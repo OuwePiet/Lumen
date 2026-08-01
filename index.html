@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lumen — NFT Marketplace</title>
+  <meta name="description" content="Ontdek, verzamel en verkoop unieke digitale kunst op Lumen, de moderne NFT-marketplace." />
+  <style>
+    :root {
+      --bg: #0d1117;
+      --surface: #161b22;
+      --surface-2: #1c2430;
+      --border: #2a3441;
+      --text: #e6edf3;
+      --muted: #8b98a5;
+      --brand: #2dd4bf;
+      --brand-strong: #14b8a6;
+      --accent: #f59e0b;
+      --radius: 16px;
+      --max: 1200px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; background: var(--bg); }
+
+    body {
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a { color: inherit; text-decoration: none; }
+    img { display: block; max-width: 100%; }
+    button { font-family: inherit; cursor: pointer; }
+
+    .wrap { width: 100%; max-width: var(--max); margin: 0 auto; padding: 0 20px; }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      border: 1px solid transparent; border-radius: 999px;
+      padding: 11px 20px; font-size: 15px; font-weight: 600;
+      transition: transform .15s ease, background .15s ease, border-color .15s ease;
+    }
+    .btn:active { transform: translateY(1px); }
+    .btn-primary { background: var(--brand); color: #062b28; }
+    .btn-primary:hover { background: var(--brand-strong); }
+    .btn-ghost { background: transparent; border-color: var(--border); color: var(--text); }
+    .btn-ghost:hover { border-color: var(--brand); color: var(--brand); }
+    .btn-sm { padding: 8px 16px; font-size: 14px; }
+
+    /* Header */
+    header {
+      position: sticky; top: 0; z-index: 50;
+      background: rgba(13,17,23,.8);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav { display: flex; align-items: center; justify-content: space-between; height: 68px; }
+    .logo { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 20px; letter-spacing: -.02em; }
+    .logo-mark {
+      width: 30px; height: 30px; border-radius: 9px;
+      background: linear-gradient(135deg, var(--brand), var(--accent));
+      display: grid; place-items: center; color: #062b28; font-weight: 800;
+    }
+    .nav-links { display: none; gap: 28px; }
+    .nav-links a { color: var(--muted); font-size: 15px; font-weight: 500; transition: color .15s ease; }
+    .nav-links a:hover { color: var(--text); }
+    .nav-actions { display: flex; align-items: center; gap: 10px; }
+    .hide-mobile { display: none; }
+
+    @media (min-width: 860px) {
+      .nav-links { display: flex; }
+      .hide-mobile { display: inline-flex; }
+    }
+
+    /* Hero */
+    .hero { padding: 64px 0 48px; }
+    .hero-grid { display: grid; grid-template-columns: 1fr; gap: 40px; align-items: center; }
+    .badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--surface); border: 1px solid var(--border);
+      padding: 6px 14px; border-radius: 999px; font-size: 13px; color: var(--muted); margin-bottom: 20px;
+    }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--brand); }
+    .hero h1 {
+      font-size: clamp(38px, 8vw, 62px); line-height: 1.05; letter-spacing: -.03em;
+      font-weight: 800; margin-bottom: 18px; text-wrap: balance;
+    }
+    .hero h1 span { color: var(--brand); }
+    .hero p { color: var(--muted); font-size: 18px; max-width: 520px; margin-bottom: 28px; text-wrap: pretty; }
+    .hero-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 40px; }
+    .stats { display: flex; gap: 36px; flex-wrap: wrap; }
+    .stat .num { font-size: 26px; font-weight: 800; letter-spacing: -.02em; }
+    .stat .lbl { color: var(--muted); font-size: 14px; }
+
+    .hero-art { position: relative; }
+    .hero-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 20px;
+      overflow: hidden; box-shadow: 0 24px 60px rgba(0,0,0,.4);
+      max-width: 380px; margin: 0 auto;
+    }
+    .hero-card img { width: 100%; aspect-ratio: 1; object-fit: cover; }
+    .hero-card .info { display: flex; align-items: center; justify-content: space-between; padding: 16px 18px; }
+    .hero-card .info .price { color: var(--brand); font-weight: 700; }
+
+    @media (min-width: 900px) {
+      .hero-grid { grid-template-columns: 1.1fr .9fr; }
+      .hero { padding: 90px 0 70px; }
+    }
+
+    /* Sections */
+    section { padding: 56px 0; }
+    .sec-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 32px; flex-wrap: wrap; }
+    .sec-head h2 { font-size: clamp(26px, 4vw, 36px); letter-spacing: -.02em; font-weight: 800; }
+    .sec-head p { color: var(--muted); font-size: 15px; }
+
+    /* Tabs */
+    .tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 28px; }
+    .tab {
+      background: var(--surface); border: 1px solid var(--border); color: var(--muted);
+      padding: 8px 18px; border-radius: 999px; font-size: 14px; font-weight: 600; transition: all .15s ease;
+    }
+    .tab:hover { color: var(--text); }
+    .tab.active { background: var(--brand); border-color: var(--brand); color: #062b28; }
+
+    /* Card grid */
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
+    .card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+      overflow: hidden; transition: transform .2s ease, border-color .2s ease;
+    }
+    .card:hover { transform: translateY(-4px); border-color: var(--brand); }
+    .card .thumb { position: relative; }
+    .card .thumb img { width: 100%; aspect-ratio: 1; object-fit: cover; }
+    .card .rank {
+      position: absolute; top: 12px; left: 12px;
+      background: rgba(13,17,23,.75); backdrop-filter: blur(6px);
+      border: 1px solid var(--border); padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 600;
+    }
+    .card .body { padding: 14px 16px 16px; }
+    .card .creator { color: var(--muted); font-size: 13px; display: flex; align-items: center; gap: 6px; }
+    .card .name { font-weight: 700; font-size: 16px; margin: 4px 0 12px; }
+    .card .row { display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--border); padding-top: 12px; }
+    .card .row .k { color: var(--muted); font-size: 12px; }
+    .card .row .v { font-weight: 700; font-size: 15px; }
+    .card .row .v.bid { color: var(--brand); }
+
+    /* How it works */
+    .steps { display: grid; grid-template-columns: 1fr; gap: 20px; }
+    .step { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 26px; }
+    .step .ico { width: 46px; height: 46px; border-radius: 12px; background: var(--surface-2); display: grid; place-items: center; margin-bottom: 16px; color: var(--brand); }
+    .step h3 { font-size: 18px; margin-bottom: 8px; }
+    .step p { color: var(--muted); font-size: 15px; }
+    @media (min-width: 760px) { .steps { grid-template-columns: repeat(3, 1fr); } }
+
+    /* CTA */
+    .cta {
+      background: linear-gradient(135deg, var(--surface-2), var(--surface));
+      border: 1px solid var(--border); border-radius: 24px; padding: 48px 28px; text-align: center;
+    }
+    .cta h2 { font-size: clamp(26px, 4vw, 38px); letter-spacing: -.02em; margin-bottom: 14px; }
+    .cta p { color: var(--muted); max-width: 480px; margin: 0 auto 26px; }
+
+    /* Footer */
+    footer { border-top: 1px solid var(--border); padding: 44px 0 32px; margin-top: 40px; }
+    .foot-grid { display: grid; grid-template-columns: 1fr; gap: 28px; }
+    .foot-grid p { color: var(--muted); font-size: 14px; max-width: 300px; margin-top: 12px; }
+    .foot-col h4 { font-size: 14px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-bottom: 14px; }
+    .foot-col a { display: block; color: var(--text); font-size: 15px; padding: 4px 0; opacity: .85; }
+    .foot-col a:hover { color: var(--brand); opacity: 1; }
+    .foot-bottom { border-top: 1px solid var(--border); margin-top: 32px; padding-top: 22px; color: var(--muted); font-size: 14px; text-align: center; }
+    @media (min-width: 760px) { .foot-grid { grid-template-columns: 2fr 1fr 1fr 1fr; } }
+
+    /* Modal */
+    .modal { position: fixed; inset: 0; z-index: 100; display: none; align-items: center; justify-content: center; padding: 20px; }
+    .modal.open { display: flex; }
+    .modal-overlay { position: absolute; inset: 0; background: rgba(0,0,0,.6); backdrop-filter: blur(4px); }
+    .modal-box {
+      position: relative; background: var(--surface); border: 1px solid var(--border);
+      border-radius: 20px; padding: 32px; width: 100%; max-width: 400px; z-index: 1;
+    }
+    .modal-box h3 { font-size: 22px; margin-bottom: 6px; }
+    .modal-box .sub { color: var(--muted); font-size: 14px; margin-bottom: 22px; }
+    .field { margin-bottom: 16px; }
+    .field label { display: block; font-size: 14px; margin-bottom: 6px; color: var(--muted); }
+    .field input {
+      width: 100%; background: var(--bg); border: 1px solid var(--border); color: var(--text);
+      border-radius: 10px; padding: 12px 14px; font-size: 15px; outline: none;
+    }
+    .field input:focus { border-color: var(--brand); }
+    .modal-close {
+      position: absolute; top: 16px; right: 16px; background: var(--surface-2);
+      border: 1px solid var(--border); color: var(--muted); width: 34px; height: 34px;
+      border-radius: 8px; font-size: 18px; line-height: 1; display: grid; place-items: center;
+    }
+    .modal-close:hover { color: var(--text); }
+    .divider { display: flex; align-items: center; gap: 12px; color: var(--muted); font-size: 13px; margin: 20px 0; }
+    .divider::before, .divider::after { content: ""; height: 1px; background: var(--border); flex: 1; }
+    .wallet-btn { width: 100%; margin-top: 10px; }
+
+    /* Toast */
+    .toast {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px);
+      background: var(--surface-2); border: 1px solid var(--brand); color: var(--text);
+      padding: 14px 22px; border-radius: 12px; font-size: 15px; font-weight: 500;
+      opacity: 0; pointer-events: none; transition: all .3s ease; z-index: 200;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap nav">
+      <a href="#" class="logo" aria-label="Lumen home">
+        <span class="logo-mark" aria-hidden="true">L</span>
+        Lumen
+      </a>
+      <nav class="nav-links" aria-label="Hoofdnavigatie">
+        <a href="#marketplace">Ontdek</a>
+        <a href="#collections">Collecties</a>
+        <a href="#how">Hoe werkt het</a>
+        <a href="#creators">Creators</a>
+      </nav>
+      <div class="nav-actions">
+        <button class="btn btn-ghost btn-sm hide-mobile" id="connectBtn">Wallet verbinden</button>
+        <button class="btn btn-primary btn-sm" id="loginBtn">Inloggen</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- Hero -->
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="wrap hero-grid">
+        <div>
+          <span class="badge"><span class="dot" aria-hidden="true"></span> Meer dan 12.000 drops live</span>
+          <h1 id="hero-title">Ontdek, verzamel &amp; verkoop <span>digitale kunst</span></h1>
+          <p>Lumen is de plek waar creators en verzamelaars samenkomen. Bouw je collectie op met unieke NFT's van artiesten wereldwijd.</p>
+          <div class="hero-actions">
+            <a href="#marketplace" class="btn btn-primary">Ontdek de markt</a>
+            <a href="#creators" class="btn btn-ghost">Word creator</a>
+          </div>
+          <div class="stats">
+            <div class="stat"><div class="num">42K+</div><div class="lbl">Kunstwerken</div></div>
+            <div class="stat"><div class="num">18K+</div><div class="lbl">Creators</div></div>
+            <div class="stat"><div class="num">6.4K</div><div class="lbl">ETH volume</div></div>
+          </div>
+        </div>
+        <div class="hero-art">
+          <div class="hero-card">
+            <img src="assets/nft-3.png" alt="Uitgelicht NFT-kunstwerk: surrealistisch zwevend landschap" />
+            <div class="info">
+              <div>
+                <div class="lbl" style="color:var(--muted);font-size:13px;">Uitgelicht</div>
+                <div style="font-weight:700;">Floating Realms #07</div>
+              </div>
+              <div style="text-align:right;">
+                <div class="lbl" style="color:var(--muted);font-size:13px;">Huidig bod</div>
+                <div class="price">3.4 ETH</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Marketplace -->
+    <section id="marketplace" aria-labelledby="market-title">
+      <div class="wrap">
+        <div class="sec-head">
+          <div>
+            <h2 id="market-title">Trending kunstwerken</h2>
+            <p>De meest bekeken drops van deze week.</p>
+          </div>
+        </div>
+        <div class="tabs" role="tablist" aria-label="Filter kunstwerken">
+          <button class="tab active" data-filter="all" role="tab" aria-selected="true">Alles</button>
+          <button class="tab" data-filter="art" role="tab" aria-selected="false">Kunst</button>
+          <button class="tab" data-filter="avatar" role="tab" aria-selected="false">Avatars</button>
+          <button class="tab" data-filter="photo" role="tab" aria-selected="false">3D</button>
+        </div>
+        <div class="grid" id="cardGrid">
+          <!-- Cards injected by JS -->
+        </div>
+      </div>
+    </section>
+
+    <!-- How it works -->
+    <section id="how" aria-labelledby="how-title">
+      <div class="wrap">
+        <div class="sec-head">
+          <div>
+            <h2 id="how-title">Hoe het werkt</h2>
+            <p>In drie stappen van start naar je eerste NFT.</p>
+          </div>
+        </div>
+        <div class="steps">
+          <div class="step">
+            <div class="ico" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+            </div>
+            <h3>1. Verbind je wallet</h3>
+            <p>Koppel een wallet zoals MetaMask of maak snel een account aan met je e-mail.</p>
+          </div>
+          <div class="step">
+            <div class="ico" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            </div>
+            <h3>2. Ontdek &amp; verzamel</h3>
+            <p>Blader door duizenden collecties, plaats een bod of koop direct tegen vaste prijs.</p>
+          </div>
+          <div class="step">
+            <div class="ico" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20"/><path d="m17 7-5-5-5 5"/><path d="m17 17-5 5-5-5"/></svg>
+            </div>
+            <h3>3. Verkoop &amp; verdien</h3>
+            <p>Zet je eigen werk in de markt en ontvang automatisch royalty's bij elke doorverkoop.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA / Creators -->
+    <section id="creators" aria-labelledby="cta-title">
+      <div class="wrap">
+        <div class="cta">
+          <h2 id="cta-title">Klaar om je eigen collectie te lanceren?</h2>
+          <p>Sluit je aan bij duizenden creators die hun kunst verkopen op Lumen. Geen setup-kosten, direct beginnen.</p>
+          <button class="btn btn-primary" id="ctaBtn">Word creator</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer id="collections">
+    <div class="wrap">
+      <div class="foot-grid">
+        <div class="foot-col">
+          <a href="#" class="logo"><span class="logo-mark" aria-hidden="true">L</span> Lumen</a>
+          <p>De moderne marketplace voor digitale kunst en collectibles. Gebouwd voor creators.</p>
+        </div>
+        <div class="foot-col">
+          <h4>Marktplaats</h4>
+          <a href="#marketplace">Alle kunst</a>
+          <a href="#marketplace">Avatars</a>
+          <a href="#marketplace">3D-werk</a>
+          <a href="#marketplace">Fotografie</a>
+        </div>
+        <div class="foot-col">
+          <h4>Account</h4>
+          <a href="#" data-open-login>Profiel</a>
+          <a href="#" data-open-login>Mijn collectie</a>
+          <a href="#" data-open-login>Favorieten</a>
+          <a href="#" data-open-login>Instellingen</a>
+        </div>
+        <div class="foot-col">
+          <h4>Bedrijf</h4>
+          <a href="#">Over ons</a>
+          <a href="#">Blog</a>
+          <a href="#">Support</a>
+          <a href="#">Privacy</a>
+        </div>
+      </div>
+      <div class="foot-bottom">© 2026 Lumen Marketplace. Alle rechten voorbehouden.</div>
+    </div>
+  </footer>
+
+  <!-- Login modal -->
+  <div class="modal" id="loginModal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-overlay" data-close></div>
+    <div class="modal-box">
+      <button class="modal-close" data-close aria-label="Sluiten">&times;</button>
+      <h3 id="modal-title">Welkom terug</h3>
+      <p class="sub">Log in om te verzamelen en te verkopen.</p>
+      <form id="loginForm">
+        <div class="field">
+          <label for="email">E-mailadres</label>
+          <input type="email" id="email" name="email" placeholder="jij@voorbeeld.nl" required />
+        </div>
+        <div class="field">
+          <label for="password">Wachtwoord</label>
+          <input type="password" id="password" name="password" placeholder="••••••••" required />
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%;">Inloggen</button>
+      </form>
+      <div class="divider">of</div>
+      <button class="btn btn-ghost wallet-btn" id="modalWalletBtn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+        Verbind wallet
+      </button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    (function () {
+      "use strict";
+
+      // --- Data for cards ---
+      var items = [
+        { img: "assets/nft-1.png", name: "Liquid Dreams #12", creator: "aurora.eth", price: "2.1 ETH", cat: "art" },
+        { img: "assets/nft-2.png", name: "Crystal Beast #04", creator: "polyforge", price: "1.8 ETH", cat: "avatar" },
+        { img: "assets/nft-4.png", name: "Chrome Mind #21", creator: "neonlab", price: "3.0 ETH", cat: "avatar" },
+        { img: "assets/nft-5.png", name: "Golden Flux #09", creator: "studio.wave", price: "4.2 ETH", cat: "art" },
+        { img: "assets/nft-6.png", name: "Pixel Pal #33", creator: "toybox", price: "0.9 ETH", cat: "photo" },
+        { img: "assets/nft-3.png", name: "Floating Realms #07", creator: "skyward", price: "3.4 ETH", cat: "photo" },
+        { img: "assets/nft-1.png", name: "Liquid Dreams #18", creator: "aurora.eth", price: "2.4 ETH", cat: "art" },
+        { img: "assets/nft-2.png", name: "Crystal Beast #11", creator: "polyforge", price: "1.5 ETH", cat: "avatar" }
+      ];
+
+      var grid = document.getElementById("cardGrid");
+
+      function renderCards(filter) {
+        grid.innerHTML = "";
+        items
+          .filter(function (it) { return filter === "all" || it.cat === filter; })
+          .forEach(function (it, i) {
+            var card = document.createElement("article");
+            card.className = "card";
+            card.innerHTML =
+              '<div class="thumb">' +
+                '<span class="rank">#' + (i + 1) + '</span>' +
+                '<img src="' + it.img + '" alt="NFT-kunstwerk: ' + it.name + '" loading="lazy" />' +
+              '</div>' +
+              '<div class="body">' +
+                '<div class="creator">' +
+                  '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>' +
+                  it.creator +
+                '</div>' +
+                '<div class="name">' + it.name + '</div>' +
+                '<div class="row">' +
+                  '<div><div class="k">Prijs</div><div class="v">' + it.price + '</div></div>' +
+                  '<button class="btn btn-ghost btn-sm" data-buy="' + it.name + '">Bod plaatsen</button>' +
+                '</div>' +
+              '</div>';
+            grid.appendChild(card);
+          });
+      }
+
+      renderCards("all");
+
+      // --- Tabs ---
+      var tabs = document.querySelectorAll(".tab");
+      tabs.forEach(function (tab) {
+        tab.addEventListener("click", function () {
+          tabs.forEach(function (t) { t.classList.remove("active"); t.setAttribute("aria-selected", "false"); });
+          tab.classList.add("active");
+          tab.setAttribute("aria-selected", "true");
+          renderCards(tab.getAttribute("data-filter"));
+        });
+      });
+
+      // --- Toast ---
+      var toast = document.getElementById("toast");
+      var toastTimer;
+      function showToast(msg) {
+        toast.textContent = msg;
+        toast.classList.add("show");
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(function () { toast.classList.remove("show"); }, 2600);
+      }
+
+      // --- Modal ---
+      var modal = document.getElementById("loginModal");
+      var lastFocused = null;
+      function openModal() {
+        lastFocused = document.activeElement;
+        modal.classList.add("open");
+        var input = document.getElementById("email");
+        if (input) input.focus();
+      }
+      function closeModal() {
+        modal.classList.remove("open");
+        if (lastFocused) lastFocused.focus();
+      }
+
+      document.getElementById("loginBtn").addEventListener("click", openModal);
+      document.getElementById("ctaBtn").addEventListener("click", openModal);
+      document.querySelectorAll("[data-open-login]").forEach(function (el) {
+        el.addEventListener("click", function (e) { e.preventDefault(); openModal(); });
+      });
+      modal.querySelectorAll("[data-close]").forEach(function (el) {
+        el.addEventListener("click", closeModal);
+      });
+      document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape" && modal.classList.contains("open")) closeModal();
+      });
+
+      document.getElementById("loginForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+        closeModal();
+        showToast("Ingelogd! Welkom terug bij Lumen.");
+      });
+
+      // --- Wallet connect (gesimuleerd) ---
+      function connectWallet() {
+        showToast("Wallet verbonden: 0x7a3f…c92b");
+        var btn = document.getElementById("connectBtn");
+        if (btn) btn.textContent = "0x7a3f…c92b";
+        if (modal.classList.contains("open")) closeModal();
+      }
+      document.getElementById("connectBtn").addEventListener("click", connectWallet);
+      document.getElementById("modalWalletBtn").addEventListener("click", connectWallet);
+
+      // --- Buy / bid buttons (event delegation) ---
+      grid.addEventListener("click", function (e) {
+        var btn = e.target.closest("[data-buy]");
+        if (btn) showToast("Bod geplaatst op " + btn.getAttribute("data-buy"));
+      });
+    })();
+  </script>
+</body>
+</html>
