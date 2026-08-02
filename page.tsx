@@ -1,6 +1,5 @@
 export default function Page() {
   return (
-  return (
   <main>
     
     <h1>Lumen</h1>
