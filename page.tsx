@@ -1,5 +1,27 @@
 export default function Page() {
   return (
+  return (
+  <main>
+    
+    <h1>Lumen</h1>
+
+    <button 
+      onClick={() => window.open("https://nftz.me/nft/000929e4490e3f744a7c889738d3aef52397ac72af906e5cd473bde710b49111")}
+      style={{
+        padding: "12px 20px",
+        background: "#00bfa6",
+        color: "white",
+        borderRadius: "8px",
+        border: "none",
+        cursor: "pointer",
+        marginTop: "20px"
+      }}
+    >
+      🔥 Buy this NFT
+    </button>
+
+  </main>
+)
     <main
       style={{
         colorScheme: 'light dark',
