@@ -14,6 +14,7 @@ type NFTEntry = {
   IsForSale?: boolean
   MinBidAmountNanos?: number
   OwnerPublicKeyBase58Check?: string
+  BuyNowPriceNanos?: number
   SerialNumber?: number
 }
 
@@ -202,6 +203,16 @@ export default async function NFTView({ postHash }: { postHash: string }) {
     const lowestBid =
       bidAmounts.length > 0 ? Math.min(...bidAmounts) : undefined
 
+    const buyNowAmounts = forSale
+  .map((entry) => entry.BuyNowPriceNanos)
+  .filter(
+    (amount): amount is number =>
+      typeof amount === "number" && amount > 0
+  )
+
+const lowestBuyNowPrice =
+  buyNowAmounts.length > 0 ? Math.min(...buyNowAmounts) : undefined
+
     const mediaUrl = independentMediaUrl(post.ImageURLs?.[0])
     const creator = post.ProfileEntryResponse?.Username
       ? `@${post.ProfileEntryResponse.Username}`
@@ -243,6 +254,7 @@ export default async function NFTView({ postHash }: { postHash: string }) {
                   ["Copies", post.NumNFTCopies ?? entries.length],
                   ["For sale", forSale.length],
                   ["Minimum bid", nanosToDeSo(lowestBid)],
+        ["Buy price", nanosToDeSo(lowestBuyNowPrice)],
                 ].map(([label, value]) => (
                   <div key={String(label)} style={styles.fact}>
                     <dt style={styles.label}>{label}</dt>
