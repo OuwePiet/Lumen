@@ -212,7 +212,8 @@ export default async function NFTGrid() {
                   <div style={styles.facts}>
                     <span>{creator}</span>
                     <span>
-                      {post.NumNFTCopies ?? 0} copies
+                        {post.NumNFTCopies ?? 0}{" "}
+                        {post.NumNFTCopies === 1 ? "copy" : "copies"}
                     </span>
                   </div>
                 </div>
