@@ -14,24 +14,50 @@ type DeSoPost = {
   }
 }
 
+type NFTEntry = {
+  IsForSale?: boolean
+}
+
 async function loadNFT(postHash: string) {
-  const response = await fetch(`${DESO_NODE}/api/v0/get-single-post`, {
+  const requestOptions = {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       PostHashHex: postHash,
       ReaderPublicKeyBase58Check: "",
     }),
-    cache: "no-store",
-  })
+    cache: "no-store" as const,
+  }
 
-  if (!response.ok) return null
+  const [postResponse, nftResponse] = await Promise.all([
+    fetch(`${DESO_NODE}/api/v0/get-single-post`, requestOptions),
+    fetch(
+      `${DESO_NODE}/api/v0/get-nft-entries-for-nft-post`,
+      requestOptions
+    ),
+  ])
 
-  const data = await response.json()
+  if (!postResponse.ok || !nftResponse.ok) return null
+
+  const [postData, nftData] = await Promise.all([
+    postResponse.json(),
+    nftResponse.json(),
+  ])
+
   const post: DeSoPost =
-    data.PostFound ?? data.PostFoundResponse ?? {}
+    postData.PostFound ?? postData.PostFoundResponse ?? {}
 
-  return { postHash, post }
+  const entries: NFTEntry[] =
+    nftData.NFTEntryResponses ??
+    nftData.NFTEntries ??
+    nftData.NFTEntryResponse ??
+    []
+
+  const forSaleCount = entries.filter(
+    (entry) => entry.IsForSale
+  ).length
+
+  return { postHash, post, forSaleCount }
 }
 
 function mediaUrl(url?: string) {
@@ -172,7 +198,7 @@ export default async function NFTGrid() {
         </p>
 
         <div style={styles.grid}>
-          {nfts.map(({ postHash, post }) => {
+          {nfts.map(({ postHash, post, forSaleCount }) => {
             const image = mediaUrl(post.ImageURLs?.[0])
 
             const creator =
@@ -212,9 +238,11 @@ export default async function NFTGrid() {
                   <div style={styles.facts}>
                     <span>{creator}</span>
                     <span>
-                        {post.NumNFTCopies ?? 0}{" "}
-                        {post.NumNFTCopies === 1 ? "copy" : "copies"}
-                    </span>
+  {post.NumNFTCopies ?? 0}{" "}
+  {post.NumNFTCopies === 1 ? "copy" : "copies"}
+  {" · "}
+  {forSaleCount} for sale
+</span>
                   </div>
                 </div>
               </a>
