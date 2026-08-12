@@ -98,7 +98,7 @@ function formatDeSo(nanos: number) {
 
 function priceStatus(buyNowPrice?: number, minBidAmount?: number) {
   if (typeof buyNowPrice === "number") {
-    return `${formatDeSo(buyNowPrice)} DESO`
+    return `Buy now: ${formatDeSo(buyNowPrice)} DESO`
   }
 
   if (typeof minBidAmount === "number") {
