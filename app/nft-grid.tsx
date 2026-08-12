@@ -346,7 +346,9 @@ export default async function NFTGrid() {
     : []
 
   const discoveredNFTs = discoveredResults.filter(
-    (result) =>
+    (
+      result
+    ): result is NonNullable<Awaited<ReturnType<typeof loadNFT>>> =>
       result !== null &&
       !nfts.some((nft) => nft.postHash === result.postHash)
   )
