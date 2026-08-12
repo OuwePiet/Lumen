@@ -41,12 +41,28 @@ function shortKey(publicKey?: string) {
   return `${publicKey.slice(0, 10)}...${publicKey.slice(-8)}`
 }
 
-function nanosToDeSo(nanos?: number) {
-  if (typeof nanos !== "number") return "Not available"
-
-  return `${new Intl.NumberFormat("en-US", {
+function formatDeSo(nanos: number) {
+  return new Intl.NumberFormat("en-US", {
     maximumFractionDigits: 9,
-  }).format(nanos / 1_000_000_000)} DESO`
+  }).format(nanos / 1_000_000_000)
+}
+
+function saleStatus(
+  forSaleCount: number,
+  buyNowPrice?: number,
+  minBidAmount?: number
+) {
+  if (forSaleCount === 0) return "Not for sale"
+
+  if (typeof buyNowPrice === "number") {
+    return `Buy now: ${formatDeSo(buyNowPrice)} DESO`
+  }
+
+  if (typeof minBidAmount === "number") {
+    return `Min bid: ${formatDeSo(minBidAmount)} DESO`
+  }
+
+  return "Claim not available"
 }
 
 function independentMediaUrl(url?: string) {
@@ -198,7 +214,10 @@ export default async function NFTView({ postHash }: { postHash: string }) {
     const forSale = entries.filter((entry) => entry.IsForSale)
     const bidAmounts = forSale
       .map((entry) => entry.MinBidAmountNanos)
-      .filter((amount): amount is number => typeof amount === "number")
+      .filter(
+        (amount): amount is number =>
+          typeof amount === "number" && amount > 0
+      )
 
     const lowestBid =
       bidAmounts.length > 0 ? Math.min(...bidAmounts) : undefined
@@ -253,8 +272,14 @@ const lowestBuyNowPrice =
                   ],
                   ["Copies", post.NumNFTCopies ?? entries.length],
                   ["For sale", forSale.length],
-                  ["Minimum bid", nanosToDeSo(lowestBid)],
-        ["Buy now", nanosToDeSo(lowestBuyNowPrice)],
+                  [
+                    "Sale status",
+                    saleStatus(
+                      forSale.length,
+                      lowestBuyNowPrice,
+                      lowestBid
+                    ),
+                  ],
                 ].map(([label, value]) => (
                   <div key={String(label)} style={styles.fact}>
                     <dt style={styles.label}>{label}</dt>
