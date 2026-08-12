@@ -96,7 +96,13 @@ function formatDeSo(nanos: number) {
   }).format(nanos / 1_000_000_000)
 }
 
-function priceStatus(buyNowPrice?: number, minBidAmount?: number) {
+function priceStatus(
+  forSaleCount: number,
+  buyNowPrice?: number,
+  minBidAmount?: number
+) {
+  if (forSaleCount === 0) return "Not for sale"
+
   if (typeof buyNowPrice === "number") {
     return `Buy now: ${formatDeSo(buyNowPrice)} DESO`
   }
@@ -297,7 +303,11 @@ export default async function NFTGrid() {
   {" · "}
   {forSaleCount} for sale
   {" · "}
-  {priceStatus(lowestBuyNowPrice, lowestMinBidAmount)}
+  {priceStatus(
+    forSaleCount,
+    lowestBuyNowPrice,
+    lowestMinBidAmount
+  )}
 </span>
                   </div>
                 </div>
