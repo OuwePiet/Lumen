@@ -17,6 +17,7 @@ type DeSoPost = {
 type NFTEntry = {
   IsForSale?: boolean
   BuyNowPriceNanos?: number
+  MinBidAmountNanos?: number
 }
 
 async function loadNFT(postHash: string) {
@@ -69,15 +70,42 @@ async function loadNFT(postHash: string) {
   const lowestBuyNowPrice =
     buyNowPrices.length > 0 ? Math.min(...buyNowPrices) : undefined
 
-  return { postHash, post, forSaleCount, lowestBuyNowPrice }
+  const minBidAmounts = entries
+    .filter((entry) => entry.IsForSale)
+    .map((entry) => entry.MinBidAmountNanos)
+    .filter(
+      (amount): amount is number =>
+        typeof amount === "number" && amount > 0
+    )
+
+  const lowestMinBidAmount =
+    minBidAmounts.length > 0 ? Math.min(...minBidAmounts) : undefined
+
+  return {
+    postHash,
+    post,
+    forSaleCount,
+    lowestBuyNowPrice,
+    lowestMinBidAmount,
+  }
 }
 
-function nanosToDeSo(nanos?: number) {
-  if (typeof nanos !== "number") return "Claim not available"
-
-  return `${new Intl.NumberFormat("en-US", {
+function formatDeSo(nanos: number) {
+  return new Intl.NumberFormat("en-US", {
     maximumFractionDigits: 9,
-  }).format(nanos / 1_000_000_000)} DESO`
+  }).format(nanos / 1_000_000_000)
+}
+
+function priceStatus(buyNowPrice?: number, minBidAmount?: number) {
+  if (typeof buyNowPrice === "number") {
+    return `${formatDeSo(buyNowPrice)} DESO`
+  }
+
+  if (typeof minBidAmount === "number") {
+    return `Min bid: ${formatDeSo(minBidAmount)} DESO`
+  }
+
+  return "Claim not available"
 }
 
 function mediaUrl(url?: string) {
@@ -223,6 +251,7 @@ export default async function NFTGrid() {
             post,
             forSaleCount,
             lowestBuyNowPrice,
+            lowestMinBidAmount,
           }) => {
             const image = mediaUrl(post.ImageURLs?.[0])
 
@@ -268,7 +297,7 @@ export default async function NFTGrid() {
   {" · "}
   {forSaleCount} for sale
   {" · "}
-  {nanosToDeSo(lowestBuyNowPrice)}
+  {priceStatus(lowestBuyNowPrice, lowestMinBidAmount)}
 </span>
                   </div>
                 </div>
