@@ -81,7 +81,7 @@ async function loadAutomaticNFTCount(publicKey: string) {
     nftCount += nftPosts.length
     for (const post of nftPosts) {
       if (
-        discoveredNFTPostHashes.length < 3 &&
+        discoveredNFTPostHashes.length < 6 &&
         post.PostHashHex &&
         !NFT_POST_HASHES.includes(post.PostHashHex) &&
         !discoveredNFTPostHashes.includes(post.PostHashHex)
