@@ -50,7 +50,7 @@ async function loadAutomaticNFTCount(publicKey: string) {
   let lastPostHashHex = ""
   let checkedPosts = 0
   let nftCount = 0
-  let firstNFTPostHash: string | undefined
+  const discoveredNFTPostHashes: string[] = []
 
   for (let page = 0; page < 4; page += 1) {
     const response = await fetch(
@@ -79,11 +79,16 @@ async function loadAutomaticNFTCount(publicKey: string) {
     checkedPosts += posts.length
     const nftPosts = posts.filter((post) => post.IsNFT === true)
     nftCount += nftPosts.length
-    firstNFTPostHash ??= nftPosts.find(
-      (post) =>
+    for (const post of nftPosts) {
+      if (
+        discoveredNFTPostHashes.length < 3 &&
         post.PostHashHex &&
-        !NFT_POST_HASHES.includes(post.PostHashHex)
-    )?.PostHashHex
+        !NFT_POST_HASHES.includes(post.PostHashHex) &&
+        !discoveredNFTPostHashes.includes(post.PostHashHex)
+      ) {
+        discoveredNFTPostHashes.push(post.PostHashHex)
+      }
+    }
 
     if (posts.length < 12) break
 
@@ -95,7 +100,7 @@ async function loadAutomaticNFTCount(publicKey: string) {
     lastPostHashHex = lastPost.PostHashHex
   }
 
-  return { nftCount, checkedPosts, firstNFTPostHash }
+  return { nftCount, checkedPosts, discoveredNFTPostHashes }
 }
 
 async function loadNFT(postHash: string) {
@@ -334,15 +339,21 @@ export default async function NFTGrid() {
     (result) => result !== null
   )
 
-  const discoveredNFT = automaticNFTResult?.firstNFTPostHash
-    ? await loadNFT(automaticNFTResult.firstNFTPostHash)
-    : null
+  const discoveredResults = automaticNFTResult
+    ? await Promise.all(
+        automaticNFTResult.discoveredNFTPostHashes.map(loadNFT)
+      )
+    : []
 
-  const collectionNFTs =
-    discoveredNFT &&
-    !nfts.some((nft) => nft.postHash === discoveredNFT.postHash)
-      ? [...nfts, discoveredNFT]
-      : nfts
+  const discoveredNFTs = discoveredResults.filter(
+    (
+      result
+    ): result is NonNullable<Awaited<ReturnType<typeof loadNFT>>> =>
+      result !== null &&
+      !nfts.some((nft) => nft.postHash === result.postHash)
+  )
+
+  const collectionNFTs = [...nfts, ...discoveredNFTs]
 
   const renderNFTCard = (
     {
@@ -441,7 +452,10 @@ export default async function NFTGrid() {
           {collectionNFTs.map((nft) =>
             renderNFTCard(
               nft,
-              nft.postHash === discoveredNFT?.postHash
+              discoveredNFTs.some(
+                (discoveredNFT) =>
+                  discoveredNFT.postHash === nft.postHash
+              )
             )
           )}
         </div>
