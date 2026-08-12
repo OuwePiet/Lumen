@@ -446,6 +446,8 @@ export default async function NFTGrid() {
           {automaticNFTResult === null
             ? "Automatic NFT check unavailable"
             : `Automatic NFTs found: ${automaticNFTResult.nftCount} of ${automaticNFTResult.checkedPosts} checked posts`}
+          <br />
+          {`Unique NFTs displayed: ${collectionNFTs.length}`}
         </p>
 
         <div style={styles.grid}>
