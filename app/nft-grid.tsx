@@ -52,7 +52,7 @@ async function loadAutomaticNFTCount(publicKey: string) {
   let nftCount = 0
   const discoveredNFTPostHashes: string[] = []
 
-  for (let page = 0; page < 8; page += 1) {
+  for (let page = 0; page < 12; page += 1) {
     const response = await fetch(
       `${DESO_NODE}/api/v0/get-posts-for-public-key`,
       {
