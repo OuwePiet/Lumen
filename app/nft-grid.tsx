@@ -9,6 +9,7 @@ type DeSoPost = {
   Body?: string
   ImageURLs?: string[]
   NumNFTCopies?: number
+  IsNFT?: boolean
   ProfileEntryResponse?: {
     Username?: string
   }
@@ -42,6 +43,31 @@ async function loadCollectionOwner() {
   if (!profile.Username || !profile.PublicKeyBase58Check) return null
 
   return profile
+}
+
+async function loadAutomaticNFTCount(publicKey: string) {
+  const response = await fetch(
+    `${DESO_NODE}/api/v0/get-posts-for-public-key`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        PublicKeyBase58Check: publicKey,
+        ReaderPublicKeyBase58Check: "",
+        LastPostHashHex: "",
+        NumToFetch: 12,
+        MediaRequired: false,
+      }),
+      cache: "no-store",
+    }
+  )
+
+  if (!response.ok) return null
+
+  const data = await response.json()
+  const posts: DeSoPost[] = data.Posts ?? []
+
+  return posts.filter((post) => post.IsNFT === true).length
 }
 
 async function loadNFT(postHash: string) {
@@ -267,6 +293,10 @@ export default async function NFTGrid() {
     loadCollectionOwner(),
   ])
 
+  const automaticNFTCount = collectionOwner
+    ? await loadAutomaticNFTCount(collectionOwner.PublicKeyBase58Check!)
+    : null
+
   const nfts = results.filter(
     (result) => result !== null
   )
@@ -286,6 +316,10 @@ export default async function NFTGrid() {
           {collectionOwner
             ? `Collection owner: @${collectionOwner.Username}`
             : "Collection owner unavailable"}
+          <br />
+          {automaticNFTCount === null
+            ? "Automatic NFT check unavailable"
+            : `Automatic NFTs found: ${automaticNFTCount} of 12 recent posts`}
         </p>
 
         <div style={styles.grid}>
