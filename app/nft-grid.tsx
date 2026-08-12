@@ -1,3 +1,5 @@
+import NFTMedia from "./nft-media"
+
 const DESO_NODE = "https://node.deso.org"
 
 const NFT_POST_HASHES = [
@@ -197,17 +199,6 @@ function priceStatus(
   return "Claim not available"
 }
 
-function mediaUrl(url?: string) {
-  if (!url) return undefined
-
-  const marker = "/ipfs/"
-  const index = url.indexOf(marker)
-
-  if (index === -1) return url
-
-  return `https://ipfs.io/ipfs/${url.slice(index + marker.length)}`
-}
-
 function cardTitle(body?: string) {
   if (!body) return "DeSo NFT"
 
@@ -363,10 +354,7 @@ export default async function NFTGrid() {
       lowestBuyNowPrice,
       lowestMinBidAmount,
     }: NonNullable<Awaited<ReturnType<typeof loadNFT>>>,
-    useMediaFallback = false
   ) => {
-    const image = mediaUrl(post.ImageURLs?.[0])
-
     const creator = post.ProfileEntryResponse?.Username
       ? `@${post.ProfileEntryResponse.Username}`
       : "DeSo creator"
@@ -378,28 +366,12 @@ export default async function NFTGrid() {
         style={styles.card}
       >
         <div style={styles.mediaFrame}>
-          {image ? (
-            useMediaFallback ? (
-              <object
-                data={image}
-                type="image/*"
-                aria-label={cardTitle(post.Body)}
-                style={styles.image}
-              >
-                <div style={styles.placeholder}>Image unavailable</div>
-              </object>
-            ) : (
-              <img
-                src={image}
-                alt={cardTitle(post.Body)}
-                width="600"
-                height="600"
-                style={styles.image}
-              />
-            )
-          ) : (
-            <div style={styles.placeholder}>No image available</div>
-          )}
+          <NFTMedia
+            url={post.ImageURLs?.[0]}
+            alt={cardTitle(post.Body)}
+            imageStyle={styles.image}
+            placeholderStyle={styles.placeholder}
+          />
         </div>
 
         <div style={styles.content}>
@@ -453,15 +425,7 @@ export default async function NFTGrid() {
         </p>
 
         <div style={styles.grid}>
-          {collectionNFTs.map((nft) =>
-            renderNFTCard(
-              nft,
-              discoveredNFTs.some(
-                (discoveredNFT) =>
-                  discoveredNFT.postHash === nft.postHash
-              )
-            )
-          )}
+          {collectionNFTs.map(renderNFTCard)}
         </div>
       </div>
     </section>
