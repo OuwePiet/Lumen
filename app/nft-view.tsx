@@ -86,6 +86,17 @@ function cleanDescription(body?: string) {
     .trim()
 }
 
+function nftTitle(body?: string) {
+  if (!body) return "DeSo NFT"
+
+  const cleaned = cleanDescription(body)
+  if (!cleaned) return "DeSo NFT"
+
+  return cleaned.length > 72
+    ? `${cleaned.slice(0, 69)}...`
+    : cleaned
+}
+
 const styles = {
   page: {
     minHeight: "100vh",
@@ -245,6 +256,7 @@ const lowestBuyNowPrice =
       : shortKey(post.PosterPublicKeyBase58Check)
 
     const description = cleanDescription(post.Body)
+    const title = nftTitle(post.Body)
 
     return (
       <main style={styles.page}>
@@ -253,7 +265,7 @@ const lowestBuyNowPrice =
             ← Back to collection
           </a>
           <p style={styles.brand}>Lumen</p>
-          <h1 style={styles.title}>DeSo NFT</h1>
+          <h1 style={styles.title}>{title}</h1>
 
           <div style={styles.grid}>
             <div>
