@@ -46,28 +46,48 @@ async function loadCollectionOwner() {
 }
 
 async function loadAutomaticNFTCount(publicKey: string) {
-  const response = await fetch(
-    `${DESO_NODE}/api/v0/get-posts-for-public-key`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        PublicKeyBase58Check: publicKey,
-        ReaderPublicKeyBase58Check: "",
-        LastPostHashHex: "",
-        NumToFetch: 12,
-        MediaRequired: false,
-      }),
-      cache: "no-store",
+  let lastPostHashHex = ""
+  let checkedPosts = 0
+  let nftCount = 0
+
+  for (let page = 0; page < 2; page += 1) {
+    const response = await fetch(
+      `${DESO_NODE}/api/v0/get-posts-for-public-key`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          PublicKeyBase58Check: publicKey,
+          ReaderPublicKeyBase58Check: "",
+          LastPostHashHex: lastPostHashHex,
+          NumToFetch: 12,
+          MediaRequired: false,
+        }),
+        cache: "no-store",
+      }
+    )
+
+    if (!response.ok) return null
+
+    const data = await response.json()
+    const posts: DeSoPost[] = data.Posts ?? []
+
+    if (posts.length === 0) break
+
+    checkedPosts += posts.length
+    nftCount += posts.filter((post) => post.IsNFT === true).length
+
+    if (posts.length < 12) break
+
+    const lastPost = posts[posts.length - 1] as DeSoPost & {
+      PostHashHex?: string
     }
-  )
 
-  if (!response.ok) return null
+    if (!lastPost.PostHashHex) break
+    lastPostHashHex = lastPost.PostHashHex
+  }
 
-  const data = await response.json()
-  const posts: DeSoPost[] = data.Posts ?? []
-
-  return posts.filter((post) => post.IsNFT === true).length
+  return { nftCount, checkedPosts }
 }
 
 async function loadNFT(postHash: string) {
@@ -293,7 +313,7 @@ export default async function NFTGrid() {
     loadCollectionOwner(),
   ])
 
-  const automaticNFTCount = collectionOwner
+  const automaticNFTResult = collectionOwner
     ? await loadAutomaticNFTCount(collectionOwner.PublicKeyBase58Check!)
     : null
 
@@ -317,9 +337,9 @@ export default async function NFTGrid() {
             ? `Collection owner: @${collectionOwner.Username}`
             : "Collection owner unavailable"}
           <br />
-          {automaticNFTCount === null
+          {automaticNFTResult === null
             ? "Automatic NFT check unavailable"
-            : `Automatic NFTs found: ${automaticNFTCount} of 12 recent posts`}
+            : `Automatic NFTs found: ${automaticNFTResult.nftCount} of ${automaticNFTResult.checkedPosts} checked posts`}
         </p>
 
         <div style={styles.grid}>
