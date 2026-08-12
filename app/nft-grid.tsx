@@ -340,7 +340,8 @@ export default async function NFTGrid() {
       forSaleCount,
       lowestBuyNowPrice,
       lowestMinBidAmount,
-    }: NonNullable<Awaited<ReturnType<typeof loadNFT>>>
+    }: NonNullable<Awaited<ReturnType<typeof loadNFT>>>,
+    useMediaFallback = false
   ) => {
     const image = mediaUrl(post.ImageURLs?.[0])
 
@@ -355,13 +356,24 @@ export default async function NFTGrid() {
         style={styles.card}
       >
         {image ? (
-          <img
-            src={image}
-            alt={cardTitle(post.Body)}
-            width="600"
-            height="600"
-            style={styles.image}
-          />
+          useMediaFallback ? (
+            <object
+              data={image}
+              type="image/*"
+              aria-label={cardTitle(post.Body)}
+              style={styles.image}
+            >
+              <div style={styles.placeholder}>Image unavailable</div>
+            </object>
+          ) : (
+            <img
+              src={image}
+              alt={cardTitle(post.Body)}
+              width="600"
+              height="600"
+              style={styles.image}
+            />
+          )
         ) : (
           <div style={styles.placeholder}>No image available</div>
         )}
@@ -421,8 +433,13 @@ export default async function NFTGrid() {
             <h2 style={{ ...styles.title, marginTop: "40px" }}>
               Automatically discovered NFT
             </h2>
-            <div style={styles.grid}>
-              {renderNFTCard(discoveredNFT)}
+            <div
+              style={{
+                ...styles.grid,
+                gridTemplateColumns: "minmax(260px, 360px)",
+              }}
+            >
+              {renderNFTCard(discoveredNFT, true)}
             </div>
           </>
         ) : null}
