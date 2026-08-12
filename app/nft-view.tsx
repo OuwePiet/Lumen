@@ -99,6 +99,13 @@ const styles = {
     maxWidth: "1120px",
     margin: "0 auto",
   },
+  backLink: {
+    display: "inline-block",
+    color: "#a9b8af",
+    fontSize: "14px",
+    marginBottom: "24px",
+    textDecoration: "none",
+  },
   brand: {
     color: "#5cff9d",
     fontSize: "14px",
@@ -242,6 +249,9 @@ const lowestBuyNowPrice =
     return (
       <main style={styles.page}>
         <div style={styles.container}>
+          <a href="/" style={styles.backLink}>
+            ← Back to collection
+          </a>
           <p style={styles.brand}>Lumen</p>
           <h1 style={styles.title}>DeSo NFT</h1>
 
@@ -306,6 +316,9 @@ const lowestBuyNowPrice =
     return (
       <main style={styles.page}>
         <div style={styles.container}>
+          <a href="/" style={styles.backLink}>
+            ← Back to collection
+          </a>
           <p style={styles.brand}>Lumen</p>
           <h1 style={styles.title}>DeSo NFT</h1>
 
