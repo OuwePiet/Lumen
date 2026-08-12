@@ -20,6 +20,30 @@ type NFTEntry = {
   MinBidAmountNanos?: number
 }
 
+type DeSoProfile = {
+  Username?: string
+  PublicKeyBase58Check?: string
+}
+
+async function loadCollectionOwner() {
+  const response = await fetch(`${DESO_NODE}/api/v0/get-single-profile`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ Username: "OuwePiet" }),
+    cache: "no-store",
+  })
+
+  if (!response.ok) return null
+
+  const data = await response.json()
+  const profile: DeSoProfile =
+    data.Profile ?? data.ProfileEntryResponse ?? {}
+
+  if (!profile.Username || !profile.PublicKeyBase58Check) return null
+
+  return profile
+}
+
 async function loadNFT(postHash: string) {
   const requestOptions = {
     method: "POST",
@@ -172,6 +196,12 @@ const styles = {
     lineHeight: 1.6,
     margin: "0 0 32px",
   },
+  owner: {
+    color: "#5cff9d",
+    fontSize: "14px",
+    fontWeight: 700,
+    margin: "-16px 0 32px",
+  },
   grid: {
     display: "grid",
     gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
@@ -232,9 +262,10 @@ const styles = {
 }
 
 export default async function NFTGrid() {
-  const results = await Promise.all(
-    NFT_POST_HASHES.map(loadNFT)
-  )
+  const [results, collectionOwner] = await Promise.all([
+    Promise.all(NFT_POST_HASHES.map(loadNFT)),
+    loadCollectionOwner(),
+  ])
 
   const nfts = results.filter(
     (result) => result !== null
@@ -249,6 +280,12 @@ export default async function NFTGrid() {
         <p style={styles.introduction}>
           Read-only NFT information loaded directly from the
           DeSo blockchain.
+        </p>
+
+        <p style={styles.owner}>
+          {collectionOwner
+            ? `Collection owner: @${collectionOwner.Username}`
+            : "Collection owner unavailable"}
         </p>
 
         <div style={styles.grid}>
