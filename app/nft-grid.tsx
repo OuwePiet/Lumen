@@ -270,22 +270,27 @@ const styles = {
     borderRadius: "18px",
     textDecoration: "none",
   },
+  mediaFrame: {
+    width: "100%",
+    aspectRatio: "1 / 1",
+    overflow: "hidden",
+    background: "#070b09",
+    borderBottom: "1px solid #254233",
+  },
   image: {
     display: "block",
     width: "100%",
-    aspectRatio: "1 / 1",
+    height: "100%",
     objectFit: "cover" as const,
     background: "#070b09",
-    borderBottom: "1px solid #254233",
   },
   placeholder: {
     display: "grid",
     width: "100%",
-    aspectRatio: "1 / 1",
+    height: "100%",
     placeItems: "center",
     color: "#84958b",
     background: "#070b09",
-    borderBottom: "1px solid #254233",
   },
   content: {
     padding: "20px",
@@ -333,6 +338,12 @@ export default async function NFTGrid() {
     ? await loadNFT(automaticNFTResult.firstNFTPostHash)
     : null
 
+  const collectionNFTs =
+    discoveredNFT &&
+    !nfts.some((nft) => nft.postHash === discoveredNFT.postHash)
+      ? [...nfts, discoveredNFT]
+      : nfts
+
   const renderNFTCard = (
     {
       postHash,
@@ -355,28 +366,30 @@ export default async function NFTGrid() {
         href={`/nft/${postHash}`}
         style={styles.card}
       >
-        {image ? (
-          useMediaFallback ? (
-            <object
-              data={image}
-              type="image/*"
-              aria-label={cardTitle(post.Body)}
-              style={styles.image}
-            >
-              <div style={styles.placeholder}>Image unavailable</div>
-            </object>
+        <div style={styles.mediaFrame}>
+          {image ? (
+            useMediaFallback ? (
+              <object
+                data={image}
+                type="image/*"
+                aria-label={cardTitle(post.Body)}
+                style={styles.image}
+              >
+                <div style={styles.placeholder}>Image unavailable</div>
+              </object>
+            ) : (
+              <img
+                src={image}
+                alt={cardTitle(post.Body)}
+                width="600"
+                height="600"
+                style={styles.image}
+              />
+            )
           ) : (
-            <img
-              src={image}
-              alt={cardTitle(post.Body)}
-              width="600"
-              height="600"
-              style={styles.image}
-            />
-          )
-        ) : (
-          <div style={styles.placeholder}>No image available</div>
-        )}
+            <div style={styles.placeholder}>No image available</div>
+          )}
+        </div>
 
         <div style={styles.content}>
           <span style={styles.badge}>DeSo verified</span>
@@ -425,24 +438,13 @@ export default async function NFTGrid() {
         </p>
 
         <div style={styles.grid}>
-          {nfts.map((nft) => renderNFTCard(nft))}
+          {collectionNFTs.map((nft) =>
+            renderNFTCard(
+              nft,
+              nft.postHash === discoveredNFT?.postHash
+            )
+          )}
         </div>
-
-        {discoveredNFT ? (
-          <>
-            <h2 style={{ ...styles.title, marginTop: "40px" }}>
-              Automatically discovered NFT
-            </h2>
-            <div
-              style={{
-                ...styles.grid,
-                gridTemplateColumns: "minmax(260px, 360px)",
-              }}
-            >
-              {renderNFTCard(discoveredNFT, true)}
-            </div>
-          </>
-        ) : null}
       </div>
     </section>
   )
