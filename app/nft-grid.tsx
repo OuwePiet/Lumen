@@ -333,6 +333,12 @@ export default async function NFTGrid() {
     ? await loadNFT(automaticNFTResult.firstNFTPostHash)
     : null
 
+  const collectionNFTs =
+    discoveredNFT &&
+    !nfts.some((nft) => nft.postHash === discoveredNFT.postHash)
+      ? [...nfts, discoveredNFT]
+      : nfts
+
   const renderNFTCard = (
     {
       postHash,
@@ -425,24 +431,13 @@ export default async function NFTGrid() {
         </p>
 
         <div style={styles.grid}>
-          {nfts.map((nft) => renderNFTCard(nft))}
+          {collectionNFTs.map((nft) =>
+            renderNFTCard(
+              nft,
+              nft.postHash === discoveredNFT?.postHash
+            )
+          )}
         </div>
-
-        {discoveredNFT ? (
-          <>
-            <h2 style={{ ...styles.title, marginTop: "40px" }}>
-              Automatically discovered NFT
-            </h2>
-            <div
-              style={{
-                ...styles.grid,
-                gridTemplateColumns: "minmax(260px, 360px)",
-              }}
-            >
-              {renderNFTCard(discoveredNFT, true)}
-            </div>
-          </>
-        ) : null}
       </div>
     </section>
   )
