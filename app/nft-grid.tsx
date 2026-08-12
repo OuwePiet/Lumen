@@ -6,6 +6,7 @@ const NFT_POST_HASHES = [
 ]
 
 type DeSoPost = {
+  PostHashHex?: string
   Body?: string
   ImageURLs?: string[]
   NumNFTCopies?: number
@@ -49,6 +50,7 @@ async function loadAutomaticNFTCount(publicKey: string) {
   let lastPostHashHex = ""
   let checkedPosts = 0
   let nftCount = 0
+  let firstNFTPostHash: string | undefined
 
   for (let page = 0; page < 2; page += 1) {
     const response = await fetch(
@@ -75,7 +77,13 @@ async function loadAutomaticNFTCount(publicKey: string) {
     if (posts.length === 0) break
 
     checkedPosts += posts.length
-    nftCount += posts.filter((post) => post.IsNFT === true).length
+    const nftPosts = posts.filter((post) => post.IsNFT === true)
+    nftCount += nftPosts.length
+    firstNFTPostHash ??= nftPosts.find(
+      (post) =>
+        post.PostHashHex &&
+        !NFT_POST_HASHES.includes(post.PostHashHex)
+    )?.PostHashHex
 
     if (posts.length < 12) break
 
@@ -87,7 +95,7 @@ async function loadAutomaticNFTCount(publicKey: string) {
     lastPostHashHex = lastPost.PostHashHex
   }
 
-  return { nftCount, checkedPosts }
+  return { nftCount, checkedPosts, firstNFTPostHash }
 }
 
 async function loadNFT(postHash: string) {
@@ -321,6 +329,68 @@ export default async function NFTGrid() {
     (result) => result !== null
   )
 
+  const discoveredNFT = automaticNFTResult?.firstNFTPostHash
+    ? await loadNFT(automaticNFTResult.firstNFTPostHash)
+    : null
+
+  const renderNFTCard = (
+    {
+      postHash,
+      post,
+      forSaleCount,
+      lowestBuyNowPrice,
+      lowestMinBidAmount,
+    }: NonNullable<Awaited<ReturnType<typeof loadNFT>>>
+  ) => {
+    const image = mediaUrl(post.ImageURLs?.[0])
+
+    const creator = post.ProfileEntryResponse?.Username
+      ? `@${post.ProfileEntryResponse.Username}`
+      : "DeSo creator"
+
+    return (
+      <a
+        key={postHash}
+        href={`/nft/${postHash}`}
+        style={styles.card}
+      >
+        {image ? (
+          <img
+            src={image}
+            alt={cardTitle(post.Body)}
+            width="600"
+            height="600"
+            style={styles.image}
+          />
+        ) : (
+          <div style={styles.placeholder}>No image available</div>
+        )}
+
+        <div style={styles.content}>
+          <span style={styles.badge}>DeSo verified</span>
+
+          <h2 style={styles.title}>{cardTitle(post.Body)}</h2>
+
+          <div style={styles.facts}>
+            <span>{creator}</span>
+            <span>
+              {post.NumNFTCopies ?? 0}{" "}
+              {post.NumNFTCopies === 1 ? "copy" : "copies"}
+              {" · "}
+              {forSaleCount} for sale
+              {" · "}
+              {priceStatus(
+                forSaleCount,
+                lowestBuyNowPrice,
+                lowestMinBidAmount
+              )}
+            </span>
+          </div>
+        </div>
+      </a>
+    )
+  }
+
   return (
     <section style={styles.section}>
       <div style={styles.container}>
@@ -343,68 +413,19 @@ export default async function NFTGrid() {
         </p>
 
         <div style={styles.grid}>
-          {nfts.map(({
-            postHash,
-            post,
-            forSaleCount,
-            lowestBuyNowPrice,
-            lowestMinBidAmount,
-          }) => {
-            const image = mediaUrl(post.ImageURLs?.[0])
+          {nfts.map(renderNFTCard)}
+        </div>
 
-            const creator =
-              post.ProfileEntryResponse?.Username
-                ? `@${post.ProfileEntryResponse.Username}`
-                : "DeSo creator"
-
-            return (
-              <a
-                key={postHash}
-                href={`/nft/${postHash}`}
-                style={styles.card}
-              >
-                {image ? (
-                  <img
-                    src={image}
-                    alt={cardTitle(post.Body)}
-                    width="600"
-                    height="600"
-                    style={styles.image}
-                  />
-                ) : (
-                  <div style={styles.placeholder}>
-                    No image available
-                  </div>
-                )}
-
-                <div style={styles.content}>
-                  <span style={styles.badge}>
-                    DeSo verified
-                  </span>
-
-                  <h2 style={styles.title}>
-                    {cardTitle(post.Body)}
-                  </h2>
-
-                  <div style={styles.facts}>
-                    <span>{creator}</span>
-                    <span>
-  {post.NumNFTCopies ?? 0}{" "}
-  {post.NumNFTCopies === 1 ? "copy" : "copies"}
-  {" · "}
-  {forSaleCount} for sale
-  {" · "}
-  {priceStatus(
-    forSaleCount,
-    lowestBuyNowPrice,
-    lowestMinBidAmount
-  )}
-</span>
-                  </div>
-                </div>
-              </a>
-            )
-          })}
+        {discoveredNFT ? (
+          <>
+            <h2 style={{ ...styles.title, marginTop: "40px" }}>
+              Automatically discovered NFT
+            </h2>
+            <div style={styles.grid}>
+              {renderNFTCard(discoveredNFT)}
+            </div>
+          </>
+        ) : null}
         </div>
       </div>
     </section>
