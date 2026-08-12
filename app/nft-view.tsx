@@ -254,7 +254,7 @@ const lowestBuyNowPrice =
                   ["Copies", post.NumNFTCopies ?? entries.length],
                   ["For sale", forSale.length],
                   ["Minimum bid", nanosToDeSo(lowestBid)],
-        ["Buy price", nanosToDeSo(lowestBuyNowPrice)],
+        ["Buy now", nanosToDeSo(lowestBuyNowPrice)],
                 ].map(([label, value]) => (
                   <div key={String(label)} style={styles.fact}>
                     <dt style={styles.label}>{label}</dt>
