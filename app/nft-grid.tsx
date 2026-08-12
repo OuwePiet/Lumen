@@ -73,7 +73,7 @@ async function loadNFT(postHash: string) {
 }
 
 function nanosToDeSo(nanos?: number) {
-  if (typeof nanos !== "number") return "No buy price"
+  if (typeof nanos !== "number") return "Claim not available"
 
   return `${new Intl.NumberFormat("en-US", {
     maximumFractionDigits: 9,
