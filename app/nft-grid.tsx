@@ -448,6 +448,8 @@ export default async function NFTGrid() {
             : `Automatic NFTs found: ${automaticNFTResult.nftCount} of ${automaticNFTResult.checkedPosts} checked posts`}
           <br />
           {`Unique NFTs displayed: ${collectionNFTs.length}`}
+          <br />
+          {`Automatically added to collection: ${discoveredNFTs.length}`}
         </p>
 
         <div style={styles.grid}>
