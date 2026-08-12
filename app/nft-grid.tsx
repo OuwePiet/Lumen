@@ -425,7 +425,7 @@ export default async function NFTGrid() {
         </p>
 
         <div style={styles.grid}>
-          {nfts.map(renderNFTCard)}
+          {nfts.map((nft) => renderNFTCard(nft))}
         </div>
 
         {discoveredNFT ? (
