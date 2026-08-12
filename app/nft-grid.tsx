@@ -270,22 +270,27 @@ const styles = {
     borderRadius: "18px",
     textDecoration: "none",
   },
+  mediaFrame: {
+    width: "100%",
+    aspectRatio: "1 / 1",
+    overflow: "hidden",
+    background: "#070b09",
+    borderBottom: "1px solid #254233",
+  },
   image: {
     display: "block",
     width: "100%",
-    aspectRatio: "1 / 1",
+    height: "100%",
     objectFit: "cover" as const,
     background: "#070b09",
-    borderBottom: "1px solid #254233",
   },
   placeholder: {
     display: "grid",
     width: "100%",
-    aspectRatio: "1 / 1",
+    height: "100%",
     placeItems: "center",
     color: "#84958b",
     background: "#070b09",
-    borderBottom: "1px solid #254233",
   },
   content: {
     padding: "20px",
@@ -361,28 +366,30 @@ export default async function NFTGrid() {
         href={`/nft/${postHash}`}
         style={styles.card}
       >
-        {image ? (
-          useMediaFallback ? (
-            <object
-              data={image}
-              type="image/*"
-              aria-label={cardTitle(post.Body)}
-              style={styles.image}
-            >
-              <div style={styles.placeholder}>Image unavailable</div>
-            </object>
+        <div style={styles.mediaFrame}>
+          {image ? (
+            useMediaFallback ? (
+              <object
+                data={image}
+                type="image/*"
+                aria-label={cardTitle(post.Body)}
+                style={styles.image}
+              >
+                <div style={styles.placeholder}>Image unavailable</div>
+              </object>
+            ) : (
+              <img
+                src={image}
+                alt={cardTitle(post.Body)}
+                width="600"
+                height="600"
+                style={styles.image}
+              />
+            )
           ) : (
-            <img
-              src={image}
-              alt={cardTitle(post.Body)}
-              width="600"
-              height="600"
-              style={styles.image}
-            />
-          )
-        ) : (
-          <div style={styles.placeholder}>No image available</div>
-        )}
+            <div style={styles.placeholder}>No image available</div>
+          )}
+        </div>
 
         <div style={styles.content}>
           <span style={styles.badge}>DeSo verified</span>
