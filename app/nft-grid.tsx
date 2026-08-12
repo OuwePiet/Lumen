@@ -16,6 +16,7 @@ type DeSoPost = {
 
 type NFTEntry = {
   IsForSale?: boolean
+  BuyNowPriceNanos?: number
 }
 
 async function loadNFT(postHash: string) {
@@ -57,7 +58,26 @@ async function loadNFT(postHash: string) {
     (entry) => entry.IsForSale
   ).length
 
-  return { postHash, post, forSaleCount }
+  const buyNowPrices = entries
+    .filter((entry) => entry.IsForSale)
+    .map((entry) => entry.BuyNowPriceNanos)
+    .filter(
+      (price): price is number =>
+        typeof price === "number" && price > 0
+    )
+
+  const lowestBuyNowPrice =
+    buyNowPrices.length > 0 ? Math.min(...buyNowPrices) : undefined
+
+  return { postHash, post, forSaleCount, lowestBuyNowPrice }
+}
+
+function nanosToDeSo(nanos?: number) {
+  if (typeof nanos !== "number") return "No buy price"
+
+  return `${new Intl.NumberFormat("en-US", {
+    maximumFractionDigits: 9,
+  }).format(nanos / 1_000_000_000)} DESO`
 }
 
 function mediaUrl(url?: string) {
@@ -198,7 +218,12 @@ export default async function NFTGrid() {
         </p>
 
         <div style={styles.grid}>
-          {nfts.map(({ postHash, post, forSaleCount }) => {
+          {nfts.map(({
+            postHash,
+            post,
+            forSaleCount,
+            lowestBuyNowPrice,
+          }) => {
             const image = mediaUrl(post.ImageURLs?.[0])
 
             const creator =
@@ -242,6 +267,8 @@ export default async function NFTGrid() {
   {post.NumNFTCopies === 1 ? "copy" : "copies"}
   {" · "}
   {forSaleCount} for sale
+  {" · "}
+  {nanosToDeSo(lowestBuyNowPrice)}
 </span>
                   </div>
                 </div>
