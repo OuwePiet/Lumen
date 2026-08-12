@@ -426,7 +426,6 @@ export default async function NFTGrid() {
             </div>
           </>
         ) : null}
-        </div>
       </div>
     </section>
   )
