@@ -456,6 +456,9 @@ export default async function NFTGrid() {
           mediaTypes={collectionNFTs.map(({ post }) =>
             mediaFilterType(post)
           )}
+          saleStatuses={collectionNFTs.map(({ forSaleCount }) =>
+            forSaleCount > 0 ? "for-sale" : "not-for-sale"
+          )}
           gridStyle={styles.grid}
         >
           {collectionNFTs.map(renderNFTCard)}
