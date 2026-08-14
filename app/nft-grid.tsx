@@ -1,3 +1,4 @@
+import accessibilityStyles from "./accessibility.module.css"
 import MediaFilter, { type MediaFilterType } from "./media-filter"
 import NFTMedia from "./nft-media"
 
@@ -430,7 +431,10 @@ export default async function NFTGrid() {
 
   return (
     <main id="main-content" style={styles.section}>
-      <a className="skip-link" href="#collection-controls">
+      <a
+        className={accessibilityStyles.skipLink}
+        href="#collection-controls"
+      >
         Skip to collection controls
       </a>
       <div style={styles.container}>
