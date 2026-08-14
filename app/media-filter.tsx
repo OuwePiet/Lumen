@@ -8,6 +8,8 @@ import {
   type ReactNode,
 } from "react"
 
+import layoutStyles from "./media-filter.module.css"
+
 export type MediaFilterType =
   | "image"
   | "video"
@@ -366,9 +368,9 @@ export default function MediaFilter({
     0
   )
 
-  return (
+
+  const renderControls = () => (
     <>
-      <div style={styles.filterBar}>
         <input
           type="search"
           aria-label="Search NFT collection"
@@ -493,7 +495,31 @@ export default function MediaFilter({
         >
           Reset controls
         </button>
-      </div>
+    </>
+  )
+
+  return (
+    <>
+      <section
+        className={layoutStyles.desktopPanel}
+        aria-label="Collection controls"
+      >
+        <strong className={layoutStyles.panelHeading}>
+          Collection controls
+        </strong>
+        <div className={layoutStyles.panelContent}>
+          {renderControls()}
+        </div>
+      </section>
+
+      <details className={layoutStyles.mobilePanel}>
+        <summary className={layoutStyles.mobileSummary}>
+          Collection controls
+        </summary>
+        <div className={layoutStyles.panelContent}>
+          {renderControls()}
+        </div>
+      </details>
 
       {activeLabels.length > 0 ? (
         <div
