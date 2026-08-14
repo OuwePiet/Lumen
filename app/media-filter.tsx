@@ -10,9 +10,17 @@ export type MediaFilterType =
 
 export type SaleFilterType = "for-sale" | "not-for-sale"
 
+export type SortData = {
+  title: string
+  price?: number
+}
+
+type SortType = "collection" | "title" | "price-low" | "price-high"
+
 type MediaFilterProps = {
   mediaTypes: MediaFilterType[]
   saleStatuses: SaleFilterType[]
+  sortData: SortData[]
   gridStyle: CSSProperties
   children: ReactNode
 }
@@ -73,6 +81,16 @@ const styles = {
     background: "#5cff9d",
     borderColor: "#5cff9d",
   },
+  select: {
+    color: "#f4f7f5",
+    background: "#0c120f",
+    border: "1px solid #254233",
+    borderRadius: "10px",
+    cursor: "pointer",
+    fontSize: "13px",
+    fontWeight: 700,
+    padding: "8px 32px 8px 10px",
+  },
   empty: {
     color: "#84958b",
     background: "#0c120f",
@@ -85,6 +103,7 @@ const styles = {
 export default function MediaFilter({
   mediaTypes,
   saleStatuses,
+  sortData,
   gridStyle,
   children,
 }: MediaFilterProps) {
@@ -92,14 +111,49 @@ export default function MediaFilter({
     useState<"all" | MediaFilterType>("all")
   const [activeSaleFilter, setActiveSaleFilter] =
     useState<"all" | SaleFilterType>("all")
+  const [activeSort, setActiveSort] = useState<SortType>("collection")
   const cards = Children.toArray(children)
-  const visibleCards = cards.filter(
-    (_, index) =>
-      (activeMediaFilter === "all" ||
-        mediaTypes[index] === activeMediaFilter) &&
-      (activeSaleFilter === "all" ||
-        saleStatuses[index] === activeSaleFilter)
-  )
+
+  const visibleCards = cards
+    .map((card, index) => ({
+      card,
+      index,
+      title: sortData[index]?.title ?? "",
+      price: sortData[index]?.price,
+    }))
+    .filter(
+      ({ index }) =>
+        (activeMediaFilter === "all" ||
+          mediaTypes[index] === activeMediaFilter) &&
+        (activeSaleFilter === "all" ||
+          saleStatuses[index] === activeSaleFilter)
+    )
+
+  const sortedCards = [...visibleCards].sort((first, second) => {
+    if (activeSort === "title") {
+      return first.title.localeCompare(second.title, "en", {
+        sensitivity: "base",
+      })
+    }
+
+    if (activeSort === "price-low" || activeSort === "price-high") {
+      const firstPrice = first.price ?? Number.POSITIVE_INFINITY
+      const secondPrice = second.price ?? Number.POSITIVE_INFINITY
+
+      if (!Number.isFinite(firstPrice) && !Number.isFinite(secondPrice)) {
+        return first.index - second.index
+      }
+
+      if (!Number.isFinite(firstPrice)) return 1
+      if (!Number.isFinite(secondPrice)) return -1
+
+      return activeSort === "price-low"
+        ? firstPrice - secondPrice
+        : secondPrice - firstPrice
+    }
+
+    return first.index - second.index
+  })
 
   return (
     <>
@@ -153,10 +207,29 @@ export default function MediaFilter({
             )
           })}
         </div>
+
+        <label style={styles.controls}>
+          <span style={styles.label}>Sort</span>
+          <select
+            aria-label="Sort NFT collection"
+            value={activeSort}
+            style={styles.select}
+            onChange={(event) =>
+              setActiveSort(event.target.value as SortType)
+            }
+          >
+            <option value="collection">Collection order</option>
+            <option value="title">Title A–Z</option>
+            <option value="price-low">Price low–high</option>
+            <option value="price-high">Price high–low</option>
+          </select>
+        </label>
       </div>
 
-      {visibleCards.length > 0 ? (
-        <div style={gridStyle}>{visibleCards}</div>
+      {sortedCards.length > 0 ? (
+        <div style={gridStyle}>
+          {sortedCards.map(({ card }) => card)}
+        </div>
       ) : (
         <div style={styles.empty}>No NFTs match these filters.</div>
       )}
