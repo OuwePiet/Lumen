@@ -12,6 +12,7 @@ export type SaleFilterType = "for-sale" | "not-for-sale"
 
 export type SortData = {
   title: string
+  creator: string
   price?: number
 }
 
@@ -81,6 +82,15 @@ const styles = {
     background: "#5cff9d",
     borderColor: "#5cff9d",
   },
+  search: {
+    width: "min(100%, 360px)",
+    color: "#f4f7f5",
+    background: "#0c120f",
+    border: "1px solid #254233",
+    borderRadius: "10px",
+    fontSize: "14px",
+    padding: "10px 12px",
+  },
   select: {
     color: "#f4f7f5",
     background: "#0c120f",
@@ -112,13 +122,16 @@ export default function MediaFilter({
   const [activeSaleFilter, setActiveSaleFilter] =
     useState<"all" | SaleFilterType>("all")
   const [activeSort, setActiveSort] = useState<SortType>("collection")
+  const [searchQuery, setSearchQuery] = useState("")
   const cards = Children.toArray(children)
+  const normalizedSearchQuery = searchQuery.trim().toLocaleLowerCase("en")
 
   const visibleCards = cards
     .map((card, index) => ({
       card,
       index,
       title: sortData[index]?.title ?? "",
+      creator: sortData[index]?.creator ?? "",
       price: sortData[index]?.price,
     }))
     .filter(
@@ -126,7 +139,14 @@ export default function MediaFilter({
         (activeMediaFilter === "all" ||
           mediaTypes[index] === activeMediaFilter) &&
         (activeSaleFilter === "all" ||
-          saleStatuses[index] === activeSaleFilter)
+          saleStatuses[index] === activeSaleFilter) &&
+        (normalizedSearchQuery === "" ||
+          sortData[index]?.title
+            .toLocaleLowerCase("en")
+            .includes(normalizedSearchQuery) ||
+          sortData[index]?.creator
+            .toLocaleLowerCase("en")
+            .includes(normalizedSearchQuery))
     )
 
   const sortedCards = [...visibleCards].sort((first, second) => {
@@ -158,6 +178,15 @@ export default function MediaFilter({
   return (
     <>
       <div style={styles.filterBar}>
+        <input
+          type="search"
+          aria-label="Search NFT collection"
+          placeholder="Search by title or creator"
+          value={searchQuery}
+          style={styles.search}
+          onChange={(event) => setSearchQuery(event.target.value)}
+        />
+
         <div
           style={styles.controls}
           aria-label="Filter collection by media"

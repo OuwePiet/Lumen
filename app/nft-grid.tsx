@@ -466,6 +466,9 @@ export default async function NFTGrid() {
               lowestMinBidAmount,
             }) => ({
               title: cardTitle(post.Body),
+              creator: post.ProfileEntryResponse?.Username
+                ? `@${post.ProfileEntryResponse.Username}`
+                : "DeSo creator",
               price: lowestBuyNowPrice ?? lowestMinBidAmount,
             })
           )}
