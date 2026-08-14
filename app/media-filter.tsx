@@ -23,6 +23,7 @@ export type SortData = {
 }
 
 type SortType = "collection" | "title" | "price-low" | "price-high"
+type DensityType = "comfortable" | "compact"
 
 type MediaFilterProps = {
   mediaTypes: MediaFilterType[]
@@ -59,6 +60,7 @@ type StoredControls = {
   sort: SortType
   search: string
   visibleLimit: number
+  density?: DensityType
 }
 
 const saleFilterOptions: Array<{
@@ -176,6 +178,7 @@ export default function MediaFilter({
   const [activeSort, setActiveSort] = useState<SortType>("collection")
   const [searchQuery, setSearchQuery] = useState("")
   const [visibleLimit, setVisibleLimit] = useState(PAGE_SIZE)
+  const [density, setDensity] = useState<DensityType>("comfortable")
   const [isStateRestored, setIsStateRestored] = useState(false)
   const cards = Children.toArray(children)
   const normalizedSearchQuery = searchQuery.trim().toLocaleLowerCase("en")
@@ -215,6 +218,13 @@ export default function MediaFilter({
         }
 
         if (
+          stored.density === "comfortable" ||
+          stored.density === "compact"
+        ) {
+          setDensity(stored.density)
+        }
+
+        if (
           typeof stored.visibleLimit === "number" &&
           Number.isFinite(stored.visibleLimit) &&
           stored.visibleLimit >= PAGE_SIZE
@@ -238,12 +248,14 @@ export default function MediaFilter({
       sort: activeSort,
       search: searchQuery,
       visibleLimit,
+      density,
     }
 
     sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(stored))
   }, [
     activeMediaFilter,
     activeSaleFilter,
+    density,
     activeSort,
     isStateRestored,
     searchQuery,
@@ -254,7 +266,8 @@ export default function MediaFilter({
     activeMediaFilter !== "all" ||
     activeSaleFilter !== "all" ||
     activeSort !== "collection" ||
-    searchQuery !== ""
+    searchQuery !== "" ||
+    density !== "comfortable"
 
   const activeLabels = [
     searchQuery.trim()
@@ -277,6 +290,7 @@ export default function MediaFilter({
     activeSort !== "collection"
       ? `Sort: ${sortLabels[activeSort]}`
       : null,
+    density !== "comfortable" ? "View: Compact" : null,
   ].filter((label): label is string => Boolean(label))
 
   const resetControls = () => {
@@ -285,6 +299,7 @@ export default function MediaFilter({
     setActiveSort("collection")
     setSearchQuery("")
     setVisibleLimit(PAGE_SIZE)
+    setDensity("comfortable")
   }
 
   const visibleCards = cards
@@ -335,6 +350,15 @@ export default function MediaFilter({
 
     return first.index - second.index
   })
+
+  const effectiveGridStyle: CSSProperties = {
+    ...gridStyle,
+    gridTemplateColumns:
+      density === "compact"
+        ? "repeat(auto-fit, minmax(210px, 1fr))"
+        : gridStyle.gridTemplateColumns,
+    gap: density === "compact" ? "16px" : gridStyle.gap,
+  }
 
   const displayedCards = sortedCards.slice(0, visibleLimit)
   const remainingCards = Math.max(
@@ -431,6 +455,31 @@ export default function MediaFilter({
           </select>
         </label>
 
+        <div
+          style={styles.controls}
+          aria-label="Choose collection density"
+        >
+          <span style={styles.label}>View</span>
+          {(["comfortable", "compact"] as const).map((option) => {
+            const isActive = density === option
+
+            return (
+              <button
+                key={option}
+                type="button"
+                aria-pressed={isActive}
+                style={{
+                  ...styles.button,
+                  ...(isActive ? styles.activeButton : {}),
+                }}
+                onClick={() => setDensity(option)}
+              >
+                {option === "comfortable" ? "Comfortable" : "Compact"}
+              </button>
+            )
+          })}
+        </div>
+
         <button
           type="button"
           disabled={!hasActiveControls}
@@ -467,7 +516,7 @@ export default function MediaFilter({
 
       {sortedCards.length > 0 ? (
         <>
-          <div style={gridStyle}>
+          <div style={effectiveGridStyle}>
             {displayedCards.map(({ card }) => card)}
           </div>
 
