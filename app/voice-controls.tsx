@@ -185,6 +185,7 @@ export default function VoiceControls({ onCommand }: VoiceControlsProps) {
   const [readAloud, setReadAloud] = useState(false)
   const [supported, setSupported] = useState(false)
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null)
+  const listeningTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
     setSupported(
@@ -192,7 +193,15 @@ export default function VoiceControls({ onCommand }: VoiceControlsProps) {
     )
   }, [])
 
+  const clearListeningTimeout = () => {
+    if (listeningTimeoutRef.current) {
+      clearTimeout(listeningTimeoutRef.current)
+      listeningTimeoutRef.current = null
+    }
+  }
+
   const stopListening = () => {
+    clearListeningTimeout()
     recognitionRef.current?.stop()
     recognitionRef.current = null
     setListening(false)
@@ -245,15 +254,21 @@ export default function VoiceControls({ onCommand }: VoiceControlsProps) {
     }
 
     recognition.onerror = () => {
+      clearListeningTimeout()
       setStatus("Voice control unavailable")
     }
 
     recognition.onend = () => {
+      clearListeningTimeout()
       recognitionRef.current = null
       setListening(false)
     }
 
     recognition.start()
+    listeningTimeoutRef.current = setTimeout(() => {
+      recognition.stop()
+      setStatus("Listening stopped after 15 seconds")
+    }, 15_000)
   }
 
   return (
@@ -322,7 +337,7 @@ export default function VoiceControls({ onCommand }: VoiceControlsProps) {
             <li>Lumen does not store audio or voice transcripts</li>
             <li>Your browser handles speech recognition</li>
             <li>Voice commands never sign in, pay, trade or write to a blockchain</li>
-            <li>Listening stops after each command and can be turned off at any time</li>
+            <li>Listening stops after each command or automatically after 15 seconds</li>
             <li>Buttons, touch and keyboard always remain available</li>
           </ul>
         </details>
