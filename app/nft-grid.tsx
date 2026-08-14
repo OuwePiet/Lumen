@@ -1,3 +1,4 @@
+import accessibilityStyles from "./accessibility.module.css"
 import MediaFilter, { type MediaFilterType } from "./media-filter"
 import NFTMedia from "./nft-media"
 
@@ -390,6 +391,7 @@ export default async function NFTGrid() {
       <a
         key={postHash}
         href={`/nft/${postHash}`}
+        aria-label={`Open NFT: ${cardTitle(post.Body)} by ${creator}`}
         style={styles.card}
       >
         <div style={styles.mediaFrame}>
@@ -428,7 +430,13 @@ export default async function NFTGrid() {
   }
 
   return (
-    <section style={styles.section}>
+    <main id="main-content" style={styles.section}>
+      <a
+        className={accessibilityStyles.skipLink}
+        href="#collection-controls"
+      >
+        Skip to collection controls
+      </a>
       <div style={styles.container}>
         <p style={styles.brand}>Lumen</p>
         <h1 style={styles.heading}>NFT collection</h1>
@@ -452,7 +460,8 @@ export default async function NFTGrid() {
           {`Automatically added to collection: ${discoveredNFTs.length}`}
         </p>
 
-        <MediaFilter
+        <div id="collection-controls">
+          <MediaFilter
           mediaTypes={collectionNFTs.map(({ post }) =>
             mediaFilterType(post)
           )}
@@ -475,8 +484,9 @@ export default async function NFTGrid() {
           gridStyle={styles.grid}
         >
           {collectionNFTs.map(renderNFTCard)}
-        </MediaFilter>
+          </MediaFilter>
+        </div>
       </div>
-    </section>
+    </main>
   )
 }
