@@ -1,3 +1,4 @@
+import MediaFilter, { type MediaFilterType } from "./media-filter"
 import NFTMedia from "./nft-media"
 
 const DESO_NODE = "https://node.deso.org"
@@ -28,6 +29,31 @@ type NFTEntry = {
 type DeSoProfile = {
   Username?: string
   PublicKeyBase58Check?: string
+}
+
+const VIDEO_EXTENSIONS = [".mp4", ".webm", ".mov", ".m4v"]
+const AUDIO_EXTENSIONS = [".mp3", ".wav", ".m4a", ".aac", ".flac", ".oga"]
+
+function mediaFilterType(post: DeSoPost): MediaFilterType {
+  const videoUrl = post.VideoURLs?.[0]
+  const mediaUrl = videoUrl ?? post.ImageURLs?.[0]
+
+  if (!mediaUrl) return "unavailable"
+
+  const path = mediaUrl.split(/[?#]/, 1)[0].toLowerCase()
+
+  if (AUDIO_EXTENSIONS.some((extension) => path.endsWith(extension))) {
+    return "audio"
+  }
+
+  if (
+    videoUrl ||
+    VIDEO_EXTENSIONS.some((extension) => path.endsWith(extension))
+  ) {
+    return "video"
+  }
+
+  return "image"
 }
 
 async function loadCollectionOwner() {
@@ -426,9 +452,14 @@ export default async function NFTGrid() {
           {`Automatically added to collection: ${discoveredNFTs.length}`}
         </p>
 
-        <div style={styles.grid}>
+        <MediaFilter
+          mediaTypes={collectionNFTs.map(({ post }) =>
+            mediaFilterType(post)
+          )}
+          gridStyle={styles.grid}
+        >
           {collectionNFTs.map(renderNFTCard)}
-        </div>
+        </MediaFilter>
       </div>
     </section>
   )
