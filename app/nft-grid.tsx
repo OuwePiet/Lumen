@@ -459,6 +459,16 @@ export default async function NFTGrid() {
           saleStatuses={collectionNFTs.map(({ forSaleCount }) =>
             forSaleCount > 0 ? "for-sale" : "not-for-sale"
           )}
+          sortData={collectionNFTs.map(
+            ({
+              post,
+              lowestBuyNowPrice,
+              lowestMinBidAmount,
+            }) => ({
+              title: cardTitle(post.Body),
+              price: lowestBuyNowPrice ?? lowestMinBidAmount,
+            })
+          )}
           gridStyle={styles.grid}
         >
           {collectionNFTs.map(renderNFTCard)}
