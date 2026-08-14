@@ -68,6 +68,45 @@ const confirmationMessages: Record<
   },
 }
 
+
+const helpExamples: Record<VoiceLanguage, string[]> = {
+  "en-US": [
+    "Show images",
+    "For sale",
+    "Compact view",
+    "Search followed by a title or creator",
+    "Reset controls",
+  ],
+  "nl-NL": [
+    "Afbeeldingen tonen",
+    "Te koop",
+    "Compacte weergave",
+    "Zoeken gevolgd door een titel of maker",
+    "Bediening resetten",
+  ],
+  "fr-FR": [
+    "Afficher les images",
+    "À vendre",
+    "Vue compacte",
+    "Rechercher suivi d’un titre ou créateur",
+    "Réinitialiser les commandes",
+  ],
+  "es-ES": [
+    "Mostrar imágenes",
+    "En venta",
+    "Vista compacta",
+    "Buscar seguido de un título o creador",
+    "Restablecer controles",
+  ],
+  "zh-CN": [
+    "显示图片",
+    "出售中",
+    "紧凑视图",
+    "搜索，后接标题或创作者",
+    "重置控件",
+  ],
+}
+
 type VoiceControlsProps = {
   onCommand: (command: string) => boolean
 }
@@ -110,6 +149,26 @@ const styles = {
     fontSize: "13px",
     fontWeight: 700,
     padding: "8px 32px 8px 10px",
+  },
+  help: {
+    width: "100%",
+    color: "#a9b8af",
+    background: "#09100c",
+    border: "1px solid #254233",
+    borderRadius: "12px",
+    padding: "10px 12px",
+  },
+  helpSummary: {
+    color: "#b9ffd4",
+    cursor: "pointer",
+    fontSize: "13px",
+    fontWeight: 800,
+  },
+  helpList: {
+    margin: "10px 0 0",
+    paddingLeft: "22px",
+    fontSize: "12px",
+    lineHeight: 1.7,
   },
   status: {
     color: "#84958b",
@@ -230,6 +289,17 @@ export default function VoiceControls({ onCommand }: VoiceControlsProps) {
             ))}
           </select>
         </label>
+      ) : null}
+
+      {enabled ? (
+        <details style={styles.help}>
+          <summary style={styles.helpSummary}>Voice help</summary>
+          <ul style={styles.helpList}>
+            {helpExamples[language].map((example) => (
+              <li key={example}>{example}</li>
+            ))}
+          </ul>
+        </details>
       ) : null}
 
       {enabled ? (
