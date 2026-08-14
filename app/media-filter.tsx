@@ -8,13 +8,16 @@ export type MediaFilterType =
   | "audio"
   | "unavailable"
 
+export type SaleFilterType = "for-sale" | "not-for-sale"
+
 type MediaFilterProps = {
   mediaTypes: MediaFilterType[]
+  saleStatuses: SaleFilterType[]
   gridStyle: CSSProperties
   children: ReactNode
 }
 
-const filterOptions: Array<{
+const mediaFilterOptions: Array<{
   label: string
   value: "all" | MediaFilterType
 }> = [
@@ -25,13 +28,28 @@ const filterOptions: Array<{
   { label: "Unavailable", value: "unavailable" },
 ]
 
+const saleFilterOptions: Array<{
+  label: string
+  value: "all" | SaleFilterType
+}> = [
+  { label: "All", value: "all" },
+  { label: "For sale", value: "for-sale" },
+  { label: "Not for sale", value: "not-for-sale" },
+]
+
 const styles = {
+  filterBar: {
+    display: "flex",
+    flexWrap: "wrap" as const,
+    alignItems: "center",
+    gap: "18px 28px",
+    margin: "0 0 24px",
+  },
   controls: {
     display: "flex",
     flexWrap: "wrap" as const,
     alignItems: "center",
     gap: "10px",
-    margin: "0 0 24px",
   },
   label: {
     color: "#a9b8af",
@@ -66,45 +84,81 @@ const styles = {
 
 export default function MediaFilter({
   mediaTypes,
+  saleStatuses,
   gridStyle,
   children,
 }: MediaFilterProps) {
-  const [activeFilter, setActiveFilter] =
+  const [activeMediaFilter, setActiveMediaFilter] =
     useState<"all" | MediaFilterType>("all")
+  const [activeSaleFilter, setActiveSaleFilter] =
+    useState<"all" | SaleFilterType>("all")
   const cards = Children.toArray(children)
   const visibleCards = cards.filter(
     (_, index) =>
-      activeFilter === "all" || mediaTypes[index] === activeFilter
+      (activeMediaFilter === "all" ||
+        mediaTypes[index] === activeMediaFilter) &&
+      (activeSaleFilter === "all" ||
+        saleStatuses[index] === activeSaleFilter)
   )
 
   return (
     <>
-      <div style={styles.controls} aria-label="Filter collection by media">
-        <span style={styles.label}>Media</span>
-        {filterOptions.map((option) => {
-          const isActive = activeFilter === option.value
+      <div style={styles.filterBar}>
+        <div
+          style={styles.controls}
+          aria-label="Filter collection by media"
+        >
+          <span style={styles.label}>Media</span>
+          {mediaFilterOptions.map((option) => {
+            const isActive = activeMediaFilter === option.value
 
-          return (
-            <button
-              key={option.value}
-              type="button"
-              aria-pressed={isActive}
-              style={{
-                ...styles.button,
-                ...(isActive ? styles.activeButton : {}),
-              }}
-              onClick={() => setActiveFilter(option.value)}
-            >
-              {option.label}
-            </button>
-          )
-        })}
+            return (
+              <button
+                key={option.value}
+                type="button"
+                aria-pressed={isActive}
+                style={{
+                  ...styles.button,
+                  ...(isActive ? styles.activeButton : {}),
+                }}
+                onClick={() => setActiveMediaFilter(option.value)}
+              >
+                {option.label}
+              </button>
+            )
+          })}
+        </div>
+
+        <div
+          style={styles.controls}
+          aria-label="Filter collection by sale status"
+        >
+          <span style={styles.label}>Sale</span>
+          {saleFilterOptions.map((option) => {
+            const isActive = activeSaleFilter === option.value
+
+            return (
+              <button
+                key={option.value}
+                type="button"
+                aria-pressed={isActive}
+                style={{
+                  ...styles.button,
+                  ...(isActive ? styles.activeButton : {}),
+                }}
+                onClick={() => setActiveSaleFilter(option.value)}
+              >
+                {option.label}
+              </button>
+            )
+          })}
+        </div>
       </div>
 
       {visibleCards.length > 0 ? (
         <div style={gridStyle}>{visibleCards}</div>
       ) : (
-        <div style={styles.empty}>No NFTs match this media filter.</div>
+        <div style={styles.empty}>No NFTs match these filters.</div>
       )}
     </>
   )
