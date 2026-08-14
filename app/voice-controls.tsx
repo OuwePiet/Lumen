@@ -191,6 +191,13 @@ export default function VoiceControls({ onCommand }: VoiceControlsProps) {
     setSupported(
       Boolean(window.SpeechRecognition ?? window.webkitSpeechRecognition)
     )
+
+    return () => {
+      if (listeningTimeoutRef.current) {
+        clearTimeout(listeningTimeoutRef.current)
+      }
+      recognitionRef.current?.stop()
+    }
   }, [])
 
   const clearListeningTimeout = () => {
