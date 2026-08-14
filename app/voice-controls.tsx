@@ -1,6 +1,6 @@
 "use client"
 
-import { useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 
 type SpeechResultEvent = {
   results: {
@@ -75,11 +75,14 @@ export default function VoiceControls({ onCommand }: VoiceControlsProps) {
   const [enabled, setEnabled] = useState(false)
   const [listening, setListening] = useState(false)
   const [status, setStatus] = useState("Off")
+  const [supported, setSupported] = useState(false)
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null)
 
-  const supported =
-    typeof window !== "undefined" &&
-    Boolean(window.SpeechRecognition ?? window.webkitSpeechRecognition)
+  useEffect(() => {
+    setSupported(
+      Boolean(window.SpeechRecognition ?? window.webkitSpeechRecognition)
+    )
+  }, [])
 
   const stopListening = () => {
     recognitionRef.current?.stop()
