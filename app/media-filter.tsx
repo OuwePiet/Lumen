@@ -46,6 +46,13 @@ const mediaFilterOptions: Array<{
 const PAGE_SIZE = 8
 const SESSION_STORAGE_KEY = "lumen-collection-controls"
 
+const sortLabels: Record<SortType, string> = {
+  collection: "Collection order",
+  title: "Title A–Z",
+  "price-low": "Price low–high",
+  "price-high": "Price high–low",
+}
+
 type StoredControls = {
   mediaFilter: "all" | MediaFilterType
   saleFilter: "all" | SaleFilterType
@@ -70,6 +77,23 @@ const styles = {
     alignItems: "center",
     gap: "18px 28px",
     margin: "0 0 24px",
+  },
+  activeLabels: {
+    display: "flex",
+    flexWrap: "wrap" as const,
+    alignItems: "center",
+    gap: "8px",
+    margin: "-8px 0 22px",
+  },
+  activeLabel: {
+    color: "#b9ffd4",
+    background: "#10261a",
+    border: "1px solid #285f40",
+    borderRadius: "999px",
+    fontSize: "12px",
+    fontWeight: 700,
+    overflowWrap: "anywhere" as const,
+    padding: "6px 10px",
   },
   resultCount: {
     color: "#84958b",
@@ -231,6 +255,29 @@ export default function MediaFilter({
     activeSaleFilter !== "all" ||
     activeSort !== "collection" ||
     searchQuery !== ""
+
+  const activeLabels = [
+    searchQuery.trim()
+      ? `Search: “${searchQuery.trim()}”`
+      : null,
+    activeMediaFilter !== "all"
+      ? `Media: ${
+          mediaFilterOptions.find(
+            ({ value }) => value === activeMediaFilter
+          )?.label ?? activeMediaFilter
+        }`
+      : null,
+    activeSaleFilter !== "all"
+      ? `Sale: ${
+          saleFilterOptions.find(
+            ({ value }) => value === activeSaleFilter
+          )?.label ?? activeSaleFilter
+        }`
+      : null,
+    activeSort !== "collection"
+      ? `Sort: ${sortLabels[activeSort]}`
+      : null,
+  ].filter((label): label is string => Boolean(label))
 
   const resetControls = () => {
     setActiveMediaFilter("all")
@@ -398,6 +445,20 @@ export default function MediaFilter({
           Reset controls
         </button>
       </div>
+
+      {activeLabels.length > 0 ? (
+        <div
+          style={styles.activeLabels}
+          aria-label="Active collection controls"
+        >
+          <span style={styles.label}>Active</span>
+          {activeLabels.map((label) => (
+            <span key={label} style={styles.activeLabel}>
+              {label}
+            </span>
+          ))}
+        </div>
+      ) : null}
 
       <p style={styles.resultCount} aria-live="polite">
         {displayedCards.length} of {cards.length}{" "}
