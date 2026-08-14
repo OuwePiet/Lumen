@@ -303,6 +303,19 @@ export default function VoiceControls({ onCommand }: VoiceControlsProps) {
       ) : null}
 
       {enabled ? (
+        <details style={styles.help}>
+          <summary style={styles.helpSummary}>Supported devices</summary>
+          <ul style={styles.helpList}>
+            <li>Chrome and Edge on desktop, laptop and Android</li>
+            <li>Safari on Mac, iPhone and iPad</li>
+            <li>Firefox may not provide speech recognition</li>
+            <li>Microphone permission is required only when listening starts</li>
+            <li>Buttons, touch and keyboard always remain available</li>
+          </ul>
+        </details>
+      ) : null}
+
+      {enabled ? (
         <button
           type="button"
           aria-pressed={readAloud}
