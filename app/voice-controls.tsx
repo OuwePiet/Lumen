@@ -316,6 +316,19 @@ export default function VoiceControls({ onCommand }: VoiceControlsProps) {
       ) : null}
 
       {enabled ? (
+        <details style={styles.help}>
+          <summary style={styles.helpSummary}>Privacy</summary>
+          <ul style={styles.helpList}>
+            <li>Lumen does not store audio or voice transcripts</li>
+            <li>Your browser handles speech recognition</li>
+            <li>Voice commands never sign in, pay, trade or write to a blockchain</li>
+            <li>Listening stops after each command and can be turned off at any time</li>
+            <li>Buttons, touch and keyboard always remain available</li>
+          </ul>
+        </details>
+      ) : null}
+
+      {enabled ? (
         <button
           type="button"
           aria-pressed={readAloud}
