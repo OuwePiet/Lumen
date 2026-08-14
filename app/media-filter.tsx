@@ -125,6 +125,18 @@ export default function MediaFilter({
   const [searchQuery, setSearchQuery] = useState("")
   const cards = Children.toArray(children)
   const normalizedSearchQuery = searchQuery.trim().toLocaleLowerCase("en")
+  const hasActiveControls =
+    activeMediaFilter !== "all" ||
+    activeSaleFilter !== "all" ||
+    activeSort !== "collection" ||
+    searchQuery !== ""
+
+  const resetControls = () => {
+    setActiveMediaFilter("all")
+    setActiveSaleFilter("all")
+    setActiveSort("collection")
+    setSearchQuery("")
+  }
 
   const visibleCards = cards
     .map((card, index) => ({
@@ -253,6 +265,20 @@ export default function MediaFilter({
             <option value="price-high">Price high–low</option>
           </select>
         </label>
+
+        <button
+          type="button"
+          disabled={!hasActiveControls}
+          style={{
+            ...styles.button,
+            ...(!hasActiveControls
+              ? { cursor: "default", opacity: 0.45 }
+              : {}),
+          }}
+          onClick={resetControls}
+        >
+          Reset controls
+        </button>
       </div>
 
       {sortedCards.length > 0 ? (
