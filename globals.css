@@ -163,6 +163,7 @@
 }
 
 
+:where(a, button, input, select, summary):focus,
 :where(a, button, input, select, summary):focus-visible {
   outline: 3px solid #b9ffd4;
   outline-offset: 4px;
