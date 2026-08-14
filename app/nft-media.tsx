@@ -16,6 +16,32 @@ type MediaKind = "image" | "video" | "audio"
 const VIDEO_EXTENSIONS = [".mp4", ".webm", ".mov", ".m4v"]
 const AUDIO_EXTENSIONS = [".mp3", ".wav", ".m4a", ".aac", ".flac", ".oga"]
 
+const mediaWrapperStyle: CSSProperties = {
+  position: "relative",
+  width: "100%",
+  height: "100%",
+}
+
+const mediaBadgeStyle: CSSProperties = {
+  position: "absolute",
+  top: "12px",
+  left: "12px",
+  zIndex: 1,
+  color: "#5cff9d",
+  background: "rgba(5, 8, 7, 0.88)",
+  border: "1px solid #285f40",
+  borderRadius: "999px",
+  fontSize: "11px",
+  fontWeight: 700,
+  letterSpacing: "0.06em",
+  padding: "5px 9px",
+  pointerEvents: "none",
+}
+
+function MediaBadge({ label }: { label: string }) {
+  return <span style={mediaBadgeStyle}>{label}</span>
+}
+
 function filePath(url: string) {
   return url.split(/[?#]/, 1)[0].toLowerCase()
 }
@@ -73,11 +99,21 @@ export default function NFTMedia({
   const [candidateIndex, setCandidateIndex] = useState(0)
 
   if (!kind || candidates.length === 0) {
-    return <div style={placeholderStyle}>No media available</div>
+    return (
+      <div style={{ ...placeholderStyle, position: "relative" }}>
+        <MediaBadge label="Media unavailable" />
+        <span>No media available</span>
+      </div>
+    )
   }
 
   if (candidateIndex >= candidates.length) {
-    return <div style={placeholderStyle}>Media unavailable</div>
+    return (
+      <div style={{ ...placeholderStyle, position: "relative" }}>
+        <MediaBadge label="Media unavailable" />
+        <span>Media unavailable</span>
+      </div>
+    )
   }
 
   const currentUrl = candidates[candidateIndex]
@@ -86,22 +122,26 @@ export default function NFTMedia({
 
   if (kind === "video") {
     return (
-      <video
-        key={currentUrl}
-        src={currentUrl}
-        aria-label={alt}
-        controls
-        playsInline
-        preload="metadata"
-        style={imageStyle}
-        onError={tryNextCandidate}
-      />
+      <div style={mediaWrapperStyle}>
+        <MediaBadge label="Video" />
+        <video
+          key={currentUrl}
+          src={currentUrl}
+          aria-label={alt}
+          controls
+          playsInline
+          preload="metadata"
+          style={imageStyle}
+          onError={tryNextCandidate}
+        />
+      </div>
     )
   }
 
   if (kind === "audio") {
     return (
-      <div style={placeholderStyle}>
+      <div style={{ ...placeholderStyle, position: "relative" }}>
+        <MediaBadge label="Audio" />
         <audio
           key={currentUrl}
           src={currentUrl}
@@ -116,17 +156,20 @@ export default function NFTMedia({
   }
 
   return (
-    <Image
-      key={currentUrl}
-      src={currentUrl}
-      alt={alt}
-      width={600}
-      height={600}
-      sizes="(max-width: 600px) 100vw, 600px"
-      loader={passthroughLoader}
-      unoptimized
-      style={imageStyle}
-      onError={tryNextCandidate}
-    />
+    <div style={mediaWrapperStyle}>
+      <MediaBadge label="Image" />
+      <Image
+        key={currentUrl}
+        src={currentUrl}
+        alt={alt}
+        width={600}
+        height={600}
+        sizes="(max-width: 600px) 100vw, 600px"
+        loader={passthroughLoader}
+        unoptimized
+        style={imageStyle}
+        onError={tryNextCandidate}
+      />
+    </div>
   )
 }
