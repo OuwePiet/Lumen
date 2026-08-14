@@ -37,6 +37,8 @@ const mediaFilterOptions: Array<{
   { label: "Unavailable", value: "unavailable" },
 ]
 
+const PAGE_SIZE = 8
+
 const saleFilterOptions: Array<{
   label: string
   value: "all" | SaleFilterType
@@ -107,6 +109,11 @@ const styles = {
     fontWeight: 700,
     padding: "8px 32px 8px 10px",
   },
+  loadMore: {
+    display: "flex",
+    justifyContent: "center",
+    marginTop: "28px",
+  },
   empty: {
     color: "#84958b",
     background: "#0c120f",
@@ -129,6 +136,7 @@ export default function MediaFilter({
     useState<"all" | SaleFilterType>("all")
   const [activeSort, setActiveSort] = useState<SortType>("collection")
   const [searchQuery, setSearchQuery] = useState("")
+  const [visibleLimit, setVisibleLimit] = useState(PAGE_SIZE)
   const cards = Children.toArray(children)
   const normalizedSearchQuery = searchQuery.trim().toLocaleLowerCase("en")
   const hasActiveControls =
@@ -142,6 +150,7 @@ export default function MediaFilter({
     setActiveSaleFilter("all")
     setActiveSort("collection")
     setSearchQuery("")
+    setVisibleLimit(PAGE_SIZE)
   }
 
   const visibleCards = cards
@@ -193,6 +202,12 @@ export default function MediaFilter({
     return first.index - second.index
   })
 
+  const displayedCards = sortedCards.slice(0, visibleLimit)
+  const remainingCards = Math.max(
+    sortedCards.length - displayedCards.length,
+    0
+  )
+
   return (
     <>
       <div style={styles.filterBar}>
@@ -202,7 +217,10 @@ export default function MediaFilter({
           placeholder="Search by title or creator"
           value={searchQuery}
           style={styles.search}
-          onChange={(event) => setSearchQuery(event.target.value)}
+          onChange={(event) => {
+            setSearchQuery(event.target.value)
+            setVisibleLimit(PAGE_SIZE)
+          }}
         />
 
         <div
@@ -222,7 +240,10 @@ export default function MediaFilter({
                   ...styles.button,
                   ...(isActive ? styles.activeButton : {}),
                 }}
-                onClick={() => setActiveMediaFilter(option.value)}
+                onClick={() => {
+                  setActiveMediaFilter(option.value)
+                  setVisibleLimit(PAGE_SIZE)
+                }}
               >
                 {option.label}
               </button>
@@ -247,7 +268,10 @@ export default function MediaFilter({
                   ...styles.button,
                   ...(isActive ? styles.activeButton : {}),
                 }}
-                onClick={() => setActiveSaleFilter(option.value)}
+                onClick={() => {
+                  setActiveSaleFilter(option.value)
+                  setVisibleLimit(PAGE_SIZE)
+                }}
               >
                 {option.label}
               </button>
@@ -261,9 +285,10 @@ export default function MediaFilter({
             aria-label="Sort NFT collection"
             value={activeSort}
             style={styles.select}
-            onChange={(event) =>
+            onChange={(event) => {
               setActiveSort(event.target.value as SortType)
-            }
+              setVisibleLimit(PAGE_SIZE)
+            }}
           >
             <option value="collection">Collection order</option>
             <option value="title">Title A–Z</option>
@@ -288,14 +313,30 @@ export default function MediaFilter({
       </div>
 
       <p style={styles.resultCount} aria-live="polite">
-        {sortedCards.length} of {cards.length}{" "}
+        {displayedCards.length} of {cards.length}{" "}
         {cards.length === 1 ? "NFT" : "NFTs"} shown
       </p>
 
       {sortedCards.length > 0 ? (
-        <div style={gridStyle}>
-          {sortedCards.map(({ card }) => card)}
-        </div>
+        <>
+          <div style={gridStyle}>
+            {displayedCards.map(({ card }) => card)}
+          </div>
+
+          {remainingCards > 0 ? (
+            <div style={styles.loadMore}>
+              <button
+                type="button"
+                style={styles.button}
+                onClick={() =>
+                  setVisibleLimit((current) => current + PAGE_SIZE)
+                }
+              >
+                Load more ({remainingCards})
+              </button>
+            </div>
+          ) : null}
+        </>
       ) : (
         <div style={styles.empty}>No NFTs match these filters.</div>
       )}
