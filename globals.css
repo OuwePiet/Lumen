@@ -161,36 +161,3 @@
     @apply bg-background text-foreground;
   }
 }
-
-
-:where(a, button, input, select, summary):focus,
-:where(a, button, input, select, summary):focus-visible {
-  outline: 3px solid #b9ffd4;
-  outline-offset: 4px;
-}
-
-.skip-link {
-  position: fixed;
-  top: 12px;
-  left: 12px;
-  z-index: 1000;
-  color: #050807;
-  background: #b9ffd4;
-  border-radius: 999px;
-  font-size: 14px;
-  font-weight: 800;
-  padding: 10px 14px;
-  text-decoration: none;
-  transform: translateY(-180%);
-  transition: transform 120ms ease;
-}
-
-.skip-link:focus {
-  transform: translateY(0);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .skip-link {
-    transition: none;
-  }
-}
