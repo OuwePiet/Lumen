@@ -9,6 +9,7 @@ import {
 } from "react"
 
 import layoutStyles from "./media-filter.module.css"
+import VoiceControls from "./voice-controls"
 
 export type MediaFilterType =
   | "image"
@@ -369,6 +370,58 @@ export default function MediaFilter({
   )
 
 
+  const applyVoiceCommand = (spokenCommand: string) => {
+    const command = spokenCommand.trim().toLocaleLowerCase("en")
+    const mediaCommands: Record<string, "all" | MediaFilterType> = {
+      "show all": "all",
+      "show images": "image",
+      "show videos": "video",
+      "show audio": "audio",
+      "show unavailable": "unavailable",
+    }
+
+    if (mediaCommands[command]) {
+      setActiveMediaFilter(mediaCommands[command])
+      setVisibleLimit(PAGE_SIZE)
+      return true
+    }
+
+    if (command === "for sale" || command === "show for sale") {
+      setActiveSaleFilter("for-sale")
+      setVisibleLimit(PAGE_SIZE)
+      return true
+    }
+
+    if (command === "not for sale" || command === "show not for sale") {
+      setActiveSaleFilter("not-for-sale")
+      setVisibleLimit(PAGE_SIZE)
+      return true
+    }
+
+    if (command === "comfortable view") {
+      setDensity("comfortable")
+      return true
+    }
+
+    if (command === "compact view") {
+      setDensity("compact")
+      return true
+    }
+
+    if (command === "reset controls") {
+      resetControls()
+      return true
+    }
+
+    if (command.startsWith("search ")) {
+      setSearchQuery(spokenCommand.trim().slice(7))
+      setVisibleLimit(PAGE_SIZE)
+      return true
+    }
+
+    return false
+  }
+
   const renderControls = () => (
     <>
         <input
@@ -481,6 +534,8 @@ export default function MediaFilter({
             )
           })}
         </div>
+
+        <VoiceControls onCommand={applyVoiceCommand} />
 
         <button
           type="button"
