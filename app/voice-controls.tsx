@@ -42,6 +42,32 @@ const voiceLanguages: Array<{ label: string; value: VoiceLanguage }> = [
   { label: "中文", value: "zh-CN" },
 ]
 
+const confirmationMessages: Record<
+  VoiceLanguage,
+  { confirmed: string; retry: string }
+> = {
+  "en-US": {
+    confirmed: "Command confirmed.",
+    retry: "I did not understand. Please try again.",
+  },
+  "nl-NL": {
+    confirmed: "Opdracht bevestigd.",
+    retry: "Niet begrepen. Probeer het opnieuw.",
+  },
+  "fr-FR": {
+    confirmed: "Commande confirmée.",
+    retry: "Je n’ai pas compris. Veuillez réessayer.",
+  },
+  "es-ES": {
+    confirmed: "Comando confirmado.",
+    retry: "No lo entendí. Inténtalo de nuevo.",
+  },
+  "zh-CN": {
+    confirmed: "指令已确认。",
+    retry: "没有听懂，请再试一次。",
+  },
+}
+
 type VoiceControlsProps = {
   onCommand: (command: string) => boolean
 }
@@ -97,6 +123,7 @@ export default function VoiceControls({ onCommand }: VoiceControlsProps) {
   const [listening, setListening] = useState(false)
   const [status, setStatus] = useState("Off")
   const [language, setLanguage] = useState<VoiceLanguage>("en-US")
+  const [readAloud, setReadAloud] = useState(false)
   const [supported, setSupported] = useState(false)
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null)
 
@@ -115,13 +142,26 @@ export default function VoiceControls({ onCommand }: VoiceControlsProps) {
   const toggleEnabled = () => {
     if (enabled) {
       stopListening()
+      window.speechSynthesis?.cancel()
       setEnabled(false)
+      setReadAloud(false)
       setStatus("Off")
       return
     }
 
     setEnabled(true)
     setStatus("Ready")
+  }
+
+  const confirmCommand = (message: string) => {
+    setStatus(message)
+
+    if (!readAloud || !("speechSynthesis" in window)) return
+
+    window.speechSynthesis.cancel()
+    const utterance = new SpeechSynthesisUtterance(message)
+    utterance.lang = language
+    window.speechSynthesis.speak(utterance)
   }
 
   const listen = () => {
@@ -141,7 +181,8 @@ export default function VoiceControls({ onCommand }: VoiceControlsProps) {
     recognition.onresult = (event) => {
       const command = event.results[0]?.[0]?.transcript?.trim() ?? ""
       const applied = command ? onCommand(command) : false
-      setStatus(applied ? "Command applied" : "Command not recognized")
+      const messages = confirmationMessages[language]
+      confirmCommand(applied ? messages.confirmed : messages.retry)
     }
 
     recognition.onerror = () => {
@@ -189,6 +230,20 @@ export default function VoiceControls({ onCommand }: VoiceControlsProps) {
             ))}
           </select>
         </label>
+      ) : null}
+
+      {enabled ? (
+        <button
+          type="button"
+          aria-pressed={readAloud}
+          style={{
+            ...styles.button,
+            ...(readAloud ? styles.enabled : {}),
+          }}
+          onClick={() => setReadAloud((current) => !current)}
+        >
+          {readAloud ? "Read aloud on" : "Read aloud off"}
+        </button>
       ) : null}
 
       {enabled ? (
