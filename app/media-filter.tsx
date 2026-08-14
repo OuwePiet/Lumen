@@ -54,6 +54,12 @@ const styles = {
     gap: "18px 28px",
     margin: "0 0 24px",
   },
+  resultCount: {
+    color: "#84958b",
+    fontSize: "13px",
+    fontWeight: 700,
+    margin: "-10px 0 24px",
+  },
   controls: {
     display: "flex",
     flexWrap: "wrap" as const,
@@ -280,6 +286,11 @@ export default function MediaFilter({
           Reset controls
         </button>
       </div>
+
+      <p style={styles.resultCount} aria-live="polite">
+        {sortedCards.length} of {cards.length}{" "}
+        {cards.length === 1 ? "NFT" : "NFTs"} shown
+      </p>
 
       {sortedCards.length > 0 ? (
         <div style={gridStyle}>
