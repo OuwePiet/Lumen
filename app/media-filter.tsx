@@ -1,6 +1,12 @@
 "use client"
 
-import { Children, useState, type CSSProperties, type ReactNode } from "react"
+import {
+  Children,
+  useEffect,
+  useState,
+  type CSSProperties,
+  type ReactNode,
+} from "react"
 
 export type MediaFilterType =
   | "image"
@@ -38,6 +44,15 @@ const mediaFilterOptions: Array<{
 ]
 
 const PAGE_SIZE = 8
+const SESSION_STORAGE_KEY = "lumen-collection-controls"
+
+type StoredControls = {
+  mediaFilter: "all" | MediaFilterType
+  saleFilter: "all" | SaleFilterType
+  sort: SortType
+  search: string
+  visibleLimit: number
+}
 
 const saleFilterOptions: Array<{
   label: string
@@ -137,8 +152,80 @@ export default function MediaFilter({
   const [activeSort, setActiveSort] = useState<SortType>("collection")
   const [searchQuery, setSearchQuery] = useState("")
   const [visibleLimit, setVisibleLimit] = useState(PAGE_SIZE)
+  const [isStateRestored, setIsStateRestored] = useState(false)
   const cards = Children.toArray(children)
   const normalizedSearchQuery = searchQuery.trim().toLocaleLowerCase("en")
+  useEffect(() => {
+    try {
+      const storedValue = sessionStorage.getItem(SESSION_STORAGE_KEY)
+
+      if (storedValue) {
+        const stored = JSON.parse(storedValue) as Partial<StoredControls>
+        const validMediaFilter = mediaFilterOptions.some(
+          ({ value }) => value === stored.mediaFilter
+        )
+        const validSaleFilter = saleFilterOptions.some(
+          ({ value }) => value === stored.saleFilter
+        )
+        const validSort = [
+          "collection",
+          "title",
+          "price-low",
+          "price-high",
+        ].includes(stored.sort ?? "")
+
+        if (validMediaFilter && stored.mediaFilter) {
+          setActiveMediaFilter(stored.mediaFilter)
+        }
+
+        if (validSaleFilter && stored.saleFilter) {
+          setActiveSaleFilter(stored.saleFilter)
+        }
+
+        if (validSort && stored.sort) {
+          setActiveSort(stored.sort)
+        }
+
+        if (typeof stored.search === "string") {
+          setSearchQuery(stored.search)
+        }
+
+        if (
+          typeof stored.visibleLimit === "number" &&
+          Number.isFinite(stored.visibleLimit) &&
+          stored.visibleLimit >= PAGE_SIZE
+        ) {
+          setVisibleLimit(Math.floor(stored.visibleLimit))
+        }
+      }
+    } catch {
+      sessionStorage.removeItem(SESSION_STORAGE_KEY)
+    } finally {
+      setIsStateRestored(true)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!isStateRestored) return
+
+    const stored: StoredControls = {
+      mediaFilter: activeMediaFilter,
+      saleFilter: activeSaleFilter,
+      sort: activeSort,
+      search: searchQuery,
+      visibleLimit,
+    }
+
+    sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(stored))
+  }, [
+    activeMediaFilter,
+    activeSaleFilter,
+    activeSort,
+    isStateRestored,
+    searchQuery,
+    visibleLimit,
+  ])
+
   const hasActiveControls =
     activeMediaFilter !== "all" ||
     activeSaleFilter !== "all" ||
