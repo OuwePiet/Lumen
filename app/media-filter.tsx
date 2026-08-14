@@ -371,13 +371,33 @@ export default function MediaFilter({
 
 
   const applyVoiceCommand = (spokenCommand: string) => {
-    const command = spokenCommand.trim().toLocaleLowerCase("en")
+    const command = spokenCommand.trim().toLocaleLowerCase()
     const mediaCommands: Record<string, "all" | MediaFilterType> = {
       "show all": "all",
       "show images": "image",
       "show videos": "video",
       "show audio": "audio",
       "show unavailable": "unavailable",
+      "alles tonen": "all",
+      "afbeeldingen tonen": "image",
+      "video's tonen": "video",
+      "audio tonen": "audio",
+      "niet beschikbaar tonen": "unavailable",
+      "tout afficher": "all",
+      "afficher les images": "image",
+      "afficher les vidéos": "video",
+      "afficher l'audio": "audio",
+      "afficher indisponible": "unavailable",
+      "mostrar todo": "all",
+      "mostrar imágenes": "image",
+      "mostrar vídeos": "video",
+      "mostrar audio": "audio",
+      "mostrar no disponible": "unavailable",
+      "显示全部": "all",
+      "显示图片": "image",
+      "显示视频": "video",
+      "显示音频": "audio",
+      "显示不可用": "unavailable",
     }
 
     if (mediaCommands[command]) {
@@ -386,35 +406,67 @@ export default function MediaFilter({
       return true
     }
 
-    if (command === "for sale" || command === "show for sale") {
+    const forSaleCommands = [
+      "for sale",
+      "show for sale",
+      "te koop",
+      "à vendre",
+      "en venta",
+      "出售中",
+    ]
+    const notForSaleCommands = [
+      "not for sale",
+      "show not for sale",
+      "niet te koop",
+      "pas à vendre",
+      "no está en venta",
+      "非出售",
+    ]
+
+    if (forSaleCommands.includes(command)) {
       setActiveSaleFilter("for-sale")
       setVisibleLimit(PAGE_SIZE)
       return true
     }
 
-    if (command === "not for sale" || command === "show not for sale") {
+    if (notForSaleCommands.includes(command)) {
       setActiveSaleFilter("not-for-sale")
       setVisibleLimit(PAGE_SIZE)
       return true
     }
 
-    if (command === "comfortable view") {
+    if (
+      ["comfortable view", "comfortabele weergave", "vue confortable",
+        "vista cómoda", "舒适视图"].includes(command)
+    ) {
       setDensity("comfortable")
       return true
     }
 
-    if (command === "compact view") {
+    if (
+      ["compact view", "compacte weergave", "vue compacte",
+        "vista compacta", "紧凑视图"].includes(command)
+    ) {
       setDensity("compact")
       return true
     }
 
-    if (command === "reset controls") {
+    if (
+      ["reset controls", "bediening resetten",
+        "réinitialiser les commandes", "restablecer controles",
+        "重置控件"].includes(command)
+    ) {
       resetControls()
       return true
     }
 
-    if (command.startsWith("search ")) {
-      setSearchQuery(spokenCommand.trim().slice(7))
+    const searchPrefixes = ["search ", "zoeken ", "rechercher ", "buscar ", "搜索 "]
+    const searchPrefix = searchPrefixes.find((prefix) =>
+      command.startsWith(prefix)
+    )
+
+    if (searchPrefix) {
+      setSearchQuery(spokenCommand.trim().slice(searchPrefix.length))
       setVisibleLimit(PAGE_SIZE)
       return true
     }
