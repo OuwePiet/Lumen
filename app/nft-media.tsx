@@ -4,10 +4,37 @@ import Image from "next/image"
 import { useState, type CSSProperties } from "react"
 
 type NFTMediaProps = {
-  url?: string
+  imageUrl?: string
+  videoUrl?: string
   alt: string
   imageStyle: CSSProperties
   placeholderStyle: CSSProperties
+}
+
+type MediaKind = "image" | "video" | "audio"
+
+const VIDEO_EXTENSIONS = [".mp4", ".webm", ".mov", ".m4v"]
+const AUDIO_EXTENSIONS = [".mp3", ".wav", ".m4a", ".aac", ".flac", ".oga"]
+
+function filePath(url: string) {
+  return url.split(/[?#]/, 1)[0].toLowerCase()
+}
+
+function mediaKind(url: string, suppliedAsVideo: boolean): MediaKind {
+  const path = filePath(url)
+
+  if (AUDIO_EXTENSIONS.some((extension) => path.endsWith(extension))) {
+    return "audio"
+  }
+
+  if (
+    suppliedAsVideo ||
+    VIDEO_EXTENSIONS.some((extension) => path.endsWith(extension))
+  ) {
+    return "video"
+  }
+
+  return "image"
 }
 
 function mediaCandidates(url?: string) {
@@ -34,26 +61,64 @@ function passthroughLoader({ src }: { src: string }) {
 }
 
 export default function NFTMedia({
-  url,
+  imageUrl,
+  videoUrl,
   alt,
   imageStyle,
   placeholderStyle,
 }: NFTMediaProps) {
-  const candidates = mediaCandidates(url)
+  const sourceUrl = videoUrl ?? imageUrl
+  const kind = sourceUrl ? mediaKind(sourceUrl, Boolean(videoUrl)) : null
+  const candidates = mediaCandidates(sourceUrl)
   const [candidateIndex, setCandidateIndex] = useState(0)
 
-  if (candidates.length === 0) {
-    return <div style={placeholderStyle}>No image available</div>
+  if (!kind || candidates.length === 0) {
+    return <div style={placeholderStyle}>No media available</div>
   }
 
   if (candidateIndex >= candidates.length) {
-    return <div style={placeholderStyle}>Image unavailable</div>
+    return <div style={placeholderStyle}>Media unavailable</div>
+  }
+
+  const currentUrl = candidates[candidateIndex]
+  const tryNextCandidate = () =>
+    setCandidateIndex((current) => current + 1)
+
+  if (kind === "video") {
+    return (
+      <video
+        key={currentUrl}
+        src={currentUrl}
+        aria-label={alt}
+        controls
+        playsInline
+        preload="metadata"
+        style={imageStyle}
+        onError={tryNextCandidate}
+      />
+    )
+  }
+
+  if (kind === "audio") {
+    return (
+      <div style={placeholderStyle}>
+        <audio
+          key={currentUrl}
+          src={currentUrl}
+          aria-label={alt}
+          controls
+          preload="metadata"
+          style={{ width: "calc(100% - 40px)" }}
+          onError={tryNextCandidate}
+        />
+      </div>
+    )
   }
 
   return (
     <Image
-      key={candidates[candidateIndex]}
-      src={candidates[candidateIndex]}
+      key={currentUrl}
+      src={currentUrl}
       alt={alt}
       width={600}
       height={600}
@@ -61,7 +126,7 @@ export default function NFTMedia({
       loader={passthroughLoader}
       unoptimized
       style={imageStyle}
-      onError={() => setCandidateIndex((current) => current + 1)}
+      onError={tryNextCandidate}
     />
   )
 }
