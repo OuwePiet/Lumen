@@ -11,6 +11,7 @@ type DeSoPost = {
   PostHashHex?: string
   Body?: string
   ImageURLs?: string[]
+  VideoURLs?: string[]
   NumNFTCopies?: number
   IsNFT?: boolean
   ProfileEntryResponse?: {
@@ -367,7 +368,8 @@ export default async function NFTGrid() {
       >
         <div style={styles.mediaFrame}>
           <NFTMedia
-            url={post.ImageURLs?.[0]}
+            imageUrl={post.ImageURLs?.[0]}
+            videoUrl={post.VideoURLs?.[0]}
             alt={cardTitle(post.Body)}
             imageStyle={styles.image}
             placeholderStyle={styles.placeholder}
