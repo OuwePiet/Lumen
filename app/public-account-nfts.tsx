@@ -18,6 +18,8 @@ type DeSoPost = {
 
 type NFTEntry = {
   IsForSale?: boolean
+  BuyNowPriceNanos?: number
+  MinBidAmountNanos?: number
 }
 
 type NFTCollection = {
@@ -50,6 +52,43 @@ function mediaType(post?: DeSoPost): Exclude<MediaFilter, "all"> {
   }
 
   return "image"
+}
+
+function formatDeSo(nanos: number) {
+  return new Intl.NumberFormat("en-US", {
+    maximumFractionDigits: 9,
+  }).format(nanos / 1_000_000_000)
+}
+
+function ownedSaleStatus(entries: NFTEntry[]) {
+  const forSale = entries.filter((entry) => entry.IsForSale)
+  if (forSale.length === 0) return "Not for sale"
+
+  const buyNowPrices = forSale
+    .map((entry) => entry.BuyNowPriceNanos)
+    .filter(
+      (price): price is number =>
+        typeof price === "number" && price > 0
+    )
+  if (buyNowPrices.length > 0) {
+    return `${forSale.length} for sale · Buy now: ${formatDeSo(
+      Math.min(...buyNowPrices)
+    )} DESO`
+  }
+
+  const minBidAmounts = forSale
+    .map((entry) => entry.MinBidAmountNanos)
+    .filter(
+      (amount): amount is number =>
+        typeof amount === "number" && amount > 0
+    )
+  if (minBidAmounts.length > 0) {
+    return `${forSale.length} for sale · Min bid: ${formatDeSo(
+      Math.min(...minBidAmounts)
+    )} DESO`
+  }
+
+  return `${forSale.length} for sale`
 }
 
 function title(body?: string) {
@@ -171,6 +210,11 @@ const styles = {
     WebkitLineClamp: 2,
   },
   fact: { color: "#a9b8af", fontSize: "11px", margin: 0 },
+  saleFact: {
+    color: "#b9ffd4",
+    fontSize: "11px",
+    margin: "5px 0 0",
+  },
   more: {
     background: "transparent",
     border: "1px solid #285f40",
@@ -193,7 +237,17 @@ export default function PublicAccountNFTs({
   username: string
   autoLoad?: boolean
 }) {
-  const [nfts, setNFTs] = useState<NFTCollection[] | null>(null)
+  const cacheKey = `lumen:account-nfts:${publicKey}`
+  const [nfts, setNFTs] = useState<NFTCollection[] | null>(() => {
+    if (!autoLoad || typeof window === "undefined") return null
+
+    try {
+      const cached = window.sessionStorage.getItem(cacheKey)
+      return cached ? (JSON.parse(cached) as NFTCollection[]) : null
+    } catch {
+      return null
+    }
+  })
   const [loading, setLoading] = useState(false)
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
   const initialParams =
@@ -279,35 +333,63 @@ export default function PublicAccountNFTs({
         lastKeyHex = nextKey
       }
 
+      const completeCollection = Array.from(collectionsByPostHash.values())
       setVisibleCount(PAGE_SIZE)
-      setNFTs(Array.from(collectionsByPostHash.values()))
+      setNFTs(completeCollection)
+      try {
+        window.sessionStorage.setItem(
+          cacheKey,
+          JSON.stringify(completeCollection)
+        )
+      } catch {
+        // A fresh DeSo load remains available when session storage is full.
+      }
     } catch {
       setError("The public NFTs could not be retrieved from DeSo right now.")
     } finally {
       setLoading(false)
     }
-  }, [publicKey])
+  }, [cacheKey, publicKey])
 
   useEffect(() => {
-    if (autoLoad && !autoLoadStarted.current) {
+    if (autoLoad && nfts === null && !autoLoadStarted.current) {
       autoLoadStarted.current = true
       void loadNFTs()
     }
-  }, [autoLoad, loadNFTs])
+  }, [autoLoad, loadNFTs, nfts])
+
+  const collectionParams = new URLSearchParams({
+    account: username,
+    accountKey: publicKey,
+    view: "nfts",
+  })
+  const collectionHref =
+    `/?${collectionParams.toString()}#account-lookup-heading`
 
   if (nfts === null) {
+    if (autoLoad) {
+      return (
+        <>
+          <button
+            type="button"
+            style={styles.action}
+            disabled={!error || loading}
+            onClick={loadNFTs}
+          >
+            {error ? "Try loading public NFTs again" : "Loading public NFTs…"}
+          </button>
+          {error ? <div style={styles.error}>{error}</div> : null}
+        </>
+      )
+    }
+
     return (
-      <>
-        <button
-          type="button"
-          style={styles.action}
-          disabled={loading}
-          onClick={loadNFTs}
-        >
-          {loading ? "Loading public NFTs…" : "View public NFTs"}
-        </button>
-        {error ? <div style={styles.error}>{error}</div> : null}
-      </>
+      <a
+        href={collectionHref}
+        style={{ ...styles.action, display: "inline-block", textDecoration: "none" }}
+      >
+        View public NFTs
+      </a>
     )
   }
 
@@ -476,11 +558,13 @@ export default function PublicAccountNFTs({
             const post = collection.PostEntryResponse!
             const postHash = post.PostHashHex!
             const mediaUrl = post.VideoURLs?.[0] ?? post.ImageURLs?.[0]
-            const ownedCopies = collection.NFTEntryResponses?.length ?? 0
+            const ownedEntries = collection.NFTEntryResponses ?? []
+            const ownedCopies = ownedEntries.length
             const totalCopies = post.NumNFTCopies ?? ownedCopies
 
             const returnParams = new URLSearchParams({
               account: username,
+              accountKey: publicKey,
               view: "nfts",
               query,
               sort: sortMode,
@@ -512,6 +596,9 @@ export default function PublicAccountNFTs({
                   <p style={styles.fact}>
                     @{username} owns {ownedCopies} of {totalCopies}{" "}
                     {totalCopies === 1 ? "copy" : "copies"}
+                  </p>
+                  <p style={styles.saleFact}>
+                    {ownedSaleStatus(ownedEntries)}
                   </p>
                 </div>
               </a>

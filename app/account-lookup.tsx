@@ -126,7 +126,28 @@ export default function AccountLookup({
   const [loading, setLoading] = useState(false)
   const [autoLoadNFTs, setAutoLoadNFTs] = useState(false)
 
+  const rememberSelectedAccount = (selectedProfile: DeSoProfile) => {
+    if (
+      typeof window === "undefined" ||
+      !selectedProfile.Username ||
+      !selectedProfile.PublicKeyBase58Check
+    ) {
+      return
+    }
+
+    const params = new URLSearchParams({
+      account: selectedProfile.Username,
+      accountKey: selectedProfile.PublicKeyBase58Check,
+    })
+    window.history.replaceState(
+      {},
+      "",
+      `${window.location.pathname}?${params.toString()}#account-lookup-heading`
+    )
+  }
+
   const selectProfile = (selectedProfile: DeSoProfile) => {
+    rememberSelectedAccount(selectedProfile)
     setUsername(selectedProfile.Username ?? "")
     setProfile(selectedProfile)
     onAccountSelected?.()
@@ -176,6 +197,7 @@ export default function AccountLookup({
       )
 
       if (exactProfile) {
+        rememberSelectedAccount(exactProfile)
         setProfile(exactProfile)
         onAccountSelected?.()
         return
@@ -197,12 +219,24 @@ export default function AccountLookup({
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
     const requestedAccount = params.get("account")
-    setAutoLoadNFTs(params.get("view") === "nfts")
+    const requestedPublicKey = params.get("accountKey")
+    const shouldOpenNFTs = params.get("view") === "nfts"
+    setAutoLoadNFTs(shouldOpenNFTs)
+
+    if (requestedAccount && requestedPublicKey && shouldOpenNFTs) {
+      setUsername(requestedAccount)
+      setProfile({
+        Username: requestedAccount,
+        PublicKeyBase58Check: requestedPublicKey,
+      })
+      onAccountSelected?.()
+      return
+    }
 
     if (requestedAccount) {
       void lookupAccount(requestedAccount)
     }
-  }, [lookupAccount])
+  }, [lookupAccount, onAccountSelected])
 
   const findAccount = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()

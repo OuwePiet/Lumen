@@ -345,7 +345,11 @@ const styles = {
   },
 }
 
-export default async function NFTGrid() {
+export default async function NFTGrid({
+  initialAccount,
+}: {
+  initialAccount?: string
+}) {
   const [results, collectionOwner] = await Promise.all([
     Promise.all(NFT_POST_HASHES.map(loadNFT)),
     loadCollectionOwner(),
@@ -447,7 +451,7 @@ export default async function NFTGrid() {
           DeSo blockchain.
         </p>
 
-        <CollectionBrowser>
+        <CollectionBrowser initialAccount={initialAccount}>
           <>
             <p style={styles.owner}>
               {collectionOwner
