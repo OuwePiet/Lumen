@@ -358,19 +358,38 @@ export default function PublicAccountNFTs({
     }
   }, [autoLoad, loadNFTs, nfts])
 
+  const collectionParams = new URLSearchParams({
+    account: username,
+    accountKey: publicKey,
+    view: "nfts",
+  })
+  const collectionHref =
+    `/?${collectionParams.toString()}#account-lookup-heading`
+
   if (nfts === null) {
+    if (autoLoad) {
+      return (
+        <>
+          <button
+            type="button"
+            style={styles.action}
+            disabled={!error || loading}
+            onClick={loadNFTs}
+          >
+            {error ? "Try loading public NFTs again" : "Loading public NFTs…"}
+          </button>
+          {error ? <div style={styles.error}>{error}</div> : null}
+        </>
+      )
+    }
+
     return (
-      <>
-        <button
-          type="button"
-          style={styles.action}
-          disabled={loading}
-          onClick={loadNFTs}
-        >
-          {loading ? "Loading public NFTs…" : "View public NFTs"}
-        </button>
-        {error ? <div style={styles.error}>{error}</div> : null}
-      </>
+      <a
+        href={collectionHref}
+        style={{ ...styles.action, display: "inline-block", textDecoration: "none" }}
+      >
+        View public NFTs
+      </a>
     )
   }
 
