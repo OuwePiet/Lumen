@@ -1,13 +1,13 @@
 "use client"
 
-import type { MouseEvent } from "react"
+import type { CSSProperties, MouseEvent } from "react"
 
 export default function BackToCollection({
   href,
   style,
 }: {
   href: string
-  style?: React.CSSProperties
+  style?: CSSProperties
 }) {
   const goBack = (event: MouseEvent<HTMLAnchorElement>) => {
     try {
