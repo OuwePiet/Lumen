@@ -57,6 +57,15 @@ const sortLabels: Record<SortType, string> = {
   "price-high": "Price high–low",
 }
 
+type VoiceUndoState = {
+  mediaFilter: "all" | MediaFilterType
+  saleFilter: "all" | SaleFilterType
+  sort: SortType
+  search: string
+  visibleLimit: number
+  density: DensityType
+}
+
 type StoredControls = {
   mediaFilter: "all" | MediaFilterType
   saleFilter: "all" | SaleFilterType
@@ -183,6 +192,8 @@ export default function MediaFilter({
   const [visibleLimit, setVisibleLimit] = useState(PAGE_SIZE)
   const [density, setDensity] = useState<DensityType>("comfortable")
   const [isStateRestored, setIsStateRestored] = useState(false)
+  const [lastVoiceState, setLastVoiceState] =
+    useState<VoiceUndoState | null>(null)
   const cards = Children.toArray(children)
   const normalizedSearchQuery = searchQuery.trim().toLocaleLowerCase("en")
   useEffect(() => {
@@ -370,6 +381,17 @@ export default function MediaFilter({
   )
 
 
+  const rememberStateBeforeVoiceCommand = () => {
+    setLastVoiceState({
+      mediaFilter: activeMediaFilter,
+      saleFilter: activeSaleFilter,
+      sort: activeSort,
+      search: searchQuery,
+      visibleLimit,
+      density,
+    })
+  }
+
   const applyVoiceCommand = (spokenCommand: string) => {
     const command = spokenCommand.trim().toLocaleLowerCase()
     const mediaCommands: Record<string, "all" | MediaFilterType> = {
@@ -401,6 +423,7 @@ export default function MediaFilter({
     }
 
     if (mediaCommands[command]) {
+      rememberStateBeforeVoiceCommand()
       setActiveMediaFilter(mediaCommands[command])
       setVisibleLimit(PAGE_SIZE)
       return true
@@ -424,12 +447,14 @@ export default function MediaFilter({
     ]
 
     if (forSaleCommands.includes(command)) {
+      rememberStateBeforeVoiceCommand()
       setActiveSaleFilter("for-sale")
       setVisibleLimit(PAGE_SIZE)
       return true
     }
 
     if (notForSaleCommands.includes(command)) {
+      rememberStateBeforeVoiceCommand()
       setActiveSaleFilter("not-for-sale")
       setVisibleLimit(PAGE_SIZE)
       return true
@@ -439,6 +464,7 @@ export default function MediaFilter({
       ["comfortable view", "comfortabele weergave", "vue confortable",
         "vista cómoda", "舒适视图"].includes(command)
     ) {
+      rememberStateBeforeVoiceCommand()
       setDensity("comfortable")
       return true
     }
@@ -447,6 +473,7 @@ export default function MediaFilter({
       ["compact view", "compacte weergave", "vue compacte",
         "vista compacta", "紧凑视图"].includes(command)
     ) {
+      rememberStateBeforeVoiceCommand()
       setDensity("compact")
       return true
     }
@@ -456,6 +483,7 @@ export default function MediaFilter({
         "réinitialiser les commandes", "restablecer controles",
         "重置控件"].includes(command)
     ) {
+      rememberStateBeforeVoiceCommand()
       resetControls()
       return true
     }
@@ -466,12 +494,25 @@ export default function MediaFilter({
     )
 
     if (searchPrefix) {
+      rememberStateBeforeVoiceCommand()
       setSearchQuery(spokenCommand.trim().slice(searchPrefix.length))
       setVisibleLimit(PAGE_SIZE)
       return true
     }
 
     return false
+  }
+
+  const undoLastVoiceCommand = () => {
+    if (!lastVoiceState) return
+
+    setActiveMediaFilter(lastVoiceState.mediaFilter)
+    setActiveSaleFilter(lastVoiceState.saleFilter)
+    setActiveSort(lastVoiceState.sort)
+    setSearchQuery(lastVoiceState.search)
+    setVisibleLimit(lastVoiceState.visibleLimit)
+    setDensity(lastVoiceState.density)
+    setLastVoiceState(null)
   }
 
   const renderControls = () => (
@@ -587,7 +628,11 @@ export default function MediaFilter({
           })}
         </div>
 
-        <VoiceControls onCommand={applyVoiceCommand} />
+        <VoiceControls
+          onCommand={applyVoiceCommand}
+          canUndo={lastVoiceState !== null}
+          onUndo={undoLastVoiceCommand}
+        />
 
         <button
           type="button"
