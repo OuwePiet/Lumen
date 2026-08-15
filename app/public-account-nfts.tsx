@@ -180,6 +180,11 @@ export default function PublicAccountNFTs({
     )
   }
 
+  const totalOwnedCopies = nfts.reduce(
+    (total, collection) =>
+      total + (collection.NFTEntryResponses?.length ?? 0),
+    0
+  )
   const normalizedQuery = query.trim().toLocaleLowerCase()
   const filteredNFTs = normalizedQuery
     ? nfts.filter((collection) => {
@@ -200,6 +205,14 @@ export default function PublicAccountNFTs({
 
   return (
     <section aria-label={`Public NFTs owned by @${username}`}>
+      {nfts.length > 0 ? (
+        <p style={styles.status}>
+          @{username} owns {totalOwnedCopies} NFT{" "}
+          {totalOwnedCopies === 1 ? "copy" : "copies"} across {nfts.length}{" "}
+          different NFT{nfts.length === 1 ? "" : "s"}.
+        </p>
+      ) : null}
+
       {nfts.length > 0 ? (
         <input
           type="search"
