@@ -7,9 +7,14 @@ type SpeechResultEvent = {
     0?: {
       0?: {
         transcript?: string
+        confidence?: number
       }
     }
   }
+}
+
+type SpeechErrorEvent = {
+  error?: string
 }
 
 type SpeechRecognitionLike = {
@@ -17,7 +22,7 @@ type SpeechRecognitionLike = {
   interimResults: boolean
   lang: string
   onend: (() => void) | null
-  onerror: (() => void) | null
+  onerror: ((event: SpeechErrorEvent) => void) | null
   onresult: ((event: SpeechResultEvent) => void) | null
   start: () => void
   stop: () => void
@@ -84,6 +89,14 @@ const testExamples: Record<VoiceLanguage, string> = {
   "fr-FR": "Afficher les images",
   "es-ES": "Mostrar imágenes",
   "zh-CN": "显示图片",
+}
+
+const backgroundNoiseMessages: Record<VoiceLanguage, string> = {
+  "en-US": "Speech was not clear enough. Reduce background noise and try again.",
+  "nl-NL": "De spraak was niet duidelijk genoeg. Verminder achtergrondgeluid en probeer opnieuw.",
+  "fr-FR": "La parole n’était pas assez claire. Réduisez le bruit de fond et réessayez.",
+  "es-ES": "La voz no fue suficientemente clara. Reduce el ruido de fondo e inténtalo de nuevo.",
+  "zh-CN": "语音不够清晰。请减少背景噪音后重试。",
 }
 
 const helpExamples: Record<VoiceLanguage, string[]> = {
@@ -352,7 +365,9 @@ export default function VoiceControls({
     setStatus("Listening")
 
     recognition.onresult = (event) => {
-      const command = event.results[0]?.[0]?.transcript?.trim() ?? ""
+      const result = event.results[0]?.[0]
+      const command = result?.transcript?.trim() ?? ""
+      const confidence = result?.confidence
       const messages = confirmationMessages[language]
 
       if (testOnly) {
@@ -362,13 +377,26 @@ export default function VoiceControls({
       }
 
       setStatus("Processing command")
+      if (
+        typeof confidence === "number" &&
+        confidence > 0 &&
+        confidence < 0.55
+      ) {
+        setStatus(backgroundNoiseMessages[language])
+        return
+      }
+
       const applied = command ? onCommand(command) : false
       confirmCommand(applied ? messages.confirmed : messages.retry)
     }
 
-    recognition.onerror = () => {
+    recognition.onerror = (event) => {
       clearListeningTimeout()
-      setStatus("Voice unavailable")
+      setStatus(
+        event.error === "no-speech"
+          ? backgroundNoiseMessages[language]
+          : "Voice unavailable"
+      )
     }
 
     recognition.onend = () => {
@@ -482,6 +510,18 @@ export default function VoiceControls({
             <li>Firefox may not provide speech recognition</li>
             <li>Microphone permission is required only when listening starts</li>
             <li>Buttons, touch and keyboard always remain available</li>
+          </ul>
+        </details>
+      ) : null}
+
+      {enabled ? (
+        <details style={styles.help}>
+          <summary style={styles.helpSummary}>Background noise</summary>
+          <ul style={styles.helpList}>
+            <li>Your browser handles microphone noise reduction</li>
+            <li>Speak close to the microphone and pause background audio</li>
+            <li>Lumen does not guess or apply an unclear command</li>
+            <li>Unclear speech can always be tried again</li>
           </ul>
         </details>
       ) : null}
