@@ -124,6 +124,7 @@ export default function AccountLookup({
   const [matches, setMatches] = useState<DeSoProfile[]>([])
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
+  const [autoLoadNFTs, setAutoLoadNFTs] = useState(false)
 
   const selectProfile = (selectedProfile: DeSoProfile) => {
     setUsername(selectedProfile.Username ?? "")
@@ -194,9 +195,9 @@ export default function AccountLookup({
   }, [onAccountSelected])
 
   useEffect(() => {
-    const requestedAccount = new URLSearchParams(window.location.search).get(
-      "account"
-    )
+    const params = new URLSearchParams(window.location.search)
+    const requestedAccount = params.get("account")
+    setAutoLoadNFTs(params.get("view") === "nfts")
 
     if (requestedAccount) {
       void lookupAccount(requestedAccount)
@@ -243,6 +244,7 @@ export default function AccountLookup({
               key={profile.PublicKeyBase58Check}
               publicKey={profile.PublicKeyBase58Check!}
               username={profile.Username!}
+              autoLoad={autoLoadNFTs}
             />
           </div>
         ) : null}

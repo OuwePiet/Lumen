@@ -447,22 +447,22 @@ export default async function NFTGrid() {
           DeSo blockchain.
         </p>
 
-        <p style={styles.owner}>
-          {collectionOwner
-            ? `Collection owner: @${collectionOwner.Username}`
-            : "Collection owner unavailable"}
-          <br />
-          {automaticNFTResult === null
-            ? "Automatic NFT check unavailable"
-            : `Automatic NFTs found: ${automaticNFTResult.nftCount} of ${automaticNFTResult.checkedPosts} checked posts`}
-          <br />
-          {`Unique NFTs displayed: ${collectionNFTs.length}`}
-          <br />
-          {`Automatically added to collection: ${discoveredNFTs.length}`}
-        </p>
-
         <CollectionBrowser>
-          <div id="collection-controls">
+          <>
+            <p style={styles.owner}>
+              {collectionOwner
+                ? `Collection owner: @${collectionOwner.Username}`
+                : "Collection owner unavailable"}
+              <br />
+              {automaticNFTResult === null
+                ? "Automatic NFT check unavailable"
+                : `Automatic NFTs found: ${automaticNFTResult.nftCount} of ${automaticNFTResult.checkedPosts} checked posts`}
+              <br />
+              {`Unique NFTs displayed: ${collectionNFTs.length}`}
+              <br />
+              {`Automatically added to collection: ${discoveredNFTs.length}`}
+            </p>
+            <div id="collection-controls">
           <MediaFilter
           mediaTypes={collectionNFTs.map(({ post }) =>
             mediaFilterType(post)
@@ -487,7 +487,8 @@ export default async function NFTGrid() {
         >
           {collectionNFTs.map(renderNFTCard)}
           </MediaFilter>
-          </div>
+            </div>
+          </>
         </CollectionBrowser>
       </div>
     </main>

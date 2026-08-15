@@ -266,7 +266,13 @@ const styles = {
   },
 }
 
-export default async function NFTView({ postHash }: { postHash: string }) {
+export default async function NFTView({
+  postHash,
+  backHref = "/",
+}: {
+  postHash: string
+  backHref?: string
+}) {
   try {
     const [postResponse, nftResponse] = await Promise.all([
       requestDeSo("get-single-post", postHash),
@@ -349,7 +355,7 @@ const lowestBuyNowPrice =
     return (
       <main style={styles.page}>
         <div style={styles.container}>
-          <a href="/" style={styles.backLink}>
+          <a href={backHref} style={styles.backLink}>
             ← Back to collection
           </a>
           <p style={styles.brand}>Lumen</p>
@@ -442,7 +448,7 @@ const lowestBuyNowPrice =
     return (
       <main style={styles.page}>
         <div style={styles.container}>
-          <a href="/" style={styles.backLink}>
+          <a href={backHref} style={styles.backLink}>
             ← Back to collection
           </a>
           <p style={styles.brand}>Lumen</p>
