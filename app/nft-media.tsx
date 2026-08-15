@@ -76,10 +76,13 @@ function mediaCandidates(url?: string) {
 
   if (!ipfsPath) return [url]
 
-  return [
-    `https://ipfs.io/ipfs/${ipfsPath}`,
-    `https://dweb.link/ipfs/${ipfsPath}`,
-  ]
+  return Array.from(
+    new Set([
+      url,
+      `https://ipfs.io/ipfs/${ipfsPath}`,
+      `https://dweb.link/ipfs/${ipfsPath}`,
+    ])
+  )
 }
 
 function passthroughLoader({ src }: { src: string }) {
