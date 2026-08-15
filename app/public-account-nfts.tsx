@@ -19,6 +19,8 @@ type NFTCollection = {
   NFTEntryResponses?: unknown[]
 }
 
+type SortMode = "collection" | "title" | "most-owned" | "fewest-owned"
+
 function title(body?: string) {
   const cleaned = (body ?? "")
     .replace(/https?:\/\/nftz\.me\/\S+/gi, "")
@@ -41,16 +43,30 @@ const styles = {
     marginTop: "12px",
     padding: "9px 14px",
   },
+  controls: {
+    alignItems: "center",
+    display: "flex",
+    flexWrap: "wrap" as const,
+    gap: "10px",
+    marginTop: "14px",
+  },
   search: {
     background: "#050807",
     border: "1px solid #285f40",
     borderRadius: "10px",
     color: "#f4f7f5",
     fontSize: "13px",
-    marginTop: "14px",
     maxWidth: "420px",
     padding: "9px 11px",
     width: "100%",
+  },
+  select: {
+    background: "#050807",
+    border: "1px solid #285f40",
+    borderRadius: "10px",
+    color: "#f4f7f5",
+    fontSize: "13px",
+    padding: "9px 11px",
   },
   status: {
     color: "#a9b8af",
@@ -129,6 +145,7 @@ export default function PublicAccountNFTs({
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
   const [error, setError] = useState("")
   const [query, setQuery] = useState("")
+  const [sortMode, setSortMode] = useState<SortMode>("collection")
 
   const loadNFTs = async () => {
     setLoading(true)
@@ -229,8 +246,32 @@ export default function PublicAccountNFTs({
         return searchableText.includes(normalizedQuery)
       })
     : nfts
-  const visibleNFTs = filteredNFTs.slice(0, visibleCount)
-  const remaining = filteredNFTs.length - visibleNFTs.length
+  const sortedNFTs = [...filteredNFTs].sort((left, right) => {
+    if (sortMode === "collection") return 0
+
+    const leftTitle = title(left.PostEntryResponse?.Body)
+    const rightTitle = title(right.PostEntryResponse?.Body)
+
+    if (sortMode === "title") {
+      return leftTitle.localeCompare(rightTitle, undefined, {
+        sensitivity: "base",
+      })
+    }
+
+    const leftOwned = left.NFTEntryResponses?.length ?? 0
+    const rightOwned = right.NFTEntryResponses?.length ?? 0
+    const ownedDifference =
+      sortMode === "most-owned"
+        ? rightOwned - leftOwned
+        : leftOwned - rightOwned
+
+    return (
+      ownedDifference ||
+      leftTitle.localeCompare(rightTitle, undefined, { sensitivity: "base" })
+    )
+  })
+  const visibleNFTs = sortedNFTs.slice(0, visibleCount)
+  const remaining = sortedNFTs.length - visibleNFTs.length
 
   return (
     <section aria-label={`Public NFTs owned by @${username}`}>
@@ -243,17 +284,33 @@ export default function PublicAccountNFTs({
       ) : null}
 
       {nfts.length > 0 ? (
-        <input
-          type="search"
-          aria-label="Search this account collection"
-          placeholder="Search by NFT title or creator"
-          value={query}
-          style={styles.search}
-          onChange={(event) => {
-            setQuery(event.target.value)
-            setVisibleCount(PAGE_SIZE)
-          }}
-        />
+        <div style={styles.controls}>
+          <input
+            type="search"
+            aria-label="Search this account collection"
+            placeholder="Search by NFT title or creator"
+            value={query}
+            style={styles.search}
+            onChange={(event) => {
+              setQuery(event.target.value)
+              setVisibleCount(PAGE_SIZE)
+            }}
+          />
+          <select
+            aria-label="Sort this account collection"
+            value={sortMode}
+            style={styles.select}
+            onChange={(event) => {
+              setSortMode(event.target.value as SortMode)
+              setVisibleCount(PAGE_SIZE)
+            }}
+          >
+            <option value="collection">Collection order</option>
+            <option value="title">Title A–Z</option>
+            <option value="most-owned">Most copies owned</option>
+            <option value="fewest-owned">Fewest copies owned</option>
+          </select>
+        </div>
       ) : null}
 
       <p style={styles.status}>
