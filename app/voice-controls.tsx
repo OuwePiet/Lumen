@@ -33,6 +33,13 @@ declare global {
 }
 
 type VoiceLanguage = "en-US" | "nl-NL" | "fr-FR" | "es-ES" | "zh-CN"
+type SpeechRate = 0.8 | 1 | 1.2
+
+const speechRates: Array<{ label: string; value: SpeechRate }> = [
+  { label: "Slow", value: 0.8 },
+  { label: "Normal", value: 1 },
+  { label: "Fast", value: 1.2 },
+]
 
 const SITE_VOICE_LANGUAGE: VoiceLanguage = "en-US"
 
@@ -220,6 +227,7 @@ export default function VoiceControls({
   const [status, setStatus] = useState("Microphone off")
   const [language, setLanguage] = useState<VoiceLanguage>("en-US")
   const [readAloud, setReadAloud] = useState(false)
+  const [speechRate, setSpeechRate] = useState<SpeechRate>(1)
   const [supported, setSupported] = useState(false)
   const [testResult, setTestResult] = useState<string | null>(null)
   const [privacyConfirmationRequired, setPrivacyConfirmationRequired] =
@@ -290,6 +298,7 @@ export default function VoiceControls({
     window.speechSynthesis.cancel()
     const utterance = new SpeechSynthesisUtterance(message)
     utterance.lang = language
+    utterance.rate = speechRate
     window.speechSynthesis.speak(utterance)
   }
 
@@ -370,6 +379,7 @@ export default function VoiceControls({
     setEnabled(false)
     setLanguage(SITE_VOICE_LANGUAGE)
     setReadAloud(false)
+    setSpeechRate(1)
     setTestResult(null)
     setPrivacyConfirmationRequired(true)
     setStatus("Voice settings reset")
@@ -510,6 +520,26 @@ export default function VoiceControls({
             Lumen does not store the audio or recognized test text.
           </p>
         </div>
+      ) : null}
+
+      {enabled ? (
+        <label style={styles.panel}>
+          <span style={styles.label}>Confirmation speed</span>
+          <select
+            aria-label="Spoken confirmation speed"
+            value={speechRate}
+            style={styles.select}
+            onChange={(event) =>
+              setSpeechRate(Number(event.target.value) as SpeechRate)
+            }
+          >
+            {speechRates.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </label>
       ) : null}
 
       {enabled ? (
