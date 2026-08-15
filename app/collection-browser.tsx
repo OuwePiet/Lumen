@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, type ReactNode } from "react"
+import { useCallback, useState, type ReactNode } from "react"
 import AccountLookup from "./account-lookup"
 
 export default function CollectionBrowser({
@@ -9,10 +9,11 @@ export default function CollectionBrowser({
   children: ReactNode
 }) {
   const [selectedAccount, setSelectedAccount] = useState(false)
+  const selectAccount = useCallback(() => setSelectedAccount(true), [])
 
   return (
     <>
-      <AccountLookup onAccountSelected={() => setSelectedAccount(true)} />
+      <AccountLookup onAccountSelected={selectAccount} />
       {selectedAccount ? null : children}
     </>
   )
