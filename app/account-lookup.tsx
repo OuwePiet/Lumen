@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, type FormEvent } from "react"
+import { useCallback, useEffect, useState, type FormEvent } from "react"
 import PublicAccountNFTs from "./public-account-nfts"
 
 const DESO_NODE = "https://node.deso.org"
@@ -128,10 +128,9 @@ export default function AccountLookup() {
     setError("")
   }
 
-  const findAccount = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-
-    const normalizedUsername = username.trim().replace(/^@/, "")
+  const lookupAccount = useCallback(async (requestedUsername: string) => {
+    const normalizedUsername = requestedUsername.trim().replace(/^@/, "")
+    setUsername(normalizedUsername)
     setProfile(null)
     setMatches([])
     setError("")
@@ -186,6 +185,21 @@ export default function AccountLookup() {
     } finally {
       setLoading(false)
     }
+  }, [])
+
+  useEffect(() => {
+    const requestedAccount = new URLSearchParams(window.location.search).get(
+      "account"
+    )
+
+    if (requestedAccount) {
+      void lookupAccount(requestedAccount)
+    }
+  }, [lookupAccount])
+
+  const findAccount = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    void lookupAccount(username)
   }
 
   return (
