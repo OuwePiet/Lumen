@@ -5,10 +5,14 @@ import AccountLookup from "./account-lookup"
 
 export default function CollectionBrowser({
   children,
+  initialAccount,
 }: {
   children: ReactNode
+  initialAccount?: string
 }) {
-  const [selectedAccount, setSelectedAccount] = useState(false)
+  const [selectedAccount, setSelectedAccount] = useState(
+    Boolean(initialAccount)
+  )
   const selectAccount = useCallback(() => setSelectedAccount(true), [])
 
   return (
