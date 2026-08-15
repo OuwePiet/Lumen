@@ -234,6 +234,7 @@ export default function AccountLookup() {
               {shortKey(profile.PublicKeyBase58Check)}
             </code>
             <PublicAccountNFTs
+              key={profile.PublicKeyBase58Check}
               publicKey={profile.PublicKeyBase58Check!}
               username={profile.Username!}
             />

@@ -3,6 +3,7 @@
 import { useState } from "react"
 
 const DESO_NODE = "https://node.deso.org"
+const PAGE_SIZE = 25
 
 type DeSoPost = {
   PostHashHex?: string
@@ -55,9 +56,9 @@ const styles = {
   },
   grid: {
     display: "grid",
-    gap: "14px",
-    gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))",
-    marginTop: "14px",
+    gap: "10px",
+    gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))",
+    marginTop: "12px",
   },
   card: {
     background: "#07100b",
@@ -80,9 +81,29 @@ const styles = {
     width: "100%",
   },
   placeholder: { color: "#84958b", fontSize: "12px" },
-  content: { padding: "12px" },
-  title: { fontSize: "14px", lineHeight: 1.4, margin: "0 0 8px" },
-  fact: { color: "#a9b8af", fontSize: "12px", margin: 0 },
+  content: { padding: "9px" },
+  title: {
+    display: "-webkit-box",
+    fontSize: "13px",
+    lineHeight: 1.35,
+    margin: "0 0 6px",
+    minHeight: "35px",
+    overflow: "hidden",
+    WebkitBoxOrient: "vertical" as const,
+    WebkitLineClamp: 2,
+  },
+  fact: { color: "#a9b8af", fontSize: "11px", margin: 0 },
+  more: {
+    background: "transparent",
+    border: "1px solid #285f40",
+    borderRadius: "999px",
+    color: "#b9ffd4",
+    cursor: "pointer",
+    fontSize: "13px",
+    fontWeight: 800,
+    marginTop: "14px",
+    padding: "8px 12px",
+  },
 }
 
 export default function PublicAccountNFTs({
@@ -94,6 +115,7 @@ export default function PublicAccountNFTs({
 }) {
   const [nfts, setNFTs] = useState<NFTCollection[] | null>(null)
   const [loading, setLoading] = useState(false)
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
   const [error, setError] = useState("")
 
   const loadNFTs = async () => {
@@ -117,6 +139,7 @@ export default function PublicAccountNFTs({
 
       const data = await response.json()
       const collections: NFTCollection[] = Object.values(data.NFTsMap ?? {})
+      setVisibleCount(PAGE_SIZE)
       setNFTs(
         collections.filter(
           (collection) => collection.PostEntryResponse?.PostHashHex
@@ -145,6 +168,9 @@ export default function PublicAccountNFTs({
     )
   }
 
+  const visibleNFTs = nfts.slice(0, visibleCount)
+  const remaining = nfts.length - visibleNFTs.length
+
   return (
     <section aria-label={`Public NFTs owned by @${username}`}>
       <p style={styles.status}>
@@ -155,7 +181,7 @@ export default function PublicAccountNFTs({
 
       {nfts.length > 0 ? (
         <div style={styles.grid}>
-          {nfts.map((collection) => {
+          {visibleNFTs.map((collection) => {
             const post = collection.PostEntryResponse!
             const postHash = post.PostHashHex!
             const mediaUrl = post.VideoURLs?.[0] ?? post.ImageURLs?.[0]
@@ -186,6 +212,20 @@ export default function PublicAccountNFTs({
             )
           })}
         </div>
+      ) : null}
+
+      {remaining > 0 ? (
+        <button
+          type="button"
+          style={styles.more}
+          onClick={() =>
+            setVisibleCount((current) =>
+              Math.min(current + PAGE_SIZE, nfts.length)
+            )
+          }
+        >
+          Show next {Math.min(PAGE_SIZE, remaining)}
+        </button>
       ) : null}
     </section>
   )
