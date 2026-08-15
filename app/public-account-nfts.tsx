@@ -4,6 +4,8 @@ import { useState } from "react"
 
 const DESO_NODE = "https://node.deso.org"
 const PAGE_SIZE = 25
+const VIDEO_EXTENSIONS = [".mp4", ".webm", ".mov", ".m4v"]
+const AUDIO_EXTENSIONS = [".mp3", ".wav", ".m4a", ".aac", ".flac", ".oga"]
 
 type DeSoPost = {
   PostHashHex?: string
@@ -23,9 +25,32 @@ type NFTCollection = {
   NFTEntryResponses?: NFTEntry[]
 }
 
+type MediaFilter = "all" | "image" | "video" | "audio" | "unavailable"
 type SaleFilter = "all" | "for-sale" | "not-for-sale"
 
 type SortMode = "collection" | "title" | "most-owned" | "fewest-owned"
+
+function mediaType(post?: DeSoPost): Exclude<MediaFilter, "all"> {
+  const videoUrl = post?.VideoURLs?.[0]
+  const mediaUrl = videoUrl ?? post?.ImageURLs?.[0]
+
+  if (!mediaUrl) return "unavailable"
+
+  const path = mediaUrl.split(/[?#]/, 1)[0].toLowerCase()
+
+  if (AUDIO_EXTENSIONS.some((extension) => path.endsWith(extension))) {
+    return "audio"
+  }
+
+  if (
+    videoUrl ||
+    VIDEO_EXTENSIONS.some((extension) => path.endsWith(extension))
+  ) {
+    return "video"
+  }
+
+  return "image"
+}
 
 function title(body?: string) {
   const cleaned = (body ?? "")
@@ -65,6 +90,11 @@ const styles = {
     maxWidth: "420px",
     padding: "9px 11px",
     width: "100%",
+  },
+  controlLabel: {
+    color: "#a9b8af",
+    fontSize: "12px",
+    fontWeight: 700,
   },
   filter: {
     background: "transparent",
@@ -168,6 +198,7 @@ export default function PublicAccountNFTs({
   const [query, setQuery] = useState("")
   const [sortMode, setSortMode] = useState<SortMode>("collection")
   const [saleFilter, setSaleFilter] = useState<SaleFilter>("all")
+  const [mediaFilter, setMediaFilter] = useState<MediaFilter>("all")
 
   const loadNFTs = async () => {
     setLoading(true)
@@ -279,7 +310,12 @@ export default function PublicAccountNFTs({
       ? hasOwnedCopyForSale
       : !hasOwnedCopyForSale
   })
-  const sortedNFTs = [...saleFilteredNFTs].sort((left, right) => {
+  const mediaFilteredNFTs = saleFilteredNFTs.filter((collection) =>
+    mediaFilter === "all"
+      ? true
+      : mediaType(collection.PostEntryResponse) === mediaFilter
+  )
+  const sortedNFTs = [...mediaFilteredNFTs].sort((left, right) => {
     if (sortMode === "collection") return 0
 
     const leftTitle = title(left.PostEntryResponse?.Body)
@@ -343,6 +379,7 @@ export default function PublicAccountNFTs({
             <option value="most-owned">Most copies owned</option>
             <option value="fewest-owned">Fewest copies owned</option>
           </select>
+          <span style={styles.controlLabel}>Sale</span>
           {(
             [
               ["all", "All"],
@@ -366,16 +403,42 @@ export default function PublicAccountNFTs({
               {label}
             </button>
           ))}
+          <span style={styles.controlLabel}>Media</span>
+          {(
+            [
+              ["all", "All"],
+              ["image", "Image"],
+              ["video", "Video"],
+              ["audio", "Audio"],
+              ["unavailable", "Unavailable"],
+            ] as const
+          ).map(([value, label]) => (
+            <button
+              key={value}
+              type="button"
+              aria-pressed={mediaFilter === value}
+              style={{
+                ...styles.filter,
+                ...(mediaFilter === value ? styles.filterActive : {}),
+              }}
+              onClick={() => {
+                setMediaFilter(value)
+                setVisibleCount(PAGE_SIZE)
+              }}
+            >
+              {label}
+            </button>
+          ))}
         </div>
       ) : null}
 
       <p style={styles.status}>
         {nfts.length === 0
           ? `No public NFTs found for @${username}.`
-          : `${saleFilteredNFTs.length} of ${nfts.length} public NFTs shown for @${username}.`}
+          : `${mediaFilteredNFTs.length} of ${nfts.length} public NFTs shown for @${username}.`}
       </p>
 
-      {saleFilteredNFTs.length > 0 ? (
+      {mediaFilteredNFTs.length > 0 ? (
         <div style={styles.grid}>
           {visibleNFTs.map((collection) => {
             const post = collection.PostEntryResponse!
@@ -418,7 +481,7 @@ export default function PublicAccountNFTs({
           style={styles.more}
           onClick={() =>
             setVisibleCount((current) =>
-              Math.min(current + PAGE_SIZE, saleFilteredNFTs.length)
+              Math.min(current + PAGE_SIZE, mediaFilteredNFTs.length)
             )
           }
         >
