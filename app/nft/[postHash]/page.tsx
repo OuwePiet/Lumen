@@ -17,7 +17,7 @@ export default async function NFTPage({ params, searchParams }: NFTPageProps) {
   }
 
   const returnParams = new URLSearchParams()
-  for (const key of ["account", "view", "query", "sort", "sale", "media"]) {
+  for (const key of ["account", "accountKey", "view", "query", "sort", "sale", "media"]) {
     const value = context[key]
     if (typeof value === "string" && value) {
       returnParams.set(key, value)
