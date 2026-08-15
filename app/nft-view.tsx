@@ -13,6 +13,10 @@ type DeSoPost = {
   }
 }
 
+type DeSoProfile = {
+  Username?: string
+}
+
 type NFTEntry = {
   IsForSale?: boolean
   MinBidAmountNanos?: number
@@ -37,6 +41,25 @@ async function requestDeSo(endpoint: string, postHash: string) {
   }
 
   return response.json()
+}
+
+async function loadProfileUsername(publicKey?: string) {
+  if (!publicKey) return undefined
+
+  const response = await fetch(`${DESO_NODE}/api/v0/get-single-profile`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ PublicKeyBase58Check: publicKey }),
+    cache: "no-store",
+  })
+
+  if (!response.ok) return undefined
+
+  const data = await response.json()
+  const profile: DeSoProfile =
+    data.Profile ?? data.ProfileEntryResponse ?? {}
+
+  return profile.Username
 }
 
 function shortKey(publicKey?: string) {
@@ -254,6 +277,12 @@ export default async function NFTView({ postHash }: { postHash: string }) {
       []
 
     const firstEntry = entries.find((entry) => entry.SerialNumber === 1)
+    const currentOwnerUsername = await loadProfileUsername(
+      firstEntry?.OwnerPublicKeyBase58Check
+    )
+    const currentOwner = currentOwnerUsername
+      ? `@${currentOwnerUsername}`
+      : shortKey(firstEntry?.OwnerPublicKeyBase58Check)
     const forSale = entries.filter((entry) => entry.IsForSale)
     const bidAmounts = forSale
       .map((entry) => entry.MinBidAmountNanos)
@@ -321,8 +350,8 @@ const lowestBuyNowPrice =
                 {[
                   ["Creator", creator],
                   [
-                    "Edition 1 owner",
-                    shortKey(firstEntry?.OwnerPublicKeyBase58Check),
+                    "Current owner",
+                    currentOwner,
                   ],
                   ["Copies", post.NumNFTCopies ?? entries.length],
                   ["For sale", forSale.length],
