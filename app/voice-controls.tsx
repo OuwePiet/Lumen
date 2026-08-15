@@ -34,6 +34,8 @@ declare global {
 
 type VoiceLanguage = "en-US" | "nl-NL" | "fr-FR" | "es-ES" | "zh-CN"
 
+const SITE_VOICE_LANGUAGE: VoiceLanguage = "en-US"
+
 const voiceLanguages: Array<{ label: string; value: VoiceLanguage }> = [
   { label: "English", value: "en-US" },
   { label: "Nederlands", value: "nl-NL" },
@@ -214,6 +216,8 @@ export default function VoiceControls({ onCommand }: VoiceControlsProps) {
   const [readAloud, setReadAloud] = useState(false)
   const [supported, setSupported] = useState(false)
   const [testResult, setTestResult] = useState<string | null>(null)
+  const [privacyConfirmationRequired, setPrivacyConfirmationRequired] =
+    useState(true)
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null)
   const listeningTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -253,6 +257,19 @@ export default function VoiceControls({ onCommand }: VoiceControlsProps) {
       setTestResult(null)
       setStatus("Microphone off")
       return
+    }
+
+    if (privacyConfirmationRequired) {
+      const accepted = window.confirm(
+        "Voice control uses your browser microphone only while listening. Lumen does not store audio or transcripts. Continue?"
+      )
+
+      if (!accepted) {
+        setStatus("Microphone off")
+        return
+      }
+
+      setPrivacyConfirmationRequired(false)
     }
 
     setEnabled(true)
@@ -328,6 +345,23 @@ export default function VoiceControls({ onCommand }: VoiceControlsProps) {
     stopListening()
     setTestResult(null)
     setStatus("Microphone off")
+  }
+
+  const resetVoiceSettings = () => {
+    const confirmed = window.confirm(
+      "Reset all voice settings? Collection filters and NFT data will not change."
+    )
+
+    if (!confirmed) return
+
+    stopListening()
+    window.speechSynthesis?.cancel()
+    setEnabled(false)
+    setLanguage(SITE_VOICE_LANGUAGE)
+    setReadAloud(false)
+    setTestResult(null)
+    setPrivacyConfirmationRequired(true)
+    setStatus("Voice settings reset")
   }
 
   return (
@@ -508,6 +542,14 @@ export default function VoiceControls({ onCommand }: VoiceControlsProps) {
           {listening ? "Listening…" : "Start listening"}
         </button>
       ) : null}
+
+      <button
+        type="button"
+        style={styles.button}
+        onClick={resetVoiceSettings}
+      >
+        Reset voice settings
+      </button>
 
       <span style={styles.status} aria-live="polite">
         {supported ? status : "Not supported on this device"}
