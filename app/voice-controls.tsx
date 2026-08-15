@@ -158,6 +158,27 @@ const styles = {
     fontWeight: 700,
     padding: "8px 32px 8px 10px",
   },
+  settings: {
+    width: "100%",
+    color: "#a9b8af",
+    background: "#07100b",
+    border: "1px solid #285f40",
+    borderRadius: "14px",
+    padding: "12px",
+  },
+  settingsSummary: {
+    color: "#b9ffd4",
+    cursor: "pointer",
+    fontSize: "14px",
+    fontWeight: 800,
+  },
+  settingsContent: {
+    display: "flex",
+    flexWrap: "wrap" as const,
+    alignItems: "center",
+    gap: "10px",
+    marginTop: "12px",
+  },
   help: {
     width: "100%",
     color: "#a9b8af",
@@ -188,7 +209,7 @@ const styles = {
 export default function VoiceControls({ onCommand }: VoiceControlsProps) {
   const [enabled, setEnabled] = useState(false)
   const [listening, setListening] = useState(false)
-  const [status, setStatus] = useState("Off")
+  const [status, setStatus] = useState("Microphone off")
   const [language, setLanguage] = useState<VoiceLanguage>("en-US")
   const [readAloud, setReadAloud] = useState(false)
   const [supported, setSupported] = useState(false)
@@ -230,12 +251,12 @@ export default function VoiceControls({ onCommand }: VoiceControlsProps) {
       setEnabled(false)
       setReadAloud(false)
       setTestResult(null)
-      setStatus("Off")
+      setStatus("Microphone off")
       return
     }
 
     setEnabled(true)
-    setStatus("Ready")
+    setStatus("Microphone off")
   }
 
   const confirmCommand = (message: string) => {
@@ -261,7 +282,7 @@ export default function VoiceControls({ onCommand }: VoiceControlsProps) {
     recognition.lang = language
     recognitionRef.current = recognition
     setListening(true)
-    setStatus("Listening…")
+    setStatus("Listening")
 
     recognition.onresult = (event) => {
       const command = event.results[0]?.[0]?.transcript?.trim() ?? ""
@@ -273,13 +294,14 @@ export default function VoiceControls({ onCommand }: VoiceControlsProps) {
         return
       }
 
+      setStatus("Processing command")
       const applied = command ? onCommand(command) : false
       confirmCommand(applied ? messages.confirmed : messages.retry)
     }
 
     recognition.onerror = () => {
       clearListeningTimeout()
-      setStatus("Voice control unavailable")
+      setStatus("Voice unavailable")
     }
 
     recognition.onend = () => {
@@ -291,7 +313,7 @@ export default function VoiceControls({ onCommand }: VoiceControlsProps) {
     recognition.start()
     listeningTimeoutRef.current = setTimeout(() => {
       recognition.stop()
-      setStatus("Listening stopped after 15 seconds")
+      setStatus("Microphone off")
     }, 15_000)
   }
 
@@ -305,11 +327,17 @@ export default function VoiceControls({ onCommand }: VoiceControlsProps) {
   const cancelTest = () => {
     stopListening()
     setTestResult(null)
-    setStatus("Ready")
+    setStatus("Microphone off")
   }
 
   return (
-    <div style={styles.panel} aria-label="Optional voice controls">
+    <details
+      open
+      style={styles.settings}
+      aria-label="Voice settings"
+    >
+      <summary style={styles.settingsSummary}>Voice settings</summary>
+      <div style={styles.settingsContent}>
       <span style={styles.label}>Voice</span>
       <button
         type="button"
@@ -449,7 +477,19 @@ export default function VoiceControls({ onCommand }: VoiceControlsProps) {
           }}
           onClick={() => setReadAloud((current) => !current)}
         >
-          {readAloud ? "Read aloud on" : "Read aloud off"}
+          {readAloud
+            ? "Spoken confirmations on"
+            : "Spoken confirmations off"}
+        </button>
+      ) : null}
+
+      {enabled && listening ? (
+        <button
+          type="button"
+          style={styles.button}
+          onClick={stopListening}
+        >
+          Stop listening
         </button>
       ) : null}
 
@@ -472,6 +512,7 @@ export default function VoiceControls({ onCommand }: VoiceControlsProps) {
       <span style={styles.status} aria-live="polite">
         {supported ? status : "Not supported on this device"}
       </span>
-    </div>
+      </div>
+    </details>
   )
 }
