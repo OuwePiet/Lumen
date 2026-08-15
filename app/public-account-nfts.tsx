@@ -135,28 +135,57 @@ export default function PublicAccountNFTs({
     setError("")
 
     try {
-      const response = await fetch(`${DESO_NODE}/api/v0/get-nfts-for-user`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          UserPublicKeyBase58Check: publicKey,
-          ReaderPublicKeyBase58Check: "",
-        }),
-      })
+      const collectionsByPostHash = new Map<string, NFTCollection>()
+      const seenPageKeys = new Set<string>()
+      let lastKeyHex = ""
 
-      if (!response.ok) {
-        setError("The public NFTs could not be retrieved from DeSo right now.")
-        return
+      while (true) {
+        const response = await fetch(`${DESO_NODE}/api/v0/get-nfts-for-user`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            UserPublicKeyBase58Check: publicKey,
+            ReaderPublicKeyBase58Check: "",
+            LastKeyHex: lastKeyHex,
+            Limit: 100,
+          }),
+        })
+
+        if (!response.ok) {
+          setError("The complete public NFT collection could not be retrieved from DeSo right now.")
+          return
+        }
+
+        const data = await response.json()
+        const pageCollections: NFTCollection[] = Object.values(
+          data.NFTsMap ?? {}
+        )
+
+        for (const collection of pageCollections) {
+          const postHash = collection.PostEntryResponse?.PostHashHex
+          if (!postHash) continue
+
+          const existing = collectionsByPostHash.get(postHash)
+          if (existing) {
+            existing.NFTEntryResponses = [
+              ...(existing.NFTEntryResponses ?? []),
+              ...(collection.NFTEntryResponses ?? []),
+            ]
+          } else {
+            collectionsByPostHash.set(postHash, collection)
+          }
+        }
+
+        const nextKey =
+          typeof data.LastKeyHex === "string" ? data.LastKeyHex : ""
+        if (!nextKey || seenPageKeys.has(nextKey)) break
+
+        seenPageKeys.add(nextKey)
+        lastKeyHex = nextKey
       }
 
-      const data = await response.json()
-      const collections: NFTCollection[] = Object.values(data.NFTsMap ?? {})
       setVisibleCount(PAGE_SIZE)
-      setNFTs(
-        collections.filter(
-          (collection) => collection.PostEntryResponse?.PostHashHex
-        )
-      )
+      setNFTs(Array.from(collectionsByPostHash.values()))
     } catch {
       setError("The public NFTs could not be retrieved from DeSo right now.")
     } finally {
