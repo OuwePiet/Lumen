@@ -1,4 +1,5 @@
 import accessibilityStyles from "./accessibility.module.css"
+import AccountLookup from "./account-lookup"
 import MediaFilter, { type MediaFilterType } from "./media-filter"
 import NFTMedia from "./nft-media"
 
@@ -459,6 +460,8 @@ export default async function NFTGrid() {
           <br />
           {`Automatically added to collection: ${discoveredNFTs.length}`}
         </p>
+
+        <AccountLookup />
 
         <div id="collection-controls">
           <MediaFilter
