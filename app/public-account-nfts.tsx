@@ -18,6 +18,8 @@ type DeSoPost = {
 
 type NFTEntry = {
   IsForSale?: boolean
+  BuyNowPriceNanos?: number
+  MinBidAmountNanos?: number
 }
 
 type NFTCollection = {
@@ -50,6 +52,43 @@ function mediaType(post?: DeSoPost): Exclude<MediaFilter, "all"> {
   }
 
   return "image"
+}
+
+function formatDeSo(nanos: number) {
+  return new Intl.NumberFormat("en-US", {
+    maximumFractionDigits: 9,
+  }).format(nanos / 1_000_000_000)
+}
+
+function ownedSaleStatus(entries: NFTEntry[]) {
+  const forSale = entries.filter((entry) => entry.IsForSale)
+  if (forSale.length === 0) return "Not for sale"
+
+  const buyNowPrices = forSale
+    .map((entry) => entry.BuyNowPriceNanos)
+    .filter(
+      (price): price is number =>
+        typeof price === "number" && price > 0
+    )
+  if (buyNowPrices.length > 0) {
+    return `${forSale.length} for sale · Buy now: ${formatDeSo(
+      Math.min(...buyNowPrices)
+    )} DESO`
+  }
+
+  const minBidAmounts = forSale
+    .map((entry) => entry.MinBidAmountNanos)
+    .filter(
+      (amount): amount is number =>
+        typeof amount === "number" && amount > 0
+    )
+  if (minBidAmounts.length > 0) {
+    return `${forSale.length} for sale · Min bid: ${formatDeSo(
+      Math.min(...minBidAmounts)
+    )} DESO`
+  }
+
+  return `${forSale.length} for sale`
 }
 
 function title(body?: string) {
@@ -171,6 +210,11 @@ const styles = {
     WebkitLineClamp: 2,
   },
   fact: { color: "#a9b8af", fontSize: "11px", margin: 0 },
+  saleFact: {
+    color: "#b9ffd4",
+    fontSize: "11px",
+    margin: "5px 0 0",
+  },
   more: {
     background: "transparent",
     border: "1px solid #285f40",
@@ -476,7 +520,8 @@ export default function PublicAccountNFTs({
             const post = collection.PostEntryResponse!
             const postHash = post.PostHashHex!
             const mediaUrl = post.VideoURLs?.[0] ?? post.ImageURLs?.[0]
-            const ownedCopies = collection.NFTEntryResponses?.length ?? 0
+            const ownedEntries = collection.NFTEntryResponses ?? []
+            const ownedCopies = ownedEntries.length
             const totalCopies = post.NumNFTCopies ?? ownedCopies
 
             const returnParams = new URLSearchParams({
@@ -512,6 +557,9 @@ export default function PublicAccountNFTs({
                   <p style={styles.fact}>
                     @{username} owns {ownedCopies} of {totalCopies}{" "}
                     {totalCopies === 1 ? "copy" : "copies"}
+                  </p>
+                  <p style={styles.saleFact}>
+                    {ownedSaleStatus(ownedEntries)}
                   </p>
                 </div>
               </a>
