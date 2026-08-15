@@ -41,6 +41,7 @@ export default function CollectionBrowser({
       {selectedAccount ? (
         <button
           type="button"
+          aria-label="Return to the default OuwePiet collection"
           style={styles.back}
           onClick={showDefaultCollection}
         >
