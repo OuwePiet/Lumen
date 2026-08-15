@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 
 const DESO_NODE = "https://node.deso.org"
 const PAGE_SIZE = 25
@@ -187,20 +187,45 @@ const styles = {
 export default function PublicAccountNFTs({
   publicKey,
   username,
+  autoLoad = false,
 }: {
   publicKey: string
   username: string
+  autoLoad?: boolean
 }) {
   const [nfts, setNFTs] = useState<NFTCollection[] | null>(null)
   const [loading, setLoading] = useState(false)
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
+  const initialParams =
+    typeof window === "undefined"
+      ? new URLSearchParams()
+      : new URLSearchParams(window.location.search)
   const [error, setError] = useState("")
-  const [query, setQuery] = useState("")
-  const [sortMode, setSortMode] = useState<SortMode>("collection")
-  const [saleFilter, setSaleFilter] = useState<SaleFilter>("all")
-  const [mediaFilter, setMediaFilter] = useState<MediaFilter>("all")
+  const [query, setQuery] = useState(initialParams.get("query") ?? "")
+  const [sortMode, setSortMode] = useState<SortMode>(() => {
+    const value = initialParams.get("sort")
+    return value === "title" ||
+      value === "most-owned" ||
+      value === "fewest-owned"
+      ? value
+      : "collection"
+  })
+  const [saleFilter, setSaleFilter] = useState<SaleFilter>(() => {
+    const value = initialParams.get("sale")
+    return value === "for-sale" || value === "not-for-sale" ? value : "all"
+  })
+  const [mediaFilter, setMediaFilter] = useState<MediaFilter>(() => {
+    const value = initialParams.get("media")
+    return value === "image" ||
+      value === "video" ||
+      value === "audio" ||
+      value === "unavailable"
+      ? value
+      : "all"
+  })
+  const autoLoadStarted = useRef(false)
 
-  const loadNFTs = async () => {
+  const loadNFTs = useCallback(async () => {
     setLoading(true)
     setError("")
 
@@ -261,7 +286,14 @@ export default function PublicAccountNFTs({
     } finally {
       setLoading(false)
     }
-  }
+  }, [publicKey])
+
+  useEffect(() => {
+    if (autoLoad && !autoLoadStarted.current) {
+      autoLoadStarted.current = true
+      void loadNFTs()
+    }
+  }, [autoLoad, loadNFTs])
 
   if (nfts === null) {
     return (
@@ -447,8 +479,21 @@ export default function PublicAccountNFTs({
             const ownedCopies = collection.NFTEntryResponses?.length ?? 0
             const totalCopies = post.NumNFTCopies ?? ownedCopies
 
+            const returnParams = new URLSearchParams({
+              account: username,
+              view: "nfts",
+              query,
+              sort: sortMode,
+              sale: saleFilter,
+              media: mediaFilter,
+            })
+
             return (
-              <a key={postHash} href={`/nft/${postHash}`} style={styles.card}>
+              <a
+                key={postHash}
+                href={`/nft/${postHash}?${returnParams.toString()}`}
+                style={styles.card}
+              >
                 <div style={styles.media}>
                   {mediaUrl ? (
                     <img
