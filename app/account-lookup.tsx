@@ -7,6 +7,7 @@ const DESO_NODE = "https://node.deso.org"
 type DeSoProfile = {
   Username?: string
   PublicKeyBase58Check?: string
+  ProfilePic?: string
 }
 
 function shortKey(publicKey?: string) {
@@ -22,22 +23,14 @@ const styles = {
     marginBottom: "28px",
     padding: "20px",
   },
-  heading: {
-    color: "#b9ffd4",
-    fontSize: "16px",
-    margin: "0 0 8px",
-  },
+  heading: { color: "#b9ffd4", fontSize: "16px", margin: "0 0 8px" },
   text: {
     color: "#a9b8af",
     fontSize: "13px",
     lineHeight: 1.6,
     margin: "0 0 14px",
   },
-  form: {
-    display: "flex",
-    flexWrap: "wrap" as const,
-    gap: "10px",
-  },
+  form: { display: "flex", flexWrap: "wrap" as const, gap: "10px" },
   input: {
     flex: "1 1 260px",
     color: "#f4f7f5",
@@ -80,19 +73,66 @@ const styles = {
     marginTop: "6px",
     overflowWrap: "anywhere" as const,
   },
+  choices: {
+    background: "#07100b",
+    border: "1px solid #285f40",
+    borderRadius: "12px",
+    listStyle: "none",
+    margin: "14px 0 0",
+    padding: "8px",
+  },
+  choiceButton: {
+    alignItems: "center",
+    background: "transparent",
+    border: 0,
+    borderRadius: "9px",
+    color: "#b9ffd4",
+    cursor: "pointer",
+    display: "flex",
+    gap: "10px",
+    padding: "10px",
+    textAlign: "left" as const,
+    width: "100%",
+  },
+  avatar: {
+    borderRadius: "50%",
+    height: "36px",
+    objectFit: "cover" as const,
+    width: "36px",
+  },
+  avatarFallback: {
+    alignItems: "center",
+    background: "#254233",
+    borderRadius: "50%",
+    color: "#b9ffd4",
+    display: "flex",
+    fontWeight: 800,
+    height: "36px",
+    justifyContent: "center",
+    width: "36px",
+  },
 }
 
 export default function AccountLookup() {
   const [username, setUsername] = useState("")
   const [profile, setProfile] = useState<DeSoProfile | null>(null)
+  const [matches, setMatches] = useState<DeSoProfile[]>([])
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
+
+  const selectProfile = (selectedProfile: DeSoProfile) => {
+    setUsername(selectedProfile.Username ?? "")
+    setProfile(selectedProfile)
+    setMatches([])
+    setError("")
+  }
 
   const findAccount = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
 
     const normalizedUsername = username.trim().replace(/^@/, "")
     setProfile(null)
+    setMatches([])
     setError("")
 
     if (!normalizedUsername) {
@@ -103,18 +143,15 @@ export default function AccountLookup() {
     setLoading(true)
 
     try {
-      const response = await fetch(
-        `${DESO_NODE}/api/v0/get-profiles`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            UsernamePrefix: normalizedUsername,
-            NumToFetch: 25,
-            ReaderPublicKeyBase58Check: "",
-          }),
-        }
-      )
+      const response = await fetch(`${DESO_NODE}/api/v0/get-profiles`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          UsernamePrefix: normalizedUsername,
+          NumToFetch: 25,
+          ReaderPublicKeyBase58Check: "",
+        }),
+      })
 
       if (!response.ok) {
         setError("The DeSo account could not be checked right now.")
@@ -122,20 +159,27 @@ export default function AccountLookup() {
       }
 
       const data = await response.json()
-      const profiles: DeSoProfile[] =
-        data.ProfilesFound ?? data.Profiles ?? []
-      const foundProfile = profiles.find(
+      const profiles: DeSoProfile[] = data.ProfilesFound ?? data.Profiles ?? []
+      const usableProfiles = profiles.filter(
+        (candidate) => candidate.Username && candidate.PublicKeyBase58Check
+      )
+      const exactProfile = usableProfiles.find(
         (candidate) =>
           candidate.Username?.toLocaleLowerCase() ===
           normalizedUsername.toLocaleLowerCase()
       )
 
-      if (!foundProfile?.Username || !foundProfile.PublicKeyBase58Check) {
+      if (exactProfile) {
+        setProfile(exactProfile)
+        return
+      }
+
+      if (usableProfiles.length === 0) {
         setError("DeSo account not found.")
         return
       }
 
-      setProfile(foundProfile)
+      setMatches(usableProfiles.slice(0, 10))
     } catch {
       setError("The DeSo account could not be checked right now.")
     } finally {
@@ -175,6 +219,40 @@ export default function AccountLookup() {
               {shortKey(profile.PublicKeyBase58Check)}
             </code>
           </div>
+        ) : null}
+
+        {matches.length > 0 ? (
+          <ul style={styles.choices} aria-label="Matching DeSo accounts">
+            {matches.map((candidate) => (
+              <li key={candidate.PublicKeyBase58Check}>
+                <button
+                  type="button"
+                  style={styles.choiceButton}
+                  onClick={() => selectProfile(candidate)}
+                >
+                  {candidate.ProfilePic ? (
+                    <img
+                      src={candidate.ProfilePic}
+                      alt=""
+                      width={36}
+                      height={36}
+                      style={styles.avatar}
+                    />
+                  ) : (
+                    <span style={styles.avatarFallback} aria-hidden="true">
+                      {(candidate.Username ?? "?").slice(0, 1).toUpperCase()}
+                    </span>
+                  )}
+                  <span>
+                    <strong>@{candidate.Username}</strong>
+                    <code style={styles.code}>
+                      {shortKey(candidate.PublicKeyBase58Check)}
+                    </code>
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ul>
         ) : null}
 
         {error ? <div style={styles.error}>{error}</div> : null}
