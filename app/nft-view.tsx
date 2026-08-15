@@ -241,6 +241,11 @@ const styles = {
     margin: 0,
     overflowWrap: "anywhere" as const,
   },
+  accountLink: {
+    color: "#ffffff",
+    textDecoration: "underline",
+    textUnderlineOffset: "3px",
+  },
   hash: {
     marginTop: "24px",
     paddingTop: "20px",
@@ -397,7 +402,20 @@ const lowestBuyNowPrice =
                 ].map(([label, value]) => (
                   <div key={String(label)} style={styles.fact}>
                     <dt style={styles.label}>{label}</dt>
-                    <dd style={styles.value}>{value}</dd>
+                    <dd style={styles.value}>
+                      {typeof value === "string" && value.startsWith("@") ? (
+                        <a
+                          href={`/?account=${encodeURIComponent(
+                            value.slice(1)
+                          )}#account-lookup-heading`}
+                          style={styles.accountLink}
+                        >
+                          {value}
+                        </a>
+                      ) : (
+                        value
+                      )}
+                    </dd>
                   </div>
                 ))}
               </dl>
