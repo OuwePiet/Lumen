@@ -69,6 +69,14 @@ const confirmationMessages: Record<
 }
 
 
+const testExamples: Record<VoiceLanguage, string> = {
+  "en-US": "Show images",
+  "nl-NL": "Afbeeldingen tonen",
+  "fr-FR": "Afficher les images",
+  "es-ES": "Mostrar imágenes",
+  "zh-CN": "显示图片",
+}
+
 const helpExamples: Record<VoiceLanguage, string[]> = {
   "en-US": [
     "Show images",
@@ -184,6 +192,7 @@ export default function VoiceControls({ onCommand }: VoiceControlsProps) {
   const [language, setLanguage] = useState<VoiceLanguage>("en-US")
   const [readAloud, setReadAloud] = useState(false)
   const [supported, setSupported] = useState(false)
+  const [testResult, setTestResult] = useState<string | null>(null)
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null)
   const listeningTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -220,6 +229,7 @@ export default function VoiceControls({ onCommand }: VoiceControlsProps) {
       window.speechSynthesis?.cancel()
       setEnabled(false)
       setReadAloud(false)
+      setTestResult(null)
       setStatus("Off")
       return
     }
@@ -239,7 +249,7 @@ export default function VoiceControls({ onCommand }: VoiceControlsProps) {
     window.speechSynthesis.speak(utterance)
   }
 
-  const listen = () => {
+  const startListening = (testOnly: boolean) => {
     const Recognition =
       window.SpeechRecognition ?? window.webkitSpeechRecognition
 
@@ -255,8 +265,15 @@ export default function VoiceControls({ onCommand }: VoiceControlsProps) {
 
     recognition.onresult = (event) => {
       const command = event.results[0]?.[0]?.transcript?.trim() ?? ""
-      const applied = command ? onCommand(command) : false
       const messages = confirmationMessages[language]
+
+      if (testOnly) {
+        setTestResult(command)
+        setStatus(command ? `Recognized: “${command}”` : messages.retry)
+        return
+      }
+
+      const applied = command ? onCommand(command) : false
       confirmCommand(applied ? messages.confirmed : messages.retry)
     }
 
@@ -276,6 +293,19 @@ export default function VoiceControls({ onCommand }: VoiceControlsProps) {
       recognition.stop()
       setStatus("Listening stopped after 15 seconds")
     }, 15_000)
+  }
+
+  const listen = () => startListening(false)
+
+  const testMicrophone = () => {
+    setTestResult(null)
+    startListening(true)
+  }
+
+  const cancelTest = () => {
+    stopListening()
+    setTestResult(null)
+    setStatus("Ready")
   }
 
   return (
@@ -348,6 +378,65 @@ export default function VoiceControls({ onCommand }: VoiceControlsProps) {
             <li>Buttons, touch and keyboard always remain available</li>
           </ul>
         </details>
+      ) : null}
+
+      {enabled ? (
+        <div style={styles.help} aria-label="Safe microphone test">
+          <strong style={styles.helpSummary}>Test microphone</strong>
+          <p style={{ margin: "8px 0", fontSize: "12px" }}>
+            Say: “{testExamples[language]}”. The recognized text is shown
+            without changing a filter or setting.
+          </p>
+          <div style={styles.panel}>
+            <button
+              type="button"
+              disabled={!supported || listening}
+              style={{
+                ...styles.button,
+                ...(!supported || listening
+                  ? { cursor: "default", opacity: 0.45 }
+                  : {}),
+              }}
+              onClick={testMicrophone}
+            >
+              {listening ? "Listening…" : "Test microphone"}
+            </button>
+
+            {testResult !== null ? (
+              <>
+                <span style={styles.status}>
+                  Recognized text: “{testResult || "Nothing recognized"}”
+                </span>
+                <button
+                  type="button"
+                  disabled={listening}
+                  style={styles.button}
+                  onClick={testMicrophone}
+                >
+                  Try again
+                </button>
+                <button
+                  type="button"
+                  disabled={listening}
+                  style={styles.button}
+                  onClick={listen}
+                >
+                  Start voice control
+                </button>
+                <button
+                  type="button"
+                  style={styles.button}
+                  onClick={cancelTest}
+                >
+                  Cancel
+                </button>
+              </>
+            ) : null}
+          </div>
+          <p style={{ margin: "8px 0 0", fontSize: "12px" }}>
+            Lumen does not store the audio or recognized test text.
+          </p>
+        </div>
       ) : null}
 
       {enabled ? (
