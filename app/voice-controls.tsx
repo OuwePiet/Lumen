@@ -255,6 +255,9 @@ export default function VoiceControls({
     useState<SpeechSynthesisVoice[]>([])
   const [selectedVoiceURI, setSelectedVoiceURI] = useState("")
   const [supported, setSupported] = useState(false)
+  const [speechOutputSupported, setSpeechOutputSupported] = useState(false)
+  const [secureContext, setSecureContext] = useState(false)
+  const [compatibilityChecked, setCompatibilityChecked] = useState(false)
   const [testResult, setTestResult] = useState<string | null>(null)
   const [privacyConfirmationRequired, setPrivacyConfirmationRequired] =
     useState(true)
@@ -265,6 +268,8 @@ export default function VoiceControls({
     setSupported(
       Boolean(window.SpeechRecognition ?? window.webkitSpeechRecognition)
     )
+    setSpeechOutputSupported("speechSynthesis" in window)
+    setSecureContext(window.isSecureContext)
 
     return () => {
       if (listeningTimeoutRef.current) {
@@ -456,8 +461,16 @@ export default function VoiceControls({
     setSelectedVoiceURI("")
     setTestResult(null)
     setPrivacyConfirmationRequired(true)
+    setCompatibilityChecked(false)
     setStatus("Voice settings reset")
   }
+
+  const runCompatibilityCheck = () => {
+    setCompatibilityChecked(true)
+  }
+
+  const compatibilityReady =
+    supported && speechOutputSupported && secureContext
 
   return (
     <details
@@ -519,14 +532,47 @@ export default function VoiceControls({
 
       {enabled ? (
         <details style={styles.help}>
-          <summary style={styles.helpSummary}>Supported devices</summary>
-          <ul style={styles.helpList}>
-            <li>Chrome and Edge on desktop, laptop and Android</li>
-            <li>Safari on Mac, iPhone and iPad</li>
-            <li>Firefox may not provide speech recognition</li>
-            <li>Microphone permission is required only when listening starts</li>
-            <li>Buttons, touch and keyboard always remain available</li>
-          </ul>
+          <summary style={styles.helpSummary}>Compatibility check</summary>
+          <div style={{ marginTop: "10px" }}>
+            <button
+              type="button"
+              style={styles.button}
+              onClick={runCompatibilityCheck}
+            >
+              Check compatibility
+            </button>
+          </div>
+          {compatibilityChecked ? (
+            <>
+              <ul style={styles.helpList}>
+                <li>
+                  Speech recognition: {supported ? "Available" : "Unavailable"}
+                </li>
+                <li>
+                  Spoken confirmations:{" "}
+                  {speechOutputSupported ? "Available" : "Unavailable"}
+                </li>
+                <li>
+                  Secure connection: {secureContext ? "Yes" : "No"}
+                </li>
+                <li>
+                  Voice variants for {language}: {matchingVoices.length}
+                </li>
+                <li>
+                  Microphone permission: requested only when listening starts
+                </li>
+              </ul>
+              <p style={{ margin: "8px 0 0", fontSize: "12px" }}>
+                {compatibilityReady
+                  ? "Voice controls are ready on this browser."
+                  : "Voice controls are limited. Buttons, touch and keyboard remain available."}
+              </p>
+            </>
+          ) : (
+            <p style={{ margin: "8px 0 0", fontSize: "12px" }}>
+              This check does not request microphone permission.
+            </p>
+          )
         </details>
       ) : null}
 
