@@ -1,13 +1,20 @@
+import NFTMedia from "./nft-media"
+
 const DESO_NODE = "https://node.deso.org"
 
 type DeSoPost = {
   Body?: string
   ImageURLs?: string[]
+  VideoURLs?: string[]
   NumNFTCopies?: number
   PosterPublicKeyBase58Check?: string
   ProfileEntryResponse?: {
     Username?: string
   }
+}
+
+type DeSoProfile = {
+  Username?: string
 }
 
 type NFTEntry = {
@@ -34,6 +41,25 @@ async function requestDeSo(endpoint: string, postHash: string) {
   }
 
   return response.json()
+}
+
+async function loadProfileUsername(publicKey?: string) {
+  if (!publicKey) return undefined
+
+  const response = await fetch(`${DESO_NODE}/api/v0/get-single-profile`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ PublicKeyBase58Check: publicKey }),
+    cache: "no-store",
+  })
+
+  if (!response.ok) return undefined
+
+  const data = await response.json()
+  const profile: DeSoProfile =
+    data.Profile ?? data.ProfileEntryResponse ?? {}
+
+  return profile.Username
 }
 
 function shortKey(publicKey?: string) {
@@ -63,18 +89,6 @@ function saleStatus(
   }
 
   return "Claim not available"
-}
-
-function independentMediaUrl(url?: string) {
-  if (!url) return undefined
-
-  const ipfsMarker = "/ipfs/"
-  const ipfsIndex = url.indexOf(ipfsMarker)
-
-  if (ipfsIndex === -1) return url
-
-  const ipfsPath = url.slice(ipfsIndex + ipfsMarker.length)
-  return `https://ipfs.io/ipfs/${ipfsPath}`
 }
 
 function hasLegacyNFTzLink(body?: string) {
@@ -140,13 +154,27 @@ const styles = {
     gap: "32px",
     alignItems: "start",
   },
+  mediaFrame: {
+    aspectRatio: "1 / 1",
+    background: "#0c120f",
+    border: "1px solid #254233",
+    borderRadius: "18px",
+    overflow: "hidden",
+  },
   image: {
     display: "block",
     width: "100%",
-    height: "auto",
-    border: "1px solid #254233",
-    borderRadius: "18px",
+    height: "100%",
+    objectFit: "contain" as const,
     background: "#0c120f",
+  },
+  placeholder: {
+    display: "grid",
+    width: "100%",
+    height: "100%",
+    placeItems: "center",
+    color: "#84958b",
+    background: "#070b09",
   },
   card: {
     background: "#0c120f",
@@ -249,6 +277,12 @@ export default async function NFTView({ postHash }: { postHash: string }) {
       []
 
     const firstEntry = entries.find((entry) => entry.SerialNumber === 1)
+    const currentOwnerUsername = await loadProfileUsername(
+      firstEntry?.OwnerPublicKeyBase58Check
+    )
+    const currentOwner = currentOwnerUsername
+      ? `@${currentOwnerUsername}`
+      : shortKey(firstEntry?.OwnerPublicKeyBase58Check)
     const forSale = entries.filter((entry) => entry.IsForSale)
     const bidAmounts = forSale
       .map((entry) => entry.MinBidAmountNanos)
@@ -270,7 +304,6 @@ export default async function NFTView({ postHash }: { postHash: string }) {
 const lowestBuyNowPrice =
   buyNowAmounts.length > 0 ? Math.min(...buyNowAmounts) : undefined
 
-    const mediaUrl = independentMediaUrl(post.ImageURLs?.[0])
     const creator = post.ProfileEntryResponse?.Username
       ? `@${post.ProfileEntryResponse.Username}`
       : shortKey(post.PosterPublicKeyBase58Check)
@@ -289,17 +322,14 @@ const lowestBuyNowPrice =
           <h1 style={styles.title}>{title}</h1>
 
           <div style={styles.grid}>
-            <div>
-              {mediaUrl ? (
-                <img
-                  src={mediaUrl}
-                  alt="NFT stored on the DeSo blockchain"
-                  width="600"
-                  style={styles.image}
-                />
-              ) : (
-                <div style={styles.card}>No NFT image is available.</div>
-              )}
+            <div style={styles.mediaFrame}>
+              <NFTMedia
+                imageUrl={post.ImageURLs?.[0]}
+                videoUrl={post.VideoURLs?.[0]}
+                alt="NFT stored on the DeSo blockchain"
+                imageStyle={styles.image}
+                placeholderStyle={styles.placeholder}
+              />
             </div>
 
             <section style={styles.card}>
@@ -320,8 +350,8 @@ const lowestBuyNowPrice =
                 {[
                   ["Creator", creator],
                   [
-                    "Edition 1 owner",
-                    shortKey(firstEntry?.OwnerPublicKeyBase58Check),
+                    "Current owner",
+                    currentOwner,
                   ],
                   ["Copies", post.NumNFTCopies ?? entries.length],
                   ["For sale", forSale.length],
