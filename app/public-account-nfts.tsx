@@ -41,6 +41,17 @@ const styles = {
     marginTop: "12px",
     padding: "9px 14px",
   },
+  search: {
+    background: "#050807",
+    border: "1px solid #285f40",
+    borderRadius: "10px",
+    color: "#f4f7f5",
+    fontSize: "13px",
+    marginTop: "14px",
+    maxWidth: "420px",
+    padding: "9px 11px",
+    width: "100%",
+  },
   status: {
     color: "#a9b8af",
     fontSize: "13px",
@@ -117,6 +128,7 @@ export default function PublicAccountNFTs({
   const [loading, setLoading] = useState(false)
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
   const [error, setError] = useState("")
+  const [query, setQuery] = useState("")
 
   const loadNFTs = async () => {
     setLoading(true)
@@ -168,23 +180,54 @@ export default function PublicAccountNFTs({
     )
   }
 
-  const visibleNFTs = nfts.slice(0, visibleCount)
-  const remaining = nfts.length - visibleNFTs.length
+  const normalizedQuery = query.trim().toLocaleLowerCase()
+  const filteredNFTs = normalizedQuery
+    ? nfts.filter((collection) => {
+        const post = collection.PostEntryResponse
+        const searchableText = [
+          post?.Body,
+          post?.ProfileEntryResponse?.Username,
+        ]
+          .filter(Boolean)
+          .join(" ")
+          .toLocaleLowerCase()
+
+        return searchableText.includes(normalizedQuery)
+      })
+    : nfts
+  const visibleNFTs = filteredNFTs.slice(0, visibleCount)
+  const remaining = filteredNFTs.length - visibleNFTs.length
 
   return (
     <section aria-label={`Public NFTs owned by @${username}`}>
+      {nfts.length > 0 ? (
+        <input
+          type="search"
+          aria-label="Search this account collection"
+          placeholder="Search by NFT title or creator"
+          value={query}
+          style={styles.search}
+          onChange={(event) => {
+            setQuery(event.target.value)
+            setVisibleCount(PAGE_SIZE)
+          }}
+        />
+      ) : null}
+
       <p style={styles.status}>
         {nfts.length === 0
           ? `No public NFTs found for @${username}.`
-          : `${nfts.length} public NFT${nfts.length === 1 ? "" : "s"} found for @${username}.`}
+          : `${filteredNFTs.length} of ${nfts.length} public NFTs shown for @${username}.`}
       </p>
 
-      {nfts.length > 0 ? (
+      {filteredNFTs.length > 0 ? (
         <div style={styles.grid}>
           {visibleNFTs.map((collection) => {
             const post = collection.PostEntryResponse!
             const postHash = post.PostHashHex!
             const mediaUrl = post.VideoURLs?.[0] ?? post.ImageURLs?.[0]
+            const ownedCopies = collection.NFTEntryResponses?.length ?? 0
+            const totalCopies = post.NumNFTCopies ?? ownedCopies
 
             return (
               <a key={postHash} href={`/nft/${postHash}`} style={styles.card}>
@@ -204,8 +247,8 @@ export default function PublicAccountNFTs({
                 <div style={styles.content}>
                   <h3 style={styles.title}>{title(post.Body)}</h3>
                   <p style={styles.fact}>
-                    {post.NumNFTCopies ?? collection.NFTEntryResponses?.length ?? 0}{" "}
-                    copies
+                    @{username} owns {ownedCopies} of {totalCopies}{" "}
+                    {totalCopies === 1 ? "copy" : "copies"}
                   </p>
                 </div>
               </a>
@@ -220,7 +263,7 @@ export default function PublicAccountNFTs({
           style={styles.more}
           onClick={() =>
             setVisibleCount((current) =>
-              Math.min(current + PAGE_SIZE, nfts.length)
+              Math.min(current + PAGE_SIZE, filteredNFTs.length)
             )
           }
         >
