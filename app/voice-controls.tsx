@@ -203,6 +203,16 @@ const styles = {
     gap: "10px",
     marginTop: "12px",
   },
+  processing: {
+    width: "100%",
+    color: "#b9ffd4",
+    background: "#0b1b12",
+    border: "1px solid #285f40",
+    borderRadius: "10px",
+    fontSize: "12px",
+    lineHeight: 1.6,
+    padding: "10px 12px",
+  },
   help: {
     width: "100%",
     color: "#a9b8af",
@@ -320,7 +330,7 @@ export default function VoiceControls({
 
     if (privacyConfirmationRequired) {
       const accepted = window.confirm(
-        "Voice control uses your browser microphone only while listening. Lumen does not store audio or transcripts. Continue?"
+        "Speech recognition may use your browser’s speech service. Lumen does not store audio or transcripts and uses no external speech server of its own. Continue?"
       )
 
       if (!accepted) {
@@ -457,6 +467,12 @@ export default function VoiceControls({
     >
       <summary style={styles.settingsSummary}>Voice settings</summary>
       <div style={styles.settingsContent}>
+      <div style={styles.processing} role="note">
+        <strong>Speech processing</strong><br />
+        Recognition may use your browser’s speech service. Lumen does not
+        store audio or transcripts and uses no external speech server of its
+        own. Voice remains off until you choose to activate it.
+      </div>
       <span style={styles.label}>Voice</span>
       <button
         type="button"
