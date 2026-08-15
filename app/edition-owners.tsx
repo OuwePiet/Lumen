@@ -37,7 +37,12 @@ const styles = {
     justifyContent: "space-between",
     padding: "10px 0",
   },
-  owner: { color: "#f4f7f5", fontWeight: 700 },
+  owner: {
+    color: "#f4f7f5",
+    fontWeight: 700,
+    textDecoration: "underline",
+    textUnderlineOffset: "3px",
+  },
   button: {
     background: "transparent",
     border: "1px solid #285f40",
@@ -69,7 +74,14 @@ export default function EditionOwners({
         {visibleEditions.map((edition) => (
           <li key={edition.serialNumber} style={styles.row}>
             <span>Edition #{edition.serialNumber}</span>
-            <span style={styles.owner}>{edition.owner}</span>
+            <a
+              href={`/?account=${encodeURIComponent(
+                edition.owner.replace(/^@/, "")
+              )}#account-lookup-heading`}
+              style={styles.owner}
+            >
+              {edition.owner}
+            </a>
           </li>
         ))}
       </ol>
