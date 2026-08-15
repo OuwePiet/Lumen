@@ -252,6 +252,37 @@ const styles = {
     lineHeight: 1.6,
     overflowWrap: "anywhere" as const,
   },
+  owners: {
+    background: "#070b09",
+    border: "1px solid #254233",
+    borderRadius: "12px",
+    marginTop: "20px",
+    padding: "14px",
+  },
+  ownersSummary: {
+    color: "#b9ffd4",
+    cursor: "pointer",
+    fontSize: "14px",
+    fontWeight: 800,
+  },
+  ownersList: {
+    listStyle: "none",
+    margin: "14px 0 0",
+    padding: 0,
+  },
+  ownerRow: {
+    alignItems: "center",
+    borderTop: "1px solid #1b3327",
+    display: "flex",
+    flexWrap: "wrap" as const,
+    gap: "8px 16px",
+    justifyContent: "space-between",
+    padding: "10px 0",
+  },
+  ownerName: {
+    color: "#f4f7f5",
+    fontWeight: 700,
+  },
   source: {
     color: "#84958b",
     fontSize: "13px",
@@ -276,10 +307,28 @@ export default async function NFTView({ postHash }: { postHash: string }) {
       nftResponse.NFTEntryResponse ??
       []
 
-    const firstEntry = entries.find((entry) => entry.SerialNumber === 1)
-    const currentOwnerUsername = await loadProfileUsername(
-      firstEntry?.OwnerPublicKeyBase58Check
+    const sortedEntries = [...entries].sort(
+      (a, b) => (a.SerialNumber ?? 0) - (b.SerialNumber ?? 0)
     )
+    const ownerKeys = Array.from(
+      new Set(
+        sortedEntries
+          .map((entry) => entry.OwnerPublicKeyBase58Check)
+          .filter((key): key is string => Boolean(key))
+      )
+    )
+    const ownerNames = new Map(
+      await Promise.all(
+        ownerKeys.map(async (key) => [
+          key,
+          await loadProfileUsername(key),
+        ] as const)
+      )
+    )
+    const firstEntry = sortedEntries.find((entry) => entry.SerialNumber === 1)
+    const currentOwnerUsername = firstEntry?.OwnerPublicKeyBase58Check
+      ? ownerNames.get(firstEntry.OwnerPublicKeyBase58Check)
+      : undefined
     const currentOwner = currentOwnerUsername
       ? `@${currentOwnerUsername}`
       : shortKey(firstEntry?.OwnerPublicKeyBase58Check)
@@ -370,6 +419,38 @@ const lowestBuyNowPrice =
                   </div>
                 ))}
               </dl>
+
+              {sortedEntries.length > 1 ? (
+                <details style={styles.owners}>
+                  <summary style={styles.ownersSummary}>
+                    View edition owners ({sortedEntries.length})
+                  </summary>
+                  <ol style={styles.ownersList}>
+                    {sortedEntries.map((entry, index) => {
+                      const ownerKey = entry.OwnerPublicKeyBase58Check
+                      const ownerUsername = ownerKey
+                        ? ownerNames.get(ownerKey)
+                        : undefined
+
+                      return (
+                        <li
+                          key={entry.SerialNumber ?? index}
+                          style={styles.ownerRow}
+                        >
+                          <span>
+                            Edition #{entry.SerialNumber ?? index + 1}
+                          </span>
+                          <span style={styles.ownerName}>
+                            {ownerUsername
+                              ? `@${ownerUsername}`
+                              : shortKey(ownerKey)}
+                          </span>
+                        </li>
+                      )
+                    })}
+                  </ol>
+                </details>
+              ) : null}
 
               <div style={styles.hash}>
                 <p style={styles.label}>Blockchain PostHash</p>
