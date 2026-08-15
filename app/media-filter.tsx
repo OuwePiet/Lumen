@@ -397,13 +397,30 @@ export default function MediaFilter({
     const mediaCommands: Record<string, "all" | MediaFilterType> = {
       "show all": "all",
       "show images": "image",
+      "show image": "image",
+      "show the images": "image",
+      "show me images": "image",
+      "images": "image",
       "show videos": "video",
+      "show the videos": "video",
+      "videos": "video",
       "show audio": "audio",
+      "play audio": "audio",
       "show unavailable": "unavailable",
       "alles tonen": "all",
       "afbeeldingen tonen": "image",
+      "afbeelding tonen": "image",
+      "toon afbeeldingen": "image",
+      "toon de afbeeldingen": "image",
+      "laat afbeeldingen zien": "image",
+      "laat de afbeeldingen zien": "image",
+      "afbeeldingen": "image",
       "video's tonen": "video",
+      "toon video's": "video",
+      "laat video's zien": "video",
+      "video's": "video",
       "audio tonen": "audio",
+      "speel audio": "audio",
       "niet beschikbaar tonen": "unavailable",
       "tout afficher": "all",
       "afficher les images": "image",
@@ -432,7 +449,11 @@ export default function MediaFilter({
     const forSaleCommands = [
       "for sale",
       "show for sale",
+      "show items for sale",
+      "items for sale",
       "te koop",
+      "toon te koop",
+      "toon wat te koop is",
       "à vendre",
       "en venta",
       "出售中",
@@ -440,7 +461,10 @@ export default function MediaFilter({
     const notForSaleCommands = [
       "not for sale",
       "show not for sale",
+      "show items not for sale",
       "niet te koop",
+      "toon niet te koop",
+      "toon wat niet te koop is",
       "pas à vendre",
       "no está en venta",
       "非出售",
@@ -461,7 +485,8 @@ export default function MediaFilter({
     }
 
     if (
-      ["comfortable view", "comfortabele weergave", "vue confortable",
+      ["comfortable view", "comfortable", "normal view",
+        "comfortabele weergave", "comfortabel", "normale weergave", "vue confortable",
         "vista cómoda", "舒适视图"].includes(command)
     ) {
       rememberStateBeforeVoiceCommand()
@@ -470,7 +495,7 @@ export default function MediaFilter({
     }
 
     if (
-      ["compact view", "compacte weergave", "vue compacte",
+      ["compact view", "compact", "compacte weergave", "compact", "vue compacte",
         "vista compacta", "紧凑视图"].includes(command)
     ) {
       rememberStateBeforeVoiceCommand()
@@ -479,7 +504,8 @@ export default function MediaFilter({
     }
 
     if (
-      ["reset controls", "bediening resetten",
+      ["reset controls", "reset the controls", "bediening resetten",
+        "reset bediening", "herstel bediening",
         "réinitialiser les commandes", "restablecer controles",
         "重置控件"].includes(command)
     ) {
