@@ -572,7 +572,7 @@ export default function VoiceControls({
             <p style={{ margin: "8px 0 0", fontSize: "12px" }}>
               This check does not request microphone permission.
             </p>
-          )
+          )}
         </details>
       ) : null}
 
