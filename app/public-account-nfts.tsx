@@ -509,6 +509,19 @@ export default function PublicAccountNFTs({
   })
   const visibleNFTs = sortedNFTs.slice(0, visibleCount)
   const remaining = sortedNFTs.length - visibleNFTs.length
+  const controlsChanged =
+    query !== "" ||
+    sortMode !== "collection" ||
+    saleFilter !== "all" ||
+    mediaFilter !== "all"
+
+  const resetControls = () => {
+    setQuery("")
+    setSortMode("collection")
+    setSaleFilter("all")
+    setMediaFilter("all")
+    setVisibleCount(PAGE_SIZE)
+  }
 
   return (
     <section aria-label={`Public NFTs owned by @${username}`}>
@@ -599,6 +612,18 @@ export default function PublicAccountNFTs({
               {label}
             </button>
           ))}
+          <button
+            type="button"
+            disabled={!controlsChanged}
+            style={{
+              ...styles.filter,
+              opacity: controlsChanged ? 1 : 0.55,
+              cursor: controlsChanged ? "pointer" : "default",
+            }}
+            onClick={resetControls}
+          >
+            Reset collection filters
+          </button>
         </div>
       ) : null}
 
