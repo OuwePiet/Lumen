@@ -1,3 +1,4 @@
+import BackToCollection from "./back-to-collection"
 import EditionOwners from "./edition-owners"
 import NFTMedia from "./nft-media"
 
@@ -355,9 +356,7 @@ const lowestBuyNowPrice =
     return (
       <main style={styles.page}>
         <div style={styles.container}>
-          <a href={backHref} style={styles.backLink}>
-            ← Back to collection
-          </a>
+          <BackToCollection href={backHref} style={styles.backLink} />
           <p style={styles.brand}>Lumen</p>
           <h1 style={styles.title}>{title}</h1>
 
@@ -448,9 +447,7 @@ const lowestBuyNowPrice =
     return (
       <main style={styles.page}>
         <div style={styles.container}>
-          <a href={backHref} style={styles.backLink}>
-            ← Back to collection
-          </a>
+          <BackToCollection href={backHref} style={styles.backLink} />
           <p style={styles.brand}>Lumen</p>
           <h1 style={styles.title}>DeSo NFT</h1>
 
