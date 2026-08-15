@@ -14,10 +14,16 @@ type DeSoPost = {
   ProfileEntryResponse?: { Username?: string }
 }
 
+type NFTEntry = {
+  IsForSale?: boolean
+}
+
 type NFTCollection = {
   PostEntryResponse?: DeSoPost
-  NFTEntryResponses?: unknown[]
+  NFTEntryResponses?: NFTEntry[]
 }
+
+type SaleFilter = "all" | "for-sale" | "not-for-sale"
 
 type SortMode = "collection" | "title" | "most-owned" | "fewest-owned"
 
@@ -59,6 +65,21 @@ const styles = {
     maxWidth: "420px",
     padding: "9px 11px",
     width: "100%",
+  },
+  filter: {
+    background: "transparent",
+    border: "1px solid #285f40",
+    borderRadius: "999px",
+    color: "#b9c8bf",
+    cursor: "pointer",
+    fontSize: "12px",
+    fontWeight: 700,
+    padding: "8px 12px",
+  },
+  filterActive: {
+    background: "#5cff9d",
+    borderColor: "#5cff9d",
+    color: "#050807",
   },
   select: {
     background: "#050807",
@@ -146,6 +167,7 @@ export default function PublicAccountNFTs({
   const [error, setError] = useState("")
   const [query, setQuery] = useState("")
   const [sortMode, setSortMode] = useState<SortMode>("collection")
+  const [saleFilter, setSaleFilter] = useState<SaleFilter>("all")
 
   const loadNFTs = async () => {
     setLoading(true)
@@ -246,7 +268,18 @@ export default function PublicAccountNFTs({
         return searchableText.includes(normalizedQuery)
       })
     : nfts
-  const sortedNFTs = [...filteredNFTs].sort((left, right) => {
+  const saleFilteredNFTs = filteredNFTs.filter((collection) => {
+    if (saleFilter === "all") return true
+
+    const hasOwnedCopyForSale = (collection.NFTEntryResponses ?? []).some(
+      (entry) => entry.IsForSale
+    )
+
+    return saleFilter === "for-sale"
+      ? hasOwnedCopyForSale
+      : !hasOwnedCopyForSale
+  })
+  const sortedNFTs = [...saleFilteredNFTs].sort((left, right) => {
     if (sortMode === "collection") return 0
 
     const leftTitle = title(left.PostEntryResponse?.Body)
@@ -310,16 +343,39 @@ export default function PublicAccountNFTs({
             <option value="most-owned">Most copies owned</option>
             <option value="fewest-owned">Fewest copies owned</option>
           </select>
+          {(
+            [
+              ["all", "All"],
+              ["for-sale", "For sale"],
+              ["not-for-sale", "Not for sale"],
+            ] as const
+          ).map(([value, label]) => (
+            <button
+              key={value}
+              type="button"
+              aria-pressed={saleFilter === value}
+              style={{
+                ...styles.filter,
+                ...(saleFilter === value ? styles.filterActive : {}),
+              }}
+              onClick={() => {
+                setSaleFilter(value)
+                setVisibleCount(PAGE_SIZE)
+              }}
+            >
+              {label}
+            </button>
+          ))}
         </div>
       ) : null}
 
       <p style={styles.status}>
         {nfts.length === 0
           ? `No public NFTs found for @${username}.`
-          : `${filteredNFTs.length} of ${nfts.length} public NFTs shown for @${username}.`}
+          : `${saleFilteredNFTs.length} of ${nfts.length} public NFTs shown for @${username}.`}
       </p>
 
-      {filteredNFTs.length > 0 ? (
+      {saleFilteredNFTs.length > 0 ? (
         <div style={styles.grid}>
           {visibleNFTs.map((collection) => {
             const post = collection.PostEntryResponse!
@@ -362,7 +418,7 @@ export default function PublicAccountNFTs({
           style={styles.more}
           onClick={() =>
             setVisibleCount((current) =>
-              Math.min(current + PAGE_SIZE, filteredNFTs.length)
+              Math.min(current + PAGE_SIZE, saleFilteredNFTs.length)
             )
           }
         >
