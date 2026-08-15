@@ -1,3 +1,4 @@
+import EditionOwners from "./edition-owners"
 import NFTMedia from "./nft-media"
 
 const DESO_NODE = "https://node.deso.org"
@@ -276,13 +277,41 @@ export default async function NFTView({ postHash }: { postHash: string }) {
       nftResponse.NFTEntryResponse ??
       []
 
-    const firstEntry = entries.find((entry) => entry.SerialNumber === 1)
-    const currentOwnerUsername = await loadProfileUsername(
-      firstEntry?.OwnerPublicKeyBase58Check
+    const sortedEntries = [...entries].sort(
+      (a, b) => (a.SerialNumber ?? 0) - (b.SerialNumber ?? 0)
     )
+    const ownerKeys = Array.from(
+      new Set(
+        sortedEntries
+          .map((entry) => entry.OwnerPublicKeyBase58Check)
+          .filter((key): key is string => Boolean(key))
+      )
+    )
+    const ownerNames = new Map(
+      await Promise.all(
+        ownerKeys.map(async (key) => [
+          key,
+          await loadProfileUsername(key),
+        ] as const)
+      )
+    )
+    const firstEntry = sortedEntries.find((entry) => entry.SerialNumber === 1)
+    const currentOwnerUsername = firstEntry?.OwnerPublicKeyBase58Check
+      ? ownerNames.get(firstEntry.OwnerPublicKeyBase58Check)
+      : undefined
     const currentOwner = currentOwnerUsername
       ? `@${currentOwnerUsername}`
       : shortKey(firstEntry?.OwnerPublicKeyBase58Check)
+    const uniqueOwnerCount = ownerKeys.length
+    const editionOwners = sortedEntries.map((entry, index) => {
+      const ownerKey = entry.OwnerPublicKeyBase58Check
+      const ownerUsername = ownerKey ? ownerNames.get(ownerKey) : undefined
+
+      return {
+        serialNumber: entry.SerialNumber ?? index + 1,
+        owner: ownerUsername ? `@${ownerUsername}` : shortKey(ownerKey),
+      }
+    })
     const forSale = entries.filter((entry) => entry.IsForSale)
     const bidAmounts = forSale
       .map((entry) => entry.MinBidAmountNanos)
@@ -349,10 +378,12 @@ const lowestBuyNowPrice =
               <dl style={styles.facts}>
                 {[
                   ["Creator", creator],
-                  [
-                    "Current owner",
-                    currentOwner,
-                  ],
+                  sortedEntries.length === 1
+                    ? ["Current owner", currentOwner]
+                    : [
+                        "Edition owners",
+                        `${uniqueOwnerCount} unique owner${uniqueOwnerCount === 1 ? "" : "s"} across ${sortedEntries.length} editions`,
+                      ],
                   ["Copies", post.NumNFTCopies ?? entries.length],
                   ["For sale", forSale.length],
                   [
@@ -370,6 +401,10 @@ const lowestBuyNowPrice =
                   </div>
                 ))}
               </dl>
+
+              {sortedEntries.length > 1 ? (
+                <EditionOwners editions={editionOwners} />
+              ) : null}
 
               <div style={styles.hash}>
                 <p style={styles.label}>Blockchain PostHash</p>
