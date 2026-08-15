@@ -104,21 +104,33 @@ export default function AccountLookup() {
 
     try {
       const response = await fetch(
-        `${DESO_NODE}/api/v0/get-single-profile`,
+        `${DESO_NODE}/api/v0/get-profiles`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ Username: normalizedUsername }),
+          body: JSON.stringify({
+            UsernamePrefix: normalizedUsername,
+            NumToFetch: 25,
+            ReaderPublicKeyBase58Check: "",
+          }),
         }
       )
 
-      if (!response.ok) throw new Error("Profile request failed")
+      if (!response.ok) {
+        setError("The DeSo account could not be checked right now.")
+        return
+      }
 
       const data = await response.json()
-      const foundProfile: DeSoProfile =
-        data.Profile ?? data.ProfileEntryResponse ?? {}
+      const profiles: DeSoProfile[] =
+        data.ProfilesFound ?? data.Profiles ?? []
+      const foundProfile = profiles.find(
+        (candidate) =>
+          candidate.Username?.toLocaleLowerCase() ===
+          normalizedUsername.toLocaleLowerCase()
+      )
 
-      if (!foundProfile.Username || !foundProfile.PublicKeyBase58Check) {
+      if (!foundProfile?.Username || !foundProfile.PublicKeyBase58Check) {
         setError("DeSo account not found.")
         return
       }
