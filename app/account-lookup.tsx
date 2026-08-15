@@ -197,12 +197,24 @@ export default function AccountLookup({
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
     const requestedAccount = params.get("account")
-    setAutoLoadNFTs(params.get("view") === "nfts")
+    const requestedPublicKey = params.get("accountKey")
+    const shouldOpenNFTs = params.get("view") === "nfts"
+    setAutoLoadNFTs(shouldOpenNFTs)
+
+    if (requestedAccount && requestedPublicKey && shouldOpenNFTs) {
+      setUsername(requestedAccount)
+      setProfile({
+        Username: requestedAccount,
+        PublicKeyBase58Check: requestedPublicKey,
+      })
+      onAccountSelected?.()
+      return
+    }
 
     if (requestedAccount) {
       void lookupAccount(requestedAccount)
     }
-  }, [lookupAccount])
+  }, [lookupAccount, onAccountSelected])
 
   const findAccount = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
