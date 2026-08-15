@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, type FormEvent } from "react"
+import PublicAccountNFTs from "./public-account-nfts"
 
 const DESO_NODE = "https://node.deso.org"
 
@@ -218,6 +219,10 @@ export default function AccountLookup() {
             <code style={styles.code}>
               {shortKey(profile.PublicKeyBase58Check)}
             </code>
+            <PublicAccountNFTs
+              publicKey={profile.PublicKeyBase58Check!}
+              username={profile.Username!}
+            />
           </div>
         ) : null}
 
