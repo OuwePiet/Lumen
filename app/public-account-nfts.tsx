@@ -30,7 +30,13 @@ type NFTCollection = {
 type MediaFilter = "all" | "image" | "video" | "audio" | "unavailable"
 type SaleFilter = "all" | "for-sale" | "not-for-sale"
 
-type SortMode = "collection" | "title" | "most-owned" | "fewest-owned"
+type SortMode =
+  | "collection"
+  | "title"
+  | "most-owned"
+  | "fewest-owned"
+  | "lowest-price"
+  | "highest-price"
 
 function mediaType(post?: DeSoPost): Exclude<MediaFilter, "all"> {
   const videoUrl = post?.VideoURLs?.[0]
@@ -58,6 +64,27 @@ function formatDeSo(nanos: number) {
   return new Intl.NumberFormat("en-US", {
     maximumFractionDigits: 9,
   }).format(nanos / 1_000_000_000)
+}
+
+function lowestSalePrice(entries: NFTEntry[]) {
+  const forSale = entries.filter((entry) => entry.IsForSale)
+  const buyNowPrices = forSale
+    .map((entry) => entry.BuyNowPriceNanos)
+    .filter(
+      (price): price is number =>
+        typeof price === "number" && price > 0
+    )
+
+  if (buyNowPrices.length > 0) return Math.min(...buyNowPrices)
+
+  const minBidAmounts = forSale
+    .map((entry) => entry.MinBidAmountNanos)
+    .filter(
+      (amount): amount is number =>
+        typeof amount === "number" && amount > 0
+    )
+
+  return minBidAmounts.length > 0 ? Math.min(...minBidAmounts) : undefined
 }
 
 function ownedSaleStatus(entries: NFTEntry[]) {
@@ -260,7 +287,9 @@ export default function PublicAccountNFTs({
     const value = initialParams.get("sort")
     return value === "title" ||
       value === "most-owned" ||
-      value === "fewest-owned"
+      value === "fewest-owned" ||
+      value === "lowest-price" ||
+      value === "highest-price"
       ? value
       : "collection"
   })
@@ -441,6 +470,31 @@ export default function PublicAccountNFTs({
       })
     }
 
+    if (sortMode === "lowest-price" || sortMode === "highest-price") {
+      const leftPrice = lowestSalePrice(left.NFTEntryResponses ?? [])
+      const rightPrice = lowestSalePrice(right.NFTEntryResponses ?? [])
+
+      if (leftPrice === undefined && rightPrice === undefined) {
+        return leftTitle.localeCompare(rightTitle, undefined, {
+          sensitivity: "base",
+        })
+      }
+      if (leftPrice === undefined) return 1
+      if (rightPrice === undefined) return -1
+
+      const priceDifference =
+        sortMode === "lowest-price"
+          ? leftPrice - rightPrice
+          : rightPrice - leftPrice
+
+      return (
+        priceDifference ||
+        leftTitle.localeCompare(rightTitle, undefined, {
+          sensitivity: "base",
+        })
+      )
+    }
+
     const leftOwned = left.NFTEntryResponses?.length ?? 0
     const rightOwned = right.NFTEntryResponses?.length ?? 0
     const ownedDifference =
@@ -492,6 +546,8 @@ export default function PublicAccountNFTs({
             <option value="title">Title A–Z</option>
             <option value="most-owned">Most copies owned</option>
             <option value="fewest-owned">Fewest copies owned</option>
+            <option value="lowest-price">Lowest price</option>
+            <option value="highest-price">Highest price</option>
           </select>
           <span style={styles.controlLabel}>Sale</span>
           {(
