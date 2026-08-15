@@ -119,6 +119,8 @@ const helpExamples: Record<VoiceLanguage, string[]> = {
 
 type VoiceControlsProps = {
   onCommand: (command: string) => boolean
+  canUndo: boolean
+  onUndo: () => void
 }
 
 const styles = {
@@ -208,7 +210,11 @@ const styles = {
   },
 }
 
-export default function VoiceControls({ onCommand }: VoiceControlsProps) {
+export default function VoiceControls({
+  onCommand,
+  canUndo,
+  onUndo,
+}: VoiceControlsProps) {
   const [enabled, setEnabled] = useState(false)
   const [listening, setListening] = useState(false)
   const [status, setStatus] = useState("Microphone off")
@@ -345,6 +351,11 @@ export default function VoiceControls({ onCommand }: VoiceControlsProps) {
     stopListening()
     setTestResult(null)
     setStatus("Microphone off")
+  }
+
+  const undoLastVoiceCommand = () => {
+    onUndo()
+    setStatus("Last voice command undone")
   }
 
   const resetVoiceSettings = () => {
@@ -540,6 +551,16 @@ export default function VoiceControls({ onCommand }: VoiceControlsProps) {
           onClick={listen}
         >
           {listening ? "Listening…" : "Start listening"}
+        </button>
+      ) : null}
+
+      {canUndo ? (
+        <button
+          type="button"
+          style={styles.button}
+          onClick={undoLastVoiceCommand}
+        >
+          Undo last voice command
         </button>
       ) : null}
 
