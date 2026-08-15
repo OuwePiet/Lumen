@@ -228,6 +228,9 @@ export default function VoiceControls({
   const [language, setLanguage] = useState<VoiceLanguage>("en-US")
   const [readAloud, setReadAloud] = useState(false)
   const [speechRate, setSpeechRate] = useState<SpeechRate>(1)
+  const [availableVoices, setAvailableVoices] =
+    useState<SpeechSynthesisVoice[]>([])
+  const [selectedVoiceURI, setSelectedVoiceURI] = useState("")
   const [supported, setSupported] = useState(false)
   const [testResult, setTestResult] = useState<string | null>(null)
   const [privacyConfirmationRequired, setPrivacyConfirmationRequired] =
@@ -247,6 +250,35 @@ export default function VoiceControls({
       recognitionRef.current?.stop()
     }
   }, [])
+
+  useEffect(() => {
+    if (!("speechSynthesis" in window)) return
+
+    const loadVoices = () => {
+      setAvailableVoices(window.speechSynthesis.getVoices())
+    }
+
+    loadVoices()
+    window.speechSynthesis.addEventListener("voiceschanged", loadVoices)
+
+    return () => {
+      window.speechSynthesis.removeEventListener("voiceschanged", loadVoices)
+    }
+  }, [])
+
+  const languagePrefix = language.slice(0, 2).toLocaleLowerCase()
+  const matchingVoices = availableVoices.filter((voice) =>
+    voice.lang.toLocaleLowerCase().startsWith(languagePrefix)
+  )
+
+  useEffect(() => {
+    if (
+      selectedVoiceURI &&
+      !matchingVoices.some((voice) => voice.voiceURI === selectedVoiceURI)
+    ) {
+      setSelectedVoiceURI("")
+    }
+  }, [language, availableVoices, selectedVoiceURI])
 
   const clearListeningTimeout = () => {
     if (listeningTimeoutRef.current) {
@@ -299,6 +331,9 @@ export default function VoiceControls({
     const utterance = new SpeechSynthesisUtterance(message)
     utterance.lang = language
     utterance.rate = speechRate
+    utterance.voice =
+      matchingVoices.find((voice) => voice.voiceURI === selectedVoiceURI) ??
+      null
     window.speechSynthesis.speak(utterance)
   }
 
@@ -380,6 +415,7 @@ export default function VoiceControls({
     setLanguage(SITE_VOICE_LANGUAGE)
     setReadAloud(false)
     setSpeechRate(1)
+    setSelectedVoiceURI("")
     setTestResult(null)
     setPrivacyConfirmationRequired(true)
     setStatus("Voice settings reset")
@@ -536,6 +572,25 @@ export default function VoiceControls({
             {speechRates.map((option) => (
               <option key={option.value} value={option.value}>
                 {option.label}
+              </option>
+            ))}
+          </select>
+        </label>
+      ) : null}
+
+      {enabled ? (
+        <label style={styles.panel}>
+          <span style={styles.label}>Voice variant</span>
+          <select
+            aria-label="Spoken confirmation voice"
+            value={selectedVoiceURI}
+            style={styles.select}
+            onChange={(event) => setSelectedVoiceURI(event.target.value)}
+          >
+            <option value="">Automatic</option>
+            {matchingVoices.map((voice) => (
+              <option key={voice.voiceURI} value={voice.voiceURI}>
+                {voice.name}
               </option>
             ))}
           </select>
