@@ -137,6 +137,21 @@ const helpExamples: Record<VoiceLanguage, string[]> = {
   ],
 }
 
+const voiceTestChecklist = [
+  { id: "default-off", label: "Voice and microphone are off by default" },
+  { id: "processing", label: "Speech processing disclosure is visible before activation" },
+  { id: "compatibility", label: "Compatibility check completes without microphone permission" },
+  { id: "languages", label: "Microphone test works in EN, NL, FR, ES and CN" },
+  { id: "time-limit", label: "Listening stops after one command or no later than 15 seconds" },
+  { id: "commands", label: "Exact and natural voice commands change only read-only controls" },
+  { id: "confirmation", label: "Spoken confirmation, speed and voice variant work" },
+  { id: "noise", label: "Unclear speech or background noise does not apply a guessed command" },
+  { id: "undo", label: "Undo restores the state before the last voice command" },
+  { id: "reset", label: "Reset voice settings stops listening and restores safe defaults" },
+  { id: "controls", label: "Buttons, touch and keyboard remain available" },
+  { id: "safety", label: "No audio/transcript storage, payment or blockchain action occurs" },
+] as const
+
 type VoiceControlsProps = {
   onCommand: (command: string) => boolean
   canUndo: boolean
@@ -258,6 +273,8 @@ export default function VoiceControls({
   const [speechOutputSupported, setSpeechOutputSupported] = useState(false)
   const [secureContext, setSecureContext] = useState(false)
   const [compatibilityChecked, setCompatibilityChecked] = useState(false)
+  const [checkedChecklistItems, setCheckedChecklistItems] =
+    useState<string[]>([])
   const [testResult, setTestResult] = useState<string | null>(null)
   const [privacyConfirmationRequired, setPrivacyConfirmationRequired] =
     useState(true)
@@ -462,6 +479,7 @@ export default function VoiceControls({
     setTestResult(null)
     setPrivacyConfirmationRequired(true)
     setCompatibilityChecked(false)
+    setCheckedChecklistItems([])
     setStatus("Voice settings reset")
   }
 
@@ -471,6 +489,17 @@ export default function VoiceControls({
 
   const compatibilityReady =
     supported && speechOutputSupported && secureContext
+
+  const toggleChecklistItem = (itemId: string) => {
+    setCheckedChecklistItems((current) =>
+      current.includes(itemId)
+        ? current.filter((id) => id !== itemId)
+        : [...current, itemId]
+    )
+  }
+
+  const checklistComplete =
+    checkedChecklistItems.length === voiceTestChecklist.length
 
   return (
     <details
@@ -573,6 +602,49 @@ export default function VoiceControls({
               This check does not request microphone permission.
             </p>
           )}
+        </details>
+      ) : null}
+
+      {enabled ? (
+        <details style={styles.help}>
+          <summary style={styles.helpSummary}>Voice test checklist</summary>
+          <p style={{ margin: "10px 0", fontSize: "12px" }}>
+            Manually check each item. Results stay only in this visit.
+          </p>
+          <ul
+            style={{
+              ...styles.helpList,
+              listStyle: "none",
+              paddingLeft: 0,
+            }}
+          >
+            {voiceTestChecklist.map((item) => (
+              <li key={item.id}>
+                <label style={{ cursor: "pointer" }}>
+                  <input
+                    type="checkbox"
+                    checked={checkedChecklistItems.includes(item.id)}
+                    onChange={() => toggleChecklistItem(item.id)}
+                  />{" "}
+                  {item.label}
+                </label>
+              </li>
+            ))}
+          </ul>
+          <div style={styles.panel}>
+            <button
+              type="button"
+              style={styles.button}
+              onClick={() => setCheckedChecklistItems([])}
+            >
+              Reset checklist
+            </button>
+            <span style={styles.status} aria-live="polite">
+              {checklistComplete
+                ? "Voice test complete"
+                : `${checkedChecklistItems.length} of ${voiceTestChecklist.length} checked`}
+            </span>
+          </div>
         </details>
       ) : null}
 
