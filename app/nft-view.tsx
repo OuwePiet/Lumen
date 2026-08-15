@@ -1,3 +1,4 @@
+import EditionOwners from "./edition-owners"
 import NFTMedia from "./nft-media"
 
 const DESO_NODE = "https://node.deso.org"
@@ -252,37 +253,6 @@ const styles = {
     lineHeight: 1.6,
     overflowWrap: "anywhere" as const,
   },
-  owners: {
-    background: "#070b09",
-    border: "1px solid #254233",
-    borderRadius: "12px",
-    marginTop: "20px",
-    padding: "14px",
-  },
-  ownersSummary: {
-    color: "#b9ffd4",
-    cursor: "pointer",
-    fontSize: "14px",
-    fontWeight: 800,
-  },
-  ownersList: {
-    listStyle: "none",
-    margin: "14px 0 0",
-    padding: 0,
-  },
-  ownerRow: {
-    alignItems: "center",
-    borderTop: "1px solid #1b3327",
-    display: "flex",
-    flexWrap: "wrap" as const,
-    gap: "8px 16px",
-    justifyContent: "space-between",
-    padding: "10px 0",
-  },
-  ownerName: {
-    color: "#f4f7f5",
-    fontWeight: 700,
-  },
   source: {
     color: "#84958b",
     fontSize: "13px",
@@ -332,6 +302,16 @@ export default async function NFTView({ postHash }: { postHash: string }) {
     const currentOwner = currentOwnerUsername
       ? `@${currentOwnerUsername}`
       : shortKey(firstEntry?.OwnerPublicKeyBase58Check)
+    const uniqueOwnerCount = ownerKeys.length
+    const editionOwners = sortedEntries.map((entry, index) => {
+      const ownerKey = entry.OwnerPublicKeyBase58Check
+      const ownerUsername = ownerKey ? ownerNames.get(ownerKey) : undefined
+
+      return {
+        serialNumber: entry.SerialNumber ?? index + 1,
+        owner: ownerUsername ? `@${ownerUsername}` : shortKey(ownerKey),
+      }
+    })
     const forSale = entries.filter((entry) => entry.IsForSale)
     const bidAmounts = forSale
       .map((entry) => entry.MinBidAmountNanos)
@@ -398,10 +378,12 @@ const lowestBuyNowPrice =
               <dl style={styles.facts}>
                 {[
                   ["Creator", creator],
-                  [
-                    "Current owner",
-                    currentOwner,
-                  ],
+                  sortedEntries.length === 1
+                    ? ["Current owner", currentOwner]
+                    : [
+                        "Edition owners",
+                        `${uniqueOwnerCount} unique owner${uniqueOwnerCount === 1 ? "" : "s"} across ${sortedEntries.length} editions`,
+                      ],
                   ["Copies", post.NumNFTCopies ?? entries.length],
                   ["For sale", forSale.length],
                   [
@@ -421,35 +403,7 @@ const lowestBuyNowPrice =
               </dl>
 
               {sortedEntries.length > 1 ? (
-                <details style={styles.owners}>
-                  <summary style={styles.ownersSummary}>
-                    View edition owners ({sortedEntries.length})
-                  </summary>
-                  <ol style={styles.ownersList}>
-                    {sortedEntries.map((entry, index) => {
-                      const ownerKey = entry.OwnerPublicKeyBase58Check
-                      const ownerUsername = ownerKey
-                        ? ownerNames.get(ownerKey)
-                        : undefined
-
-                      return (
-                        <li
-                          key={entry.SerialNumber ?? index}
-                          style={styles.ownerRow}
-                        >
-                          <span>
-                            Edition #{entry.SerialNumber ?? index + 1}
-                          </span>
-                          <span style={styles.ownerName}>
-                            {ownerUsername
-                              ? `@${ownerUsername}`
-                              : shortKey(ownerKey)}
-                          </span>
-                        </li>
-                      )
-                    })}
-                  </ol>
-                </details>
+                <EditionOwners editions={editionOwners} />
               ) : null}
 
               <div style={styles.hash}>
