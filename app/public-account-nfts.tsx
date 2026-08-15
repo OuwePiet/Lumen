@@ -237,7 +237,17 @@ export default function PublicAccountNFTs({
   username: string
   autoLoad?: boolean
 }) {
-  const [nfts, setNFTs] = useState<NFTCollection[] | null>(null)
+  const cacheKey = `lumen:account-nfts:${publicKey}`
+  const [nfts, setNFTs] = useState<NFTCollection[] | null>(() => {
+    if (!autoLoad || typeof window === "undefined") return null
+
+    try {
+      const cached = window.sessionStorage.getItem(cacheKey)
+      return cached ? (JSON.parse(cached) as NFTCollection[]) : null
+    } catch {
+      return null
+    }
+  })
   const [loading, setLoading] = useState(false)
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
   const initialParams =
@@ -323,21 +333,30 @@ export default function PublicAccountNFTs({
         lastKeyHex = nextKey
       }
 
+      const completeCollection = Array.from(collectionsByPostHash.values())
       setVisibleCount(PAGE_SIZE)
-      setNFTs(Array.from(collectionsByPostHash.values()))
+      setNFTs(completeCollection)
+      try {
+        window.sessionStorage.setItem(
+          cacheKey,
+          JSON.stringify(completeCollection)
+        )
+      } catch {
+        // A fresh DeSo load remains available when session storage is full.
+      }
     } catch {
       setError("The public NFTs could not be retrieved from DeSo right now.")
     } finally {
       setLoading(false)
     }
-  }, [publicKey])
+  }, [cacheKey, publicKey])
 
   useEffect(() => {
-    if (autoLoad && !autoLoadStarted.current) {
+    if (autoLoad && nfts === null && !autoLoadStarted.current) {
       autoLoadStarted.current = true
       void loadNFTs()
     }
-  }, [autoLoad, loadNFTs])
+  }, [autoLoad, loadNFTs, nfts])
 
   if (nfts === null) {
     return (
@@ -526,6 +545,7 @@ export default function PublicAccountNFTs({
 
             const returnParams = new URLSearchParams({
               account: username,
+              accountKey: publicKey,
               view: "nfts",
               query,
               sort: sortMode,
