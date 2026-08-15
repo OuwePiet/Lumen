@@ -77,6 +77,10 @@ function independentMediaUrl(url?: string) {
   return `https://ipfs.io/ipfs/${ipfsPath}`
 }
 
+function hasLegacyNFTzLink(body?: string) {
+  return Boolean(body && /https?:\/\/nftz\.me\/\S+/i.test(body))
+}
+
 function cleanDescription(body?: string) {
   if (!body) return "No on-chain description available."
 
@@ -160,6 +164,22 @@ const styles = {
     fontWeight: 700,
     padding: "7px 11px",
     marginBottom: "18px",
+  },
+  warning: {
+    color: "#f1d89a",
+    background: "#211a0c",
+    border: "1px solid #6e5721",
+    borderRadius: "12px",
+    fontSize: "13px",
+    lineHeight: 1.6,
+    margin: "0 0 20px",
+    padding: "14px",
+  },
+  warningTitle: {
+    display: "block",
+    color: "#ffe7a6",
+    fontWeight: 800,
+    marginBottom: "4px",
   },
   description: {
     color: "#c4cec8",
@@ -256,6 +276,7 @@ const lowestBuyNowPrice =
       : shortKey(post.PosterPublicKeyBase58Check)
 
     const description = cleanDescription(post.Body)
+    const legacyNFTzLinkDetected = hasLegacyNFTzLink(post.Body)
     const title = nftTitle(post.Body)
 
     return (
@@ -283,6 +304,16 @@ const lowestBuyNowPrice =
 
             <section style={styles.card}>
               <div style={styles.badge}>DeSo verified</div>
+              {legacyNFTzLinkDetected ? (
+                <div style={styles.warning} role="note">
+                  <strong style={styles.warningTitle}>
+                    Legacy external link detected
+                  </strong>
+                  This on-chain description contains an nftz.me link that may
+                  no longer work. Lumen does not open or depend on this link.
+                  NFT data remains available directly from DeSo.
+                </div>
+              ) : null}
               <p style={styles.description}>{description}</p>
 
               <dl style={styles.facts}>
