@@ -41,6 +41,17 @@ const styles = {
     marginTop: "12px",
     padding: "9px 14px",
   },
+  search: {
+    background: "#050807",
+    border: "1px solid #285f40",
+    borderRadius: "10px",
+    color: "#f4f7f5",
+    fontSize: "13px",
+    marginTop: "14px",
+    maxWidth: "420px",
+    padding: "9px 11px",
+    width: "100%",
+  },
   status: {
     color: "#a9b8af",
     fontSize: "13px",
@@ -117,34 +128,64 @@ export default function PublicAccountNFTs({
   const [loading, setLoading] = useState(false)
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
   const [error, setError] = useState("")
+  const [query, setQuery] = useState("")
 
   const loadNFTs = async () => {
     setLoading(true)
     setError("")
 
     try {
-      const response = await fetch(`${DESO_NODE}/api/v0/get-nfts-for-user`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          UserPublicKeyBase58Check: publicKey,
-          ReaderPublicKeyBase58Check: "",
-        }),
-      })
+      const collectionsByPostHash = new Map<string, NFTCollection>()
+      const seenPageKeys = new Set<string>()
+      let lastKeyHex = ""
 
-      if (!response.ok) {
-        setError("The public NFTs could not be retrieved from DeSo right now.")
-        return
+      while (true) {
+        const response = await fetch(`${DESO_NODE}/api/v0/get-nfts-for-user`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            UserPublicKeyBase58Check: publicKey,
+            ReaderPublicKeyBase58Check: "",
+            LastKeyHex: lastKeyHex,
+            Limit: 100,
+          }),
+        })
+
+        if (!response.ok) {
+          setError("The complete public NFT collection could not be retrieved from DeSo right now.")
+          return
+        }
+
+        const data = await response.json()
+        const pageCollections: NFTCollection[] = Object.values(
+          data.NFTsMap ?? {}
+        )
+
+        for (const collection of pageCollections) {
+          const postHash = collection.PostEntryResponse?.PostHashHex
+          if (!postHash) continue
+
+          const existing = collectionsByPostHash.get(postHash)
+          if (existing) {
+            existing.NFTEntryResponses = [
+              ...(existing.NFTEntryResponses ?? []),
+              ...(collection.NFTEntryResponses ?? []),
+            ]
+          } else {
+            collectionsByPostHash.set(postHash, collection)
+          }
+        }
+
+        const nextKey =
+          typeof data.LastKeyHex === "string" ? data.LastKeyHex : ""
+        if (!nextKey || seenPageKeys.has(nextKey)) break
+
+        seenPageKeys.add(nextKey)
+        lastKeyHex = nextKey
       }
 
-      const data = await response.json()
-      const collections: NFTCollection[] = Object.values(data.NFTsMap ?? {})
       setVisibleCount(PAGE_SIZE)
-      setNFTs(
-        collections.filter(
-          (collection) => collection.PostEntryResponse?.PostHashHex
-        )
-      )
+      setNFTs(Array.from(collectionsByPostHash.values()))
     } catch {
       setError("The public NFTs could not be retrieved from DeSo right now.")
     } finally {
@@ -168,23 +209,67 @@ export default function PublicAccountNFTs({
     )
   }
 
-  const visibleNFTs = nfts.slice(0, visibleCount)
-  const remaining = nfts.length - visibleNFTs.length
+  const totalOwnedCopies = nfts.reduce(
+    (total, collection) =>
+      total + (collection.NFTEntryResponses?.length ?? 0),
+    0
+  )
+  const normalizedQuery = query.trim().toLocaleLowerCase()
+  const filteredNFTs = normalizedQuery
+    ? nfts.filter((collection) => {
+        const post = collection.PostEntryResponse
+        const searchableText = [
+          post?.Body,
+          post?.ProfileEntryResponse?.Username,
+        ]
+          .filter(Boolean)
+          .join(" ")
+          .toLocaleLowerCase()
+
+        return searchableText.includes(normalizedQuery)
+      })
+    : nfts
+  const visibleNFTs = filteredNFTs.slice(0, visibleCount)
+  const remaining = filteredNFTs.length - visibleNFTs.length
 
   return (
     <section aria-label={`Public NFTs owned by @${username}`}>
+      {nfts.length > 0 ? (
+        <p style={styles.status}>
+          @{username} owns {totalOwnedCopies} NFT{" "}
+          {totalOwnedCopies === 1 ? "copy" : "copies"} across {nfts.length}{" "}
+          different NFT{nfts.length === 1 ? "" : "s"}.
+        </p>
+      ) : null}
+
+      {nfts.length > 0 ? (
+        <input
+          type="search"
+          aria-label="Search this account collection"
+          placeholder="Search by NFT title or creator"
+          value={query}
+          style={styles.search}
+          onChange={(event) => {
+            setQuery(event.target.value)
+            setVisibleCount(PAGE_SIZE)
+          }}
+        />
+      ) : null}
+
       <p style={styles.status}>
         {nfts.length === 0
           ? `No public NFTs found for @${username}.`
-          : `${nfts.length} public NFT${nfts.length === 1 ? "" : "s"} found for @${username}.`}
+          : `${filteredNFTs.length} of ${nfts.length} public NFTs shown for @${username}.`}
       </p>
 
-      {nfts.length > 0 ? (
+      {filteredNFTs.length > 0 ? (
         <div style={styles.grid}>
           {visibleNFTs.map((collection) => {
             const post = collection.PostEntryResponse!
             const postHash = post.PostHashHex!
             const mediaUrl = post.VideoURLs?.[0] ?? post.ImageURLs?.[0]
+            const ownedCopies = collection.NFTEntryResponses?.length ?? 0
+            const totalCopies = post.NumNFTCopies ?? ownedCopies
 
             return (
               <a key={postHash} href={`/nft/${postHash}`} style={styles.card}>
@@ -204,8 +289,8 @@ export default function PublicAccountNFTs({
                 <div style={styles.content}>
                   <h3 style={styles.title}>{title(post.Body)}</h3>
                   <p style={styles.fact}>
-                    {post.NumNFTCopies ?? collection.NFTEntryResponses?.length ?? 0}{" "}
-                    copies
+                    @{username} owns {ownedCopies} of {totalCopies}{" "}
+                    {totalCopies === 1 ? "copy" : "copies"}
                   </p>
                 </div>
               </a>
@@ -220,7 +305,7 @@ export default function PublicAccountNFTs({
           style={styles.more}
           onClick={() =>
             setVisibleCount((current) =>
-              Math.min(current + PAGE_SIZE, nfts.length)
+              Math.min(current + PAGE_SIZE, filteredNFTs.length)
             )
           }
         >

@@ -114,7 +114,11 @@ const styles = {
   },
 }
 
-export default function AccountLookup() {
+export default function AccountLookup({
+  onAccountSelected,
+}: {
+  onAccountSelected?: () => void
+}) {
   const [username, setUsername] = useState("")
   const [profile, setProfile] = useState<DeSoProfile | null>(null)
   const [matches, setMatches] = useState<DeSoProfile[]>([])
@@ -124,6 +128,7 @@ export default function AccountLookup() {
   const selectProfile = (selectedProfile: DeSoProfile) => {
     setUsername(selectedProfile.Username ?? "")
     setProfile(selectedProfile)
+    onAccountSelected?.()
     setMatches([])
     setError("")
   }
@@ -171,6 +176,7 @@ export default function AccountLookup() {
 
       if (exactProfile) {
         setProfile(exactProfile)
+        onAccountSelected?.()
         return
       }
 
@@ -185,7 +191,7 @@ export default function AccountLookup() {
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [onAccountSelected])
 
   useEffect(() => {
     const requestedAccount = new URLSearchParams(window.location.search).get(
