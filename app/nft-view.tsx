@@ -2,6 +2,7 @@ import BackToCollection from "./back-to-collection"
 import CopyNFTLink from "./copy-nft-link"
 import EditionOwners from "./edition-owners"
 import NFTMedia from "./nft-media"
+import NFTHistory from "./nft-history"
 
 const DESO_NODE = "https://node.deso.org"
 
@@ -11,6 +12,7 @@ type DeSoPost = {
   VideoURLs?: string[]
   NumNFTCopies?: number
   PosterPublicKeyBase58Check?: string
+  TimestampNanos?: number
   ProfileEntryResponse?: {
     Username?: string
   }
@@ -466,6 +468,18 @@ const lowestBuyNowPrice =
               {sortedEntries.length > 1 ? (
                 <EditionOwners editions={editionOwners} />
               ) : null}
+
+              <NFTHistory
+                postTimestampNanos={post.TimestampNanos}
+                editionCount={sortedEntries.length}
+                uniqueOwnerCount={uniqueOwnerCount}
+                forSaleCount={forSale.length}
+                saleStatus={saleStatus(
+                  forSale.length,
+                  lowestBuyNowPrice,
+                  lowestBid
+                )}
+              />
 
               <div style={styles.hash}>
                 <p style={styles.label}>Blockchain PostHash</p>
