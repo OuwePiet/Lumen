@@ -141,7 +141,7 @@ const styles = {
   },
   container: {
     width: "100%",
-    maxWidth: "1120px",
+    maxWidth: "1040px",
     margin: "0 auto",
   },
   topActions: {
@@ -177,19 +177,22 @@ const styles = {
     textTransform: "uppercase" as const,
   },
   title: {
-    fontSize: "clamp(32px, 5vw, 58px)",
+    fontSize: "clamp(28px, 3.5vw, 44px)",
     lineHeight: 1.05,
-    margin: "0 0 28px",
+    margin: "0 0 22px",
   },
   grid: {
     display: "grid",
     gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-    gap: "32px",
+    gap: "24px",
     alignItems: "start",
   },
   mediaFrame: {
     aspectRatio: "1 / 1",
     background: "#0c120f",
+    justifySelf: "center",
+    maxWidth: "480px",
+    width: "100%",
     border: "1px solid #254233",
     borderRadius: "18px",
     overflow: "hidden",
