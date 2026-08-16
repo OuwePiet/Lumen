@@ -28,7 +28,7 @@ const styles = {
     overflow: "hidden",
   },
   summary: {
-    color: "#b9ffd4",
+    color: "#c4cec8",
     cursor: "pointer",
     fontSize: "15px",
     fontWeight: 800,
