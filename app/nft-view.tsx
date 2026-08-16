@@ -177,7 +177,7 @@ const styles = {
     textTransform: "uppercase" as const,
   },
   title: {
-    fontSize: "clamp(25px, 3vw, 38px)",
+    fontSize: "clamp(22px, 2.5vw, 32px)",
     lineHeight: 1.05,
     margin: "0 0 22px",
   },
