@@ -70,6 +70,17 @@ function shortKey(publicKey?: string) {
   return `${publicKey.slice(0, 10)}...${publicKey.slice(-8)}`
 }
 
+function accountCollectionHref(username: string, publicKey?: string) {
+  const params = new URLSearchParams({ account: username })
+
+  if (publicKey) {
+    params.set("accountKey", publicKey)
+    params.set("view", "nfts")
+  }
+
+  return `/?${params.toString()}#account-lookup-heading`
+}
+
 function formatDeSo(nanos: number) {
   return new Intl.NumberFormat("en-US", {
     maximumFractionDigits: 9,
@@ -340,6 +351,7 @@ export default async function NFTView({
       return {
         serialNumber: entry.SerialNumber ?? index + 1,
         owner: ownerUsername ? `@${ownerUsername}` : shortKey(ownerKey),
+        publicKey: ownerKey,
       }
     })
     const forSale = entries.filter((entry) => entry.IsForSale)
@@ -431,18 +443,14 @@ const lowestBuyNowPrice =
                     <dd style={styles.value}>
                       {typeof value === "string" && value.startsWith("@") ? (
                         <a
-                          href={
-                            label === "Creator" &&
-                            post.PosterPublicKeyBase58Check
-                              ? `/?account=${encodeURIComponent(
-                                  value.slice(1)
-                                )}&accountKey=${encodeURIComponent(
-                                  post.PosterPublicKeyBase58Check
-                                )}&view=nfts#account-lookup-heading`
-                              : `/?account=${encodeURIComponent(
-                                  value.slice(1)
-                                )}#account-lookup-heading`
-                          }
+                          href={accountCollectionHref(
+                            value.slice(1),
+                            label === "Creator"
+                              ? post.PosterPublicKeyBase58Check
+                              : label === "Current owner"
+                                ? firstEntry?.OwnerPublicKeyBase58Check
+                                : undefined
+                          )}
                           style={styles.accountLink}
                         >
                           {value}
