@@ -276,6 +276,7 @@ export default function PublicAccountNFTs({
     }
   })
   const [loading, setLoading] = useState(false)
+  const [linkCopied, setLinkCopied] = useState(false)
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
   const initialParams =
     typeof window === "undefined"
@@ -523,6 +524,38 @@ export default function PublicAccountNFTs({
     setVisibleCount(PAGE_SIZE)
   }
 
+  const shareParams = new URLSearchParams({
+    account: username,
+    accountKey: publicKey,
+    view: "nfts",
+    query,
+    sort: sortMode,
+    sale: saleFilter,
+    media: mediaFilter,
+  })
+  const sharePath =
+    `/?${shareParams.toString()}#account-lookup-heading`
+
+  const copyCollectionLink = async () => {
+    const shareUrl = `${window.location.origin}${sharePath}`
+
+    try {
+      await navigator.clipboard.writeText(shareUrl)
+    } catch {
+      const temporaryInput = document.createElement("textarea")
+      temporaryInput.value = shareUrl
+      temporaryInput.style.position = "fixed"
+      temporaryInput.style.opacity = "0"
+      document.body.appendChild(temporaryInput)
+      temporaryInput.select()
+      document.execCommand("copy")
+      temporaryInput.remove()
+    }
+
+    setLinkCopied(true)
+    window.setTimeout(() => setLinkCopied(false), 2000)
+  }
+
   return (
     <section aria-label={`Public NFTs owned by @${username}`}>
       {nfts.length > 0 ? (
@@ -623,6 +656,13 @@ export default function PublicAccountNFTs({
             onClick={resetControls}
           >
             Reset collection filters
+          </button>
+          <button
+            type="button"
+            style={styles.filter}
+            onClick={copyCollectionLink}
+          >
+            {linkCopied ? "Collection link copied" : "Copy collection link"}
           </button>
         </div>
       ) : null}
