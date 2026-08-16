@@ -431,9 +431,18 @@ const lowestBuyNowPrice =
                     <dd style={styles.value}>
                       {typeof value === "string" && value.startsWith("@") ? (
                         <a
-                          href={`/?account=${encodeURIComponent(
-                            value.slice(1)
-                          )}#account-lookup-heading`}
+                          href={
+                            label === "Creator" &&
+                            post.PosterPublicKeyBase58Check
+                              ? `/?account=${encodeURIComponent(
+                                  value.slice(1)
+                                )}&accountKey=${encodeURIComponent(
+                                  post.PosterPublicKeyBase58Check
+                                )}&view=nfts#account-lookup-heading`
+                              : `/?account=${encodeURIComponent(
+                                  value.slice(1)
+                                )}#account-lookup-heading`
+                          }
                           style={styles.accountLink}
                         >
                           {value}
