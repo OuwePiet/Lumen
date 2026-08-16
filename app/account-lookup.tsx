@@ -9,6 +9,7 @@ type DeSoProfile = {
   Username?: string
   PublicKeyBase58Check?: string
   ProfilePic?: string
+  Description?: string
 }
 
 function shortKey(publicKey?: string) {
@@ -73,6 +74,31 @@ const styles = {
     fontSize: "12px",
     marginTop: "6px",
     overflowWrap: "anywhere" as const,
+  },
+  profileHeader: {
+    alignItems: "center",
+    display: "flex",
+    gap: "12px",
+  },
+  profileText: {
+    minWidth: 0,
+  },
+  description: {
+    color: "#d5e2da",
+    fontSize: "13px",
+    lineHeight: 1.55,
+    margin: "12px 0 0",
+    whiteSpace: "pre-wrap" as const,
+  },
+  keyDetails: {
+    color: "#a9b8af",
+    fontSize: "12px",
+    marginTop: "12px",
+  },
+  keySummary: {
+    color: "#b9ffd4",
+    cursor: "pointer",
+    fontWeight: 700,
   },
   choices: {
     background: "#07100b",
@@ -270,10 +296,37 @@ export default function AccountLookup({
       <div aria-live="polite">
         {profile ? (
           <div style={styles.result}>
-            <strong>DeSo account found: @{profile.Username}</strong>
-            <code style={styles.code}>
-              {shortKey(profile.PublicKeyBase58Check)}
-            </code>
+            <div style={styles.profileHeader}>
+              {profile.ProfilePic ? (
+                <img
+                  src={profile.ProfilePic}
+                  alt=""
+                  width={52}
+                  height={52}
+                  style={{ ...styles.avatar, height: "52px", width: "52px" }}
+                />
+              ) : (
+                <span
+                  style={{ ...styles.avatarFallback, height: "52px", width: "52px" }}
+                  aria-hidden="true"
+                >
+                  {(profile.Username ?? "?").slice(0, 1).toUpperCase()}
+                </span>
+              )}
+              <div style={styles.profileText}>
+                <strong>DeSo account found: @{profile.Username}</strong>
+                <code style={styles.code}>
+                  {shortKey(profile.PublicKeyBase58Check)}
+                </code>
+              </div>
+            </div>
+            {profile.Description ? (
+              <p style={styles.description}>{profile.Description}</p>
+            ) : null}
+            <details style={styles.keyDetails}>
+              <summary style={styles.keySummary}>View full public key</summary>
+              <code style={styles.code}>{profile.PublicKeyBase58Check}</code>
+            </details>
             <PublicAccountNFTs
               key={profile.PublicKeyBase58Check}
               publicKey={profile.PublicKeyBase58Check!}
