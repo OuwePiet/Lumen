@@ -5,6 +5,17 @@ import { useState } from "react"
 type EditionOwner = {
   serialNumber: number
   owner: string
+  publicKey?: string
+}
+
+function ownerCollectionHref(owner: string, publicKey: string) {
+  const params = new URLSearchParams({
+    account: owner.replace(/^@/, ""),
+    accountKey: publicKey,
+    view: "nfts",
+  })
+
+  return `/?${params.toString()}#account-lookup-heading`
 }
 
 const PAGE_SIZE = 25
@@ -74,14 +85,19 @@ export default function EditionOwners({
         {visibleEditions.map((edition) => (
           <li key={edition.serialNumber} style={styles.row}>
             <span>Edition #{edition.serialNumber}</span>
-            <a
-              href={`/?account=${encodeURIComponent(
-                edition.owner.replace(/^@/, "")
-              )}#account-lookup-heading`}
-              style={styles.owner}
-            >
-              {edition.owner}
-            </a>
+            {edition.publicKey && edition.owner.startsWith("@") ? (
+              <a
+                href={ownerCollectionHref(
+                  edition.owner,
+                  edition.publicKey
+                )}
+                style={styles.owner}
+              >
+                {edition.owner}
+              </a>
+            ) : (
+              <span>{edition.owner}</span>
+            )}
           </li>
         ))}
       </ol>
