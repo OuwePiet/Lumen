@@ -1,4 +1,5 @@
 import BackToCollection from "./back-to-collection"
+import CopyNFTLink from "./copy-nft-link"
 import EditionOwners from "./edition-owners"
 import NFTMedia from "./nft-media"
 
@@ -130,12 +131,29 @@ const styles = {
     maxWidth: "1120px",
     margin: "0 auto",
   },
+  topActions: {
+    alignItems: "center",
+    display: "flex",
+    flexWrap: "wrap" as const,
+    gap: "12px",
+    justifyContent: "space-between",
+    marginBottom: "24px",
+  },
   backLink: {
     display: "inline-block",
     color: "#a9b8af",
     fontSize: "14px",
-    marginBottom: "24px",
     textDecoration: "none",
+  },
+  shareButton: {
+    background: "transparent",
+    border: "1px solid #285f40",
+    borderRadius: "999px",
+    color: "#b9ffd4",
+    cursor: "pointer",
+    fontSize: "13px",
+    fontWeight: 700,
+    padding: "8px 12px",
   },
   brand: {
     color: "#5cff9d",
@@ -356,7 +374,10 @@ const lowestBuyNowPrice =
     return (
       <main style={styles.page}>
         <div style={styles.container}>
-          <BackToCollection href={backHref} style={styles.backLink} />
+          <div style={styles.topActions}>
+            <BackToCollection href={backHref} style={styles.backLink} />
+            <CopyNFTLink style={styles.shareButton} />
+          </div>
           <p style={styles.brand}>Lumen</p>
           <h1 style={styles.title}>{title}</h1>
 
@@ -447,7 +468,10 @@ const lowestBuyNowPrice =
     return (
       <main style={styles.page}>
         <div style={styles.container}>
-          <BackToCollection href={backHref} style={styles.backLink} />
+          <div style={styles.topActions}>
+            <BackToCollection href={backHref} style={styles.backLink} />
+            <CopyNFTLink style={styles.shareButton} />
+          </div>
           <p style={styles.brand}>Lumen</p>
           <h1 style={styles.title}>DeSo NFT</h1>
 
