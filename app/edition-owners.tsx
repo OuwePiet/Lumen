@@ -29,7 +29,7 @@ const styles = {
     padding: "14px",
   },
   summary: {
-    color: "#b9ffd4",
+    color: "#c4cec8",
     cursor: "pointer",
     fontSize: "14px",
     fontWeight: 800,
