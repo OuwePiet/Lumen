@@ -1,10 +1,9 @@
 import BackToCollection from "./back-to-collection"
 import CopyNFTLink from "./copy-nft-link"
+import { fetchDeSo } from "./deso-api"
 import EditionOwners from "./edition-owners"
 import NFTMedia from "./nft-media"
 import NFTHistory from "./nft-history"
-
-const DESO_NODE = "https://node.deso.org"
 
 type DeSoPost = {
   Body?: string
@@ -31,7 +30,7 @@ type NFTEntry = {
 }
 
 async function requestDeSo(endpoint: string, postHash: string) {
-  const response = await fetch(`${DESO_NODE}/api/v0/${endpoint}`, {
+  const response = await fetchDeSo(endpoint, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -51,7 +50,7 @@ async function requestDeSo(endpoint: string, postHash: string) {
 async function loadProfileUsername(publicKey?: string) {
   if (!publicKey) return undefined
 
-  const response = await fetch(`${DESO_NODE}/api/v0/get-single-profile`, {
+  const response = await fetchDeSo("get-single-profile", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ PublicKeyBase58Check: publicKey }),

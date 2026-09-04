@@ -1,9 +1,8 @@
 "use client"
 
 import { useCallback, useEffect, useState, type FormEvent } from "react"
+import { fetchDeSo } from "./deso-api"
 import PublicAccountNFTs from "./public-account-nfts"
-
-const DESO_NODE = "https://node.deso.org"
 
 type DeSoProfile = {
   Username?: string
@@ -196,7 +195,7 @@ export default function AccountLookup({
     setLoading(true)
 
     try {
-      const response = await fetch(`${DESO_NODE}/api/v0/get-profiles`, {
+      const response = await fetchDeSo("get-profiles", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
