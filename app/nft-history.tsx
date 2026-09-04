@@ -105,7 +105,7 @@ export default function NFTHistory({
           </div>
         ))}
         <p style={styles.note}>
-          This read-only record uses direct DeSo data. Lumen does not infer
+          This read-only record uses direct DeSo data. VIA does not infer
           earlier transfers or sales that the current direct endpoint does not
           return.
         </p>
