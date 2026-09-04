@@ -1,6 +1,7 @@
 "use client"
 
 import { useCallback, useEffect, useRef, useState } from "react"
+import NFTMedia from "./nft-media"
 
 const DESO_NODE = "https://node.deso.org"
 const PAGE_SIZE = 25
@@ -224,7 +225,14 @@ const styles = {
     objectFit: "cover" as const,
     width: "100%",
   },
-  placeholder: { color: "#84958b", fontSize: "12px" },
+  placeholder: {
+    color: "#84958b",
+    display: "grid",
+    fontSize: "12px",
+    height: "100%",
+    placeItems: "center",
+    width: "100%",
+  },
   content: { padding: "9px" },
   title: {
     display: "-webkit-box",
@@ -678,7 +686,6 @@ export default function PublicAccountNFTs({
           {visibleNFTs.map((collection) => {
             const post = collection.PostEntryResponse!
             const postHash = post.PostHashHex!
-            const mediaUrl = post.VideoURLs?.[0] ?? post.ImageURLs?.[0]
             const ownedEntries = collection.NFTEntryResponses ?? []
             const ownedCopies = ownedEntries.length
             const totalCopies = post.NumNFTCopies ?? ownedCopies
@@ -700,17 +707,13 @@ export default function PublicAccountNFTs({
                 style={styles.card}
               >
                 <div style={styles.media}>
-                  {mediaUrl ? (
-                    <img
-                      src={mediaUrl}
-                      alt=""
-                      width={320}
-                      height={320}
-                      style={styles.image}
-                    />
-                  ) : (
-                    <span style={styles.placeholder}>Media unavailable</span>
-                  )}
+                  <NFTMedia
+                    imageUrl={post.ImageURLs?.[0]}
+                    videoUrl={post.VideoURLs?.[0]}
+                    alt={title(post.Body)}
+                    imageStyle={styles.image}
+                    placeholderStyle={styles.placeholder}
+                  />
                 </div>
                 <div style={styles.content}>
                   <h3 style={styles.title}>{title(post.Body)}</h3>
