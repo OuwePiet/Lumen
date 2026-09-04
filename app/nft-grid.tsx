@@ -1,9 +1,8 @@
 import accessibilityStyles from "./accessibility.module.css"
 import CollectionBrowser from "./collection-browser"
+import { fetchDeSo } from "./deso-api"
 import MediaFilter, { type MediaFilterType } from "./media-filter"
 import NFTMedia from "./nft-media"
-
-const DESO_NODE = "https://node.deso.org"
 
 const NFT_POST_HASHES = [
   "000929e4490e3f744a7c889738d3aef52397ac72af906e5cd473bde710b49111",
@@ -59,7 +58,7 @@ function mediaFilterType(post: DeSoPost): MediaFilterType {
 }
 
 async function loadCollectionOwner() {
-  const response = await fetch(`${DESO_NODE}/api/v0/get-single-profile`, {
+  const response = await fetchDeSo("get-single-profile", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ Username: "OuwePiet" }),
@@ -84,9 +83,7 @@ async function loadAutomaticNFTCount(publicKey: string) {
   const discoveredNFTPostHashes: string[] = []
 
   for (let page = 0; page < 20; page += 1) {
-    const response = await fetch(
-      `${DESO_NODE}/api/v0/get-posts-for-public-key`,
-      {
+    const response = await fetchDeSo("get-posts-for-public-key", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -97,8 +94,7 @@ async function loadAutomaticNFTCount(publicKey: string) {
           MediaRequired: false,
         }),
         cache: "no-store",
-      }
-    )
+      })
 
     if (!response.ok) return null
 
@@ -146,11 +142,8 @@ async function loadNFT(postHash: string) {
   }
 
   const [postResponse, nftResponse] = await Promise.all([
-    fetch(`${DESO_NODE}/api/v0/get-single-post`, requestOptions),
-    fetch(
-      `${DESO_NODE}/api/v0/get-nft-entries-for-nft-post`,
-      requestOptions
-    ),
+    fetchDeSo("get-single-post", requestOptions),
+    fetchDeSo("get-nft-entries-for-nft-post", requestOptions),
   ])
 
   if (!postResponse.ok || !nftResponse.ok) return null
