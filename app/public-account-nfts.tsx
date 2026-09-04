@@ -272,50 +272,77 @@ export default function PublicAccountNFTs({
   username: string
   autoLoad?: boolean
 }) {
-  const cacheKey = `lumen:account-nfts:${publicKey}`
-  const [nfts, setNFTs] = useState<NFTCollection[] | null>(() => {
-    if (!autoLoad || typeof window === "undefined") return null
-
-    try {
-      const cached = window.sessionStorage.getItem(cacheKey)
-      return cached ? (JSON.parse(cached) as NFTCollection[]) : null
-    } catch {
-      return null
-    }
-  })
+  const cacheKey = `via:account-nfts:${publicKey}`
+  const legacyCacheKey = `lumen:account-nfts:${publicKey}`
+  const [nfts, setNFTs] = useState<NFTCollection[] | null>(null)
   const [loading, setLoading] = useState(false)
   const [linkCopied, setLinkCopied] = useState(false)
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
-  const initialParams =
-    typeof window === "undefined"
-      ? new URLSearchParams()
-      : new URLSearchParams(window.location.search)
   const [error, setError] = useState("")
-  const [query, setQuery] = useState(initialParams.get("query") ?? "")
-  const [sortMode, setSortMode] = useState<SortMode>(() => {
-    const value = initialParams.get("sort")
-    return value === "title" ||
-      value === "most-owned" ||
-      value === "fewest-owned" ||
-      value === "lowest-price" ||
-      value === "highest-price"
-      ? value
-      : "collection"
-  })
-  const [saleFilter, setSaleFilter] = useState<SaleFilter>(() => {
-    const value = initialParams.get("sale")
-    return value === "for-sale" || value === "not-for-sale" ? value : "all"
-  })
-  const [mediaFilter, setMediaFilter] = useState<MediaFilter>(() => {
-    const value = initialParams.get("media")
-    return value === "image" ||
-      value === "video" ||
-      value === "audio" ||
-      value === "unavailable"
-      ? value
-      : "all"
-  })
+  const [query, setQuery] = useState("")
+  const [sortMode, setSortMode] = useState<SortMode>("collection")
+  const [saleFilter, setSaleFilter] = useState<SaleFilter>("all")
+  const [mediaFilter, setMediaFilter] = useState<MediaFilter>("all")
+  const [isInitialStateRestored, setIsInitialStateRestored] = useState(false)
   const autoLoadStarted = useRef(false)
+
+  useEffect(() => {
+    if (!autoLoad || isInitialStateRestored) return
+
+    const params = new URLSearchParams(window.location.search)
+    const requestedSort = params.get("sort")
+    const requestedSale = params.get("sale")
+    const requestedMedia = params.get("media")
+
+    setQuery(params.get("query") ?? "")
+    if (
+      requestedSort === "title" ||
+      requestedSort === "most-owned" ||
+      requestedSort === "fewest-owned" ||
+      requestedSort === "lowest-price" ||
+      requestedSort === "highest-price"
+    ) {
+      setSortMode(requestedSort)
+    }
+    if (requestedSale === "for-sale" || requestedSale === "not-for-sale") {
+      setSaleFilter(requestedSale)
+    }
+    if (
+      requestedMedia === "image" ||
+      requestedMedia === "video" ||
+      requestedMedia === "audio" ||
+      requestedMedia === "unavailable"
+    ) {
+      setMediaFilter(requestedMedia)
+    }
+
+    let restoredKey: string | null = null
+    try {
+      const currentValue = window.sessionStorage.getItem(cacheKey)
+      const legacyValue = window.sessionStorage.getItem(legacyCacheKey)
+      const cachedValue = currentValue ?? legacyValue
+      restoredKey = currentValue
+        ? cacheKey
+        : legacyValue
+          ? legacyCacheKey
+          : null
+
+      if (cachedValue) {
+        const cachedNFTs: unknown = JSON.parse(cachedValue)
+        if (Array.isArray(cachedNFTs)) {
+          setNFTs(cachedNFTs as NFTCollection[])
+          if (restoredKey === legacyCacheKey) {
+            window.sessionStorage.setItem(cacheKey, cachedValue)
+            window.sessionStorage.removeItem(legacyCacheKey)
+          }
+        }
+      }
+    } catch {
+      if (restoredKey) window.sessionStorage.removeItem(restoredKey)
+    } finally {
+      setIsInitialStateRestored(true)
+    }
+  }, [autoLoad, cacheKey, isInitialStateRestored, legacyCacheKey])
 
   const loadNFTs = useCallback(async () => {
     setLoading(true)
@@ -390,11 +417,16 @@ export default function PublicAccountNFTs({
   }, [cacheKey, publicKey])
 
   useEffect(() => {
-    if (autoLoad && nfts === null && !autoLoadStarted.current) {
+    if (
+      autoLoad &&
+      isInitialStateRestored &&
+      nfts === null &&
+      !autoLoadStarted.current
+    ) {
       autoLoadStarted.current = true
       void loadNFTs()
     }
-  }, [autoLoad, loadNFTs, nfts])
+  }, [autoLoad, isInitialStateRestored, loadNFTs, nfts])
 
   const collectionParams = new URLSearchParams({
     account: username,
