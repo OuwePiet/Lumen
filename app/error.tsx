@@ -65,7 +65,7 @@ export default function Error({
   return (
     <main style={styles.page}>
       <section style={styles.panel} role="alert">
-        <p style={styles.brand}>Lumen</p>
+        <p style={styles.brand}>VIA</p>
         <h1 style={styles.heading}>The collection could not be loaded.</h1>
         <p style={styles.message}>
           DeSo is temporarily unavailable or the connection was interrupted.

@@ -390,7 +390,7 @@ const lowestBuyNowPrice =
             <BackToCollection href={backHref} style={styles.backLink} />
             <CopyNFTLink style={styles.shareButton} />
           </div>
-          <p style={styles.brand}>Lumen</p>
+          <p style={styles.brand}>VIA</p>
           <h1 style={styles.title}>{title}</h1>
 
           <div style={styles.grid}>
@@ -412,7 +412,7 @@ const lowestBuyNowPrice =
                     Legacy external link detected
                   </strong>
                   This on-chain description contains an nftz.me link that may
-                  no longer work. Lumen does not open or depend on this link.
+                  no longer work. VIA does not open or depend on this link.
                   NFT data remains available directly from DeSo.
                 </div>
               ) : null}
@@ -489,7 +489,7 @@ const lowestBuyNowPrice =
             <BackToCollection href={backHref} style={styles.backLink} />
             <CopyNFTLink style={styles.shareButton} />
           </div>
-          <p style={styles.brand}>Lumen</p>
+          <p style={styles.brand}>VIA</p>
           <h1 style={styles.title}>DeSo NFT</h1>
 
           <section style={styles.card}>

@@ -61,7 +61,7 @@ export default function Loading() {
   return (
     <main style={styles.page} aria-busy="true" aria-live="polite">
       <div style={styles.container}>
-        <p style={styles.brand}>Lumen</p>
+        <p style={styles.brand}>VIA</p>
         <h1 style={styles.heading}>NFT collection</h1>
         <p style={styles.status}>Loading NFT collection from DeSo…</p>
 

@@ -443,7 +443,7 @@ export default async function NFTGrid({
         Skip to collection controls
       </a>
       <div style={styles.container}>
-        <p style={styles.brand}>Lumen</p>
+        <p style={styles.brand}>VIA</p>
         <h1 style={styles.heading}>NFT collection</h1>
 
         <p style={styles.introduction}>

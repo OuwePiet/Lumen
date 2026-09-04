@@ -335,7 +335,7 @@ export default function VoiceControls({
 
     if (privacyConfirmationRequired) {
       const accepted = window.confirm(
-        "Speech recognition may use your browser’s speech service. Lumen does not store audio or transcripts and uses no external speech server of its own. Continue?"
+        "Speech recognition may use your browser’s speech service. VIA does not store audio or transcripts and uses no external speech server of its own. Continue?"
       )
 
       if (!accepted) {
@@ -482,7 +482,7 @@ export default function VoiceControls({
       <div style={styles.settingsContent}>
       <div style={styles.processing} role="note">
         <strong>Speech processing</strong><br />
-        Recognition may use your browser’s speech service. Lumen does not
+        Recognition may use your browser’s speech service. VIA does not
         store audio or transcripts and uses no external speech server of its
         own. Voice remains off until you choose to activate it.
       </div>
@@ -582,7 +582,7 @@ export default function VoiceControls({
           <ul style={styles.helpList}>
             <li>Your browser handles microphone noise reduction</li>
             <li>Speak close to the microphone and pause background audio</li>
-            <li>Lumen does not guess or apply an unclear command</li>
+            <li>VIA does not guess or apply an unclear command</li>
             <li>Unclear speech can always be tried again</li>
           </ul>
         </details>
@@ -592,7 +592,7 @@ export default function VoiceControls({
         <details style={styles.help}>
           <summary style={styles.helpSummary}>Privacy</summary>
           <ul style={styles.helpList}>
-            <li>Lumen does not store audio or voice transcripts</li>
+            <li>VIA does not store audio or voice transcripts</li>
             <li>Your browser handles speech recognition</li>
             <li>Voice commands never sign in, pay, trade or write to a blockchain</li>
             <li>Listening stops after each command or automatically after 15 seconds</li>
@@ -655,7 +655,7 @@ export default function VoiceControls({
             ) : null}
           </div>
           <p style={{ margin: "8px 0 0", fontSize: "12px" }}>
-            Lumen does not store the audio or recognized test text.
+            VIA does not store the audio or recognized test text.
           </p>
         </div>
       ) : null}
