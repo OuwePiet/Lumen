@@ -48,7 +48,8 @@ const mediaFilterOptions: Array<{
 ]
 
 const PAGE_SIZE = 8
-const SESSION_STORAGE_KEY = "lumen-collection-controls"
+const SESSION_STORAGE_KEY = "via-collection-controls"
+const LEGACY_SESSION_STORAGE_KEY = "lumen-collection-controls"
 
 const sortLabels: Record<SortType, string> = {
   collection: "Collection order",
@@ -197,8 +198,17 @@ export default function MediaFilter({
   const cards = Children.toArray(children)
   const normalizedSearchQuery = searchQuery.trim().toLocaleLowerCase("en")
   useEffect(() => {
+    let restoredKey: string | null = null
+
     try {
-      const storedValue = sessionStorage.getItem(SESSION_STORAGE_KEY)
+      const currentValue = sessionStorage.getItem(SESSION_STORAGE_KEY)
+      const legacyValue = sessionStorage.getItem(LEGACY_SESSION_STORAGE_KEY)
+      const storedValue = currentValue ?? legacyValue
+      restoredKey = currentValue
+        ? SESSION_STORAGE_KEY
+        : legacyValue
+          ? LEGACY_SESSION_STORAGE_KEY
+          : null
 
       if (storedValue) {
         const stored = JSON.parse(storedValue) as Partial<StoredControls>
@@ -245,9 +255,14 @@ export default function MediaFilter({
         ) {
           setVisibleLimit(Math.floor(stored.visibleLimit))
         }
+
+        if (restoredKey === LEGACY_SESSION_STORAGE_KEY) {
+          sessionStorage.setItem(SESSION_STORAGE_KEY, storedValue)
+          sessionStorage.removeItem(LEGACY_SESSION_STORAGE_KEY)
+        }
       }
     } catch {
-      sessionStorage.removeItem(SESSION_STORAGE_KEY)
+      if (restoredKey) sessionStorage.removeItem(restoredKey)
     } finally {
       setIsStateRestored(true)
     }
