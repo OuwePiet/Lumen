@@ -3,9 +3,24 @@ import type { Metadata, Viewport } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'v0 App',
-  description: 'Created with v0',
-  generator: 'v0.app',
+  metadataBase: new URL('https://viadeso.online'),
+  title: {
+    default: 'VIA — DeSo NFT platform',
+    template: '%s | VIA',
+  },
+  description:
+    'Explore DeSo NFT collections through VIA, directly from the DeSo blockchain.',
+  alternates: {
+    canonical: '/',
+  },
+  openGraph: {
+    title: 'VIA — DeSo NFT platform',
+    description:
+      'Explore DeSo NFT collections through VIA, directly from the DeSo blockchain.',
+    url: '/',
+    siteName: 'VIA',
+    type: 'website',
+  },
   icons: {
     icon: [
       {
