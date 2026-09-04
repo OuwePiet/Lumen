@@ -1,9 +1,8 @@
 "use client"
 
 import { useCallback, useEffect, useRef, useState } from "react"
+import { fetchDeSo } from "./deso-api"
 import NFTMedia from "./nft-media"
-
-const DESO_NODE = "https://node.deso.org"
 const PAGE_SIZE = 25
 const VIDEO_EXTENSIONS = [".mp4", ".webm", ".mov", ".m4v"]
 const AUDIO_EXTENSIONS = [".mp3", ".wav", ".m4a", ".aac", ".flac", ".oga"]
@@ -354,7 +353,7 @@ export default function PublicAccountNFTs({
       let lastKeyHex = ""
 
       while (true) {
-        const response = await fetch(`${DESO_NODE}/api/v0/get-nfts-for-user`, {
+        const response = await fetchDeSo("get-nfts-for-user", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
