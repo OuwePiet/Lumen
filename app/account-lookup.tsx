@@ -45,9 +45,10 @@ export default function AccountLookup({ onAccountSelected }: { onAccountSelected
   const [loading, setLoading] = useState(false)
   const [autoLoadNFTs, setAutoLoadNFTs] = useState(false)
 
-  const rememberSelectedAccount = (selectedProfile: DeSoProfile) => {
-    if (typeof window === "undefined" || !selectedProfile.Username || !selectedProfile.PublicKeyBase58Check) return
-    const params = new URLSearchParams({ account: selectedProfile.Username, accountKey: selectedProfile.PublicKeyBase58Check })
+  const rememberSelectedAccount = (selectedProfile: DeSoProfile, openNFTs = false) => {
+    if (typeof window === "undefined" || !selectedProfile.Username) return
+    const params = new URLSearchParams({ account: selectedProfile.Username })
+    if (openNFTs) params.set("view", "nfts")
     window.history.replaceState({}, "", `${window.location.pathname}?${params.toString()}#account-lookup-heading`)
   }
 
@@ -84,7 +85,7 @@ export default function AccountLookup({ onAccountSelected }: { onAccountSelected
           setError("This VIA link contains an account key that does not match the DeSo profile. Nothing was loaded.")
           return
         }
-        rememberSelectedAccount(exactProfile)
+        rememberSelectedAccount(exactProfile, openNFTs)
         setProfile(exactProfile)
         setAutoLoadNFTs(openNFTs)
         onAccountSelected?.()
