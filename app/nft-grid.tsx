@@ -40,11 +40,11 @@ function mediaFilterType(post: DeSoPost): MediaFilterType {
   return "image"
 }
 
-async function loadCollectionOwner() {
+async function loadCollectionOwner(username: string) {
   const response = await fetchDeSo("get-single-profile", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ Username: "OuwePiet" }),
+    body: JSON.stringify({ Username: username }),
     cache: "no-store",
   })
   if (!response.ok) return null
@@ -152,7 +152,8 @@ const styles = {
 }
 
 export default async function NFTGrid({ initialAccount }: { initialAccount?: string }) {
-  const [results, collectionOwner] = await Promise.all([Promise.all(NFT_POST_HASHES.map(loadNFT)), loadCollectionOwner()])
+  const selectedAccount = initialAccount?.trim().replace(/^@/, "") || "OuwePiet"
+  const [results, collectionOwner] = await Promise.all([Promise.all(NFT_POST_HASHES.map(loadNFT)), loadCollectionOwner(selectedAccount)])
   const automaticNFTResult = collectionOwner ? await loadAutomaticNFTCount(collectionOwner.PublicKeyBase58Check!) : null
   const nfts = results.filter((result) => result !== null)
   const discoveredResults = automaticNFTResult ? await Promise.all(automaticNFTResult.discoveredNFTPostHashes.map(loadNFT)) : []
@@ -188,7 +189,7 @@ export default async function NFTGrid({ initialAccount }: { initialAccount?: str
         <CollectionBrowser initialAccount={initialAccount}>
           <>
             <p style={styles.owner}>
-              {collectionOwner ? `Collection owner: @${collectionOwner.Username}` : "Collection owner unavailable"}<br />
+              {collectionOwner ? `Collection owner: @${collectionOwner.Username}` : `Collection owner unavailable: @${selectedAccount}`}<br />
               {automaticNFTResult === null ? "Automatic NFT check unavailable" : `Automatic NFTs found: ${automaticNFTResult.nftCount} of ${automaticNFTResult.checkedPosts} checked posts`}<br />
               {`Unique NFTs displayed: ${collectionNFTs.length}`}<br />
               {`Automatically added to collection: ${discoveredNFTs.length}`}
