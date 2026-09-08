@@ -60,6 +60,30 @@ This file records relevant ideas that are deliberately not adopted into the acti
 - **Current decision:** Keep ordinary Git-to-Vercel deployment automation as infrastructure practice. Do not add custom realtime update sensors or fallback routers unless a concrete product need, data source, failure model and test plan exist.
 - **Discussion status:** Infrastructure principle adopted; custom autonomous update machinery deferred.
 
+## Automatic node rotation and self-healing fallback
+
+- **Idea:** Continuously health-check infrastructure and switch the browser automatically across public DeSo nodes whenever the primary route is slow or unavailable.
+- **Source:** Historical `Google node rotetor, bij storing.docx` and `Google-beveiliging-bij uitval Velcon-Github.docx` material.
+- **Why not adopted as-is:** The resilience principle is useful, but the historical implementation assumes that several third-party hosts expose interchangeable API contracts and promises fixed failover timings and uninterrupted availability without verified health, compatibility, rate-limit or trust guarantees.
+- **Current decision:** Keep the active `node.deso.org` request wrapper with timeout/retry. A real multi-node fallback may be added only after each candidate node is explicitly verified for the endpoints VIA uses, with bounded retries, deterministic ordering, no credential/referrer leakage, and no claim of guaranteed uptime.
+- **Discussion status:** Architecture direction retained; unverified node list and self-healing guarantees deferred.
+
+## Autonomous third-party software detection and live implementation
+
+- **Idea:** Continuously scan competitors/protocols, classify detected features as safe, and inject newly discovered Web3 components into VIA automatically without a reviewed code release.
+- **Source:** Historical update/detection documents including `Google detectie sensor voor gesignaleerde updates.docx` and `Google-detectie nieuwe software-derde.docx`.
+- **Why not adopted as-is:** Runtime feature injection from external metadata creates supply-chain, XSS, provenance and product-integrity risks. A regex scan or label such as `Geverifieerd Web3 Protocol` is not an authoritative security review.
+- **Current decision:** Monitoring and benchmarking may inform human-reviewed development, but production features must enter VIA through normal reviewed source changes and Vercel deployments. Do not render untrusted external descriptions through `innerHTML` or automatically install discovered integrations.
+- **Discussion status:** Monitoring principle retained; autonomous implementation rejected.
+
+## Legal blocklists and 18+ biometric claims
+
+- **Idea:** Hide blocked on-chain posts by hash/wallet and treat Face ID/Touch ID/passkey confirmation as proof that a viewer is an adult.
+- **Source:** Historical `Google-beveiliging-18+-en verboden middelen..docx` material.
+- **Why not adopted as-is:** A content blocklist can be a valid moderation mechanism, but its policy source, update authority, appeals process and scope must be explicit. Device biometrics/passkeys authenticate device/user possession; they do not by themselves establish legal age, so presenting them as age verification would be misleading.
+- **Current decision:** Retain the concept of platform-level visibility controls for later moderation design. Do not claim biometric/passkey use proves age. Any future age-gating or restricted-content system requires a separately reviewed legal/product design and clear data-minimisation rules.
+- **Discussion status:** Moderation direction retained; legal-age verification claim deferred.
+
 ## International payments, regional badges and cross-chain bridging
 
 - **Idea:** Add India/China payment methods, region-based creator badges, imported external verification and direct L2/cross-chain NFT bridging.
