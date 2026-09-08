@@ -84,6 +84,30 @@ This file records relevant ideas that are deliberately not adopted into the acti
 - **Current decision:** Retain the concept of platform-level visibility controls for later moderation design. Do not claim biometric/passkey use proves age. Any future age-gating or restricted-content system requires a separately reviewed legal/product design and clear data-minimisation rules.
 - **Discussion status:** Moderation direction retained; legal-age verification claim deferred.
 
+## Anti-piracy and "copy-proof" media claims
+
+- **Idea:** Prevent copying by hiding source URLs behind blobs/canvas, disabling right-click/dragging, adding invisible overlays and watermarking non-owner views.
+- **Source:** Historical `Google-komplete-hacker-kopieerbeveiliging.docx` material.
+- **Why not adopted as security:** Browser-delivered media cannot be made genuinely copy-proof once pixels or video are rendered to a user's device. Right-click suppression and overlays reduce convenience but do not prevent screenshots, developer tools, network capture or camera capture. Calling these controls cryptographic protection or proof against theft would overstate what they do.
+- **Current decision:** Watermarking can be considered later as a presentation/deterrence option, especially for previews. Do not disable ordinary browser controls globally, do not describe client-side rendering as copy-proof, and do not weaken accessibility to create cosmetic protection.
+- **Discussion status:** Optional UX/deterrence concept retained; security guarantee rejected.
+
+## Admin access by public-key comparison
+
+- **Idea:** Show the admin panel when the currently supplied DeSo public key equals the owner's configured public key.
+- **Source:** Historical `Google-beveiliging-site.docx` material.
+- **Why not adopted as-is:** A public key is an identifier, not proof that the browser controls the corresponding signing authority. This would recreate the trust flaw already removed from VIA wallet linking.
+- **Current decision:** Any future admin capability must require an authoritative authenticated session and explicit proof of wallet/account control before role checks are evaluated. Secrets belong in protected environment configuration, never in client code.
+- **Discussion status:** Security rule retained for future admin work.
+
+## Legal/compliance certainty claims
+
+- **Idea:** State that serverless architecture, external swap widgets or disclaimers shift legal responsibility completely to third parties and make VIA legally `100% safe`.
+- **Source:** Historical `Google-miccadekking-juridische zaken.docx` and related master material.
+- **Why not adopted as-is:** Architecture choices and third-party providers can change legal responsibilities but do not by themselves establish regulatory status or eliminate operator obligations. The historical text contains absolute legal conclusions without a jurisdiction-specific professional assessment.
+- **Current decision:** Keep non-custodial architecture and clear disclosures as useful design principles, but do not publish absolute compliance/safety claims. Payment, swap, custody, moderation and token-economic features require separate legal review before launch in relevant jurisdictions.
+- **Discussion status:** Legal review item; no absolute claims in active VIA copy.
+
 ## International payments, regional badges and cross-chain bridging
 
 - **Idea:** Add India/China payment methods, region-based creator badges, imported external verification and direct L2/cross-chain NFT bridging.
