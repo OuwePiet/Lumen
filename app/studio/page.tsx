@@ -1,4 +1,5 @@
 import type { Metadata } from "next"
+import StudioDraft from "./studio-draft"
 
 export const metadata: Metadata = {
   title: "Studio",
@@ -25,18 +26,20 @@ export default function StudioPage() {
           <p className="via-studio-kicker">VIA Studio</p>
           <h1>Create from any screen.</h1>
           <p>
-            A free creator workspace designed for phone, tablet and desktop. This first
-            foundation is intentionally non-custodial: VIA Studio never asks for or stores
-            your DeSo seed phrase or private signing key.
+            A free creator workspace designed for phone, tablet and desktop. VIA Studio is
+            intentionally non-custodial: it never asks for or stores your DeSo seed phrase
+            or private signing key.
           </p>
         </header>
+
+        <StudioDraft />
 
         <section className="via-studio-grid" aria-label="Studio tools">
           {tools.map((tool) => (
             <article className="via-studio-card" key={tool.title}>
               <h2>{tool.title}</h2>
               <p>{tool.text}</p>
-              <span aria-label={`${tool.title} is being built`}>Foundation ready</span>
+              <span aria-label={`${tool.title} development status`}>Foundation ready</span>
             </article>
           ))}
         </section>
