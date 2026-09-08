@@ -418,16 +418,11 @@ export default function PublicAccountNFTs({
   }, [cacheKey, publicKey])
 
   useEffect(() => {
-    if (
-      autoLoad &&
-      restored &&
-      nfts === null &&
-      !autoLoadStarted.current
-    ) {
+    if (autoLoad && restored && !autoLoadStarted.current) {
       autoLoadStarted.current = true
       void loadNFTs()
     }
-  }, [autoLoad, loadNFTs, nfts, restored])
+  }, [autoLoad, loadNFTs, restored])
 
   const collectionParams = new URLSearchParams({
     account: username,
@@ -664,8 +659,18 @@ export default function PublicAccountNFTs({
           <button type="button" style={styles.filter} onClick={copyCollectionLink}>
             {linkCopied ? "Link copied" : "Copy collection link"}
           </button>
+          <button
+            type="button"
+            style={styles.filter}
+            disabled={loading}
+            onClick={loadNFTs}
+          >
+            {loading ? "Refreshing from DeSo…" : "Refresh from DeSo"}
+          </button>
         </div>
       ) : null}
+
+      {error ? <div style={styles.error} role="alert">{error}</div> : null}
 
       <p style={styles.status} aria-live="polite">
         {nfts.length === 0
