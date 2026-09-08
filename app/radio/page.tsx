@@ -1,3 +1,5 @@
+import RadioBrowser from "./radio-browser"
+
 const styles = {
   main: {
     minHeight: "100vh",
@@ -59,28 +61,6 @@ const styles = {
     maxWidth: "760px",
     margin: "0 0 28px",
   },
-  grid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-    gap: "16px",
-  },
-  card: {
-    background: "#0b120e",
-    border: "1px solid #285f40",
-    borderRadius: "16px",
-    padding: "20px",
-  },
-  cardTitle: {
-    color: "#b9ffd4",
-    fontSize: "18px",
-    margin: "0 0 10px",
-  },
-  cardText: {
-    color: "#a9b8af",
-    fontSize: "14px",
-    lineHeight: 1.55,
-    margin: 0,
-  },
   notice: {
     marginTop: "22px",
     background: "#10261a",
@@ -105,30 +85,13 @@ export default function WorldRadioPage() {
         <p style={styles.eyebrow}>World Radio</p>
         <h1 style={styles.heading}>Listen around the world.</h1>
         <p style={styles.intro}>
-          VIA World Radio is the audio discovery area for public internet radio. The route is now live in VIA; station discovery and playback will only be connected after the public directory source, stream URLs and rights boundaries have been verified.
+          Discover public internet radio by country or genre. Station metadata comes from the Radio Browser directory; when you press Play, audio is requested directly from the station and is not hosted or proxied by VIA.
         </p>
 
-        <div style={styles.grid}>
-          <section style={styles.card}>
-            <h2 style={styles.cardTitle}>Countries</h2>
-            <p style={styles.cardText}>Browse stations by country without turning radio into a core dependency of the DeSo experience.</p>
-          </section>
-          <section style={styles.card}>
-            <h2 style={styles.cardTitle}>Genres</h2>
-            <p style={styles.cardText}>A simple genre layer will make worldwide discovery fast on phone, tablet and desktop.</p>
-          </section>
-          <section style={styles.card}>
-            <h2 style={styles.cardTitle}>Favorites</h2>
-            <p style={styles.cardText}>Favorites will stay local to the browser first, avoiding accounts, databases and extra cost for this feature.</p>
-          </section>
-          <section style={styles.card}>
-            <h2 style={styles.cardTitle}>Explicit play</h2>
-            <p style={styles.cardText}>No station should auto-play. Audio starts only after the visitor chooses a station and presses play.</p>
-          </section>
-        </div>
+        <RadioBrowser />
 
         <div style={styles.notice}>
-          World Radio is separate from VIA LIVE. Radio is for station listening; VIA LIVE is for community conversations and later replays. VIA will not host or proxy station audio by default.
+          World Radio is separate from VIA LIVE. Radio is for station listening; VIA LIVE is for community conversations and later replays. Availability and rights remain the responsibility of each station or stream provider.
         </div>
       </div>
     </main>
