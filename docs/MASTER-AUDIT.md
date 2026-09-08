@@ -23,6 +23,8 @@ VIA / viadeso.online is the active product baseline. Historical Lumen, Vero, Vel
 - Factual NFT labels instead of unverified trust badges.
 - HTTPS-only remote NFT media rendering, with `ipfs://` metadata translated to fixed HTTPS gateway candidates.
 - Media fallback state reset whenever a different NFT source is shown.
+- HTTPS-only DeSo profile images with a local VIA fallback avatar.
+- One authoritative `get-nfts-for-user` request contract followed by client-side presentation paging.
 
 ### Reject as-is / Phase 3
 
@@ -39,10 +41,12 @@ VIA / viadeso.online is the active product baseline. Historical Lumen, Vero, Vel
 - Added deterministic IPFS HTTPS fallback candidates.
 - Reset media fallback state between NFT source changes.
 - Replaced the remaining `DeSo verified` NFT detail badge with the factual `On-chain NFT` label.
+- Enforced the documented NFT collection request/response contract centrally so legacy callers cannot accidentally loop on an unverified cursor.
+- Restricted remote DeSo profile pictures to HTTPS and removed referrer leakage.
 
 ## Next checks
 
-- Audit all remaining external links and URL construction for untrusted input.
+- Audit remaining URL construction and share/deep-link state for untrusted input.
 - Audit NFT metadata parsing beyond media URLs.
 - Audit accessibility and responsive behavior on mobile/tablet/desktop.
 - Audit error/loading states and API failure isolation.
