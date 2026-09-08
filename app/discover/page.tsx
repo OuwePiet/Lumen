@@ -11,7 +11,9 @@ const sections = [
   },
   {
     title: "NFT Window",
-    text: "A discovery entry point for public DeSo NFTs using VIA's existing NFT retrieval and media-safety foundation.",
+    text: "Open VIA's existing public DeSo NFT collection browser. Search a public creator account and inspect NFTs without signing or spending.",
+    href: "/?account=OuwePiet#collection-controls",
+    action: "Open NFT Window",
   },
   {
     title: "Surprise Me",
@@ -26,11 +28,12 @@ const styles = {
   title: { fontSize: "clamp(34px, 7vw, 68px)", lineHeight: 0.98, margin: "12px 0" },
   lead: { color: "#b7c5bd", lineHeight: 1.65, maxWidth: "720px", marginBottom: "24px" },
   nav: { display: "flex", gap: "10px", flexWrap: "wrap" as const, marginBottom: "28px" },
-  link: { border: "1px solid #285f40", borderRadius: "999px", padding: "9px 14px", color: "#b9ffd4", textDecoration: "none", fontWeight: 800 },
+  link: { border: "1px solid #285f40", borderRadius: "999px", padding: "9px 14px", color: "#b9ffd4", textDecoration: "none", fontWeight: 800, display: "inline-flex" },
   grid: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "14px" },
   card: { border: "1px solid #285f40", borderRadius: "16px", background: "#08100b", padding: "18px" },
   cardTitle: { margin: "0 0 8px", fontSize: "19px" },
   cardText: { margin: 0, color: "#a9b8af", lineHeight: 1.55, fontSize: "14px" },
+  cardAction: { marginTop: "14px" },
   radio: { marginTop: "14px", border: "1px solid #347d52", borderRadius: "16px", background: "#0b1710", padding: "18px" },
 }
 
@@ -56,6 +59,9 @@ export default function DiscoverPage() {
             <article key={section.title} style={styles.card}>
               <h2 style={styles.cardTitle}>{section.title}</h2>
               <p style={styles.cardText}>{section.text}</p>
+              {section.href && section.action ? (
+                <p style={styles.cardAction}><Link href={section.href} style={styles.link}>{section.action}</Link></p>
+              ) : null}
             </article>
           ))}
         </section>
