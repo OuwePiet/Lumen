@@ -19,3 +19,27 @@ This file records relevant ideas that are deliberately not adopted into the acti
 - **Current decision:** Keep the central request guard that strips unverified request fields and move the gallery toward the documented `getNFTsForUser` loader. Do not claim server-side pagination until the deployed DeSo contract is verified.
 - **Alternative:** Retain VIA's client-side 25-item presentation paging after one authoritative collection load; revisit transport pagination if DeSo documents or verifies a cursor contract.
 - **Discussion status:** Recorded for later review; no NFT functionality is intentionally discarded.
+
+## Silent derived private keys in browser storage
+
+- **Idea:** Store a derived private key in `sessionStorage` so later on-chain actions can run without repeated user prompts.
+- **Source:** Historical Lumen login/test documents.
+- **Why not adopted as-is:** Browser storage is not an acceptable trust boundary for signing secrets. The proposal also blurs the distinction between convenient login and explicit authority to sign blockchain transactions.
+- **Current decision:** VIA may store non-secret session state, but private signing material must not be persisted in `sessionStorage` or `localStorage`. Wallet-linked capabilities are granted only after an authoritative identity-control verification step.
+- **Discussion status:** Security rule; any future low-friction signing design must be separately reviewed.
+
+## Platform-seed gasless relay
+
+- **Idea:** Use a centrally stored platform seed phrase in a relay service to sponsor and submit transactions for users.
+- **Source:** Historical advanced-modules/test material.
+- **Why not adopted as-is:** A reusable platform seed becomes a high-impact signing secret and creates custody, abuse, rate-limit, compromise and recovery responsibilities that are not designed in the current VIA architecture.
+- **Current decision:** Do not introduce a platform seed or generic signing relay into the active build. Gas sponsorship can be reconsidered only with a narrowly scoped signing model, explicit limits, monitoring and recovery design.
+- **Discussion status:** Open for later architecture review.
+
+## Automatic auction acceptance
+
+- **Idea:** Let a cron job automatically accept the highest NFT bid when a VIA auction timer expires.
+- **Source:** Historical master/test documents.
+- **Why not adopted as-is:** Automatic settlement requires verified signing authority, clear user consent, deterministic failure handling, chain-state reconciliation and protection against stale bids or timing races.
+- **Current decision:** Keep auction timing as a future module until the signing and recovery model is proven. Native DeSo bid state can still be displayed read-only.
+- **Discussion status:** Open for later product/security review.
