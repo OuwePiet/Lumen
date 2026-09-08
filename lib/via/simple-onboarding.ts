@@ -20,6 +20,16 @@ export type ViaSimpleAccount = {
   desoPublicKey?: string
 }
 
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+function normalizeEmail(email: string) {
+  const normalizedEmail = email.trim().toLowerCase()
+  if (!EMAIL_PATTERN.test(normalizedEmail)) {
+    throw new Error("A valid e-mail address is required")
+  }
+  return normalizedEmail
+}
+
 export function capabilitiesFor(account?: ViaSimpleAccount): ViaCapabilities {
   const verified = account?.accessLevel === "verified" || account?.accessLevel === "wallet-linked"
   const walletLinked = account?.accessLevel === "wallet-linked" && Boolean(account.desoPublicKey)
@@ -27,23 +37,33 @@ export function capabilitiesFor(account?: ViaSimpleAccount): ViaCapabilities {
 }
 
 export async function startViaSimpleOnboarding(email: string) {
-  const normalizedEmail = email.trim().toLowerCase()
-  if (!normalizedEmail || !normalizedEmail.includes("@")) throw new Error("A valid e-mail address is required")
+  const normalizedEmail = normalizeEmail(email)
 
   // Integration point: existing VIA Gatekeeper sends the OTP.
   return { email: normalizedEmail, next: "verify-otp" as const }
 }
 
 export async function completeViaSimpleOnboarding(userId: string, email: string): Promise<ViaSimpleAccount> {
+  const normalizedUserId = userId.trim()
+  if (!normalizedUserId) throw new Error("A verified VIA user id is required")
+
   // Call only after Gatekeeper has successfully verified the OTP.
   // Integration point: persist account and create the real server-side session.
-  return { userId, email: email.trim().toLowerCase(), accessLevel: "verified" }
+  return { userId: normalizedUserId, email: normalizeEmail(email), accessLevel: "verified" }
 }
 
-export async function laterLinkDeSoWallet(account: ViaSimpleAccount, desoPublicKey: string): Promise<ViaSimpleAccount> {
+export async function laterLinkDeSoWallet(
+  account: ViaSimpleAccount,
+  desoPublicKey: string,
+  identityVerified = false
+): Promise<ViaSimpleAccount> {
   const publicKey = desoPublicKey.trim()
   if (!publicKey) throw new Error("A DeSo public key is required")
+  if (!identityVerified) {
+    throw new Error("DeSo identity control must be verified before linking a wallet")
+  }
 
-  // Gatekeeper must verify control of this DeSo identity before persistence.
+  // The caller must set identityVerified only after authoritative Gatekeeper/Identity proof.
+  // Never infer wallet control from the presence of a public key alone.
   return { ...account, desoPublicKey: publicKey, accessLevel: "wallet-linked" }
 }

@@ -1,35 +1,22 @@
 "use client"
 
 import { useCallback, useEffect, useRef, useState } from "react"
-import { fetchDeSo } from "./deso-api"
+import {
+  getNFTsForUser,
+  type DeSoNFTCollection,
+  type DeSoNFTEntry,
+  type DeSoNFTPost,
+} from "./deso-nfts"
 import NFTMedia from "./nft-media"
+
 const PAGE_SIZE = 25
+const CACHE_VERSION = 1
+const QUERY_LIMIT = 120
 const VIDEO_EXTENSIONS = [".mp4", ".webm", ".mov", ".m4v"]
 const AUDIO_EXTENSIONS = [".mp3", ".wav", ".m4a", ".aac", ".flac", ".oga"]
 
-type DeSoPost = {
-  PostHashHex?: string
-  Body?: string
-  ImageURLs?: string[]
-  VideoURLs?: string[]
-  NumNFTCopies?: number
-  ProfileEntryResponse?: { Username?: string }
-}
-
-type NFTEntry = {
-  IsForSale?: boolean
-  BuyNowPriceNanos?: number
-  MinBidAmountNanos?: number
-}
-
-type NFTCollection = {
-  PostEntryResponse?: DeSoPost
-  NFTEntryResponses?: NFTEntry[]
-}
-
 type MediaFilter = "all" | "image" | "video" | "audio" | "unavailable"
 type SaleFilter = "all" | "for-sale" | "not-for-sale"
-
 type SortMode =
   | "collection"
   | "title"
@@ -38,25 +25,125 @@ type SortMode =
   | "lowest-price"
   | "highest-price"
 
-function mediaType(post?: DeSoPost): Exclude<MediaFilter, "all"> {
+type NFTCacheEnvelope = {
+  version: number
+  publicKey: string
+  savedAt: number
+  collections: DeSoNFTCollection[]
+}
+
+function isFiniteNonNegativeNumber(value: unknown) {
+  return typeof value === "number" && Number.isFinite(value) && value >= 0
+}
+
+function isStringArray(value: unknown) {
+  return (
+    value === undefined ||
+    (Array.isArray(value) && value.every((item) => typeof item === "string"))
+  )
+}
+
+function isPost(value: unknown): value is DeSoNFTPost {
+  if (!value || typeof value !== "object") return false
+  const post = value as DeSoNFTPost
+
+  if (
+    typeof post.PostHashHex !== "string" ||
+    !/^[0-9a-fA-F]{64}$/.test(post.PostHashHex)
+  ) {
+    return false
+  }
+
+  if (post.Body !== undefined && typeof post.Body !== "string") return false
+  if (!isStringArray(post.ImageURLs) || !isStringArray(post.VideoURLs)) return false
+  if (
+    post.NumNFTCopies !== undefined &&
+    !isFiniteNonNegativeNumber(post.NumNFTCopies)
+  ) {
+    return false
+  }
+
+  return true
+}
+
+function isEntry(value: unknown): value is DeSoNFTEntry {
+  if (!value || typeof value !== "object") return false
+  const entry = value as DeSoNFTEntry
+
+  if (entry.IsForSale !== undefined && typeof entry.IsForSale !== "boolean") {
+    return false
+  }
+  if (
+    entry.BuyNowPriceNanos !== undefined &&
+    !isFiniteNonNegativeNumber(entry.BuyNowPriceNanos)
+  ) {
+    return false
+  }
+  if (
+    entry.MinBidAmountNanos !== undefined &&
+    !isFiniteNonNegativeNumber(entry.MinBidAmountNanos)
+  ) {
+    return false
+  }
+
+  return true
+}
+
+function isCollection(value: unknown): value is DeSoNFTCollection {
+  if (!value || typeof value !== "object") return false
+  const collection = value as DeSoNFTCollection
+
+  if (!isPost(collection.PostEntryResponse)) return false
+  if (
+    collection.NFTEntryResponses !== undefined &&
+    (!Array.isArray(collection.NFTEntryResponses) ||
+      !collection.NFTEntryResponses.every(isEntry))
+  ) {
+    return false
+  }
+
+  return true
+}
+
+function readCache(value: string | null, publicKey: string) {
+  if (!value) return null
+
+  try {
+    const parsed: unknown = JSON.parse(value)
+    if (!parsed || typeof parsed !== "object") return null
+
+    const envelope = parsed as NFTCacheEnvelope
+    if (
+      envelope.version !== CACHE_VERSION ||
+      envelope.publicKey !== publicKey ||
+      !Number.isFinite(envelope.savedAt) ||
+      !Array.isArray(envelope.collections) ||
+      !envelope.collections.every(isCollection)
+    ) {
+      return null
+    }
+
+    return envelope.collections
+  } catch {
+    return null
+  }
+}
+
+function mediaType(post?: DeSoNFTPost): Exclude<MediaFilter, "all"> {
   const videoUrl = post?.VideoURLs?.[0]
   const mediaUrl = videoUrl ?? post?.ImageURLs?.[0]
-
   if (!mediaUrl) return "unavailable"
 
   const path = mediaUrl.split(/[?#]/, 1)[0].toLowerCase()
-
   if (AUDIO_EXTENSIONS.some((extension) => path.endsWith(extension))) {
     return "audio"
   }
-
   if (
     videoUrl ||
     VIDEO_EXTENSIONS.some((extension) => path.endsWith(extension))
   ) {
     return "video"
   }
-
   return "image"
 }
 
@@ -66,56 +153,27 @@ function formatDeSo(nanos: number) {
   }).format(nanos / 1_000_000_000)
 }
 
-function lowestSalePrice(entries: NFTEntry[]) {
+function lowestSalePrice(entries: DeSoNFTEntry[]) {
   const forSale = entries.filter((entry) => entry.IsForSale)
-  const buyNowPrices = forSale
+  const buyNow = forSale
     .map((entry) => entry.BuyNowPriceNanos)
-    .filter(
-      (price): price is number =>
-        typeof price === "number" && price > 0
-    )
+    .filter((value): value is number => typeof value === "number" && value > 0)
+  if (buyNow.length > 0) return Math.min(...buyNow)
 
-  if (buyNowPrices.length > 0) return Math.min(...buyNowPrices)
-
-  const minBidAmounts = forSale
+  const minBid = forSale
     .map((entry) => entry.MinBidAmountNanos)
-    .filter(
-      (amount): amount is number =>
-        typeof amount === "number" && amount > 0
-    )
-
-  return minBidAmounts.length > 0 ? Math.min(...minBidAmounts) : undefined
+    .filter((value): value is number => typeof value === "number" && value > 0)
+  return minBid.length > 0 ? Math.min(...minBid) : undefined
 }
 
-function ownedSaleStatus(entries: NFTEntry[]) {
+function ownedSaleStatus(entries: DeSoNFTEntry[]) {
   const forSale = entries.filter((entry) => entry.IsForSale)
   if (forSale.length === 0) return "Not for sale"
 
-  const buyNowPrices = forSale
-    .map((entry) => entry.BuyNowPriceNanos)
-    .filter(
-      (price): price is number =>
-        typeof price === "number" && price > 0
-    )
-  if (buyNowPrices.length > 0) {
-    return `${forSale.length} for sale · Buy now: ${formatDeSo(
-      Math.min(...buyNowPrices)
-    )} DESO`
-  }
-
-  const minBidAmounts = forSale
-    .map((entry) => entry.MinBidAmountNanos)
-    .filter(
-      (amount): amount is number =>
-        typeof amount === "number" && amount > 0
-    )
-  if (minBidAmounts.length > 0) {
-    return `${forSale.length} for sale · Min bid: ${formatDeSo(
-      Math.min(...minBidAmounts)
-    )} DESO`
-  }
-
-  return `${forSale.length} for sale`
+  const price = lowestSalePrice(entries)
+  return price === undefined
+    ? `${forSale.length} for sale`
+    : `${forSale.length} for sale · From ${formatDeSo(price)} DESO`
 }
 
 function title(body?: string) {
@@ -135,10 +193,11 @@ const styles = {
     borderRadius: "999px",
     color: "#050807",
     cursor: "pointer",
-    fontSize: "13px",
+    fontSize: "14px",
     fontWeight: 800,
     marginTop: "12px",
-    padding: "9px 14px",
+    minHeight: "44px",
+    padding: "10px 16px",
   },
   controls: {
     alignItems: "center",
@@ -152,10 +211,20 @@ const styles = {
     border: "1px solid #285f40",
     borderRadius: "10px",
     color: "#f4f7f5",
-    fontSize: "13px",
-    maxWidth: "420px",
-    padding: "9px 11px",
+    flex: "1 1 260px",
+    fontSize: "16px",
+    minHeight: "44px",
+    padding: "10px 12px",
     width: "100%",
+  },
+  select: {
+    background: "#050807",
+    border: "1px solid #285f40",
+    borderRadius: "10px",
+    color: "#f4f7f5",
+    fontSize: "14px",
+    minHeight: "44px",
+    padding: "9px 11px",
   },
   controlLabel: {
     color: "#a9b8af",
@@ -168,26 +237,20 @@ const styles = {
     borderRadius: "999px",
     color: "#b9c8bf",
     cursor: "pointer",
-    fontSize: "12px",
+    fontSize: "13px",
     fontWeight: 700,
-    padding: "8px 12px",
+    minHeight: "44px",
+    padding: "9px 13px",
   },
   filterActive: {
     background: "#5cff9d",
     borderColor: "#5cff9d",
     color: "#050807",
   },
-  select: {
-    background: "#050807",
-    border: "1px solid #285f40",
-    borderRadius: "10px",
-    color: "#f4f7f5",
-    fontSize: "13px",
-    padding: "9px 11px",
-  },
   status: {
     color: "#a9b8af",
     fontSize: "13px",
+    lineHeight: 1.5,
     margin: "12px 0 0",
   },
   error: {
@@ -200,8 +263,8 @@ const styles = {
   },
   grid: {
     display: "grid",
-    gap: "10px",
-    gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))",
+    gap: "12px",
+    gridTemplateColumns: "repeat(auto-fill, minmax(min(160px, 100%), 1fr))",
     marginTop: "12px",
   },
   card: {
@@ -232,7 +295,7 @@ const styles = {
     placeItems: "center",
     width: "100%",
   },
-  content: { padding: "9px" },
+  content: { padding: "10px" },
   title: {
     display: "-webkit-box",
     fontSize: "13px",
@@ -244,21 +307,18 @@ const styles = {
     WebkitLineClamp: 2,
   },
   fact: { color: "#a9b8af", fontSize: "11px", margin: 0 },
-  saleFact: {
-    color: "#b9ffd4",
-    fontSize: "11px",
-    margin: "5px 0 0",
-  },
+  saleFact: { color: "#b9ffd4", fontSize: "11px", margin: "5px 0 0" },
   more: {
     background: "transparent",
     border: "1px solid #285f40",
     borderRadius: "999px",
     color: "#b9ffd4",
     cursor: "pointer",
-    fontSize: "13px",
+    fontSize: "14px",
     fontWeight: 800,
     marginTop: "14px",
-    padding: "8px 12px",
+    minHeight: "44px",
+    padding: "9px 14px",
   },
 }
 
@@ -271,9 +331,8 @@ export default function PublicAccountNFTs({
   username: string
   autoLoad?: boolean
 }) {
-  const cacheKey = `via:account-nfts:${publicKey}`
-  const legacyCacheKey = `lumen:account-nfts:${publicKey}`
-  const [nfts, setNFTs] = useState<NFTCollection[] | null>(null)
+  const cacheKey = `via:account-nfts:v${CACHE_VERSION}:${publicKey}`
+  const [nfts, setNFTs] = useState<DeSoNFTCollection[] | null>(null)
   const [loading, setLoading] = useState(false)
   const [linkCopied, setLinkCopied] = useState(false)
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
@@ -282,18 +341,16 @@ export default function PublicAccountNFTs({
   const [sortMode, setSortMode] = useState<SortMode>("collection")
   const [saleFilter, setSaleFilter] = useState<SaleFilter>("all")
   const [mediaFilter, setMediaFilter] = useState<MediaFilter>("all")
-  const [isInitialStateRestored, setIsInitialStateRestored] = useState(false)
+  const [restored, setRestored] = useState(false)
   const autoLoadStarted = useRef(false)
 
   useEffect(() => {
-    if (!autoLoad || isInitialStateRestored) return
+    if (!autoLoad || restored) return
 
     const params = new URLSearchParams(window.location.search)
-    const requestedSort = params.get("sort")
-    const requestedSale = params.get("sale")
-    const requestedMedia = params.get("media")
+    setQuery((params.get("query") ?? "").slice(0, QUERY_LIMIT))
 
-    setQuery(params.get("query") ?? "")
+    const requestedSort = params.get("sort")
     if (
       requestedSort === "title" ||
       requestedSort === "most-owned" ||
@@ -303,9 +360,13 @@ export default function PublicAccountNFTs({
     ) {
       setSortMode(requestedSort)
     }
+
+    const requestedSale = params.get("sale")
     if (requestedSale === "for-sale" || requestedSale === "not-for-sale") {
       setSaleFilter(requestedSale)
     }
+
+    const requestedMedia = params.get("media")
     if (
       requestedMedia === "image" ||
       requestedMedia === "video" ||
@@ -315,98 +376,39 @@ export default function PublicAccountNFTs({
       setMediaFilter(requestedMedia)
     }
 
-    let restoredKey: string | null = null
     try {
-      const currentValue = window.sessionStorage.getItem(cacheKey)
-      const legacyValue = window.sessionStorage.getItem(legacyCacheKey)
-      const cachedValue = currentValue ?? legacyValue
-      restoredKey = currentValue
-        ? cacheKey
-        : legacyValue
-          ? legacyCacheKey
-          : null
-
-      if (cachedValue) {
-        const cachedNFTs: unknown = JSON.parse(cachedValue)
-        if (Array.isArray(cachedNFTs)) {
-          setNFTs(cachedNFTs as NFTCollection[])
-          if (restoredKey === legacyCacheKey) {
-            window.sessionStorage.setItem(cacheKey, cachedValue)
-            window.sessionStorage.removeItem(legacyCacheKey)
-          }
-        }
+      const cached = readCache(window.sessionStorage.getItem(cacheKey), publicKey)
+      if (cached) {
+        setNFTs(cached)
+      } else {
+        window.sessionStorage.removeItem(cacheKey)
       }
     } catch {
-      if (restoredKey) window.sessionStorage.removeItem(restoredKey)
+      // Cache is optional. A live DeSo request remains authoritative.
     } finally {
-      setIsInitialStateRestored(true)
+      setRestored(true)
     }
-  }, [autoLoad, cacheKey, isInitialStateRestored, legacyCacheKey])
+  }, [autoLoad, cacheKey, publicKey, restored])
 
   const loadNFTs = useCallback(async () => {
     setLoading(true)
     setError("")
 
     try {
-      const collectionsByPostHash = new Map<string, NFTCollection>()
-      const seenPageKeys = new Set<string>()
-      let lastKeyHex = ""
-
-      while (true) {
-        const response = await fetchDeSo("get-nfts-for-user", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            UserPublicKeyBase58Check: publicKey,
-            ReaderPublicKeyBase58Check: "",
-            LastKeyHex: lastKeyHex,
-            Limit: 100,
-          }),
-        })
-
-        if (!response.ok) {
-          setError("The complete public NFT collection could not be retrieved from DeSo right now.")
-          return
-        }
-
-        const data = await response.json()
-        const pageCollections: NFTCollection[] = Object.values(
-          data.NFTsMap ?? {}
-        )
-
-        for (const collection of pageCollections) {
-          const postHash = collection.PostEntryResponse?.PostHashHex
-          if (!postHash) continue
-
-          const existing = collectionsByPostHash.get(postHash)
-          if (existing) {
-            existing.NFTEntryResponses = [
-              ...(existing.NFTEntryResponses ?? []),
-              ...(collection.NFTEntryResponses ?? []),
-            ]
-          } else {
-            collectionsByPostHash.set(postHash, collection)
-          }
-        }
-
-        const nextKey =
-          typeof data.LastKeyHex === "string" ? data.LastKeyHex : ""
-        if (!nextKey || seenPageKeys.has(nextKey)) break
-
-        seenPageKeys.add(nextKey)
-        lastKeyHex = nextKey
-      }
-
-      const completeCollection = Array.from(collectionsByPostHash.values())
+      const collections = await getNFTsForUser(publicKey)
       setVisibleCount(PAGE_SIZE)
-      setNFTs(completeCollection)
+      setNFTs(collections)
+
+      const envelope: NFTCacheEnvelope = {
+        version: CACHE_VERSION,
+        publicKey,
+        savedAt: Date.now(),
+        collections,
+      }
       try {
-        window.sessionStorage.setItem(
-          cacheKey,
-          JSON.stringify(completeCollection)
-        )
+        window.sessionStorage.setItem(cacheKey, JSON.stringify(envelope))
       } catch {
-        // A fresh DeSo load remains available when session storage is full.
+        // Session cache is an optimisation only.
       }
     } catch {
       setError("The public NFTs could not be retrieved from DeSo right now.")
@@ -418,27 +420,26 @@ export default function PublicAccountNFTs({
   useEffect(() => {
     if (
       autoLoad &&
-      isInitialStateRestored &&
+      restored &&
       nfts === null &&
       !autoLoadStarted.current
     ) {
       autoLoadStarted.current = true
       void loadNFTs()
     }
-  }, [autoLoad, isInitialStateRestored, loadNFTs, nfts])
+  }, [autoLoad, loadNFTs, nfts, restored])
 
   const collectionParams = new URLSearchParams({
     account: username,
     accountKey: publicKey,
     view: "nfts",
   })
-  const collectionHref =
-    `/?${collectionParams.toString()}#account-lookup-heading`
+  const collectionHref = `/?${collectionParams.toString()}#account-lookup-heading`
 
   if (nfts === null) {
     if (autoLoad) {
       return (
-        <>
+        <div aria-live="polite" aria-busy={loading}>
           <button
             type="button"
             style={styles.action}
@@ -447,8 +448,8 @@ export default function PublicAccountNFTs({
           >
             {error ? "Try loading public NFTs again" : "Loading public NFTs…"}
           </button>
-          {error ? <div style={styles.error}>{error}</div> : null}
-        </>
+          {error ? <div style={styles.error} role="alert">{error}</div> : null}
+        </div>
       )
     }
 
@@ -463,90 +464,62 @@ export default function PublicAccountNFTs({
   }
 
   const totalOwnedCopies = nfts.reduce(
-    (total, collection) =>
-      total + (collection.NFTEntryResponses?.length ?? 0),
+    (total, collection) => total + (collection.NFTEntryResponses?.length ?? 0),
     0
   )
   const normalizedQuery = query.trim().toLocaleLowerCase()
   const filteredNFTs = normalizedQuery
     ? nfts.filter((collection) => {
         const post = collection.PostEntryResponse
-        const searchableText = [
-          post?.Body,
-          post?.ProfileEntryResponse?.Username,
-        ]
+        return [post?.Body, post?.ProfileEntryResponse?.Username]
           .filter(Boolean)
           .join(" ")
           .toLocaleLowerCase()
-
-        return searchableText.includes(normalizedQuery)
+          .includes(normalizedQuery)
       })
     : nfts
+
   const saleFilteredNFTs = filteredNFTs.filter((collection) => {
     if (saleFilter === "all") return true
-
-    const hasOwnedCopyForSale = (collection.NFTEntryResponses ?? []).some(
+    const hasSale = (collection.NFTEntryResponses ?? []).some(
       (entry) => entry.IsForSale
     )
-
-    return saleFilter === "for-sale"
-      ? hasOwnedCopyForSale
-      : !hasOwnedCopyForSale
+    return saleFilter === "for-sale" ? hasSale : !hasSale
   })
+
   const mediaFilteredNFTs = saleFilteredNFTs.filter((collection) =>
     mediaFilter === "all"
       ? true
       : mediaType(collection.PostEntryResponse) === mediaFilter
   )
+
   const sortedNFTs = [...mediaFilteredNFTs].sort((left, right) => {
     if (sortMode === "collection") return 0
 
     const leftTitle = title(left.PostEntryResponse?.Body)
     const rightTitle = title(right.PostEntryResponse?.Body)
-
-    if (sortMode === "title") {
-      return leftTitle.localeCompare(rightTitle, undefined, {
-        sensitivity: "base",
-      })
-    }
+    if (sortMode === "title") return leftTitle.localeCompare(rightTitle)
 
     if (sortMode === "lowest-price" || sortMode === "highest-price") {
       const leftPrice = lowestSalePrice(left.NFTEntryResponses ?? [])
       const rightPrice = lowestSalePrice(right.NFTEntryResponses ?? [])
-
       if (leftPrice === undefined && rightPrice === undefined) {
-        return leftTitle.localeCompare(rightTitle, undefined, {
-          sensitivity: "base",
-        })
+        return leftTitle.localeCompare(rightTitle)
       }
       if (leftPrice === undefined) return 1
       if (rightPrice === undefined) return -1
-
-      const priceDifference =
-        sortMode === "lowest-price"
-          ? leftPrice - rightPrice
-          : rightPrice - leftPrice
-
-      return (
-        priceDifference ||
-        leftTitle.localeCompare(rightTitle, undefined, {
-          sensitivity: "base",
-        })
-      )
+      return sortMode === "lowest-price"
+        ? leftPrice - rightPrice
+        : rightPrice - leftPrice
     }
 
     const leftOwned = left.NFTEntryResponses?.length ?? 0
     const rightOwned = right.NFTEntryResponses?.length ?? 0
-    const ownedDifference =
-      sortMode === "most-owned"
-        ? rightOwned - leftOwned
-        : leftOwned - rightOwned
-
-    return (
-      ownedDifference ||
-      leftTitle.localeCompare(rightTitle, undefined, { sensitivity: "base" })
-    )
+    return sortMode === "most-owned"
+      ? rightOwned - leftOwned
+      : leftOwned - rightOwned
   })
+
   const visibleNFTs = sortedNFTs.slice(0, visibleCount)
   const remaining = sortedNFTs.length - visibleNFTs.length
   const controlsChanged =
@@ -572,12 +545,10 @@ export default function PublicAccountNFTs({
     sale: saleFilter,
     media: mediaFilter,
   })
-  const sharePath =
-    `/?${shareParams.toString()}#account-lookup-heading`
+  const sharePath = `/?${shareParams.toString()}#account-lookup-heading`
 
   const copyCollectionLink = async () => {
     const shareUrl = `${window.location.origin}${sharePath}`
-
     try {
       await navigator.clipboard.writeText(shareUrl)
     } catch {
@@ -590,7 +561,6 @@ export default function PublicAccountNFTs({
       document.execCommand("copy")
       temporaryInput.remove()
     }
-
     setLinkCopied(true)
     window.setTimeout(() => setLinkCopied(false), 2000)
   }
@@ -599,9 +569,7 @@ export default function PublicAccountNFTs({
     <section aria-label={`Public NFTs owned by @${username}`}>
       {nfts.length > 0 ? (
         <p style={styles.status}>
-          @{username} owns {totalOwnedCopies} NFT{" "}
-          {totalOwnedCopies === 1 ? "copy" : "copies"} across {nfts.length}{" "}
-          different NFT{nfts.length === 1 ? "" : "s"}.
+          @{username} owns {totalOwnedCopies} NFT {totalOwnedCopies === 1 ? "copy" : "copies"} across {nfts.length} different NFT{nfts.length === 1 ? "" : "s"}.
         </p>
       ) : null}
 
@@ -611,6 +579,7 @@ export default function PublicAccountNFTs({
             type="search"
             aria-label="Search this account collection"
             placeholder="Search by NFT title or creator"
+            maxLength={QUERY_LIMIT}
             value={query}
             style={styles.search}
             onChange={(event) => {
@@ -635,55 +604,51 @@ export default function PublicAccountNFTs({
             <option value="highest-price">Highest price</option>
           </select>
           <span style={styles.controlLabel}>Sale</span>
-          {(
-            [
-              ["all", "All"],
-              ["for-sale", "For sale"],
-              ["not-for-sale", "Not for sale"],
-            ] as const
-          ).map(([value, label]) => (
-            <button
-              key={value}
-              type="button"
-              aria-pressed={saleFilter === value}
-              style={{
-                ...styles.filter,
-                ...(saleFilter === value ? styles.filterActive : {}),
-              }}
-              onClick={() => {
-                setSaleFilter(value)
-                setVisibleCount(PAGE_SIZE)
-              }}
-            >
-              {label}
-            </button>
-          ))}
+          {([[
+            "all",
+            "All",
+          ], ["for-sale", "For sale"], ["not-for-sale", "Not for sale"]] as const).map(
+            ([value, label]) => (
+              <button
+                key={value}
+                type="button"
+                aria-pressed={saleFilter === value}
+                style={{
+                  ...styles.filter,
+                  ...(saleFilter === value ? styles.filterActive : {}),
+                }}
+                onClick={() => {
+                  setSaleFilter(value)
+                  setVisibleCount(PAGE_SIZE)
+                }}
+              >
+                {label}
+              </button>
+            )
+          )}
           <span style={styles.controlLabel}>Media</span>
-          {(
-            [
-              ["all", "All"],
-              ["image", "Image"],
-              ["video", "Video"],
-              ["audio", "Audio"],
-              ["unavailable", "Unavailable"],
-            ] as const
-          ).map(([value, label]) => (
-            <button
-              key={value}
-              type="button"
-              aria-pressed={mediaFilter === value}
-              style={{
-                ...styles.filter,
-                ...(mediaFilter === value ? styles.filterActive : {}),
-              }}
-              onClick={() => {
-                setMediaFilter(value)
-                setVisibleCount(PAGE_SIZE)
-              }}
-            >
-              {label}
-            </button>
-          ))}
+          {([[
+            "all",
+            "All",
+          ], ["image", "Image"], ["video", "Video"], ["audio", "Audio"], ["unavailable", "Unavailable"]] as const).map(
+            ([value, label]) => (
+              <button
+                key={value}
+                type="button"
+                aria-pressed={mediaFilter === value}
+                style={{
+                  ...styles.filter,
+                  ...(mediaFilter === value ? styles.filterActive : {}),
+                }}
+                onClick={() => {
+                  setMediaFilter(value)
+                  setVisibleCount(PAGE_SIZE)
+                }}
+              >
+                {label}
+              </button>
+            )
+          )}
           <button
             type="button"
             disabled={!controlsChanged}
@@ -694,22 +659,18 @@ export default function PublicAccountNFTs({
             }}
             onClick={resetControls}
           >
-            Reset collection filters
+            Reset filters
           </button>
-          <button
-            type="button"
-            style={styles.filter}
-            onClick={copyCollectionLink}
-          >
-            {linkCopied ? "Collection link copied" : "Copy collection link"}
+          <button type="button" style={styles.filter} onClick={copyCollectionLink}>
+            {linkCopied ? "Link copied" : "Copy collection link"}
           </button>
         </div>
       ) : null}
 
-      <p style={styles.status}>
+      <p style={styles.status} aria-live="polite">
         {nfts.length === 0
           ? `No public NFTs found for @${username}.`
-          : `${mediaFilteredNFTs.length} of ${nfts.length} public NFTs shown for @${username}.`}
+          : `${mediaFilteredNFTs.length} of ${nfts.length} public NFTs match.`}
       </p>
 
       {mediaFilteredNFTs.length > 0 ? (
@@ -736,6 +697,7 @@ export default function PublicAccountNFTs({
                 key={postHash}
                 href={`/nft/${postHash}?${returnParams.toString()}`}
                 style={styles.card}
+                aria-label={`${title(post.Body)}. ${ownedSaleStatus(ownedEntries)}`}
               >
                 <div style={styles.media}>
                   <NFTMedia
@@ -749,12 +711,9 @@ export default function PublicAccountNFTs({
                 <div style={styles.content}>
                   <h3 style={styles.title}>{title(post.Body)}</h3>
                   <p style={styles.fact}>
-                    @{username} owns {ownedCopies} of {totalCopies}{" "}
-                    {totalCopies === 1 ? "copy" : "copies"}
+                    @{username} owns {ownedCopies} of {totalCopies} {totalCopies === 1 ? "copy" : "copies"}
                   </p>
-                  <p style={styles.saleFact}>
-                    {ownedSaleStatus(ownedEntries)}
-                  </p>
+                  <p style={styles.saleFact}>{ownedSaleStatus(ownedEntries)}</p>
                 </div>
               </a>
             )

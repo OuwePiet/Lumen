@@ -1,9 +1,36 @@
 const DESO_NODE = "https://node.deso.org"
 const REQUEST_TIMEOUT_MS = 12_000
 const MAX_ATTEMPTS = 2
+const PROFILE_LOOKUP_CONCURRENCY = 6
+
+let activeProfileLookups = 0
+const profileLookupWaiters: Array<() => void> = []
+
+function normalizedEndpoint(endpoint: string) {
+  const normalized = endpoint.trim().replace(/^\/+/, "")
+  if (!/^[a-z0-9-]+$/.test(normalized)) {
+    throw new Error("INVALID_DESO_ENDPOINT")
+  }
+  return normalized
+}
+
+async function acquireProfileLookupSlot() {
+  if (activeProfileLookups < PROFILE_LOOKUP_CONCURRENCY) {
+    activeProfileLookups += 1
+    return
+  }
+
+  await new Promise<void>((resolve) => profileLookupWaiters.push(resolve))
+  activeProfileLookups += 1
+}
+
+function releaseProfileLookupSlot() {
+  activeProfileLookups = Math.max(0, activeProfileLookups - 1)
+  profileLookupWaiters.shift()?.()
+}
 
 function documentedRequest(endpoint: string, init: RequestInit): RequestInit {
-  if (endpoint.replace(/^\//, "") !== "get-nfts-for-user" || typeof init.body !== "string") {
+  if (normalizedEndpoint(endpoint) !== "get-nfts-for-user" || typeof init.body !== "string") {
     return init
   }
 
@@ -23,12 +50,40 @@ function documentedRequest(endpoint: string, init: RequestInit): RequestInit {
   }
 }
 
-export async function fetchDeSo(
-  endpoint: string,
-  init: RequestInit
+async function documentedResponse(endpoint: string, response: Response): Promise<Response> {
+  if (normalizedEndpoint(endpoint) !== "get-nfts-for-user" || !response.ok) {
+    return response
+  }
+
+  const contentType = response.headers.get("content-type") ?? ""
+  if (!contentType.includes("application/json")) return response
+
+  try {
+    const data = await response.clone().json() as Record<string, unknown>
+    // VIA does not rely on undocumented transport cursor fields. Removing the
+    // field here keeps legacy callers from accidentally looping over the same
+    // documented request after LastKeyHex/Limit were stripped above.
+    delete data.LastKeyHex
+
+    const headers = new Headers(response.headers)
+    headers.set("content-type", "application/json")
+    headers.delete("content-length")
+
+    return new Response(JSON.stringify(data), {
+      status: response.status,
+      statusText: response.statusText,
+      headers,
+    })
+  } catch {
+    return response
+  }
+}
+
+async function performDeSoRequest(
+  safeEndpoint: string,
+  requestInit: RequestInit
 ): Promise<Response> {
   let lastError: unknown
-  const requestInit = documentedRequest(endpoint, init)
 
   for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt += 1) {
     const controller = new AbortController()
@@ -36,8 +91,13 @@ export async function fetchDeSo(
 
     try {
       const response = await fetch(
-        `${DESO_NODE}/api/v0/${endpoint.replace(/^\//, "")}`,
-        { ...requestInit, signal: controller.signal }
+        `${DESO_NODE}/api/v0/${safeEndpoint}`,
+        {
+          ...requestInit,
+          signal: controller.signal,
+          credentials: "omit",
+          referrerPolicy: "no-referrer",
+        }
       )
 
       if (
@@ -48,7 +108,7 @@ export async function fetchDeSo(
         continue
       }
 
-      return response
+      return documentedResponse(safeEndpoint, response)
     } catch (error) {
       lastError = error
       if (attempt + 1 >= MAX_ATTEMPTS) throw error
@@ -58,4 +118,23 @@ export async function fetchDeSo(
   }
 
   throw lastError ?? new Error("DeSo request failed")
+}
+
+export async function fetchDeSo(
+  endpoint: string,
+  init: RequestInit
+): Promise<Response> {
+  const safeEndpoint = normalizedEndpoint(endpoint)
+  const requestInit = documentedRequest(safeEndpoint, init)
+
+  if (safeEndpoint !== "get-single-profile") {
+    return performDeSoRequest(safeEndpoint, requestInit)
+  }
+
+  await acquireProfileLookupSlot()
+  try {
+    return await performDeSoRequest(safeEndpoint, requestInit)
+  } finally {
+    releaseProfileLookupSlot()
+  }
 }
