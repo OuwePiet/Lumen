@@ -130,6 +130,24 @@ export default function QuestGame() {
         )}
       </article>
 
+      <article className={styles.questCard} aria-labelledby="diamond-reward-heading">
+        <div className={styles.progressLine}>
+          <span id="diamond-reward-heading">VIA Diamond Reward</span>
+          <span>Maximum: 1 shower</span>
+        </div>
+        <h2>◆ Diamond Shower</h2>
+        <p>
+          A qualifying Quest may later receive a DeSo Diamond Shower. One reward event can
+          never pay more than one shower. VIA will first calculate the number of posts,
+          diamond level, estimated DESO value and available reward budget.
+        </p>
+        <p className={styles.note}>
+          No automatic blockchain payment is active in this prototype. A future shower is
+          allowed only when the verified cost fits the funded reward pool and the DeSo
+          transaction is explicitly authorised through a safe signing flow.
+        </p>
+      </article>
+
       <p className={styles.note}>
         VIA Points are currently local, non-transferable game points. They are not DESO,
         money or proof that a blockchain reward was paid.
