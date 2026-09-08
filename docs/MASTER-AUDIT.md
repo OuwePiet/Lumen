@@ -6,7 +6,7 @@ VIA / viadeso.online is the active product baseline. Historical Lumen, Vero, Vel
 
 1. Current VIA code wins over legacy naming and architecture.
 2. Historical features are adopted only after checking security, DeSo/API assumptions, cost impact, maintainability and user experience.
-3. No private seed, derived private key, platform wallet secret or equivalent signing secret may be stored in browser storage or committed to the repository.
+3. No private seed, derived private key, platform wallet secret or equivalent signing secret may be stored in browser storage or committed to the repository. When a new DeSo account is created, DeSo itself may present the user with the account's 24-word recovery phrase; VIA does not receive, copy, transmit, log, back up or store those words. Derived/session signing keys are a separate security risk and are never silently persisted in browser storage.
 4. A wallet identifier is not proof of wallet control. VIA must only grant wallet-linked/on-chain capabilities after an authoritative identity verification step.
 5. Claims such as verified, permanent, free, instant, guaranteed or complete require an authoritative source and must not be inferred from UI state.
 6. Ideas not adopted yet are recorded in `docs/PHASE-3.md` instead of silently discarded.
