@@ -124,7 +124,7 @@ export default function DailyGrid() {
         <input aria-label="Five-letter guess" value={input} maxLength={5} onChange={(e) => setInput(e.target.value.replace(/[^a-z]/gi, ""))} onKeyDown={(e) => e.key === "Enter" && submit()} placeholder="5 letters" style={{padding:"12px 14px", borderRadius:10, border:"1px solid #395044", background:"#0b1510", color:"white", textTransform:"uppercase"}} />
         <button type="button" onClick={submit} disabled={input.length !== 5} style={{padding:"12px 16px", borderRadius:10, border:0, fontWeight:800}}>Guess</button>
       </div> : <div>
-        <strong>{won ? `Solved in ${guesses.indexOf(answer) + 1}/${MAX_TRIES}!` : `Today&apos;s word was ${answer}.`}</strong>
+        <strong>{won ? `Solved in ${guesses.indexOf(answer) + 1}/${MAX_TRIES}!` : `Today's word was ${answer}.`}</strong>
         <p>The share result contains only the coloured grid, never the answer.</p>
         <button type="button" onClick={copyResult} style={{padding:"12px 16px", borderRadius:10, border:0, fontWeight:800}}>{copied === "ok" ? "Copied ✓" : copied === "error" ? "Copy failed" : "Copy result for DeSo"}</button>
       </div>}
