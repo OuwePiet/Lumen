@@ -11,6 +11,7 @@ VIA / viadeso.online is the active product baseline. Historical Lumen, Vero, Vel
 5. Claims such as verified, permanent, free, instant, guaranteed or complete require an authoritative source and must not be inferred from UI state.
 6. Ideas not adopted yet are recorded in `docs/PHASE-3.md` instead of silently discarded.
 7. Media and external URL metadata are untrusted input. VIA must restrict renderable remote media to expected safe protocols and controlled fallbacks.
+8. URL/deep-link state and DeSo API metadata are untrusted input. VIA validates known values, lengths, hashes and numeric fields before reusing or rendering them.
 
 ## Current audit pass
 
@@ -25,6 +26,8 @@ VIA / viadeso.online is the active product baseline. Historical Lumen, Vero, Vel
 - Media fallback state reset whenever a different NFT source is shown.
 - HTTPS-only DeSo profile images with a local VIA fallback avatar.
 - One authoritative `get-nfts-for-user` request contract followed by client-side presentation paging.
+- Validated NFT return-link state instead of blindly reflecting query parameters.
+- Normalized public NFT metadata with 64-hex PostHash validation and finite non-negative numeric fields.
 
 ### Reject as-is / Phase 3
 
@@ -43,11 +46,12 @@ VIA / viadeso.online is the active product baseline. Historical Lumen, Vero, Vel
 - Replaced the remaining `DeSo verified` NFT detail badge with the factual `On-chain NFT` label.
 - Enforced the documented NFT collection request/response contract centrally so legacy callers cannot accidentally loop on an unverified cursor.
 - Restricted remote DeSo profile pictures to HTTPS and removed referrer leakage.
+- Validated NFT deep-link return state against known filter values and bounded text lengths.
+- Hardened central NFT metadata parsing so malformed hashes, URL arrays and invalid numeric values are discarded instead of propagated.
 
 ## Next checks
 
-- Audit remaining URL construction and share/deep-link state for untrusted input.
-- Audit NFT metadata parsing beyond media URLs.
+- Audit cached collection shape before reuse.
 - Audit accessibility and responsive behavior on mobile/tablet/desktop.
 - Audit error/loading states and API failure isolation.
 - Compare remaining historical admin, security, update and internationalisation documents against the active code.
