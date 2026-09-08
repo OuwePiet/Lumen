@@ -43,3 +43,19 @@ This file records relevant ideas that are deliberately not adopted into the acti
 - **Why not adopted as-is:** Automatic settlement requires verified signing authority, clear user consent, deterministic failure handling, chain-state reconciliation and protection against stale bids or timing races.
 - **Current decision:** Keep auction timing as a future module until the signing and recovery model is proven. Native DeSo bid state can still be displayed read-only.
 - **Discussion status:** Open for later product/security review.
+
+## Autonomous update sensors and guaranteed hot reload
+
+- **Idea:** Treat every code/database update as instantly self-propagating to all active browsers, with autonomous fallback routing and no manual intervention.
+- **Source:** Historical Vero/Lumen update documents (`Google-handmatig update knop-bestaat al?.docx` and related update-sensor material).
+- **Why not adopted as-is:** Git/Vercel deployment automation is reasonable, but claims of universal instant hot reload, guaranteed millisecond propagation, zero downtime under every condition and autonomous fallback behaviour are not established by the active VIA architecture.
+- **Current decision:** Keep ordinary Git-to-Vercel deployment automation as infrastructure practice. Do not add custom realtime update sensors or fallback routers unless a concrete product need, data source, failure model and test plan exist.
+- **Discussion status:** Infrastructure principle adopted; custom autonomous update machinery deferred.
+
+## International payments, regional badges and cross-chain bridging
+
+- **Idea:** Add India/China payment methods, region-based creator badges, imported external verification and direct L2/cross-chain NFT bridging.
+- **Source:** Historical internationalisation and 2027 roadmap documents.
+- **Why not adopted as-is:** These features add payment-provider, regulatory, reputation and cross-chain trust dependencies that are outside the current read-only/social/NFT browsing baseline. Region badges also risk creating unsupported status signals if criteria are not explicit and verifiable.
+- **Current decision:** Keep localisation, data-efficient mobile UX and language support as valid product directions. Defer payment rails, external verification imports, region ranking badges and bridging until separate product/security/legal review.
+- **Discussion status:** Roadmap material retained for later review.
