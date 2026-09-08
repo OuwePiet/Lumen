@@ -1,4 +1,5 @@
 import type { Metadata } from "next"
+import DailyGrid from "./daily-grid"
 import QuestGame from "./quest-game"
 import styles from "./quest.module.css"
 
@@ -25,6 +26,7 @@ export default function QuestPage() {
           </p>
         </header>
 
+        <DailyGrid />
         <QuestGame />
 
         <section className={styles.safety} aria-labelledby="quest-reward-heading">
