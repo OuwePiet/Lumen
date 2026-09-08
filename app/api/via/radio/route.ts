@@ -2,7 +2,10 @@ import { NextRequest, NextResponse } from "next/server"
 
 export const dynamic = "force-dynamic"
 
-const RADIO_BROWSER = "https://de1.api.radio-browser.info"
+const RADIO_BROWSER_SERVERS = [
+  "https://de1.api.radio-browser.info",
+  "https://nl1.api.radio-browser.info",
+]
 const USER_AGENT = "VIA/1.0 (+https://viadeso.online)"
 const MAX_RESULTS = 24
 
@@ -34,6 +37,30 @@ function safeHttps(value?: string) {
   }
 }
 
+async function radioBrowserFetch(path: string, timeoutMs = 6000) {
+  let lastError: unknown = null
+
+  for (const server of RADIO_BROWSER_SERVERS) {
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), timeoutMs)
+    try {
+      const response = await fetch(`${server}${path}`, {
+        headers: { "User-Agent": USER_AGENT, Accept: "application/json" },
+        cache: "no-store",
+        signal: controller.signal,
+      })
+      if (response.ok) return response
+      lastError = new Error(`Radio Browser returned ${response.status}`)
+    } catch (error) {
+      lastError = error
+    } finally {
+      clearTimeout(timeout)
+    }
+  }
+
+  throw lastError ?? new Error("Radio Browser unavailable")
+}
+
 export async function GET(request: NextRequest) {
   const country = clean(request.nextUrl.searchParams.get("country"), 60)
   const tag = clean(request.nextUrl.searchParams.get("tag"), 60)
@@ -47,19 +74,8 @@ export async function GET(request: NextRequest) {
   if (country) params.set("country", country)
   if (tag) params.set("tag", tag)
 
-  const controller = new AbortController()
-  const timeout = setTimeout(() => controller.abort(), 6000)
-
   try {
-    const response = await fetch(`${RADIO_BROWSER}/json/stations/search?${params.toString()}`, {
-      headers: { "User-Agent": USER_AGENT, Accept: "application/json" },
-      cache: "no-store",
-      signal: controller.signal,
-    })
-    if (!response.ok) {
-      return NextResponse.json({ stations: [], error: "Radio directory unavailable" }, { status: 502 })
-    }
-
+    const response = await radioBrowserFetch(`/json/stations/search?${params.toString()}`)
     const raw: RadioBrowserStation[] = await response.json()
     const stations = raw
       .map((station) => ({
@@ -79,8 +95,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ stations }, { headers: { "Cache-Control": "no-store" } })
   } catch {
     return NextResponse.json({ stations: [], error: "Radio directory request failed" }, { status: 502 })
-  } finally {
-    clearTimeout(timeout)
   }
 }
 
@@ -96,10 +110,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ok: false }, { status: 400 })
   }
   try {
-    await fetch(`${RADIO_BROWSER}/json/url/${encodeURIComponent(stationId)}`, {
-      headers: { "User-Agent": USER_AGENT, Accept: "application/json" },
-      cache: "no-store",
-    })
+    await radioBrowserFetch(`/json/url/${encodeURIComponent(stationId)}`, 3500)
   } catch {
     // Click counting is best-effort and must never block playback.
   }
