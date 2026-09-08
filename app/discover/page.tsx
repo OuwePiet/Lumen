@@ -3,7 +3,9 @@ import Link from "next/link"
 const sections = [
   {
     title: "Around the World",
-    text: "Discover public DeSo activity through transparent, read-only views. Country context is shown only when it comes from suitable public data; VIA does not infer private location.",
+    text: "Open VIA's safe global discovery route. Region labels are navigation only; creator locations are never inferred without suitable public evidence.",
+    href: "/discover/world",
+    action: "Explore the World",
   },
   {
     title: "New Voices",
