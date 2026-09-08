@@ -6,9 +6,18 @@ const LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("")
 const CATEGORIES = ["Free theme", "Animals", "Food", "Countries", "Music", "Art", "DeSo"]
 const GAME_SECONDS = 5 * 60
 
-function scoreWord(word: string) {
-  const clean = word.trim()
-  if (!clean) return 0
+function cleanWord(word: string) {
+  return word.trim()
+}
+
+function isValidForLetter(word: string, letter: string) {
+  const clean = cleanWord(word)
+  return Boolean(clean) && clean.toLocaleUpperCase().startsWith(letter)
+}
+
+function scoreWord(word: string, letter: string) {
+  const clean = cleanWord(word)
+  if (!isValidForLetter(clean, letter)) return 0
   return clean.length + (clean.length >= 6 ? 2 : 0)
 }
 
@@ -36,8 +45,8 @@ export default function AlphabetRelay() {
     return () => window.clearInterval(id)
   }, [running])
 
-  const total = useMemo(() => LETTERS.reduce((sum, letter) => sum + scoreWord(words[letter] || ""), 0), [words])
-  const completed = useMemo(() => LETTERS.filter((letter) => (words[letter] || "").trim()).length, [words])
+  const total = useMemo(() => LETTERS.reduce((sum, letter) => sum + scoreWord(words[letter] || "", letter), 0), [words])
+  const completed = useMemo(() => LETTERS.filter((letter) => isValidForLetter(words[letter] || "", letter)).length, [words])
   const minutes = Math.floor(secondsLeft / 60)
   const seconds = secondsLeft % 60
 
@@ -60,7 +69,7 @@ export default function AlphabetRelay() {
       `Category: ${category}`,
       `Score: ${total}`,
       `Letters completed: ${completed}/26`,
-      "Time: 5:00",
+      "Time limit: 5:00",
       "",
       "Play the world. Discover DeSo.",
     ].join("\n")
@@ -78,7 +87,7 @@ export default function AlphabetRelay() {
     <article style={{border:"1px solid #234b36", borderRadius:18, padding:20, marginTop:24, background:"#07100b"}}>
       <p style={{margin:0, color:"#7ee2a8", fontWeight:700}}>SOLO WORD GAME · 5 MINUTES</p>
       <h2>VIA Alphabet Relay</h2>
-      <p>Fill A to Z with one word per letter. Each letter in a valid entry scores 1 point; words of 6 letters or more earn +2 bonus points.</p>
+      <p>Fill A to Z with one word per letter. A word only scores when it starts with that letter. Each letter in the word scores 1 point; words of 6 letters or more earn +2 bonus points.</p>
 
       <div style={{display:"flex", gap:10, flexWrap:"wrap", alignItems:"center", margin:"16px 0"}}>
         <label>
@@ -96,8 +105,8 @@ export default function AlphabetRelay() {
       <div style={{display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))", gap:8, maxHeight:520, overflow:"auto", paddingRight:4}}>
         {LETTERS.map((letter) => {
           const value = words[letter] || ""
-          const points = scoreWord(value)
-          const startsCorrectly = !value || value.trim().toUpperCase().startsWith(letter)
+          const points = scoreWord(value, letter)
+          const valid = !cleanWord(value) || isValidForLetter(value, letter)
           return <label key={letter} style={{display:"grid", gridTemplateColumns:"28px 1fr auto", gap:7, alignItems:"center"}}>
             <strong>{letter}</strong>
             <input
@@ -106,7 +115,8 @@ export default function AlphabetRelay() {
               onChange={(e) => setWords((old) => ({...old, [letter]: e.target.value}))}
               placeholder={`${letter}…`}
               aria-label={`Word for ${letter}`}
-              style={{padding:"9px 10px", borderRadius:8, border:`1px solid ${startsCorrectly ? "#395044" : "#8a3d3d"}`, background:"#0b1510", color:"white"}}
+              aria-invalid={!valid}
+              style={{padding:"9px 10px", borderRadius:8, border:`1px solid ${valid ? "#395044" : "#8a3d3d"}`, background:"#0b1510", color:"white"}}
             />
             <span style={{fontSize:12, opacity:.8, minWidth:28, textAlign:"right"}}>{points}</span>
           </label>
@@ -115,14 +125,14 @@ export default function AlphabetRelay() {
 
       <div style={{marginTop:18, display:"flex", gap:16, flexWrap:"wrap"}}>
         <strong>Score: {total}</strong>
-        <span>Completed: {completed}/26</span>
+        <span>Valid letters: {completed}/26</span>
       </div>
 
       {finished && <div style={{marginTop:14}}>
         <button type="button" onClick={copyResult} style={{padding:"11px 15px", borderRadius:9, border:0, fontWeight:800}}>{copied ? "Copied ✓" : "Copy result for DeSo"}</button>
       </div>}
 
-      <p style={{fontSize:13, opacity:.75, marginBottom:0, marginTop:16}}>VIA currently checks the starting letter and calculates the score locally. Dictionary/category validation is deliberately not automatic yet, so the first version stays lightweight and language-friendly.</p>
+      <p style={{fontSize:13, opacity:.75, marginBottom:0, marginTop:16}}>VIA enforces the starting-letter rule and calculates the score locally. Dictionary/category validation is deliberately not automatic yet, so the first version stays lightweight and language-friendly.</p>
     </article>
   )
 }
