@@ -1,6 +1,10 @@
 const DESO_NODE = "https://node.deso.org"
 const REQUEST_TIMEOUT_MS = 12_000
 const MAX_ATTEMPTS = 2
+const PROFILE_LOOKUP_CONCURRENCY = 6
+
+let activeProfileLookups = 0
+const profileLookupWaiters: Array<() => void> = []
 
 function normalizedEndpoint(endpoint: string) {
   const normalized = endpoint.trim().replace(/^\/+/, "")
@@ -8,6 +12,21 @@ function normalizedEndpoint(endpoint: string) {
     throw new Error("INVALID_DESO_ENDPOINT")
   }
   return normalized
+}
+
+async function acquireProfileLookupSlot() {
+  if (activeProfileLookups < PROFILE_LOOKUP_CONCURRENCY) {
+    activeProfileLookups += 1
+    return
+  }
+
+  await new Promise<void>((resolve) => profileLookupWaiters.push(resolve))
+  activeProfileLookups += 1
+}
+
+function releaseProfileLookupSlot() {
+  activeProfileLookups = Math.max(0, activeProfileLookups - 1)
+  profileLookupWaiters.shift()?.()
 }
 
 function documentedRequest(endpoint: string, init: RequestInit): RequestInit {
@@ -60,13 +79,11 @@ async function documentedResponse(endpoint: string, response: Response): Promise
   }
 }
 
-export async function fetchDeSo(
-  endpoint: string,
-  init: RequestInit
+async function performDeSoRequest(
+  safeEndpoint: string,
+  requestInit: RequestInit
 ): Promise<Response> {
   let lastError: unknown
-  const safeEndpoint = normalizedEndpoint(endpoint)
-  const requestInit = documentedRequest(safeEndpoint, init)
 
   for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt += 1) {
     const controller = new AbortController()
@@ -101,4 +118,23 @@ export async function fetchDeSo(
   }
 
   throw lastError ?? new Error("DeSo request failed")
+}
+
+export async function fetchDeSo(
+  endpoint: string,
+  init: RequestInit
+): Promise<Response> {
+  const safeEndpoint = normalizedEndpoint(endpoint)
+  const requestInit = documentedRequest(safeEndpoint, init)
+
+  if (safeEndpoint !== "get-single-profile") {
+    return performDeSoRequest(safeEndpoint, requestInit)
+  }
+
+  await acquireProfileLookupSlot()
+  try {
+    return await performDeSoRequest(safeEndpoint, requestInit)
+  } finally {
+    releaseProfileLookupSlot()
+  }
 }
