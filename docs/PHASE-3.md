@@ -20,6 +20,14 @@ This file records relevant ideas that are deliberately not adopted into the acti
 - **Alternative:** Retain VIA's client-side 25-item presentation paging after one authoritative collection load; revisit transport pagination if DeSo documents or verifies a cursor contract.
 - **Discussion status:** Recorded for later review; no NFT functionality is intentionally discarded.
 
+## Legacy NFT session cache migration
+
+- **Idea:** Restore historical `lumen:account-nfts:*` or current `via:account-nfts:*` session cache entries directly as NFT collections.
+- **Source:** Existing public NFT gallery cache migration code.
+- **Why not adopted as fully trusted:** Session cache is non-secret and useful for navigation speed, but old entries can outlive schema changes or contain partial/malformed data. An array check alone is not enough to establish that cached NFT objects still satisfy VIA's current metadata contract.
+- **Current decision:** Keep session caching as a performance aid only. Fresh DeSo data remains authoritative. Cache restoration must move to the same structural validation used for live NFT data before old Lumen cache migration can be considered complete.
+- **Discussion status:** Migration hardening still open; no private material may ever be stored in this cache.
+
 ## Silent derived private keys in browser storage
 
 - **Idea:** Store a derived private key in `sessionStorage` so later on-chain actions can run without repeated user prompts.
