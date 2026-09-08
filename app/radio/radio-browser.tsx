@@ -50,29 +50,14 @@ export default function RadioBrowser() {
   const [favoriteStations, setFavoriteStations] = useState<Station[]>([])
   const [showFavorites, setShowFavorites] = useState(false)
 
-  useEffect(() => {
-    try {
-      const parsed = JSON.parse(localStorage.getItem(FAVORITES_KEY) ?? "[]")
-      if (Array.isArray(parsed)) setFavorites(parsed.filter((value) => typeof value === "string"))
-      const savedStations = JSON.parse(localStorage.getItem(FAVORITE_STATIONS_KEY) ?? "[]")
-      if (Array.isArray(savedStations)) setFavoriteStations(savedStations.filter(validStation))
-    } catch {
-      // Favorites are optional local convenience data.
-    }
-  }, [])
-
-  const favoriteSet = useMemo(() => new Set(favorites), [favorites])
-  const visibleStations = showFavorites ? favoriteStations.filter((station) => favoriteSet.has(station.id)) : stations
-
-  const search = async (event?: FormEvent) => {
-    event?.preventDefault()
+  const loadStations = async (nextCountry: string, nextTag: string) => {
     setLoading(true)
     setError("")
     setShowFavorites(false)
     try {
       const params = new URLSearchParams()
-      if (country.trim()) params.set("country", country.trim())
-      if (tag.trim()) params.set("tag", tag.trim())
+      if (nextCountry.trim()) params.set("country", nextCountry.trim())
+      if (nextTag.trim()) params.set("tag", nextTag.trim())
       const response = await fetch(`/api/via/radio?${params.toString()}`, { cache: "no-store" })
       const data = await response.json()
       if (!response.ok) throw new Error(data?.error ?? "Radio directory unavailable")
@@ -83,6 +68,34 @@ export default function RadioBrowser() {
     } finally {
       setLoading(false)
     }
+  }
+
+  useEffect(() => {
+    try {
+      const parsed = JSON.parse(localStorage.getItem(FAVORITES_KEY) ?? "[]")
+      if (Array.isArray(parsed)) setFavorites(parsed.filter((value) => typeof value === "string"))
+      const savedStations = JSON.parse(localStorage.getItem(FAVORITE_STATIONS_KEY) ?? "[]")
+      if (Array.isArray(savedStations)) setFavoriteStations(savedStations.filter(validStation))
+    } catch {
+      // Favorites are optional local convenience data.
+    }
+
+    const params = new URLSearchParams(window.location.search)
+    const initialCountry = (params.get("country") ?? "").slice(0, 60)
+    const initialTag = (params.get("tag") ?? "").slice(0, 60)
+    if (initialCountry || initialTag) {
+      setCountry(initialCountry)
+      setTag(initialTag)
+      void loadStations(initialCountry, initialTag)
+    }
+  }, [])
+
+  const favoriteSet = useMemo(() => new Set(favorites), [favorites])
+  const visibleStations = showFavorites ? favoriteStations.filter((station) => favoriteSet.has(station.id)) : stations
+
+  const search = async (event?: FormEvent) => {
+    event?.preventDefault()
+    await loadStations(country, tag)
   }
 
   const play = (station: Station) => {
