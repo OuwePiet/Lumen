@@ -3,27 +3,31 @@ import Link from "next/link"
 const sections = [
   {
     title: "Around the World",
-    text: "Open VIA's safe global discovery route. Region labels are navigation only; creator locations are never inferred without suitable public evidence.",
+    text: "Travel through VIA's safe global layer using public context only. Start with world regions and public radio shortcuts without guessing where DeSo creators live.",
     href: "/discover/world",
     action: "Explore the World",
+    status: "LIVE",
   },
   {
     title: "New Voices",
-    text: "Explore a public DeSo creator through a user-directed, read-only route. VIA does not present paid placement as organic discovery or label accounts as new or verified without suitable public evidence.",
+    text: "Open a public DeSo creator through a user-directed, read-only route. VIA does not call accounts new, verified, or organically ranked without suitable public evidence.",
     href: "/discover/voices",
     action: "Open New Voices",
+    status: "LIVE",
   },
   {
     title: "NFT Window",
-    text: "Open VIA's existing public DeSo NFT collection browser. Search a public creator account and inspect NFTs without signing or spending.",
+    text: "Open VIA's public DeSo NFT collection browser. Search a creator account and inspect NFTs without signing or spending.",
     href: "/?account=OuwePiet#collection-controls",
     action: "Open NFT Window",
+    status: "LIVE",
   },
   {
     title: "Surprise Me",
-    text: "Open today's deterministic discovery route. It never silently signs, transacts, spends, follows, likes, or sends Diamonds.",
+    text: "Open today's deterministic VIA discovery route. It never silently signs, transacts, spends, follows, likes, or sends Diamonds.",
     href: "/discover/surprise",
     action: "Surprise Me",
+    status: "DAILY",
   },
 ]
 
@@ -32,12 +36,15 @@ const styles = {
   shell: { width: "min(980px, 100%)", margin: "0 auto" },
   eyebrow: { color: "#78f0a8", fontWeight: 800, letterSpacing: "0.12em", fontSize: "12px" },
   title: { fontSize: "clamp(34px, 7vw, 68px)", lineHeight: 0.98, margin: "12px 0" },
-  lead: { color: "#b7c5bd", lineHeight: 1.65, maxWidth: "720px", marginBottom: "24px" },
+  lead: { color: "#b7c5bd", lineHeight: 1.65, maxWidth: "760px", marginBottom: "18px" },
+  safety: { border: "1px solid #285f40", borderRadius: "14px", background: "#07100b", padding: "12px 14px", color: "#b9d6c4", lineHeight: 1.5, fontSize: "13px", marginBottom: "22px" },
   nav: { display: "flex", gap: "10px", flexWrap: "wrap" as const, marginBottom: "28px" },
   link: { border: "1px solid #285f40", borderRadius: "999px", padding: "9px 14px", color: "#b9ffd4", textDecoration: "none", fontWeight: 800, display: "inline-flex" },
   grid: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "14px" },
   card: { border: "1px solid #285f40", borderRadius: "16px", background: "#08100b", padding: "18px" },
+  cardTop: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: "10px" },
   cardTitle: { margin: "0 0 8px", fontSize: "19px" },
+  badge: { color: "#78f0a8", border: "1px solid #285f40", borderRadius: "999px", padding: "4px 8px", fontSize: "10px", fontWeight: 900, letterSpacing: "0.08em" },
   cardText: { margin: 0, color: "#a9b8af", lineHeight: 1.55, fontSize: "14px" },
   cardAction: { marginTop: "14px" },
   radio: { marginTop: "14px", border: "1px solid #347d52", borderRadius: "16px", background: "#0b1710", padding: "18px" },
@@ -48,10 +55,13 @@ export default function DiscoverPage() {
     <main style={styles.main}>
       <div style={styles.shell}>
         <p style={styles.eyebrow}>VIA · WORLD DISCOVERY</p>
-        <h1 style={styles.title}>Discover DeSo beyond your usual circle.</h1>
+        <h1 style={styles.title}>Discover beyond your usual DeSo circle.</h1>
         <p style={styles.lead}>
-          World Discovery starts as a low-cost, read-only layer. It connects VIA's existing public NFT and World Radio foundations without pretending that unverified rankings, locations, sponsorships, or blockchain actions are something else.
+          One VIA hub for creators, NFTs, world radio and daily discovery. The foundation stays low-cost and read-only while public data and DeSo capabilities are verified step by step.
         </p>
+        <div style={styles.safety}>
+          Discovery is not authority: opening these routes never proves identity or location and never silently signs, spends, follows, likes, transfers assets, or sends Diamonds.
+        </div>
 
         <nav aria-label="Discovery navigation" style={styles.nav}>
           <Link href="/" style={styles.link}>Home</Link>
@@ -63,18 +73,19 @@ export default function DiscoverPage() {
         <section style={styles.grid} aria-label="World Discovery sections">
           {sections.map((section) => (
             <article key={section.title} style={styles.card}>
-              <h2 style={styles.cardTitle}>{section.title}</h2>
+              <div style={styles.cardTop}>
+                <h2 style={styles.cardTitle}>{section.title}</h2>
+                <span style={styles.badge}>{section.status}</span>
+              </div>
               <p style={styles.cardText}>{section.text}</p>
-              {section.href && section.action ? (
-                <p style={styles.cardAction}><Link href={section.href} style={styles.link}>{section.action}</Link></p>
-              ) : null}
+              <p style={styles.cardAction}><Link href={section.href} style={styles.link}>{section.action}</Link></p>
             </article>
           ))}
         </section>
 
         <section style={styles.radio}>
-          <h2 style={styles.cardTitle}>World Radio is already live in VIA</h2>
-          <p style={styles.cardText}>Explore stations by country or genre, keep local favorites, and start streams only when you choose Play.</p>
+          <h2 style={styles.cardTitle}>World Radio · public world layer</h2>
+          <p style={styles.cardText}>Explore stations by country or genre, keep local favorites, and start streams only when you choose Play. Around the World now links directly into these public country searches.</p>
           <p style={{ margin: "14px 0 0" }}><Link href="/radio" style={styles.link}>Open World Radio</Link></p>
         </section>
       </div>
