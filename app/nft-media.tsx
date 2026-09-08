@@ -63,26 +63,41 @@ function mediaKind(url: string, suppliedAsVideo: boolean): MediaKind {
   return "image"
 }
 
+function safeHttpsUrl(value: string) {
+  try {
+    const parsed = new URL(value)
+    return parsed.protocol === "https:" ? parsed.toString() : null
+  } catch {
+    return null
+  }
+}
+
 function mediaCandidates(url?: string) {
   if (!url) return []
 
+  const trimmed = url.trim()
+  const lower = trimmed.toLowerCase()
   const ipfsPrefix = "ipfs://"
   const ipfsMarker = "/ipfs/"
-  const ipfsPath = url.startsWith(ipfsPrefix)
-    ? url.slice(ipfsPrefix.length)
-    : url.includes(ipfsMarker)
-      ? url.slice(url.indexOf(ipfsMarker) + ipfsMarker.length)
+  const markerIndex = lower.indexOf(ipfsMarker)
+  const ipfsPath = lower.startsWith(ipfsPrefix)
+    ? trimmed.slice(ipfsPrefix.length)
+    : markerIndex >= 0
+      ? trimmed.slice(markerIndex + ipfsMarker.length)
       : null
 
-  if (!ipfsPath) return [url]
+  if (ipfsPath) {
+    const cleanPath = ipfsPath.replace(/^\/+/, "")
+    if (!cleanPath) return []
 
-  return Array.from(
-    new Set([
-      url,
-      `https://ipfs.io/ipfs/${ipfsPath}`,
-      `https://dweb.link/ipfs/${ipfsPath}`,
-    ])
-  )
+    return [
+      `https://ipfs.io/ipfs/${cleanPath}`,
+      `https://dweb.link/ipfs/${cleanPath}`,
+    ]
+  }
+
+  const safeUrl = safeHttpsUrl(trimmed)
+  return safeUrl ? [safeUrl] : []
 }
 
 function passthroughLoader({ src }: { src: string }) {
@@ -109,7 +124,7 @@ export default function NFTMedia({
     return (
       <div style={{ ...placeholderStyle, position: "relative" }}>
         <MediaBadge label="Media unavailable" />
-        <span>No media available</span>
+        <span>No safe media source available</span>
       </div>
     )
   }
