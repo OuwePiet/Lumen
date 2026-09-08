@@ -2,8 +2,12 @@ const DESO_NODE = "https://node.deso.org"
 const REQUEST_TIMEOUT_MS = 12_000
 const MAX_ATTEMPTS = 2
 
+function normalizedEndpoint(endpoint: string) {
+  return endpoint.replace(/^\//, "")
+}
+
 function documentedRequest(endpoint: string, init: RequestInit): RequestInit {
-  if (endpoint.replace(/^\//, "") !== "get-nfts-for-user" || typeof init.body !== "string") {
+  if (normalizedEndpoint(endpoint) !== "get-nfts-for-user" || typeof init.body !== "string") {
     return init
   }
 
@@ -23,6 +27,35 @@ function documentedRequest(endpoint: string, init: RequestInit): RequestInit {
   }
 }
 
+async function documentedResponse(endpoint: string, response: Response): Promise<Response> {
+  if (normalizedEndpoint(endpoint) !== "get-nfts-for-user" || !response.ok) {
+    return response
+  }
+
+  const contentType = response.headers.get("content-type") ?? ""
+  if (!contentType.includes("application/json")) return response
+
+  try {
+    const data = await response.clone().json() as Record<string, unknown>
+    // VIA does not rely on undocumented transport cursor fields. Removing the
+    // field here keeps legacy callers from accidentally looping over the same
+    // documented request after LastKeyHex/Limit were stripped above.
+    delete data.LastKeyHex
+
+    const headers = new Headers(response.headers)
+    headers.set("content-type", "application/json")
+    headers.delete("content-length")
+
+    return new Response(JSON.stringify(data), {
+      status: response.status,
+      statusText: response.statusText,
+      headers,
+    })
+  } catch {
+    return response
+  }
+}
+
 export async function fetchDeSo(
   endpoint: string,
   init: RequestInit
@@ -36,7 +69,7 @@ export async function fetchDeSo(
 
     try {
       const response = await fetch(
-        `${DESO_NODE}/api/v0/${endpoint.replace(/^\//, "")}`,
+        `${DESO_NODE}/api/v0/${normalizedEndpoint(endpoint)}`,
         { ...requestInit, signal: controller.signal }
       )
 
@@ -48,7 +81,7 @@ export async function fetchDeSo(
         continue
       }
 
-      return response
+      return documentedResponse(endpoint, response)
     } catch (error) {
       lastError = error
       if (attempt + 1 >= MAX_ATTEMPTS) throw error
