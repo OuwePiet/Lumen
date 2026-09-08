@@ -161,3 +161,133 @@
     @apply bg-background text-foreground;
   }
 }
+
+.via-studio {
+  min-height: 100vh;
+  background: #050807;
+  color: #f4f7f5;
+  padding: clamp(18px, 4vw, 48px);
+}
+
+.via-studio-shell {
+  width: min(1120px, 100%);
+  margin: 0 auto;
+}
+
+.via-studio-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: clamp(40px, 8vw, 88px);
+}
+
+.via-studio-back,
+.via-studio-free {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid #285f40;
+  border-radius: 999px;
+  padding: 8px 14px;
+  color: #b9ffd4;
+  font-size: 14px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.via-studio-free {
+  background: #10261a;
+}
+
+.via-studio-hero {
+  max-width: 760px;
+  margin-bottom: clamp(30px, 6vw, 60px);
+}
+
+.via-studio-kicker {
+  color: #5cff9d;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+}
+
+.via-studio-hero h1 {
+  margin: 10px 0 18px;
+  font-size: clamp(36px, 8vw, 72px);
+  line-height: .98;
+  letter-spacing: -.04em;
+}
+
+.via-studio-hero p,
+.via-studio-card p,
+.via-studio-safety p {
+  color: #a9b8af;
+  font-size: clamp(16px, 2vw, 18px);
+  line-height: 1.65;
+}
+
+.via-studio-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr));
+  gap: 18px;
+}
+
+.via-studio-card {
+  min-width: 0;
+  background: #0c120f;
+  border: 1px solid #254233;
+  border-radius: 18px;
+  padding: clamp(20px, 4vw, 30px);
+}
+
+.via-studio-card h2 {
+  margin: 0 0 12px;
+  font-size: 20px;
+}
+
+.via-studio-card p {
+  margin: 0 0 24px;
+}
+
+.via-studio-card span {
+  display: inline-block;
+  color: #5cff9d;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+
+.via-studio-safety {
+  margin-top: 18px;
+  padding: clamp(20px, 4vw, 30px);
+  border: 1px solid #1b3327;
+  border-radius: 18px;
+  background: #070b09;
+}
+
+.via-studio-safety h2 {
+  margin: 0 0 10px;
+  font-size: 20px;
+}
+
+.via-studio-safety p {
+  margin: 0;
+}
+
+@media (max-width: 520px) {
+  .via-studio {
+    padding-inline: 16px;
+  }
+
+  .via-studio-nav {
+    align-items: stretch;
+  }
+
+  .via-studio-back,
+  .via-studio-free {
+    justify-content: center;
+  }
+}
