@@ -3,7 +3,11 @@ const REQUEST_TIMEOUT_MS = 12_000
 const MAX_ATTEMPTS = 2
 
 function normalizedEndpoint(endpoint: string) {
-  return endpoint.replace(/^\//, "")
+  const normalized = endpoint.trim().replace(/^\/+/, "")
+  if (!/^[a-z0-9-]+$/.test(normalized)) {
+    throw new Error("INVALID_DESO_ENDPOINT")
+  }
+  return normalized
 }
 
 function documentedRequest(endpoint: string, init: RequestInit): RequestInit {
@@ -61,7 +65,8 @@ export async function fetchDeSo(
   init: RequestInit
 ): Promise<Response> {
   let lastError: unknown
-  const requestInit = documentedRequest(endpoint, init)
+  const safeEndpoint = normalizedEndpoint(endpoint)
+  const requestInit = documentedRequest(safeEndpoint, init)
 
   for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt += 1) {
     const controller = new AbortController()
@@ -69,8 +74,13 @@ export async function fetchDeSo(
 
     try {
       const response = await fetch(
-        `${DESO_NODE}/api/v0/${normalizedEndpoint(endpoint)}`,
-        { ...requestInit, signal: controller.signal }
+        `${DESO_NODE}/api/v0/${safeEndpoint}`,
+        {
+          ...requestInit,
+          signal: controller.signal,
+          credentials: "omit",
+          referrerPolicy: "no-referrer",
+        }
       )
 
       if (
@@ -81,7 +91,7 @@ export async function fetchDeSo(
         continue
       }
 
-      return documentedResponse(endpoint, response)
+      return documentedResponse(safeEndpoint, response)
     } catch (error) {
       lastError = error
       if (attempt + 1 >= MAX_ATTEMPTS) throw error
