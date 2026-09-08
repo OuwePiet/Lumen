@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useMemo, useState } from "react"
+import YouTubeEmbed from "../youtube-embed"
 
 const STORAGE_KEY = "via:studio:draft:v1"
 const MAX_TITLE = 120
@@ -99,9 +100,11 @@ export default function StudioDraft() {
           onChange={(event) => setBody(event.target.value)}
           maxLength={MAX_BODY}
           rows={10}
-          placeholder="Write your post, NFT description or creator notes..."
+          placeholder="Write your post, NFT description or creator notes... Paste a YouTube link to preview it directly in VIA."
         />
       </label>
+
+      <YouTubeEmbed text={body} title={title.trim() || "YouTube video shared in VIA Studio"} />
 
       <div className="via-studio-editor-actions">
         <button type="button" onClick={saveDraft}>Save draft</button>
