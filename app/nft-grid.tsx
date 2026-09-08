@@ -191,6 +191,7 @@ export default async function NFTGrid({ initialAccount }: { initialAccount?: str
           <nav aria-label="VIA main navigation" style={styles.nav}>
             <a href="/studio" style={styles.navLink}>Studio</a>
             <a href="/quest" style={styles.navLink}>World Quest</a>
+            <a href="/discover" style={styles.navLink}>World Discovery</a>
             <a href="/radio" style={styles.navLink}>World Radio</a>
             <a href="/live" style={styles.navLink}>VIA LIVE</a>
           </nav>
