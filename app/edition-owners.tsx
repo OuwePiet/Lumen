@@ -9,9 +9,13 @@ type EditionOwner = {
 }
 
 function ownerCollectionHref(owner: string, publicKey: string) {
+  const username = owner.replace(/^@/, "").trim().slice(0, 64)
+  const safePublicKey = publicKey.trim().slice(0, 128)
+  if (!username || !safePublicKey) return undefined
+
   const params = new URLSearchParams({
-    account: owner.replace(/^@/, ""),
-    accountKey: publicKey,
+    account: username,
+    accountKey: safePublicKey,
     view: "nfts",
   })
 
@@ -33,26 +37,32 @@ const styles = {
     cursor: "pointer",
     fontSize: "14px",
     fontWeight: 800,
+    minHeight: "44px",
+    padding: "11px 0",
   },
   list: {
     listStyle: "none",
-    margin: "14px 0 0",
+    margin: "8px 0 0",
     padding: 0,
   },
   row: {
     alignItems: "center",
     borderTop: "1px solid #1b3327",
-    display: "flex",
-    flexWrap: "wrap" as const,
-    gap: "8px 16px",
-    justifyContent: "space-between",
-    padding: "10px 0",
+    display: "grid",
+    gap: "6px 12px",
+    gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))",
+    padding: "12px 0",
   },
   owner: {
     color: "#f4f7f5",
     fontWeight: 700,
+    overflowWrap: "anywhere" as const,
     textDecoration: "underline",
     textUnderlineOffset: "3px",
+  },
+  fallbackOwner: {
+    color: "#c4cec8",
+    overflowWrap: "anywhere" as const,
   },
   button: {
     background: "transparent",
@@ -63,7 +73,13 @@ const styles = {
     fontSize: "13px",
     fontWeight: 800,
     marginTop: "12px",
-    padding: "8px 12px",
+    minHeight: "44px",
+    padding: "8px 14px",
+  },
+  status: {
+    color: "#84958b",
+    fontSize: "12px",
+    margin: "10px 0 0",
   },
 }
 
@@ -82,29 +98,34 @@ export default function EditionOwners({
         View edition owners ({editions.length})
       </summary>
       <ol style={styles.list}>
-        {visibleEditions.map((edition) => (
-          <li key={edition.serialNumber} style={styles.row}>
-            <span>Edition #{edition.serialNumber}</span>
-            {edition.publicKey && edition.owner.startsWith("@") ? (
-              <a
-                href={ownerCollectionHref(
-                  edition.owner,
-                  edition.publicKey
-                )}
-                style={styles.owner}
-              >
-                {edition.owner}
-              </a>
-            ) : (
-              <span>{edition.owner}</span>
-            )}
-          </li>
-        ))}
+        {visibleEditions.map((edition) => {
+          const href =
+            edition.publicKey && edition.owner.startsWith("@")
+              ? ownerCollectionHref(edition.owner, edition.publicKey)
+              : undefined
+
+          return (
+            <li key={edition.serialNumber} style={styles.row}>
+              <span>Edition #{edition.serialNumber}</span>
+              {href ? (
+                <a href={href} style={styles.owner}>
+                  {edition.owner}
+                </a>
+              ) : (
+                <span style={styles.fallbackOwner}>{edition.owner}</span>
+              )}
+            </li>
+          )
+        })}
       </ol>
+      <p style={styles.status} aria-live="polite">
+        Showing {visibleEditions.length} of {editions.length} editions.
+      </p>
       {remaining > 0 ? (
         <button
           type="button"
           style={styles.button}
+          aria-label={`Show ${Math.min(PAGE_SIZE, remaining)} more edition owners`}
           onClick={() =>
             setVisibleCount((current) =>
               Math.min(current + PAGE_SIZE, editions.length)
