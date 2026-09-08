@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import AlphabetRelay from "./alphabet-relay"
 import DailyGrid from "./daily-grid"
 import QuestGame from "./quest-game"
+import ViaPong from "./via-pong"
 import styles from "./quest.module.css"
 
 export const metadata: Metadata = {
@@ -29,6 +30,7 @@ export default function QuestPage() {
 
         <DailyGrid />
         <AlphabetRelay />
+        <ViaPong />
         <QuestGame />
 
         <section className={styles.safety} aria-labelledby="quest-reward-heading">
