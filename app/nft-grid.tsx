@@ -136,9 +136,10 @@ function cardTitle(body?: string) {
 const styles = {
   section: { minHeight: "100vh", background: "#050807", color: "#f4f7f5", fontFamily: "Arial, Helvetica, sans-serif", padding: "40px 20px 72px" },
   container: { width: "100%", maxWidth: "1120px", margin: "0 auto" },
-  brandRow: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: "16px", marginBottom: "10px" },
+  brandRow: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: "16px", marginBottom: "10px", flexWrap: "wrap" as const },
   brand: { color: "#5cff9d", fontSize: "14px", fontWeight: 700, letterSpacing: "0.18em", margin: 0, textTransform: "uppercase" as const },
-  studioLink: { minHeight: "44px", display: "inline-flex", alignItems: "center", color: "#b9ffd4", background: "#10261a", border: "1px solid #285f40", borderRadius: "999px", fontSize: "13px", fontWeight: 800, padding: "8px 14px", textDecoration: "none" },
+  nav: { display: "flex", flexWrap: "wrap" as const, gap: "8px", justifyContent: "flex-end" },
+  navLink: { minHeight: "44px", display: "inline-flex", alignItems: "center", color: "#b9ffd4", background: "#10261a", border: "1px solid #285f40", borderRadius: "999px", fontSize: "13px", fontWeight: 800, padding: "8px 14px", textDecoration: "none" },
   heading: { fontSize: "clamp(30px, 5vw, 52px)", lineHeight: 1.05, margin: "0 0 12px" },
   introduction: { color: "#a9b8af", fontSize: "16px", lineHeight: 1.6, margin: "0 0 32px" },
   owner: { color: "#5cff9d", fontSize: "14px", fontWeight: 700, margin: "-16px 0 32px" },
@@ -187,7 +188,11 @@ export default async function NFTGrid({ initialAccount }: { initialAccount?: str
       <div style={styles.container}>
         <div style={styles.brandRow}>
           <p style={styles.brand}>VIA</p>
-          <a href="/studio" style={styles.studioLink}>Free VIA Studio</a>
+          <nav aria-label="VIA main navigation" style={styles.nav}>
+            <a href="/studio" style={styles.navLink}>Studio</a>
+            <a href="/quest" style={styles.navLink}>World Quest</a>
+            <a href="/live" style={styles.navLink}>VIA LIVE</a>
+          </nav>
         </div>
         <h1 style={styles.heading}>NFT collection</h1>
         <p style={styles.introduction}>Read-only NFT information loaded directly from the DeSo blockchain.</p>
