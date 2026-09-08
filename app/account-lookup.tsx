@@ -11,6 +11,9 @@ type DeSoProfile = {
   Description?: string
 }
 
+const MAX_USERNAME_LENGTH = 64
+const MAX_PUBLIC_KEY_LENGTH = 128
+
 function shortKey(publicKey?: string) {
   if (!publicKey) return "Public key unavailable"
   return `${publicKey.slice(0, 10)}...${publicKey.slice(-8)}`
@@ -27,25 +30,35 @@ function safeProfileImage(url?: string) {
   }
 }
 
+function normalizedUsername(value: string) {
+  return value.trim().replace(/^@/, "").slice(0, MAX_USERNAME_LENGTH)
+}
+
+function safeExpectedPublicKey(value?: string) {
+  if (!value || value.length > MAX_PUBLIC_KEY_LENGTH) return undefined
+  return value
+}
+
 const styles = {
   section: { background: "#0a100d", border: "1px solid #254233", borderRadius: "18px", marginBottom: "28px", padding: "20px" },
   heading: { color: "#b9ffd4", fontSize: "16px", margin: "0 0 8px" },
   text: { color: "#a9b8af", fontSize: "13px", lineHeight: 1.6, margin: "0 0 14px" },
   form: { display: "flex", flexWrap: "wrap" as const, gap: "10px" },
-  input: { flex: "1 1 260px", color: "#f4f7f5", background: "#050807", border: "1px solid #254233", borderRadius: "10px", fontSize: "14px", padding: "10px 12px" },
-  button: { color: "#050807", background: "#5cff9d", border: "1px solid #5cff9d", borderRadius: "999px", cursor: "pointer", fontSize: "13px", fontWeight: 800, padding: "9px 14px" },
+  input: { flex: "1 1 260px", minWidth: 0, color: "#f4f7f5", background: "#050807", border: "1px solid #254233", borderRadius: "10px", fontSize: "16px", padding: "11px 12px" },
+  button: { minHeight: "44px", color: "#050807", background: "#5cff9d", border: "1px solid #5cff9d", borderRadius: "999px", cursor: "pointer", fontSize: "13px", fontWeight: 800, padding: "10px 16px" },
+  status: { color: "#a9b8af", fontSize: "13px", marginTop: "12px" },
   result: { color: "#b9ffd4", background: "#10261a", border: "1px solid #285f40", borderRadius: "12px", marginTop: "14px", padding: "14px" },
   error: { color: "#f1d89a", background: "#211a0c", border: "1px solid #6e5721", borderRadius: "12px", marginTop: "14px", padding: "14px" },
   code: { display: "block", color: "#a9b8af", fontSize: "12px", marginTop: "6px", overflowWrap: "anywhere" as const },
-  profileHeader: { alignItems: "center", display: "flex", gap: "12px" },
-  profileText: { minWidth: 0 },
-  description: { color: "#d5e2da", fontSize: "13px", lineHeight: 1.55, margin: "12px 0 0", whiteSpace: "pre-wrap" as const },
+  profileHeader: { alignItems: "center", display: "flex", flexWrap: "wrap" as const, gap: "12px" },
+  profileText: { minWidth: 0, overflowWrap: "anywhere" as const },
+  description: { color: "#d5e2da", fontSize: "13px", lineHeight: 1.55, margin: "12px 0 0", overflowWrap: "anywhere" as const, whiteSpace: "pre-wrap" as const },
   keyDetails: { color: "#a9b8af", fontSize: "12px", marginTop: "12px" },
   keySummary: { color: "#b9ffd4", cursor: "pointer", fontWeight: 700 },
   choices: { background: "#07100b", border: "1px solid #285f40", borderRadius: "12px", listStyle: "none", margin: "14px 0 0", padding: "8px" },
-  choiceButton: { alignItems: "center", background: "transparent", border: 0, borderRadius: "9px", color: "#b9ffd4", cursor: "pointer", display: "flex", gap: "10px", padding: "10px", textAlign: "left" as const, width: "100%" },
+  choiceButton: { alignItems: "center", minHeight: "44px", background: "transparent", border: 0, borderRadius: "9px", color: "#b9ffd4", cursor: "pointer", display: "flex", gap: "10px", padding: "10px", textAlign: "left" as const, width: "100%" },
   avatar: { borderRadius: "50%", height: "36px", objectFit: "cover" as const, width: "36px" },
-  avatarFallback: { alignItems: "center", background: "#254233", borderRadius: "50%", color: "#b9ffd4", display: "flex", fontWeight: 800, height: "36px", justifyContent: "center", width: "36px" },
+  avatarFallback: { alignItems: "center", background: "#254233", borderRadius: "50%", color: "#b9ffd4", display: "flex", flex: "0 0 auto", fontWeight: 800, height: "36px", justifyContent: "center", width: "36px" },
 }
 
 export default function AccountLookup({ onAccountSelected }: { onAccountSelected?: () => void }) {
@@ -73,26 +86,50 @@ export default function AccountLookup({ onAccountSelected }: { onAccountSelected
   }
 
   const lookupAccount = useCallback(async (requestedUsername: string, expectedPublicKey?: string, openNFTs = false) => {
-    const normalizedUsername = requestedUsername.trim().replace(/^@/, "")
-    setUsername(normalizedUsername)
+    const requested = normalizedUsername(requestedUsername)
+    const expectedKey = safeExpectedPublicKey(expectedPublicKey)
+    setUsername(requested)
     setProfile(null)
     setMatches([])
     setError("")
-    if (!normalizedUsername) { setError("Enter a DeSo username."); return }
+
+    if (!requested) {
+      setError("Enter a DeSo username.")
+      return
+    }
+    if (expectedPublicKey && !expectedKey) {
+      setError("This VIA account link contains an invalid account key. Nothing was loaded.")
+      return
+    }
+
     setLoading(true)
     try {
       const response = await fetchDeSo("get-profiles", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ UsernamePrefix: normalizedUsername, NumToFetch: 25, ReaderPublicKeyBase58Check: "" }),
+        body: JSON.stringify({ UsernamePrefix: requested, NumToFetch: 25, ReaderPublicKeyBase58Check: "" }),
       })
-      if (!response.ok) { setError("The DeSo account could not be checked right now."); return }
+      if (!response.ok) {
+        setError("The DeSo account could not be checked right now.")
+        return
+      }
+
       const data = await response.json()
-      const profiles: DeSoProfile[] = data.ProfilesFound ?? data.Profiles ?? []
-      const usableProfiles = profiles.filter((candidate) => candidate.Username && candidate.PublicKeyBase58Check)
-      const exactProfile = usableProfiles.find((candidate) => candidate.Username?.toLocaleLowerCase() === normalizedUsername.toLocaleLowerCase())
+      const profiles: DeSoProfile[] = Array.isArray(data.ProfilesFound)
+        ? data.ProfilesFound
+        : Array.isArray(data.Profiles)
+          ? data.Profiles
+          : []
+      const usableProfiles = profiles.filter((candidate) =>
+        typeof candidate.Username === "string" &&
+        candidate.Username.length <= MAX_USERNAME_LENGTH &&
+        typeof candidate.PublicKeyBase58Check === "string" &&
+        candidate.PublicKeyBase58Check.length <= MAX_PUBLIC_KEY_LENGTH
+      )
+      const exactProfile = usableProfiles.find((candidate) => candidate.Username?.toLocaleLowerCase() === requested.toLocaleLowerCase())
+
       if (exactProfile) {
-        if (expectedPublicKey && exactProfile.PublicKeyBase58Check !== expectedPublicKey) {
+        if (expectedKey && exactProfile.PublicKeyBase58Check !== expectedKey) {
           setError("This VIA link contains an account key that does not match the DeSo profile. Nothing was loaded.")
           return
         }
@@ -102,11 +139,20 @@ export default function AccountLookup({ onAccountSelected }: { onAccountSelected
         onAccountSelected?.()
         return
       }
-      if (expectedPublicKey) { setError("The VIA account link could not be verified against DeSo. Nothing was loaded."); return }
-      if (usableProfiles.length === 0) { setError("DeSo account not found."); return }
+      if (expectedKey) {
+        setError("The VIA account link could not be verified against DeSo. Nothing was loaded.")
+        return
+      }
+      if (usableProfiles.length === 0) {
+        setError("DeSo account not found.")
+        return
+      }
       setMatches(usableProfiles.slice(0, 10))
-    } catch { setError("The DeSo account could not be checked right now.") }
-    finally { setLoading(false) }
+    } catch {
+      setError("The DeSo account could not be checked right now.")
+    } finally {
+      setLoading(false)
+    }
   }, [onAccountSelected])
 
   useEffect(() => {
@@ -118,18 +164,35 @@ export default function AccountLookup({ onAccountSelected }: { onAccountSelected
     if (requestedAccount) void lookupAccount(requestedAccount, requestedPublicKey, shouldOpenNFTs)
   }, [lookupAccount])
 
-  const findAccount = (event: FormEvent<HTMLFormElement>) => { event.preventDefault(); void lookupAccount(username) }
+  const findAccount = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    void lookupAccount(username)
+  }
   const profileImage = safeProfileImage(profile?.ProfilePic)
 
   return (
-    <section style={styles.section} aria-labelledby="account-lookup-heading">
+    <section style={styles.section} aria-labelledby="account-lookup-heading" aria-busy={loading}>
       <h2 id="account-lookup-heading" style={styles.heading}>Find DeSo account</h2>
       <p style={styles.text}>Read-only public profile check. No login, wallet connection or storage.</p>
       <form style={styles.form} onSubmit={findAccount}>
-        <input type="search" aria-label="DeSo username" autoComplete="off" placeholder="Enter DeSo username" value={username} style={styles.input} onChange={(event) => setUsername(event.target.value)} />
-        <button type="submit" disabled={loading} style={styles.button}>{loading ? "Checking…" : "Find DeSo account"}</button>
+        <input
+          type="search"
+          aria-label="DeSo username"
+          autoComplete="off"
+          autoCapitalize="none"
+          spellCheck={false}
+          maxLength={MAX_USERNAME_LENGTH + 1}
+          placeholder="Enter DeSo username"
+          value={username}
+          style={styles.input}
+          onChange={(event) => setUsername(event.target.value)}
+        />
+        <button type="submit" disabled={loading} style={{ ...styles.button, opacity: loading ? 0.65 : 1 }}>
+          {loading ? "Checking…" : "Find DeSo account"}
+        </button>
       </form>
-      <div aria-live="polite">
+      <div aria-live="polite" aria-atomic="true">
+        {loading ? <p style={styles.status}>Checking the public DeSo profile…</p> : null}
         {profile ? (
           <div style={styles.result}>
             <div style={styles.profileHeader}>
@@ -149,7 +212,7 @@ export default function AccountLookup({ onAccountSelected }: { onAccountSelected
             })}
           </ul>
         ) : null}
-        {error ? <div style={styles.error}>{error}</div> : null}
+        {error ? <div style={styles.error} role="alert">{error}</div> : null}
       </div>
     </section>
   )
