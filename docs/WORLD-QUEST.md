@@ -29,6 +29,27 @@ Initial rewards can include:
 - cosmetic themes or collection cards;
 - access to curated discovery views.
 
+### VIA Diamond Shower
+A later verified reward mode may pay a DeSo Diamond Shower. The hard maximum reward for one Quest winner is **one Diamond Shower**. VIA must never stack or multiply showers for the same reward event.
+
+Before any real Diamond Shower is authorized, VIA must show and verify:
+- number of posts included in the shower;
+- selected diamond level;
+- estimated total DESO cost;
+- estimated fiat value where a current price source is available;
+- available VIA reward-pool balance;
+- any separately identifiable transaction/network cost if authoritative data is available.
+
+The shower may only proceed when the estimated total cost is within the configured reward budget. The reward budget should be funded from a defined share of net VIA income after operating costs and reserve, not from gross revenue assumptions.
+
+Conceptually:
+
+`available reward pool = allocated net VIA income - already committed rewards`
+
+`shower allowed = estimated shower cost <= available reward pool`
+
+The implementation must use authoritative current DeSo transaction/cost behavior before real payouts are enabled. A UI estimate is not sufficient authority for spending. Every real on-chain reward requires explicit, bounded wallet authorization/signing. VIA must never store a seed phrase or unrestricted private key to automate showers.
+
 Any future financial, token, prize, sweepstakes or chance-based reward requires a separate legal, security and abuse review before implementation.
 
 ## Fair discovery
@@ -44,6 +65,8 @@ Organic discovery remains available without payment. Sponsored Creator Quests, f
 ## Anti-abuse
 Points and streaks are local/account-level game state until authoritative account storage is designed. Do not present client-only state as tamper-proof. Creator-sponsored quests need moderation/reporting controls before public self-service launch.
 
+Diamond Shower rewards additionally require anti-abuse controls against duplicate accounts, repeated claims, replayed quest completions and manipulated local progress before any real DESO can be spent.
+
 ## Monetisation
 Potential revenue, only after the corresponding feature is implemented safely:
 - clearly labelled Sponsored Creator Quest;
@@ -58,8 +81,10 @@ Normal Daily Quest and Surprise Route should remain usable for free.
 2. Local non-sensitive progress, points and streak prototype.
 3. Connect only verified VIA discovery sources.
 4. Add badges/achievements.
-5. Add account sync only after VIA account authority is established.
-6. Creator Quest tooling only after moderation, sponsorship disclosure and abuse controls exist.
+5. Add a read-only Diamond Shower cost preview only after current DeSo diamond-cost behavior is verified.
+6. Add account sync only after VIA account authority is established.
+7. Creator Quest tooling only after moderation, sponsorship disclosure and abuse controls exist.
+8. Enable real Diamond Shower rewards only after bounded signing, reward-pool accounting and anti-abuse checks are complete.
 
 ## Definition of done for first playable version
 A phone, tablet or desktop visitor can start a quest, move through several safe read-only VIA discovery steps, finish it, see local points/streak progress and replay a Surprise Route without wallet signing or entering sensitive credentials.
