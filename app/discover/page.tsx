@@ -7,7 +7,9 @@ const sections = [
   },
   {
     title: "New Voices",
-    text: "A future read-only window for newer or less-visible public creators. No paid placement is presented as organic discovery.",
+    text: "Explore a public DeSo creator through a user-directed, read-only route. VIA does not present paid placement as organic discovery or label accounts as new or verified without suitable public evidence.",
+    href: "/discover/voices",
+    action: "Open New Voices",
   },
   {
     title: "NFT Window",
