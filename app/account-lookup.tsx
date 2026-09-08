@@ -16,6 +16,17 @@ function shortKey(publicKey?: string) {
   return `${publicKey.slice(0, 10)}...${publicKey.slice(-8)}`
 }
 
+function safeProfileImage(url?: string) {
+  if (!url) return undefined
+
+  try {
+    const parsed = new URL(url)
+    return parsed.protocol === "https:" ? parsed.toString() : undefined
+  } catch {
+    return undefined
+  }
+}
+
 const styles = {
   section: { background: "#0a100d", border: "1px solid #254233", borderRadius: "18px", marginBottom: "28px", padding: "20px" },
   heading: { color: "#b9ffd4", fontSize: "16px", margin: "0 0 8px" },
@@ -108,6 +119,7 @@ export default function AccountLookup({ onAccountSelected }: { onAccountSelected
   }, [lookupAccount])
 
   const findAccount = (event: FormEvent<HTMLFormElement>) => { event.preventDefault(); void lookupAccount(username) }
+  const profileImage = safeProfileImage(profile?.ProfilePic)
 
   return (
     <section style={styles.section} aria-labelledby="account-lookup-heading">
@@ -121,7 +133,7 @@ export default function AccountLookup({ onAccountSelected }: { onAccountSelected
         {profile ? (
           <div style={styles.result}>
             <div style={styles.profileHeader}>
-              {profile.ProfilePic ? <img src={profile.ProfilePic} alt="" width={52} height={52} style={{ ...styles.avatar, height: "52px", width: "52px" }} /> : <span style={{ ...styles.avatarFallback, height: "52px", width: "52px" }} aria-hidden="true">{(profile.Username ?? "?").slice(0, 1).toUpperCase()}</span>}
+              {profileImage ? <img src={profileImage} alt="" width={52} height={52} style={{ ...styles.avatar, height: "52px", width: "52px" }} referrerPolicy="no-referrer" /> : <span style={{ ...styles.avatarFallback, height: "52px", width: "52px" }} aria-hidden="true">{(profile.Username ?? "?").slice(0, 1).toUpperCase()}</span>}
               <div style={styles.profileText}><strong>DeSo account found: @{profile.Username}</strong><code style={styles.code}>{shortKey(profile.PublicKeyBase58Check)}</code></div>
             </div>
             {profile.Description ? <p style={styles.description}>{profile.Description}</p> : null}
@@ -131,7 +143,10 @@ export default function AccountLookup({ onAccountSelected }: { onAccountSelected
         ) : null}
         {matches.length > 0 ? (
           <ul style={styles.choices} aria-label="Matching DeSo accounts">
-            {matches.map((candidate) => <li key={candidate.PublicKeyBase58Check}><button type="button" style={styles.choiceButton} onClick={() => selectProfile(candidate)}>{candidate.ProfilePic ? <img src={candidate.ProfilePic} alt="" width={36} height={36} style={styles.avatar} /> : <span style={styles.avatarFallback} aria-hidden="true">{(candidate.Username ?? "?").slice(0, 1).toUpperCase()}</span>}<span><strong>@{candidate.Username}</strong><code style={styles.code}>{shortKey(candidate.PublicKeyBase58Check)}</code></span></button></li>)}
+            {matches.map((candidate) => {
+              const candidateImage = safeProfileImage(candidate.ProfilePic)
+              return <li key={candidate.PublicKeyBase58Check}><button type="button" style={styles.choiceButton} onClick={() => selectProfile(candidate)}>{candidateImage ? <img src={candidateImage} alt="" width={36} height={36} style={styles.avatar} referrerPolicy="no-referrer" /> : <span style={styles.avatarFallback} aria-hidden="true">{(candidate.Username ?? "?").slice(0, 1).toUpperCase()}</span>}<span><strong>@{candidate.Username}</strong><code style={styles.code}>{shortKey(candidate.PublicKeyBase58Check)}</code></span></button></li>
+            })}
           </ul>
         ) : null}
         {error ? <div style={styles.error}>{error}</div> : null}
