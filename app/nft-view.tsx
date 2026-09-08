@@ -370,14 +370,14 @@ export default async function NFTView({
       bidAmounts.length > 0 ? Math.min(...bidAmounts) : undefined
 
     const buyNowAmounts = forSale
-  .map((entry) => entry.BuyNowPriceNanos)
-  .filter(
-    (amount): amount is number =>
-      typeof amount === "number" && amount > 0
-  )
+      .map((entry) => entry.BuyNowPriceNanos)
+      .filter(
+        (amount): amount is number =>
+          typeof amount === "number" && amount > 0
+      )
 
-const lowestBuyNowPrice =
-  buyNowAmounts.length > 0 ? Math.min(...buyNowAmounts) : undefined
+    const lowestBuyNowPrice =
+      buyNowAmounts.length > 0 ? Math.min(...buyNowAmounts) : undefined
 
     const creator = post.ProfileEntryResponse?.Username
       ? `@${post.ProfileEntryResponse.Username}`
@@ -409,7 +409,7 @@ const lowestBuyNowPrice =
             </div>
 
             <section style={styles.card}>
-              <div style={styles.badge}>DeSo verified</div>
+              <div style={styles.badge}>On-chain NFT</div>
               {legacyNFTzLinkDetected ? (
                 <div style={styles.warning} role="note">
                   <strong style={styles.warningTitle}>
