@@ -12,6 +12,7 @@ type NFTMediaProps = {
 }
 
 type MediaKind = "image" | "video" | "audio"
+type MediaCandidate = { url: string; kind: MediaKind }
 
 const VIDEO_EXTENSIONS = [".mp4", ".webm", ".mov", ".m4v"]
 const AUDIO_EXTENSIONS = [".mp3", ".wav", ".m4a", ".aac", ".flac", ".oga"]
@@ -72,6 +73,18 @@ function safeHttpsUrl(value: string) {
   }
 }
 
+function safeIpfsPath(value: string) {
+  const clean = value.replace(/^\/+/, "")
+  if (!clean || clean.length > 4096) return null
+  if (/[\u0000-\u001f\u007f\\]/.test(clean)) return null
+
+  const pathOnly = clean.split(/[?#]/, 1)[0]
+  const segments = pathOnly.split("/")
+  if (segments.some((segment) => segment === ".." || segment === ".")) return null
+
+  return clean
+}
+
 function mediaCandidates(url?: string) {
   if (!url) return []
 
@@ -80,14 +93,14 @@ function mediaCandidates(url?: string) {
   const ipfsPrefix = "ipfs://"
   const ipfsMarker = "/ipfs/"
   const markerIndex = lower.indexOf(ipfsMarker)
-  const ipfsPath = lower.startsWith(ipfsPrefix)
+  const rawIpfsPath = lower.startsWith(ipfsPrefix)
     ? trimmed.slice(ipfsPrefix.length)
     : markerIndex >= 0
       ? trimmed.slice(markerIndex + ipfsMarker.length)
       : null
 
-  if (ipfsPath) {
-    const cleanPath = ipfsPath.replace(/^\/+/, "")
+  if (rawIpfsPath) {
+    const cleanPath = safeIpfsPath(rawIpfsPath)
     if (!cleanPath) return []
 
     return [
@@ -98,6 +111,26 @@ function mediaCandidates(url?: string) {
 
   const safeUrl = safeHttpsUrl(trimmed)
   return safeUrl ? [safeUrl] : []
+}
+
+function buildCandidates(imageUrl?: string, videoUrl?: string): MediaCandidate[] {
+  const candidates: MediaCandidate[] = []
+  const seen = new Set<string>()
+
+  const append = (source: string | undefined, suppliedAsVideo: boolean) => {
+    if (!source) return
+    const kind = mediaKind(source, suppliedAsVideo)
+    for (const url of mediaCandidates(source)) {
+      const key = `${kind}:${url}`
+      if (seen.has(key)) continue
+      seen.add(key)
+      candidates.push({ url, kind })
+    }
+  }
+
+  append(videoUrl, true)
+  append(imageUrl, false)
+  return candidates
 }
 
 function passthroughLoader({ src }: { src: string }) {
@@ -111,16 +144,15 @@ export default function NFTMedia({
   imageStyle,
   placeholderStyle,
 }: NFTMediaProps) {
-  const sourceUrl = videoUrl ?? imageUrl
-  const kind = sourceUrl ? mediaKind(sourceUrl, Boolean(videoUrl)) : null
-  const candidates = mediaCandidates(sourceUrl)
+  const sourceKey = `${videoUrl ?? ""}|${imageUrl ?? ""}`
+  const candidates = buildCandidates(imageUrl, videoUrl)
   const [candidateIndex, setCandidateIndex] = useState(0)
 
   useEffect(() => {
     setCandidateIndex(0)
-  }, [sourceUrl])
+  }, [sourceKey])
 
-  if (!kind || candidates.length === 0) {
+  if (candidates.length === 0) {
     return (
       <div style={{ ...placeholderStyle, position: "relative" }}>
         <MediaBadge label="Media unavailable" />
@@ -138,17 +170,17 @@ export default function NFTMedia({
     )
   }
 
-  const currentUrl = candidates[candidateIndex]
+  const current = candidates[candidateIndex]
   const tryNextCandidate = () =>
-    setCandidateIndex((current) => current + 1)
+    setCandidateIndex((currentIndex) => currentIndex + 1)
 
-  if (kind === "video") {
+  if (current.kind === "video") {
     return (
       <div style={mediaWrapperStyle}>
         <MediaBadge label="Video" />
         <video
-          key={currentUrl}
-          src={currentUrl}
+          key={current.url}
+          src={current.url}
           aria-label={alt}
           controls
           playsInline
@@ -160,13 +192,13 @@ export default function NFTMedia({
     )
   }
 
-  if (kind === "audio") {
+  if (current.kind === "audio") {
     return (
       <div style={{ ...placeholderStyle, position: "relative" }}>
         <MediaBadge label="Audio" />
         <audio
-          key={currentUrl}
-          src={currentUrl}
+          key={current.url}
+          src={current.url}
           aria-label={alt}
           controls
           preload="metadata"
@@ -181,8 +213,8 @@ export default function NFTMedia({
     <div style={mediaWrapperStyle}>
       <MediaBadge label="Image" />
       <Image
-        key={currentUrl}
-        src={currentUrl}
+        key={current.url}
+        src={current.url}
         alt={alt}
         width={600}
         height={600}
