@@ -50,20 +50,24 @@ async function requestDeSo(endpoint: string, postHash: string) {
 async function loadProfileUsername(publicKey?: string) {
   if (!publicKey) return undefined
 
-  const response = await fetchDeSo("get-single-profile", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ PublicKeyBase58Check: publicKey }),
-    cache: "no-store",
-  })
+  try {
+    const response = await fetchDeSo("get-single-profile", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ PublicKeyBase58Check: publicKey }),
+      cache: "no-store",
+    })
 
-  if (!response.ok) return undefined
+    if (!response.ok) return undefined
 
-  const data = await response.json()
-  const profile: DeSoProfile =
-    data.Profile ?? data.ProfileEntryResponse ?? {}
+    const data = await response.json()
+    const profile: DeSoProfile =
+      data.Profile ?? data.ProfileEntryResponse ?? {}
 
-  return profile.Username
+    return typeof profile.Username === "string" ? profile.Username : undefined
+  } catch {
+    return undefined
+  }
 }
 
 function shortKey(publicKey?: string) {
@@ -165,7 +169,8 @@ const styles = {
     cursor: "pointer",
     fontSize: "13px",
     fontWeight: 700,
-    padding: "8px 12px",
+    minHeight: "44px",
+    padding: "8px 14px",
   },
   brand: {
     color: "#5cff9d",
@@ -252,7 +257,7 @@ const styles = {
   },
   facts: {
     display: "grid",
-    gridTemplateColumns: "1fr 1fr",
+    gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
     gap: "14px",
     margin: 0,
   },
@@ -490,7 +495,7 @@ export default async function NFTView({
 
               <p style={styles.source}>
                 NFT data is read directly from DeSo. IPFS media is loaded
-                through an independent public gateway.
+                through controlled public HTTPS gateways.
               </p>
             </section>
           </div>
