@@ -17,7 +17,9 @@ const sections = [
   },
   {
     title: "Surprise Me",
-    text: "A future deterministic discovery route. It will not silently sign, transact, spend, follow, like, or send Diamonds.",
+    text: "Open today's deterministic discovery route. It never silently signs, transacts, spends, follows, likes, or sends Diamonds.",
+    href: "/discover/surprise",
+    action: "Surprise Me",
   },
 ]
 
