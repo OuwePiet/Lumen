@@ -9,9 +9,12 @@ export const metadata: Metadata = {
 export default function LivePage(){
   return <main style={{minHeight:"100vh",background:"#020504",color:"white",padding:"24px 16px 60px"}}>
     <div style={{width:"min(980px,100%)",margin:"0 auto"}}>
-      <nav style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:12}}>
+      <nav style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:12,flexWrap:"wrap"}}>
         <a href="/" style={{color:"#7ee2a8",fontWeight:900,textDecoration:"none"}}>← VIA</a>
-        <span style={{fontSize:13,opacity:.72}}>LIVE · Replay · Media Health</span>
+        <div style={{display:"flex",gap:12,alignItems:"center",flexWrap:"wrap"}}>
+          <a href="/live/guide" style={{color:"#b9ffd4",fontWeight:800,textDecoration:"none"}}>How VIA LIVE works</a>
+          <span style={{fontSize:13,opacity:.72}}>LIVE · Replay · Media Health</span>
+        </div>
       </nav>
       <header style={{padding:"46px 0 16px"}}>
         <p style={{margin:0,color:"#7ee2a8",fontWeight:900,letterSpacing:2}}>VIA LIVE</p>
