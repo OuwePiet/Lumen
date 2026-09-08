@@ -1,7 +1,7 @@
 "use client"
 
 import Image from "next/image"
-import { useState, type CSSProperties } from "react"
+import { useEffect, useState, type CSSProperties } from "react"
 
 type NFTMediaProps = {
   imageUrl?: string
@@ -100,6 +100,10 @@ export default function NFTMedia({
   const kind = sourceUrl ? mediaKind(sourceUrl, Boolean(videoUrl)) : null
   const candidates = mediaCandidates(sourceUrl)
   const [candidateIndex, setCandidateIndex] = useState(0)
+
+  useEffect(() => {
+    setCandidateIndex(0)
+  }, [sourceUrl])
 
   if (!kind || candidates.length === 0) {
     return (
