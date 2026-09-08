@@ -123,7 +123,7 @@ function readCache(value: string | null, publicKey: string) {
       return null
     }
 
-    return envelope.collections
+    return envelope
   } catch {
     return null
   }
@@ -334,6 +334,7 @@ export default function PublicAccountNFTs({
   const cacheKey = `via:account-nfts:v${CACHE_VERSION}:${publicKey}`
   const [nfts, setNFTs] = useState<DeSoNFTCollection[] | null>(null)
   const [loading, setLoading] = useState(false)
+  const [lastUpdated, setLastUpdated] = useState<number | null>(null)
   const [linkCopied, setLinkCopied] = useState(false)
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
   const [error, setError] = useState("")
@@ -379,7 +380,8 @@ export default function PublicAccountNFTs({
     try {
       const cached = readCache(window.sessionStorage.getItem(cacheKey), publicKey)
       if (cached) {
-        setNFTs(cached)
+        setNFTs(cached.collections)
+        setLastUpdated(cached.savedAt)
       } else {
         window.sessionStorage.removeItem(cacheKey)
       }
@@ -396,13 +398,14 @@ export default function PublicAccountNFTs({
 
     try {
       const collections = await getNFTsForUser(publicKey)
-      setVisibleCount(PAGE_SIZE)
+      const savedAt = Date.now()
       setNFTs(collections)
+      setLastUpdated(savedAt)
 
       const envelope: NFTCacheEnvelope = {
         version: CACHE_VERSION,
         publicKey,
-        savedAt: Date.now(),
+        savedAt,
         collections,
       }
       try {
@@ -599,10 +602,7 @@ export default function PublicAccountNFTs({
             <option value="highest-price">Highest price</option>
           </select>
           <span style={styles.controlLabel}>Sale</span>
-          {([[
-            "all",
-            "All",
-          ], ["for-sale", "For sale"], ["not-for-sale", "Not for sale"]] as const).map(
+          {([["all", "All"], ["for-sale", "For sale"], ["not-for-sale", "Not for sale"]] as const).map(
             ([value, label]) => (
               <button
                 key={value}
@@ -622,10 +622,7 @@ export default function PublicAccountNFTs({
             )
           )}
           <span style={styles.controlLabel}>Media</span>
-          {([[
-            "all",
-            "All",
-          ], ["image", "Image"], ["video", "Video"], ["audio", "Audio"], ["unavailable", "Unavailable"]] as const).map(
+          {([["all", "All"], ["image", "Image"], ["video", "Video"], ["audio", "Audio"], ["unavailable", "Unavailable"]] as const).map(
             ([value, label]) => (
               <button
                 key={value}
@@ -668,9 +665,28 @@ export default function PublicAccountNFTs({
             {loading ? "Refreshing from DeSo…" : "Refresh from DeSo"}
           </button>
         </div>
-      ) : null}
+      ) : (
+        <button
+          type="button"
+          style={styles.filter}
+          disabled={loading}
+          onClick={loadNFTs}
+        >
+          {loading ? "Refreshing from DeSo…" : "Refresh from DeSo"}
+        </button>
+      )}
 
       {error ? <div style={styles.error} role="alert">{error}</div> : null}
+
+      <p style={styles.status} aria-live="polite">
+        {loading && lastUpdated
+          ? "Showing cached NFTs · refreshing from DeSo…"
+          : lastUpdated
+            ? `Updated ${new Date(lastUpdated).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`
+            : loading
+              ? "Loading public NFTs from DeSo…"
+              : "DeSo refresh status unavailable."}
+      </p>
 
       <p style={styles.status} aria-live="polite">
         {nfts.length === 0
