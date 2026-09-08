@@ -38,10 +38,10 @@ VIA / viadeso.online is the active product baseline. Historical Lumen, Vero, Vel
 - Audited NFT media source construction and blocked arbitrary non-HTTPS remote protocols.
 - Added deterministic IPFS HTTPS fallback candidates.
 - Reset media fallback state between NFT source changes.
+- Replaced the remaining `DeSo verified` NFT detail badge with the factual `On-chain NFT` label.
 
 ## Next checks
 
-- Remove any remaining UI trust labels that imply verification without an authoritative verification source.
 - Audit all remaining external links and URL construction for untrusted input.
 - Audit NFT metadata parsing beyond media URLs.
 - Audit accessibility and responsive behavior on mobile/tablet/desktop.
