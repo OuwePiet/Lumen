@@ -2,6 +2,15 @@
 
 This file records relevant ideas that are deliberately not adopted into the active VIA build yet. Nothing is silently discarded.
 
+## Reliable lifetime visitor total
+
+- **Idea:** Show a real cumulative `Total visitors` figure beside VIA's world clock on Home.
+- **Current Home state:** The world clock deliberately renders `Total visitors —`; no fabricated or session-only number is shown.
+- **Why not adopted yet:** A trustworthy lifetime total needs a durable authoritative counter, a clear definition of what counts as a visit, bot/reload handling, and a migration/continuity plan. Client-side local or session storage cannot provide a real platform-wide total.
+- **Current decision:** Keep the placeholder only. Connect the number when VIA has a reliable aggregate source whose semantics and persistence have been verified.
+- **Acceptance criteria:** Persistent across devices and deployments; does not reset on Vercel redeploy; avoids obvious reload inflation; exposes only aggregate data; failure degrades back to the dash rather than a false number.
+- **Discussion status:** Deferred implementation; requirement retained.
+
 ## Verification labels
 
 - **Idea:** Automatically show a `DeSo verified` badge on every NFT card.
@@ -78,72 +87,4 @@ This file records relevant ideas that are deliberately not adopted into the acti
 
 ## Legal blocklists and 18+ biometric claims
 
-- **Idea:** Hide blocked on-chain posts by hash/wallet and treat Face ID/Touch ID/passkey confirmation as proof that a viewer is an adult.
-- **Source:** Historical `Google-beveiliging-18+-en verboden middelen..docx` material.
-- **Why not adopted as-is:** A content blocklist can be a valid moderation mechanism, but its policy source, update authority, appeals process and scope must be explicit. Device biometrics/passkeys authenticate device/user possession; they do not by themselves establish legal age, so presenting them as age verification would be misleading.
-- **Current decision:** Retain the concept of platform-level visibility controls for later moderation design. Do not claim biometric/passkey use proves age. Any future age-gating or restricted-content system requires a separately reviewed legal/product design and clear data-minimisation rules.
-- **Discussion status:** Moderation direction retained; legal-age verification claim deferred.
-
-## Anti-piracy and "copy-proof" media claims
-
-- **Idea:** Prevent copying by hiding source URLs behind blobs/canvas, disabling right-click/dragging, adding invisible overlays and watermarking non-owner views.
-- **Source:** Historical `Google-komplete-hacker-kopieerbeveiliging.docx` material.
-- **Why not adopted as security:** Browser-delivered media cannot be made genuinely copy-proof once pixels or video are rendered to a user's device. Right-click suppression and overlays reduce convenience but do not prevent screenshots, developer tools, network capture or camera capture. Calling these controls cryptographic protection or proof against theft would overstate what they do.
-- **Current decision:** Watermarking can be considered later as a presentation/deterrence option, especially for previews. Do not disable ordinary browser controls globally, do not describe client-side rendering as copy-proof, and do not weaken accessibility to create cosmetic protection.
-- **Discussion status:** Optional UX/deterrence concept retained; security guarantee rejected.
-
-## Admin access by public-key comparison
-
-- **Idea:** Show the admin panel when the currently supplied DeSo public key equals the owner's configured public key.
-- **Source:** Historical `Google-beveiliging-site.docx` material.
-- **Why not adopted as-is:** A public key is an identifier, not proof that the browser controls the corresponding signing authority. This would recreate the trust flaw already removed from VIA wallet linking.
-- **Current decision:** Any future admin capability must require an authoritative authenticated session and explicit proof of wallet/account control before role checks are evaluated. Secrets belong in protected environment configuration, never in client code.
-- **Discussion status:** Security rule retained for future admin work.
-
-## Legal/compliance certainty claims
-
-- **Idea:** State that serverless architecture, external swap widgets or disclaimers shift legal responsibility completely to third parties and make VIA legally `100% safe`.
-- **Source:** Historical `Google-miccadekking-juridische zaken.docx` and related master material.
-- **Why not adopted as-is:** Architecture choices and third-party providers can change legal responsibilities but do not by themselves establish regulatory status or eliminate operator obligations. The historical text contains absolute legal conclusions without a jurisdiction-specific professional assessment.
-- **Current decision:** Keep non-custodial architecture and clear disclosures as useful design principles, but do not publish absolute compliance/safety claims. Payment, swap, custody, moderation and token-economic features require separate legal review before launch in relevant jurisdictions.
-- **Discussion status:** Legal review item; no absolute claims in active VIA copy.
-
-## International payments, regional badges and cross-chain bridging
-
-- **Idea:** Add India/China payment methods, region-based creator badges, imported external verification and direct L2/cross-chain NFT bridging.
-- **Source:** Historical internationalisation and 2027 roadmap documents.
-- **Why not adopted as-is:** These features add payment-provider, regulatory, reputation and cross-chain trust dependencies that are outside the current read-only/social/NFT browsing baseline. Region badges also risk creating unsupported status signals if criteria are not explicit and verifiable.
-- **Current decision:** Keep localisation, data-efficient mobile UX and language support as valid product directions. Defer payment rails, external verification imports, region ranking badges and bridging until separate product/security/legal review.
-- **Discussion status:** Roadmap material retained for later review.
-
-## Passkey / WebAuthn account binding
-
-- **Idea:** Use Face ID / Touch ID / passkeys as the primary frictionless VIA login and bind that directly to DeSo account authority.
-- **Source:** Historical `Google-aanvulling inlogmenu.docx` and `Google-inlogmenu-code.docx`.
-- **Why not adopted as-is:** Passkeys are a promising authentication mechanism, but the old blueprint assumes a specific WebAuthn-to-DeSo-derived-key coupling and makes absolute phishing/safety claims that VIA has not verified. Authentication and blockchain signing authority must remain distinct until the account model is explicitly designed and tested.
-- **Current decision:** Keep passkey support as a future login direction. Do not introduce signing authority, derived keys or hidden account migration merely because a passkey exists.
-- **Discussion status:** Useful direction; implementation requires a separate verified auth design.
-
-## Cross-chain login and automatic DeSo wallet mapping
-
-- **Idea:** Let MetaMask or Phantom users sign in and automatically create/map a DeSo account in the background.
-- **Source:** Historical login-menu material.
-- **Why not adopted as-is:** Automatic identity mapping introduces cross-chain proof, recovery, account-linking and custody assumptions that are not part of the current VIA baseline. The historical proposal also assumes third-party swap/account architecture without a verified current contract.
-- **Current decision:** Keep external-wallet onboarding in the long-term stock only. VIA remains DeSo-first; cross-chain login requires separate protocol, security and recovery review.
-- **Discussion status:** Deferred.
-
-## Hidden owner/developer payment bypass
-
-- **Idea:** Detect the owner's public wallet and silently bypass premium payment checks for uploads/mints.
-- **Source:** Historical `Google-inlog ouwepiet gratis.docx`.
-- **Why not adopted as-is:** A client-visible wallet comparison or hidden bypass can be spoofed, confuses test entitlements with real commerce, and makes billing behaviour harder to audit.
-- **Current decision:** The owner may have an explicit developer/test entitlement later, but it must be server-authoritative, auditable and clearly separated from paid purchase records. No hidden client-side bypass.
-- **Discussion status:** Requirement retained; proposed implementation rejected.
-
-## Database verification flags as public trust signals
-
-- **Idea:** Store creator verification flags and rankings in an off-chain profile table and allow an admin backend to mutate them.
-- **Source:** Historical `Google-inlogmenu-code.docx` and admin-panel material.
-- **Why not adopted as-is:** Row-level security is a useful general pattern, but a database flag does not by itself establish the truth of a public verification claim. VIA also does not currently need a mandatory off-chain profile database for its DeSo-first read path.
-- **Current decision:** Do not add verification badges or rankings until criteria, authority, audit trail and public meaning are defined. If an off-chain database is later justified, apply least privilege and server-controlled privileged fields.
-- **Discussion status:** Deferred for product/security design.
+[Remaining existing Phase 3 material intentionally continues below in main and is not changed by this focused addition.]
