@@ -1,10 +1,32 @@
-const DESO_NODE = "https://node.deso.org"
+const DEFAULT_DESO_NODE = "https://node.deso.org"
 const REQUEST_TIMEOUT_MS = 12_000
 const MAX_ATTEMPTS = 2
 const PROFILE_LOOKUP_CONCURRENCY = 6
 
 let activeProfileLookups = 0
 const profileLookupWaiters: Array<() => void> = []
+
+function normalizedNodeUrl(value: string | undefined) {
+  if (!value) return null
+
+  try {
+    const url = new URL(value.trim())
+    if (url.protocol !== "https:") return null
+    return url.origin
+  } catch {
+    return null
+  }
+}
+
+const DESO_NODES = Array.from(
+  new Set(
+    [
+      normalizedNodeUrl(process.env.NEXT_PUBLIC_DESO_NODE),
+      normalizedNodeUrl(process.env.DESO_NODE),
+      DEFAULT_DESO_NODE,
+    ].filter((node): node is string => Boolean(node))
+  )
+)
 
 function normalizedEndpoint(endpoint: string) {
   const normalized = endpoint.trim().replace(/^\/+/, "")
@@ -86,12 +108,13 @@ async function performDeSoRequest(
   let lastError: unknown
 
   for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt += 1) {
+    const node = DESO_NODES[Math.min(attempt, DESO_NODES.length - 1)] ?? DEFAULT_DESO_NODE
     const controller = new AbortController()
     const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS)
 
     try {
       const response = await fetch(
-        `${DESO_NODE}/api/v0/${safeEndpoint}`,
+        `${node}/api/v0/${safeEndpoint}`,
         {
           ...requestInit,
           signal: controller.signal,
