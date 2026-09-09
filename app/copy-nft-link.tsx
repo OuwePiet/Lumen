@@ -9,8 +9,20 @@ export default function CopyNFTLink({
 }) {
   const [copied, setCopied] = useState(false)
 
+  const buttonStyle: CSSProperties = {
+    ...style,
+    background: "transparent",
+    border: "1px solid rgba(143, 212, 169, .42)",
+    borderRadius: "11px",
+    color: "#9adbb2",
+    minHeight: "40px",
+    padding: "8px 13px",
+  }
+
+  const currentNFTUrl = () => `${window.location.origin}${window.location.pathname}`
+
   const copyLink = async () => {
-    const nftUrl = `${window.location.origin}${window.location.pathname}`
+    const nftUrl = currentNFTUrl()
 
     try {
       await navigator.clipboard.writeText(nftUrl)
@@ -29,9 +41,32 @@ export default function CopyNFTLink({
     window.setTimeout(() => setCopied(false), 2000)
   }
 
+  const shareWhatsApp = () => {
+    const text = `View this NFT on VIA: ${currentNFTUrl()}`
+    window.open(
+      `https://wa.me/?text=${encodeURIComponent(text)}`,
+      "_blank",
+      "noopener,noreferrer"
+    )
+  }
+
   return (
-    <button type="button" style={style} onClick={copyLink}>
-      {copied ? "NFT link copied" : "Copy NFT link"}
-    </button>
+    <div
+      role="group"
+      aria-label="Share NFT"
+      style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}
+    >
+      <button type="button" style={buttonStyle} onClick={copyLink}>
+        {copied ? "NFT link copied" : "Copy link"}
+      </button>
+      <button
+        type="button"
+        style={buttonStyle}
+        onClick={shareWhatsApp}
+        aria-label="Share NFT via WhatsApp"
+      >
+        WhatsApp
+      </button>
+    </div>
   )
 }
