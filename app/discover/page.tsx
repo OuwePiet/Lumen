@@ -1,4 +1,5 @@
 import Link from "next/link"
+import SaveButton from "../saved/save-button"
 
 const sections = [
   {
@@ -46,7 +47,7 @@ const styles = {
   cardTitle: { margin: "0 0 8px", fontSize: "19px" },
   badge: { color: "#78f0a8", border: "1px solid #285f40", borderRadius: "999px", padding: "4px 8px", fontSize: "10px", fontWeight: 900, letterSpacing: "0.08em" },
   cardText: { margin: 0, color: "#a9b8af", lineHeight: 1.55, fontSize: "14px" },
-  cardAction: { marginTop: "14px" },
+  cardAction: { marginTop: "14px", display: "flex", gap: "10px", flexWrap: "wrap" as const, alignItems: "center" },
   radio: { marginTop: "14px", border: "1px solid #347d52", borderRadius: "16px", background: "#0b1710", padding: "18px" },
 }
 
@@ -60,7 +61,7 @@ export default function DiscoverPage() {
           One VIA hub for creators, NFTs, world radio and daily discovery. The foundation stays low-cost and read-only while public data and DeSo capabilities are verified step by step.
         </p>
         <div style={styles.safety}>
-          Discovery is not authority: opening these routes never proves identity or location and never silently signs, spends, follows, likes, transfers assets, or sends Diamonds.
+          Discovery is not authority: opening these routes never proves identity or location and never silently signs, spends, follows, likes, transfers assets, or sends Diamonds. Saving a route is also explicit and stays in this browser.
         </div>
 
         <nav aria-label="Discovery navigation" style={styles.nav}>
@@ -68,6 +69,7 @@ export default function DiscoverPage() {
           <Link href="/quest" style={styles.link}>World Quest</Link>
           <Link href="/radio" style={styles.link}>World Radio</Link>
           <Link href="/live" style={styles.link}>VIA LIVE</Link>
+          <Link href="/saved" style={styles.link}>Saved</Link>
         </nav>
 
         <section style={styles.grid} aria-label="World Discovery sections">
@@ -78,7 +80,10 @@ export default function DiscoverPage() {
                 <span style={styles.badge}>{section.status}</span>
               </div>
               <p style={styles.cardText}>{section.text}</p>
-              <p style={styles.cardAction}><Link href={section.href} style={styles.link}>{section.action}</Link></p>
+              <div style={styles.cardAction}>
+                <Link href={section.href} style={styles.link}>{section.action}</Link>
+                <SaveButton title={section.title} href={section.href} kind="Discovery" />
+              </div>
             </article>
           ))}
         </section>
@@ -86,7 +91,10 @@ export default function DiscoverPage() {
         <section style={styles.radio}>
           <h2 style={styles.cardTitle}>World Radio · public world layer</h2>
           <p style={styles.cardText}>Explore stations by country or genre, keep local favorites, and start streams only when you choose Play. Around the World now links directly into these public country searches.</p>
-          <p style={{ margin: "14px 0 0" }}><Link href="/radio" style={styles.link}>Open World Radio</Link></p>
+          <div style={{ marginTop: "14px", display: "flex", gap: "10px", flexWrap: "wrap", alignItems: "center" }}>
+            <Link href="/radio" style={styles.link}>Open World Radio</Link>
+            <SaveButton title="World Radio" href="/radio" kind="Listen" />
+          </div>
         </section>
       </div>
     </main>
