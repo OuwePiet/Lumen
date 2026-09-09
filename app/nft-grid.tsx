@@ -134,23 +134,27 @@ function cardTitle(body?: string) {
 }
 
 const styles = {
-  section: { minHeight: "100vh", background: "#050807", color: "#f4f7f5", fontFamily: "Arial, Helvetica, sans-serif", padding: "40px 20px 72px" },
+  section: { minHeight: "100vh", background: "#050807", color: "#f4f7f5", fontFamily: "Arial, Helvetica, sans-serif", padding: "32px 20px 72px" },
   container: { width: "100%", maxWidth: "1120px", margin: "0 auto" },
-  brandRow: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: "16px", marginBottom: "10px", flexWrap: "wrap" as const },
-  brand: { color: "#5cff9d", fontSize: "14px", fontWeight: 700, letterSpacing: "0.18em", margin: 0, textTransform: "uppercase" as const },
+  brandRow: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: "18px", marginBottom: "28px", flexWrap: "wrap" as const },
+  brandLockup: { display: "flex", alignItems: "center", gap: "12px", textDecoration: "none" },
+  brandMark: { display: "grid", placeItems: "center", width: "38px", height: "38px", border: "1px solid #356348", borderRadius: "12px", color: "#9adbb2", background: "#0b1710", fontSize: "15px", fontWeight: 800, letterSpacing: "0.08em" },
+  brandText: { display: "grid", gap: "2px" },
+  brand: { color: "#9adbb2", fontSize: "14px", fontWeight: 800, letterSpacing: "0.16em", margin: 0, textTransform: "uppercase" as const },
+  domain: { color: "#76837b", fontSize: "11px", letterSpacing: "0.08em", margin: 0 },
   nav: { display: "flex", flexWrap: "wrap" as const, gap: "8px", justifyContent: "flex-end" },
-  navLink: { minHeight: "44px", display: "inline-flex", alignItems: "center", color: "#b9ffd4", background: "#10261a", border: "1px solid #285f40", borderRadius: "999px", fontSize: "13px", fontWeight: 800, padding: "8px 14px", textDecoration: "none" },
-  heading: { fontSize: "clamp(30px, 5vw, 52px)", lineHeight: 1.05, margin: "0 0 12px" },
-  introduction: { color: "#a9b8af", fontSize: "16px", lineHeight: 1.6, margin: "0 0 32px" },
-  owner: { color: "#5cff9d", fontSize: "14px", fontWeight: 700, margin: "-16px 0 32px" },
+  navLink: { minHeight: "40px", display: "inline-flex", alignItems: "center", color: "#b7d8c3", background: "#0b1710", border: "1px solid #2b5039", borderRadius: "999px", fontSize: "12px", fontWeight: 700, padding: "7px 12px", textDecoration: "none" },
+  heading: { fontSize: "clamp(28px, 4.5vw, 46px)", lineHeight: 1.08, margin: "0 0 10px" },
+  introduction: { color: "#9ba9a0", fontSize: "15px", lineHeight: 1.6, margin: "0 0 30px" },
+  owner: { color: "#8fd4a9", fontSize: "13px", fontWeight: 700, lineHeight: 1.7, margin: "-12px 0 30px" },
   grid: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: "24px" },
   card: { display: "block", overflow: "hidden", color: "inherit", background: "#0c120f", border: "1px solid #254233", borderRadius: "18px", textDecoration: "none" },
   mediaFrame: { width: "100%", aspectRatio: "1 / 1", overflow: "hidden", background: "#070b09", borderBottom: "1px solid #254233" },
   image: { display: "block", width: "100%", height: "100%", objectFit: "cover" as const, background: "#070b09" },
   placeholder: { display: "grid", width: "100%", height: "100%", placeItems: "center", color: "#84958b", background: "#070b09" },
   content: { padding: "20px" },
-  badge: { display: "inline-block", color: "#5cff9d", background: "#10261a", border: "1px solid #285f40", borderRadius: "999px", fontSize: "12px", fontWeight: 700, padding: "6px 10px", marginBottom: "14px" },
-  title: { fontSize: "19px", lineHeight: 1.4, margin: "0 0 18px" },
+  badge: { display: "inline-block", color: "#92d7ab", background: "#0d1c13", border: "1px solid #2f5940", borderRadius: "999px", fontSize: "12px", fontWeight: 700, padding: "6px 10px", marginBottom: "14px" },
+  title: { fontSize: "18px", lineHeight: 1.4, margin: "0 0 18px" },
   facts: { display: "flex", justifyContent: "space-between", gap: "16px", color: "#a9b8af", fontSize: "13px" },
 }
 
@@ -187,18 +191,25 @@ export default async function NFTGrid({ initialAccount }: { initialAccount?: str
       <a className={accessibilityStyles.skipLink} href="#collection-controls">Skip to collection controls</a>
       <div style={styles.container}>
         <div style={styles.brandRow}>
-          <p style={styles.brand}>VIA</p>
+          <a href="/" aria-label="VIA home" style={styles.brandLockup}>
+            <span aria-hidden="true" style={styles.brandMark}>V</span>
+            <span style={styles.brandText}>
+              <span style={styles.brand}>VIA</span>
+              <span style={styles.domain}>viadeso.online</span>
+            </span>
+          </a>
           <nav aria-label="VIA main navigation" style={styles.nav}>
+            <a href="/social" style={styles.navLink}>Social</a>
+            <a href="/my-via" style={styles.navLink}>My VIA</a>
+            <a href="/communities" style={styles.navLink}>Communities</a>
             <a href="/studio" style={styles.navLink}>Studio</a>
-            <a href="/quest" style={styles.navLink}>World Quest</a>
-            <a href="/discover" style={styles.navLink}>World Discovery</a>
-            <a href="/radio" style={styles.navLink}>World Radio</a>
+            <a href="/discover" style={styles.navLink}>Discover</a>
             <a href="/live" style={styles.navLink}>VIA LIVE</a>
-            <a href="/news" style={styles.navLink}>Daily News</a>
+            <a href="/news" style={styles.navLink}>News</a>
           </nav>
         </div>
         <h1 style={styles.heading}>NFT collection</h1>
-        <p style={styles.introduction}>Read-only NFT information loaded directly from the DeSo blockchain.</p>
+        <p style={styles.introduction}>Explore public DeSo NFTs through VIA. Collection data is loaded read-only from the DeSo network.</p>
         <CollectionBrowser initialAccount={initialAccount}>
           <>
             <p style={styles.owner}>
