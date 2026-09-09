@@ -1,4 +1,5 @@
 import Link from "next/link";
+import CommunityInterests from "./community-interests";
 
 const communityTypes = [
   { title: "Art & Photography", text: "A place for creators, collectors and visitors to share work and talk about visual culture." },
@@ -27,9 +28,11 @@ export default function CommunitiesPage() {
         <section className="mb-7 rounded-2xl border border-green-900/60 bg-zinc-950 p-5">
           <h2 className="text-lg font-medium text-green-300">Foundation first</h2>
           <p className="mt-2 text-sm leading-6 text-zinc-400">
-            This first version defines the community structure only. Joining, posting, moderation, membership and visibility rules are not presented as live until their DeSo-compatible implementation is reviewed.
+            This version defines the community structure and lets a visitor mark local interests. Joining, posting, moderation, membership and visibility rules are not presented as live until their DeSo-compatible implementation is reviewed.
           </p>
         </section>
+
+        <CommunityInterests />
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {communityTypes.map((community) => (
