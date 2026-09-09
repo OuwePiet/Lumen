@@ -2,6 +2,7 @@
 
 import Image from "next/image"
 import { useEffect, useState, type CSSProperties } from "react"
+import ViaWatermark from "./via-watermark"
 
 type NFTMediaProps = {
   imageUrl?: string
@@ -188,6 +189,7 @@ export default function NFTMedia({
           style={imageStyle}
           onError={tryNextCandidate}
         />
+        <ViaWatermark />
       </div>
     )
   }
@@ -224,6 +226,7 @@ export default function NFTMedia({
         style={imageStyle}
         onError={tryNextCandidate}
       />
+      <ViaWatermark />
     </div>
   )
 }
