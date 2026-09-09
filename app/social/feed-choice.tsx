@@ -6,9 +6,9 @@ export const VIA_SOCIAL_FEED_STORAGE_KEY = "via:social:feed-choice:v1"
 export const VIA_SOCIAL_FEED_EVENT = "via:social:feed-choice"
 
 const choices = [
-  { id: "following", title: "Following", text: "Posts from accounts you choose to follow. VIA will keep the ordering rule visible when this feed becomes live." },
+  { id: "following", title: "Following", text: "Read a bounded newest-first view of public posts from accounts the selected DeSo identity follows." },
   { id: "recent", title: "Recent", text: "A recency-first public DeSo view. Loaded public posts are shown newest first; newest does not automatically mean trusted or recommended." },
-  { id: "discovery", title: "Discovery", text: "A broader route to creators and conversations outside your follows, with ranking and Sponsored placement kept explicit." },
+  { id: "discovery", title: "Discovery", text: "A broader route to creators and conversations outside your follows. Discovery ranking is the next feed track and Sponsored placement will stay explicit." },
 ] as const
 
 export type ChoiceId = (typeof choices)[number]["id"]
@@ -45,7 +45,7 @@ export default function FeedChoice() {
       <p className="text-xs font-semibold uppercase tracking-[0.16em] text-green-400">Your entry point</p>
       <h2 id="feed-choice-heading" className="mt-2 text-2xl font-semibold">Choose your social view</h2>
       <p className="mt-2 max-w-3xl text-sm leading-6 text-zinc-400">
-        Recent now changes the ordering of loaded public posts in this browser. Following and Discovery remain preferences only until their verified DeSo read flows are connected. No choice changes DeSo data or follows accounts.
+        Following and Recent now have live read-only behavior. Discovery remains a local preference until its verified public read and ranking flow is connected. No choice changes DeSo data or follows accounts.
       </p>
       <div className="mt-4 grid gap-3 md:grid-cols-3">
         {choices.map((choice) => {
