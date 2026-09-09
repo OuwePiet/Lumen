@@ -1,5 +1,6 @@
 import Link from "next/link"
 import SaveButton from "../saved/save-button"
+import FeedChoice from "./feed-choice"
 import SocialDraft from "./social-draft"
 
 const feeds = [
@@ -46,8 +47,10 @@ export default function SocialPage() {
           </p>
         </section>
 
+        <FeedChoice />
+
         <section aria-labelledby="feeds-heading">
-          <h2 id="feeds-heading" className="text-2xl font-semibold">Feed choices</h2>
+          <h2 id="feeds-heading" className="text-2xl font-semibold">Planned feed lanes</h2>
           <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {feeds.map((feed) => (
               <article key={feed.title} className="rounded-2xl border border-zinc-800 bg-zinc-950 p-5">
