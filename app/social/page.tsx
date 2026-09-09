@@ -1,5 +1,6 @@
 import Link from "next/link"
 import SaveButton from "../saved/save-button"
+import SocialDraft from "./social-draft"
 
 const feeds = [
   { title: "Hot", text: "A future view for active public DeSo conversations. Ranking logic must stay explainable and must not be sold as organic placement." },
@@ -58,11 +59,13 @@ export default function SocialPage() {
           </div>
         </section>
 
+        <SocialDraft />
+
         <section className="mt-8 rounded-2xl border border-zinc-800 bg-zinc-950/70 p-5" aria-labelledby="composer-heading">
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-green-400">Composer track</p>
-          <h2 id="composer-heading" className="mt-2 text-2xl font-semibold">Create when the wallet boundary is ready</h2>
+          <h2 id="composer-heading" className="mt-2 text-2xl font-semibold">Publish only when the wallet boundary is ready</h2>
           <p className="mt-2 max-w-3xl text-sm leading-6 text-zinc-400">
-            The social composer is a planned DeSo write surface. Drafting can stay local, but any blockchain write must show the action clearly and require the correct wallet proof/signing flow. VIA will not silently sign on behalf of a visitor.
+            Local drafting is available above. Publishing remains a future DeSo write surface: every blockchain write must show the action clearly and require the correct wallet proof/signing flow. VIA will not silently sign on behalf of a visitor.
           </p>
           <div className="mt-4 flex flex-wrap gap-2">
             {actions.map((action) => (
