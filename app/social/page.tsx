@@ -1,6 +1,7 @@
 import Link from "next/link"
 import SaveButton from "../saved/save-button"
 import FeedChoice from "./feed-choice"
+import PublicPosts from "./public-posts"
 import SocialDraft from "./social-draft"
 
 const feeds = [
@@ -31,7 +32,7 @@ export default function SocialPage() {
             <p className="text-sm font-semibold uppercase tracking-[0.25em] text-green-400">VIA · DeSo Social</p>
             <h1 className="mt-2 text-3xl font-semibold sm:text-4xl">Social without one compulsory feed</h1>
             <p className="mt-3 max-w-3xl text-sm leading-6 text-zinc-400 sm:text-base">
-              VIA keeps the DeSo social layer as a core track, but the visitor chooses how to enter it. This foundation does not yet publish, sign, follow, like, repost or send Diamonds.
+              VIA keeps the DeSo social layer as a core track, but the visitor chooses how to enter it. Public posts can now be read here; publishing, signing, follow, like, repost and Diamonds remain outside this read-only boundary.
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -48,8 +49,9 @@ export default function SocialPage() {
         </section>
 
         <FeedChoice />
+        <PublicPosts />
 
-        <section aria-labelledby="feeds-heading">
+        <section className="mt-8" aria-labelledby="feeds-heading">
           <h2 id="feeds-heading" className="text-2xl font-semibold">Planned feed lanes</h2>
           <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {feeds.map((feed) => (
