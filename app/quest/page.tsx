@@ -85,9 +85,9 @@ export default function QuestPage() {
         <section id="coffee-corner" style={{ scrollMarginTop: 24 }}>
           <CoffeeGames />
           <div style={shareRow} aria-label="Share VIA Coffee Corner games">
-            <ShareButton game="VIA Coffee Rush" path="/quest#coffee-corner" />
-            <ShareButton game="VIA Bean Drop" path="/quest#coffee-corner" />
-            <ShareButton game="VIA Perfect Blend" path="/quest#coffee-corner" />
+            <ShareButton game="VIA Coffee Rush" path="/quest#coffee-rush-heading" />
+            <ShareButton game="VIA Bean Drop" path="/quest#bean-drop-heading" />
+            <ShareButton game="VIA Perfect Blend" path="/quest#perfect-blend-heading" />
           </div>
         </section>
 
