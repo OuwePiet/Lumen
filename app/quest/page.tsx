@@ -22,12 +22,12 @@ const shareRow = {
 }
 
 const games = [
-  { href: "#daily-grid", title: "Daily Grid", text: "A short daily brain game." },
-  { href: "#alphabet-relay", title: "Alphabet Relay", text: "Keep the letter chain moving." },
+  { href: "#daily-grid", title: "VIA Daily Grid", text: "A short daily brain game." },
+  { href: "#alphabet-relay", title: "VIA Alphabet Relay", text: "Keep the letter chain moving." },
   { href: "#neo-pong", title: "VIA NEO PONG", text: "Fast local arcade play." },
-  { href: "#coffee-corner", title: "Coffee Corner", text: "Three light coffee mini games." },
-  { href: "#blockchain-mosaic", title: "Blockchain Mosaic", text: "Rebuild a chain image up to 500 pieces." },
-  { href: "#world-quest", title: "World Quest", text: "Discover VIA and DeSo through routes." },
+  { href: "#coffee-corner", title: "VIA Coffee Corner", text: "Three light VIA coffee mini games." },
+  { href: "#blockchain-mosaic", title: "VIA Blockchain Mosaic", text: "Rebuild a chain image up to 500 pieces." },
+  { href: "#world-quest", title: "VIA World Quest", text: "Discover VIA and DeSo through routes." },
 ]
 
 export default function QuestPage() {
@@ -40,7 +40,7 @@ export default function QuestPage() {
             <a href="/discover" className={styles.back}>World Discovery</a>
             <a href="/radio" className={styles.back}>World Radio</a>
             <a href="/live" className={styles.back}>VIA LIVE</a>
-            <span className={styles.status}>World Quest · Free</span>
+            <span className={styles.status}>VIA World Quest · Free</span>
           </div>
         </nav>
 
@@ -54,8 +54,8 @@ export default function QuestPage() {
         </header>
 
         <section aria-labelledby="pick-game-heading" style={{ marginBottom: 30 }}>
-          <p className={styles.kicker}>Games</p>
-          <h2 id="pick-game-heading">Pick a game</h2>
+          <p className={styles.kicker}>VIA Games</p>
+          <h2 id="pick-game-heading">Pick a VIA game</h2>
           <p style={{ color: "#9bac9f", maxWidth: 720 }}>Jump straight to a game. Everything below is free to play; sharing is optional and always carries viadeso.online.</p>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 12, marginTop: 16 }}>
             {games.map((game) => (
@@ -84,16 +84,16 @@ export default function QuestPage() {
 
         <section id="coffee-corner" style={{ scrollMarginTop: 24 }}>
           <CoffeeGames />
-          <div style={shareRow} aria-label="Share Coffee Corner games">
-            <ShareButton game="Coffee Rush" />
-            <ShareButton game="Bean Drop" />
-            <ShareButton game="The Perfect Blend" />
+          <div style={shareRow} aria-label="Share VIA Coffee Corner games">
+            <ShareButton game="VIA Coffee Rush" />
+            <ShareButton game="VIA Bean Drop" />
+            <ShareButton game="VIA Perfect Blend" />
           </div>
         </section>
 
         <section id="blockchain-mosaic" style={{ scrollMarginTop: 24 }}>
           <BlockchainPuzzle />
-          <div style={shareRow}><ShareButton game="Blockchain Mosaic" /></div>
+          <div style={shareRow}><ShareButton game="VIA Blockchain Mosaic" /></div>
         </section>
 
         <section id="world-quest" style={{ scrollMarginTop: 24 }}>
@@ -104,7 +104,7 @@ export default function QuestPage() {
         <section className={styles.safety} aria-labelledby="quest-reward-heading">
           <h2 id="quest-reward-heading">Diamond Shower reward</h2>
           <p>
-            Daily Grid, Alphabet Relay, VIA NEO PONG, Coffee Corner and Blockchain Mosaic are casual
+            VIA Daily Grid, VIA Alphabet Relay, VIA NEO PONG, VIA Coffee Corner and VIA Blockchain Mosaic are casual
             game experiences. Local or client-visible game state is not authoritative proof for a real
             DeSo reward. A future DeSo reward can never exceed one VIA Diamond Shower per winner and
             reward moment. Before any real payout, VIA must show the number of posts, diamond level,
