@@ -219,3 +219,11 @@ export default async function NFTGrid({ initialAccount }: { initialAccount?: str
                 gridStyle={styles.grid}
               >
                 {collectionNFTs.map(renderNFTCard)}
+              </MediaFilter>
+            </div>
+          </>
+        </CollectionBrowser>
+      </div>
+    </main>
+  )
+}
