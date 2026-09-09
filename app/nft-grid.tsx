@@ -194,6 +194,7 @@ export default async function NFTGrid({ initialAccount }: { initialAccount?: str
             <a href="/discover" style={styles.navLink}>World Discovery</a>
             <a href="/radio" style={styles.navLink}>World Radio</a>
             <a href="/live" style={styles.navLink}>VIA LIVE</a>
+            <a href="/news" style={styles.navLink}>Daily News</a>
           </nav>
         </div>
         <h1 style={styles.heading}>NFT collection</h1>
@@ -218,11 +219,3 @@ export default async function NFTGrid({ initialAccount }: { initialAccount?: str
                 gridStyle={styles.grid}
               >
                 {collectionNFTs.map(renderNFTCard)}
-              </MediaFilter>
-            </div>
-          </>
-        </CollectionBrowser>
-      </div>
-    </main>
-  )
-}
