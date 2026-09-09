@@ -1,4 +1,5 @@
 import NFTGrid from "./nft-grid"
+import ViaHomeEarth from "./via-home-earth"
 import ViaHomeSignature from "./via-home-signature"
 
 export const dynamic = "force-dynamic"
@@ -21,6 +22,7 @@ export default async function Home({ searchParams }: HomeProps) {
       }}
     >
       <ViaHomeSignature />
+      <ViaHomeEarth />
       <div style={{ position: "relative", zIndex: 1 }}>
         <NFTGrid initialAccount={account} />
       </div>
