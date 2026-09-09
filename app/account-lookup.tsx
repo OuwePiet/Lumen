@@ -11,6 +11,16 @@ type DeSoProfile = {
   Description?: string
 }
 
+type ViaProfileResponse = {
+  ok?: boolean
+  profile?: {
+    publicKey?: string
+    username?: string
+    description?: string
+    profilePic?: string | null
+  }
+}
+
 const MAX_USERNAME_LENGTH = 64
 const MAX_PUBLIC_KEY_LENGTH = 128
 
@@ -21,7 +31,6 @@ function shortKey(publicKey?: string) {
 
 function safeProfileImage(url?: string) {
   if (!url) return undefined
-
   try {
     const parsed = new URL(url)
     return parsed.protocol === "https:" ? parsed.toString() : undefined
@@ -37,6 +46,15 @@ function normalizedUsername(value: string) {
 function safeExpectedPublicKey(value?: string) {
   if (!value || value.length > MAX_PUBLIC_KEY_LENGTH) return undefined
   return value
+}
+
+function viaProfileToDeSo(profile: NonNullable<ViaProfileResponse["profile"]>): DeSoProfile {
+  return {
+    Username: profile.username,
+    PublicKeyBase58Check: profile.publicKey,
+    Description: profile.description,
+    ProfilePic: profile.profilePic ?? undefined,
+  }
 }
 
 const styles = {
@@ -76,13 +94,25 @@ export default function AccountLookup({ onAccountSelected }: { onAccountSelected
     window.history.replaceState({}, "", `${window.location.pathname}?${params.toString()}#account-lookup-heading`)
   }
 
-  const selectProfile = (selectedProfile: DeSoProfile) => {
-    rememberSelectedAccount(selectedProfile)
+  const applyProfile = (selectedProfile: DeSoProfile, openNFTs = false) => {
+    rememberSelectedAccount(selectedProfile, openNFTs)
     setUsername(selectedProfile.Username ?? "")
     setProfile(selectedProfile)
-    onAccountSelected?.()
+    setAutoLoadNFTs(openNFTs)
     setMatches([])
     setError("")
+    onAccountSelected?.()
+  }
+
+  const readExactProfile = async (identity: string) => {
+    const response = await fetch(`/api/via/profile?identity=${encodeURIComponent(identity)}`, {
+      method: "GET",
+      headers: { Accept: "application/json" },
+      cache: "no-store",
+    })
+    if (!response.ok) return null
+    const data = (await response.json()) as ViaProfileResponse
+    return data.ok && data.profile ? viaProfileToDeSo(data.profile) : null
   }
 
   const lookupAccount = useCallback(async (requestedUsername: string, expectedPublicKey?: string, openNFTs = false) => {
@@ -104,6 +134,21 @@ export default function AccountLookup({ onAccountSelected }: { onAccountSelected
 
     setLoading(true)
     try {
+      const exactProfile = await readExactProfile(requested)
+      if (exactProfile) {
+        if (expectedKey && exactProfile.PublicKeyBase58Check !== expectedKey) {
+          setError("This VIA link contains an account key that does not match the DeSo profile. Nothing was loaded.")
+          return
+        }
+        applyProfile(exactProfile, openNFTs)
+        return
+      }
+
+      if (expectedKey) {
+        setError("The VIA account link could not be verified against DeSo. Nothing was loaded.")
+        return
+      }
+
       const response = await fetchDeSo("get-profiles", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -126,23 +171,7 @@ export default function AccountLookup({ onAccountSelected }: { onAccountSelected
         typeof candidate.PublicKeyBase58Check === "string" &&
         candidate.PublicKeyBase58Check.length <= MAX_PUBLIC_KEY_LENGTH
       )
-      const exactProfile = usableProfiles.find((candidate) => candidate.Username?.toLocaleLowerCase() === requested.toLocaleLowerCase())
 
-      if (exactProfile) {
-        if (expectedKey && exactProfile.PublicKeyBase58Check !== expectedKey) {
-          setError("This VIA link contains an account key that does not match the DeSo profile. Nothing was loaded.")
-          return
-        }
-        rememberSelectedAccount(exactProfile, openNFTs)
-        setProfile(exactProfile)
-        setAutoLoadNFTs(openNFTs)
-        onAccountSelected?.()
-        return
-      }
-      if (expectedKey) {
-        setError("The VIA account link could not be verified against DeSo. Nothing was loaded.")
-        return
-      }
       if (usableProfiles.length === 0) {
         setError("DeSo account not found.")
         return
@@ -175,21 +204,8 @@ export default function AccountLookup({ onAccountSelected }: { onAccountSelected
       <h2 id="account-lookup-heading" style={styles.heading}>Find DeSo account</h2>
       <p style={styles.text}>Read-only public profile check. No login, wallet connection or storage.</p>
       <form style={styles.form} onSubmit={findAccount}>
-        <input
-          type="search"
-          aria-label="DeSo username"
-          autoComplete="off"
-          autoCapitalize="none"
-          spellCheck={false}
-          maxLength={MAX_USERNAME_LENGTH + 1}
-          placeholder="Enter DeSo username"
-          value={username}
-          style={styles.input}
-          onChange={(event) => setUsername(event.target.value)}
-        />
-        <button type="submit" disabled={loading} style={{ ...styles.button, opacity: loading ? 0.65 : 1 }}>
-          {loading ? "Checking…" : "Find DeSo account"}
-        </button>
+        <input type="search" aria-label="DeSo username" autoComplete="off" autoCapitalize="none" spellCheck={false} maxLength={MAX_USERNAME_LENGTH + 1} placeholder="Enter DeSo username" value={username} style={styles.input} onChange={(event) => setUsername(event.target.value)} />
+        <button type="submit" disabled={loading} style={{ ...styles.button, opacity: loading ? 0.65 : 1 }}>{loading ? "Checking…" : "Find DeSo account"}</button>
       </form>
       <div aria-live="polite" aria-atomic="true">
         {loading ? <p style={styles.status}>Checking the public DeSo profile…</p> : null}
@@ -208,7 +224,7 @@ export default function AccountLookup({ onAccountSelected }: { onAccountSelected
           <ul style={styles.choices} aria-label="Matching DeSo accounts">
             {matches.map((candidate) => {
               const candidateImage = safeProfileImage(candidate.ProfilePic)
-              return <li key={candidate.PublicKeyBase58Check}><button type="button" style={styles.choiceButton} onClick={() => selectProfile(candidate)}>{candidateImage ? <img src={candidateImage} alt="" width={36} height={36} style={styles.avatar} referrerPolicy="no-referrer" /> : <span style={styles.avatarFallback} aria-hidden="true">{(candidate.Username ?? "?").slice(0, 1).toUpperCase()}</span>}<span><strong>@{candidate.Username}</strong><code style={styles.code}>{shortKey(candidate.PublicKeyBase58Check)}</code></span></button></li>
+              return <li key={candidate.PublicKeyBase58Check}><button type="button" style={styles.choiceButton} onClick={() => void lookupAccount(candidate.Username ?? "")}>{candidateImage ? <img src={candidateImage} alt="" width={36} height={36} style={styles.avatar} referrerPolicy="no-referrer" /> : <span style={styles.avatarFallback} aria-hidden="true">{(candidate.Username ?? "?").slice(0, 1).toUpperCase()}</span>}<span><strong>@{candidate.Username}</strong><code style={styles.code}>{shortKey(candidate.PublicKeyBase58Check)}</code></span></button></li>
             })}
           </ul>
         ) : null}
