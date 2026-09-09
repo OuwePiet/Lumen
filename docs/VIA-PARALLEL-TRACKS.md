@@ -71,6 +71,9 @@ Each track can be in one of four states:
 - My VIA as the visitor-controlled starting environment.
 - Favourites/saved items where appropriate.
 - Clear preference controls and reset.
+- World clock as a compact visitor utility.
+- A small cumulative **Total visitors** meter displayed beside the world clock once a reliable aggregate counter source is implemented.
+- The visitor meter must never show invented/demo numbers and should use privacy-minimising aggregate counting without fingerprinting or hidden sensitive profiling.
 - No hidden sensitive-interest profiling.
 
 ### Commercial sustainability
