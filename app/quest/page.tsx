@@ -69,36 +69,36 @@ export default function QuestPage() {
 
         <section id="daily-grid" style={{ scrollMarginTop: 24 }}>
           <DailyGrid />
-          <div style={shareRow}><ShareButton game="VIA Daily Grid" /></div>
+          <div style={shareRow}><ShareButton game="VIA Daily Grid" path="/quest#daily-grid" /></div>
         </section>
 
         <section id="alphabet-relay" style={{ scrollMarginTop: 24 }}>
           <AlphabetRelay />
-          <div style={shareRow}><ShareButton game="VIA Alphabet Relay" /></div>
+          <div style={shareRow}><ShareButton game="VIA Alphabet Relay" path="/quest#alphabet-relay" /></div>
         </section>
 
         <section id="neo-pong" style={{ scrollMarginTop: 24 }}>
           <ViaPong />
-          <div style={shareRow}><ShareButton game="VIA NEO PONG" /></div>
+          <div style={shareRow}><ShareButton game="VIA NEO PONG" path="/quest#neo-pong" /></div>
         </section>
 
         <section id="coffee-corner" style={{ scrollMarginTop: 24 }}>
           <CoffeeGames />
           <div style={shareRow} aria-label="Share VIA Coffee Corner games">
-            <ShareButton game="VIA Coffee Rush" />
-            <ShareButton game="VIA Bean Drop" />
-            <ShareButton game="VIA Perfect Blend" />
+            <ShareButton game="VIA Coffee Rush" path="/quest#coffee-corner" />
+            <ShareButton game="VIA Bean Drop" path="/quest#coffee-corner" />
+            <ShareButton game="VIA Perfect Blend" path="/quest#coffee-corner" />
           </div>
         </section>
 
         <section id="blockchain-mosaic" style={{ scrollMarginTop: 24 }}>
           <BlockchainPuzzle />
-          <div style={shareRow}><ShareButton game="VIA Blockchain Mosaic" /></div>
+          <div style={shareRow}><ShareButton game="VIA Blockchain Mosaic" path="/quest#blockchain-mosaic" /></div>
         </section>
 
         <section id="world-quest" style={{ scrollMarginTop: 24 }}>
           <QuestGame />
-          <div style={shareRow}><ShareButton game="VIA World Quest" /></div>
+          <div style={shareRow}><ShareButton game="VIA World Quest" path="/quest#world-quest" /></div>
         </section>
 
         <section className={styles.safety} aria-labelledby="quest-reward-heading">
