@@ -1,5 +1,6 @@
 import Link from "next/link";
 import SaveButton from "../saved/save-button";
+import CreatorQuickMenu from "./creator-quick-menu";
 
 const places = [
   { title: "Read", text: "Daily News today; stories and knowledge can grow here next.", href: "/news", action: "Open Daily News" },
@@ -58,6 +59,8 @@ export default function MyViaPage() {
             </section>
           ))}
         </div>
+
+        <CreatorQuickMenu />
 
         <section className="mt-8 rounded-[14px] border border-zinc-800/80 bg-zinc-950/45 p-5" aria-labelledby="more-via-heading">
           <div className="max-w-2xl">
