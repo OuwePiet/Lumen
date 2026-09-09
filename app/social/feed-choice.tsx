@@ -2,15 +2,16 @@
 
 import { useEffect, useState } from "react"
 
-const STORAGE_KEY = "via:social:feed-choice:v1"
+export const VIA_SOCIAL_FEED_STORAGE_KEY = "via:social:feed-choice:v1"
+export const VIA_SOCIAL_FEED_EVENT = "via:social:feed-choice"
 
 const choices = [
   { id: "following", title: "Following", text: "Posts from accounts you choose to follow. VIA will keep the ordering rule visible when this feed becomes live." },
-  { id: "recent", title: "Recent", text: "A recency-first public DeSo view. Newest does not automatically mean trusted or recommended." },
+  { id: "recent", title: "Recent", text: "A recency-first public DeSo view. Loaded public posts are shown newest first; newest does not automatically mean trusted or recommended." },
   { id: "discovery", title: "Discovery", text: "A broader route to creators and conversations outside your follows, with ranking and Sponsored placement kept explicit." },
 ] as const
 
-type ChoiceId = (typeof choices)[number]["id"]
+export type ChoiceId = (typeof choices)[number]["id"]
 
 export default function FeedChoice() {
   const [selected, setSelected] = useState<ChoiceId>("following")
@@ -18,7 +19,7 @@ export default function FeedChoice() {
 
   useEffect(() => {
     try {
-      const stored = window.localStorage.getItem(STORAGE_KEY)
+      const stored = window.localStorage.getItem(VIA_SOCIAL_FEED_STORAGE_KEY)
       if (choices.some((choice) => choice.id === stored)) {
         setSelected(stored as ChoiceId)
       }
@@ -29,8 +30,10 @@ export default function FeedChoice() {
 
   function choose(next: ChoiceId) {
     setSelected(next)
+    window.dispatchEvent(new CustomEvent<ChoiceId>(VIA_SOCIAL_FEED_EVENT, { detail: next }))
+
     try {
-      window.localStorage.setItem(STORAGE_KEY, next)
+      window.localStorage.setItem(VIA_SOCIAL_FEED_STORAGE_KEY, next)
       setStatus(`${choices.find((choice) => choice.id === next)?.title} saved as your local VIA feed preference.`)
     } catch {
       setStatus("Preference changed for this visit, but could not be saved locally.")
@@ -42,7 +45,7 @@ export default function FeedChoice() {
       <p className="text-xs font-semibold uppercase tracking-[0.16em] text-green-400">Your entry point</p>
       <h2 id="feed-choice-heading" className="mt-2 text-2xl font-semibold">Choose your social view</h2>
       <p className="mt-2 max-w-3xl text-sm leading-6 text-zinc-400">
-        This currently stores only a preference in your browser. It does not change DeSo data, follow accounts or create a profile.
+        Recent now changes the ordering of loaded public posts in this browser. Following and Discovery remain preferences only until their verified DeSo read flows are connected. No choice changes DeSo data or follows accounts.
       </p>
       <div className="mt-4 grid gap-3 md:grid-cols-3">
         {choices.map((choice) => {
