@@ -1,5 +1,7 @@
 import Link from "next/link"
 
+export const dynamic = "force-dynamic"
+
 const routes = [
   { title: "NFT Window", text: "Explore a public DeSo NFT collection without signing or spending.", href: "/?account=OuwePiet#collection-controls" },
   { title: "World Radio", text: "Discover an external station directory through VIA. Playback starts only when you choose Play.", href: "/radio" },
