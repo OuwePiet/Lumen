@@ -11,6 +11,8 @@ const choices = [
   { id: "discovery", title: "Discovery", text: "Explore a broader public DeSo feed outside your follows. Discovery ranking is experimental and is not a VIA trust or quality signal." },
 ] as const
 
+const deferredViews = ["Welcome", "First Posts"] as const
+
 export type ChoiceId = (typeof choices)[number]["id"]
 
 export default function FeedChoice() {
@@ -65,6 +67,9 @@ export default function FeedChoice() {
           )
         })}
       </div>
+      <p className="mt-4 text-xs leading-5 text-zinc-500">
+        In VIA stock, not live yet: {deferredViews.join(" · ")}. They stay separate from Home and will only become selectable after their public DeSo read rules are verified.
+      </p>
       <p className="mt-3 min-h-5 text-xs text-zinc-400" role="status" aria-live="polite">{status}</p>
     </section>
   )
