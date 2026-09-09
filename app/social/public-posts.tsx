@@ -34,6 +34,12 @@ function postTime(timestampNanos: number) {
   return Number.isNaN(date.getTime()) ? "" : date.toLocaleString()
 }
 
+function feedReadyMessage(choice: ChoiceId) {
+  if (choice === "following") return "Following selected. Load the public feed for this identity."
+  if (choice === "recent") return "Recent selected. Load public posts for this creator."
+  return "Discovery selected. Explore the public DeSo Discovery feed."
+}
+
 export default function PublicPosts() {
   const [identity, setIdentity] = useState("OuwePiet")
   const [posts, setPosts] = useState<PublicPost[]>([])
@@ -48,7 +54,12 @@ export default function PublicPosts() {
     } catch {}
     function onFeedChoice(event: Event) {
       const choice = (event as CustomEvent<ChoiceId>).detail
-      if (choice === "following" || choice === "recent" || choice === "discovery") setFeedChoice(choice)
+      if (choice === "following" || choice === "recent" || choice === "discovery") {
+        setFeedChoice(choice)
+        setPosts([])
+        setLoading(false)
+        setMessage(feedReadyMessage(choice))
+      }
     }
     window.addEventListener(VIA_SOCIAL_FEED_EVENT, onFeedChoice)
     return () => window.removeEventListener(VIA_SOCIAL_FEED_EVENT, onFeedChoice)
