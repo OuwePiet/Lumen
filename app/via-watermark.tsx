@@ -1,7 +1,7 @@
 export default function ViaWatermark() {
   return (
     <img
-      src="/via-watermark.png"
+      src="/via-watermark.svg"
       alt=""
       aria-hidden="true"
       draggable={false}
