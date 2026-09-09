@@ -4,12 +4,21 @@ import BlockchainPuzzle from "./blockchain-puzzle"
 import CoffeeGames from "./coffee-games"
 import DailyGrid from "./daily-grid"
 import QuestGame from "./quest-game"
+import ShareButton from "./share-button"
 import ViaPong from "./via-pong"
 import styles from "./quest.module.css"
 
 export const metadata: Metadata = {
   title: "VIA World Quest",
   description: "Play the world, discover DeSo creators, NFTs and VIA experiences.",
+}
+
+const shareRow = {
+  display: "flex",
+  gap: 10,
+  flexWrap: "wrap" as const,
+  alignItems: "center",
+  margin: "12px 0 28px",
 }
 
 export default function QuestPage() {
@@ -36,11 +45,26 @@ export default function QuestPage() {
         </header>
 
         <DailyGrid />
+        <div style={shareRow}><ShareButton game="VIA Daily Grid" /></div>
+
         <AlphabetRelay />
+        <div style={shareRow}><ShareButton game="VIA Alphabet Relay" /></div>
+
         <ViaPong />
+        <div style={shareRow}><ShareButton game="VIA NEO PONG" /></div>
+
         <CoffeeGames />
+        <div style={shareRow} aria-label="Share Coffee Corner games">
+          <ShareButton game="Coffee Rush" />
+          <ShareButton game="Bean Drop" />
+          <ShareButton game="The Perfect Blend" />
+        </div>
+
         <BlockchainPuzzle />
+        <div style={shareRow}><ShareButton game="Blockchain Mosaic" /></div>
+
         <QuestGame />
+        <div style={shareRow}><ShareButton game="VIA World Quest" /></div>
 
         <section className={styles.safety} aria-labelledby="quest-reward-heading">
           <h2 id="quest-reward-heading">Diamond Shower reward</h2>
