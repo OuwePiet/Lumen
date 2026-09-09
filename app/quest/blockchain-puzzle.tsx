@@ -255,7 +255,7 @@ export default function BlockchainPuzzle() {
       <div style={{ display: "flex", justifyContent: "space-between", gap: 16, flexWrap: "wrap", alignItems: "end" }}>
         <div>
           <p style={{ color: "#5cff9d", fontWeight: 800, letterSpacing: ".12em", textTransform: "uppercase", margin: 0 }}>VIA Puzzle Lab</p>
-          <h2 id="blockchain-puzzle-heading" style={{ marginBottom: 8 }}>⛓ Blockchain Mosaic</h2>
+          <h2 id="blockchain-puzzle-heading" style={{ marginBottom: 8 }}>⛓ VIA Blockchain Mosaic</h2>
           <p style={{ color: "#a9b8af", maxWidth: 760, marginTop: 0 }}>Rebuild a chain image one validated block at a time. Use VIA's generated network image or choose your own image. Your image and high scores stay in this browser.</p>
         </div>
         <span style={{ color: "#b9ffd4", fontWeight: 800 }}>{progress}% · {placed.size}/{total}</span>
@@ -270,7 +270,7 @@ export default function BlockchainPuzzle() {
 
       <div style={{ display: "flex", gap: 18, flexWrap: "wrap", color: "#d8ffe5", marginBottom: 12 }}><strong>Time {formatTime(elapsed)}</strong><strong>{mode.label}</strong><span role="status">{message}</span></div>
 
-      <canvas ref={canvasRef} width={750} height={600} onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp} aria-label={`Blockchain Mosaic puzzle board with ${total} pieces`} style={{ width: "100%", maxWidth: 750, aspectRatio: "5 / 4", display: "block", border: "2px solid #285f40", borderRadius: 16, background: "#050807", touchAction: "none", margin: "0 auto" }} />
+      <canvas ref={canvasRef} width={750} height={600} onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp} aria-label={`VIA Blockchain Mosaic puzzle board with ${total} pieces`} style={{ width: "100%", maxWidth: 750, aspectRatio: "5 / 4", display: "block", border: "2px solid #285f40", borderRadius: 16, background: "#050807", touchAction: "none", margin: "0 auto" }} />
 
       <div style={{ marginTop: 18, padding: 16, borderRadius: 16, background: "#07100b", border: "1px solid #1c4b30" }}>
         <h3 style={{ marginTop: 0 }}>🏆 Local top 10 · {total} pieces</h3>
