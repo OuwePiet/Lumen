@@ -1,4 +1,5 @@
 import Link from "next/link";
+import SaveButton from "../saved/save-button";
 
 const places = [
   { title: "Read", text: "Daily News today; stories and knowledge can grow here next.", href: "/news", action: "Open Daily News" },
@@ -36,7 +37,7 @@ export default function MyViaPage() {
         <section className="mb-7 rounded-2xl border border-green-900/60 bg-zinc-950 p-5">
           <h2 className="text-lg font-medium text-green-300">VIA revolves around the visitor</h2>
           <p className="mt-2 text-sm leading-6 text-zinc-400">
-            Read, listen, discover, talk, create or play. Personal start preferences can grow later with clear privacy controls; this version does not silently profile you.
+            Read, listen, discover, talk, create or play. Save only the routes you choose; those choices stay locally in this browser and are not silently used to profile you.
           </p>
         </section>
 
@@ -45,9 +46,12 @@ export default function MyViaPage() {
             <section key={place.title} className="flex min-h-48 flex-col rounded-2xl border border-zinc-800 bg-zinc-950 p-5">
               <h2 className="text-xl font-medium">{place.title}</h2>
               <p className="mt-2 flex-1 text-sm leading-6 text-zinc-400">{place.text}</p>
-              <Link href={place.href} className="mt-5 inline-flex min-h-11 items-center justify-center rounded-full border border-green-900 bg-green-950/30 px-4 py-2 text-sm font-semibold text-green-300 hover:border-green-600">
-                {place.action}
-              </Link>
+              <div className="mt-5 flex flex-wrap items-center gap-2">
+                <Link href={place.href} className="inline-flex min-h-11 items-center justify-center rounded-full border border-green-900 bg-green-950/30 px-4 py-2 text-sm font-semibold text-green-300 hover:border-green-600">
+                  {place.action}
+                </Link>
+                <SaveButton title={place.title} href={place.href} kind="My VIA" />
+              </div>
             </section>
           ))}
         </div>
@@ -60,10 +64,14 @@ export default function MyViaPage() {
           </div>
           <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {morePlaces.map((place) => (
-              <Link key={place.title} href={place.href} className="rounded-xl border border-zinc-800 bg-black/40 p-4 transition hover:border-green-800 hover:bg-green-950/10">
+              <section key={place.title} className="rounded-xl border border-zinc-800 bg-black/40 p-4">
                 <strong className="text-sm text-zinc-100">{place.title}</strong>
                 <p className="mt-1 text-sm leading-5 text-zinc-500">{place.text}</p>
-              </Link>
+                <div className="mt-3 flex flex-wrap items-center gap-2">
+                  <Link href={place.href} className="inline-flex min-h-10 items-center rounded-full border border-zinc-700 px-3 py-2 text-sm text-zinc-200 transition hover:border-green-800 hover:text-green-300">Open</Link>
+                  {place.href !== "/saved" ? <SaveButton title={place.title} href={place.href} kind="My VIA" /> : null}
+                </div>
+              </section>
             ))}
           </div>
         </section>
