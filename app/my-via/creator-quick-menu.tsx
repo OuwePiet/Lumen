@@ -6,6 +6,7 @@ const STORAGE_KEY = "via:creator-quick-menu:v1"
 const MAX_ITEMS = 12
 
 type SavedCreator = { username: string }
+type ViaProfileResponse = { ok?: boolean; profile?: { username?: string } }
 
 function normalizeUsername(value: string) {
   return value.trim().replace(/^@/, "").replace(/[^A-Za-z0-9_.-]/g, "").slice(0, 64)
@@ -15,6 +16,7 @@ export default function CreatorQuickMenu() {
   const [items, setItems] = useState<SavedCreator[]>([])
   const [input, setInput] = useState("")
   const [status, setStatus] = useState("")
+  const [checking, setChecking] = useState(false)
 
   useEffect(() => {
     try {
@@ -43,7 +45,7 @@ export default function CreatorQuickMenu() {
     }
   }
 
-  function addCreator(event: FormEvent) {
+  async function addCreator(event: FormEvent) {
     event.preventDefault()
     const username = normalizeUsername(input)
     if (!username) {
@@ -58,9 +60,33 @@ export default function CreatorQuickMenu() {
       setStatus(`This local quick menu is limited to ${MAX_ITEMS} creators.`)
       return
     }
-    const next = [...items, { username }]
-    if (persist(next)) setStatus(`@${username} added locally on this device.`)
-    setInput("")
+
+    setChecking(true)
+    setStatus(`Checking @${username} on DeSo…`)
+    try {
+      const response = await fetch(`/api/via/profile?identity=${encodeURIComponent(username)}`, {
+        method: "GET",
+        headers: { Accept: "application/json" },
+        cache: "no-store",
+      })
+      const data = response.ok ? (await response.json()) as ViaProfileResponse : null
+      const verifiedUsername = normalizeUsername(data?.profile?.username ?? "")
+      if (!response.ok || !data?.ok || !verifiedUsername) {
+        setStatus(`@${username} could not be verified as a public DeSo profile, so it was not saved.`)
+        return
+      }
+      if (items.some((item) => item.username.toLowerCase() === verifiedUsername.toLowerCase())) {
+        setStatus(`@${verifiedUsername} is already in your quick menu.`)
+        return
+      }
+      const next = [...items, { username: verifiedUsername }]
+      if (persist(next)) setStatus(`@${verifiedUsername} verified on DeSo and saved locally on this device.`)
+      setInput("")
+    } catch {
+      setStatus("The DeSo profile could not be checked right now. Nothing was saved.")
+    } finally {
+      setChecking(false)
+    }
   }
 
   function removeCreator(username: string) {
@@ -69,16 +95,16 @@ export default function CreatorQuickMenu() {
   }
 
   return (
-    <section className="mt-8 rounded-[14px] border border-zinc-800/80 bg-zinc-950/45 p-5" aria-labelledby="creator-quick-menu-heading">
+    <section className="mt-8 rounded-[14px] border border-zinc-800/80 bg-zinc-950/45 p-5" aria-labelledby="creator-quick-menu-heading" aria-busy={checking}>
       <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#8fd4a9]">Local shortcut</p>
       <h2 id="creator-quick-menu-heading" className="mt-2 text-2xl font-semibold text-zinc-100">Creator quick menu</h2>
       <p className="mt-2 max-w-3xl text-sm leading-6 text-zinc-400">
-        Keep a small list of DeSo creators you want to revisit. This version stays only in this browser, makes no DeSo transaction and does not prove that a username exists. Cross-device on-chain syncing remains a separate later step.
+        Keep a small list of public DeSo creators you want to revisit. VIA checks that the profile exists before saving it. This version stays only in this browser, makes no DeSo transaction and does not prove control of the saved account. Cross-device on-chain syncing remains a separate later step.
       </p>
       <form onSubmit={addCreator} className="mt-4 flex max-w-2xl flex-col gap-3 sm:flex-row">
         <label className="sr-only" htmlFor="creator-quick-menu-input">DeSo creator username</label>
-        <input id="creator-quick-menu-input" value={input} onChange={(event) => setInput(event.target.value)} autoCapitalize="none" autoCorrect="off" spellCheck={false} maxLength={65} placeholder="DeSo username, with or without @" className="min-w-0 flex-1 rounded-[12px] border border-zinc-700/80 bg-black/35 px-4 py-3 text-sm text-zinc-100 outline-none focus:border-[#8fd4a9]/70 focus:ring-2 focus:ring-[#8fd4a9]/10" />
-        <button type="submit" className="rounded-[12px] border border-[#8fd4a9]/45 bg-transparent px-5 py-3 text-sm font-medium text-[#9adbb2] hover:border-[#8fd4a9]/70 hover:bg-[#0c1711]/45 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8fd4a9]/20">Add creator</button>
+        <input id="creator-quick-menu-input" value={input} onChange={(event) => setInput(event.target.value)} autoCapitalize="none" autoCorrect="off" spellCheck={false} maxLength={65} placeholder="DeSo username, with or without @" disabled={checking} className="min-w-0 flex-1 rounded-[12px] border border-zinc-700/80 bg-black/35 px-4 py-3 text-sm text-zinc-100 outline-none focus:border-[#8fd4a9]/70 focus:ring-2 focus:ring-[#8fd4a9]/10 disabled:cursor-wait disabled:opacity-60" />
+        <button type="submit" disabled={checking} className="rounded-[12px] border border-[#8fd4a9]/45 bg-transparent px-5 py-3 text-sm font-medium text-[#9adbb2] hover:border-[#8fd4a9]/70 hover:bg-[#0c1711]/45 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8fd4a9]/20 disabled:cursor-wait disabled:opacity-60">{checking ? "Checking…" : "Add creator"}</button>
       </form>
       <p className="mt-3 min-h-5 text-sm text-zinc-500" role="status" aria-live="polite">{status}</p>
       {items.length ? (
