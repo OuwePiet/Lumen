@@ -35,13 +35,13 @@ function postTime(timestampNanos: number) {
 }
 
 function feedReadyMessage(choice: ChoiceId) {
-  if (choice === "following") return "Following selected. Load the public feed for this identity."
-  if (choice === "recent") return "Recent selected. Load public posts for this creator."
+  if (choice === "following") return "Following selected. Enter a public DeSo identity to read its follow graph."
+  if (choice === "recent") return "Recent selected. Enter a public DeSo creator to read recent posts."
   return "Discovery selected. Explore the public DeSo Discovery feed."
 }
 
 export default function PublicPosts() {
-  const [identity, setIdentity] = useState("OuwePiet")
+  const [identity, setIdentity] = useState("")
   const [posts, setPosts] = useState<PublicPost[]>([])
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState("Public DeSo posts are read-only in VIA.")
@@ -73,7 +73,11 @@ export default function PublicPosts() {
   async function loadPosts(event: FormEvent) {
     event.preventDefault()
     const value = identity.trim().replace(/^@/, "")
-    if (feedChoice !== "discovery" && !value) return
+    if (feedChoice !== "discovery" && !value) {
+      setPosts([])
+      setMessage(feedChoice === "following" ? "Enter a public DeSo username or public key to read Following." : "Enter a public DeSo username or public key to read recent posts.")
+      return
+    }
 
     setLoading(true)
     const isFollowing = feedChoice === "following"
@@ -99,16 +103,19 @@ export default function PublicPosts() {
     } finally { setLoading(false) }
   }
 
+  const identityLabel = feedChoice === "following" ? "DeSo identity whose Following feed you want to read" : "DeSo creator whose recent posts you want to read"
+  const identityPlaceholder = feedChoice === "following" ? "Username or public key for Following" : "Creator username or public key"
+
   return (
     <section className="mt-8 rounded-[14px] border border-zinc-800/80 bg-zinc-950/55 p-5" aria-labelledby="public-posts-heading">
       <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#8fd4a9]">Live public read</p>
       <h2 id="public-posts-heading" className="mt-2 text-2xl font-semibold text-zinc-100">Public DeSo posts</h2>
-      <p className="mt-2 max-w-3xl text-sm leading-6 text-zinc-400">Read public posts without connecting a wallet. Following uses the selected identity&apos;s public follow graph. Discovery uses DeSo&apos;s public experimental hot-feed ranking as an exploration source, not as a trust or quality signal. VIA does not like, repost, Diamond, follow or publish from this view.</p>
+      <p className="mt-2 max-w-3xl text-sm leading-6 text-zinc-400">Read public posts without connecting a wallet. Following uses the entered identity&apos;s public follow graph; entering a username does not sign you in or prove account ownership. Discovery uses DeSo&apos;s public experimental hot-feed ranking as an exploration source, not as a trust or quality signal. VIA does not like, repost, Diamond, follow or publish from this view.</p>
       <div className="mt-3 inline-flex rounded-[10px] border border-zinc-800/80 bg-black/30 px-3 py-1.5 text-xs text-zinc-400">
         {feedChoice === "following" ? "Following active · public read only" : feedChoice === "recent" ? "Recent active · newest loaded post first" : "Discovery active · experimental public DeSo ranking"}
       </div>
       <form onSubmit={loadPosts} className="mt-4 flex max-w-2xl flex-col gap-3 sm:flex-row">
-        {feedChoice !== "discovery" ? <><label className="sr-only" htmlFor="social-public-identity">Creator username or public key</label><input id="social-public-identity" value={identity} onChange={(event) => setIdentity(event.target.value)} maxLength={128} autoCapitalize="none" autoCorrect="off" placeholder="Creator username or public key" className="min-w-0 flex-1 rounded-[12px] border border-zinc-700/80 bg-black/35 px-4 py-3 text-sm text-zinc-100 outline-none transition-[border-color,box-shadow] duration-200 ease-out focus:border-[#8fd4a9]/70 focus:ring-2 focus:ring-[#8fd4a9]/10" /></> : <p className="flex-1 self-center text-sm text-zinc-500">Discovery does not require an account.</p>}
+        {feedChoice !== "discovery" ? <><label className="sr-only" htmlFor="social-public-identity">{identityLabel}</label><input id="social-public-identity" value={identity} onChange={(event) => setIdentity(event.target.value)} maxLength={128} autoCapitalize="none" autoCorrect="off" placeholder={identityPlaceholder} className="min-w-0 flex-1 rounded-[12px] border border-zinc-700/80 bg-black/35 px-4 py-3 text-sm text-zinc-100 outline-none transition-[border-color,box-shadow] duration-200 ease-out focus:border-[#8fd4a9]/70 focus:ring-2 focus:ring-[#8fd4a9]/10" /></> : <p className="flex-1 self-center text-sm text-zinc-500">Discovery does not require an account.</p>}
         <button type="submit" disabled={loading} className="rounded-[12px] border border-[#8fd4a9]/45 bg-transparent px-5 py-3 text-sm font-medium text-[#9adbb2] transition-[background-color,border-color,box-shadow] duration-200 ease-out hover:border-[#8fd4a9]/70 hover:bg-[#0c1711]/45 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8fd4a9]/20 disabled:cursor-wait disabled:opacity-60">{loading ? "Loading…" : feedChoice === "following" ? "Read Following" : feedChoice === "discovery" ? "Explore Discovery" : "Read posts"}</button>
       </form>
       <p className="mt-3 text-sm text-zinc-500" role="status" aria-live="polite">{message}</p>
