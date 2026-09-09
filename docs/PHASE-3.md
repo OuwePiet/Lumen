@@ -115,3 +115,35 @@ This file records relevant ideas that are deliberately not adopted into the acti
 - **Why not adopted as-is:** These features add payment-provider, regulatory, reputation and cross-chain trust dependencies that are outside the current read-only/social/NFT browsing baseline. Region badges also risk creating unsupported status signals if criteria are not explicit and verifiable.
 - **Current decision:** Keep localisation, data-efficient mobile UX and language support as valid product directions. Defer payment rails, external verification imports, region ranking badges and bridging until separate product/security/legal review.
 - **Discussion status:** Roadmap material retained for later review.
+
+## Passkey / WebAuthn account binding
+
+- **Idea:** Use Face ID / Touch ID / passkeys as the primary frictionless VIA login and bind that directly to DeSo account authority.
+- **Source:** Historical `Google-aanvulling inlogmenu.docx` and `Google-inlogmenu-code.docx`.
+- **Why not adopted as-is:** Passkeys are a promising authentication mechanism, but the old blueprint assumes a specific WebAuthn-to-DeSo-derived-key coupling and makes absolute phishing/safety claims that VIA has not verified. Authentication and blockchain signing authority must remain distinct until the account model is explicitly designed and tested.
+- **Current decision:** Keep passkey support as a future login direction. Do not introduce signing authority, derived keys or hidden account migration merely because a passkey exists.
+- **Discussion status:** Useful direction; implementation requires a separate verified auth design.
+
+## Cross-chain login and automatic DeSo wallet mapping
+
+- **Idea:** Let MetaMask or Phantom users sign in and automatically create/map a DeSo account in the background.
+- **Source:** Historical login-menu material.
+- **Why not adopted as-is:** Automatic identity mapping introduces cross-chain proof, recovery, account-linking and custody assumptions that are not part of the current VIA baseline. The historical proposal also assumes third-party swap/account architecture without a verified current contract.
+- **Current decision:** Keep external-wallet onboarding in the long-term stock only. VIA remains DeSo-first; cross-chain login requires separate protocol, security and recovery review.
+- **Discussion status:** Deferred.
+
+## Hidden owner/developer payment bypass
+
+- **Idea:** Detect the owner's public wallet and silently bypass premium payment checks for uploads/mints.
+- **Source:** Historical `Google-inlog ouwepiet gratis.docx`.
+- **Why not adopted as-is:** A client-visible wallet comparison or hidden bypass can be spoofed, confuses test entitlements with real commerce, and makes billing behaviour harder to audit.
+- **Current decision:** The owner may have an explicit developer/test entitlement later, but it must be server-authoritative, auditable and clearly separated from paid purchase records. No hidden client-side bypass.
+- **Discussion status:** Requirement retained; proposed implementation rejected.
+
+## Database verification flags as public trust signals
+
+- **Idea:** Store creator verification flags and rankings in an off-chain profile table and allow an admin backend to mutate them.
+- **Source:** Historical `Google-inlogmenu-code.docx` and admin-panel material.
+- **Why not adopted as-is:** Row-level security is a useful general pattern, but a database flag does not by itself establish the truth of a public verification claim. VIA also does not currently need a mandatory off-chain profile database for its DeSo-first read path.
+- **Current decision:** Do not add verification badges or rankings until criteria, authority, audit trail and public meaning are defined. If an off-chain database is later justified, apply least privilege and server-controlled privileged fields.
+- **Discussion status:** Deferred for product/security design.
