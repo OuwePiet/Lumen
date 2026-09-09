@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
 import AlphabetRelay from "./alphabet-relay"
+import BlockchainPuzzle from "./blockchain-puzzle"
 import CoffeeGames from "./coffee-games"
 import DailyGrid from "./daily-grid"
 import QuestGame from "./quest-game"
@@ -38,17 +39,18 @@ export default function QuestPage() {
         <AlphabetRelay />
         <ViaPong />
         <CoffeeGames />
+        <BlockchainPuzzle />
         <QuestGame />
 
         <section className={styles.safety} aria-labelledby="quest-reward-heading">
           <h2 id="quest-reward-heading">Diamond Shower reward</h2>
           <p>
-            Daily Grid, Alphabet Relay, VIA NEO PONG and Coffee Corner are casual game experiences.
-            Local or client-visible game state is not authoritative proof for a real DeSo reward.
-            A future DeSo reward can never exceed one VIA Diamond Shower per winner and reward moment.
-            Before any real payout, VIA must show the number of posts, diamond level, estimated
-            DESO cost, estimated cash value and available reward pool. No automatic on-chain payout
-            is enabled in this prototype.
+            Daily Grid, Alphabet Relay, VIA NEO PONG, Coffee Corner and Blockchain Mosaic are casual
+            game experiences. Local or client-visible game state is not authoritative proof for a real
+            DeSo reward. A future DeSo reward can never exceed one VIA Diamond Shower per winner and
+            reward moment. Before any real payout, VIA must show the number of posts, diamond level,
+            estimated DESO cost, estimated cash value and available reward pool. No automatic on-chain
+            payout is enabled in this prototype.
           </p>
         </section>
       </div>
