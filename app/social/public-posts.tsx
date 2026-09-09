@@ -100,28 +100,28 @@ export default function PublicPosts() {
   }
 
   return (
-    <section className="mt-8 rounded-2xl border border-zinc-800 bg-zinc-950 p-5" aria-labelledby="public-posts-heading">
-      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-green-400">Live public read</p>
-      <h2 id="public-posts-heading" className="mt-2 text-2xl font-semibold">Public DeSo posts</h2>
+    <section className="mt-8 rounded-[14px] border border-zinc-800/80 bg-zinc-950/55 p-5" aria-labelledby="public-posts-heading">
+      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#8fd4a9]">Live public read</p>
+      <h2 id="public-posts-heading" className="mt-2 text-2xl font-semibold text-zinc-100">Public DeSo posts</h2>
       <p className="mt-2 max-w-3xl text-sm leading-6 text-zinc-400">Read public posts without connecting a wallet. Following uses the selected identity&apos;s public follow graph. Discovery uses DeSo&apos;s public experimental hot-feed ranking as an exploration source, not as a trust or quality signal. VIA does not like, repost, Diamond, follow or publish from this view.</p>
-      <div className="mt-3 inline-flex rounded-full border border-zinc-800 bg-black px-3 py-1.5 text-xs text-zinc-400">
+      <div className="mt-3 inline-flex rounded-[10px] border border-zinc-800/80 bg-black/30 px-3 py-1.5 text-xs text-zinc-400">
         {feedChoice === "following" ? "Following active · public read only" : feedChoice === "recent" ? "Recent active · newest loaded post first" : "Discovery active · experimental public DeSo ranking"}
       </div>
       <form onSubmit={loadPosts} className="mt-4 flex max-w-2xl flex-col gap-3 sm:flex-row">
-        {feedChoice !== "discovery" ? <><label className="sr-only" htmlFor="social-public-identity">Creator username or public key</label><input id="social-public-identity" value={identity} onChange={(event) => setIdentity(event.target.value)} maxLength={128} autoCapitalize="none" autoCorrect="off" placeholder="Creator username or public key" className="min-w-0 flex-1 rounded-xl border border-zinc-700 bg-black px-4 py-3 text-sm text-white outline-none focus:border-green-600" /></> : <p className="flex-1 self-center text-sm text-zinc-500">Discovery does not require an account.</p>}
-        <button type="submit" disabled={loading} className="rounded-xl border border-green-800 px-5 py-3 text-sm font-medium text-green-300 hover:border-green-600 disabled:cursor-wait disabled:opacity-60">{loading ? "Loading…" : feedChoice === "following" ? "Read Following" : feedChoice === "discovery" ? "Explore Discovery" : "Read posts"}</button>
+        {feedChoice !== "discovery" ? <><label className="sr-only" htmlFor="social-public-identity">Creator username or public key</label><input id="social-public-identity" value={identity} onChange={(event) => setIdentity(event.target.value)} maxLength={128} autoCapitalize="none" autoCorrect="off" placeholder="Creator username or public key" className="min-w-0 flex-1 rounded-[12px] border border-zinc-700/80 bg-black/35 px-4 py-3 text-sm text-zinc-100 outline-none transition-[border-color,box-shadow] duration-200 ease-out focus:border-[#8fd4a9]/70 focus:ring-2 focus:ring-[#8fd4a9]/10" /></> : <p className="flex-1 self-center text-sm text-zinc-500">Discovery does not require an account.</p>}
+        <button type="submit" disabled={loading} className="rounded-[12px] border border-[#8fd4a9]/45 bg-transparent px-5 py-3 text-sm font-medium text-[#9adbb2] transition-[background-color,border-color,box-shadow] duration-200 ease-out hover:border-[#8fd4a9]/70 hover:bg-[#0c1711]/45 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8fd4a9]/20 disabled:cursor-wait disabled:opacity-60">{loading ? "Loading…" : feedChoice === "following" ? "Read Following" : feedChoice === "discovery" ? "Explore Discovery" : "Read posts"}</button>
       </form>
       <p className="mt-3 text-sm text-zinc-500" role="status" aria-live="polite">{message}</p>
       {visiblePosts.length > 0 ? <div className="mt-5 space-y-3">{visiblePosts.map((post) => {
         const images = post.imageUrls.map(safeHttps).filter((url): url is string => Boolean(url)).slice(0, 4)
         const videos = post.videoUrls.map(safeHttps).filter((url): url is string => Boolean(url)).slice(0, 2)
         const time = postTime(post.timestampNanos)
-        return <article key={post.postHash} className="rounded-xl border border-zinc-800 bg-black p-4">
+        return <article key={post.postHash} className="rounded-[12px] border border-zinc-800/80 bg-black/30 p-4">
           {time ? <p className="mb-2 text-xs text-zinc-600">{time}</p> : null}
           {post.body ? <p className="whitespace-pre-wrap text-sm leading-6 text-zinc-200">{post.body}</p> : <p className="text-sm text-zinc-500">Media post</p>}
-          {images.length ? <div className="mt-4 grid gap-2 sm:grid-cols-2">{images.map((url, index) => <img key={`${post.postHash}-image-${index}`} src={url} alt="Public media attached to this DeSo post" loading="lazy" decoding="async" referrerPolicy="no-referrer" className="max-h-[32rem] w-full rounded-xl border border-zinc-800 bg-zinc-950 object-contain" />)}</div> : null}
-          {videos.length ? <div className="mt-4 space-y-2">{videos.map((url, index) => <video key={`${post.postHash}-video-${index}`} src={url} controls preload="none" playsInline controlsList="nodownload" disablePictureInPicture className="max-h-[32rem] w-full rounded-xl border border-zinc-800 bg-zinc-950">Your browser cannot play this public video.</video>)}</div> : null}
-          <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-zinc-500"><span>{post.likeCount} likes</span><span>{post.diamondCount} Diamonds</span><span>{post.commentCount} replies</span><span>{post.repostCount + post.quoteRepostCount} reposts</span>{post.isNft ? <span className="text-green-400">NFT</span> : null}</div>
+          {images.length ? <div className="mt-4 grid gap-2 sm:grid-cols-2">{images.map((url, index) => <img key={`${post.postHash}-image-${index}`} src={url} alt="Public media attached to this DeSo post" loading="lazy" decoding="async" referrerPolicy="no-referrer" className="max-h-[32rem] w-full rounded-[12px] border border-zinc-800/80 bg-zinc-950/70 object-contain" />)}</div> : null}
+          {videos.length ? <div className="mt-4 space-y-2">{videos.map((url, index) => <video key={`${post.postHash}-video-${index}`} src={url} controls preload="none" playsInline controlsList="nodownload" disablePictureInPicture className="max-h-[32rem] w-full rounded-[12px] border border-zinc-800/80 bg-zinc-950/70">Your browser cannot play this public video.</video>)}</div> : null}
+          <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-zinc-500"><span>{post.likeCount} likes</span><span>{post.diamondCount} Diamonds</span><span>{post.commentCount} replies</span><span>{post.repostCount + post.quoteRepostCount} reposts</span>{post.isNft ? <span className="text-[#8fd4a9]">NFT</span> : null}</div>
         </article>
       })}</div> : null}
     </section>
