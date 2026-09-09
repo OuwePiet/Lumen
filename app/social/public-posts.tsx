@@ -21,6 +21,15 @@ type PostsResponse = {
   posts?: PublicPost[]
 }
 
+function safeHttps(url: string) {
+  try {
+    const parsed = new URL(url)
+    return parsed.protocol === "https:" ? parsed.toString() : null
+  } catch {
+    return null
+  }
+}
+
 export default function PublicPosts() {
   const [identity, setIdentity] = useState("OuwePiet")
   const [posts, setPosts] = useState<PublicPost[]>([])
@@ -82,21 +91,59 @@ export default function PublicPosts() {
 
       {posts.length > 0 ? (
         <div className="mt-5 space-y-3">
-          {posts.map((post) => (
-            <article key={post.postHashHex} className="rounded-xl border border-zinc-800 bg-black p-4">
-              {post.body ? <p className="whitespace-pre-wrap text-sm leading-6 text-zinc-200">{post.body}</p> : <p className="text-sm text-zinc-500">Media post</p>}
-              <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-zinc-500">
-                <span>{post.likeCount} likes</span>
-                <span>{post.diamondCount} Diamonds</span>
-                <span>{post.commentCount} replies</span>
-                <span>{post.repostCount + post.quoteRepostCount} reposts</span>
-                {post.isNFT ? <span className="text-green-400">NFT</span> : null}
-              </div>
-              {post.imageURLs.length || post.videoURLs.length ? (
-                <p className="mt-2 text-xs text-zinc-600">Media attached · display support follows after media safety review.</p>
-              ) : null}
-            </article>
-          ))}
+          {posts.map((post) => {
+            const images = post.imageURLs.map(safeHttps).filter((url): url is string => Boolean(url)).slice(0, 4)
+            const videos = post.videoURLs.map(safeHttps).filter((url): url is string => Boolean(url)).slice(0, 2)
+
+            return (
+              <article key={post.postHashHex} className="rounded-xl border border-zinc-800 bg-black p-4">
+                {post.body ? <p className="whitespace-pre-wrap text-sm leading-6 text-zinc-200">{post.body}</p> : <p className="text-sm text-zinc-500">Media post</p>}
+
+                {images.length > 0 ? (
+                  <div className="mt-4 grid gap-2 sm:grid-cols-2">
+                    {images.map((url, index) => (
+                      <img
+                        key={`${post.postHashHex}-image-${index}`}
+                        src={url}
+                        alt="Public media attached to this DeSo post"
+                        loading="lazy"
+                        decoding="async"
+                        referrerPolicy="no-referrer"
+                        className="max-h-[32rem] w-full rounded-xl border border-zinc-800 bg-zinc-950 object-contain"
+                      />
+                    ))}
+                  </div>
+                ) : null}
+
+                {videos.length > 0 ? (
+                  <div className="mt-4 space-y-2">
+                    {videos.map((url, index) => (
+                      <video
+                        key={`${post.postHashHex}-video-${index}`}
+                        src={url}
+                        controls
+                        preload="none"
+                        playsInline
+                        controlsList="nodownload"
+                        disablePictureInPicture
+                        className="max-h-[32rem] w-full rounded-xl border border-zinc-800 bg-zinc-950"
+                      >
+                        Your browser cannot play this public video.
+                      </video>
+                    ))}
+                  </div>
+                ) : null}
+
+                <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-zinc-500">
+                  <span>{post.likeCount} likes</span>
+                  <span>{post.diamondCount} Diamonds</span>
+                  <span>{post.commentCount} replies</span>
+                  <span>{post.repostCount + post.quoteRepostCount} reposts</span>
+                  {post.isNFT ? <span className="text-green-400">NFT</span> : null}
+                </div>
+              </article>
+            )
+          })}
         </div>
       ) : null}
     </section>
