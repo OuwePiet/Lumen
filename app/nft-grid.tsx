@@ -3,6 +3,7 @@ import CollectionBrowser from "./collection-browser"
 import { fetchDeSo } from "./deso-api"
 import MediaFilter, { type MediaFilterType } from "./media-filter"
 import NFTMedia from "./nft-media"
+import ViaWatermark from "./via-watermark"
 
 const NFT_POST_HASHES = [
   "000929e4490e3f744a7c889738d3aef52397ac72af906e5cd473bde710b49111",
@@ -149,7 +150,7 @@ const styles = {
   owner: { color: "#8fd4a9", fontSize: "13px", fontWeight: 700, lineHeight: 1.7, margin: "-12px 0 30px" },
   grid: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: "24px" },
   card: { display: "block", overflow: "hidden", color: "inherit", background: "#0c120f", border: "1px solid #254233", borderRadius: "18px", textDecoration: "none" },
-  mediaFrame: { width: "100%", aspectRatio: "1 / 1", overflow: "hidden", background: "#070b09", borderBottom: "1px solid #254233" },
+  mediaFrame: { position: "relative" as const, width: "100%", aspectRatio: "1 / 1", overflow: "hidden", background: "#070b09", borderBottom: "1px solid #254233" },
   image: { display: "block", width: "100%", height: "100%", objectFit: "cover" as const, background: "#070b09" },
   placeholder: { display: "grid", width: "100%", height: "100%", placeItems: "center", color: "#84958b", background: "#070b09" },
   content: { padding: "20px" },
@@ -173,6 +174,7 @@ export default async function NFTGrid({ initialAccount }: { initialAccount?: str
       <a key={postHash} href={`/nft/${postHash}`} aria-label={`Open NFT: ${cardTitle(post.Body)} by ${creator}`} style={styles.card}>
         <div style={styles.mediaFrame}>
           <NFTMedia imageUrl={post.ImageURLs?.[0]} videoUrl={post.VideoURLs?.[0]} alt={cardTitle(post.Body)} imageStyle={styles.image} placeholderStyle={styles.placeholder} />
+          <ViaWatermark />
         </div>
         <div style={styles.content}>
           <span style={styles.badge}>On-chain NFT</span>
