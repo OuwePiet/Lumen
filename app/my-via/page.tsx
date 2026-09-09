@@ -11,6 +11,7 @@ const places = [
 ];
 
 const morePlaces = [
+  { title: "Social", text: "Choose how you want to enter VIA's DeSo social layer instead of being forced into one feed.", href: "/social" },
   { title: "Communities", text: "Find spaces built around shared interests and conversation.", href: "/communities" },
   { title: "Read & Stories", text: "A quieter place for longer-form reading beyond a fast feed.", href: "/read" },
   { title: "Events", text: "Discover live, art, music, community, game and learning moments.", href: "/events" },
