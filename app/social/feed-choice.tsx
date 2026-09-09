@@ -8,7 +8,7 @@ export const VIA_SOCIAL_FEED_EVENT = "via:social:feed-choice"
 const choices = [
   { id: "following", title: "Following", text: "Read a bounded newest-first view of public posts from accounts the selected DeSo identity follows." },
   { id: "recent", title: "Recent", text: "A recency-first public DeSo view. Loaded public posts are shown newest first; newest does not automatically mean trusted or recommended." },
-  { id: "discovery", title: "Discovery", text: "A broader route to creators and conversations outside your follows. Discovery ranking is the next feed track and Sponsored placement will stay explicit." },
+  { id: "discovery", title: "Discovery", text: "Explore a broader public DeSo feed outside your follows. Discovery ranking is experimental and is not a VIA trust or quality signal." },
 ] as const
 
 export type ChoiceId = (typeof choices)[number]["id"]
@@ -41,11 +41,11 @@ export default function FeedChoice() {
   }
 
   return (
-    <section className="mb-8 rounded-2xl border border-zinc-800 bg-zinc-950/70 p-5" aria-labelledby="feed-choice-heading">
-      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-green-400">Your entry point</p>
+    <section className="mb-8 rounded-2xl border border-zinc-800/80 bg-zinc-950/55 p-5" aria-labelledby="feed-choice-heading">
+      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#8fd4a9]">Your entry point</p>
       <h2 id="feed-choice-heading" className="mt-2 text-2xl font-semibold">Choose your social view</h2>
       <p className="mt-2 max-w-3xl text-sm leading-6 text-zinc-400">
-        Following and Recent now have live read-only behavior. Discovery remains a local preference until its verified public read and ranking flow is connected. No choice changes DeSo data or follows accounts.
+        Following, Recent and Discovery all use public read-only DeSo data. Your choice is stored locally in this browser and never changes DeSo data or follows accounts.
       </p>
       <div className="mt-4 grid gap-3 md:grid-cols-3">
         {choices.map((choice) => {
@@ -56,11 +56,11 @@ export default function FeedChoice() {
               type="button"
               aria-pressed={active}
               onClick={() => choose(choice.id)}
-              className={`min-h-32 rounded-2xl border p-4 text-left transition ${active ? "border-green-600 bg-green-950/20" : "border-zinc-800 bg-black hover:border-zinc-600"}`}
+              className={`min-h-32 rounded-[14px] border p-4 text-left transition duration-200 ease-out focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#8fd4a9]/70 ${active ? "border-[#8fd4a9]/65 bg-[#0c1711]/55 shadow-[0_0_0_1px_rgba(143,212,169,0.08),0_0_22px_rgba(143,212,169,0.08)]" : "border-zinc-800/80 bg-transparent hover:border-[#8fd4a9]/35 hover:bg-[#0b120e]/35"}`}
             >
-              <span className={active ? "text-base font-semibold text-green-300" : "text-base font-semibold text-white"}>{choice.title}</span>
+              <span className={active ? "text-base font-semibold text-[#9adbb2]" : "text-base font-semibold text-zinc-100"}>{choice.title}</span>
               <span className="mt-2 block text-sm leading-6 text-zinc-400">{choice.text}</span>
-              <span className="mt-3 block text-xs text-zinc-500">{active ? "Selected on this device" : "Choose this view"}</span>
+              <span className={active ? "mt-3 block text-xs text-[#8fd4a9]/80" : "mt-3 block text-xs text-zinc-500"}>{active ? "Active on this device" : "Choose this view"}</span>
             </button>
           )
         })}
