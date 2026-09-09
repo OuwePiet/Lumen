@@ -63,11 +63,11 @@ VIA / viadeso.online is the active product baseline. Historical Lumen, Vero, Vel
 
 ## Verification status
 
-- The PR branch is 22 commits ahead of `main` and 0 commits behind; its merge base matches the current `main` commit used for this audit pass.
-- GitHub reports PR #103 as mergeable and rebaseable with `mergeable_state: clean` after recalculation.
-- Vercel preview builds for the replacement NFT collection loader, NFT-detail profile failure isolation, edition-owner mobile accessibility and bounded DeSo profile concurrency have completed successfully.
-- GitHub Actions is not configured for this branch; Vercel preview builds are therefore the active compile/deploy signal for this pass.
-- Protected preview authentication prevents an unauthenticated visual walkthrough through the connector, so a successful build is not treated as proof that every interactive user path has been manually exercised.
+- Audit rules in this document are part of the current VIA baseline once their pull request has passed the normal merge checks.
+- Each implementation pull request must be evaluated against the current `main`; exact branch-ahead counts and pull-request numbers belong in handoff/status reports, not in this evergreen audit document.
+- Vercel preview results are checked per pull request before merge and are treated as compile/deploy evidence, not as proof that every interactive path has been manually exercised.
+- If GitHub Actions or another automated test workflow is added later, it becomes an additional signal rather than replacing the need for feature-specific review.
+- Protected or authentication-gated previews may limit unauthenticated visual inspection; those limits must be stated rather than silently treated as successful end-to-end testing.
 
 ## Next audit cycle
 
