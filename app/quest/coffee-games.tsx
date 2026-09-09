@@ -156,9 +156,9 @@ function CoffeeRush() {
   return (
     <section style={cardStyle} aria-labelledby="coffee-rush-heading">
       <p style={{ color: "#c99462", fontWeight: 800, margin: 0 }}>TIMING · QUICK PLAY</p>
-      <h2 id="coffee-rush-heading" style={{ marginTop: 8 }}>☕ Coffee Rush</h2>
+      <h2 id="coffee-rush-heading" style={{ marginTop: 8 }}>☕ VIA Coffee Rush</h2>
       <p>Catch the cup inside the glowing pour zone. Perfect timing scores double; every successful pour makes the belt a little faster.</p>
-      <canvas ref={canvasRef} width={600} height={200} aria-label="Coffee Rush timing board" style={{ ...boardStyle, maxWidth: 600 }} />
+      <canvas ref={canvasRef} width={600} height={200} aria-label="VIA Coffee Rush timing board" style={{ ...boardStyle, maxWidth: 600 }} />
       <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
         <button type="button" onClick={tapMachine} style={buttonStyle}>Pour coffee</button>
         {gameOver && <button type="button" onClick={reset} style={buttonStyle}>Play again</button>}
@@ -275,10 +275,10 @@ function BeanDrop() {
   return (
     <section style={cardStyle} aria-labelledby="bean-drop-heading">
       <p style={{ color: "#c99462", fontWeight: 800, margin: 0 }}>PHYSICS · LUCK & AIM</p>
-      <h2 id="bean-drop-heading" style={{ marginTop: 8 }}>🫘 Bean Drop</h2>
+      <h2 id="bean-drop-heading" style={{ marginTop: 8 }}>🫘 VIA Bean Drop</h2>
       <p>Choose where each bean starts. Bounce through the VIA coffee board and hunt the narrow bonus cups.</p>
       <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}><strong>Score {score}</strong><span>Drops {drops}/12</span><span>Best {best}</span></div>
-      <canvas ref={canvasRef} width={400} height={500} onPointerDown={(event) => dropBean(event.clientX)} aria-label="Bean Drop board. Tap a horizontal position to drop a bean." style={{ ...boardStyle, maxWidth: 400, touchAction: "none" }} />
+      <canvas ref={canvasRef} width={400} height={500} onPointerDown={(event) => dropBean(event.clientX)} aria-label="VIA Bean Drop board. Tap a horizontal position to drop a bean." style={{ ...boardStyle, maxWidth: 400, touchAction: "none" }} />
       <button type="button" onClick={reset} style={buttonStyle}>New round</button>
       {drops === 0 && beansRef.current.length === 0 && <p role="status">Round complete. Score: {score}.</p>}
     </section>
@@ -345,7 +345,7 @@ function PerfectBlend() {
   return (
     <section style={cardStyle} aria-labelledby="perfect-blend-heading">
       <p style={{ color: "#c99462", fontWeight: 800, margin: 0 }}>MERGE · PUZZLE</p>
-      <h2 id="perfect-blend-heading" style={{ marginTop: 8 }}>🧺 The Perfect Blend</h2>
+      <h2 id="perfect-blend-heading" style={{ marginTop: 8 }}>🧺 VIA Perfect Blend</h2>
       <p>Build the chain from bean to VIA Roast. Tap a source tile and then its destination. Matching levels merge upward.</p>
       <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
         <button type="button" onClick={spawnItem} disabled={full || won} style={{ ...buttonStyle, opacity: full || won ? 0.5 : 1 }}>Generate bean</button>
@@ -371,8 +371,8 @@ export default function CoffeeGames() {
     <section aria-labelledby="coffee-games-heading" style={{ marginTop: 44 }}>
       <div style={{ borderLeft: "3px solid #5cff9d", paddingLeft: 16 }}>
         <p style={{ color: "#5cff9d", fontWeight: 800, letterSpacing: ".12em", textTransform: "uppercase", marginBottom: 6 }}>VIA Mini Games</p>
-        <h2 id="coffee-games-heading" style={{ margin: 0 }}>Coffee Corner</h2>
-        <p style={{ maxWidth: 760, color: "#a9b8af" }}>Three small games with three different rhythms: timing, physics and merging. Free, local and designed for touch as well as desktop. No wallet or blockchain action is needed.</p>
+        <h2 id="coffee-games-heading" style={{ margin: 0 }}>VIA Coffee Corner</h2>
+        <p style={{ maxWidth: 760, color: "#a9b8af" }}>Three small VIA games with three different rhythms: timing, physics and merging. Free, local and designed for touch as well as desktop. No wallet or blockchain action is needed.</p>
       </div>
       <CoffeeRush />
       <BeanDrop />
