@@ -1,5 +1,6 @@
 "use client"
 
+import Link from "next/link"
 import { useEffect } from "react"
 
 const styles = {
@@ -38,6 +39,11 @@ const styles = {
     lineHeight: 1.6,
     margin: "0 0 22px",
   },
+  actions: {
+    display: "flex",
+    flexWrap: "wrap" as const,
+    gap: "10px",
+  },
   button: {
     appearance: "none" as const,
     color: "#050807",
@@ -48,6 +54,15 @@ const styles = {
     fontSize: "14px",
     fontWeight: 800,
     padding: "10px 16px",
+  },
+  link: {
+    color: "#d8e2dc",
+    border: "1px solid #355244",
+    borderRadius: "999px",
+    fontSize: "14px",
+    fontWeight: 700,
+    padding: "10px 16px",
+    textDecoration: "none",
   },
 }
 
@@ -66,14 +81,19 @@ export default function Error({
     <main style={styles.page}>
       <section style={styles.panel} role="alert">
         <p style={styles.brand}>VIA</p>
-        <h1 style={styles.heading}>The collection could not be loaded.</h1>
+        <h1 style={styles.heading}>This part of VIA could not be loaded.</h1>
         <p style={styles.message}>
-          DeSo is temporarily unavailable or the connection was interrupted.
-          Your collection has not been changed.
+          DeSo or another public data source may be temporarily unavailable, or your connection was interrupted.
+          Nothing has been changed or submitted by this failed load. You can try again or continue to another public part of VIA.
         </p>
-        <button type="button" style={styles.button} onClick={reset}>
-          Try again
-        </button>
+        <div style={styles.actions}>
+          <button type="button" style={styles.button} onClick={reset}>
+            Try again
+          </button>
+          <Link href="/discover" style={styles.link}>Discover</Link>
+          <Link href="/saved" style={styles.link}>Saved</Link>
+          <Link href="/" style={styles.link}>VIA home</Link>
+        </div>
       </section>
     </main>
   )
