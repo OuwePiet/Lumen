@@ -1,12 +1,14 @@
 # VIA Storage Service Product
 
-viadeso.online remains the active VIA baseline. This document defines the still-open storage/service layer without reopening already-approved VIA UI or wallet decisions.
+viadeso.online remains the active VIA baseline. This document defines the still-open external storage/service layer without reopening already-approved VIA UI or wallet decisions.
 
 ## Product principle
 
-Storage is a separate service decision, not a hidden side effect of minting.
+VIA is an international meeting place, not a storage shop or a transaction machine. Storage is one supporting service for creators, artists, photographers, musicians, museums, archives, galleries, communities and other digital collections. It should be calm, understandable, reliable and cost-covering, with modest and transparent VIA charges where a real service is delivered.
 
-A creator should always be able to see:
+The commercial VIA Storage Service is separate from ordinary NFT mint media.
+
+A customer should always be able to see:
 
 - what is being stored;
 - whether the result is public, private, unlockable or only a working copy;
@@ -18,21 +20,35 @@ A creator should always be able to see:
 
 No provider may be described as permanent, free forever or failure-proof unless that claim is independently verifiable at the moment it is shown.
 
-## Creator-facing service choices
+## NFT mint media is a separate path
 
-The external storage action should develop into a small service selector rather than a single opaque upload button.
+Ordinary NFT creation must not require the creator to buy VIA external storage.
 
-### 1. Public NFT Media
+The mint-media design keeps three distinct choices, subject to current provider/API verification:
 
-For media that is intended to be referenced publicly by a DeSo post or NFT.
+- `DeSo` — use the supported DeSo media route within its current file/type limits. The working product rule is a 10 MB ceiling; VIA must validate the actual current API limit before production and fail clearly rather than silently changing storage class.
+- `IPFS` — suitable when the creator deliberately chooses distributed/external media storage, including larger media that does not fit the DeSo route. VIA may later offer a paid managed IPFS option, but the cost and provider must be shown before purchase.
+- `Link` — use a creator-controlled or other valid external media URL. VIA validates the reference but does not claim ownership, permanence or availability of third-party storage.
+
+The NFT/post and its media are not to be described as identical storage objects. VIA must distinguish on-chain DeSo state from the media reference and the system that actually serves the media.
+
+A creator may use their own compatible storage. VIA must not force a paid VIA storage purchase merely because external media is used.
+
+## External VIA Storage Service
+
+The separate commercial service should develop into a broad storage product rather than a single opaque upload button. It can serve material beyond NFTs: museum and heritage collections, music, photography, art masters, documents, video, archives and other digital collections.
+
+### 1. Public Media Storage
+
+For media that a creator or organisation deliberately asks VIA to store or manage.
 
 Required behavior:
 
 - validate file type, size and integrity before upload;
-- show the final public media reference before mint confirmation where technically possible;
-- verify that the stored media can actually be retrieved before the mint step continues;
-- keep the media/upload step separate from the blockchain-signing step;
-- never retry a blockchain mint merely because the storage provider returned an uncertain state.
+- show the resulting media reference where technically possible;
+- verify that stored media can actually be retrieved;
+- keep storage/payment separate from blockchain signing;
+- never trigger or retry a blockchain transaction merely because storage returned an uncertain state.
 
 ### 2. Unlockable Content
 
@@ -44,53 +60,59 @@ Until that architecture is proven, VIA may expose the product concept but must n
 
 ### 3. Media Repair / Migration
 
-For older NFTs whose external media source has disappeared or become unreliable.
+For older NFTs or collections whose external media source has disappeared or become unreliable.
 
 The service should:
 
-- preserve the original on-chain NFT identity;
+- preserve the original on-chain NFT identity where applicable;
 - clearly distinguish original metadata from VIA-assisted replacement media;
 - never imply that VIA can rewrite immutable historical blockchain data when it cannot;
 - record the replacement reference and reason transparently;
 - require creator/authorized-owner review before publishing a replacement path.
 
-This service is especially relevant for legacy NFT media whose original hosting is no longer dependable.
-
 ### 4. Working Storage / Creator Vault
 
 A future private workspace for drafts, masters, certificates, backups and unreleased media is a separate product from public NFT storage.
 
-It requires a verified private-storage architecture, access control, encryption, recovery, deletion rules, malware/integrity checks and audit behavior. It is not part of the first public-media button merely because historical documents described a Vault.
+It requires a verified private-storage architecture, access control, encryption, recovery, deletion rules, malware/integrity checks and audit behavior.
 
 ## Cost model
 
-Storage costs belong to the creator at the moment the creator requests the service, unless a future commercial flow explicitly says otherwise.
+The aim is cost-covering and sustainable, not aggressive monetisation.
 
 At checkout/review VIA should separate:
 
 1. external storage/provider cost;
 2. network/blockchain cost if applicable;
-3. VIA storage/service fee if VIA charges one;
-4. taxes/payment-provider costs if they ever apply;
+3. modest VIA storage/service fee if VIA charges one;
+4. taxes/payment-provider costs if they apply;
 5. total due.
 
-No bundled hidden margin and no preselected paid extras.
+No bundled hidden margin, no preselected paid extras and no forced VIA storage when the creator has a valid own-storage option.
 
-A later resale may economically compensate a creator for earlier costs, but that must never be presented as an automatic guaranteed reimbursement unless the sale contract actually provides it.
+Historical VIA storage tiers and prices are inventory only. They must be recalculated against current provider costs, payment costs, retention/replication requirements and a reasonable VIA service margin before publication.
+
+## Payment direction
+
+The external storage service needs its own reviewed checkout path. The target is a clear base price (for example EUR/USD), an up-to-date conversion quote where DESO or another supported asset is offered, an external payment reference/idempotency key, a clear payment status and a deliberate association with the customer's VIA/DeSo account.
+
+Fiat payment confirmation, wallet/account association, conversion quotation and blockchain signing are separate security boundaries. VIA must not introduce an automatic custodial hot-wallet flow merely to make checkout appear simpler.
+
+Regional payment methods may be added only after current provider availability, fees, legal requirements and failure/refund behavior are verified.
 
 ## Provider independence
 
 The product contract must not be named after one storage vendor.
 
-VIA should expose a provider-neutral storage interface internally so that a compatible provider can be replaced without redesigning the creator flow. Any concrete provider must be checked for current API compatibility, retention/pinning model, pricing, limits, deletion behavior, public gateway behavior, legal terms and failure semantics before production use.
+VIA should expose a provider-neutral storage interface internally so that a compatible provider can be replaced without redesigning the customer flow. Any concrete provider must be checked for current API compatibility, retention/pinning model, pricing, limits, deletion behavior, public gateway behavior, legal terms and failure semantics before production use.
 
-The first implementation should prefer the smallest architecture that satisfies the actual VIA requirement. VIA should not introduce its own always-on storage server merely to imitate an old document.
+VIA should not introduce its own always-on storage server or DeSo node merely to imitate another service. External infrastructure is acceptable when it is transparent, economical and replaceable.
 
 ## External buttons
 
-The eventual creator-facing controls can be organised as:
+The eventual customer-facing controls can be organised as:
 
-- `Store public media`
+- `Store media`
 - `Add unlockable content` — only when the secure owner-access architecture is ready
 - `Repair / migrate media`
 - `Open storage details`
@@ -111,34 +133,50 @@ Recommended neutral states:
 - Action required
 - Failed
 
-For public media, `Ready` means VIA has verified the returned storage reference can be retrieved according to the chosen service contract. It does not mean permanent availability is guaranteed.
+`Ready` means VIA has verified the returned storage reference can be retrieved according to the chosen service contract. It does not mean permanent availability is guaranteed.
 
 ## Mint boundary
 
-Minting remains a separate, explicit blockchain action.
+Minting remains a separate, explicit blockchain action. There are two legitimate cases:
 
-The preferred order is:
+### Ordinary mint media
 
-1. creator selects media and storage service;
-2. VIA validates file and shows costs;
-3. creator confirms storage service;
-4. VIA stores and verifies media;
-5. VIA shows the final media reference and mint review;
-6. creator separately confirms/signs the DeSo publication/mint action;
-7. VIA verifies the resulting on-chain state.
+1. creator chooses `DeSo`, `IPFS` or `Link`;
+2. VIA validates that selected route and its current limits;
+3. media/reference is prepared and verified;
+4. VIA shows the mint review;
+5. creator separately confirms/signs the DeSo publication/mint action;
+6. VIA verifies the resulting on-chain state.
 
-A storage failure must stop before mint. A mint failure must not automatically create duplicate storage purchases or duplicate uploads.
+No VIA Storage Service purchase is required unless the creator explicitly chooses a VIA-managed paid storage option.
+
+### Separate VIA Storage Service
+
+1. customer chooses a storage service/tier;
+2. VIA validates files and shows provider cost, VIA fee and total;
+3. customer confirms and pays;
+4. VIA stores and verifies the media;
+5. the resulting reference can later be used for an NFT, gallery, museum/archive collection, music, photography or another supported VIA module.
+
+A storage failure must not create a blockchain transaction. A blockchain failure must not automatically create duplicate storage purchases or uploads.
+
+## International product direction
+
+VIA should evaluate storage as infrastructure for the whole international platform, not only for NFT images. Future modules may have different storage and delivery requirements for museums/heritage, music/audio, photography, video, art collections, documents and community material.
+
+The common rules remain: simple access, user choice, transparent cost, no unnecessary custody, no hidden lock-in, no exaggerated guarantees and no assumption that every visitor must be a buyer or seller.
 
 ## What is deliberately not decided yet
 
 The following require a separate implementation decision before production:
 
 - exact external storage provider(s);
-- exact pricing and VIA service fee;
+- recalculated storage tiers, exact pricing and VIA service fee;
 - retention/pinning duration or replication level;
 - private/unlockable encryption and key ownership;
 - whether VIA offers paid redundancy across providers;
 - legal/tax treatment of a paid storage service;
+- exact external payment provider(s) and regional methods;
 - repair/migration authority rules for non-creators/current owners;
 - deletion rights where blockchain metadata already references the media;
 - SLA/availability wording.
@@ -153,5 +191,6 @@ The following require a separate implementation decision before production:
 - stored reference retrieval verified;
 - no claim of permanence or unlimited free storage;
 - no private-media claim without proven access-control architecture;
-- mint remains separately confirmed and signed;
-- creator can see exactly which service was purchased and what it covers.
+- NFT mint remains separately confirmed and signed;
+- ordinary mint does not force purchase of VIA external storage;
+- customer can see exactly which service was purchased and what it covers.
