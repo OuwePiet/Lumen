@@ -15,42 +15,35 @@ const tools = [
 
 export default function StudioPage() {
   return (
-    <main className="via-studio">
-      <div className="via-studio-shell">
-        <nav className="via-studio-nav" aria-label="Studio navigation">
-          <a href="/" className="via-studio-back">← VIA</a>
-          <span className="via-studio-free">Free Studio</span>
+    <main className="min-h-screen bg-[#050807] px-5 py-8 text-zinc-100 sm:px-8 lg:px-12">
+      <div className="mx-auto max-w-6xl">
+        <nav className="mb-12 flex flex-wrap items-center justify-between gap-3" aria-label="Studio navigation">
+          <a href="/" className="inline-flex min-h-10 items-center rounded-[11px] border border-zinc-700/80 bg-transparent px-3 py-2 text-sm font-semibold text-zinc-300 transition-[background-color,border-color,color] duration-200 hover:border-[#8fd4a9]/50 hover:bg-[#0c1711]/35 hover:text-[#9adbb2] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8fd4a9]/15">← VIA</a>
+          <span className="inline-flex min-h-10 items-center rounded-[10px] border border-[#8fd4a9]/30 bg-[#0c1711]/40 px-3 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-[#8fd4a9]">Free Studio</span>
         </nav>
 
-        <header className="via-studio-hero">
-          <p className="via-studio-kicker">VIA Studio</p>
-          <h1>Create from any screen.</h1>
-          <p>
-            A free creator workspace designed for phone, tablet and desktop. VIA Studio is
-            intentionally non-custodial: it never asks for or stores your DeSo seed phrase
-            or private signing key.
-          </p>
+        <header className="mb-10 max-w-3xl">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8fd4a9]">VIA Studio</p>
+          <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-[2.5rem]">Create from any screen.</h1>
+          <p className="mt-3 text-sm leading-6 text-zinc-400 sm:text-base">A free creator workspace designed for phone, tablet and desktop. VIA Studio is intentionally non-custodial: it never asks for or stores your DeSo seed phrase or private signing key.</p>
         </header>
 
         <StudioDraft />
 
-        <section className="via-studio-grid" aria-label="Studio tools">
+        <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4" aria-label="Studio tools">
           {tools.map((tool) => (
-            <article className="via-studio-card" key={tool.title}>
-              <h2>{tool.title}</h2>
-              <p>{tool.text}</p>
-              <span aria-label={`${tool.title} development status`}>Foundation ready</span>
+            <article className="rounded-[14px] border border-zinc-800/80 bg-zinc-950/50 p-5" key={tool.title}>
+              <h2 className="text-lg font-medium text-zinc-100">{tool.title}</h2>
+              <p className="mt-2 text-sm leading-6 text-zinc-400">{tool.text}</p>
+              <span className="mt-5 inline-block text-xs font-semibold uppercase tracking-[0.12em] text-[#8fd4a9]" aria-label={`${tool.title} development status`}>Foundation ready</span>
             </article>
           ))}
         </section>
 
-        <section className="via-studio-safety" aria-labelledby="studio-safety-heading">
-          <h2 id="studio-safety-heading">Safe by design</h2>
-          <p>
-            Studio separates preparing content from authorising blockchain actions. Future
-            on-chain publishing or minting must use an authoritative DeSo wallet-control
-            flow and explicit signing confirmation.
-          </p>
+        <section className="mt-4 rounded-[14px] border border-zinc-800/80 bg-zinc-950/45 p-5" aria-labelledby="studio-safety-heading">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#8fd4a9]">Safety boundary</p>
+          <h2 id="studio-safety-heading" className="mt-2 text-lg font-medium text-zinc-100">Safe by design</h2>
+          <p className="mt-2 text-sm leading-6 text-zinc-400">Studio separates preparing content from authorising blockchain actions. Future on-chain publishing or minting must use an authoritative DeSo wallet-control flow and explicit signing confirmation.</p>
         </section>
       </div>
     </main>
