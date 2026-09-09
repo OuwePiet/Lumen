@@ -2,6 +2,7 @@ import NFTGrid from "./nft-grid"
 import ViaHomeEarth from "./via-home-earth"
 import ViaHomeSignature from "./via-home-signature"
 import ViaPriceBoard from "./via-price-board"
+import ViaStoragePriceBoard from "./via-storage-price-board"
 import ViaWorldClock from "./via-world-clock"
 
 export const dynamic = "force-dynamic"
@@ -29,6 +30,7 @@ export default async function Home({ searchParams }: HomeProps) {
         <NFTGrid initialAccount={account} />
         <div style={{ maxWidth: 1180, margin: "0 auto", padding: "0 20px 8px" }}>
           <ViaPriceBoard />
+          <ViaStoragePriceBoard />
         </div>
         <ViaWorldClock />
       </div>
