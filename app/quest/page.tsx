@@ -1,4 +1,5 @@
 import type { Metadata } from "next"
+import SaveButton from "../saved/save-button"
 import AlphabetRelay from "./alphabet-relay"
 import BlockchainPuzzle from "./blockchain-puzzle"
 import CoffeeGames from "./coffee-games"
@@ -40,6 +41,7 @@ export default function QuestPage() {
             <a href="/discover" className={styles.back}>World Discovery</a>
             <a href="/radio" className={styles.back}>World Radio</a>
             <a href="/live" className={styles.back}>VIA LIVE</a>
+            <a href="/saved" className={styles.back}>Saved</a>
             <span className={styles.status}>VIA World Quest · Free</span>
           </div>
         </nav>
@@ -56,7 +58,7 @@ export default function QuestPage() {
         <section aria-labelledby="pick-game-heading" style={{ marginBottom: 30 }}>
           <p className={styles.kicker}>VIA Games</p>
           <h2 id="pick-game-heading">Pick a VIA game</h2>
-          <p style={{ color: "#9bac9f", maxWidth: 720 }}>Jump straight to a game. Everything below is free to play; sharing is optional and always carries viadeso.online.</p>
+          <p style={{ color: "#9bac9f", maxWidth: 720 }}>Jump straight to a game. Everything below is free to play; sharing and saving are optional. Saved games stay in this browser.</p>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 12, marginTop: 16 }}>
             {games.map((game) => (
               <a key={game.href} href={game.href} style={{ display: "block", minHeight: 104, border: "1px solid #285f40", borderRadius: 16, padding: 16, background: "#0a100d", color: "#f4f7f5", textDecoration: "none" }}>
@@ -69,36 +71,54 @@ export default function QuestPage() {
 
         <section id="daily-grid" style={{ scrollMarginTop: 24 }}>
           <DailyGrid />
-          <div style={shareRow}><ShareButton game="VIA Daily Grid" path="/quest#daily-grid" /></div>
+          <div style={shareRow}>
+            <ShareButton game="VIA Daily Grid" path="/quest#daily-grid" />
+            <SaveButton title="VIA Daily Grid" href="/quest#daily-grid" kind="Game" />
+          </div>
         </section>
 
         <section id="alphabet-relay" style={{ scrollMarginTop: 24 }}>
           <AlphabetRelay />
-          <div style={shareRow}><ShareButton game="VIA Alphabet Relay" path="/quest#alphabet-relay" /></div>
+          <div style={shareRow}>
+            <ShareButton game="VIA Alphabet Relay" path="/quest#alphabet-relay" />
+            <SaveButton title="VIA Alphabet Relay" href="/quest#alphabet-relay" kind="Game" />
+          </div>
         </section>
 
         <section id="neo-pong" style={{ scrollMarginTop: 24 }}>
           <ViaPong />
-          <div style={shareRow}><ShareButton game="VIA NEO PONG" path="/quest#neo-pong" /></div>
+          <div style={shareRow}>
+            <ShareButton game="VIA NEO PONG" path="/quest#neo-pong" />
+            <SaveButton title="VIA NEO PONG" href="/quest#neo-pong" kind="Game" />
+          </div>
         </section>
 
         <section id="coffee-corner" style={{ scrollMarginTop: 24 }}>
           <CoffeeGames />
-          <div style={shareRow} aria-label="Share VIA Coffee Corner games">
+          <div style={shareRow} aria-label="Share or save VIA Coffee Corner games">
             <ShareButton game="VIA Coffee Rush" path="/quest#coffee-rush-heading" />
+            <SaveButton title="VIA Coffee Rush" href="/quest#coffee-rush-heading" kind="Game" />
             <ShareButton game="VIA Bean Drop" path="/quest#bean-drop-heading" />
+            <SaveButton title="VIA Bean Drop" href="/quest#bean-drop-heading" kind="Game" />
             <ShareButton game="VIA Perfect Blend" path="/quest#perfect-blend-heading" />
+            <SaveButton title="VIA Perfect Blend" href="/quest#perfect-blend-heading" kind="Game" />
           </div>
         </section>
 
         <section id="blockchain-mosaic" style={{ scrollMarginTop: 24 }}>
           <BlockchainPuzzle />
-          <div style={shareRow}><ShareButton game="VIA Blockchain Mosaic" path="/quest#blockchain-mosaic" /></div>
+          <div style={shareRow}>
+            <ShareButton game="VIA Blockchain Mosaic" path="/quest#blockchain-mosaic" />
+            <SaveButton title="VIA Blockchain Mosaic" href="/quest#blockchain-mosaic" kind="Game" />
+          </div>
         </section>
 
         <section id="world-quest" style={{ scrollMarginTop: 24 }}>
           <QuestGame />
-          <div style={shareRow}><ShareButton game="VIA World Quest" path="/quest#world-quest" /></div>
+          <div style={shareRow}>
+            <ShareButton game="VIA World Quest" path="/quest#world-quest" />
+            <SaveButton title="VIA World Quest" href="/quest#world-quest" kind="Game" />
+          </div>
         </section>
 
         <section className={styles.safety} aria-labelledby="quest-reward-heading">
