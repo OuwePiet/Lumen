@@ -62,21 +62,26 @@ export default function PublicPosts() {
   async function loadPosts(event: FormEvent) {
     event.preventDefault()
     const value = identity.trim().replace(/^@/, "")
-    if (!value) return
+    if (feedChoice !== "discovery" && !value) return
+
     setLoading(true)
     const isFollowing = feedChoice === "following"
-    setMessage(isFollowing ? "Loading public posts from followed creators…" : "Loading public DeSo posts…")
+    const isDiscovery = feedChoice === "discovery"
+    setMessage(isFollowing ? "Loading public posts from followed creators…" : isDiscovery ? "Loading public DeSo Discovery…" : "Loading public DeSo posts…")
+
     try {
       const endpoint = isFollowing
         ? `/api/via/following?identity=${encodeURIComponent(value)}`
-        : `/api/via/posts?identity=${encodeURIComponent(value)}&limit=20`
+        : isDiscovery
+          ? "/api/via/discovery?limit=20"
+          : `/api/via/posts?identity=${encodeURIComponent(value)}&limit=20`
       const response = await fetch(endpoint)
       const data = (await response.json()) as PostsResponse
       const nextPosts = response.ok && data.ok && Array.isArray(data.posts) ? data.posts : []
       setPosts(nextPosts)
       setMessage(nextPosts.length
-        ? `${nextPosts.length} public ${isFollowing ? "Following " : ""}posts loaded.`
-        : isFollowing ? "No public posts found from followed creators." : "No public posts found.")
+        ? `${nextPosts.length} public ${isFollowing ? "Following " : isDiscovery ? "Discovery " : ""}posts loaded.`
+        : isFollowing ? "No public posts found from followed creators." : isDiscovery ? "No public Discovery posts found." : "No public posts found.")
     } catch {
       setPosts([])
       setMessage("Public posts are temporarily unavailable.")
@@ -87,14 +92,13 @@ export default function PublicPosts() {
     <section className="mt-8 rounded-2xl border border-zinc-800 bg-zinc-950 p-5" aria-labelledby="public-posts-heading">
       <p className="text-xs font-semibold uppercase tracking-[0.16em] text-green-400">Live public read</p>
       <h2 id="public-posts-heading" className="mt-2 text-2xl font-semibold">Public DeSo posts</h2>
-      <p className="mt-2 max-w-3xl text-sm leading-6 text-zinc-400">Read public posts without connecting a wallet. Following reads posts from a bounded sample of accounts the selected DeSo identity publicly follows. VIA does not like, repost, Diamond, follow or publish from this view.</p>
+      <p className="mt-2 max-w-3xl text-sm leading-6 text-zinc-400">Read public posts without connecting a wallet. Following uses the selected identity&apos;s public follow graph. Discovery uses DeSo&apos;s public experimental hot-feed ranking as an exploration source, not as a trust or quality signal. VIA does not like, repost, Diamond, follow or publish from this view.</p>
       <div className="mt-3 inline-flex rounded-full border border-zinc-800 bg-black px-3 py-1.5 text-xs text-zinc-400">
-        {feedChoice === "following" ? "Following active · public read only" : feedChoice === "recent" ? "Recent active · newest loaded post first" : "Discovery preference active · creator read"}
+        {feedChoice === "following" ? "Following active · public read only" : feedChoice === "recent" ? "Recent active · newest loaded post first" : "Discovery active · experimental public DeSo ranking"}
       </div>
       <form onSubmit={loadPosts} className="mt-4 flex max-w-2xl flex-col gap-3 sm:flex-row">
-        <label className="sr-only" htmlFor="social-public-identity">Creator username or public key</label>
-        <input id="social-public-identity" value={identity} onChange={(event) => setIdentity(event.target.value)} maxLength={128} autoCapitalize="none" autoCorrect="off" placeholder="Creator username or public key" className="min-w-0 flex-1 rounded-xl border border-zinc-700 bg-black px-4 py-3 text-sm text-white outline-none focus:border-green-600" />
-        <button type="submit" disabled={loading} className="rounded-xl border border-green-800 px-5 py-3 text-sm font-medium text-green-300 hover:border-green-600 disabled:cursor-wait disabled:opacity-60">{loading ? "Loading…" : feedChoice === "following" ? "Read Following" : "Read posts"}</button>
+        {feedChoice !== "discovery" ? <><label className="sr-only" htmlFor="social-public-identity">Creator username or public key</label><input id="social-public-identity" value={identity} onChange={(event) => setIdentity(event.target.value)} maxLength={128} autoCapitalize="none" autoCorrect="off" placeholder="Creator username or public key" className="min-w-0 flex-1 rounded-xl border border-zinc-700 bg-black px-4 py-3 text-sm text-white outline-none focus:border-green-600" /></> : <p className="flex-1 self-center text-sm text-zinc-500">Discovery does not require an account.</p>}
+        <button type="submit" disabled={loading} className="rounded-xl border border-green-800 px-5 py-3 text-sm font-medium text-green-300 hover:border-green-600 disabled:cursor-wait disabled:opacity-60">{loading ? "Loading…" : feedChoice === "following" ? "Read Following" : feedChoice === "discovery" ? "Explore Discovery" : "Read posts"}</button>
       </form>
       <p className="mt-3 text-sm text-zinc-500" role="status" aria-live="polite">{message}</p>
       {visiblePosts.length > 0 ? <div className="mt-5 space-y-3">{visiblePosts.map((post) => {
