@@ -1,6 +1,7 @@
 "use client"
 
-import { FormEvent, useState } from "react"
+import { FormEvent, useEffect, useMemo, useState } from "react"
+import { ChoiceId, VIA_SOCIAL_FEED_EVENT, VIA_SOCIAL_FEED_STORAGE_KEY } from "./feed-choice"
 
 type PublicPost = {
   postHashHex: string
@@ -30,11 +31,44 @@ function safeHttps(url: string) {
   }
 }
 
+function postTime(timestampNanos: number) {
+  if (!Number.isFinite(timestampNanos) || timestampNanos <= 0) return ""
+  const date = new Date(timestampNanos / 1_000_000)
+  return Number.isNaN(date.getTime()) ? "" : date.toLocaleString()
+}
+
 export default function PublicPosts() {
   const [identity, setIdentity] = useState("OuwePiet")
   const [posts, setPosts] = useState<PublicPost[]>([])
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState("Public DeSo posts are read-only in VIA.")
+  const [feedChoice, setFeedChoice] = useState<ChoiceId>("following")
+
+  useEffect(() => {
+    try {
+      const stored = window.localStorage.getItem(VIA_SOCIAL_FEED_STORAGE_KEY)
+      if (stored === "following" || stored === "recent" || stored === "discovery") {
+        setFeedChoice(stored)
+      }
+    } catch {
+      // Keep the safe default when browser storage is unavailable.
+    }
+
+    function onFeedChoice(event: Event) {
+      const choice = (event as CustomEvent<ChoiceId>).detail
+      if (choice === "following" || choice === "recent" || choice === "discovery") {
+        setFeedChoice(choice)
+      }
+    }
+
+    window.addEventListener(VIA_SOCIAL_FEED_EVENT, onFeedChoice)
+    return () => window.removeEventListener(VIA_SOCIAL_FEED_EVENT, onFeedChoice)
+  }, [])
+
+  const visiblePosts = useMemo(() => {
+    if (feedChoice !== "recent") return posts
+    return [...posts].sort((a, b) => b.timestampNanos - a.timestampNanos)
+  }, [feedChoice, posts])
 
   async function loadPosts(event: FormEvent) {
     event.preventDefault()
@@ -66,6 +100,10 @@ export default function PublicPosts() {
         Read a creator&apos;s recent public posts without connecting a wallet. VIA does not like, repost, Diamond, follow or publish from this view.
       </p>
 
+      <div className="mt-3 inline-flex rounded-full border border-zinc-800 bg-black px-3 py-1.5 text-xs text-zinc-400">
+        {feedChoice === "recent" ? "Recent view active · newest loaded post first" : `${feedChoice === "following" ? "Following" : "Discovery"} preference active · source order retained`}
+      </div>
+
       <form onSubmit={loadPosts} className="mt-4 flex max-w-2xl flex-col gap-3 sm:flex-row">
         <label className="sr-only" htmlFor="social-public-identity">Creator username or public key</label>
         <input
@@ -89,14 +127,16 @@ export default function PublicPosts() {
 
       <p className="mt-3 text-sm text-zinc-500" role="status" aria-live="polite">{message}</p>
 
-      {posts.length > 0 ? (
+      {visiblePosts.length > 0 ? (
         <div className="mt-5 space-y-3">
-          {posts.map((post) => {
+          {visiblePosts.map((post) => {
             const images = post.imageURLs.map(safeHttps).filter((url): url is string => Boolean(url)).slice(0, 4)
             const videos = post.videoURLs.map(safeHttps).filter((url): url is string => Boolean(url)).slice(0, 2)
+            const time = postTime(post.timestampNanos)
 
             return (
               <article key={post.postHashHex} className="rounded-xl border border-zinc-800 bg-black p-4">
+                {time ? <p className="mb-2 text-xs text-zinc-600">{time}</p> : null}
                 {post.body ? <p className="whitespace-pre-wrap text-sm leading-6 text-zinc-200">{post.body}</p> : <p className="text-sm text-zinc-500">Media post</p>}
 
                 {images.length > 0 ? (
