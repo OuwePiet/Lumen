@@ -21,6 +21,15 @@ const shareRow = {
   margin: "12px 0 28px",
 }
 
+const games = [
+  { href: "#daily-grid", title: "Daily Grid", text: "A short daily brain game." },
+  { href: "#alphabet-relay", title: "Alphabet Relay", text: "Keep the letter chain moving." },
+  { href: "#neo-pong", title: "VIA NEO PONG", text: "Fast local arcade play." },
+  { href: "#coffee-corner", title: "Coffee Corner", text: "Three light coffee mini games." },
+  { href: "#blockchain-mosaic", title: "Blockchain Mosaic", text: "Rebuild a chain image up to 500 pieces." },
+  { href: "#world-quest", title: "World Quest", text: "Discover VIA and DeSo through routes." },
+]
+
 export default function QuestPage() {
   return (
     <main className={styles.page}>
@@ -44,27 +53,53 @@ export default function QuestPage() {
           </p>
         </header>
 
-        <DailyGrid />
-        <div style={shareRow}><ShareButton game="VIA Daily Grid" /></div>
+        <section aria-labelledby="pick-game-heading" style={{ marginBottom: 30 }}>
+          <p className={styles.kicker}>Games</p>
+          <h2 id="pick-game-heading">Pick a game</h2>
+          <p style={{ color: "#9bac9f", maxWidth: 720 }}>Jump straight to a game. Everything below is free to play; sharing is optional and always carries viadeso.online.</p>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 12, marginTop: 16 }}>
+            {games.map((game) => (
+              <a key={game.href} href={game.href} style={{ display: "block", minHeight: 104, border: "1px solid #285f40", borderRadius: 16, padding: 16, background: "#0a100d", color: "#f4f7f5", textDecoration: "none" }}>
+                <strong>{game.title}</strong>
+                <span style={{ display: "block", marginTop: 7, color: "#8fa299", fontSize: 14, lineHeight: 1.45 }}>{game.text}</span>
+              </a>
+            ))}
+          </div>
+        </section>
 
-        <AlphabetRelay />
-        <div style={shareRow}><ShareButton game="VIA Alphabet Relay" /></div>
+        <section id="daily-grid" style={{ scrollMarginTop: 24 }}>
+          <DailyGrid />
+          <div style={shareRow}><ShareButton game="VIA Daily Grid" /></div>
+        </section>
 
-        <ViaPong />
-        <div style={shareRow}><ShareButton game="VIA NEO PONG" /></div>
+        <section id="alphabet-relay" style={{ scrollMarginTop: 24 }}>
+          <AlphabetRelay />
+          <div style={shareRow}><ShareButton game="VIA Alphabet Relay" /></div>
+        </section>
 
-        <CoffeeGames />
-        <div style={shareRow} aria-label="Share Coffee Corner games">
-          <ShareButton game="Coffee Rush" />
-          <ShareButton game="Bean Drop" />
-          <ShareButton game="The Perfect Blend" />
-        </div>
+        <section id="neo-pong" style={{ scrollMarginTop: 24 }}>
+          <ViaPong />
+          <div style={shareRow}><ShareButton game="VIA NEO PONG" /></div>
+        </section>
 
-        <BlockchainPuzzle />
-        <div style={shareRow}><ShareButton game="Blockchain Mosaic" /></div>
+        <section id="coffee-corner" style={{ scrollMarginTop: 24 }}>
+          <CoffeeGames />
+          <div style={shareRow} aria-label="Share Coffee Corner games">
+            <ShareButton game="Coffee Rush" />
+            <ShareButton game="Bean Drop" />
+            <ShareButton game="The Perfect Blend" />
+          </div>
+        </section>
 
-        <QuestGame />
-        <div style={shareRow}><ShareButton game="VIA World Quest" /></div>
+        <section id="blockchain-mosaic" style={{ scrollMarginTop: 24 }}>
+          <BlockchainPuzzle />
+          <div style={shareRow}><ShareButton game="Blockchain Mosaic" /></div>
+        </section>
+
+        <section id="world-quest" style={{ scrollMarginTop: 24 }}>
+          <QuestGame />
+          <div style={shareRow}><ShareButton game="VIA World Quest" /></div>
+        </section>
 
         <section className={styles.safety} aria-labelledby="quest-reward-heading">
           <h2 id="quest-reward-heading">Diamond Shower reward</h2>
