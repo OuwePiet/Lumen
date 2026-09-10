@@ -3,7 +3,6 @@ import FeedChoice from "./feed-choice"
 import PublicPosts from "./public-posts"
 import ParticipationGate from "../participation-gate"
 import PostComposer from "./post-composer"
-import VideoUploadControl from "./video-upload-control"
 
 const feeds = [
   { title: "Hot", text: "A future view for active public DeSo conversations. Ranking logic must stay explainable and must not be sold as organic placement." },
@@ -45,9 +44,8 @@ export default function SocialPage() {
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-green-400">Released participation controls</p>
           <h2 id="composer-heading" className="mt-2 text-2xl font-semibold">Post, reply and add media through DeSo</h2>
           <p className="mt-2 max-w-3xl text-sm leading-6 text-zinc-400">
-            VIA keeps media upload separate from publishing. Images and videos are prepared through DeSo-compatible media paths first. Publishing still requires the exact DeSo transaction to be reviewed and approved through DeSo Identity.
+            Images and videos can now be prepared inside the same composer while media upload stays technically separate from publishing. Publishing still requires the exact DeSo transaction to be reviewed and approved through DeSo Identity.
           </p>
-          <VideoUploadControl />
           <PostComposer />
         </section>
 
