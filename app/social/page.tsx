@@ -16,7 +16,7 @@ const actions = [
   "Add photo or video",
   "Embed video",
   "Create a poll",
-  "Reply / quote / repost",
+  "Quote / repost",
   "Like / Diamond",
   "Follow / unfollow",
 ]
@@ -30,7 +30,7 @@ export default function SocialPage() {
             <p className="text-sm font-semibold uppercase tracking-[0.25em] text-green-400">VIA · DeSo Social</p>
             <h1 className="mt-2 text-3xl font-semibold sm:text-4xl">Look around freely. Participate through DeSo.</h1>
             <p className="mt-3 max-w-3xl text-sm leading-6 text-zinc-400 sm:text-base">
-              Guests can read public DeSo posts and move through the public VIA pages. The first controlled write action is now plain-text posting after DeSo login and explicit DeSo Identity approval. Other actions remain closed until they receive their own safe path.
+              Guests can read public DeSo posts and move through the public VIA pages. Plain-text posting and direct replies are now available after DeSo login and explicit DeSo Identity approval. Other actions remain closed until they receive their own safe path.
             </p>
           </div>
           <Link href="/show-your-stuff" className="rounded-full border border-zinc-700 px-4 py-2 text-sm text-zinc-200 hover:border-green-500 hover:text-green-300">How participation works</Link>
@@ -45,7 +45,7 @@ export default function SocialPage() {
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-green-400">Released participation control</p>
           <h2 id="composer-heading" className="mt-2 text-2xl font-semibold">Post text to DeSo</h2>
           <p className="mt-2 max-w-3xl text-sm leading-6 text-zinc-400">
-            VIA prepares the exact DeSo transaction, shows the network fee returned by the construction response when available, and sends that exact transaction to DeSo Identity for approval. VIA submits only the signed result returned from the official Identity window.
+            VIA prepares the exact DeSo transaction, shows the network fee returned by the construction response when available, and sends that exact transaction to DeSo Identity for approval. VIA submits only the signed result returned from the official Identity window. Replies use the same controlled path from each public post.
           </p>
           <PostComposer />
         </section>
