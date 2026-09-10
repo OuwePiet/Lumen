@@ -62,7 +62,7 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
   return <div className="flex flex-wrap items-center gap-2">
     <span>{count} Diamonds</span>
     <select aria-label="Diamond level" value={level} onChange={(e) => { setLevel(Number(e.target.value)); setConfirmValue(false) }} className="rounded-full border border-zinc-800 bg-black px-2 py-1 text-xs text-zinc-300">
-      {[1,2,3,4,5,6].map((value) => <option key={value} value={value}>Level {value}</option>)}
+      {[1,2,3,4].map((value) => <option key={value} value={value}>Level {value}</option>)}
     </select>
     <label className="flex items-center gap-1 text-[11px] text-amber-300"><input type="checkbox" checked={confirmValue} onChange={(e) => setConfirmValue(e.target.checked)} />I understand this sends $DESO value</label>
     <button type="button" onClick={prepare} disabled={!confirmValue || status === "preparing" || status === "approval" || status === "submitting"} className="rounded-full border border-amber-700/70 px-3 py-1 text-amber-300 disabled:border-zinc-800 disabled:text-zinc-600">{status === "preparing" ? "Preparing…" : status === "approval" ? "Review in DeSo…" : status === "submitting" ? "Submitting…" : "Send Diamond"}</button>
