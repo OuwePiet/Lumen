@@ -1,65 +1,66 @@
 # VIA First Maker Space
 
-## Purpose
+## Status correction
 
-VIA should give a person showing an early or first piece of work a fair, calm moment to be discovered. The feature is not a popularity award and must not imply that VIA has verified talent, identity, age, location, profession, or that a DeSo post is literally the person's first creative work.
+First Maker Space must **not** be opened from an uncontrolled public entrance.
 
-The safe public label is **First on VIA** only when VIA can reliably establish that this is the creator's first eligible appearance through VIA's own feature. Until VIA has that reliable state, the interface should use **New Voices** or another non-authoritative discovery label.
+The second VIA entrance — the future non-DeSo **Show Your Stuff** route — does not yet have a reliable account/control layer. Therefore VIA cannot safely give an uncontrolled visitor a personal maker space, persistent creator identity or direct public submission area there.
 
-## Temporary personal window
+Until a controlled participation method exists, the non-DeSo entrance remains a public discovery/onboarding surface only. No personal First Maker Space is created there.
 
-An eligible creator may receive a temporary discovery window containing only public information VIA can safely obtain:
+## Safe eligibility
 
-- creator name / DeSo username;
-- the selected public work or post;
-- public media associated with that work, treated as untrusted external media;
-- a short public introduction when available;
-- links to the creator's public VIA/DeSo view and other public work.
+A temporary maker space may only be considered when VIA can reliably connect the presentation to a controlled identity or account route.
 
-The window is a route into the creator's normal public space, not a second identity system and not a private VIA profile database.
+For now that means:
 
-## Duration
+- existing public DeSo creators can be explored through the existing read-only DeSo discovery paths;
+- a DeSo-authenticated participation path may later support a controlled creator window once the required DeSo authority is actually connected;
+- a future non-DeSo maker route may support a maker space only after VIA has implemented and tested suitable authentication, account recovery, abuse controls and creator ownership of that presentation.
 
-A window must not disappear because one visitor clicked it. Eligibility and expiry are time-based or rotation-based and should be deterministic enough to explain. The exact duration remains a product setting until real traffic and available DeSo signals are tested.
+VIA must never infer that an anonymous visitor is the creator of submitted work merely because they supplied a name, link, image or file.
 
-## Fair discovery
+## Naming
 
-First Maker Space is designed for discovery rather than ranking. It must not require:
+The label **First on VIA** is allowed only when VIA can reliably establish that the controlled account is making its first eligible appearance through VIA's own feature.
 
-- a minimum follower count;
-- an NFT purchase;
-- a paid promotion;
-- a creator-coin holding;
-- a minimum number of Diamonds;
-- popularity on another platform.
+Until then, the existing **New Voices** label remains safer for public read-only discovery. VIA must not claim that a public DeSo post is literally a person's first creative work.
 
-VIA must not rank or select creators by race, skin colour, religion, ethnicity, sex, sexual orientation or other sensitive personal characteristics. VIA should not collect such information for this feature.
+## No uncontrolled personal space
 
-Large and established accounts can remain discoverable elsewhere, but First Maker Space exists specifically so that low existing reach does not automatically make a creator invisible.
+The following are explicitly out of scope for the uncontrolled entrance:
 
-## Categories are doors, not boxes
+- creating a persistent maker profile;
+- publishing user-supplied work into VIA-controlled discovery;
+- claiming ownership of a creator identity;
+- adding external contact or sales links as if VIA had verified the creator;
+- creating a wallet or DeSo identity in the background;
+- granting posting, signing or spending authority.
 
-Work can enter through broad discovery doors such as art and painting, music and audio, photography, film and video, NFTs and collecting, museums and heritage, writing and stories, design and craft, and new or unexpected work. A creator does not have to fit one permanent category.
+A public visitor may browse. A personal creator space requires control.
 
-## User control
+## Fair discovery after control exists
 
-Visitors choose whether to open the creator window. Opening it must never silently follow, like, repost, send a Diamond, purchase, bid, sign, transfer, or spend funds. Those actions remain separate explicit flows.
+If First Maker Space is later activated behind a controlled account route, it remains a discovery feature rather than a popularity award. It must not require a minimum follower count, NFT purchase, paid promotion, creator-coin holding, minimum Diamonds or popularity elsewhere.
 
-Creators should later be able to control VIA-specific presentation choices when reliable authentication exists. Public DeSo content remains governed by its source and VIA must not pretend to own it.
+VIA must not rank or select creators by race, skin colour, religion, ethnicity, sex, sexual orientation or other sensitive personal characteristics, and should not collect such information for this feature.
 
-## Abuse and quality boundary
+## User control and security
 
-Before public launch, the feature needs practical protections against spam floods, duplicate/recycled submissions, impersonation, malicious links/media and automated gaming. Protection should not become an opaque popularity algorithm. Where VIA excludes a submission from this feature, the reason should be understandable when VIA controls that decision.
+Opening a creator window must never silently follow, like, repost, send a Diamond, purchase, bid, sign, transfer or spend funds.
 
-## Implementation stages
+Before any creator-controlled presentation goes public, VIA needs practical protections against spam floods, duplicate/recycled submissions, impersonation, malicious links/media and automated gaming. Account recovery and the ability to prove continued control of the maker space are part of that security boundary.
 
-1. **Foundation:** document the rules and keep existing New Voices discovery read-only.
-2. **Detection:** determine which reliable DeSo/VIA signals can establish eligibility without inventing facts about a creator.
-3. **Window:** build the temporary public creator view from verified public data.
-4. **Rotation:** add explainable time/rotation rules so one account cannot permanently occupy discovery space.
-5. **Creator control:** after safe authentication exists, allow eligible creators to manage VIA-specific introduction/presentation choices.
-6. **Abuse testing:** test spam, bots, duplicate work, unsafe media and ranking manipulation before calling the feature production-ready.
+## Revised implementation order
+
+1. **Public discovery only:** keep New Voices and other public discovery routes read-only.
+2. **Controlled participation:** implement and verify the appropriate account/authentication route first.
+3. **Ownership/control test:** establish that the person controlling the account can manage the corresponding VIA presentation.
+4. **Abuse protection:** add submission validation, rate limits, impersonation/link/media protections and recovery rules.
+5. **Maker window:** only then build a temporary personal creator presentation.
+6. **First-on-VIA signal:** only after reliable VIA eligibility state exists may the First on VIA label be used.
+7. **Rotation:** add explainable time/rotation rules so one account cannot permanently occupy discovery space.
 
 ## Product principle
 
-**Everybody starts somewhere. VIA should make that starting point easier to see.**
+**Everybody starts somewhere, but a personal space starts only after VIA knows who controls it.**
