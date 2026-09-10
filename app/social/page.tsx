@@ -4,20 +4,12 @@ import PublicPosts from "./public-posts"
 import ParticipationGate from "../participation-gate"
 import PostComposer from "./post-composer"
 
-const feeds = [
-  { title: "Hot", text: "A future view for active public DeSo conversations. Ranking logic must stay explainable and must not be sold as organic placement." },
-  { title: "Following", text: "A future chronological or clearly explained view based on accounts the visitor chooses to follow." },
-  { title: "Recent", text: "A future public stream ordered by recency, without pretending that recency equals quality or trust." },
-  { title: "Welcome", text: "A calm entry point for orientation, help and useful VIA/community posts rather than an engagement trap." },
-  { title: "First Posts", text: "A discovery lane for early public posts, with anti-spam and safety checks before activation." },
+const futureIdeas = [
+  { title: "Hot", text: "A possible future view for active public DeSo conversations. It only becomes live if the ranking can stay explainable and abuse-resistant." },
 ]
 
-const actions = [
-  "Embed video",
+const remainingActions = [
   "Create a poll",
-  "Quote / repost",
-  "Diamond",
-  "Follow / unfollow",
 ]
 
 export default function SocialPage() {
@@ -29,7 +21,7 @@ export default function SocialPage() {
             <p className="text-sm font-semibold uppercase tracking-[0.25em] text-green-400">VIA · DeSo Social</p>
             <h1 className="mt-2 text-3xl font-semibold sm:text-4xl">Look around freely. Participate through DeSo.</h1>
             <p className="mt-3 max-w-3xl text-sm leading-6 text-zinc-400 sm:text-base">
-              Guests can read public DeSo posts and move through the public VIA pages. Posting, direct replies, Likes, images and controlled video upload are available after DeSo login through their own guarded paths. Other actions remain closed until they receive the same treatment.
+              Guests can read public DeSo posts and move through the public VIA pages. Posting, replies, Likes, Follow/Unfollow, Repost/Quote, Diamonds and image/video attachments are available after DeSo login through their own guarded paths.
             </p>
           </div>
           <Link href="/show-your-stuff" className="rounded-full border border-zinc-700 px-4 py-2 text-sm text-zinc-200 hover:border-green-500 hover:text-green-300">How participation works</Link>
@@ -44,7 +36,7 @@ export default function SocialPage() {
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-green-400">Released participation controls</p>
           <h2 id="composer-heading" className="mt-2 text-2xl font-semibold">Post, reply and add media through DeSo</h2>
           <p className="mt-2 max-w-3xl text-sm leading-6 text-zinc-400">
-            Images and videos can now be prepared inside the same composer while media upload stays technically separate from publishing. Publishing still requires the exact DeSo transaction to be reviewed and approved through DeSo Identity.
+            Images and videos can be prepared inside the same composer while media upload stays technically separate from publishing. Publishing still requires the exact DeSo transaction to be reviewed and approved through DeSo Identity.
           </p>
           <PostComposer />
         </section>
@@ -52,14 +44,14 @@ export default function SocialPage() {
         <FeedChoice />
         <PublicPosts />
 
-        <section className="mt-8" aria-labelledby="feeds-heading">
-          <h2 id="feeds-heading" className="text-2xl font-semibold">Planned feed lanes</h2>
+        <section className="mt-8" aria-labelledby="future-social-heading">
+          <h2 id="future-social-heading" className="text-2xl font-semibold">Ideas under evaluation</h2>
           <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {feeds.map((feed) => (
-              <article key={feed.title} className="rounded-2xl border border-zinc-800 bg-zinc-950 p-5">
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-green-400">Planned feed</p>
-                <h3 className="mt-2 text-lg font-medium">{feed.title}</h3>
-                <p className="mt-2 text-sm leading-6 text-zinc-400">{feed.text}</p>
+            {futureIdeas.map((idea) => (
+              <article key={idea.title} className="rounded-2xl border border-zinc-800 bg-zinc-950 p-5">
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-green-400">Not released</p>
+                <h3 className="mt-2 text-lg font-medium">{idea.title}</h3>
+                <p className="mt-2 text-sm leading-6 text-zinc-400">{idea.text}</p>
               </article>
             ))}
           </div>
@@ -67,12 +59,12 @@ export default function SocialPage() {
 
         <section className="mt-8 rounded-2xl border border-zinc-800 bg-zinc-950/70 p-5" aria-labelledby="remaining-controls-heading">
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-green-400">Still protected</p>
-          <h2 id="remaining-controls-heading" className="mt-2 text-2xl font-semibold">Release the remaining writes one by one</h2>
+          <h2 id="remaining-controls-heading" className="mt-2 text-2xl font-semibold">Release remaining writes only after DeSo verification</h2>
           <p className="mt-2 max-w-3xl text-sm leading-6 text-zinc-400">
-            Login is not permission for every action. Each remaining DeSo write needs its own validation, abuse protection and explicit transaction/signing path before becoming operational.
+            Login is not permission for every action. A new DeSo write becomes operational only after its exact endpoint, validation, abuse protection and signing path are verified.
           </p>
           <div className="mt-4 flex flex-wrap gap-2" aria-label="Actions reserved for later DeSo controls">
-            {actions.map((action) => (
+            {remainingActions.map((action) => (
               <span key={action} className="rounded-full border border-zinc-800 px-3 py-2 text-xs text-zinc-500">{action} · protected</span>
             ))}
           </div>
