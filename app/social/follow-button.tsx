@@ -9,6 +9,7 @@ type Props = {
 
 type PrepareResponse = { ok?: boolean; transactionHex?: string; feeNanos?: number | null; error?: string }
 type SubmitResponse = { ok?: boolean; error?: string }
+type StatusResponse = { ok?: boolean; following?: boolean; self?: boolean; error?: string }
 
 function signedTransactionFromMessage(event: MessageEvent, source: Window | null) {
   if (event.origin !== DESO_IDENTITY_ORIGIN || event.source !== source) return null
@@ -24,6 +25,7 @@ function signedTransactionFromMessage(event: MessageEvent, source: Window | null
 export default function FollowButton({ followedPublicKey }: Props) {
   const [session, setSession] = useState<ViaIdentitySession | null>(null)
   const [following, setFollowing] = useState(false)
+  const [statusReady, setStatusReady] = useState(false)
   const [busy, setBusy] = useState(false)
   const [message, setMessage] = useState("")
   const popupRef = useRef<Window | null>(null)
@@ -38,6 +40,26 @@ export default function FollowButton({ followedPublicKey }: Props) {
     window.addEventListener(VIA_IDENTITY_EVENT, onIdentity)
     return () => window.removeEventListener(VIA_IDENTITY_EVENT, onIdentity)
   }, [])
+
+  useEffect(() => {
+    let cancelled = false
+    async function loadStatus() {
+      setStatusReady(false)
+      if (!session || session.publicKey === followedPublicKey) return
+      try {
+        const response = await fetch(`/api/via/social/follow?follower=${encodeURIComponent(session.publicKey)}&followed=${encodeURIComponent(followedPublicKey)}`, { cache: "no-store" })
+        const data = await response.json() as StatusResponse
+        if (!cancelled && response.ok && data.ok) {
+          setFollowing(data.following === true)
+          setStatusReady(true)
+        }
+      } catch {
+        if (!cancelled) setMessage("Follow status is temporarily unavailable.")
+      }
+    }
+    void loadStatus()
+    return () => { cancelled = true }
+  }, [session, followedPublicKey])
 
   useEffect(() => {
     const onMessage = async (event: MessageEvent) => {
@@ -56,6 +78,7 @@ export default function FollowButton({ followedPublicKey }: Props) {
         if (!response.ok || !data.ok) throw new Error(data.error || "SUBMIT_FAILED")
         const nextFollowing = !pendingUnfollow.current
         setFollowing(nextFollowing)
+        setStatusReady(true)
         setMessage(nextFollowing ? "Followed on DeSo." : "Unfollowed on DeSo.")
       } catch {
         setMessage("Follow transaction failed. Nothing was changed by VIA.")
@@ -68,7 +91,7 @@ export default function FollowButton({ followedPublicKey }: Props) {
   }, [])
 
   async function toggleFollow() {
-    if (!session || busy || session.publicKey === followedPublicKey) return
+    if (!session || !statusReady || busy || session.publicKey === followedPublicKey) return
     setBusy(true)
     pendingUnfollow.current = following
     setMessage(following ? "Preparing DeSo unfollow transaction…" : "Preparing DeSo follow transaction…")
@@ -107,8 +130,8 @@ export default function FollowButton({ followedPublicKey }: Props) {
 
   return (
     <span className="inline-flex items-center gap-2">
-      <button type="button" onClick={toggleFollow} disabled={busy} className="rounded-full border border-green-900/70 px-3 py-1 text-green-300 hover:border-green-700 disabled:cursor-wait disabled:opacity-60">
-        {busy ? "Waiting…" : following ? "Unfollow" : "Follow"}
+      <button type="button" onClick={toggleFollow} disabled={busy || !statusReady} className="rounded-full border border-green-900/70 px-3 py-1 text-green-300 hover:border-green-700 disabled:cursor-wait disabled:opacity-60">
+        {!statusReady ? "Follow…" : busy ? "Waiting…" : following ? "Unfollow" : "Follow"}
       </button>
       {message ? <span className="sr-only" role="status" aria-live="polite">{message}</span> : null}
     </span>
