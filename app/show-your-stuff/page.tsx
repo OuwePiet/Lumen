@@ -3,19 +3,21 @@ import Link from "next/link"
 const doors = [
   {
     title: "Just look around",
-    text: "Come in without a wallet. Discover public work, creators, music, culture, communities and DeSo activity at your own pace.",
+    text: "Come in without an account or wallet. Discover public work, creators, music, culture, communities and DeSo activity at your own pace.",
     href: "/discover",
     action: "Explore VIA",
     status: "OPEN",
   },
   {
     title: "Show your stuff",
-    text: "A simple showcase route is being prepared for makers who are not ready to use DeSo. It is for showing work and meeting people — not a VIA shop or general marketplace.",
-    status: "PREPARING",
+    text: "Want to present work or take part? Participation opens through DeSo. VIA does not create a second anonymous or email-based creator account beside DeSo.",
+    href: "/social",
+    action: "Continue through DeSo",
+    status: "DESO LOGIN",
   },
   {
-    title: "Join through DeSo",
-    text: "Already on DeSo? VIA keeps the existing DeSo route for public profiles, social participation and the DeSo-native NFT functions as they are safely connected.",
+    title: "Already on DeSo",
+    text: "Use the DeSo side for public profiles and social participation as those write functions are safely connected. DeSo-native NFT functions keep their additional transaction controls.",
     href: "/social",
     action: "Open DeSo side",
     status: "DESO",
@@ -46,7 +48,7 @@ export default function ShowYourStuffPage() {
       <div style={styles.shell}>
         <p style={styles.eyebrow}>VIA · COME IN</p>
         <h1 style={styles.title}>Show your stuff. Meet the world.</h1>
-        <p style={styles.lead}>VIA is the café: a place to discover what people make and do. You do not need to understand blockchain to walk in. DeSo remains the network VIA opens onto when you want to participate there.</p>
+        <p style={styles.lead}>VIA is the café: anyone can walk in and discover what people make and do. Guests stay view-only. When you want to participate, VIA opens the DeSo door.</p>
         <div style={styles.welcome}><strong>The world is welcome. The coffee is ready. ☕</strong><p style={{ ...styles.cardText, marginTop: "7px" }}>Art, photography, music, film, writing, NFTs, heritage, hobbies, communities and things we have not thought of yet all belong at the table.</p></div>
 
         <section style={styles.grid} aria-label="Ways into VIA">
@@ -59,8 +61,8 @@ export default function ShowYourStuffPage() {
           ))}
         </section>
 
-        <div style={styles.boundary}><strong>Clear boundary:</strong> Show Your Stuff is not a general VIA buy/sell system. People may meet here and arrange ordinary trade elsewhere. DeSo-native NFT and blockchain functions keep their existing VIA safety path. VIA never silently creates a wallet, signs, spends, follows, likes or sends a Diamond.</div>
-        <div style={styles.boundary}><strong>Community first:</strong> before public showcase submissions open, VIA will add suitable account control, spam and bot limits, link/media validation, impersonation protection and understandable restrictions for repeated abuse. Reading stays low-friction.</div>
+        <div style={styles.boundary}><strong>Clear boundary:</strong> guests may navigate, search, read, watch and listen, but cannot post, reply, upload, follow, like, send Diamonds, claim a maker space or perform another participation action. Those actions require the controlled DeSo path. Sensitive NFT and financial actions additionally require explicit preflight, consent, signing and verification.</div>
+        <div style={styles.boundary}><strong>Community protection:</strong> a DeSo login is the participation gate, not a trust badge. VIA can still apply spam and bot limits, link/media validation, impersonation protection and proportional restrictions for repeated abuse. Any DeSo balance or purchase requirement remains DeSo's own current rule; VIA does not invent a fixed entry payment.</div>
 
         <nav aria-label="Show Your Stuff navigation" style={styles.nav}>
           <Link href="/" style={styles.link}>Home</Link>
