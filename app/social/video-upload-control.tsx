@@ -6,7 +6,12 @@ import { uploadVideoToDeSo, waitForDeSoVideoReady } from "./deso-video-upload"
 
 const MAX_VIDEO_BYTES = 250 * 1024 * 1024
 
-export default function VideoUploadControl() {
+type VideoUploadControlProps = {
+  onReady?: (videoUrl: string) => void
+  onBusyChange?: (busy: boolean) => void
+}
+
+export default function VideoUploadControl({ onReady, onBusyChange }: VideoUploadControlProps) {
   const [session, setSession] = useState<ViaIdentitySession | null>(null)
   const [status, setStatus] = useState<"idle" | "uploading" | "processing" | "ready" | "error">("idle")
   const [message, setMessage] = useState("")
@@ -19,6 +24,11 @@ export default function VideoUploadControl() {
     window.addEventListener(VIA_IDENTITY_EVENT, onSession)
     return () => window.removeEventListener(VIA_IDENTITY_EVENT, onSession)
   }, [])
+
+  useEffect(() => {
+    onBusyChange?.(status === "uploading" || status === "processing")
+    return () => onBusyChange?.(false)
+  }, [status, onBusyChange])
 
   async function upload(file: File | null) {
     if (!session || !file || status === "uploading" || status === "processing") return
@@ -47,8 +57,11 @@ export default function VideoUploadControl() {
       if (!ready) throw new Error("VIDEO_NOT_READY")
 
       setVideoUrl(result.videoUrl)
+      onReady?.(result.videoUrl)
       setStatus("ready")
-      setMessage("Video is ready. Copy this DeSo video URL into the post composer below. Uploading alone does not publish a post.")
+      setMessage(onReady
+        ? "Video is ready and attached to this post draft. Uploading alone did not publish anything."
+        : "Video is ready. Uploading alone did not publish anything.")
     } catch {
       setStatus("error")
       setMessage("The video could not be prepared for posting. Nothing was published.")
@@ -78,12 +91,7 @@ export default function VideoUploadControl() {
       </label>
 
       {message ? <p className={`mt-2 text-xs ${status === "error" ? "text-amber-300" : "text-zinc-400"}`}>{message}</p> : null}
-      {videoUrl ? (
-        <div className="mt-3 flex flex-col gap-2 sm:flex-row">
-          <input readOnly value={videoUrl} className="min-w-0 flex-1 rounded-lg border border-zinc-800 bg-black/40 px-3 py-2 text-xs text-zinc-300" />
-          <button type="button" onClick={() => void navigator.clipboard.writeText(videoUrl)} className="rounded-lg border border-green-800 px-3 py-2 text-xs font-semibold text-green-300">Copy video URL</button>
-        </div>
-      ) : null}
+      {videoUrl ? <input readOnly value={videoUrl} aria-label="Ready DeSo video URL" className="mt-3 w-full rounded-lg border border-zinc-800 bg-black/40 px-3 py-2 text-xs text-zinc-300" /> : null}
     </div>
   )
 }
