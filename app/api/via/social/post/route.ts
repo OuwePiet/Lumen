@@ -18,6 +18,10 @@ function validHex(value: unknown): value is string {
   return typeof value === "string" && value.length >= 2 && value.length <= 500_000 && value.length % 2 === 0 && /^[0-9a-fA-F]+$/.test(value)
 }
 
+function validPostHash(value: unknown): value is string {
+  return typeof value === "string" && /^[0-9a-fA-F]{64}$/.test(value)
+}
+
 export async function POST(request: Request) {
   let input: unknown
   try {
@@ -36,10 +40,14 @@ export async function POST(request: Request) {
   if (action === "prepare") {
     const publicKey = body.publicKey
     const text = typeof body.body === "string" ? body.body.trim() : ""
+    const parentStakeID = typeof body.parentStakeID === "string" ? body.parentStakeID.trim() : ""
 
     if (!validPublicKey(publicKey)) return noStore({ ok: false, error: "INVALID_PUBLIC_KEY" }, 400)
     if (!text || text.length > MAX_POST_LENGTH || text.includes("\u0000")) {
       return noStore({ ok: false, error: "INVALID_POST_BODY" }, 400)
+    }
+    if (parentStakeID && !validPostHash(parentStakeID)) {
+      return noStore({ ok: false, error: "INVALID_PARENT_POST" }, 400)
     }
 
     const configuredRate = Number(process.env.DESO_MIN_FEE_RATE_NANOS_PER_KB)
@@ -54,7 +62,7 @@ export async function POST(request: Request) {
         body: JSON.stringify({
           UpdaterPublicKeyBase58Check: publicKey,
           PostHashHexToModify: "",
-          ParentStakeID: "",
+          ParentStakeID: parentStakeID,
           RepostedPostHashHex: "",
           Title: "",
           BodyObj: { Body: text, ImageURLs: [], VideoURLs: [] },

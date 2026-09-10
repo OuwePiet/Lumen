@@ -2,6 +2,8 @@
 
 import { FormEvent, useEffect, useMemo, useState } from "react"
 import { ChoiceId, VIA_SOCIAL_FEED_EVENT, VIA_SOCIAL_FEED_STORAGE_KEY } from "./feed-choice"
+import PostComposer from "./post-composer"
+import { restoreIdentitySession, VIA_IDENTITY_EVENT, type ViaIdentitySession } from "../deso-identity-session"
 
 type PublicPost = {
   postHash: string
@@ -46,6 +48,19 @@ export default function PublicPosts() {
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState("Public DeSo posts are read-only in VIA.")
   const [feedChoice, setFeedChoice] = useState<ChoiceId>("following")
+  const [session, setSession] = useState<ViaIdentitySession | null>(null)
+  const [replyingTo, setReplyingTo] = useState<string | null>(null)
+
+  useEffect(() => {
+    setSession(restoreIdentitySession())
+    const onIdentity = (event: Event) => {
+      const custom = event as CustomEvent<ViaIdentitySession | null>
+      setSession(custom.detail ?? restoreIdentitySession())
+      if (!custom.detail && !restoreIdentitySession()) setReplyingTo(null)
+    }
+    window.addEventListener(VIA_IDENTITY_EVENT, onIdentity)
+    return () => window.removeEventListener(VIA_IDENTITY_EVENT, onIdentity)
+  }, [])
 
   useEffect(() => {
     try {
@@ -58,6 +73,7 @@ export default function PublicPosts() {
         setFeedChoice(choice)
         setPosts([])
         setLoading(false)
+        setReplyingTo(null)
         setMessage(feedReadyMessage(choice))
       }
     }
@@ -70,8 +86,8 @@ export default function PublicPosts() {
     return [...posts].sort((a, b) => b.timestampNanos - a.timestampNanos)
   }, [feedChoice, posts])
 
-  async function loadPosts(event: FormEvent) {
-    event.preventDefault()
+  async function loadPosts(event?: FormEvent) {
+    event?.preventDefault()
     const value = identity.trim().replace(/^@/, "")
     if (feedChoice !== "discovery" && !value) {
       setPosts([])
@@ -110,7 +126,7 @@ export default function PublicPosts() {
     <section className="mt-8 rounded-[14px] border border-zinc-800/80 bg-zinc-950/55 p-5" aria-labelledby="public-posts-heading">
       <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#8fd4a9]">Live public read</p>
       <h2 id="public-posts-heading" className="mt-2 text-2xl font-semibold text-zinc-100">Public DeSo posts</h2>
-      <p className="mt-2 max-w-3xl text-sm leading-6 text-zinc-400">Read public posts without connecting a wallet. Following uses the entered identity&apos;s public follow graph; entering a username does not sign you in or prove account ownership. Discovery uses DeSo&apos;s public experimental hot-feed ranking as an exploration source, not as a trust or quality signal. VIA does not like, repost, Diamond, follow or publish from this view.</p>
+      <p className="mt-2 max-w-3xl text-sm leading-6 text-zinc-400">Read public posts without connecting a wallet. Following uses the entered identity&apos;s public follow graph; entering a username does not sign you in or prove account ownership. Discovery uses DeSo&apos;s public experimental hot-feed ranking as an exploration source, not as a trust or quality signal. Logged-in DeSo users may now reply through the same approval-controlled transaction flow; like, repost, Diamond and follow remain protected.</p>
       <div className="mt-3 inline-flex rounded-[10px] border border-zinc-800/80 bg-black/30 px-3 py-1.5 text-xs text-zinc-400">
         {feedChoice === "following" ? "Following active · public read only" : feedChoice === "recent" ? "Recent active · newest loaded post first" : "Discovery active · experimental public DeSo ranking"}
       </div>
@@ -123,12 +139,14 @@ export default function PublicPosts() {
         const images = post.imageUrls.map(safeHttps).filter((url): url is string => Boolean(url)).slice(0, 4)
         const videos = post.videoUrls.map(safeHttps).filter((url): url is string => Boolean(url)).slice(0, 2)
         const time = postTime(post.timestampNanos)
+        const isReplying = replyingTo === post.postHash
         return <article key={post.postHash} className="rounded-[12px] border border-zinc-800/80 bg-black/30 p-4">
           {time ? <p className="mb-2 text-xs text-zinc-600">{time}</p> : null}
           {post.body ? <p className="whitespace-pre-wrap text-sm leading-6 text-zinc-200">{post.body}</p> : <p className="text-sm text-zinc-500">Media post</p>}
           {images.length ? <div className="mt-4 grid gap-2 sm:grid-cols-2">{images.map((url, index) => <img key={`${post.postHash}-image-${index}`} src={url} alt="Public media attached to this DeSo post" loading="lazy" decoding="async" referrerPolicy="no-referrer" className="max-h-[32rem] w-full rounded-[12px] border border-zinc-800/80 bg-zinc-950/70 object-contain" />)}</div> : null}
           {videos.length ? <div className="mt-4 space-y-2">{videos.map((url, index) => <video key={`${post.postHash}-video-${index}`} src={url} controls preload="none" playsInline controlsList="nodownload" disablePictureInPicture className="max-h-[32rem] w-full rounded-[12px] border border-zinc-800/80 bg-zinc-950/70">Your browser cannot play this public video.</video>)}</div> : null}
-          <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-zinc-500"><span>{post.likeCount} likes</span><span>{post.diamondCount} Diamonds</span><span>{post.commentCount} replies</span><span>{post.repostCount + post.quoteRepostCount} reposts</span>{post.isNft ? <span className="text-[#8fd4a9]">NFT</span> : null}</div>
+          <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-zinc-500"><span>{post.likeCount} likes</span><span>{post.diamondCount} Diamonds</span><span>{post.commentCount} replies</span><span>{post.repostCount + post.quoteRepostCount} reposts</span>{post.isNft ? <span className="text-[#8fd4a9]">NFT</span> : null}{session ? <button type="button" onClick={() => setReplyingTo(isReplying ? null : post.postHash)} className="rounded-full border border-green-900/70 px-3 py-1 text-green-300 hover:border-green-700">{isReplying ? "Close reply" : "Reply"}</button> : <span className="text-zinc-600">Reply · DeSo login</span>}</div>
+          {session && isReplying ? <PostComposer parentStakeID={post.postHash} compact onDone={() => { setReplyingTo(null); void loadPosts() }} /> : null}
         </article>
       })}</div> : null}
     </section>
