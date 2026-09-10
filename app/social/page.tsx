@@ -1,8 +1,6 @@
 import Link from "next/link"
-import SaveButton from "../saved/save-button"
 import FeedChoice from "./feed-choice"
 import PublicPosts from "./public-posts"
-import SocialDraft from "./social-draft"
 
 const feeds = [
   { title: "Hot", text: "A future view for active public DeSo conversations. Ranking logic must stay explainable and must not be sold as organic placement." },
@@ -17,10 +15,9 @@ const actions = [
   "Add photo or video",
   "Embed video",
   "Create a poll",
-  "Use emoji",
-  "Save a draft",
   "Reply / quote / repost",
   "Like / Diamond",
+  "Follow / unfollow",
 ]
 
 export default function SocialPage() {
@@ -30,21 +27,18 @@ export default function SocialPage() {
         <header className="mb-8 flex flex-wrap items-start justify-between gap-4">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.25em] text-green-400">VIA · DeSo Social</p>
-            <h1 className="mt-2 text-3xl font-semibold sm:text-4xl">Social without one compulsory feed</h1>
+            <h1 className="mt-2 text-3xl font-semibold sm:text-4xl">Look around freely. Participate through DeSo.</h1>
             <p className="mt-3 max-w-3xl text-sm leading-6 text-zinc-400 sm:text-base">
-              VIA keeps the DeSo social layer as a core track, but the visitor chooses how to enter it. Public posts can now be read here; publishing, signing, follow, like, repost and Diamonds remain outside this read-only boundary.
+              Guests can read public DeSo posts and move through the public VIA pages. Posting, saving drafts, follow, like, repost, Diamonds and other community actions stay unavailable until the authenticated DeSo participation path is active.
             </p>
           </div>
-          <div className="flex flex-wrap gap-2">
-            <SaveButton title="VIA Social" href="/social" kind="Social" />
-            <Link href="/my-via" className="rounded-full border border-zinc-700 px-4 py-2 text-sm text-zinc-200 hover:border-green-500 hover:text-green-300">My VIA</Link>
-          </div>
+          <Link href="/show-your-stuff" className="rounded-full border border-zinc-700 px-4 py-2 text-sm text-zinc-200 hover:border-green-500 hover:text-green-300">How participation works</Link>
         </header>
 
         <section className="mb-7 rounded-2xl border border-green-900/60 bg-zinc-950 p-5">
-          <h2 className="text-lg font-medium text-green-300">Visitor control first</h2>
+          <h2 className="text-lg font-medium text-green-300">Guest mode · view only</h2>
           <p className="mt-2 text-sm leading-6 text-zinc-400">
-            Hot, Following, Recent, Welcome and First Posts remain separate choices. VIA should make ranking and paid placement understandable, keep Sponsored distinct from organic social content and avoid silent profile-based feed changes.
+            You may browse public feeds and change how this page is viewed. Those controls do not post, follow, like, save community state or perform a blockchain action. Taking part requires DeSo authentication first.
           </p>
         </section>
 
@@ -64,25 +58,23 @@ export default function SocialPage() {
           </div>
         </section>
 
-        <SocialDraft />
-
         <section className="mt-8 rounded-2xl border border-zinc-800 bg-zinc-950/70 p-5" aria-labelledby="composer-heading">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-green-400">Composer track</p>
-          <h2 id="composer-heading" className="mt-2 text-2xl font-semibold">Publish only when the wallet boundary is ready</h2>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-green-400">Participation gate</p>
+          <h2 id="composer-heading" className="mt-2 text-2xl font-semibold">DeSo login comes before community controls</h2>
           <p className="mt-2 max-w-3xl text-sm leading-6 text-zinc-400">
-            Local drafting is available above. Publishing remains a future DeSo write surface: every blockchain write must show the action clearly and require the correct wallet proof/signing flow. VIA will not silently sign on behalf of a visitor.
+            VIA does not show guest participation controls as usable features. After a verified DeSo login is implemented, the appropriate controls can be released there. Financial and blockchain actions still require their separate preflight, consent and signing steps.
           </p>
-          <div className="mt-4 flex flex-wrap gap-2">
+          <div className="mt-4 flex flex-wrap gap-2" aria-label="Actions reserved for DeSo participants">
             {actions.map((action) => (
-              <span key={action} className="rounded-full border border-zinc-700 px-3 py-2 text-xs text-zinc-300">{action}</span>
+              <span key={action} className="rounded-full border border-zinc-800 px-3 py-2 text-xs text-zinc-500">{action} · DeSo</span>
             ))}
           </div>
         </section>
 
         <section className="mt-8 grid gap-4 sm:grid-cols-2">
           <article className="rounded-2xl border border-zinc-800 bg-zinc-950 p-5">
-            <h2 className="text-lg font-medium">Community actions</h2>
-            <p className="mt-2 text-sm leading-6 text-zinc-400">Replies, quotes, reposts, likes, Diamonds, follow/unfollow and notifications belong here once current DeSo write/read flows are verified and tested.</p>
+            <h2 className="text-lg font-medium">Community boundary</h2>
+            <p className="mt-2 text-sm leading-6 text-zinc-400">Guests observe. Authenticated DeSo users participate. This keeps VIA from becoming a second uncontrolled account and posting system.</p>
           </article>
           <article className="rounded-2xl border border-zinc-800 bg-zinc-950 p-5">
             <h2 className="text-lg font-medium">Safety boundary</h2>
