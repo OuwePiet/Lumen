@@ -13,6 +13,7 @@ const creatorWindows = [
 ]
 
 const sections = [
+  { title: "Show Your Stuff", text: "Start at VIA's open front door: look around without a wallet, see how the future showcase route fits, or continue into the existing DeSo side.", href: "/show-your-stuff", action: "Come In", status: "NEW" },
   { title: "Around the World", text: "Travel through VIA's safe global layer using public context only. Start with world regions and public radio shortcuts without guessing where DeSo creators live.", href: "/discover/world", action: "Explore the World", status: "LIVE" },
   { title: "New Voices", text: "Open a public DeSo creator through a user-directed, read-only route. VIA does not call accounts new, verified, or organically ranked without suitable public evidence.", href: "/discover/voices", action: "Open New Voices", status: "LIVE" },
   { title: "NFT Window", text: "Open VIA's public DeSo NFT collection browser. Search a creator account and inspect NFTs without signing or spending.", href: "/?account=OuwePiet#collection-controls", action: "Open NFT Window", status: "LIVE" },
@@ -51,7 +52,7 @@ export default function DiscoverPage() {
         <div style={styles.welcome}><strong>The world is welcome. The coffee is ready. ☕</strong><p style={{ ...styles.cardText, marginTop: "7px" }}>Small or established, local or international, beginner or professional: VIA is meant to open doors, not decide who is important before they arrive.</p></div>
 
         <nav aria-label="Discovery navigation" style={styles.nav}>
-          <Link href="/" style={styles.link}>Home</Link><Link href="/quest" style={styles.link}>World Quest</Link><Link href="/radio" style={styles.link}>World Radio</Link><Link href="/live" style={styles.link}>VIA LIVE</Link><Link href="/saved" style={styles.link}>Saved</Link>
+          <Link href="/" style={styles.link}>Home</Link><Link href="/show-your-stuff" style={styles.link}>Show Your Stuff</Link><Link href="/quest" style={styles.link}>World Quest</Link><Link href="/radio" style={styles.link}>World Radio</Link><Link href="/live" style={styles.link}>VIA LIVE</Link><Link href="/saved" style={styles.link}>Saved</Link>
         </nav>
 
         <h2 style={styles.sectionTitle}>A daily creator newspaper</h2>
