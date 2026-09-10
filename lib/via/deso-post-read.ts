@@ -13,6 +13,7 @@ export type ViaPublicPost = {
   repostCount: number
   quoteRepostCount: number
   isNft: boolean
+  postExtraData: Record<string, string>
 }
 
 type DeSoPost = {
@@ -29,6 +30,7 @@ type DeSoPost = {
   QuoteRepostCount?: unknown
   IsNFT?: unknown
   IsHidden?: unknown
+  PostExtraData?: unknown
 }
 
 type DeSoPostsResponse = {
@@ -51,10 +53,20 @@ function safeHttpsUrls(value: unknown) {
     .slice(0, 8)
 }
 
+function safePostExtraData(value: unknown) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return {}
+  const entries = Object.entries(value as Record<string, unknown>)
+    .filter(([key, item]) => key.length > 0 && key.length <= 128 && typeof item === "string" && item.length <= 10_000)
+    .slice(0, 64) as Array<[string, string]>
+  return Object.fromEntries(entries)
+}
+
 /**
  * Reads public posts for one DeSo identity. The backend endpoint uses POST as
  * a query transport, but this function has read-only effect: it never builds,
  * signs or broadcasts a transaction and never requests wallet authority.
+ * PostExtraData is preserved as bounded string metadata so later DeSo-native
+ * features can inspect it without inventing or mutating a VIA-only format.
  */
 export async function readPublicPosts(
   usernameOrPublicKey: string,
@@ -104,6 +116,7 @@ export async function readPublicPosts(
       repostCount: count(post.RepostCount),
       quoteRepostCount: count(post.QuoteRepostCount),
       isNft: post.IsNFT === true,
+      postExtraData: safePostExtraData(post.PostExtraData),
     }))
     .filter((post) => Boolean(post.postHash))
 }

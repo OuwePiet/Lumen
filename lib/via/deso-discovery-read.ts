@@ -15,6 +15,7 @@ type DeSoPost = {
   QuoteRepostCount?: unknown
   IsNFT?: unknown
   IsHidden?: unknown
+  PostExtraData?: unknown
 }
 
 type HotFeedResponse = { HotFeedPage?: unknown }
@@ -32,6 +33,14 @@ function safeHttpsUrls(value: unknown) {
   return value
     .filter((item): item is string => typeof item === "string" && /^https:\/\//i.test(item))
     .slice(0, 8)
+}
+
+function safePostExtraData(value: unknown) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return {}
+  const entries = Object.entries(value as Record<string, unknown>)
+    .filter(([key, item]) => key.length > 0 && key.length <= 128 && typeof item === "string" && item.length <= 10_000)
+    .slice(0, 64) as Array<[string, string]>
+  return Object.fromEntries(entries)
 }
 
 /**
@@ -75,6 +84,7 @@ export async function readDiscoveryPosts(limit = 20): Promise<ViaPublicPost[]> {
       repostCount: count(post.RepostCount),
       quoteRepostCount: count(post.QuoteRepostCount),
       isNft: post.IsNFT === true,
+      postExtraData: safePostExtraData(post.PostExtraData),
     }))
     .filter((post) => Boolean(post.postHash))
 }
