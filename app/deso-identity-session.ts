@@ -31,15 +31,17 @@ export type ViaIdentitySession = {
   signedUp: boolean
 }
 
+export type ViaIdentityCredentials = {
+  encryptedSeedHex: string
+  accessLevel: number
+  accessLevelHmac: string
+}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value)
 }
 
-function isUsableCredentials(value: unknown): value is DeSoIdentityCredentials & {
-  encryptedSeedHex: string
-  accessLevel: number
-  accessLevelHmac: string
-} {
+function isUsableCredentials(value: unknown): value is DeSoIdentityCredentials & ViaIdentityCredentials {
   if (!isRecord(value)) return false
   const accessLevel = value.accessLevel
   return (
@@ -87,6 +89,24 @@ export function persistIdentityLogin(event: MessageEvent): ViaIdentitySession | 
   localStorage.setItem(VIA_ACTIVE_PUBLIC_KEY, session.publicKey)
   window.dispatchEvent(new CustomEvent(VIA_IDENTITY_EVENT, { detail: session }))
   return session
+}
+
+export function getIdentityCredentials(publicKey: string): ViaIdentityCredentials | null {
+  try {
+    const rawUsers = localStorage.getItem(IDENTITY_USERS_KEY)
+    if (!rawUsers) return null
+    const users: unknown = JSON.parse(rawUsers)
+    if (!isRecord(users)) return null
+    const credentials = users[publicKey]
+    if (!isUsableCredentials(credentials)) return null
+    return {
+      encryptedSeedHex: credentials.encryptedSeedHex,
+      accessLevel: credentials.accessLevel,
+      accessLevelHmac: credentials.accessLevelHmac,
+    }
+  } catch {
+    return null
+  }
 }
 
 export function restoreIdentitySession(): ViaIdentitySession | null {
