@@ -3,6 +3,7 @@ import FeedChoice from "./feed-choice"
 import PublicPosts from "./public-posts"
 import ParticipationGate from "../participation-gate"
 import PostComposer from "./post-composer"
+import VideoUploadControl from "./video-upload-control"
 
 const feeds = [
   { title: "Hot", text: "A future view for active public DeSo conversations. Ranking logic must stay explainable and must not be sold as organic placement." },
@@ -13,7 +14,6 @@ const feeds = [
 ]
 
 const actions = [
-  "Add photo or video",
   "Embed video",
   "Create a poll",
   "Quote / repost",
@@ -30,7 +30,7 @@ export default function SocialPage() {
             <p className="text-sm font-semibold uppercase tracking-[0.25em] text-green-400">VIA · DeSo Social</p>
             <h1 className="mt-2 text-3xl font-semibold sm:text-4xl">Look around freely. Participate through DeSo.</h1>
             <p className="mt-3 max-w-3xl text-sm leading-6 text-zinc-400 sm:text-base">
-              Guests can read public DeSo posts and move through the public VIA pages. Plain-text posting, direct replies and Likes are now available after DeSo login and explicit DeSo Identity approval. Other actions remain closed until they receive their own safe path.
+              Guests can read public DeSo posts and move through the public VIA pages. Posting, direct replies, Likes, images and controlled video upload are available after DeSo login through their own guarded paths. Other actions remain closed until they receive the same treatment.
             </p>
           </div>
           <Link href="/show-your-stuff" className="rounded-full border border-zinc-700 px-4 py-2 text-sm text-zinc-200 hover:border-green-500 hover:text-green-300">How participation works</Link>
@@ -43,10 +43,11 @@ export default function SocialPage() {
 
         <section className="mt-6 rounded-2xl border border-zinc-800 bg-zinc-950/70 p-5" aria-labelledby="composer-heading">
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-green-400">Released participation controls</p>
-          <h2 id="composer-heading" className="mt-2 text-2xl font-semibold">Post, reply and like through DeSo</h2>
+          <h2 id="composer-heading" className="mt-2 text-2xl font-semibold">Post, reply and add media through DeSo</h2>
           <p className="mt-2 max-w-3xl text-sm leading-6 text-zinc-400">
-            VIA prepares the exact DeSo transaction, shows the network fee returned by the construction response when available, and sends that exact transaction to DeSo Identity for approval. VIA submits only the signed result returned from the official Identity window. Replies and Likes use the same approval-controlled boundary.
+            VIA keeps media upload separate from publishing. Images and videos are prepared through DeSo-compatible media paths first. Publishing still requires the exact DeSo transaction to be reviewed and approved through DeSo Identity.
           </p>
+          <VideoUploadControl />
           <PostComposer />
         </section>
 
