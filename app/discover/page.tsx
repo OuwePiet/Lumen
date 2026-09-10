@@ -13,7 +13,7 @@ const creatorWindows = [
 ]
 
 const sections = [
-  { title: "Show Your Stuff", text: "Start at VIA's open front door: look around without a wallet, see how the future showcase route fits, or continue into the existing DeSo side.", href: "/show-your-stuff", action: "Come In", status: "NEW" },
+  { title: "Show Your Stuff", text: "Anyone can look around. Presenting work or taking part opens through the controlled DeSo participation route; VIA does not create a second anonymous creator account.", href: "/show-your-stuff", action: "Come In", status: "DESO TO JOIN" },
   { title: "Around the World", text: "Travel through VIA's safe global layer using public context only. Start with world regions and public radio shortcuts without guessing where DeSo creators live.", href: "/discover/world", action: "Explore the World", status: "LIVE" },
   { title: "New Voices", text: "Open a public DeSo creator through a user-directed, read-only route. VIA does not call accounts new, verified, or organically ranked without suitable public evidence.", href: "/discover/voices", action: "Open New Voices", status: "LIVE" },
   { title: "NFT Window", text: "Open VIA's public DeSo NFT collection browser. Search a creator account and inspect NFTs without signing or spending.", href: "/?account=OuwePiet#collection-controls", action: "Open NFT Window", status: "LIVE" },
@@ -56,7 +56,7 @@ export default function DiscoverPage() {
         </nav>
 
         <h2 style={styles.sectionTitle}>A daily creator newspaper</h2>
-        <p style={styles.sectionLead}>Not every visitor has to buy something. Browse, read, watch, listen, learn, follow a maker or discover work you would otherwise never meet.</p>
+        <p style={styles.sectionLead}>Not every visitor has to buy something. Guests can browse, read, watch, listen and discover freely. Posting, following and other public participation opens through DeSo.</p>
         <section style={styles.grid} aria-label="Creator windows">
           {creatorWindows.map((window) => <article key={window.title} style={styles.card}><h3 style={styles.cardTitle}>{window.title}</h3><p style={styles.cardText}>{window.text}</p></article>)}
         </section>
@@ -72,7 +72,7 @@ export default function DiscoverPage() {
           ))}
         </section>
 
-        <div style={{ ...styles.safety, marginTop: "22px" }}>Discovery is not authority: opening these routes never proves identity or location and never silently signs, spends, follows, likes, transfers assets, or sends Diamonds. Saving a route is explicit and stays in this browser.</div>
+        <div style={{ ...styles.safety, marginTop: "22px" }}>Guest discovery is view-only for VIA/DeSo/community state: navigation, public search, reading, watching and listening stay open. DeSo login is required before participation. A login is not a trust badge; VIA can still restrict spam, bots, impersonation and malicious links. Sensitive financial/blockchain actions keep their additional consent and signing boundary.</div>
 
         <section style={styles.radio}>
           <h2 style={styles.cardTitle}>World Radio · public world layer</h2>
