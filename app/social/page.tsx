@@ -2,6 +2,7 @@ import Link from "next/link"
 import FeedChoice from "./feed-choice"
 import PublicPosts from "./public-posts"
 import ParticipationGate from "../participation-gate"
+import PostComposer from "./post-composer"
 
 const feeds = [
   { title: "Hot", text: "A future view for active public DeSo conversations. Ranking logic must stay explainable and must not be sold as organic placement." },
@@ -12,7 +13,6 @@ const feeds = [
 ]
 
 const actions = [
-  "Post text",
   "Add photo or video",
   "Embed video",
   "Create a poll",
@@ -30,7 +30,7 @@ export default function SocialPage() {
             <p className="text-sm font-semibold uppercase tracking-[0.25em] text-green-400">VIA · DeSo Social</p>
             <h1 className="mt-2 text-3xl font-semibold sm:text-4xl">Look around freely. Participate through DeSo.</h1>
             <p className="mt-3 max-w-3xl text-sm leading-6 text-zinc-400 sm:text-base">
-              Guests can read public DeSo posts and move through the public VIA pages. Posting, follow, like, repost, Diamonds and other community actions stay behind the authenticated DeSo participation path.
+              Guests can read public DeSo posts and move through the public VIA pages. The first controlled write action is now plain-text posting after DeSo login and explicit DeSo Identity approval. Other actions remain closed until they receive their own safe path.
             </p>
           </div>
           <Link href="/show-your-stuff" className="rounded-full border border-zinc-700 px-4 py-2 text-sm text-zinc-200 hover:border-green-500 hover:text-green-300">How participation works</Link>
@@ -40,6 +40,15 @@ export default function SocialPage() {
           title="Guest mode · view only"
           text="Public feeds stay open. When you want to take part, continue through DeSo Identity; VIA changes participation state only after a valid Identity login response is received."
         />
+
+        <section className="mt-6 rounded-2xl border border-zinc-800 bg-zinc-950/70 p-5" aria-labelledby="composer-heading">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-green-400">Released participation control</p>
+          <h2 id="composer-heading" className="mt-2 text-2xl font-semibold">Post text to DeSo</h2>
+          <p className="mt-2 max-w-3xl text-sm leading-6 text-zinc-400">
+            VIA prepares the exact DeSo transaction, shows the network fee returned by the construction response when available, and sends that exact transaction to DeSo Identity for approval. VIA submits only the signed result returned from the official Identity window.
+          </p>
+          <PostComposer />
+        </section>
 
         <FeedChoice />
         <PublicPosts />
@@ -57,15 +66,15 @@ export default function SocialPage() {
           </div>
         </section>
 
-        <section className="mt-8 rounded-2xl border border-zinc-800 bg-zinc-950/70 p-5" aria-labelledby="composer-heading">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-green-400">Participation controls</p>
-          <h2 id="composer-heading" className="mt-2 text-2xl font-semibold">Login first; release write actions one by one</h2>
+        <section className="mt-8 rounded-2xl border border-zinc-800 bg-zinc-950/70 p-5" aria-labelledby="remaining-controls-heading">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-green-400">Still protected</p>
+          <h2 id="remaining-controls-heading" className="mt-2 text-2xl font-semibold">Release the remaining writes one by one</h2>
           <p className="mt-2 max-w-3xl text-sm leading-6 text-zinc-400">
-            A successful DeSo Identity session is now recognizable by VIA. The controls below remain non-operational until each matching DeSo write action is implemented with validation and abuse protection. Financial and blockchain actions still require their separate preflight, consent and signing steps.
+            Login is not permission for every action. Each remaining DeSo write needs its own validation, abuse protection and explicit transaction/signing path before becoming operational.
           </p>
-          <div className="mt-4 flex flex-wrap gap-2" aria-label="Actions reserved for DeSo participants">
+          <div className="mt-4 flex flex-wrap gap-2" aria-label="Actions reserved for later DeSo controls">
             {actions.map((action) => (
-              <span key={action} className="rounded-full border border-zinc-800 px-3 py-2 text-xs text-zinc-500">{action} · DeSo</span>
+              <span key={action} className="rounded-full border border-zinc-800 px-3 py-2 text-xs text-zinc-500">{action} · protected</span>
             ))}
           </div>
         </section>
