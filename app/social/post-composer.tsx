@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react"
 import { DESO_IDENTITY_ORIGIN, restoreIdentitySession, VIA_IDENTITY_EVENT, type ViaIdentitySession } from "../deso-identity-session"
 import { requestIdentityJwt } from "./identity-jwt"
+import VideoUploadControl from "./video-upload-control"
 
 const MAX_POST_LENGTH = 5000
 const MAX_IMAGES = 4
@@ -44,6 +45,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
   const [feeNanos, setFeeNanos] = useState<number | null>(null)
   const [imageUploadStatus, setImageUploadStatus] = useState<"idle" | "jwt" | "uploading" | "error">("idle")
   const [imageUploadMessage, setImageUploadMessage] = useState("")
+  const [videoUploading, setVideoUploading] = useState(false)
   const popupRef = useRef<Window | null>(null)
   const isReply = Boolean(parentStakeID)
 
@@ -77,6 +79,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
         setFeeNanos(null)
         setImageUploadStatus("idle")
         setImageUploadMessage("")
+        setVideoUploading(false)
         onDone?.()
       } catch {
         setStatus("error")
@@ -95,7 +98,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
   const hasContent = Boolean(body.trim() || imageUrls.length || videoUrls.length)
   const busy = status === "preparing" || status === "awaiting-approval" || status === "submitting"
   const imageUploading = imageUploadStatus === "jwt" || imageUploadStatus === "uploading"
-  const canPrepare = Boolean(session && hasContent && body.length <= MAX_POST_LENGTH && !mediaInvalid && !busy && !imageUploading)
+  const canPrepare = Boolean(session && hasContent && body.length <= MAX_POST_LENGTH && !mediaInvalid && !busy && !imageUploading && !videoUploading)
   const remaining = MAX_POST_LENGTH - body.length
   const feeLabel = useMemo(() => feeNanos === null ? null : `${feeNanos.toLocaleString()} nanos network fee in the prepared transaction`, [feeNanos])
 
@@ -215,8 +218,14 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
 
         <div className="mt-3 space-y-2">{imageInputs.map((value, index) => <input key={index} value={value} onChange={(event) => changeImage(index, event.target.value)} placeholder={`Image HTTPS URL ${index + 1}`} className="w-full rounded-lg border border-zinc-800 bg-black/40 px-3 py-2 text-sm text-zinc-200 outline-none focus:border-green-700" />)}</div>
         {imageInputs.length < MAX_IMAGES ? <button type="button" onClick={() => setImageInputs((current) => [...current, ""])} className="mt-2 text-xs text-green-300">+ Add image URL</button> : null}
-        <input value={videoInput} onChange={(event) => setVideoInput(event.target.value)} placeholder="Video HTTPS URL (optional)" className="mt-3 w-full rounded-lg border border-zinc-800 bg-black/40 px-3 py-2 text-sm text-zinc-200 outline-none focus:border-green-700" />
-        <p className="mt-1 text-xs text-zinc-600">Direct video upload remains separate because DeSo uses a different tokenized tus upload flow.</p>
+
+        <div className="mt-5 border-t border-zinc-800 pt-4">
+          <p className="text-sm font-medium text-zinc-200">Video</p>
+          <p className="mt-1 text-xs leading-5 text-zinc-500">Upload one video through DeSo&apos;s tokenized tus flow. VIA waits until the stream is ready and then attaches its HTTPS URL to this draft automatically.</p>
+          <VideoUploadControl onReady={setVideoInput} onBusyChange={setVideoUploading} />
+          <input value={videoInput} onChange={(event) => setVideoInput(event.target.value)} placeholder="Ready DeSo video HTTPS URL (optional)" className="mt-3 w-full rounded-lg border border-zinc-800 bg-black/40 px-3 py-2 text-sm text-zinc-200 outline-none focus:border-green-700" />
+          <p className="mt-1 text-xs text-zinc-600">Uploading or processing a video temporarily disables post preparation. The post itself still requires DeSo Identity approval.</p>
+        </div>
         {mediaInvalid ? <p className="mt-2 text-xs text-amber-300">Media links must be valid HTTPS URLs without embedded credentials.</p> : null}
       </div> : null}
 
