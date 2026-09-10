@@ -17,6 +17,39 @@ function validHex(value: unknown): value is string {
   return typeof value === "string" && value.length >= 2 && value.length <= 500_000 && value.length % 2 === 0 && /^[0-9a-fA-F]+$/.test(value)
 }
 
+export async function GET(request: Request) {
+  const url = new URL(request.url)
+  const followerPublicKey = url.searchParams.get("follower")
+  const followedPublicKey = url.searchParams.get("followed")
+
+  if (!validPublicKey(followerPublicKey)) return noStore({ ok: false, error: "INVALID_FOLLOWER_PUBLIC_KEY" }, 400)
+  if (!validPublicKey(followedPublicKey)) return noStore({ ok: false, error: "INVALID_FOLLOWED_PUBLIC_KEY" }, 400)
+  if (followerPublicKey === followedPublicKey) return noStore({ ok: true, following: false, self: true })
+
+  try {
+    const response = await fetchDeSo("get-users-stateless", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", accept: "application/json" },
+      body: JSON.stringify({
+        PublicKeysBase58Check: [followerPublicKey],
+        SkipForLeaderboard: false,
+        IncludeBalance: false,
+        GetUnminedBalance: false,
+      }),
+    })
+    if (!response.ok) return noStore({ ok: false, error: "DESO_STATUS_REJECTED" }, 502)
+    const data = await response.json() as Record<string, unknown>
+    const userList = Array.isArray(data.UserList) ? data.UserList : []
+    const user = userList[0]
+    const followedKeys = user && typeof user === "object" && Array.isArray((user as Record<string, unknown>).PublicKeysBase58CheckFollowedByUser)
+      ? ((user as Record<string, unknown>).PublicKeysBase58CheckFollowedByUser as unknown[]).filter((value): value is string => typeof value === "string")
+      : []
+    return noStore({ ok: true, following: followedKeys.includes(followedPublicKey) })
+  } catch {
+    return noStore({ ok: false, error: "DESO_STATUS_UNAVAILABLE" }, 503)
+  }
+}
+
 export async function POST(request: Request) {
   let input: unknown
   try { input = await request.json() } catch { return noStore({ ok: false, error: "INVALID_JSON" }, 400) }
