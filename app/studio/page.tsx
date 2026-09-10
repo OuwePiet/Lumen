@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
 import StudioDraft from "./studio-draft"
+import MintPreflight from "./mint-preflight"
 
 export const metadata: Metadata = {
   title: "Studio",
@@ -29,6 +30,7 @@ export default function StudioPage() {
         </header>
 
         <StudioDraft />
+        <MintPreflight />
 
         <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4" aria-label="Studio tools">
           {tools.map((tool) => (
