@@ -2,37 +2,39 @@
 
 ## Position
 
-VIA is an open international meeting place attached to the DeSo ecosystem. The useful mental model is a busy café: people may walk in, look around, discover work, listen, read and meet creators without first becoming blockchain users.
+VIA is an open international meeting place attached to the DeSo ecosystem. The useful mental model is a busy café: people may walk in, look around, discover work, listen and read without first becoming blockchain users.
 
-VIA is not intended to become a general shop or a replacement marketplace for friends and applications in the DeSo ecosystem.
+VIA is not intended to become a general shop, a second social identity system, or a replacement marketplace for friends and applications in the DeSo ecosystem.
 
 ## Door 1 — Visit VIA
 
-Public discovery stays open where the underlying information is public. A visitor can browse public creator work, public DeSo content, cultural windows, radio and discovery surfaces without a VIA wallet or an automatic blockchain account.
+Public discovery stays open where the underlying information is public. A guest can navigate VIA's public pages and browse, search, read, watch and listen to public creator work, public DeSo content, cultural windows, radio and discovery surfaces.
 
-Reading must never silently create an account, wallet, derived key, follow, like, Diamond, purchase or transaction.
+**Guest means view-only.** A guest has no VIA participation authority. Guest access must not create or change public/community state and must not expose participation controls as if they were available.
 
-## Door 2 — Show Your Stuff
+Actions such as posting, replying, reposting, following, liking, sending Diamonds, uploading community content, claiming creator presentation, minting, bidding, buying, selling, transferring, burning, changing prices or other write/financial/blockchain actions require the appropriate authenticated DeSo path first.
 
-A maker who is not ready to use DeSo should eventually be able to present eligible work through a simple VIA participation route. This is a showcase and meeting function, not a general VIA commerce account.
+A navigation control that merely opens another public VIA page is allowed for guests. A purely local browser convenience may be allowed only when it cannot be confused with community participation and creates no server, VIA, DeSo or blockchain state.
 
-The intended message is simple: **I made something. Let me show it.**
+## Door 2 — Become a participant through DeSo
 
-Non-DeSo work may point visitors to creator-controlled public contact or external information where appropriate. VIA does not provide a general buy/sell checkout for this route and does not take a sales commission merely because two people met through VIA.
+VIA does not need a separate Google/email participation identity for ordinary community activity. When a guest wants to take part, VIA opens the controlled DeSo onboarding/login path.
 
-Before this route accepts user-generated content, VIA needs a real authentication and moderation design. Google, Apple, email/passkey or another low-friction identity method may be evaluated, but no provider is considered implemented until it has been technically and legally selected.
+VIA explains what is required before anything is created, funded, signed or broadcast. A required initial DeSo balance or network cost must be based on the actual current DeSo flow and displayed before consent. VIA must not promise a fixed start deposit until the current account-creation and funding mechanism is verified.
 
-## Door 3 — Join the DeSo conversation
+Authentication alone does not authorize every action. Sensitive DeSo/NFT actions continue under their existing explicit preflight, consent, signing and verification boundaries.
 
-When a visitor wants to post to DeSo or use other DeSo-native functions, VIA opens the existing DeSo participation path. VIA explains what is required before anything is created, funded, signed or broadcast.
+## Show Your Stuff and creator spaces
 
-A required initial DeSo balance or network cost must be based on the actual current DeSo flow and displayed before consent. VIA must not promise a fixed start deposit until the current account-creation and funding mechanism is verified.
+Show Your Stuff remains a VIA discovery idea, but **publishing or claiming a creator space requires authenticated DeSo participation**. Until that gate exists and is verified, non-DeSo visitors can only view the public Show Your Stuff entrance and other public discovery pages.
 
-Existing VIA DeSo/NFT architecture remains separate and intact. DeSo-native NFT minting, royalties, bids/sales and related blockchain actions continue under their existing explicit preflight, consent, signing and verification boundaries.
+VIA must not create a First Maker Space, personal showcase, creator claim or upload route for an uncontrolled guest. A creator space may be introduced only after VIA can bind the action to the appropriate authenticated DeSo authority and apply the required abuse controls.
+
+This keeps VIA from operating a second uncontrolled identity database and gives the community one clear participation boundary.
 
 ## No silent blockchain conversion
 
-VIA must not silently turn a normal visitor or showcase account into a DeSo wallet. It must not create or retain signing authority merely to make onboarding look frictionless. Linking or creating blockchain capability is a visible step with understandable permissions and costs.
+VIA must not silently turn a guest into a DeSo wallet or retain signing authority merely to make onboarding look frictionless. Linking or creating blockchain capability is a visible step with understandable permissions and costs.
 
 ## VIA service fees
 
@@ -44,12 +46,13 @@ All paid VIA services follow the existing cost-consent rule: price, attributable
 
 An open café still has a door policy. VIA protects both the platform and the community against abuse without turning ordinary browsing into surveillance.
 
-Controls should be proportional to the action:
+Controls are proportional to the action:
 
-- public reading: lowest friction;
-- showcase submissions: validation, rate limits and spam/duplicate controls;
+- public guest browsing: view-only, lowest friction;
+- navigation between public VIA pages: open;
+- creator/community participation: authenticated DeSo authority;
 - links/media: treat as untrusted, validate and contain where practical;
-- social posting: authenticated DeSo authority and explicit action;
+- social writes: authenticated authority plus explicit user action;
 - financial/blockchain actions: strongest preflight, consent, signing and verification boundary;
 - repeated abuse: rate limiting, temporary restriction or exclusion from VIA-controlled surfaces with an understandable reason where practical.
 
@@ -59,8 +62,10 @@ VIA does not need sensitive personal characteristics to decide who is welcome or
 
 ## Relationship with the DeSo ecosystem
 
-VIA should add an approachable front door to DeSo, not try to own every activity behind that door. Existing DeSo users can continue directly into the DeSo functions. New visitors can first discover why the people and work are interesting and choose later whether they want to join the DeSo network.
+VIA adds an approachable public front door to DeSo rather than building a second participation network beside it. Existing DeSo users can continue into the DeSo functions. New visitors can first discover why the people and work are interesting; if they want to participate, the next door is DeSo.
 
 ## Product principle
 
-**VIA is the café. DeSo is the network it opens onto. Everyone may look around; participation opens the door to DeSo.**
+**Guest = view only. DeSo logged in = participate. Sensitive action = additional consent and signing control.**
+
+**VIA is the café. DeSo is the participation network it opens onto. Everyone may look around; taking part goes through DeSo.**
