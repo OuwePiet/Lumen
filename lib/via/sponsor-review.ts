@@ -12,6 +12,7 @@ export type ViaSponsorReviewPacket = {
   paymentPlan: ViaSponsorApplication["paymentPlan"]
   submittedAt: string
   ownerDecisionRequired: true
+  visibility: "private-admin-only"
 }
 
 export type ViaSponsorOwnerDecision =
@@ -33,14 +34,17 @@ export function buildSponsorReviewPacket(
     paymentPlan: application.paymentPlan,
     submittedAt: application.submittedAt,
     ownerDecisionRequired: true,
+    visibility: "private-admin-only",
   }
 }
 
 export const VIA_SPONSOR_REVIEW_GUIDE = {
   review:
-    "The owner decision email must show the advertiser, verified website, requested placement, term, payment plan and the exact submitted static advertisement preview.",
+    "The private VIA Admin review must show the advertiser, website, requested placement, term, payment plan and the exact submitted static advertisement preview.",
+  privacy:
+    "Submitted sponsor applications and creative remain invisible to the public and to other sponsors until approval, confirmed payment and scheduled activation.",
   decision:
-    "Only Approve or Reject is required from the VIA owner. All later payment, activation and expiry steps are designed to continue automatically.",
+    "Only Approve or Reject is required from the VIA owner inside the private Admin area. The sponsor email address is used for automated status and payment notices, not for owner approval.",
   immutableCreative:
     "Approval applies only to the exact reviewed creative. Replacing the advertisement requires a new review before it can go live.",
 } as const
