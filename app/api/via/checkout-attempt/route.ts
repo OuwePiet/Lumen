@@ -2,7 +2,7 @@ import { NextResponse } from "next/server"
 import {
   validateCheckoutAttemptInput,
   type ViaCheckoutAttemptInput,
-} from "../../../../../lib/via/checkout-attempt-foundation"
+} from "../../../../lib/via/checkout-attempt-foundation"
 
 export const dynamic = "force-dynamic"
 
