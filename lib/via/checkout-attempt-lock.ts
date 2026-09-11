@@ -21,7 +21,11 @@ export function checkoutAttemptMayStart(input: {
   orderId: string
   nowMs: number
 }): boolean {
-  return !checkoutAttemptLockIsActive({\n    lock: input.existingLock,\n    orderId: input.orderId,\n    nowMs: input.nowMs,\n  })
+  return !checkoutAttemptLockIsActive({
+    lock: input.existingLock,
+    orderId: input.orderId,
+    nowMs: input.nowMs,
+  })
 }
 
 export const VIA_CHECKOUT_ATTEMPT_LOCK_RULES = {
