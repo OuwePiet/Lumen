@@ -41,4 +41,40 @@ export const VIA_FIAT_PROVIDER_GUIDE = {
     "A sponsor or community-support order is confirmed only after provider-side payment confirmation.",
   selection:
     "The provider remains configurable so VIA is not permanently locked to one payment company.",
+  customerCosts:
+    "Where permitted by the selected payment method, provider and applicable rules, payment-processing costs are disclosed before confirmation and added to the customer total rather than silently absorbed by VIA."
+} as const
+
+
+export type ViaCheckoutCostBreakdown = {
+  sponsorAmountMinor: number
+  processingCostMinor: number
+  totalDueMinor: number
+}
+
+export function checkoutCostBreakdown(input: {
+  sponsorAmountMinor: number
+  processingCostMinor: number
+}): ViaCheckoutCostBreakdown | null {
+  if (!Number.isSafeInteger(input.sponsorAmountMinor) || input.sponsorAmountMinor < 1) return null
+  if (!Number.isSafeInteger(input.processingCostMinor) || input.processingCostMinor < 0) return null
+
+  return {
+    sponsorAmountMinor: input.sponsorAmountMinor,
+    processingCostMinor: input.processingCostMinor,
+    totalDueMinor: input.sponsorAmountMinor + input.processingCostMinor,
+  }
+}
+
+export const VIA_CHECKOUT_COST_COPY = {
+  en: {
+    processing: "Payment processing costs",
+    total: "Total to pay",
+    disclosure: "Payment processing costs are shown before you confirm payment.",
+  },
+  nl: {
+    processing: "Betaalverwerkingskosten",
+    total: "Totaal te betalen",
+    disclosure: "De betaalverwerkingskosten worden getoond voordat u de betaling bevestigt.",
+  },
 } as const
