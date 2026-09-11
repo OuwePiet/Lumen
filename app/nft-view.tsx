@@ -11,6 +11,7 @@ import { rightsDisplayLabel } from "../lib/via/nft-rights"
 import { readUtilityMetadata } from "../lib/via/nft-utility-metadata"
 import { readRoyaltyMetadata } from "../lib/via/nft-royalty-metadata"
 import { formatRoyaltyBasisPoints } from "../lib/via/nft-royalties"
+import { readViaMintProvenance } from "../lib/via/mint-provenance"
 import { evaluateUtilityCapability } from "../lib/via/nft-capability"
 import { utilityCapabilityLabel } from "../lib/via/nft-capability-labels"
 
@@ -444,6 +445,7 @@ export default async function NFTView({
           ? post.ExtraData
           : {}
 
+    const mintProvenance = readViaMintProvenance(postExtraData)
     const parsedRights = readRightsMetadata(postExtraData)
     // PostExtraData comes from the NFT creator's DeSo post, so VIA may treat an
     // explicit VIA creator-declared marker there as creator-origin metadata.
@@ -516,7 +518,7 @@ export default async function NFTView({
             </div>
 
             <section style={styles.card}>
-              <div style={styles.badge}>On-chain NFT</div>
+              <div style={styles.badge}>{mintProvenance ? "Minted via VIA" : "On-chain NFT"}</div>
               {legacyNFTzLinkDetected ? (
                 <div style={styles.warning} role="note">
                   <strong style={styles.warningTitle}>
