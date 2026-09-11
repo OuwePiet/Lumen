@@ -9,6 +9,8 @@ import { normalizeNftRecord } from "../lib/via/nft-record"
 import { readRightsMetadata } from "../lib/via/nft-rights-metadata"
 import { rightsDisplayLabel } from "../lib/via/nft-rights"
 import { readUtilityMetadata } from "../lib/via/nft-utility-metadata"
+import { readRoyaltyMetadata } from "../lib/via/nft-royalty-metadata"
+import { formatRoyaltyBasisPoints } from "../lib/via/nft-royalties"
 
 type DeSoPost = {
   Body?: string
@@ -440,6 +442,11 @@ export default async function NFTView({
         Boolean(post.PosterPublicKeyBase58Check),
     }
     const utility = readUtilityMetadata(postExtraData)
+    const royalties = readRoyaltyMetadata(postExtraData)
+    const royaltyLabel =
+      royalties.source === "unavailable"
+        ? "Not available"
+        : `Creator ${formatRoyaltyBasisPoints(royalties.creatorBasisPoints)} · Coin ${formatRoyaltyBasisPoints(royalties.coinBasisPoints)}`
     const rightsLabel = rightsDisplayLabel(rights)
     const utilityLabel =
       utility.length > 0
@@ -574,6 +581,7 @@ export default async function NFTView({
                 <p style={styles.ownershipText}>Ownership: {nftRecord.editionCount} edition{nftRecord.editionCount === 1 ? "" : "s"} · {nftRecord.ownerPublicKeys.length} current owner{nftRecord.ownerPublicKeys.length === 1 ? "" : "s"}.</p>
                 <p style={styles.ownershipText}>Media: {storageSummary}.</p>
                 <p style={styles.ownershipText}>Rights: {rightsLabel}.</p>
+                <p style={styles.ownershipText}>Royalties: {royaltyLabel}.</p>
                 <p style={styles.ownershipText}>Utility: {utilityLabel}.</p>
                 <p style={styles.verifyNote}>Verify: current ownership can be checked against live DeSo NFT entries. Public-key ownership lookup does not prove control of that identity.</p>
               </section>
