@@ -320,6 +320,12 @@ const styles = {
     margin: "0 0 10px",
     textTransform: "uppercase" as const,
   },
+  verifyNote: {
+    color: "#84958b",
+    fontSize: "12px",
+    lineHeight: 1.55,
+    margin: "10px 0 0",
+  },
   ownershipText: {
     color: "#a9b8af",
     fontSize: "13px",
@@ -569,6 +575,7 @@ export default async function NFTView({
                 <p style={styles.ownershipText}>Media: {storageSummary}.</p>
                 <p style={styles.ownershipText}>Rights: {rightsLabel}.</p>
                 <p style={styles.ownershipText}>Utility: {utilityLabel}.</p>
+                <p style={styles.verifyNote}>Verify: current ownership can be checked against live DeSo NFT entries. Public-key ownership lookup does not prove control of that identity.</p>
               </section>
 
               <div style={styles.hash}>
