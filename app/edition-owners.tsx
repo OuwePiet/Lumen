@@ -4,6 +4,7 @@ import { useState } from "react"
 
 type EditionOwner = {
   serialNumber: number
+  label?: string
   owner: string
   publicKey?: string
 }
