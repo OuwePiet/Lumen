@@ -14,6 +14,8 @@ type DeSoPost = {
   NumNFTCopies?: number
   PosterPublicKeyBase58Check?: string
   TimestampNanos?: number
+  PostExtraData?: Record<string, unknown>
+  ExtraData?: Record<string, unknown>
   ProfileEntryResponse?: {
     Username?: string
   }
@@ -411,6 +413,13 @@ export default async function NFTView({
     const creator = post.ProfileEntryResponse?.Username
       ? `@${post.ProfileEntryResponse.Username}`
       : shortKey(post.PosterPublicKeyBase58Check)
+
+    const postExtraData =
+      post.PostExtraData && typeof post.PostExtraData === "object"
+        ? post.PostExtraData
+        : post.ExtraData && typeof post.ExtraData === "object"
+          ? post.ExtraData
+          : {}
 
     const description = cleanDescription(post.Body)
     const legacyNFTzLinkDetected = hasLegacyNFTzLink(post.Body)
