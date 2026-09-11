@@ -445,6 +445,7 @@ export default async function NFTView({
           ? post.ExtraData
           : {}
 
+    const mintProvenance = readViaMintProvenance(postExtraData)
     const parsedRights = readRightsMetadata(postExtraData)
     // PostExtraData comes from the NFT creator's DeSo post, so VIA may treat an
     // explicit VIA creator-declared marker there as creator-origin metadata.
