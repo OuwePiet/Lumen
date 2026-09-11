@@ -49,3 +49,37 @@ export const VIA_SPONSOR_ADMIN_GUIDE = {
   ledger:
     "Sponsor payment receipt, activation, forwarding and expiry are tracked as separate auditable states.",
 } as const
+
+
+export type ViaSponsorAdminLocale = "en" | "nl"
+
+export const VIA_SPONSOR_ADMIN_COPY = {
+  en: {
+    title: "Sponsor Admin",
+    pending: "Pending review",
+    approved: "Approved / awaiting payment",
+    active: "Active sponsors",
+    secondPayment: "Second payment due",
+    expired: "Expired",
+    rejected: "Rejected",
+    ledger: "Payment & forwarding log",
+    approve: "Approve",
+    reject: "Reject",
+  },
+  nl: {
+    title: "Sponsorbeheer",
+    pending: "Wacht op beoordeling",
+    approved: "Goedgekeurd / wacht op betaling",
+    active: "Actieve sponsors",
+    secondPayment: "Tweede betaling verschuldigd",
+    expired: "Verlopen",
+    rejected: "Afgewezen",
+    ledger: "Betalings- en doorstortlogboek",
+    approve: "Goedkeuren",
+    reject: "Afwijzen",
+  },
+} as const
+
+export function sponsorAdminCopy(locale: ViaSponsorAdminLocale = "nl") {
+  return VIA_SPONSOR_ADMIN_COPY[locale]
+}
