@@ -424,7 +424,15 @@ export default async function NFTView({
           ? post.ExtraData
           : {}
 
-    const rights = readRightsMetadata(postExtraData)
+    const parsedRights = readRightsMetadata(postExtraData)
+    // PostExtraData comes from the NFT creator's DeSo post, so VIA may treat an
+    // explicit VIA creator-declared marker there as creator-origin metadata.
+    const rights = {
+      ...parsedRights,
+      declaredByCreator:
+        parsedRights.declaredByCreator &&
+        Boolean(post.PosterPublicKeyBase58Check),
+    }
     const utility = readUtilityMetadata(postExtraData)
     const rightsLabel = rightsDisplayLabel(rights)
     const utilityLabel =
