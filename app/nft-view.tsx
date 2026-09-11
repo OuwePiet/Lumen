@@ -314,6 +314,16 @@ const styles = {
     border: "1px solid rgba(143,212,169,.22)",
     borderRadius: "12px",
   },
+  ownershipStatus: {
+    display: "inline-block",
+    marginBottom: "10px",
+    padding: "3px 8px",
+    border: "1px solid rgba(143,212,169,.2)",
+    borderRadius: "999px",
+    color: "#91a69a",
+    fontSize: "11px",
+    letterSpacing: "0.04em",
+  },
   ownershipTitle: {
     color: "#9adbb2",
     fontSize: "13px",
@@ -578,6 +588,7 @@ export default async function NFTView({
 
               <section style={styles.ownershipPanel} aria-labelledby="digital-ownership-heading">
                 <h2 id="digital-ownership-heading" style={styles.ownershipTitle}>Digital Ownership</h2>
+                <span style={styles.ownershipStatus}>Live DeSo data · read-only</span>
                 <p style={styles.ownershipText}>Ownership: {nftRecord.editionCount} edition{nftRecord.editionCount === 1 ? "" : "s"} · {nftRecord.ownerPublicKeys.length} current owner{nftRecord.ownerPublicKeys.length === 1 ? "" : "s"}.</p>
                 <p style={styles.ownershipText}>Media: {storageSummary}.</p>
                 <p style={styles.ownershipText}>Rights: {rightsLabel}.</p>
