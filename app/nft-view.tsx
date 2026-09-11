@@ -437,7 +437,13 @@ export default async function NFTView({
     const rightsLabel = rightsDisplayLabel(rights)
     const utilityLabel =
       utility.length > 0
-        ? utility.map((item) => item.label).join(" · ")
+        ? utility
+            .map((item) =>
+              item.requiresCurrentOwnership
+                ? `${item.label} · ownership required`
+                : item.label
+            )
+            .join(" · ")
         : "No verified VIA utility declared"
 
     const description = cleanDescription(post.Body)
