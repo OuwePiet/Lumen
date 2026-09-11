@@ -7,6 +7,9 @@ export type ViaSponsorApplication = {
   contactEmail: string
   advertiserName: string
   websiteUrl: string
+  creativeUploadName: string
+  creativeMimeType: "image/png" | "image/jpeg" | "image/webp"
+  creativeIsAnimated: boolean
   adType: ViaSponsorAdType
   requestedDays: number
   requestedSpace: ViaSponsorSpace
@@ -26,6 +29,9 @@ export type ViaSponsorApplicationStatus =
   | "expired"
 
 export function validateSponsorApplication(input: ViaSponsorApplication) {
+  if (!input.creativeUploadName.trim()) return "creative-upload-required" as const
+  if (input.creativeIsAnimated) return "animated-creative-not-allowed" as const
+  if (!["image/png", "image/jpeg", "image/webp"].includes(input.creativeMimeType)) return "unsupported-creative-format" as const
   if (!input.acceptedReviewTerms) return "review-terms-required" as const
   if (!input.contactEmail.includes("@")) return "email-required" as const
   if (input.requestedDays < 1 || input.requestedDays > 365) return "invalid-duration" as const
@@ -67,7 +73,9 @@ export const VIA_SPONSOR_APPLICATION_GUIDE = {
   language:
     "The application form uses plain everyday language and explains each choice without advertising jargon.",
   form:
-    "Applicant chooses duration, advertising type, page-space size and payment plan, and supplies a website for verification.",
+    "Applicant chooses duration, advertising type, page-space size and payment plan, supplies a website for verification, and uploads the exact advertisement proposed for placement.",
+  creative:
+    "Sponsor review uses a static preview of the exact submitted creative. Animated, blinking, rotating, tilting or attention-grabbing motion advertising is not accepted.",
   consent:
     "Submission requires explicit agreement that VIA may review the advertiser, website and submitted advertising material.",
   automation:
