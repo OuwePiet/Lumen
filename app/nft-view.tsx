@@ -588,13 +588,13 @@ export default async function NFTView({
 
               <section style={styles.ownershipPanel} aria-labelledby="digital-ownership-heading">
                 <h2 id="digital-ownership-heading" style={styles.ownershipTitle}>Digital Ownership</h2>
-                <span style={styles.ownershipStatus}>Live DeSo data · read-only</span>
-                <p style={styles.ownershipText}>Ownership: {nftRecord.editionCount} edition{nftRecord.editionCount === 1 ? "" : "s"} · {nftRecord.ownerPublicKeys.length} current owner{nftRecord.ownerPublicKeys.length === 1 ? "" : "s"}.</p>
-                <p style={styles.ownershipText}>Media: {storageSummary}.</p>
-                <p style={styles.ownershipText}>Rights: {rightsLabel}.</p>
-                <p style={styles.ownershipText}>Royalties: {royaltyLabel}.</p>
-                <p style={styles.ownershipText}>Utility: {utilityLabel}.</p>
-                <p style={styles.verifyNote}>Verify: current ownership can be checked against live DeSo NFT entries. Public-key ownership lookup does not prove control of that identity.</p>
+                <span style={styles.ownershipStatus} aria-label="Digital Ownership status: live DeSo data, read only">Live DeSo data · read-only</span>
+                <p style={styles.ownershipText}><strong>Ownership:</strong> {nftRecord.editionCount} edition{nftRecord.editionCount === 1 ? "" : "s"} · {nftRecord.ownerPublicKeys.length} current owner{nftRecord.ownerPublicKeys.length === 1 ? "" : "s"}.</p>
+                <p style={styles.ownershipText}><strong>Media:</strong> {storageSummary}.</p>
+                <p style={styles.ownershipText}><strong>Rights:</strong> {rightsLabel}.</p>
+                <p style={styles.ownershipText}><strong>Royalties:</strong> {royaltyLabel}.</p>
+                <p style={styles.ownershipText}><strong>Utility:</strong> {utilityLabel}.</p>
+                <p style={styles.verifyNote}><strong>Verify:</strong> current ownership can be checked against live DeSo NFT entries. Public-key ownership lookup does not prove control of that identity.</p>
               </section>
 
               <div style={styles.hash}>
