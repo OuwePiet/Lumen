@@ -299,6 +299,27 @@ const styles = {
     lineHeight: 1.6,
     overflowWrap: "anywhere" as const,
   },
+  ownershipPanel: {
+    marginTop: "18px",
+    padding: "16px",
+    background: "#070b09",
+    border: "1px solid rgba(143,212,169,.22)",
+    borderRadius: "12px",
+  },
+  ownershipTitle: {
+    color: "#9adbb2",
+    fontSize: "13px",
+    fontWeight: 800,
+    letterSpacing: "0.08em",
+    margin: "0 0 10px",
+    textTransform: "uppercase" as const,
+  },
+  ownershipText: {
+    color: "#a9b8af",
+    fontSize: "13px",
+    lineHeight: 1.6,
+    margin: "4px 0",
+  },
   source: {
     color: "#84958b",
     fontSize: "13px",
@@ -502,6 +523,14 @@ export default async function NFTView({
                   lowestBid
                 )}
               />
+
+              <section style={styles.ownershipPanel} aria-labelledby="digital-ownership-heading">
+                <h2 id="digital-ownership-heading" style={styles.ownershipTitle}>Digital Ownership</h2>
+                <p style={styles.ownershipText}>Ownership: read directly from current DeSo NFT entries.</p>
+                <p style={styles.ownershipText}>Media: {storageSummary}.</p>
+                <p style={styles.ownershipText}>Rights: no creator-verified VIA rights declaration available for this legacy NFT.</p>
+                <p style={styles.ownershipText}>Utility: no verified VIA utility declared.</p>
+              </section>
 
               <div style={styles.hash}>
                 <p style={styles.label}>Blockchain PostHash</p>
