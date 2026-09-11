@@ -1,6 +1,6 @@
 const DEFAULT_DESO_NODE = "https://node.deso.org"
 const REQUEST_TIMEOUT_MS = 12_000
-const MAX_ATTEMPTS = 2
+const MIN_ATTEMPTS = 2
 const PROFILE_LOOKUP_CONCURRENCY = 6
 
 let activeProfileLookups = 0
@@ -107,8 +107,10 @@ async function performDeSoRequest(
 ): Promise<Response> {
   let lastError: unknown
 
-  for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt += 1) {
-    const node = DESO_NODES[Math.min(attempt, DESO_NODES.length - 1)] ?? DEFAULT_DESO_NODE
+  const maxAttempts = Math.max(MIN_ATTEMPTS, DESO_NODES.length)
+
+  for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
+    const node = DESO_NODES[attempt % DESO_NODES.length] ?? DEFAULT_DESO_NODE
     const controller = new AbortController()
     const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS)
 
@@ -124,7 +126,7 @@ async function performDeSoRequest(
       )
 
       if (
-        attempt + 1 < MAX_ATTEMPTS &&
+        attempt + 1 < maxAttempts &&
         (response.status === 429 || response.status >= 500)
       ) {
         await response.body?.cancel()
@@ -134,7 +136,7 @@ async function performDeSoRequest(
       return documentedResponse(safeEndpoint, response)
     } catch (error) {
       lastError = error
-      if (attempt + 1 >= MAX_ATTEMPTS) throw error
+      if (attempt + 1 >= maxAttempts) throw error
     } finally {
       clearTimeout(timeout)
     }
