@@ -11,6 +11,8 @@ import { rightsDisplayLabel } from "../lib/via/nft-rights"
 import { readUtilityMetadata } from "../lib/via/nft-utility-metadata"
 import { readRoyaltyMetadata } from "../lib/via/nft-royalty-metadata"
 import { formatRoyaltyBasisPoints } from "../lib/via/nft-royalties"
+import { evaluateUtilityCapability } from "../lib/via/nft-capability"
+import { utilityCapabilityLabel } from "../lib/via/nft-capability-labels"
 
 type DeSoPost = {
   Body?: string
@@ -461,11 +463,14 @@ export default async function NFTView({
     const utilityLabel =
       utility.length > 0
         ? utility
-            .map((item) =>
-              item.requiresCurrentOwnership
-                ? `${item.label} · ownership required`
-                : item.label
-            )
+            .map((item) => {
+              const capability = evaluateUtilityCapability({
+                utility: item,
+                ownsCurrentEdition: false,
+                identityVerified: false,
+              })
+              return `${item.label} · ${utilityCapabilityLabel(capability)}`
+            })
             .join(" · ")
         : "No verified VIA utility declared"
 
