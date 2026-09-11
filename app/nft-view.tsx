@@ -415,10 +415,14 @@ export default async function NFTView({
     const description = cleanDescription(post.Body)
     const legacyNFTzLinkDetected = hasLegacyNFTzLink(post.Body)
     const title = nftTitle(post.Body)
-    const mediaIntegrity = inspectMediaIntegrity([
-      ...(post.ImageURLs ?? []),
-      ...(post.VideoURLs ?? []),
-    ])
+    const nftRecord = normalizeNftRecord({
+      postHash,
+      creatorPublicKey: post.PosterPublicKeyBase58Check,
+      imageUrls: post.ImageURLs,
+      videoUrls: post.VideoURLs,
+      entries,
+    })
+    const mediaIntegrity = inspectMediaIntegrity(nftRecord.mediaUrls)
     const storageSummary =
       mediaIntegrity.length === 0
         ? "No media reference available"
