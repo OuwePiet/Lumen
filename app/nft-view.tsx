@@ -404,7 +404,7 @@ export default async function NFTView({
       ? `@${currentOwnerUsername}`
       : shortKey(firstEntry?.OwnerPublicKeyBase58Check)
     const uniqueOwnerCount = ownerKeys.length
-    const totalCopies = post.NumNFTCopies ?? entries.length
+    const totalCopies = post.NumNFTCopies ?? sortedEntries.length
     const editionOwners = sortedEntries.map((entry, index) => {
       const ownerKey = entry.OwnerPublicKeyBase58Check
       const ownerUsername = ownerKey ? ownerNames.get(ownerKey) : undefined
