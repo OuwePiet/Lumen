@@ -4,6 +4,7 @@ import { fetchDeSo } from "./deso-api"
 import EditionOwners from "./edition-owners"
 import NFTMedia from "./nft-media"
 import NFTHistory from "./nft-history"
+import { inspectMediaIntegrity } from "../lib/via/digital-ownership"
 
 type DeSoPost = {
   Body?: string
@@ -392,6 +393,18 @@ export default async function NFTView({
     const description = cleanDescription(post.Body)
     const legacyNFTzLinkDetected = hasLegacyNFTzLink(post.Body)
     const title = nftTitle(post.Body)
+    const mediaIntegrity = inspectMediaIntegrity([
+      ...(post.ImageURLs ?? []),
+      ...(post.VideoURLs ?? []),
+    ])
+    const storageSummary =
+      mediaIntegrity.length === 0
+        ? "No media reference available"
+        : mediaIntegrity.every((item) => item.contentAddressed)
+          ? "Content-addressed media reference"
+          : mediaIntegrity.some((item) => item.contentAddressed)
+            ? "Mixed storage references"
+            : "External media · permanence not verified"
 
     return (
       <main style={styles.page}>
@@ -431,6 +444,7 @@ export default async function NFTView({
               <dl style={styles.facts}>
                 {[
                   ["Creator", creator],
+                  ["Media storage", storageSummary],
                   sortedEntries.length === 1
                     ? ["Current owner", currentOwner]
                     : [
@@ -495,8 +509,7 @@ export default async function NFTView({
               </div>
 
               <p style={styles.source}>
-                NFT data is read directly from DeSo. IPFS media is loaded
-                through controlled public HTTPS gateways.
+                NFT ownership data is read directly from DeSo. Media storage is reported separately: ordinary HTTPS is never presented by VIA as permanent, while content-addressed references are identified without promising gateway availability.
               </p>
             </section>
           </div>
