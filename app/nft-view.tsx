@@ -5,6 +5,7 @@ import EditionOwners from "./edition-owners"
 import NFTMedia from "./nft-media"
 import NFTHistory from "./nft-history"
 import { inspectMediaIntegrity } from "../lib/via/digital-ownership"
+import { normalizeNftRecord } from "../lib/via/nft-record"
 
 type DeSoPost = {
   Body?: string
@@ -526,7 +527,7 @@ export default async function NFTView({
 
               <section style={styles.ownershipPanel} aria-labelledby="digital-ownership-heading">
                 <h2 id="digital-ownership-heading" style={styles.ownershipTitle}>Digital Ownership</h2>
-                <p style={styles.ownershipText}>Ownership: read directly from current DeSo NFT entries.</p>
+                <p style={styles.ownershipText}>Ownership: {nftRecord.editionCount} edition{nftRecord.editionCount === 1 ? "" : "s"} · {nftRecord.ownerPublicKeys.length} current owner{nftRecord.ownerPublicKeys.length === 1 ? "" : "s"}.</p>
                 <p style={styles.ownershipText}>Media: {storageSummary}.</p>
                 <p style={styles.ownershipText}>Rights: no creator-verified VIA rights declaration available for this legacy NFT.</p>
                 <p style={styles.ownershipText}>Utility: no verified VIA utility declared.</p>
