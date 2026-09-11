@@ -4,6 +4,7 @@ import { useState } from "react"
 
 type EditionOwner = {
   serialNumber: number
+  label?: string
   owner: string
   publicKey?: string
 }
@@ -106,7 +107,7 @@ export default function EditionOwners({
 
           return (
             <li key={edition.serialNumber} style={styles.row}>
-              <span>Edition #{edition.serialNumber}</span>
+              <span>{edition.label ?? `Edition #${edition.serialNumber}`}</span>
               {href ? (
                 <a href={href} style={styles.owner}>
                   {edition.owner}

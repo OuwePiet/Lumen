@@ -14,6 +14,7 @@ import { formatRoyaltyBasisPoints } from "../lib/via/nft-royalties"
 import { readViaMintProvenance } from "../lib/via/mint-provenance"
 import { evaluateUtilityCapability } from "../lib/via/nft-capability"
 import { utilityCapabilityLabel } from "../lib/via/nft-capability-labels"
+import { buildEditionIdentity } from "../lib/via/edition-identity"
 
 type DeSoPost = {
   Body?: string
@@ -403,12 +404,21 @@ export default async function NFTView({
       ? `@${currentOwnerUsername}`
       : shortKey(firstEntry?.OwnerPublicKeyBase58Check)
     const uniqueOwnerCount = ownerKeys.length
+    const totalCopies = post.NumNFTCopies ?? sortedEntries.length
     const editionOwners = sortedEntries.map((entry, index) => {
       const ownerKey = entry.OwnerPublicKeyBase58Check
       const ownerUsername = ownerKey ? ownerNames.get(ownerKey) : undefined
 
+      const serialNumber = entry.SerialNumber ?? index + 1
+      const identity = buildEditionIdentity({
+        postHashHex: postHash,
+        serialNumber,
+        totalCopies,
+      })
+
       return {
-        serialNumber: entry.SerialNumber ?? index + 1,
+        serialNumber,
+        label: identity?.displayLabel ?? `Edition #${serialNumber}`,
         owner: ownerUsername ? `@${ownerUsername}` : shortKey(ownerKey),
         publicKey: ownerKey,
       }
@@ -541,7 +551,7 @@ export default async function NFTView({
                         "Edition owners",
                         `${uniqueOwnerCount} unique owner${uniqueOwnerCount === 1 ? "" : "s"} across ${sortedEntries.length} editions`,
                       ],
-                  ["Copies", post.NumNFTCopies ?? entries.length],
+                  ["Copies", totalCopies],
                   ["For sale", forSale.length],
                   [
                     "Sale status",
