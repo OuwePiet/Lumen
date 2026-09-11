@@ -6,7 +6,8 @@ import PostComposer from "./post-composer"
 import LikeButton from "./like-button"
 import FollowButton from "./follow-button"
 import RepostButton from "./repost-button"
-import DiamondButton from "./diamond-button"\nimport LocalSaveButton from "./local-save-button"
+import DiamondButton from "./diamond-button"
+import LocalSaveButton from "./local-save-button"
 import { restoreIdentitySession, VIA_IDENTITY_EVENT, type ViaIdentitySession } from "../deso-identity-session"
 
 type PublicPost = { postHash: string; publicKey: string; body: string; imageUrls: string[]; videoUrls: string[]; timestampNanos: number; likeCount: number; diamondCount: number; commentCount: number; repostCount: number; quoteRepostCount: number; isNft: boolean; sourcePublicKey?: string }
