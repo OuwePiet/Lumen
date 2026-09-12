@@ -8,6 +8,7 @@ type MintQuote = {
   reason?: string
   quotedAt?: string
   quoteId?: string
+  quotedForPublicKey?: string
   expiresAt?: string
   quote?: {
     feeNanos?: number | null
@@ -120,8 +121,8 @@ export default function MintPreflight() {
       })
       const data: MintQuote = await response.json().catch(() => ({}))
       setResult(data)
-      setQuotedPublicKey(response.ok && data.resolved ? session.publicKey : "")
-      setMessage(response.ok && data.resolved ? "Fresh unsigned DeSo mint quote loaded. Nothing has been signed or submitted." : `Preflight stopped: ${data.reason ?? "quote unavailable"}.`)
+      setQuotedPublicKey(response.ok && data.resolved && data.quotedForPublicKey === session.publicKey ? data.quotedForPublicKey : "")
+      setMessage(response.ok && data.resolved && data.quotedForPublicKey === session.publicKey ? "Fresh unsigned DeSo mint quote loaded. Nothing has been signed or submitted." : response.ok && data.resolved ? "Preflight stopped: quote account did not match the active DeSo Identity." : `Preflight stopped: ${data.reason ?? "quote unavailable"}.`)
     } catch {
       setMessage("Preflight stopped: current DeSo quote could not be loaded.")
     } finally { setLoading(false) }
