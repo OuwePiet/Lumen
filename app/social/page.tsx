@@ -15,12 +15,12 @@ const releasedCapabilities = [
   "Diamonds",
   "Polls",
   "Saved posts",
+  "Notification filters",
 ]
 
 const futureIdeas = [
   { title: "Hot", text: "A possible future view for active public DeSo conversations. It only becomes live if the ranking can stay explainable and abuse-resistant." },
   { title: "Edit post", text: "Worth adding only after VIA verifies the current official DeSo edit/update transaction path and can keep the same explicit approval boundary as other writes." },
-  { title: "Notification filters", text: "Mentions, replies, reposts, follows and diamonds can become separate filters when the underlying DeSo event data is reliable enough to avoid misleading counts." },
   { title: "Language & region views", text: "A future preference for discovering public content by explicit language or region metadata. It will not silently translate posts, infer location in the background or require a paid translation service." },
 ]
 
@@ -40,7 +40,10 @@ export default function SocialPage() {
               Guests can read public DeSo posts and move through the public VIA pages. Posting, replies, Likes, Follow/Unfollow, Repost/Quote, Diamonds and image/video attachments are available after DeSo login through their own guarded paths.
             </p>
           </div>
-          <Link href="/show-your-stuff" className="rounded-full border border-zinc-700 px-4 py-2 text-sm text-zinc-200 hover:border-green-500 hover:text-green-300">How participation works</Link>
+          <div className="flex flex-wrap gap-2">
+            <Link href="/notifications" className="rounded-full border border-green-800 px-4 py-2 text-sm text-green-300 hover:border-green-500">Notifications</Link>
+            <Link href="/show-your-stuff" className="rounded-full border border-zinc-700 px-4 py-2 text-sm text-zinc-200 hover:border-green-500 hover:text-green-300">How participation works</Link>
+          </div>
         </header>
 
         <ParticipationGate
