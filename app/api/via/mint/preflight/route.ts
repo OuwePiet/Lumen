@@ -89,6 +89,7 @@ export async function POST(request: Request) {
         },
         unsignedTransactionConstructed: true,
         quoteId: crypto.randomUUID(),
+        createdAt: new Date().toISOString(),
         quotedForPublicKey: input.updaterPublicKey,
         expiresAt: new Date(Date.now() + 5 * 60 * 1000).toISOString(),
         transactionHexExposed: false,
