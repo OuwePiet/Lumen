@@ -22,7 +22,6 @@ type IssueCheckoutOrderRequest = {
   nftId: string
   sellerPublicKey: string
   buyerPublicKey?: string
-  amountMinor?: number
   currency: ViaCheckoutOrderInput["currency"]
 }
 
@@ -38,12 +37,7 @@ function isIssueCheckoutOrderRequest(value: unknown): value is IssueCheckoutOrde
   ) {
     return false
   }
-  if (
-    input.amountMinor !== undefined &&
-    (!Number.isSafeInteger(input.amountMinor) || Number(input.amountMinor) <= 0)
-  ) {
-    return false
-  }
+  if ("amountMinor" in input) return false
   return ["EUR", "USD", "BTC", "DESO"].includes(String(input.currency))
 }
 
