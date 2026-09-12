@@ -1,6 +1,5 @@
 import { randomUUID } from "node:crypto"
 import { NextResponse } from "next/server"
-import { getNFTsForUser } from "../../../deso-nfts"
 import {
   createCheckoutOrder,
   type ViaCheckoutOrderInput,
@@ -10,6 +9,7 @@ import {
   checkoutOrderSigningReady,
   signCheckoutOrder,
 } from "../../../../lib/via/checkout-order-signing"
+import { resolveDeSoListingEvidence } from "../../../../lib/via/deso-listing-server"
 import { currentPaymentReadiness } from "../../../../lib/via/payment-readiness-server"
 import { resolveServerListingCommercialTerm } from "../../../../lib/via/listing-commercial-terms-server"
 
@@ -46,18 +46,6 @@ function methodForCurrency(currency: ViaCheckoutOrderInput["currency"]) {
   if (currency === "USD") return "fiat-usd" as const
   if (currency === "BTC") return "bitcoin" as const
   return "deso" as const
-}
-
-async function isDeSoListingCurrentlyForSale(input: {
-  nftId: string
-  sellerPublicKey: string
-}) {
-  const collections = await getNFTsForUser(input.sellerPublicKey)
-  const collection = collections.find(
-    (item) => item.PostEntryResponse?.PostHashHex === input.nftId.toLowerCase(),
-  )
-
-  return Boolean(collection?.NFTEntryResponses?.some((entry) => entry.IsForSale === true))
 }
 
 export async function POST(request: Request) {
@@ -100,9 +88,9 @@ export async function POST(request: Request) {
       )
     }
 
-    let listingForSale = false
+    let listing = null
     try {
-      listingForSale = await isDeSoListingCurrentlyForSale({
+      listing = await resolveDeSoListingEvidence({
         nftId: authoritativeTerm.nftId,
         sellerPublicKey: authoritativeTerm.sellerPublicKey,
       })
@@ -113,7 +101,7 @@ export async function POST(request: Request) {
       )
     }
 
-    if (!listingForSale) {
+    if (!listing?.forSale) {
       return NextResponse.json(
         { issued: false, reason: "deso-listing-not-for-sale" },
         { status: 409, headers: noStore },
