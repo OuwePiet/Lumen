@@ -17,7 +17,17 @@ type MintQuote = {
     viaServiceFeeNanos?: number | null
   }
   mintAuthorized?: boolean
-  mint?: { updaterPublicKey?: string }
+  mint?: {
+    nftPostHashHex?: string
+    numCopies?: number
+    hasUnlockable?: boolean
+    isForSale?: boolean
+    minBidAmountNanos?: number
+    creatorRoyaltyBasisPoints?: number
+    coinRoyaltyBasisPoints?: number
+    isBuyNow?: boolean
+    buyNowPriceNanos?: number
+  }
 }
 
 const field = "w-full rounded-[11px] border border-zinc-700/80 bg-[#050807] px-3 py-3 text-base text-zinc-100 outline-none focus:border-[#8fd4a9]/55 focus:ring-2 focus:ring-[#8fd4a9]/10"
@@ -129,14 +139,12 @@ export default function MintPreflight() {
         <p className="text-sm leading-6 text-zinc-400" role="status">{message}</p>
       </form>
 
-      {result?.resolved ? <div className="mt-4 grid gap-3 rounded-[12px] border border-zinc-800/80 bg-black/25 p-4 sm:grid-cols-2 lg:grid-cols-4">
+      {result?.resolved ? <div className="mt-4 rounded-[12px] border border-zinc-800/80 bg-black/25 p-4"><p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#8fd4a9]">Mint terms confirmed by DeSo preflight</p><div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4"><div><p className="text-xs uppercase tracking-[0.12em] text-zinc-500">Copies</p><p className="mt-1 text-sm text-zinc-200">{result.mint?.numCopies ?? "—"}</p></div><div><p className="text-xs uppercase tracking-[0.12em] text-zinc-500">Sale</p><p className="mt-1 text-sm text-zinc-200">{result.mint?.isForSale ? (result.mint?.isBuyNow ? "Buy Now" : "Auction / bids") : "Not for sale"}</p></div><div><p className="text-xs uppercase tracking-[0.12em] text-zinc-500">Creator royalty</p><p className="mt-1 text-sm text-zinc-200">{typeof result.mint?.creatorRoyaltyBasisPoints === "number" ? `${(result.mint.creatorRoyaltyBasisPoints / 100).toFixed(2)}%` : "—"}</p></div><div><p className="text-xs uppercase tracking-[0.12em] text-zinc-500">Unlockable</p><p className="mt-1 text-sm text-zinc-200">{result.mint?.hasUnlockable ? "Yes" : "No"}</p></div></div><div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <div><p className="text-xs uppercase tracking-[0.12em] text-zinc-500">Network fee</p><p className="mt-1 text-sm text-zinc-200">{nanos(result.quote?.feeNanos)}</p></div>
         <div><p className="text-xs uppercase tracking-[0.12em] text-zinc-500">Spend amount</p><p className="mt-1 text-sm text-zinc-200">{nanos(result.quote?.spendAmountNanos)}</p></div>
         <div><p className="text-xs uppercase tracking-[0.12em] text-zinc-500">VIA service fee</p><p className="mt-1 text-sm text-zinc-200">{nanos(result.quote?.viaServiceFeeNanos)}</p></div>
         <div><p className="text-xs uppercase tracking-[0.12em] text-zinc-500">Quote valid until</p><p className="mt-1 text-sm text-zinc-200">{result.expiresAt ? new Date(result.expiresAt).toLocaleTimeString() : "Unavailable"}{!quoteExpired && quoteSecondsLeft > 0 ? ` · ${Math.floor(quoteSecondsLeft / 60)}:${String(quoteSecondsLeft % 60).padStart(2, "0")} left` : ""}</p></div>
-      </div> : null}
-
-      {quoteSessionMismatch ? <div className="mt-4 rounded-[11px] border border-red-900/50 bg-red-950/15 px-4 py-3 text-sm leading-6 text-red-100/80">The active DeSo Identity changed after this quote was created. This quote is no longer valid for approval; request a fresh quote for the active account.</div> : null}\n      {quoteExpired ? <div className="mt-4 rounded-[11px] border border-red-900/50 bg-red-950/15 px-4 py-3 text-sm leading-6 text-red-100/80">This mint quote has expired. Refresh the current DeSo cost before any later approval.</div> : null}\n      <div className="mt-4 rounded-[11px] border border-amber-900/50 bg-amber-950/15 px-4 py-3 text-sm leading-6 text-amber-100/80">Any changed mint term invalidates the displayed quote. Before a future approval/sign step, VIA must refresh current costs again. DESO payment, provider checkout and NFT transfer remain blocked.</div>
+      </div></div> : null}\n\n      {quoteSessionMismatch ? <div className="mt-4 rounded-[11px] border border-red-900/50 bg-red-950/15 px-4 py-3 text-sm leading-6 text-red-100/80">The active DeSo Identity changed after this quote was created. This quote is no longer valid for approval; request a fresh quote for the active account.</div> : null}\n      {quoteExpired ? <div className="mt-4 rounded-[11px] border border-red-900/50 bg-red-950/15 px-4 py-3 text-sm leading-6 text-red-100/80">This mint quote has expired. Refresh the current DeSo cost before any later approval.</div> : null}\n      <div className="mt-4 rounded-[11px] border border-amber-900/50 bg-amber-950/15 px-4 py-3 text-sm leading-6 text-amber-100/80">Any changed mint term invalidates the displayed quote. Before a future approval/sign step, VIA must refresh current costs again. DESO payment, provider checkout and NFT transfer remain blocked.</div>
       <button type="button" disabled aria-disabled="true" className="mt-4 min-h-11 rounded-[11px] border border-zinc-800 bg-transparent px-4 py-2 text-sm text-zinc-600">Approve &amp; mint — not released</button>
     </section>
   )
