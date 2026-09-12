@@ -101,7 +101,7 @@ export default function MintPreflight() {
   const quoteSecondsLeft = quoteExpired || !Number.isFinite(quoteExpiresAt) ? 0 : Math.max(0, Math.ceil((quoteExpiresAt - effectiveNow) / 1000))
   const clockSkewAcceptable = Math.abs(serverClockOffset) <= 60000
   const quoteContractSupported = result?.quoteContractVersion === 1
-  const quoteReadinessReason = !result?.resolved ? "No resolved quote" : !quoteContractSupported ? "Unsupported quote contract" : quoteExpired ? "Quote expired" : quoteSessionMismatch ? "Identity changed" : !clockSkewAcceptable ? "Device clock differs from server" : !quotedPublicKey || quotedPublicKey !== session?.publicKey ? "Quote owner mismatch" : ""
+  const quoteReadinessReason = !result?.resolved ? "No resolved quote" : !quoteContractSupported ? "Unsupported quote contract" : quoteSessionMismatch ? "Identity changed" : !quotedPublicKey || quotedPublicKey !== session?.publicKey ? "Quote owner mismatch" : !clockSkewAcceptable ? "Device clock differs from server" : quoteExpired ? "Quote expired" : ""
   const quoteUsable = quoteReadinessReason === ""
 
   const validationMessage = useMemo(() => {
