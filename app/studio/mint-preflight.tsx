@@ -7,6 +7,7 @@ type MintQuote = {
   resolved?: boolean
   reason?: string
   quotedAt?: string
+  serverNow?: number
   quoteId?: string
   createdAt?: string
   quoteTtlSeconds?: number
