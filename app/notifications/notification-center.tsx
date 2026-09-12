@@ -86,6 +86,7 @@ export default function NotificationCenter() {
       return
     }
 
+    const publicKey = session.publicKey
     let cancelled = false
     async function load() {
       setStatus("loading")
@@ -95,7 +96,7 @@ export default function NotificationCenter() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           cache: "no-store",
-          body: JSON.stringify({ publicKey: session.publicKey, fetchStartIndex: -1, numToFetch: 40 }),
+          body: JSON.stringify({ publicKey, fetchStartIndex: -1, numToFetch: 40 }),
         })
         const data = await response.json() as NotificationResponse
         if (!response.ok || !data.ok || !Array.isArray(data.notifications)) throw new Error(data.error || "NOTIFICATIONS_FAILED")
