@@ -69,7 +69,10 @@ export default function MintPreflight() {
       setSession((event as CustomEvent<ViaIdentitySession | null>).detail ?? restoreIdentitySession())
     }
     window.addEventListener(VIA_IDENTITY_EVENT, onSession)
-    return () => {\n      requestSequence.current += 1\n      window.removeEventListener(VIA_IDENTITY_EVENT, onSession)\n    }
+    return () => {
+      requestSequence.current += 1
+      window.removeEventListener(VIA_IDENTITY_EVENT, onSession)
+    }
   }, [])
 
   useEffect(() => {
