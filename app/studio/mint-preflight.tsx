@@ -38,6 +38,7 @@ export default function MintPreflight() {
   const [coinRoyalty, setCoinRoyalty] = useState("0")
   const [unlockable, setUnlockable] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [now, setNow] = useState(() => Date.now())
   const [result, setResult] = useState<MintQuote | null>(null)
   const [message, setMessage] = useState("Enter mint terms to request a fresh DeSo constructor quote.")
 
@@ -52,6 +53,15 @@ export default function MintPreflight() {
     setResult(null)
     setMessage("Terms changed. Refresh the DeSo quote before any later approval.")
   }, [postHash, copies, forSale, buyNow, minBid, buyNowPrice, creatorRoyalty, coinRoyalty, unlockable])
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(Date.now()), 1000)
+    return () => window.clearInterval(timer)
+  }, [])
+
+  const quoteExpiresAt = result?.expiresAt ? Date.parse(result.expiresAt) : Number.NaN
+  const quoteExpired = Boolean(result?.resolved && (!Number.isFinite(quoteExpiresAt) || now >= quoteExpiresAt))
+  const quoteSecondsLeft = quoteExpired || !Number.isFinite(quoteExpiresAt) ? 0 : Math.max(0, Math.ceil((quoteExpiresAt - now) / 1000))
 
   const valid = useMemo(() => {
     const ints = [copies, minBid, buyNowPrice, creatorRoyalty, coinRoyalty].map(Number)
@@ -118,10 +128,10 @@ export default function MintPreflight() {
         <div><p className="text-xs uppercase tracking-[0.12em] text-zinc-500">Network fee</p><p className="mt-1 text-sm text-zinc-200">{nanos(result.quote?.feeNanos)}</p></div>
         <div><p className="text-xs uppercase tracking-[0.12em] text-zinc-500">Spend amount</p><p className="mt-1 text-sm text-zinc-200">{nanos(result.quote?.spendAmountNanos)}</p></div>
         <div><p className="text-xs uppercase tracking-[0.12em] text-zinc-500">VIA service fee</p><p className="mt-1 text-sm text-zinc-200">{nanos(result.quote?.viaServiceFeeNanos)}</p></div>
-        <div><p className="text-xs uppercase tracking-[0.12em] text-zinc-500">Quote valid until</p><p className="mt-1 text-sm text-zinc-200">{result.expiresAt ? new Date(result.expiresAt).toLocaleTimeString() : "Unavailable"}</p></div>
+        <div><p className="text-xs uppercase tracking-[0.12em] text-zinc-500">Quote valid until</p><p className="mt-1 text-sm text-zinc-200">{result.expiresAt ? new Date(result.expiresAt).toLocaleTimeString() : "Unavailable"}{!quoteExpired && quoteSecondsLeft > 0 ? ` · ${Math.floor(quoteSecondsLeft / 60)}:${String(quoteSecondsLeft % 60).padStart(2, "0")} left` : ""}</p></div>
       </div> : null}
 
-      <div className="mt-4 rounded-[11px] border border-amber-900/50 bg-amber-950/15 px-4 py-3 text-sm leading-6 text-amber-100/80">Any changed mint term invalidates the displayed quote. Before a future approval/sign step, VIA must refresh current costs again. DESO payment, provider checkout and NFT transfer remain blocked.</div>
+      {quoteExpired ? <div className="mt-4 rounded-[11px] border border-red-900/50 bg-red-950/15 px-4 py-3 text-sm leading-6 text-red-100/80">This mint quote has expired. Refresh the current DeSo cost before any later approval.</div> : null}\n      <div className="mt-4 rounded-[11px] border border-amber-900/50 bg-amber-950/15 px-4 py-3 text-sm leading-6 text-amber-100/80">Any changed mint term invalidates the displayed quote. Before a future approval/sign step, VIA must refresh current costs again. DESO payment, provider checkout and NFT transfer remain blocked.</div>
       <button type="button" disabled aria-disabled="true" className="mt-4 min-h-11 rounded-[11px] border border-zinc-800 bg-transparent px-4 py-2 text-sm text-zinc-600">Approve &amp; mint — not released</button>
     </section>
   )
