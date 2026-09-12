@@ -98,7 +98,8 @@ export default function MintPreflight() {
   const effectiveNow = now + serverClockOffset
   const quoteExpired = Boolean(result?.resolved && (!Number.isFinite(quoteExpiresAt) || effectiveNow >= quoteExpiresAt))
   const quoteSecondsLeft = quoteExpired || !Number.isFinite(quoteExpiresAt) ? 0 : Math.max(0, Math.ceil((quoteExpiresAt - effectiveNow) / 1000))
-  const clockSkewAcceptable = Math.abs(serverClockOffset) <= 60000\n  const quoteUsable = Boolean(result?.resolved && !quoteExpired && !quoteSessionMismatch && clockSkewAcceptable && quotedPublicKey && quotedPublicKey === session?.publicKey)
+  const clockSkewAcceptable = Math.abs(serverClockOffset) <= 60000
+  const quoteUsable = Boolean(result?.resolved && !quoteExpired && !quoteSessionMismatch && clockSkewAcceptable && quotedPublicKey && quotedPublicKey === session?.publicKey)
 
   const validationMessage = useMemo(() => {
     if (!session) return "Log in with DeSo Identity to request a mint quote."
