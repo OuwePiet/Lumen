@@ -40,7 +40,13 @@ export default function EditPostControl() {
   const popupRef = useRef<Window | null>(null)
 
   useEffect(() => {
-    setSession(restoreIdentitySession())
+    const current = restoreIdentitySession()
+    setSession(current)
+    const linkedHash = new URLSearchParams(window.location.search).get("post")?.trim() ?? ""
+    if (/^[0-9a-fA-F]{64}$/.test(linkedHash)) {
+      setPostHashHex(linkedHash.toLowerCase())
+      setMessage("Post hash loaded from VIA. Verify ownership before editing.")
+    }
     const onSession = (event: Event) => setSession((event as CustomEvent<ViaIdentitySession | null>).detail ?? restoreIdentitySession())
     window.addEventListener(VIA_IDENTITY_EVENT, onSession)
     return () => window.removeEventListener(VIA_IDENTITY_EVENT, onSession)
