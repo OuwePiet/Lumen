@@ -52,22 +52,63 @@ export default function CheckoutSecurityPreview() {
 
   async function runPreview() {
     const amount = Number(amountMinor)
-    if (!nftId.trim() || !sellerPublicKey.trim() || !Number.isSafeInteger(amount) || amount <= 0) {
+    const normalizedNftId = nftId.trim()
+    const normalizedSeller = sellerPublicKey.trim()
+
+    if (!normalizedNftId || !normalizedSeller || !Number.isSafeInteger(amount) || amount <= 0) {
       setState({ phase: "blocked", message: "Enter an NFT, seller public key and valid integer amount." })
       return
     }
 
-    setState({ phase: "running", message: "Issuing server-signed order…" })
+    setState({ phase: "running", message: "Verifying DeSo listing evidence…" })
 
     try {
+      const listingResult = await readJson(
+        await fetch(
+          `/api/via/listing?seller=${encodeURIComponent(normalizedSeller)}&nft=${encodeURIComponent(normalizedNftId)}`,
+          { cache: "no-store" },
+        ),
+      )
+
+      const listingData = listingResult.data as {
+        resolved?: boolean
+        reason?: string
+        listing?: {
+          forSale?: boolean
+          copiesForSale?: number
+        }
+        commercialAuthority?: {
+          fiatTermsAvailable?: boolean
+          authorizesCheckout?: boolean
+        }
+      }
+
+      if (!listingResult.response.ok || !listingData.resolved || !listingData.listing) {
+        setState({
+          phase: "blocked",
+          message: `Listing blocked: ${listingData.reason ?? "DeSo listing could not be verified"}.`,
+        })
+        return
+      }
+
+      if (!listingData.listing.forSale || !listingData.listing.copiesForSale) {
+        setState({
+          phase: "blocked",
+          message: "Listing blocked: this NFT is not currently observed for sale for this seller.",
+        })
+        return
+      }
+
+      setState({ phase: "running", message: "Listing verified. Issuing server-signed order…" })
+
       const orderResult = await readJson(
         await fetch("/api/via/checkout-order", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           cache: "no-store",
           body: JSON.stringify({
-            nftId: nftId.trim(),
-            sellerPublicKey: sellerPublicKey.trim(),
+            nftId: normalizedNftId,
+            sellerPublicKey: normalizedSeller,
             amountMinor: amount,
             currency,
           }),
@@ -150,7 +191,7 @@ export default function CheckoutSecurityPreview() {
 
       setState({
         phase: "eligible",
-        message: "Secure preflight passed. This preview still does not create or execute a payment.",
+        message: "Secure preflight passed after DeSo listing verification. This preview still does not create or execute a payment.",
       })
     } catch {
       setState({ phase: "blocked", message: "Secure checkout preview unavailable." })
@@ -171,7 +212,7 @@ export default function CheckoutSecurityPreview() {
     <section style={{ marginTop: 24, paddingTop: 22, borderTop: "1px solid rgba(143,212,169,.16)" }}>
       <p style={{ color: "#8fd4a9", fontSize: 12, letterSpacing: ".1em" }}>SECURE CHECKOUT PREVIEW</p>
       <p style={{ color: "#b9c6be", lineHeight: 1.6 }}>
-        Runs the signed order → signed attempt → provider preflight chain. It cannot charge, transfer an NFT or write to DeSo.
+        Verifies the NFT against VIA&apos;s read-only DeSo listing source, then runs the signed order → signed attempt → provider preflight chain. The listing check does not invent fiat terms, and this preview cannot charge, transfer an NFT or write to DeSo.
       </p>
 
       <div style={{ display: "grid", gap: 12 }}>
