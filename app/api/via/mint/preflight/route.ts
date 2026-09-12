@@ -70,7 +70,7 @@ export async function POST(request: Request) {
       {
         resolved: true,
         source: "deso-create-nft-constructor",
-        quotedAt: new Date().toISOString(),
+        quotedAt: new Date(quoteCreatedAt).toISOString(),
         quote: {
           feeNanos,
           spendAmountNanos,
