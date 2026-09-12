@@ -69,6 +69,7 @@ export async function POST(request: Request) {
     return NextResponse.json(
       {
         resolved: true,
+        quoteContractVersion: 1,
         source: "deso-create-nft-constructor",
         quotedAt: new Date(quoteCreatedAt).toISOString(),
         serverNow: quoteCreatedAt,
