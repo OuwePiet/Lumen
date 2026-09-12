@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { getNFTsForUser } from "../../../deso-nfts"
+import { resolveDeSoListingEvidence } from "../../../../lib/via/deso-listing-server"
 
 export const dynamic = "force-dynamic"
 
@@ -25,40 +25,23 @@ export async function GET(request: Request) {
   }
 
   try {
-    const collections = await getNFTsForUser(sellerPublicKey)
-    const collection = collections.find(
-      (item) => item.PostEntryResponse?.PostHashHex === nftId.toLowerCase(),
-    )
+    const listing = await resolveDeSoListingEvidence({
+      nftId,
+      sellerPublicKey,
+    })
 
-    if (!collection) {
+    if (!listing) {
       return NextResponse.json(
         { resolved: false, reason: "nft-not-found-for-seller" },
         { status: 404, headers: noStore },
       )
     }
 
-    const entries = collection.NFTEntryResponses ?? []
-    const forSaleEntries = entries.filter((entry) => entry.IsForSale === true)
-    const buyNowPricesNanos = forSaleEntries
-      .map((entry) => entry.BuyNowPriceNanos)
-      .filter((value): value is number => Number.isFinite(value) && value! >= 0)
-    const minBidAmountsNanos = forSaleEntries
-      .map((entry) => entry.MinBidAmountNanos)
-      .filter((value): value is number => Number.isFinite(value) && value! >= 0)
-
     return NextResponse.json(
       {
         resolved: true,
         source: "deso-get-nfts-for-user",
-        listing: {
-          nftId: nftId.toLowerCase(),
-          sellerPublicKey,
-          forSale: forSaleEntries.length > 0,
-          copiesObserved: entries.length,
-          copiesForSale: forSaleEntries.length,
-          buyNowPricesNanos,
-          minBidAmountsNanos,
-        },
+        listing,
         commercialAuthority: {
           desoNanosOnly: true,
           fiatTermsAvailable: false,
