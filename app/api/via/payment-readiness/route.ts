@@ -8,9 +8,13 @@ export async function GET() {
 
   return NextResponse.json(
     {
-      methods: methods.map(({ method, actionable, priority }) => ({
+      methods: methods.map(({ method, released, operational, actionable, priority }) => ({
         method,
+        released,
+        operational,
         actionable,
+        checkoutEnabled:
+          actionable && (method === "fiat-eur" || method === "fiat-usd"),
         priority,
       })),
     },
