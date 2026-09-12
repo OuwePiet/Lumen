@@ -27,7 +27,7 @@ function expectedMethod(order: ViaCheckoutOrder): ViaPaymentMethodState["method"
 export function evaluateCheckoutHandoffEligibility(
   order: ViaCheckoutOrder,
   attempt: ViaCheckoutAttempt,
-  readiness: ViaPaymentMethodState[],
+  readiness: readonly ViaPaymentMethodState[],
 ): ViaCheckoutHandoffResult {
   const binding = validateOrderAttemptBinding(order, attempt)
   if (!binding.valid) return { eligible: false, reason: "order-attempt-mismatch" }
