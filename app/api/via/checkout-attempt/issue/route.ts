@@ -23,6 +23,26 @@ type IssueAttemptRequest = {
   method: ViaCheckoutAttemptInput["method"]
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value)
+}
+
+function isIssueAttemptRequest(value: unknown): value is IssueAttemptRequest {
+  if (!isRecord(value) || !isRecord(value.order)) return false
+
+  const order = value.order
+  if (typeof value.orderSignature !== "string" || !value.orderSignature.trim()) return false
+  if (!(value.method === "fiat-eur" || value.method === "fiat-usd" || value.method === "bitcoin" || value.method === "deso")) return false
+
+  if (typeof order.orderId !== "string" || !order.orderId.trim()) return false
+  if (typeof order.nftId !== "string" || !order.nftId.trim()) return false
+  if (typeof order.sellerPublicKey !== "string" || !order.sellerPublicKey.trim()) return false
+  if (order.buyerPublicKey !== undefined && (typeof order.buyerPublicKey !== "string" || !order.buyerPublicKey.trim())) return false
+  if (!Number.isSafeInteger(order.amountMinor) || (order.amountMinor as number) <= 0) return false
+  if (!(order.currency === "EUR" || order.currency === "USD" || order.currency === "BTC" || order.currency === "DESO")) return false
+  return order.status === "pending"
+}
+
 function methodMatchesCurrency(
   currency: ViaCheckoutOrder["currency"],
   method: ViaCheckoutAttemptInput["method"],
@@ -42,8 +62,8 @@ export async function POST(request: Request) {
       )
     }
 
-    const input = (await request.json()) as IssueAttemptRequest
-    if (!input?.order || !input?.orderSignature || !input?.method) {
+    const input = await request.json()
+    if (!isIssueAttemptRequest(input)) {
       return NextResponse.json(
         { issued: false, reason: "invalid-request" },
         { status: 400, headers: noStore },
@@ -57,7 +77,7 @@ export async function POST(request: Request) {
       )
     }
 
-    if (input.order.status !== "pending" || !methodMatchesCurrency(input.order.currency, input.method)) {
+    if (!methodMatchesCurrency(input.order.currency, input.method)) {
       return NextResponse.json(
         { issued: false, reason: "invalid-order-method" },
         { status: 409, headers: noStore },
