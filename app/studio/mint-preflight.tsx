@@ -119,7 +119,7 @@ export default function MintPreflight() {
     if (!valid || !session || requestInFlight.current) return
     requestInFlight.current = true
     const requestId = ++requestSequence.current
-    setLoading(true); setResult(null); setPreflightFailed(false); setMessage("Requesting current DeSo mint fee and spend context…")
+    setLoading(true); setResult(null); setServerClockOffset(0); setPreflightFailed(false); setMessage("Requesting current DeSo mint fee and spend context…")
     try {
       const response = await fetch("/api/via/mint/preflight", {
         method: "POST",
