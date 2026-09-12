@@ -100,6 +100,13 @@ export async function POST(request: Request) {
       )
     }
 
+    if (input.order.currency !== "EUR" && input.order.currency !== "USD") {
+      return NextResponse.json(
+        { eligible: false, reason: "payment-method-not-released" },
+        { status: 409, headers: noStore },
+      )
+    }
+
     const validation = validateProviderSessionPreflightInput(input.order, input.attempt)
     if (!validation.valid) {
       return NextResponse.json(
