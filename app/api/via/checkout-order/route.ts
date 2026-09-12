@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto"
 import { NextResponse } from "next/server"
+import { getNFTsForUser } from "../../../deso-nfts"
 import {
   createCheckoutOrder,
   type ViaCheckoutOrderInput,
@@ -53,6 +54,18 @@ function methodForCurrency(currency: ViaCheckoutOrderInput["currency"]) {
   return "deso" as const
 }
 
+async function isDeSoListingCurrentlyForSale(input: {
+  nftId: string
+  sellerPublicKey: string
+}) {
+  const collections = await getNFTsForUser(input.sellerPublicKey)
+  const collection = collections.find(
+    (item) => item.PostEntryResponse?.PostHashHex === input.nftId.toLowerCase(),
+  )
+
+  return Boolean(collection?.NFTEntryResponses?.some((entry) => entry.IsForSale === true))
+}
+
 export async function POST(request: Request) {
   try {
     if (!checkoutOrderSigningReady()) {
@@ -89,6 +102,26 @@ export async function POST(request: Request) {
     if (!authoritativeTerm) {
       return NextResponse.json(
         { issued: false, reason: "authoritative-commercial-terms-unavailable" },
+        { status: 409, headers: noStore },
+      )
+    }
+
+    let listingForSale = false
+    try {
+      listingForSale = await isDeSoListingCurrentlyForSale({
+        nftId: authoritativeTerm.nftId,
+        sellerPublicKey: authoritativeTerm.sellerPublicKey,
+      })
+    } catch {
+      return NextResponse.json(
+        { issued: false, reason: "deso-listing-source-unavailable" },
+        { status: 503, headers: noStore },
+      )
+    }
+
+    if (!listingForSale) {
+      return NextResponse.json(
+        { issued: false, reason: "deso-listing-not-for-sale" },
         { status: 409, headers: noStore },
       )
     }
