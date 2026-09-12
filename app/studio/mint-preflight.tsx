@@ -55,6 +55,7 @@ export default function MintPreflight() {
   const [unlockable, setUnlockable] = useState(false)
   const [loading, setLoading] = useState(false)
   const requestInFlight = useRef(false)
+  const requestSequence = useRef(0)
   const [now, setNow] = useState(() => Date.now())
   const [result, setResult] = useState<MintQuote | null>(null)
   const [quotedPublicKey, setQuotedPublicKey] = useState("")
@@ -105,6 +106,7 @@ export default function MintPreflight() {
   async function requestPreflight() {
     if (!valid || !session || requestInFlight.current) return
     requestInFlight.current = true
+    const requestId = ++requestSequence.current
     setLoading(true); setResult(null); setPreflightFailed(false); setMessage("Requesting current DeSo mint fee and spend context…")
     try {
       const response = await fetch("/api/via/mint/preflight", {
@@ -125,12 +127,14 @@ export default function MintPreflight() {
         }),
       })
       const data: MintQuote = await response.json().catch(() => ({}))
+      if (requestId !== requestSequence.current) return
       setResult(data)
       setQuotedPublicKey(response.ok && data.resolved && data.quotedForPublicKey === session.publicKey ? data.quotedForPublicKey : "")
       const accepted = response.ok && data.resolved && data.quotedForPublicKey === session.publicKey
       setPreflightFailed(!accepted)
       setMessage(accepted ? "Fresh unsigned DeSo mint quote loaded. Nothing has been signed or submitted." : response.ok && data.resolved ? "Preflight stopped: quote account did not match the active DeSo Identity." : `Preflight stopped: ${data.reason ?? "quote unavailable"}.`)
     } catch {
+      if (requestId !== requestSequence.current) return
       setPreflightFailed(true)
       setMessage("Preflight stopped: current DeSo quote could not be loaded.")
     } finally {
@@ -140,6 +144,7 @@ export default function MintPreflight() {
   }
 
   function resetPreflight() {
+    requestSequence.current += 1
     setResult(null)
     setQuotedPublicKey("")
     setPreflightFailed(false)
