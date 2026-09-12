@@ -16,6 +16,9 @@ export const runtime = "nodejs"
 
 const noStore = { "Cache-Control": "no-store" }
 const ATTEMPT_TTL_MS = 15 * 60 * 1000
+const POST_HASH_RE = /^[0-9a-fA-F]{64}$/
+const PUBLIC_KEY_RE = /^[1-9A-HJ-NP-Za-km-z]{20,100}$/
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 
 type IssueAttemptRequest = {
   order: ViaCheckoutOrder
@@ -27,18 +30,24 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value)
 }
 
+function hasOnlyKeys(value: Record<string, unknown>, allowed: readonly string[]) {
+  return Object.keys(value).every((key) => allowed.includes(key))
+}
+
 function isIssueAttemptRequest(value: unknown): value is IssueAttemptRequest {
   if (!isRecord(value) || !isRecord(value.order)) return false
+  if (!hasOnlyKeys(value, ["order", "orderSignature", "method"])) return false
 
   const order = value.order
+  if (!hasOnlyKeys(order, ["orderId", "nftId", "sellerPublicKey", "buyerPublicKey", "amountMinor", "currency", "status"])) return false
   if (typeof value.orderSignature !== "string" || !value.orderSignature.trim()) return false
   if (!(value.method === "fiat-eur" || value.method === "fiat-usd" || value.method === "bitcoin" || value.method === "deso")) return false
 
-  if (typeof order.orderId !== "string" || !order.orderId.trim()) return false
-  if (typeof order.nftId !== "string" || !order.nftId.trim()) return false
-  if (typeof order.sellerPublicKey !== "string" || !order.sellerPublicKey.trim()) return false
-  if (order.buyerPublicKey !== undefined && (typeof order.buyerPublicKey !== "string" || !order.buyerPublicKey.trim())) return false
-  if (!Number.isSafeInteger(order.amountMinor) || (order.amountMinor as number) <= 0) return false
+  if (typeof order.orderId !== "string" || !UUID_RE.test(order.orderId)) return false
+  if (typeof order.nftId !== "string" || !POST_HASH_RE.test(order.nftId)) return false
+  if (typeof order.sellerPublicKey !== "string" || !PUBLIC_KEY_RE.test(order.sellerPublicKey)) return false
+  if (order.buyerPublicKey !== undefined && (typeof order.buyerPublicKey !== "string" || !PUBLIC_KEY_RE.test(order.buyerPublicKey))) return false
+  if (!Number.isSafeInteger(order.amountMinor) || Number(order.amountMinor) <= 0) return false
   if (!(order.currency === "EUR" || order.currency === "USD" || order.currency === "BTC" || order.currency === "DESO")) return false
   return order.status === "pending"
 }
@@ -62,7 +71,7 @@ export async function POST(request: Request) {
       )
     }
 
-    const input = await request.json()
+    const input: unknown = await request.json()
     if (!isIssueAttemptRequest(input)) {
       return NextResponse.json(
         { issued: false, reason: "invalid-request" },
