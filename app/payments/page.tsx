@@ -1,3 +1,4 @@
+import Link from "next/link"
 import CheckoutSecurityPreview from "../checkout-security-preview"
 import ViaPaymentReadiness from "../via-payment-readiness"
 
@@ -27,6 +28,13 @@ export default function PaymentsPage() {
           VIA · PAYMENT AVAILABILITY
         </p>
         <h1 style={{ fontSize: 24 }}>Payment methods</h1>
+        <p style={{ color: "#b9c6be", lineHeight: 1.6 }}>
+          Costs caused by a paid action are shown before confirmation wherever possible. See the{" "}
+          <Link href="/transparency" style={{ color: "#a9dfba" }}>
+            costs & transparency rules
+          </Link>
+          .
+        </p>
         <ViaPaymentReadiness />
         <CheckoutSecurityPreview />
       </section>
