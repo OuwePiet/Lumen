@@ -10,13 +10,20 @@ import {
   signCheckoutOrder,
 } from "../../../../lib/via/checkout-order-signing"
 import { currentPaymentReadiness } from "../../../../lib/via/payment-readiness-server"
+import { resolveServerListingCommercialTerm } from "../../../../lib/via/listing-commercial-terms-server"
 
 export const dynamic = "force-dynamic"
 export const runtime = "nodejs"
 
 const noStore = { "Cache-Control": "no-store" }
 
-type IssueCheckoutOrderRequest = Omit<ViaCheckoutOrderInput, "orderId">
+type IssueCheckoutOrderRequest = {
+  nftId: string
+  sellerPublicKey: string
+  buyerPublicKey?: string
+  amountMinor?: number
+  currency: ViaCheckoutOrderInput["currency"]
+}
 
 function isIssueCheckoutOrderRequest(value: unknown): value is IssueCheckoutOrderRequest {
   if (!value || typeof value !== "object" || Array.isArray(value)) return false
@@ -30,7 +37,12 @@ function isIssueCheckoutOrderRequest(value: unknown): value is IssueCheckoutOrde
   ) {
     return false
   }
-  if (!Number.isSafeInteger(input.amountMinor) || Number(input.amountMinor) <= 0) return false
+  if (
+    input.amountMinor !== undefined &&
+    (!Number.isSafeInteger(input.amountMinor) || Number(input.amountMinor) <= 0)
+  ) {
+    return false
+  }
   return ["EUR", "USD", "BTC", "DESO"].includes(String(input.currency))
 }
 
@@ -58,13 +70,36 @@ export async function POST(request: Request) {
       )
     }
 
+    const nftId = rawInput.nftId.trim()
+    const sellerPublicKey = rawInput.sellerPublicKey.trim()
+    const buyerPublicKey = rawInput.buyerPublicKey?.trim()
+
+    if (rawInput.currency !== "EUR" && rawInput.currency !== "USD") {
+      return NextResponse.json(
+        { issued: false, reason: "authoritative-commercial-terms-unavailable" },
+        { status: 409, headers: noStore },
+      )
+    }
+
+    const authoritativeTerm = resolveServerListingCommercialTerm({
+      nftId,
+      sellerPublicKey,
+      currency: rawInput.currency,
+    })
+    if (!authoritativeTerm) {
+      return NextResponse.json(
+        { issued: false, reason: "authoritative-commercial-terms-unavailable" },
+        { status: 409, headers: noStore },
+      )
+    }
+
     const serverInput: ViaCheckoutOrderInput = {
       orderId: randomUUID(),
-      nftId: rawInput.nftId.trim(),
-      sellerPublicKey: rawInput.sellerPublicKey.trim(),
-      buyerPublicKey: rawInput.buyerPublicKey?.trim(),
-      amountMinor: rawInput.amountMinor,
-      currency: rawInput.currency,
+      nftId: authoritativeTerm.nftId,
+      sellerPublicKey: authoritativeTerm.sellerPublicKey,
+      buyerPublicKey,
+      amountMinor: authoritativeTerm.amountMinor,
+      currency: authoritativeTerm.currency,
     }
 
     const validation = validateCheckoutOrderForAttempt(serverInput)
@@ -80,7 +115,7 @@ export async function POST(request: Request) {
     const methodState = readiness.methods.find((item) => item.method === method)
     if (!methodState?.released || !methodState.actionable) {
       return NextResponse.json(
-        { issued: false, reason: method === "deso" ? "deso-not-released" : "payment-method-unavailable" },
+        { issued: false, reason: "payment-method-unavailable" },
         { status: 409, headers: noStore },
       )
     }
