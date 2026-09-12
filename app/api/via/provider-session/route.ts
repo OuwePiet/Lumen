@@ -4,6 +4,7 @@ import { currentPaymentReadiness } from "../../../../lib/via/payment-readiness-s
 import { createProviderSessionDraft } from "../../../../lib/via/provider-session-boundary"
 import { validateProviderSessionPreflightInput } from "../../../../lib/via/provider-session-preflight-validation"
 import { verifyCheckoutAttemptSignature } from "../../../../lib/via/checkout-attempt-signing"
+import { verifyCheckoutOrderSignature } from "../../../../lib/via/checkout-order-signing"
 import type { ViaCheckoutOrder } from "../../../../lib/via/checkout-order-boundary"
 import type { ViaCheckoutAttempt } from "../../../../lib/via/checkout-attempt-foundation"
 
@@ -12,6 +13,7 @@ export const runtime = "nodejs"
 
 type ProviderSessionPreflightRequest = {
   order: ViaCheckoutOrder
+  orderSignature: string
   attempt: ViaCheckoutAttempt
   attemptSignature: string
 }
@@ -21,10 +23,22 @@ const noStore = { "Cache-Control": "no-store" }
 export async function POST(request: Request) {
   try {
     const input = (await request.json()) as ProviderSessionPreflightRequest
-    if (!input?.order || !input?.attempt || !input?.attemptSignature) {
+    if (
+      !input?.order ||
+      !input?.orderSignature ||
+      !input?.attempt ||
+      !input?.attemptSignature
+    ) {
       return NextResponse.json(
         { eligible: false, reason: "invalid-request" },
         { status: 400, headers: noStore },
+      )
+    }
+
+    if (!verifyCheckoutOrderSignature(input.order, input.orderSignature)) {
+      return NextResponse.json(
+        { eligible: false, reason: "invalid-order-signature" },
+        { status: 409, headers: noStore },
       )
     }
 
