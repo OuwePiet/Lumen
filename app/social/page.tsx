@@ -17,10 +17,10 @@ const releasedCapabilities = [
   "Saved posts",
   "Notification filters",
   "Edit own post",
+  "Hot feed",
 ]
 
 const futureIdeas = [
-  { title: "Hot", text: "A possible future view for active public DeSo conversations. It only becomes live if the ranking can stay explainable and abuse-resistant." },
   { title: "Language & region views", text: "A future preference for discovering public content by explicit language or region metadata. It will not silently translate posts, infer location in the background or require a paid translation service." },
 ]
 
