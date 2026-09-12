@@ -7,6 +7,8 @@ type MintQuote = {
   resolved?: boolean
   reason?: string
   quotedAt?: string
+  quoteId?: string
+  expiresAt?: string
   quote?: {
     feeNanos?: number | null
     spendAmountNanos?: number | null
@@ -116,7 +118,7 @@ export default function MintPreflight() {
         <div><p className="text-xs uppercase tracking-[0.12em] text-zinc-500">Network fee</p><p className="mt-1 text-sm text-zinc-200">{nanos(result.quote?.feeNanos)}</p></div>
         <div><p className="text-xs uppercase tracking-[0.12em] text-zinc-500">Spend amount</p><p className="mt-1 text-sm text-zinc-200">{nanos(result.quote?.spendAmountNanos)}</p></div>
         <div><p className="text-xs uppercase tracking-[0.12em] text-zinc-500">VIA service fee</p><p className="mt-1 text-sm text-zinc-200">{nanos(result.quote?.viaServiceFeeNanos)}</p></div>
-        <div><p className="text-xs uppercase tracking-[0.12em] text-zinc-500">Quote time</p><p className="mt-1 text-sm text-zinc-200">{result.quotedAt ? new Date(result.quotedAt).toLocaleString() : "Unavailable"}</p></div>
+        <div><p className="text-xs uppercase tracking-[0.12em] text-zinc-500">Quote valid until</p><p className="mt-1 text-sm text-zinc-200">{result.expiresAt ? new Date(result.expiresAt).toLocaleTimeString() : "Unavailable"}</p></div>
       </div> : null}
 
       <div className="mt-4 rounded-[11px] border border-amber-900/50 bg-amber-950/15 px-4 py-3 text-sm leading-6 text-amber-100/80">Any changed mint term invalidates the displayed quote. Before a future approval/sign step, VIA must refresh current costs again. DESO payment, provider checkout and NFT transfer remain blocked.</div>

@@ -88,6 +88,8 @@ export async function POST(request: Request) {
           buyNowPriceNanos: input.buyNowPriceNanos,
         },
         unsignedTransactionConstructed: true,
+        quoteId: crypto.randomUUID(),
+        expiresAt: new Date(Date.now() + 5 * 60 * 1000).toISOString(),
         transactionHexExposed: false,
         mintAuthorized: false,
         paymentAuthorized: false,
