@@ -17,6 +17,7 @@ type MintQuote = {
     viaServiceFeeNanos?: number | null
   }
   mintAuthorized?: boolean
+  mint?: { updaterPublicKey?: string }
 }
 
 const field = "w-full rounded-[11px] border border-zinc-700/80 bg-[#050807] px-3 py-3 text-base text-zinc-100 outline-none focus:border-[#8fd4a9]/55 focus:ring-2 focus:ring-[#8fd4a9]/10"
@@ -40,6 +41,7 @@ export default function MintPreflight() {
   const [loading, setLoading] = useState(false)
   const [now, setNow] = useState(() => Date.now())
   const [result, setResult] = useState<MintQuote | null>(null)
+  const [quotedPublicKey, setQuotedPublicKey] = useState("")
   const [message, setMessage] = useState("Enter mint terms to request a fresh DeSo constructor quote.")
 
   useEffect(() => {
@@ -51,6 +53,7 @@ export default function MintPreflight() {
 
   useEffect(() => {
     setResult(null)
+    setQuotedPublicKey("")
     setMessage("Terms changed. Refresh the DeSo quote before any later approval.")
   }, [postHash, copies, forSale, buyNow, minBid, buyNowPrice, creatorRoyalty, coinRoyalty, unlockable])
 
@@ -59,6 +62,7 @@ export default function MintPreflight() {
     return () => window.clearInterval(timer)
   }, [])
 
+  const quoteSessionMismatch = Boolean(result?.resolved && quotedPublicKey && session?.publicKey !== quotedPublicKey)
   const quoteExpiresAt = result?.expiresAt ? Date.parse(result.expiresAt) : Number.NaN
   const quoteExpired = Boolean(result?.resolved && (!Number.isFinite(quoteExpiresAt) || now >= quoteExpiresAt))
   const quoteSecondsLeft = quoteExpired || !Number.isFinite(quoteExpiresAt) ? 0 : Math.max(0, Math.ceil((quoteExpiresAt - now) / 1000))
@@ -91,6 +95,7 @@ export default function MintPreflight() {
       })
       const data: MintQuote = await response.json().catch(() => ({}))
       setResult(data)
+      setQuotedPublicKey(response.ok && data.resolved ? session.publicKey : "")
       setMessage(response.ok && data.resolved ? "Fresh unsigned DeSo mint quote loaded. Nothing has been signed or submitted." : `Preflight stopped: ${data.reason ?? "quote unavailable"}.`)
     } catch {
       setMessage("Preflight stopped: current DeSo quote could not be loaded.")
@@ -131,7 +136,7 @@ export default function MintPreflight() {
         <div><p className="text-xs uppercase tracking-[0.12em] text-zinc-500">Quote valid until</p><p className="mt-1 text-sm text-zinc-200">{result.expiresAt ? new Date(result.expiresAt).toLocaleTimeString() : "Unavailable"}{!quoteExpired && quoteSecondsLeft > 0 ? ` · ${Math.floor(quoteSecondsLeft / 60)}:${String(quoteSecondsLeft % 60).padStart(2, "0")} left` : ""}</p></div>
       </div> : null}
 
-      {quoteExpired ? <div className="mt-4 rounded-[11px] border border-red-900/50 bg-red-950/15 px-4 py-3 text-sm leading-6 text-red-100/80">This mint quote has expired. Refresh the current DeSo cost before any later approval.</div> : null}\n      <div className="mt-4 rounded-[11px] border border-amber-900/50 bg-amber-950/15 px-4 py-3 text-sm leading-6 text-amber-100/80">Any changed mint term invalidates the displayed quote. Before a future approval/sign step, VIA must refresh current costs again. DESO payment, provider checkout and NFT transfer remain blocked.</div>
+      {quoteSessionMismatch ? <div className="mt-4 rounded-[11px] border border-red-900/50 bg-red-950/15 px-4 py-3 text-sm leading-6 text-red-100/80">The active DeSo Identity changed after this quote was created. This quote is no longer valid for approval; request a fresh quote for the active account.</div> : null}\n      {quoteExpired ? <div className="mt-4 rounded-[11px] border border-red-900/50 bg-red-950/15 px-4 py-3 text-sm leading-6 text-red-100/80">This mint quote has expired. Refresh the current DeSo cost before any later approval.</div> : null}\n      <div className="mt-4 rounded-[11px] border border-amber-900/50 bg-amber-950/15 px-4 py-3 text-sm leading-6 text-amber-100/80">Any changed mint term invalidates the displayed quote. Before a future approval/sign step, VIA must refresh current costs again. DESO payment, provider checkout and NFT transfer remain blocked.</div>
       <button type="button" disabled aria-disabled="true" className="mt-4 min-h-11 rounded-[11px] border border-zinc-800 bg-transparent px-4 py-2 text-sm text-zinc-600">Approve &amp; mint — not released</button>
     </section>
   )
