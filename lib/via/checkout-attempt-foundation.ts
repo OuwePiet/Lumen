@@ -17,7 +17,12 @@ export type ViaCheckoutAttempt = ViaCheckoutAttemptInput & {
 export function validateCheckoutAttemptInput(input: ViaCheckoutAttemptInput): boolean {
   if (!input.orderId.trim() || !input.createdAt || !input.expiresAt) return false
   if (!Number.isSafeInteger(input.amountMinor) || input.amountMinor <= 0) return false
-  if (new Date(input.expiresAt).getTime() <= new Date(input.createdAt).getTime()) return false
+
+  const createdAtMs = Date.parse(input.createdAt)
+  const expiresAtMs = Date.parse(input.expiresAt)
+  if (!Number.isFinite(createdAtMs) || !Number.isFinite(expiresAtMs)) return false
+  if (expiresAtMs <= createdAtMs) return false
+
   if (input.currency === "EUR" && input.method !== "fiat-eur") return false
   if (input.currency === "USD" && input.method !== "fiat-usd") return false
   if (input.currency === "BTC" && input.method !== "bitcoin") return false
@@ -33,6 +38,6 @@ export function createCheckoutAttempt(input: ViaCheckoutAttemptInput, attemptId:
 export const VIA_CHECKOUT_ATTEMPT_RULES = {
   serverAuthority: "Checkout attempts are server-side state; browser state never confirms payment.",
   exactBinding: "An attempt binds one order, one amount, one currency and one payment method.",
-  expiry: "The expiry timestamp must be later than creation time; expired attempts cannot be created from this foundation.",
+  expiry: "Creation and expiry timestamps must be valid dates and expiry must be later than creation time.",
   noPayment: "This foundation creates no provider session, charge, transfer, signature or blockchain write.",
 } as const
