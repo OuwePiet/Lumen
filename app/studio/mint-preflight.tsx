@@ -82,6 +82,16 @@ export default function MintPreflight() {
   const quoteExpired = Boolean(result?.resolved && (!Number.isFinite(quoteExpiresAt) || now >= quoteExpiresAt))
   const quoteSecondsLeft = quoteExpired || !Number.isFinite(quoteExpiresAt) ? 0 : Math.max(0, Math.ceil((quoteExpiresAt - now) / 1000))
 
+  const validationMessage = useMemo(() => {
+    if (!session) return "Log in with DeSo Identity to request a mint quote."
+    if (!/^[0-9a-fA-F]{64}$/.test(postHash.trim())) return "Enter a valid 64-character DeSo NFT post hash."
+    if (!Number.isSafeInteger(Number(copies)) || Number(copies) < 1 || Number(copies) > 10000) return "Copies must be a whole number from 1 to 10,000."
+    if (![minBid, buyNowPrice, creatorRoyalty, coinRoyalty].map(Number).every((n) => Number.isSafeInteger(n) && n >= 0)) return "Prices and royalties must be non-negative whole numbers."
+    if (Number(creatorRoyalty) + Number(coinRoyalty) > 10000) return "Creator and coin royalties together cannot exceed 100%."
+    if (buyNow && (!forSale || Number(buyNowPrice) <= 0 || unlockable)) return "Buy Now requires a sale price above zero and cannot be combined with unlockable content in this flow."
+    return ""
+  }, [session, postHash, copies, minBid, buyNowPrice, creatorRoyalty, coinRoyalty, buyNow, forSale, unlockable])
+
   const valid = useMemo(() => {
     const ints = [copies, minBid, buyNowPrice, creatorRoyalty, coinRoyalty].map(Number)
     return Boolean(session && /^[0-9a-fA-F]{64}$/.test(postHash.trim()) && ints.every(Number.isSafeInteger) && ints.every((n) => n >= 0) && Number(copies) >= 1 && Number(copies) <= 10000 && Number(creatorRoyalty) + Number(coinRoyalty) <= 10000 && (!buyNow || (forSale && Number(buyNowPrice) > 0 && !unlockable)))
@@ -140,7 +150,7 @@ export default function MintPreflight() {
         </div>
         {forSale ? <div className="grid gap-4 sm:grid-cols-2"><label className="grid gap-2"><span className="text-sm font-semibold text-zinc-200">Minimum bid</span><span className="text-xs text-zinc-500">DeSo nanos; 1 DESO = 1,000,000,000 nanos. No fiat conversion is assumed here.</span><input className={field} type="number" min="0" step="1" value={minBid} onChange={(e)=>setMinBid(e.target.value)}/></label>{buyNow?<label className="grid gap-2"><span className="text-sm font-semibold text-zinc-200">Buy Now price</span><span className="text-xs text-zinc-500">DeSo nanos; VIA does not treat this as an EUR/USD checkout price.</span><input className={field} type="number" min="1" step="1" value={buyNowPrice} onChange={(e)=>setBuyNowPrice(e.target.value)}/></label>:null}</div> : null}
 
-        <button type="submit" disabled={!valid || loading} className="min-h-11 w-fit rounded-[11px] border border-[#8fd4a9]/45 px-4 py-2 text-sm font-semibold text-[#9adbb2] disabled:border-zinc-800 disabled:text-zinc-600">{loading ? "Checking current DeSo cost…" : "Check current mint cost"}</button>
+        {validationMessage ? <p className="rounded-[10px] border border-zinc-800/80 bg-black/20 px-3 py-2 text-xs leading-5 text-zinc-500">{validationMessage}</p> : null}\n        <button type="submit" disabled={!valid || loading} className="min-h-11 w-fit rounded-[11px] border border-[#8fd4a9]/45 px-4 py-2 text-sm font-semibold text-[#9adbb2] disabled:border-zinc-800 disabled:text-zinc-600">{loading ? "Checking current DeSo cost…" : "Check current mint cost"}</button>
         <p className="text-sm leading-6 text-zinc-400" role="status">{message}</p>
       </form>
 
