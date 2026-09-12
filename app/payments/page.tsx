@@ -1,3 +1,4 @@
+import CheckoutSecurityPreview from "../checkout-security-preview"
 import ViaPaymentReadiness from "../via-payment-readiness"
 
 export const dynamic = "force-dynamic"
@@ -27,6 +28,7 @@ export default function PaymentsPage() {
         </p>
         <h1 style={{ fontSize: 24 }}>Payment methods</h1>
         <ViaPaymentReadiness />
+        <CheckoutSecurityPreview />
       </section>
     </main>
   )
