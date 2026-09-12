@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server"
 import { evaluateCheckoutHandoffEligibility } from "../../../../lib/via/checkout-handoff-eligibility"
+import { resolveDeSoListingEvidence } from "../../../../lib/via/deso-listing-server"
+import { resolveServerListingCommercialTerm } from "../../../../lib/via/listing-commercial-terms-server"
 import { currentPaymentReadiness } from "../../../../lib/via/payment-readiness-server"
 import { createProviderSessionDraft } from "../../../../lib/via/provider-session-boundary"
 import { validateProviderSessionPreflightInput } from "../../../../lib/via/provider-session-preflight-validation"
@@ -111,6 +113,38 @@ export async function POST(request: Request) {
     if (!validation.valid) {
       return NextResponse.json(
         { eligible: false, reason: validation.reason },
+        { status: 409, headers: noStore },
+      )
+    }
+
+    const currentTerm = resolveServerListingCommercialTerm({
+      nftId: input.order.nftId,
+      sellerPublicKey: input.order.sellerPublicKey,
+      currency: input.order.currency,
+    })
+    if (!currentTerm || currentTerm.amountMinor !== input.order.amountMinor) {
+      return NextResponse.json(
+        { eligible: false, reason: "authoritative-commercial-terms-changed" },
+        { status: 409, headers: noStore },
+      )
+    }
+
+    let listing = null
+    try {
+      listing = await resolveDeSoListingEvidence({
+        nftId: input.order.nftId,
+        sellerPublicKey: input.order.sellerPublicKey,
+      })
+    } catch {
+      return NextResponse.json(
+        { eligible: false, reason: "deso-listing-source-unavailable" },
+        { status: 503, headers: noStore },
+      )
+    }
+
+    if (!listing?.forSale) {
+      return NextResponse.json(
+        { eligible: false, reason: "deso-listing-not-for-sale" },
         { status: 409, headers: noStore },
       )
     }
