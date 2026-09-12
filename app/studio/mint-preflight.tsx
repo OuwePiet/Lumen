@@ -95,7 +95,8 @@ export default function MintPreflight() {
   const visibleCostBoundaryNanos = result?.resolved ? sumKnownNanos(result.quote?.feeNanos, result.quote?.spendAmountNanos, result.quote?.viaServiceFeeNanos) : null
   const quoteSessionMismatch = Boolean(result?.resolved && quotedPublicKey && session?.publicKey !== quotedPublicKey)
   const quoteExpiresAt = result?.expiresAt ? Date.parse(result.expiresAt) : Number.NaN
-  const quoteExpired = Boolean(result?.resolved && (!Number.isFinite(quoteExpiresAt) || now >= quoteExpiresAt))
+  const effectiveNow = now + serverClockOffset
+  const quoteExpired = Boolean(result?.resolved && (!Number.isFinite(quoteExpiresAt) || effectiveNow >= quoteExpiresAt))
   const quoteSecondsLeft = quoteExpired || !Number.isFinite(quoteExpiresAt) ? 0 : Math.max(0, Math.ceil((quoteExpiresAt - effectiveNow) / 1000))
   const quoteUsable = Boolean(result?.resolved && !quoteExpired && !quoteSessionMismatch && quotedPublicKey && quotedPublicKey === session?.publicKey)
 
