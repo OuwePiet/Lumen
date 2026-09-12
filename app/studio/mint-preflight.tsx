@@ -60,6 +60,7 @@ export default function MintPreflight() {
   const requestInFlight = useRef(false)
   const requestSequence = useRef(0)
   const [now, setNow] = useState(() => Date.now())
+  const [serverClockOffset, setServerClockOffset] = useState(0)
   const [result, setResult] = useState<MintQuote | null>(null)
   const [quotedPublicKey, setQuotedPublicKey] = useState("")
   const [message, setMessage] = useState("Enter mint terms to request a fresh DeSo constructor quote.")
@@ -81,6 +82,7 @@ export default function MintPreflight() {
   useEffect(() => {
     setResult(null)
     setQuotedPublicKey("")
+    setServerClockOffset(0)
     setPreflightFailed(false)
     setMessage("Terms changed. Refresh the DeSo quote before any later approval.")
   }, [postHash, copies, forSale, buyNow, minBid, buyNowPrice, creatorRoyalty, coinRoyalty, unlockable])
@@ -93,8 +95,9 @@ export default function MintPreflight() {
   const visibleCostBoundaryNanos = result?.resolved ? sumKnownNanos(result.quote?.feeNanos, result.quote?.spendAmountNanos, result.quote?.viaServiceFeeNanos) : null
   const quoteSessionMismatch = Boolean(result?.resolved && quotedPublicKey && session?.publicKey !== quotedPublicKey)
   const quoteExpiresAt = result?.expiresAt ? Date.parse(result.expiresAt) : Number.NaN
-  const quoteExpired = Boolean(result?.resolved && (!Number.isFinite(quoteExpiresAt) || now >= quoteExpiresAt))
-  const quoteSecondsLeft = quoteExpired || !Number.isFinite(quoteExpiresAt) ? 0 : Math.max(0, Math.ceil((quoteExpiresAt - now) / 1000))
+  const effectiveNow = now + serverClockOffset
+  const quoteExpired = Boolean(result?.resolved && (!Number.isFinite(quoteExpiresAt) || effectiveNow >= quoteExpiresAt))
+  const quoteSecondsLeft = quoteExpired || !Number.isFinite(quoteExpiresAt) ? 0 : Math.max(0, Math.ceil((quoteExpiresAt - effectiveNow) / 1000))
   const quoteUsable = Boolean(result?.resolved && !quoteExpired && !quoteSessionMismatch && quotedPublicKey && quotedPublicKey === session?.publicKey)
 
   const validationMessage = useMemo(() => {
@@ -138,6 +141,7 @@ export default function MintPreflight() {
       const data: MintQuote = await response.json().catch(() => ({}))
       if (requestId !== requestSequence.current) return
       setResult(data)
+      if (typeof data.serverNow === "number") setServerClockOffset(data.serverNow - Date.now())
       setQuotedPublicKey(response.ok && data.resolved && data.quotedForPublicKey === session.publicKey ? data.quotedForPublicKey : "")
       const accepted = response.ok && data.resolved && data.quotedForPublicKey === session.publicKey
       setPreflightFailed(!accepted)
