@@ -105,7 +105,8 @@ export default function MintPreflight() {
     try {
       const response = await fetch("/api/via/mint/preflight", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "Cache-Control": "no-store" },
+        cache: "no-store",
         body: JSON.stringify({
           updaterPublicKey: session.publicKey,
           nftPostHashHex: postHash.trim(),
