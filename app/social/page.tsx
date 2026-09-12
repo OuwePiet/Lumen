@@ -4,8 +4,24 @@ import PublicPosts from "./public-posts"
 import ParticipationGate from "../participation-gate"
 import PostComposer from "./post-composer"
 
+const releasedCapabilities = [
+  "5,000-character posts",
+  "Up to 4 images",
+  "Video",
+  "Replies",
+  "Likes",
+  "Follow / Unfollow",
+  "Repost / Quote",
+  "Diamonds",
+  "Polls",
+  "Saved posts",
+]
+
 const futureIdeas = [
   { title: "Hot", text: "A possible future view for active public DeSo conversations. It only becomes live if the ranking can stay explainable and abuse-resistant." },
+  { title: "Edit post", text: "Worth adding only after VIA verifies the current official DeSo edit/update transaction path and can keep the same explicit approval boundary as other writes." },
+  { title: "Notification filters", text: "Mentions, replies, reposts, follows and diamonds can become separate filters when the underlying DeSo event data is reliable enough to avoid misleading counts." },
+  { title: "Language & region views", text: "A future preference for discovering public content by explicit language or region metadata. It will not silently translate posts, infer location in the background or require a paid translation service." },
 ]
 
 const remainingActions = [
@@ -32,11 +48,24 @@ export default function SocialPage() {
           text="Public feeds stay open. When you want to take part, continue through DeSo Identity; VIA changes participation state only after a valid Identity login response is received."
         />
 
+        <section className="mt-6 rounded-2xl border border-zinc-800 bg-zinc-950/55 p-5" aria-labelledby="social-capabilities-heading">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#8fd4a9]">Available in VIA</p>
+          <h2 id="social-capabilities-heading" className="mt-2 text-xl font-semibold">A broader DeSo social toolkit</h2>
+          <p className="mt-2 max-w-3xl text-sm leading-6 text-zinc-400">
+            VIA builds on DeSo&apos;s public social layer with its own guarded interface. Generic improvements from the wider DeSo ecosystem are considered when they are useful, affordable and technically verifiable; third-party branding and proprietary reward products are not copied.
+          </p>
+          <div className="mt-4 flex flex-wrap gap-2" aria-label="Released VIA social capabilities">
+            {releasedCapabilities.map((capability) => (
+              <span key={capability} className="rounded-full border border-zinc-800 px-3 py-1.5 text-xs text-zinc-300">{capability}</span>
+            ))}
+          </div>
+        </section>
+
         <section className="mt-6 rounded-2xl border border-zinc-800 bg-zinc-950/70 p-5" aria-labelledby="composer-heading">
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-green-400">Released participation controls</p>
           <h2 id="composer-heading" className="mt-2 text-2xl font-semibold">Post, reply and add media through DeSo</h2>
           <p className="mt-2 max-w-3xl text-sm leading-6 text-zinc-400">
-            Images and videos can be prepared inside the same composer while media upload stays technically separate from publishing. Publishing still requires the exact DeSo transaction to be reviewed and approved through DeSo Identity.
+            Posts can contain up to 5,000 characters and four images, with optional video. Media upload stays technically separate from publishing, and publishing still requires the exact DeSo transaction to be reviewed and approved through DeSo Identity.
           </p>
           <PostComposer />
         </section>
@@ -46,6 +75,7 @@ export default function SocialPage() {
 
         <section className="mt-8" aria-labelledby="future-social-heading">
           <h2 id="future-social-heading" className="text-2xl font-semibold">Ideas under evaluation</h2>
+          <p className="mt-2 max-w-3xl text-sm leading-6 text-zinc-400">Only generic product ideas are evaluated here. VIA will not copy proprietary code, branding or branded reward programs from another application.</p>
           <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {futureIdeas.map((idea) => (
               <article key={idea.title} className="rounded-2xl border border-zinc-800 bg-zinc-950 p-5">
