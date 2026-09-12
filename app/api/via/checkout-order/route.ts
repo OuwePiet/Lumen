@@ -9,6 +9,7 @@ import {
   checkoutOrderSigningReady,
   signCheckoutOrder,
 } from "../../../../lib/via/checkout-order-signing"
+import { currentPaymentReadiness } from "../../../../lib/via/payment-readiness-server"
 
 export const dynamic = "force-dynamic"
 export const runtime = "nodejs"
@@ -16,6 +17,13 @@ export const runtime = "nodejs"
 const noStore = { "Cache-Control": "no-store" }
 
 type IssueCheckoutOrderRequest = Omit<ViaCheckoutOrderInput, "orderId">
+
+function methodForCurrency(currency: ViaCheckoutOrderInput["currency"]) {
+  if (currency === "EUR") return "fiat-eur" as const
+  if (currency === "USD") return "fiat-usd" as const
+  if (currency === "BTC") return "bitcoin" as const
+  return "deso" as const
+}
 
 export async function POST(request: Request) {
   try {
@@ -41,6 +49,16 @@ export async function POST(request: Request) {
       return NextResponse.json(
         { issued: false, reason: validation.reason ?? "invalid-order" },
         { status: 400, headers: noStore },
+      )
+    }
+
+    const method = methodForCurrency(serverInput.currency)
+    const readiness = currentPaymentReadiness()
+    const methodState = readiness.methods.find((item) => item.method === method)
+    if (!methodState?.released || !methodState.actionable) {
+      return NextResponse.json(
+        { issued: false, reason: method === "deso" ? "deso-not-released" : "payment-method-unavailable" },
+        { status: 409, headers: noStore },
       )
     }
 
