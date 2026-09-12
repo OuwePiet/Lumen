@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto"
 import { NextResponse } from "next/server"
 import {
   createCheckoutOrder,
@@ -14,6 +15,8 @@ export const runtime = "nodejs"
 
 const noStore = { "Cache-Control": "no-store" }
 
+type IssueCheckoutOrderRequest = Omit<ViaCheckoutOrderInput, "orderId">
+
 export async function POST(request: Request) {
   try {
     if (!checkoutOrderSigningReady()) {
@@ -23,8 +26,17 @@ export async function POST(request: Request) {
       )
     }
 
-    const input = (await request.json()) as ViaCheckoutOrderInput
-    const validation = validateCheckoutOrderForAttempt(input)
+    const input = (await request.json()) as IssueCheckoutOrderRequest
+    const serverInput: ViaCheckoutOrderInput = {
+      orderId: randomUUID(),
+      nftId: input.nftId,
+      sellerPublicKey: input.sellerPublicKey,
+      buyerPublicKey: input.buyerPublicKey,
+      amountMinor: input.amountMinor,
+      currency: input.currency,
+    }
+
+    const validation = validateCheckoutOrderForAttempt(serverInput)
     if (!validation.valid) {
       return NextResponse.json(
         { issued: false, reason: validation.reason ?? "invalid-order" },
@@ -32,7 +44,7 @@ export async function POST(request: Request) {
       )
     }
 
-    const order = createCheckoutOrder(input)
+    const order = createCheckoutOrder(serverInput)
     if (!order) {
       return NextResponse.json(
         { issued: false, reason: "invalid-order" },
