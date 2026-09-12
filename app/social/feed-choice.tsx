@@ -8,7 +8,7 @@ export const VIA_SOCIAL_FEED_EVENT = "via:social:feed-choice"
 const choices = [
   { id: "following", title: "Following", text: "Read a bounded newest-first view of public posts from accounts the selected DeSo identity follows." },
   { id: "recent", title: "Recent", text: "A recency-first public DeSo view. Loaded public posts are shown newest first; newest does not automatically mean trusted or recommended." },
-  { id: "discovery", title: "Discovery", text: "Explore a broader public DeSo feed outside your follows. Discovery ranking is experimental and is not a VIA trust or quality signal." },
+  { id: "hot", title: "Hot", text: "Read DeSo's documented Hot feed, ranked by recency and public engagement signals such as likes, diamonds, comments and reposts. Hot is not a VIA trust signal." },
 ] as const
 
 export type ChoiceId = (typeof choices)[number]["id"]
@@ -20,8 +20,9 @@ export default function FeedChoice() {
   useEffect(() => {
     try {
       const stored = window.localStorage.getItem(VIA_SOCIAL_FEED_STORAGE_KEY)
-      if (choices.some((choice) => choice.id === stored)) {
-        setSelected(stored as ChoiceId)
+      const normalized = stored === "discovery" ? "hot" : stored
+      if (choices.some((choice) => choice.id === normalized)) {
+        setSelected(normalized as ChoiceId)
       }
     } catch {
       setStatus("Feed preference could not be read from this browser.")
@@ -45,7 +46,7 @@ export default function FeedChoice() {
       <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#8fd4a9]">Your entry point</p>
       <h2 id="feed-choice-heading" className="mt-2 text-2xl font-semibold">Choose your social view</h2>
       <p className="mt-2 max-w-3xl text-sm leading-6 text-zinc-400">
-        Following, Recent and Discovery all use public read-only DeSo data. Your choice is stored locally in this browser and never changes DeSo data or follows accounts.
+        Following, Recent and Hot all use public read-only DeSo data. Your choice is stored locally in this browser and never changes DeSo data or follows accounts.
       </p>
       <div className="mt-4 grid gap-3 md:grid-cols-3">
         {choices.map((choice) => {
@@ -66,7 +67,7 @@ export default function FeedChoice() {
         })}
       </div>
       <p className="mt-4 text-xs leading-5 text-zinc-500">
-        VIA keeps the social entrance lightweight: public reading first, with DeSo identity used when a DeSo action requires it. New discovery ideas remain an internal design track until they have a clear DeSo-backed purpose.
+        Hot is DeSo ranking, not VIA endorsement. VIA keeps public reading separate from account authority and blockchain writes.
       </p>
       <p className="mt-3 min-h-5 text-xs text-zinc-400" role="status" aria-live="polite">{status}</p>
     </section>
