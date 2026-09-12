@@ -17,6 +17,14 @@ export const dynamic = "force-dynamic"
 export const runtime = "nodejs"
 
 const noStore = { "Cache-Control": "no-store" }
+const POST_HASH_RE = /^[0-9a-fA-F]{64}$/
+const PUBLIC_KEY_RE = /^[1-9A-HJ-NP-Za-km-z]{20,100}$/
+const ISSUE_ORDER_KEYS = new Set([
+  "nftId",
+  "sellerPublicKey",
+  "buyerPublicKey",
+  "currency",
+])
 
 type IssueCheckoutOrderRequest = {
   nftId: string
@@ -29,15 +37,21 @@ function isIssueCheckoutOrderRequest(value: unknown): value is IssueCheckoutOrde
   if (!value || typeof value !== "object" || Array.isArray(value)) return false
 
   const input = value as Record<string, unknown>
-  if (typeof input.nftId !== "string" || !input.nftId.trim()) return false
-  if (typeof input.sellerPublicKey !== "string" || !input.sellerPublicKey.trim()) return false
+  if (Object.keys(input).some((key) => !ISSUE_ORDER_KEYS.has(key))) return false
+  if (typeof input.nftId !== "string" || !POST_HASH_RE.test(input.nftId.trim())) return false
   if (
-    input.buyerPublicKey !== undefined &&
-    (typeof input.buyerPublicKey !== "string" || !input.buyerPublicKey.trim())
+    typeof input.sellerPublicKey !== "string" ||
+    !PUBLIC_KEY_RE.test(input.sellerPublicKey.trim())
   ) {
     return false
   }
-  if ("amountMinor" in input) return false
+  if (
+    input.buyerPublicKey !== undefined &&
+    (typeof input.buyerPublicKey !== "string" ||
+      !PUBLIC_KEY_RE.test(input.buyerPublicKey.trim()))
+  ) {
+    return false
+  }
   return ["EUR", "USD", "BTC", "DESO"].includes(String(input.currency))
 }
 
