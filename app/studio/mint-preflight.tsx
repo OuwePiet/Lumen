@@ -101,8 +101,9 @@ export default function MintPreflight() {
   const quoteSecondsLeft = quoteExpired || !Number.isFinite(quoteExpiresAt) ? 0 : Math.max(0, Math.ceil((quoteExpiresAt - effectiveNow) / 1000))
   const clockSkewAcceptable = Math.abs(serverClockOffset) <= 60000
   const quoteContractSupported = result?.quoteContractVersion === 1
-  const quoteReadinessReason = !result?.resolved ? "No resolved quote" : !quoteContractSupported ? "Unsupported quote contract" : quoteSessionMismatch ? "Identity changed" : !quotedPublicKey || quotedPublicKey !== session?.publicKey ? "Quote owner mismatch" : !clockSkewAcceptable ? "Device clock differs from server" : quoteExpired ? "Quote expired" : ""
-  const quoteUsable = quoteReadinessReason === ""
+  const quoteReadinessCode = !result?.resolved ? "unresolved" : !quoteContractSupported ? "unsupported_contract" : quoteSessionMismatch ? "identity_changed" : !quotedPublicKey || quotedPublicKey !== session?.publicKey ? "owner_mismatch" : !clockSkewAcceptable ? "clock_skew" : quoteExpired ? "expired" : "ready"
+  const quoteReadinessReason = quoteReadinessCode === "unresolved" ? "No resolved quote" : quoteReadinessCode === "unsupported_contract" ? "Unsupported quote contract" : quoteReadinessCode === "identity_changed" ? "Identity changed" : quoteReadinessCode === "owner_mismatch" ? "Quote owner mismatch" : quoteReadinessCode === "clock_skew" ? "Device clock differs from server" : quoteReadinessCode === "expired" ? "Quote expired" : ""
+  const quoteUsable = quoteReadinessCode === "ready"
 
   const validationMessage = useMemo(() => {
     if (!session) return "Log in with DeSo Identity to request a mint quote."
