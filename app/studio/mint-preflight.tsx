@@ -1,6 +1,6 @@
 "use client"
 
-import { FormEvent, useEffect, useMemo, useState } from "react"
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react"
 import { restoreIdentitySession, VIA_IDENTITY_EVENT, type ViaIdentitySession } from "../deso-identity-session"
 
 type MintQuote = {
@@ -54,6 +54,7 @@ export default function MintPreflight() {
   const [coinRoyalty, setCoinRoyalty] = useState("0")
   const [unlockable, setUnlockable] = useState(false)
   const [loading, setLoading] = useState(false)
+  const requestInFlight = useRef(false)
   const [now, setNow] = useState(() => Date.now())
   const [result, setResult] = useState<MintQuote | null>(null)
   const [quotedPublicKey, setQuotedPublicKey] = useState("")
@@ -102,7 +103,8 @@ export default function MintPreflight() {
   }, [session, postHash, copies, minBid, buyNowPrice, creatorRoyalty, coinRoyalty, buyNow, forSale, unlockable])
 
   async function requestPreflight() {
-    if (!valid || !session) return
+    if (!valid || !session || requestInFlight.current) return
+    requestInFlight.current = true
     setLoading(true); setResult(null); setPreflightFailed(false); setMessage("Requesting current DeSo mint fee and spend context…")
     try {
       const response = await fetch("/api/via/mint/preflight", {
@@ -131,7 +133,10 @@ export default function MintPreflight() {
     } catch {
       setPreflightFailed(true)
       setMessage("Preflight stopped: current DeSo quote could not be loaded.")
-    } finally { setLoading(false) }
+    } finally {
+      requestInFlight.current = false
+      setLoading(false)
+    }
   }
 
   function resetPreflight() {
