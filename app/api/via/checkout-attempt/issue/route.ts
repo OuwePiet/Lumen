@@ -86,6 +86,13 @@ export async function POST(request: Request) {
       )
     }
 
+    if (input.order.currency !== "EUR" && input.order.currency !== "USD") {
+      return NextResponse.json(
+        { issued: false, reason: "payment-method-not-released" },
+        { status: 409, headers: noStore },
+      )
+    }
+
     if (!methodMatchesCurrency(input.order.currency, input.method)) {
       return NextResponse.json(
         { issued: false, reason: "invalid-order-method" },
