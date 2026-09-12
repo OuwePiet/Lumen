@@ -20,15 +20,50 @@ type ProviderSessionPreflightRequest = {
 
 const noStore = { "Cache-Control": "no-store" }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value)
+}
+
+function isNonEmptyString(value: unknown): value is string {
+  return typeof value === "string" && value.trim().length > 0
+}
+
+function isCheckoutOrder(value: unknown): value is ViaCheckoutOrder {
+  if (!isRecord(value)) return false
+  if (!isNonEmptyString(value.orderId)) return false
+  if (!isNonEmptyString(value.nftId)) return false
+  if (!isNonEmptyString(value.sellerPublicKey)) return false
+  if (value.buyerPublicKey !== undefined && !isNonEmptyString(value.buyerPublicKey)) return false
+  if (!Number.isSafeInteger(value.amountMinor) || Number(value.amountMinor) <= 0) return false
+  if (!["EUR", "USD", "BTC", "DESO"].includes(String(value.currency))) return false
+  return value.status === "pending"
+}
+
+function isCheckoutAttempt(value: unknown): value is ViaCheckoutAttempt {
+  if (!isRecord(value)) return false
+  if (!isNonEmptyString(value.attemptId)) return false
+  if (!isNonEmptyString(value.orderId)) return false
+  if (!Number.isSafeInteger(value.amountMinor) || Number(value.amountMinor) <= 0) return false
+  if (!["EUR", "USD", "BTC", "DESO"].includes(String(value.currency))) return false
+  if (!["fiat-eur", "fiat-usd", "bitcoin", "deso"].includes(String(value.method))) return false
+  if (!isNonEmptyString(value.createdAt) || !isNonEmptyString(value.expiresAt)) return false
+  return value.status === "created"
+}
+
+function isProviderSessionPreflightRequest(value: unknown): value is ProviderSessionPreflightRequest {
+  if (!isRecord(value)) return false
+  return (
+    isCheckoutOrder(value.order) &&
+    isNonEmptyString(value.orderSignature) &&
+    isCheckoutAttempt(value.attempt) &&
+    isNonEmptyString(value.attemptSignature)
+  )
+}
+
 export async function POST(request: Request) {
   try {
-    const input = (await request.json()) as ProviderSessionPreflightRequest
-    if (
-      !input?.order ||
-      !input?.orderSignature ||
-      !input?.attempt ||
-      !input?.attemptSignature
-    ) {
+    const input = (await request.json()) as unknown
+    if (!isProviderSessionPreflightRequest(input)) {
       return NextResponse.json(
         { eligible: false, reason: "invalid-request" },
         { status: 400, headers: noStore },
