@@ -264,6 +264,12 @@ const styles = {
     fontWeight: 800,
     marginBottom: "4px",
   },
+  creatorLine: {
+    color: "#a9b8af",
+    fontSize: "13px",
+    lineHeight: 1.5,
+    margin: "-10px 0 20px",
+  },
   description: {
     color: "#c4cec8",
     fontSize: "15px",
@@ -517,6 +523,7 @@ export default async function NFTView({
           </div>
           <p style={styles.brand}>VIA</p>
           <h1 style={styles.title}>{title}</h1>
+          <p style={styles.creatorLine}>Creator · {creator.startsWith("@") ? <a href={accountCollectionHref(creator.slice(1), post.PosterPublicKeyBase58Check)} style={styles.accountLink}>{creator}</a> : creator}</p>
 
           <div style={styles.grid}>
             <div style={styles.mediaFrame}>
@@ -545,7 +552,6 @@ export default async function NFTView({
 
               <dl style={styles.facts}>
                 {[
-                  ["Creator", creator],
                   ["Media storage", storageSummary],
                   sortedEntries.length === 1
                     ? ["Current owner", currentOwner]
