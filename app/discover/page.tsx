@@ -9,7 +9,7 @@ const creatorWindows = [
   { title: "NFTs & Collecting", text: "Explore native DeSo NFTs, collectors and creators publicly. Future external collectibles will remain clearly labelled and separate until a verified DeSo mint/ownership route exists.", href: "/social?media=nft", action: "Discover DeSo NFTs" },
   { title: "Museums & Heritage", text: "Museums, archives, history, collections and cultural heritage belong in the same daily world window." },
   { title: "Writing & Stories", text: "Discover writers, poets, reporters and storytellers through VIA’s public DeSo post window; dedicated long-form classification waits for verified metadata.", href: "/social", action: "Discover Posts" },
-  { title: "New & Unexpected", text: "Leave room for new makers, small accounts and creative forms that do not fit an existing label yet." },
+  { title: "New & Unexpected", text: "Leave room for new makers, small accounts and creative forms that do not fit an existing label yet. VIA opens the existing deterministic Surprise route instead of pretending to rank people as new or important.", href: "/discover/surprise", action: "Surprise Me" },
 ]
 
 const sections = [
