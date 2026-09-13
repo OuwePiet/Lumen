@@ -124,7 +124,7 @@ export default function LikeButton({ postHash, initialCount }: Props) {
 
   return (
     <span className="inline-flex items-center gap-2">
-      <button type="button" onClick={toggleLike} disabled={busy} className="rounded-full border border-green-900/70 px-3 py-1 text-green-300 hover:border-green-700 disabled:cursor-wait disabled:opacity-60">
+      <button type="button" onClick={toggleLike} disabled={busy} className="rounded-full border border-[#285f40]/70 px-3 py-1 text-[#9adbb2] hover:border-[#8fd4a9]/55 disabled:cursor-wait disabled:opacity-60">
         {busy ? "Waiting…" : liked ? `Unlike · ${count}` : `Like · ${count}`}
       </button>
       {message ? <span className="sr-only" role="status" aria-live="polite">{message}</span> : null}

@@ -226,7 +226,7 @@ export default function PollVoteControl({ postHash, options }: Props) {
               type="button"
               disabled={!canVote}
               onClick={() => void vote(option)}
-              className={`rounded-lg border px-3 py-2 text-left text-sm ${selected ? "border-green-700 text-green-300" : "border-zinc-800 text-zinc-200"} disabled:cursor-not-allowed disabled:opacity-60`}
+              className={`rounded-lg border px-3 py-2 text-left text-sm ${selected ? "border-[#8fd4a9]/55 text-[#9adbb2]" : "border-zinc-800 text-zinc-200"} disabled:cursor-not-allowed disabled:opacity-60`}
             >
               {selected ? "✓ " : ""}{option}
             </button>
