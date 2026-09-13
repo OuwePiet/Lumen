@@ -32,7 +32,7 @@ const sections = [
   { title: "Show Your Stuff", text: "Anyone can look around. Presenting work or taking part opens through the controlled DeSo participation route; VIA does not create a second anonymous creator account.", href: "/show-your-stuff", action: "Come In", status: "DESO TO JOIN" },
   { title: "Around the World", text: "Travel through VIA's safe global layer using public context only. Start with world regions and public radio shortcuts without guessing where DeSo creators live.", href: "/discover/world", action: "Explore the World", status: "LIVE" },
   { title: "New Voices", text: "Open a public DeSo creator through a user-directed, read-only route. VIA does not call accounts new, verified, or organically ranked without suitable public evidence.", href: "/discover/voices", action: "Open New Voices", status: "LIVE" },
-  { title: "NFT Window", text: "Open VIA's public DeSo NFT collection browser. Search a creator account and inspect NFTs without signing or spending.", href: "/?account=OuwePiet#collection-controls", action: "Open NFT Window", status: "LIVE" },
+  { title: "NFT Window", text: "Open VIA's public DeSo NFT collection browser. Search a creator account and inspect NFTs without signing or spending.", href: "/#collection-controls", action: "Open NFT Window", status: "LIVE" },
   { title: "Surprise Me", text: "Open today's deterministic VIA discovery route. It never silently signs, transacts, spends, follows, likes, or sends Diamonds.", href: "/discover/surprise", action: "Surprise Me", status: "DAILY" },
 ]
 
