@@ -117,7 +117,7 @@ export default function NFTBidControl({ postHash, editions }: Props) {
       if (!response.ok || !data.ok || !data.transactionHex) throw new Error(data.error || "PREPARE_FAILED")
       setFeeNanos(typeof data.feeNanos === "number" ? data.feeNanos : null)
       const popup = window.open(
-        ${DESO_IDENTITY_ORIGIN}/approve?tx=${encodeURIComponent(data.transactionHex)},
+        `${DESO_IDENTITY_ORIGIN}/approve?tx=${encodeURIComponent(data.transactionHex)}`,
         "via-deso-nft-bid-approve",
         "popup=yes,width=800,height=900",
       )
