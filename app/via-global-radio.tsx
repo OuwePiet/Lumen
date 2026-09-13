@@ -30,7 +30,10 @@ export default function ViaGlobalRadio() {
       const next = readStation()
       setStation(next)
       if (!next) return
-      window.setTimeout(() => { void audio.current?.play().catch(() => setPlaying(false)) }, 0)
+      const player = audio.current
+      if (!player) return
+      if (player.src !== next.streamUrl) player.src = next.streamUrl
+      void player.play().catch(() => setPlaying(false))
     }
     sync()
     window.addEventListener(EVENT, sync)
