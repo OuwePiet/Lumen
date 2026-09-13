@@ -216,10 +216,8 @@ export default async function NFTGrid({ initialAccount }: { initialAccount?: str
         <CollectionBrowser initialAccount={initialAccount}>
           <>
             <p style={styles.owner}>
-              {collectionOwner ? `Collection owner: @${collectionOwner.Username}` : `Collection owner unavailable: @${selectedAccount}`}<br />
-              {automaticNFTResult === null ? "Automatic NFT check unavailable" : `Automatic NFTs found: ${automaticNFTResult.nftCount} of ${automaticNFTResult.checkedPosts} checked posts`}<br />
-              {`Unique NFTs displayed: ${collectionNFTs.length}`}<br />
-              {`Automatically added to collection: ${discoveredNFTs.length}`}
+              {collectionOwner ? `@${collectionOwner.Username} · ${collectionNFTs.length} NFTs displayed` : `Collection unavailable: @${selectedAccount}`}
+              {automaticNFTResult === null ? " · live count unavailable" : automaticNFTResult.nftCount > collectionNFTs.length ? ` · ${automaticNFTResult.nftCount} NFTs detected` : ""}
             </p>
             <div id="collection-controls">
               <MediaFilter
