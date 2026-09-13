@@ -8,6 +8,11 @@ function isOpenCreatorWindow(window: CreatorWindow) {
   return Boolean(window.href && window.action)
 }
 
+function creatorWindowAnchor(window: CreatorWindow) {
+  const slug = window.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")
+  return `creator-${window.kind}-${slug}`
+}
+
 const creatorWindows: CreatorWindow[] = [
   { title: "Art & Painting", kind: "visual", text: "A window for painters, illustrators, digital artists and people showing work for the first time.", href: "/social?media=image", action: "Discover Art Images" },
   { title: "Music & Audio", kind: "audio", text: "Discover public radio now. Musicians, creator audio and independent releases will join this window only after their DeSo-compatible media/metadata path is verified.", href: "/radio", action: "Open World Radio" },
@@ -72,9 +77,9 @@ export default function DiscoverPage() {
         <h2 style={styles.sectionTitle}>A daily creator newspaper</h2>
         <p style={styles.sectionLead}>Not every visitor has to buy something. Guests can browse, read, watch, listen and discover freely. {openCreatorWindows} creator windows already have public paths; participation such as posting, following, replying or giving a Diamond opens through DeSo.</p>
         <p style={{ ...styles.cardText, marginBottom: "12px" }}><strong>{openCreatorWindows} OPEN</strong> = working public VIA destinations. <strong>{plannedCreatorWindows} WINDOW</strong> = creator categories in VIA’s scope whose dedicated verified routes still have to come.</p>
-        <div style={{ ...styles.nav, marginBottom: "12px" }} aria-label="Creator scope shortcuts">{creatorKinds.map((kind) => <a key={kind} href={`#creator-${kind}`} style={styles.scopeLink}>{kind.toUpperCase()}</a>)}</div>
+        <div style={{ ...styles.nav, marginBottom: "12px" }} aria-label="Creator scope shortcuts">{creatorKinds.map((kind) => <a key={kind} href={`#${creatorWindowAnchor(creatorWindows.find((window) => window.kind === kind)! )}`} style={styles.scopeLink}>{kind.toUpperCase()}</a>)}</div>
         <section style={styles.grid} aria-label={`${openCreatorWindows} open creator discovery windows`}>
-          {orderedCreatorWindows.map((window) => <article key={window.title} id={`creator-${window.kind}`} style={styles.card}><div style={styles.cardTop}><h3 style={styles.cardTitle}>{window.title}</h3><span style={styles.badge}>{isOpenCreatorWindow(window) ? "OPEN" : "WINDOW"}</span></div><p style={{ ...styles.cardText, marginBottom: "6px" }}><span style={styles.metaLabel}>{window.kind.toUpperCase()}</span></p><p style={styles.cardText}>{window.text}</p>{isOpenCreatorWindow(window) ? <div style={styles.cardAction}><Link href={window.href!} style={styles.link}>{window.action}</Link></div> : null}</article>)}
+          {orderedCreatorWindows.map((window) => <article key={window.title} id={creatorWindowAnchor(window)} style={styles.card}><div style={styles.cardTop}><h3 style={styles.cardTitle}>{window.title}</h3><span style={styles.badge}>{isOpenCreatorWindow(window) ? "OPEN" : "WINDOW"}</span></div><p style={{ ...styles.cardText, marginBottom: "6px" }}><span style={styles.metaLabel}>{window.kind.toUpperCase()}</span></p><p style={styles.cardText}>{window.text}</p>{isOpenCreatorWindow(window) ? <div style={styles.cardAction}><Link href={window.href!} style={styles.link}>{window.action}</Link></div> : null}</article>)}
         </section>
 
         <h2 style={styles.sectionTitle}>Discover VIA</h2>
