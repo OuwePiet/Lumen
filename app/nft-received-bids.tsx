@@ -94,7 +94,11 @@ export default function NFTReceivedBids({ postHash, bids, editions, hasUnlockabl
     }
 
     window.addEventListener("message", onMessage)
-    return () => window.removeEventListener("message", onMessage)
+    return () => {
+      window.removeEventListener("message", onMessage)
+      popupRef.current?.close()
+      popupRef.current = null
+    }
   }, [])
 
   async function acceptBid(bid: Bid) {
