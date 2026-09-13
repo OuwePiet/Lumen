@@ -20,7 +20,7 @@ function ownerCollectionHref(owner: string, publicKey: string) {
     view: "nfts",
   })
 
-  return `/?${params.toString()}#account-lookup-heading`
+  return `/?${params.toString()}#collection-controls`
 }
 
 const PAGE_SIZE = 25
