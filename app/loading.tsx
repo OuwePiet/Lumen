@@ -12,7 +12,7 @@ const styles = {
     margin: "0 auto",
   },
   brand: {
-    color: "#5cff9d",
+    color: "#8fd4a9",
     fontSize: "14px",
     fontWeight: 700,
     letterSpacing: "0.18em",
