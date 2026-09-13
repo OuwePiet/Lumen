@@ -1,7 +1,7 @@
 "use client"
 
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react"
-import { restoreIdentitySession, VIA_IDENTITY_EVENT, type ViaIdentitySession } from "../deso-identity-session"
+import { DESO_IDENTITY_ORIGIN, restoreIdentitySession, VIA_IDENTITY_EVENT, type ViaIdentitySession } from "../deso-identity-session"
 
 type MintQuote = {
   resolved?: boolean
@@ -68,6 +68,9 @@ export default function MintPreflight() {
   const [quotedPublicKey, setQuotedPublicKey] = useState("")
   const [message, setMessage] = useState("Enter mint terms to request a fresh DeSo constructor quote.")
   const [preflightFailed, setPreflightFailed] = useState(false)
+  const [mintStatus, setMintStatus] = useState<"idle"|"preparing"|"approval"|"submitting"|"done"|"error">("idle")
+  const [mintMessage, setMintMessage] = useState("")
+  const mintPopupRef = useRef<Window | null>(null)
 
   useEffect(() => {
     setSession(restoreIdentitySession())
@@ -80,6 +83,41 @@ export default function MintPreflight() {
       requestSequence.current += 1
       window.removeEventListener(VIA_IDENTITY_EVENT, onSession)
     }
+  }, [])
+
+  useEffect(() => {
+    const onMessage = async (event: MessageEvent) => {
+      if (event.origin !== DESO_IDENTITY_ORIGIN || event.source !== mintPopupRef.current) return
+      if (!event.data || typeof event.data !== "object") return
+      const data = event.data as Record<string, unknown>
+      if (data.service !== "identity") return
+      const payload = data.payload
+      if (!payload || typeof payload !== "object" || Array.isArray(payload)) return
+      const signedTransactionHex = (payload as Record<string, unknown>).signedTransactionHex
+      if (typeof signedTransactionHex !== "string" || !signedTransactionHex) return
+      mintPopupRef.current?.close()
+      mintPopupRef.current = null
+      setMintStatus("submitting")
+      setMintMessage("Submitting approved mint to DeSo…")
+      try {
+        const response = await fetch("/api/via/mint/execute", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          cache: "no-store",
+          body: JSON.stringify({ action: "submit", signedTransactionHex }),
+        })
+        const data = await response.json() as { ok?: boolean; error?: string }
+        if (!response.ok || !data.ok) throw new Error(data.error || "SUBMIT_FAILED")
+        setMintStatus("done")
+        setMintMessage("NFT mint submitted to DeSo.")
+        setResult(null)
+      } catch {
+        setMintStatus("error")
+        setMintMessage("The approved NFT mint could not be submitted. VIA changed nothing.")
+      }
+    }
+    window.addEventListener("message", onMessage)
+    return () => window.removeEventListener("message", onMessage)
   }, [])
 
   useEffect(() => {
@@ -164,6 +202,50 @@ export default function MintPreflight() {
     }
   }
 
+  async function prepareMint() {
+    if (!session || !quoteUsable || mintStatus === "preparing" || mintStatus === "approval" || mintStatus === "submitting") return
+    setMintStatus("preparing")
+    setMintMessage("Refreshing exact DeSo mint transaction for approval…")
+    try {
+      const response = await fetch("/api/via/mint/execute", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        cache: "no-store",
+        body: JSON.stringify({
+          action: "prepare",
+          mint: {
+            updaterPublicKey: session.publicKey,
+            nftPostHashHex: postHash.trim(),
+            numCopies: Number(copies),
+            hasUnlockable: unlockable,
+            isForSale: forSale,
+            minBidAmountNanos: forSale ? Number(minBid) : 0,
+            creatorRoyaltyBasisPoints: Number(creatorRoyalty),
+            coinRoyaltyBasisPoints: Number(coinRoyalty),
+            isBuyNow: forSale && buyNow,
+            buyNowPriceNanos: forSale && buyNow ? Number(buyNowPrice) : 0,
+          },
+        }),
+      })
+      const data = await response.json() as { ok?: boolean; transactionHex?: string; feeNanos?: number | null; spendAmountNanos?: number | null; error?: string }
+      if (!response.ok || !data.ok || !data.transactionHex) throw new Error(data.error || "PREPARE_FAILED")
+      const popup = window.open(
+        DESO_IDENTITY_ORIGIN + "/approve?tx=" + encodeURIComponent(data.transactionHex),
+        "via-deso-mint-approve",
+        "popup=yes,width=800,height=900",
+      )
+      if (!popup) throw new Error("POPUP_BLOCKED")
+      mintPopupRef.current = popup
+      setMintStatus("approval")
+      setMintMessage("Review the freshly prepared NFT mint in DeSo Identity. VIA submits only after your approval.")
+    } catch (error) {
+      setMintStatus("error")
+      setMintMessage(error instanceof Error && error.message === "POPUP_BLOCKED"
+        ? "Approval window was blocked. Nothing was minted."
+        : "The NFT mint could not be prepared. Nothing was minted.")
+    }
+  }
+
   function resetPreflight() {
     requestSequence.current += 1
     setResult(null)
@@ -210,7 +292,7 @@ export default function MintPreflight() {
         <div><p className="text-xs uppercase tracking-[0.12em] text-zinc-500">VIA service fee</p><p className="mt-1 text-sm text-zinc-200">{nanos(result.quote?.viaServiceFeeNanos)}</p></div><div><p className="text-xs uppercase tracking-[0.12em] text-zinc-500">Visible cost boundary</p><p className="mt-1 text-sm font-semibold text-zinc-100">{nanos(visibleCostBoundaryNanos)}</p><p className="mt-1 text-xs leading-5 text-zinc-500">Network fee + constructor spend + VIA service fee. Storage/provider costs are not included unless separately resolved.</p></div>
         <div><p className="text-xs uppercase tracking-[0.12em] text-zinc-500">Quote valid until</p><p className="mt-1 text-sm text-zinc-200">{result.expiresAt ? new Date(result.expiresAt).toLocaleTimeString() : "Unavailable"}{!quoteExpired && quoteSecondsLeft > 0 ? ` · ${Math.floor(quoteSecondsLeft / 60)}:${String(quoteSecondsLeft % 60).padStart(2, "0")} left` : ""}</p></div><div><p className="text-xs uppercase tracking-[0.12em] text-zinc-500">Quote created</p><p className="mt-1 text-sm text-zinc-200">{result.createdAt ? new Date(result.createdAt).toLocaleTimeString() : "Unavailable"}</p></div><div><p className="text-xs uppercase tracking-[0.12em] text-zinc-500">Server TTL</p><p className="mt-1 text-sm text-zinc-200">{typeof result.quoteTtlSeconds === "number" ? `${result.quoteTtlSeconds} seconds` : "Unavailable"}</p></div><div><p className="text-xs uppercase tracking-[0.12em] text-zinc-500">Server clock</p><p className="mt-1 text-sm text-zinc-200">{typeof result.serverNow === "number" ? new Date(result.serverNow).toLocaleTimeString() : "Unavailable"}</p></div><div><p className="text-xs uppercase tracking-[0.12em] text-zinc-500">Device clock difference</p><p className="mt-1 text-sm text-zinc-200">{typeof result.serverNow === "number" ? `${Math.round(serverClockOffset / 1000)} seconds` : "Unavailable"}</p></div><div><p className="text-xs uppercase tracking-[0.12em] text-zinc-500">VIA service fee</p><p className="mt-1 text-sm text-zinc-200">{result.viaServiceFee?.currency === "USD" && typeof result.viaServiceFee?.amountMinor === "number" ? `${(result.viaServiceFee.amountMinor / 100).toFixed(2)} per mint` : "Unavailable"}</p><p className="mt-1 text-[11px] text-zinc-500">Server policy · {result.viaServiceFee?.collectionStatus === "not-collected" ? "not collected yet" : result.viaServiceFee?.collectionStatus ?? "status unavailable"} · separate from live DeSo network and storage costs.</p></div><div><p className="text-xs uppercase tracking-[0.12em] text-zinc-500">Quote source</p><p className="mt-1 text-sm text-zinc-200">{result.source ?? "Unavailable"}</p></div><div><p className="text-xs uppercase tracking-[0.12em] text-zinc-500">Quote contract</p><p className={`mt-1 text-sm ${quoteContractSupported ? "text-[#9adbb2]" : "text-red-200"}`}>{typeof result.quoteContractVersion === "number" ? `V${result.quoteContractVersion} · ${quoteContractSupported ? "supported" : "unsupported"}` : "Unavailable"}</p></div><div><p className="text-xs uppercase tracking-[0.12em] text-zinc-500">Quote reference</p><p className="mt-1 break-all font-mono text-xs text-zinc-400">{result.quoteId ?? "Unavailable"}</p></div>
       </div></div> : null}\n\n      {result?.resolved && !quoteContractSupported ? <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-[11px] border border-red-900/50 bg-red-950/15 px-4 py-3 text-sm leading-6 text-red-100/80"><span>This mint quote uses an unsupported VIA quote contract and cannot become approval-ready.</span><button type="button" disabled={!valid || loading} onClick={() => void requestPreflight()} className="rounded-[9px] border border-red-800/60 px-3 py-1.5 text-xs font-semibold text-red-100 disabled:opacity-40">{loading ? "Refreshing…" : "Request fresh quote"}</button></div> : null}\n        {result?.resolved && Math.abs(serverClockOffset) > 60000 ? <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-[11px] border border-amber-900/50 bg-amber-950/15 px-4 py-3 text-sm leading-6 text-amber-100/80"><span>Your device clock differs from VIA server time by more than one minute. Correct the device clock, then request a fresh quote.</span><button type="button" disabled={!valid || loading} onClick={() => void requestPreflight()} className="rounded-[9px] border border-amber-800/60 px-3 py-1.5 text-xs font-semibold text-amber-100 disabled:opacity-40">{loading ? "Refreshing…" : "Request fresh quote"}</button></div> : null}\n        {quoteSessionMismatch ? <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-[11px] border border-red-900/50 bg-red-950/15 px-4 py-3 text-sm leading-6 text-red-100/80"><span>The active DeSo Identity changed after this quote was created. This quote is no longer valid for approval.</span><button type="button" disabled={!valid || loading} onClick={() => void requestPreflight()} className="rounded-[9px] border border-red-800/60 px-3 py-1.5 text-xs font-semibold text-red-100 disabled:opacity-40">{loading ? "Refreshing…" : "Quote active account"}</button></div> : null}\n      {quoteExpired ? <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-[11px] border border-red-900/50 bg-red-950/15 px-4 py-3 text-sm leading-6 text-red-100/80"><span>This mint quote has expired. Refresh the current DeSo cost before any later approval.</span><button type="button" disabled={!valid || loading} onClick={() => void requestPreflight()} className="rounded-[9px] border border-red-800/60 px-3 py-1.5 text-xs font-semibold text-red-100 disabled:opacity-40">{loading ? "Refreshing…" : "Refresh quote"}</button></div> : null}\n      <div className="mt-4 rounded-[11px] border border-amber-900/50 bg-amber-950/15 px-4 py-3 text-sm leading-6 text-amber-100/80">Any changed mint term invalidates the displayed quote. Before a future approval/sign step, VIA must refresh current costs again. DESO payment, provider checkout and NFT transfer remain blocked.</div>
-      <div className="mt-4 flex flex-wrap gap-3">{result?.resolved ? <button type="button" onClick={resetPreflight} className="min-h-11 rounded-[11px] border border-zinc-700 px-4 py-2 text-sm text-zinc-300">Clear quote</button> : null}<button type="button" disabled aria-disabled="true" className="min-h-11 rounded-[11px] border border-zinc-800 bg-transparent px-4 py-2 text-sm text-zinc-600">Approve &amp; mint — not released</button></div>
+      <div className="mt-4 flex flex-wrap gap-3">{result?.resolved ? <button type="button" onClick={resetPreflight} className="min-h-11 rounded-[11px] border border-zinc-700 px-4 py-2 text-sm text-zinc-300">Clear quote</button> : null}<button type="button" disabled={!quoteUsable || mintStatus === "preparing" || mintStatus === "approval" || mintStatus === "submitting"} onClick={() => void prepareMint()} className="min-h-11 rounded-[11px] border border-[#8fd4a9]/45 bg-transparent px-4 py-2 text-sm font-semibold text-[#9adbb2] disabled:border-zinc-800 disabled:text-zinc-600">{mintStatus === "preparing" ? "Preparing mint…" : mintStatus === "approval" ? "Review in DeSo…" : mintStatus === "submitting" ? "Submitting…" : "Review & mint in DeSo"}</button></div>{mintMessage ? <p className={`mt-3 text-sm ${mintStatus === "done" ? "text-green-300" : mintStatus === "error" ? "text-amber-300" : "text-zinc-400"}`} role="status">{mintMessage}</p> : null}
     </section>
   )
 }
