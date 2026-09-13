@@ -432,7 +432,7 @@ export default function PublicAccountNFTs({
     accountKey: publicKey,
     view: "nfts",
   })
-  const collectionHref = `/?${collectionParams.toString()}#account-lookup-heading`
+  const collectionHref = `/?${collectionParams.toString()}#collection-controls`
 
   if (nfts === null) {
     if (autoLoad) {
@@ -543,7 +543,7 @@ export default function PublicAccountNFTs({
     sale: saleFilter,
     media: mediaFilter,
   })
-  const sharePath = `/?${shareParams.toString()}#account-lookup-heading`
+  const sharePath = `/?${shareParams.toString()}#collection-controls`
 
   const copyCollectionLink = async () => {
     const shareUrl = `${window.location.origin}${sharePath}`
