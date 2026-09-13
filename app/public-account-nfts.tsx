@@ -188,8 +188,8 @@ function title(body?: string) {
 
 const styles = {
   action: {
-    background: "#5cff9d",
-    border: "1px solid #5cff9d",
+    background: "#8fd4a9",
+    border: "1px solid #8fd4a9",
     borderRadius: "999px",
     color: "#050807",
     cursor: "pointer",
@@ -243,8 +243,8 @@ const styles = {
     padding: "9px 13px",
   },
   filterActive: {
-    background: "#5cff9d",
-    borderColor: "#5cff9d",
+    background: "#8fd4a9",
+    borderColor: "#8fd4a9",
     color: "#050807",
   },
   status: {
