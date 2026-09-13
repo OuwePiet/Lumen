@@ -38,6 +38,10 @@ type DeSoPostsResponse = {
   PostsFound?: unknown
 }
 
+type DeSoSinglePostResponse = {
+  PostFound?: unknown
+}
+
 function text(value: unknown) {
   return typeof value === "string" ? value : ""
 }
@@ -68,6 +72,24 @@ function safePostExtraData(value: unknown) {
  * PostExtraData is preserved as bounded string metadata so later DeSo-native
  * features can inspect it without inventing or mutating a VIA-only format.
  */
+function normalizePublicPost(post: DeSoPost): ViaPublicPost {
+  return {
+    postHash: text(post.PostHashHex),
+    publicKey: text(post.PosterPublicKeyBase58Check),
+    body: text(post.Body),
+    imageUrls: safeHttpsUrls(post.ImageURLs),
+    videoUrls: safeHttpsUrls(post.VideoURLs),
+    timestampNanos: count(post.TimestampNanos),
+    likeCount: count(post.LikeCount),
+    diamondCount: count(post.DiamondCount),
+    commentCount: count(post.CommentCount),
+    repostCount: count(post.RepostCount),
+    quoteRepostCount: count(post.QuoteRepostCount),
+    isNft: post.IsNFT === true,
+    postExtraData: safePostExtraData(post.PostExtraData),
+  }
+}
+
 export async function readPublicPosts(
   usernameOrPublicKey: string,
   limit = 20,
@@ -103,20 +125,36 @@ export async function readPublicPosts(
     .filter((value): value is DeSoPost => Boolean(value) && typeof value === "object")
     .filter((post) => post.IsHidden !== true)
     .slice(0, numToFetch)
-    .map((post) => ({
-      postHash: text(post.PostHashHex),
-      publicKey: text(post.PosterPublicKeyBase58Check),
-      body: text(post.Body),
-      imageUrls: safeHttpsUrls(post.ImageURLs),
-      videoUrls: safeHttpsUrls(post.VideoURLs),
-      timestampNanos: count(post.TimestampNanos),
-      likeCount: count(post.LikeCount),
-      diamondCount: count(post.DiamondCount),
-      commentCount: count(post.CommentCount),
-      repostCount: count(post.RepostCount),
-      quoteRepostCount: count(post.QuoteRepostCount),
-      isNft: post.IsNFT === true,
-      postExtraData: safePostExtraData(post.PostExtraData),
-    }))
+    .map(normalizePublicPost)
     .filter((post) => Boolean(post.postHash))
+}
+
+
+export async function readPublicPostByHash(postHash: string): Promise<ViaPublicPost | null> {
+  const hash = postHash.trim().toLowerCase()
+  if (!/^[0-9a-f]{64}$/.test(hash)) return null
+
+  const response = await fetchDeSo("get-single-post", {
+    method: "POST",
+    headers: { "content-type": "application/json", accept: "application/json" },
+    body: JSON.stringify({
+      PostHashHex: hash,
+      FetchParents: false,
+      CommentOffset: 0,
+      CommentLimit: 0,
+      ReaderPublicKeyBase58Check: "",
+      AddGlobalFeedBool: false,
+    }),
+  })
+
+  if (!response.ok) return null
+
+  const data = (await response.json()) as DeSoSinglePostResponse
+  const value = data.PostFound
+  if (!value || typeof value !== "object") return null
+  const post = value as DeSoPost
+  if (post.IsHidden === true) return null
+
+  const normalized = normalizePublicPost(post)
+  return normalized.postHash.toLowerCase() === hash ? normalized : null
 }
