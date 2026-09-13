@@ -70,6 +70,7 @@ export default function NotificationCenter() {
   const [status, setStatus] = useState<"idle" | "loading" | "ready" | "error">("idle")
   const [message, setMessage] = useState("")
   const [lastSeenIndex, setLastSeenIndex] = useState<number | null>(null)
+  const [refreshToken, setRefreshToken] = useState(0)
 
   useEffect(() => {
     const current = restoreIdentitySession()
@@ -114,7 +115,7 @@ export default function NotificationCenter() {
     }
     void load()
     return () => { cancelled = true }
-  }, [session])
+  }, [session, refreshToken])
 
   const visible = useMemo(() => category === "all" ? items : items.filter((item) => categoryOf(item) === category), [items, category])
 
@@ -130,7 +131,7 @@ export default function NotificationCenter() {
           <h2 id="notification-center-heading" className="mt-2 text-xl font-semibold text-white">Notification center</h2>
           <p className="mt-2 text-sm text-zinc-500">Active key: {shortKey(session.publicKey)}{lastSeenIndex !== null ? ` · DeSo last-seen index ${lastSeenIndex}` : ""}</p>
         </div>
-        <button type="button" onClick={() => window.location.reload()} className="rounded-full border border-zinc-700 px-3 py-1.5 text-xs text-zinc-300 hover:border-green-700 hover:text-green-300">Refresh</button>
+        <button type="button" onClick={() => setRefreshToken((value) => value + 1)} disabled={status === "loading"} className="rounded-full border border-zinc-700 px-3 py-1.5 text-xs text-zinc-300 hover:border-green-700 hover:text-green-300 disabled:cursor-wait disabled:opacity-60">{status === "loading" ? "Refreshing…" : "Refresh"}</button>
       </div>
 
       <div className="mt-4 flex flex-wrap gap-2" aria-label="Notification filters">
