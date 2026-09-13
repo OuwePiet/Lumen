@@ -1,3 +1,5 @@
+import "./home-wide.css"
+
 import NFTGrid from "./nft-grid"
 import ViaHomeEarth from "./via-home-earth"
 import ViaHomeSignature from "./via-home-signature"
