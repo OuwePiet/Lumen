@@ -6,7 +6,7 @@ const places = [
   { title: "Read", text: "Daily News today; stories and knowledge can grow here next.", href: "/news", action: "Open Daily News" },
   { title: "Listen", text: "World Radio and community conversation without requiring you to post.", href: "/radio", action: "Open World Radio" },
   { title: "Discover", text: "Explore creators, NFTs and VIA's world discovery routes.", href: "/discover", action: "Start discovering" },
-  { title: "Talk", text: "Community conversation without turning VIA into one compulsory feed.", href: "/live", action: "Open VIA LIVE" },
+  { title: "Talk", text: "Preview VIA LIVE audio-room controls and inspect current media health. Live microphone rooms are not released yet.", href: "/live", action: "Preview VIA LIVE" },
   { title: "Create", text: "Use VIA Studio as the starting place for creator tools.", href: "/studio", action: "Open Studio" },
   { title: "Play", text: "World Quest and casual discovery give VIA another reason to visit.", href: "/quest", action: "Open World Quest" },
 ];
@@ -83,7 +83,7 @@ export default function MyViaPage() {
         </section>
 
         <p className="mt-8 text-xs leading-5 text-zinc-600">
-          My VIA is currently a visitor-controlled navigation foundation. It does not infer sensitive interests or claim unavailable messaging, identity or recommendation features.
+          My VIA is visitor-controlled navigation. Some destinations are released tools and others are clearly labelled previews or foundations; VIA does not infer sensitive interests from these choices.
         </p>
       </div>
     </main>
