@@ -19,6 +19,7 @@ const FAVORITES_KEY = "via:world-radio:favorites:v1"
 const FAVORITE_STATIONS_KEY = "via:world-radio:favorite-stations:v1"
 const GLOBAL_STATION_KEY = "via:world-radio:station"
 const GLOBAL_STATION_EVENT = "via:world-radio:station"
+const GLOBAL_PLAY_EVENT = "via:world-radio:play"
 
 const styles = {
   form: { display: "flex", flexWrap: "wrap" as const, gap: "10px", margin: "0 0 18px" },
@@ -112,6 +113,7 @@ export default function RadioBrowser() {
     try {
       localStorage.setItem(GLOBAL_STATION_KEY, JSON.stringify({ name: station.name, streamUrl: station.streamUrl }))
       window.dispatchEvent(new Event(GLOBAL_STATION_EVENT))
+      window.dispatchEvent(new Event(GLOBAL_PLAY_EVENT))
     } catch {
       // Global playback can still be selected again if local storage is unavailable.
     }
