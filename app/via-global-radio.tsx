@@ -25,7 +25,17 @@ export default function ViaGlobalRadio() {
   const [playing, setPlaying] = useState(false)
 
   useEffect(() => {
-    const sync = () => setStation(readStation())
+    const sync = () => {
+      const next = readStation()
+      const player = audio.current
+      if (player && (!next || player.src !== next.streamUrl)) {
+        player.pause()
+        player.removeAttribute("src")
+        player.load()
+        setPlaying(false)
+      }
+      setStation(next)
+    }
     const playSelected = () => {
       const next = readStation()
       setStation(next)
@@ -39,7 +49,17 @@ export default function ViaGlobalRadio() {
     window.addEventListener(EVENT, sync)
     window.addEventListener(PLAY_EVENT, playSelected)
     window.addEventListener("storage", sync)
-    return () => { window.removeEventListener(EVENT, sync); window.removeEventListener(PLAY_EVENT, playSelected); window.removeEventListener("storage", sync) }
+    return () => {
+      window.removeEventListener(EVENT, sync)
+      window.removeEventListener(PLAY_EVENT, playSelected)
+      window.removeEventListener("storage", sync)
+      const player = audio.current
+      if (player) {
+        player.pause()
+        player.removeAttribute("src")
+        player.load()
+      }
+    }
   }, [])
 
   useEffect(() => {
