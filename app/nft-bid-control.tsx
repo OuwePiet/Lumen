@@ -32,8 +32,8 @@ function desoToSafeNanos(input: string) {
   const trimmed = input.trim()
   if (!/^\d+(?:\.\d{0,9})?$/.test(trimmed)) return null
   const [whole, fraction = ""] = trimmed.split(".")
-  const nanos = BigInt(whole) * 1_000_000_000n + BigInt((fraction + "000000000").slice(0, 9))
-  if (nanos <= 0n || nanos > BigInt(Number.MAX_SAFE_INTEGER)) return null
+  const nanos = BigInt(whole) * BigInt(1_000_000_000) + BigInt((fraction + "000000000").slice(0, 9))
+  if (nanos <= BigInt(0) || nanos > BigInt(Number.MAX_SAFE_INTEGER)) return null
   return Number(nanos)
 }
 
