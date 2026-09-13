@@ -81,7 +81,11 @@ export default function NFTMyBids({ postHash, bids }: Props) {
     }
 
     window.addEventListener("message", onMessage)
-    return () => window.removeEventListener("message", onMessage)
+    return () => {
+      window.removeEventListener("message", onMessage)
+      popupRef.current?.close()
+      popupRef.current = null
+    }
   }, [])
 
   async function withdrawBid(serialNumber: number) {
