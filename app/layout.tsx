@@ -2,6 +2,7 @@ import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
 import './global.css'
 import ViaGlobalRadio from './via-global-radio'
+import ViaSiteHeader from './via-site-header'
 
 const description =
   'Discover VIA on DeSo: an international meeting place for creators, collectors, communities, social discovery, digital culture and NFTs.'
@@ -64,6 +65,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body className="antialiased">
+        <ViaSiteHeader />
         {children}
         <ViaGlobalRadio />
         {process.env.NODE_ENV === 'production' && <Analytics />}

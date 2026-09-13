@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 92" role="img" aria-label="VIA">
+  <defs>
+    <linearGradient id="viaLeaf" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#d9f7e4"/>
+      <stop offset="1" stop-color="#78bf93"/>
+    </linearGradient>
+  </defs>
+  <g fill="none" stroke="#f4f7f5" stroke-width="11" stroke-linecap="square" stroke-linejoin="miter">
+    <path d="M18 18l34 58 34-58"/>
+    <path d="M112 18v58"/>
+    <path d="M148 76l34-58 34 58M165 50h34"/>
+  </g>
+  <path d="M188 64c18-20 36-23 52-20-8 17-21 31-40 38-10 4-19 4-28 0 6-8 11-13 16-18Z" fill="url(#viaLeaf)"/>
+  <path d="M177 84c13-15 28-27 46-36" fill="none" stroke="#8fd4a9" stroke-width="3.2" stroke-linecap="round"/>
+</svg>
