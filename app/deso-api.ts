@@ -127,6 +127,10 @@ async function performDeSoRequest(
   for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
     const node = DESO_NODES[attempt % DESO_NODES.length] ?? DEFAULT_DESO_NODE
     const controller = new AbortController()
+    const upstreamSignal = requestInit.signal
+    const abortFromUpstream = () => controller.abort(upstreamSignal?.reason)
+    if (upstreamSignal?.aborted) controller.abort(upstreamSignal.reason)
+    else upstreamSignal?.addEventListener("abort", abortFromUpstream, { once: true })
     const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS)
 
     try {
@@ -154,6 +158,7 @@ async function performDeSoRequest(
       if (attempt + 1 >= maxAttempts) throw error
     } finally {
       clearTimeout(timeout)
+      upstreamSignal?.removeEventListener("abort", abortFromUpstream)
     }
   }
 
