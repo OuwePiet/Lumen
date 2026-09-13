@@ -8,8 +8,8 @@ export const metadata: Metadata = {
 }
 
 const tools = [
-  { title: "Create a post", text: "Prepare text and media for a future DeSo post workflow." },
-  { title: "Prepare an NFT", text: "Organise artwork, title, copies and sale information before signing." },
+  { title: "Create a post", text: "Prepare a local post draft, then continue to VIA Social for the released DeSo posting flow." },
+  { title: "Mint an NFT", text: "Set native DeSo NFT terms, load a fresh cost quote and approve the mint through DeSo Identity." },
   { title: "Media workspace", text: "Prepare image, video and audio details with safe previews." },
   { title: "Drafts", text: "Keep non-secret work in progress without storing wallet signing material." },
 ]
@@ -37,7 +37,7 @@ export default function StudioPage() {
             <article className="rounded-[14px] border border-zinc-800/80 bg-zinc-950/50 p-5" key={tool.title}>
               <h2 className="text-lg font-medium text-zinc-100">{tool.title}</h2>
               <p className="mt-2 text-sm leading-6 text-zinc-400">{tool.text}</p>
-              <span className="mt-5 inline-block text-xs font-semibold uppercase tracking-[0.12em] text-[#8fd4a9]" aria-label={`${tool.title} development status`}>Foundation ready</span>
+              <span className="mt-5 inline-block text-xs font-semibold uppercase tracking-[0.12em] text-[#8fd4a9]">{tool.title === "Mint an NFT" ? "Released" : "Available in Studio"}</span>
             </article>
           ))}
         </section>
@@ -45,7 +45,7 @@ export default function StudioPage() {
         <section className="mt-4 rounded-[14px] border border-zinc-800/80 bg-zinc-950/45 p-5" aria-labelledby="studio-safety-heading">
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#8fd4a9]">Safety boundary</p>
           <h2 id="studio-safety-heading" className="mt-2 text-lg font-medium text-zinc-100">Safe by design</h2>
-          <p className="mt-2 text-sm leading-6 text-zinc-400">Studio separates preparing content from authorising blockchain actions. Future on-chain publishing or minting must use an authoritative DeSo wallet-control flow and explicit signing confirmation.</p>
+          <p className="mt-2 text-sm leading-6 text-zinc-400">Studio separates preparing content from authorising blockchain actions. Released DeSo posting and NFT minting use explicit DeSo Identity approval; VIA never signs with or stores a visitor's private key.</p>
         </section>
       </div>
     </main>
