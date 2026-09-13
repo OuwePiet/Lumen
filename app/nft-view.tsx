@@ -134,7 +134,7 @@ function saleStatus(
     return `Min bid: ${formatDeSo(minBidAmount)} DESO`
   }
 
-  return "Claim not available"
+  return "For sale"
 }
 
 function hasLegacyNFTzLink(body?: string) {
