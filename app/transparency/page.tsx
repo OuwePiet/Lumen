@@ -1,3 +1,4 @@
+import Link from "next/link"
 import { currentViaCostPolicy } from "../../lib/via/cost-transparency-policy"
 
 export const dynamic = "force-dynamic"
@@ -37,6 +38,11 @@ export default function TransparencyPage() {
         <p style={{ marginTop: 24, color: "#8fd4a9" }}>
           Old illustrative tariffs are not live VIA prices.
         </p>
+
+        <nav aria-label="Transparency navigation" style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 28 }}>
+          <Link href="/" style={{ color: "#9adbb2", textDecoration: "none", border: "1px solid rgba(143,212,169,.35)", borderRadius: 10, padding: "9px 12px" }}>Home</Link>
+          <Link href="/payment-info" style={{ color: "#9adbb2", textDecoration: "none", border: "1px solid rgba(143,212,169,.35)", borderRadius: 10, padding: "9px 12px" }}>Payment info</Link>
+        </nav>
       </section>
     </main>
   )
