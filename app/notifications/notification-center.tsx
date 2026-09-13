@@ -89,7 +89,6 @@ export default function NotificationCenter() {
 
     const publicKey = session.publicKey
     const controller = new AbortController()
-    let cancelled = false
     async function load() {
       setStatus("loading")
       setMessage("Loading public DeSo notification data…")
@@ -103,23 +102,19 @@ export default function NotificationCenter() {
         })
         const data = await response.json() as NotificationResponse
         if (!response.ok || !data.ok || !Array.isArray(data.notifications)) throw new Error(data.error || "NOTIFICATIONS_FAILED")
-        if (cancelled) return
         setItems(data.notifications)
         setLastSeenIndex(typeof data.lastSeenIndex === "number" ? data.lastSeenIndex : null)
         setStatus("ready")
         setMessage(data.notifications.length ? `${data.notifications.length} recent DeSo notifications loaded.` : "No recent notifications were returned by DeSo.")
-      } catch {
-        if (cancelled) return
+      } catch (error) {
+        if (error instanceof DOMException && error.name === "AbortError") return
         setItems([])
         setStatus("error")
         setMessage("DeSo notifications are temporarily unavailable. VIA did not change any account or blockchain state.")
       }
     }
     void load()
-    return () => {
-      cancelled = true
-      controller.abort()
-    }
+    return () => controller.abort()
   }, [session, refreshToken])
 
   const visible = useMemo(() => category === "all" ? items : items.filter((item) => categoryOf(item) === category), [items, category])
