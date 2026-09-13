@@ -131,7 +131,7 @@ export default function NotificationCenter() {
           <h2 id="notification-center-heading" className="mt-2 text-xl font-semibold text-white">Notification center</h2>
           <p className="mt-2 text-sm text-zinc-500">Active key: {shortKey(session.publicKey)}{lastSeenIndex !== null ? ` · DeSo last-seen index ${lastSeenIndex}` : ""}</p>
         </div>
-        <button type="button" onClick={() => setRefreshToken((value) => value + 1)} disabled={status === "loading"} className="rounded-full border border-zinc-700 px-3 py-1.5 text-xs text-zinc-300 hover:border-green-700 hover:text-green-300 disabled:cursor-wait disabled:opacity-60">{status === "loading" ? "Refreshing…" : "Refresh"}</button>
+        <button type="button" onClick={() => setRefreshToken((value) => value + 1)} disabled={status === "loading"} className="rounded-full border border-zinc-700 px-3 py-1.5 text-xs text-zinc-300 hover:border-[#8fd4a9]/55 hover:text-[#9adbb2] disabled:cursor-wait disabled:opacity-60">{status === "loading" ? "Refreshing…" : "Refresh"}</button>
       </div>
 
       <div className="mt-4 flex flex-wrap gap-2" aria-label="Notification filters">
@@ -152,7 +152,7 @@ export default function NotificationCenter() {
           const unread = typeof item.Index === "number" && lastSeenIndex !== null && item.Index > lastSeenIndex
           return <article key={`${item.Index ?? "n"}-${index}`} className="rounded-xl border border-zinc-800 bg-black/25 p-4">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <span className="text-xs font-semibold uppercase tracking-[0.12em] text-green-400">{itemCategory}</span>
+              <span className="text-xs font-semibold uppercase tracking-[0.12em] text-[#8fd4a9]">{itemCategory}</span>
               <span className="text-xs text-zinc-600">{unread ? "New on DeSo" : typeof item.Index === "number" ? `Index ${item.Index}` : "DeSo activity"}</span>
             </div>
             <p className="mt-2 text-sm leading-6 text-zinc-300">{describe(item)}</p>
