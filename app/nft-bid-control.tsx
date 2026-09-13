@@ -7,6 +7,7 @@ type SaleEdition = {
   serialNumber: number
   minBidAmountNanos?: number
   buyNowPriceNanos?: number
+  isBuyNow?: boolean
   ownerPublicKey?: string
 }
 
@@ -57,6 +58,7 @@ export default function NFTBidControl({ postHash, editions }: Props) {
   const minBid = edition?.minBidAmountNanos ?? 0
   const amountValid = typeof bidNanos === "number" && bidNanos >= minBid
   const isOwner = Boolean(session && edition?.ownerPublicKey === session.publicKey)
+  const canBuyNow = Boolean(edition?.isBuyNow && typeof edition?.buyNowPriceNanos === "number" && edition.buyNowPriceNanos > 0)
   const busy = status === "preparing" || status === "approval" || status === "submitting"
 
   useEffect(() => {
@@ -95,8 +97,10 @@ export default function NFTBidControl({ postHash, editions }: Props) {
     return () => window.removeEventListener("message", onMessage)
   }, [])
 
-  async function prepare() {
-    if (!session || !edition || !amountValid || !confirmed || isOwner || busy || !bidNanos) return
+  async function prepare(forBuyNow = false) {
+    const effectiveBidNanos = forBuyNow && canBuyNow ? edition?.buyNowPriceNanos ?? null : bidNanos
+    if (!session || !edition || typeof effectiveBidNanos !== "number" || effectiveBidNanos <= 0 || !confirmed || isOwner || busy) return
+    if (!forBuyNow && !amountValid) return
     setStatus("preparing")
     setMessage("Preparing the exact DeSo NFT bid transaction…")
     setFeeNanos(null)
@@ -110,7 +114,7 @@ export default function NFTBidControl({ postHash, editions }: Props) {
           publicKey: session.publicKey,
           postHash,
           serialNumber: edition.serialNumber,
-          bidAmountNanos: bidNanos,
+          bidAmountNanos: effectiveBidNanos,
         }),
       })
       const data = await response.json() as PrepareResponse
@@ -124,7 +128,7 @@ export default function NFTBidControl({ postHash, editions }: Props) {
       if (!popup) throw new Error("POPUP_BLOCKED")
       popupRef.current = popup
       setStatus("approval")
-      setMessage("Review the exact NFT bid and spend in DeSo Identity. VIA will submit only after your approval.")
+      setMessage(forBuyNow ? "Review the exact Buy Now purchase in DeSo Identity. DeSo executes Buy Now when the bid meets the listed Buy Now price." : "Review the exact NFT bid and spend in DeSo Identity. VIA will submit only after your approval.")
     } catch (error) {
       setStatus("error")
       setMessage(error instanceof Error && error.message === "POPUP_BLOCKED"
@@ -153,9 +157,12 @@ export default function NFTBidControl({ postHash, editions }: Props) {
         {!isOwner && amount && !amountValid ? <p className="mt-2 text-xs text-amber-300">Enter a valid amount of at least {formatDeso(minBid)} DESO.</p> : null}
         <label className="mt-3 flex items-start gap-2 text-xs text-amber-200"><input type="checkbox" checked={confirmed} onChange={(event) => setConfirmed(event.target.checked)} />I understand this creates a real on-chain bid that may reserve/spend $DESO according to DeSo rules.</label>
         {feeNanos !== null ? <p className="mt-2 text-xs text-zinc-500">Prepared network fee: {feeNanos.toLocaleString()} nanos.</p> : null}
-        <button type="button" onClick={prepare} disabled={!confirmed || !amountValid || isOwner || busy} className="mt-3 rounded-lg border border-green-700 px-4 py-2 text-sm font-semibold text-green-300 disabled:border-zinc-800 disabled:text-zinc-600">
-          {status === "preparing" ? "Preparing…" : status === "approval" ? "Review in DeSo…" : status === "submitting" ? "Submitting…" : "Review bid in DeSo"}
-        </button>
+        <div className="mt-3 flex flex-wrap gap-2">
+          <button type="button" onClick={() => void prepare(false)} disabled={!confirmed || !amountValid || isOwner || busy} className="rounded-lg border border-green-700 px-4 py-2 text-sm font-semibold text-green-300 disabled:border-zinc-800 disabled:text-zinc-600">
+            {status === "preparing" ? "Preparing…" : status === "approval" ? "Review in DeSo…" : status === "submitting" ? "Submitting…" : "Review bid in DeSo"}
+          </button>
+          {canBuyNow ? <button type="button" onClick={() => void prepare(true)} disabled={!confirmed || isOwner || busy} className="rounded-lg border border-emerald-600 px-4 py-2 text-sm font-semibold text-emerald-300 disabled:border-zinc-800 disabled:text-zinc-600">Buy now · {formatDeso(edition?.buyNowPriceNanos)} DESO</button> : null}
+        </div>
         {message ? <p className={"mt-3 text-xs " + (status === "error" ? "text-amber-300" : status === "done" ? "text-green-300" : "text-zinc-500")} role="status">{message}</p> : null}
       </>}
     </section>
