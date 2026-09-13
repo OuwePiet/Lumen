@@ -142,14 +142,12 @@ export default function QuestPage() {
         </section>
 
         <section className={styles.safety} aria-labelledby="quest-reward-heading">
-          <h2 id="quest-reward-heading">Diamond Shower reward</h2>
+          <h2 id="quest-reward-heading">No financial game rewards</h2>
           <p>
-            VIA Daily Grid, VIA Alphabet Relay, VIA NEO PONG, VIA Mahjong Stack, VIA Vault Breaker, VIA Coffee Corner and VIA Blockchain Mosaic are casual
-            game experiences. Local or client-visible game state is not authoritative proof for a real
-            DeSo reward. A future DeSo reward can never exceed one VIA Diamond Shower per winner and
-            reward moment. Before any real payout, VIA must show the number of posts, diamond level,
-            estimated DESO cost, estimated cash value and available reward pool. No automatic on-chain
-            payout is enabled in this prototype.
+            VIA World Quest games are casual experiences for play, discovery and optional local progress.
+            Scores, streaks, VIA Points and saved game state have no cash value and do not create any right
+            to DESO, Diamonds, tokens, payouts or other financial rewards. Game activity never triggers an
+            automatic on-chain payment or prize.
           </p>
         </section>
       </div>
