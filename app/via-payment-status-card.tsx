@@ -9,11 +9,15 @@ export default function ViaPaymentStatusCard() {
 
   useEffect(() => {
     let active = true
-    fetch("/api/via/payment-readiness", { cache: "no-store" })
+    const controller = new AbortController()
+    fetch("/api/via/payment-readiness", { cache: "no-store", signal: controller.signal })
       .then((response) => response.ok ? response.json() : Promise.reject())
       .then((data) => active && setMethods(Array.isArray(data.methods) ? data.methods : []))
       .catch(() => active && setMethods([]))
-    return () => { active = false }
+    return () => {
+      active = false
+      controller.abort()
+    }
   }, [])
 
   const ready = methods?.filter((item) => item.checkoutEnabled === true).length ?? 0
