@@ -13,6 +13,10 @@ function creatorWindowAnchor(window: CreatorWindow) {
   return `creator-${window.kind}-${slug}`
 }
 
+function creatorWindowsForKind(kind: CreatorWindowKind) {
+  return creatorWindows.filter((window) => window.kind === kind)
+}
+
 const creatorWindows: CreatorWindow[] = [
   { title: "Art & Painting", kind: "visual", text: "A window for painters, illustrators, digital artists and people showing work for the first time.", href: "/social?media=image", action: "Discover Art Images" },
   { title: "Music & Audio", kind: "audio", text: "Discover public radio now. Musicians, creator audio and independent releases will join this window only after their DeSo-compatible media/metadata path is verified.", href: "/radio", action: "Open World Radio" },
@@ -60,7 +64,7 @@ export default function DiscoverPage() {
   const openCreatorWindows = creatorWindows.filter(isOpenCreatorWindow).length
   const plannedCreatorWindows = creatorWindows.length - openCreatorWindows
   const creatorKinds = [...new Set(creatorWindows.map((window) => window.kind))]
-  const creatorKindTargets = creatorKinds.map((kind) => { const windows = creatorWindows.filter((window) => window.kind === kind); return { kind, window: windows[0]!, count: windows.length, openCount: windows.filter(isOpenCreatorWindow).length } })
+  const creatorKindTargets = creatorKinds.map((kind) => { const windows = creatorWindowsForKind(kind); return { kind, window: windows[0]!, count: windows.length, openCount: windows.filter(isOpenCreatorWindow).length } })
   const orderedCreatorWindows = [...creatorWindows].sort((a, b) => Number(isOpenCreatorWindow(b)) - Number(isOpenCreatorWindow(a)))
 
   return (
