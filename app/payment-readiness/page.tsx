@@ -1,4 +1,4 @@
-import ViaPaymentReadinessV2 from "../via-payment-readiness-v2"
+import ViaPaymentReadiness from "../via-payment-readiness"
 
 export const dynamic = "force-dynamic"
 
@@ -8,7 +8,7 @@ export default function CentralPaymentReadinessPage() {
       <section style={{ maxWidth: 760, margin: "0 auto", padding: 20, border: "1px solid rgba(143,212,169,.22)", borderRadius: 14 }}>
         <p style={{ color: "#8fd4a9", fontSize: 12, letterSpacing: ".12em" }}>VIA · CENTRAL READINESS</p>
         <h1 style={{ fontSize: 24 }}>Payment availability</h1>
-        <ViaPaymentReadinessV2 />
+        <ViaPaymentReadiness />
         <p style={{ marginTop: 20 }}>
           <a href="/" style={{ color: "#9adbb2" }}>Back to VIA</a>
         </p>
