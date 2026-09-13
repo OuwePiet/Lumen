@@ -183,7 +183,8 @@ export default function NFTOwnerSaleControl({ postHash, editions, hasUnlockable 
           setStatus("idle")
           setMessage("DeSo approval was closed. VIA changed nothing.")
         }
-      }, 500)setStatus("approval")
+      }, 500)
+      setStatus("approval")
       setMessage("Review this NFT sale change in DeSo Identity. VIA submits only after your approval.")
     } catch (error) {
       pendingMode.current = null
