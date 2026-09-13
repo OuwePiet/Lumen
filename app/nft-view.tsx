@@ -110,7 +110,7 @@ function accountCollectionHref(username: string, publicKey?: string) {
     params.set("view", "nfts")
   }
 
-  return `/?${params.toString()}#account-lookup-heading`
+  return `/?${params.toString()}${publicKey ? "#collection-controls" : "#account-lookup-heading"}`
 }
 
 function formatDeSo(nanos: number) {
