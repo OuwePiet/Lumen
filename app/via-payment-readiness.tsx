@@ -30,7 +30,8 @@ export default function ViaPaymentReadiness() {
 
   useEffect(() => {
     let active = true
-    fetch("/api/via/payment-readiness", { cache: "no-store" })
+    const controller = new AbortController()
+    fetch("/api/via/payment-readiness", { cache: "no-store", signal: controller.signal })
       .then((response) => {
         if (!response.ok) throw new Error("payment readiness unavailable")
         return response.json()
@@ -43,6 +44,7 @@ export default function ViaPaymentReadiness() {
       })
     return () => {
       active = false
+      controller.abort()
     }
   }, [])
 
