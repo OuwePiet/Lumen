@@ -117,7 +117,11 @@ export default function MintPreflight() {
       }
     }
     window.addEventListener("message", onMessage)
-    return () => window.removeEventListener("message", onMessage)
+    return () => {
+      window.removeEventListener("message", onMessage)
+      mintPopupRef.current?.close()
+      mintPopupRef.current = null
+    }
   }, [])
 
   useEffect(() => {

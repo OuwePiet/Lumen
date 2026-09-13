@@ -78,7 +78,11 @@ export default function EditPostControl() {
       }
     }
     window.addEventListener("message", onMessage)
-    return () => window.removeEventListener("message", onMessage)
+    return () => {
+      window.removeEventListener("message", onMessage)
+      popupRef.current?.close()
+      popupRef.current = null
+    }
   }, [])
 
   const hashValid = /^[0-9a-fA-F]{64}$/.test(postHashHex.trim())
