@@ -15,7 +15,7 @@ export const VIA_DESO_CAPABILITIES: ViaCapability[] = [
   { id: "like", label: "Likes", status: "released", note: "Like/Unlike transaction flow." },
   { id: "follow", label: "Follow / Unfollow", status: "released", note: "Follow status read plus controlled write." },
   { id: "repost", label: "Repost / Quote", status: "released", note: "Repost and Quote Repost through submit-post." },
-  { id: "diamond", label: "Diamonds", status: "released", note: "Explicit value confirmation before Identity approval." },
+  { id: "diamond", label: "Diamonds", status: "released", note: "Native DeSo post Diamonds exposed through VIA with explicit value confirmation before Identity approval; VIA does not recreate the protocol feature." },
   { id: "saved", label: "Saved posts", status: "released", note: "Local VIA save control; not represented as a DeSo blockchain write." },
   { id: "notifications", label: "Notification filters", status: "released", note: "Read-only DeSo notification views." },
   { id: "edit", label: "Edit own post", status: "released", note: "Ownership inspect, prepare, Identity approval and dedicated submit." },
