@@ -225,10 +225,11 @@ export default async function NFTGrid({ initialAccount }: { initialAccount?: str
               <MediaFilter
                 mediaTypes={collectionNFTs.map(({ post }) => mediaFilterType(post))}
                 saleStatuses={collectionNFTs.map(({ forSaleCount }) => forSaleCount > 0 ? "for-sale" : "not-for-sale")}
-                sortData={collectionNFTs.map(({ post, lowestBuyNowPrice, lowestMinBidAmount }) => ({
+                sortData={collectionNFTs.map(({ postHash, post, forSaleCount, lowestBuyNowPrice, lowestMinBidAmount }) => ({
                   title: cardTitle(post.Body),
                   creator: post.ProfileEntryResponse?.Username ? `@${post.ProfileEntryResponse.Username}` : "DeSo creator",
                   price: lowestBuyNowPrice ?? lowestMinBidAmount,
+                  searchText: [post.Body ?? "", postHash, forSaleCount > 0 ? "for sale te koop" : "not for sale niet te koop", mediaFilterType(post)].join(" "),
                 }))}
                 gridStyle={styles.grid}
               >
