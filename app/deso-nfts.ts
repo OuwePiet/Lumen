@@ -80,7 +80,7 @@ function normalizeCollection(value: unknown): DeSoNFTCollection | null {
  * DeSo's get-nfts-for-user endpoint. Do not add cursor/limit fields unless
  * they are verified against the currently deployed DeSo API contract.
  */
-export async function getNFTsForUser(publicKey: string) {
+export async function getNFTsForUser(publicKey: string, signal?: AbortSignal) {
   const response = await fetchDeSo("get-nfts-for-user", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -88,6 +88,7 @@ export async function getNFTsForUser(publicKey: string) {
       UserPublicKeyBase58Check: publicKey,
       ReaderPublicKeyBase58Check: "",
     }),
+    signal,
   })
 
   if (!response.ok) {
