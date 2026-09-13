@@ -45,7 +45,7 @@ function fallbackImage(width: number, height: number) {
     ctx.beginPath(); ctx.moveTo(node.x, node.y); ctx.lineTo(other.x, other.y); ctx.stroke()
   })
   nodes.forEach((node, i) => {
-    ctx.fillStyle = i % 3 === 0 ? "#d8ffe5" : "#5cff9d"
+    ctx.fillStyle = i % 3 === 0 ? "#d8ffe5" : "#8fd4a9"
     ctx.beginPath(); ctx.arc(node.x, node.y, i % 3 === 0 ? 5 : 3, 0, Math.PI * 2); ctx.fill()
   })
   ctx.fillStyle = "rgba(255,255,255,.82)"
@@ -254,7 +254,7 @@ export default function BlockchainPuzzle() {
     <section style={card} aria-labelledby="blockchain-puzzle-heading">
       <div style={{ display: "flex", justifyContent: "space-between", gap: 16, flexWrap: "wrap", alignItems: "end" }}>
         <div>
-          <p style={{ color: "#5cff9d", fontWeight: 800, letterSpacing: ".12em", textTransform: "uppercase", margin: 0 }}>VIA Puzzle Lab</p>
+          <p style={{ color: "#8fd4a9", fontWeight: 800, letterSpacing: ".12em", textTransform: "uppercase", margin: 0 }}>VIA Puzzle Lab</p>
           <h2 id="blockchain-puzzle-heading" style={{ marginBottom: 8 }}>⛓ VIA Blockchain Mosaic</h2>
           <p style={{ color: "#a9b8af", maxWidth: 760, marginTop: 0 }}>Rebuild a chain image one validated block at a time. Use VIA's generated network image or choose your own image. Your image and high scores stay in this browser.</p>
         </div>
