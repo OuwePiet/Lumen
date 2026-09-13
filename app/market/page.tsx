@@ -94,7 +94,7 @@ export default async function MarketPage({ searchParams }: { searchParams: Promi
       </div>
 
       <div className="mt-6 flex flex-wrap gap-2">
-        <Link href={"/market/my-bids" + query} className="rounded-lg border border-zinc-800 px-3 py-2 text-sm text-zinc-300">My Bids</Link>
+        <Link href={"/market/received-bids" + query} className="rounded-lg border border-zinc-800 px-3 py-2 text-sm text-zinc-300">Received Bids</Link>\n        <Link href={"/market/my-bids" + query} className="rounded-lg border border-zinc-800 px-3 py-2 text-sm text-zinc-300">My Bids</Link>
         <a href="#sales" className="rounded-lg border border-zinc-800 px-3 py-2 text-sm text-zinc-300">Sales</a>
         <a href="#transfers" className="rounded-lg border border-zinc-800 px-3 py-2 text-sm text-zinc-300">Transfers</a>
       </div>
