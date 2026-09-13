@@ -115,7 +115,7 @@ export default function StudioDraft() {
       {pollEnabled ? (
         <div className="mb-4 grid gap-3 rounded-[12px] border border-zinc-800/80 bg-black/25 p-4" aria-label="Poll draft">
           <strong className="text-sm text-zinc-100">Poll options</strong>
-          <span className="text-xs leading-5 text-zinc-500">Draft only until VIA verifies the exact DeSo poll transaction/metadata format.</span>
+          <span className="text-xs leading-5 text-zinc-500">Prepare poll options locally here. Publishing happens through the released VIA Social poll flow with explicit DeSo Identity approval.</span>
           {pollOptions.map((option, index) => (
             <div key={index} className="flex items-center gap-2">
               <input className={field} value={option} maxLength={MAX_POLL_OPTION} onChange={(event) => updatePollOption(index, event.target.value)} placeholder={`Option ${index + 1}`} aria-label={`Poll option ${index + 1}`} />
@@ -138,7 +138,7 @@ export default function StudioDraft() {
         <span className="ml-auto text-xs text-zinc-500" aria-live="polite">{remaining} characters left</span>
       </div>
 
-      <p className="mt-3 min-h-5 text-xs leading-5 text-zinc-400" role="status" aria-live="polite">{status} · Draft target: {language} / {feed}{pollEnabled ? " · Poll prepared" : ""}. Draft settings stay local here. Released DeSo posting is handled by VIA Social with explicit DeSo Identity approval.</p>
+      <p className="mt-3 min-h-5 text-xs leading-5 text-zinc-400" role="status" aria-live="polite">{status} · Draft target: {language} / {feed}{pollEnabled ? " · Poll prepared" : ""}. Draft settings stay local here. Released DeSo posting and poll publishing are handled by VIA Social with explicit DeSo Identity approval.</p>
     </section>
   )
 }
