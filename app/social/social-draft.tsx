@@ -38,7 +38,7 @@ export default function SocialDraft() {
 
   return (
     <section className="mt-8 rounded-2xl border border-zinc-800 bg-zinc-950/70 p-5" aria-labelledby="draft-heading">
-      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-green-400">Local draft</p>
+      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#8fd4a9]">Local draft</p>
       <h2 id="draft-heading" className="mt-2 text-2xl font-semibold">Write without publishing</h2>
       <p className="mt-2 max-w-3xl text-sm leading-6 text-zinc-400">
         This editor saves only in this browser. It does not upload, publish, sign a DeSo transaction or send your text to VIA.
@@ -54,13 +54,13 @@ export default function SocialDraft() {
         }}
         rows={6}
         placeholder="Write a future VIA / DeSo post..."
-        className="mt-2 w-full rounded-xl border border-zinc-700 bg-black p-3 text-base leading-6 text-white outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-900"
+        className="mt-2 w-full rounded-xl border border-zinc-700 bg-black p-3 text-base leading-6 text-white outline-none transition focus:border-[#8fd4a9] focus:ring-2 focus:ring-[#234d32]"
       />
       <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
         <p className="text-xs text-zinc-500">{text.length}/{MAX_LENGTH} characters · local to this browser</p>
         <div className="flex flex-wrap gap-2">
           <button type="button" onClick={clearDraft} className="min-h-11 rounded-full border border-zinc-700 px-4 py-2 text-sm text-zinc-300 hover:border-zinc-500">Clear</button>
-          <button type="button" onClick={saveDraft} className="min-h-11 rounded-full border border-green-800 bg-green-950/30 px-4 py-2 text-sm font-semibold text-green-300 hover:border-green-500">Save draft</button>
+          <button type="button" onClick={saveDraft} className="min-h-11 rounded-full border border-[#285f40] bg-[#123822]/50 px-4 py-2 text-sm font-semibold text-[#9adbb2] hover:border-[#8fd4a9]">Save draft</button>
         </div>
       </div>
       <p className="mt-3 min-h-5 text-xs text-zinc-400" role="status" aria-live="polite">{status}</p>
