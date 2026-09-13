@@ -134,11 +134,11 @@ export default function StudioDraft() {
       <div className="flex flex-wrap items-center gap-2">
         <button type="button" onClick={saveDraft} className="min-h-11 rounded-[11px] border border-[#8fd4a9]/55 bg-transparent px-4 py-2 text-sm font-semibold text-[#9adbb2] transition-[background-color,border-color] duration-200 hover:border-[#8fd4a9]/75 hover:bg-[#0c1711]/45 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8fd4a9]/15">Save draft</button>
         <button type="button" onClick={clearDraft} className={toolButton}>Clear</button>
-        <button type="button" disabled title="Direct DeSo posting will only be enabled after authoritative wallet verification and explicit signing." aria-disabled="true" className="min-h-11 rounded-[11px] border border-zinc-800 bg-transparent px-4 py-2 text-sm text-zinc-600">Post to DeSo — signing not connected</button>
+        <a href="/social" className="min-h-11 inline-flex items-center rounded-[11px] border border-[#8fd4a9]/45 bg-transparent px-4 py-2 text-sm font-semibold text-[#9adbb2]">Continue to released DeSo post</a>
         <span className="ml-auto text-xs text-zinc-500" aria-live="polite">{remaining} characters left</span>
       </div>
 
-      <p className="mt-3 min-h-5 text-xs leading-5 text-zinc-400" role="status" aria-live="polite">{status} · Draft target: {language} / {feed}{pollEnabled ? " · Poll prepared" : ""}. These choices are VIA draft settings until their DeSo behaviour is verified.</p>
+      <p className="mt-3 min-h-5 text-xs leading-5 text-zinc-400" role="status" aria-live="polite">{status} · Draft target: {language} / {feed}{pollEnabled ? " · Poll prepared" : ""}. Draft settings stay local here. Released DeSo posting is handled by VIA Social with explicit DeSo Identity approval.</p>
     </section>
   )
 }
