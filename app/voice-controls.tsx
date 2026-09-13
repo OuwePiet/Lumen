@@ -276,6 +276,7 @@ export default function VoiceControls({
         clearTimeout(listeningTimeoutRef.current)
       }
       recognitionRef.current?.stop()
+      window.speechSynthesis?.cancel()
     }
   }, [])
 
@@ -298,6 +299,10 @@ export default function VoiceControls({
   const matchingVoices = availableVoices.filter((voice) =>
     voice.lang.toLocaleLowerCase().startsWith(languagePrefix)
   )
+
+  useEffect(() => {
+    window.speechSynthesis?.cancel()
+  }, [language, speechRate, selectedVoiceURI, readAloud])
 
   useEffect(() => {
     if (
