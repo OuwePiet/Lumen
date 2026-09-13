@@ -3,6 +3,15 @@ const REQUEST_TIMEOUT_MS = 12_000
 const MIN_ATTEMPTS = 2
 const PROFILE_LOOKUP_CONCURRENCY = 6
 
+const SAFE_POST_RETRY_ENDPOINTS = new Set([
+  "get-single-profile",
+  "get-nfts-for-user",
+  "get-posts-for-public-key",
+  "get-posts-stateless",
+  "get-notifications",
+  "get-follows-stateless",
+])
+
 let activeProfileLookups = 0
 const profileLookupWaiters: Array<() => void> = []
 
@@ -108,7 +117,7 @@ async function performDeSoRequest(
   let lastError: unknown
 
   const method = (requestInit.method ?? "GET").toUpperCase()
-  const retrySafe = method === "GET" || method === "HEAD"
+  const retrySafe = method === "GET" || method === "HEAD" || (method === "POST" && SAFE_POST_RETRY_ENDPOINTS.has(safeEndpoint))
   const maxAttempts = retrySafe ? Math.max(MIN_ATTEMPTS, DESO_NODES.length) : 1
 
   for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
