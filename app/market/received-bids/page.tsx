@@ -21,7 +21,7 @@ export default async function ReceivedBidsPage({searchParams}:{searchParams:Prom
    const ownedResponse=await fetchDeSo("get-nfts-for-user",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({UserPublicKeyBase58Check:publicKey,ReaderPublicKeyBase58Check:publicKey,Limit:100}),cache:"no-store"})
    if(!ownedResponse.ok)throw new Error()
    const ownedData=await ownedResponse.json() as {NFTsMap?:Record<string,Owned>}
-   const owned=Object.entries(ownedData.NFTsMap??{})
+   const owned=Object.entries(ownedData.NFTsMap??{}).filter(([hash])=>/^[0-9a-fA-F]{64}$/.test(hash))
    const results=await Promise.all(owned.map(async([hash,record])=>{
     const serials=new Set((record.NFTEntryResponses??[]).map(e=>e.SerialNumber).filter((n):n is number=>typeof n==="number"))
     if(serials.size===0)return []
