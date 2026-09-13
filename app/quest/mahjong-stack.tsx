@@ -225,7 +225,7 @@ export default function MahjongStack() {
                     ?"linear-gradient(145deg,#f1ead7,#cfc8b7)"
                     :"linear-gradient(145deg,#a8a89d,#757c75)",
                 color:selected?"#f4fff8":"#17231b",
-                fontSize:"clamp(24px,6vw,52px)",
+                fontSize:"clamp(20px,6vw,52px)",
                 lineHeight:1,
                 cursor:free?"pointer":"not-allowed",
                 boxShadow:hinted
