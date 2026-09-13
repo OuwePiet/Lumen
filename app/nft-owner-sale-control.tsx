@@ -112,7 +112,11 @@ export default function NFTOwnerSaleControl({ postHash, editions, hasUnlockable 
       }
     }
     window.addEventListener("message", onMessage)
-    return () => window.removeEventListener("message", onMessage)
+    return () => {
+      window.removeEventListener("message", onMessage)
+      popupRef.current?.close()
+      popupRef.current = null
+    }
   }, [])
 
   async function prepare(mode: "list" | "remove") {
