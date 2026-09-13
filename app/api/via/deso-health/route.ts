@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 
 const DEFAULT_DESO_NODE = "https://node.deso.org"
+const PUBLIC_NODE_CAP = 8
 const TIMEOUT_MS = 4_000
 
 function normalizedNodeUrl(value: string | undefined) {
