@@ -17,6 +17,8 @@ type Station = {
 
 const FAVORITES_KEY = "via:world-radio:favorites:v1"
 const FAVORITE_STATIONS_KEY = "via:world-radio:favorite-stations:v1"
+const GLOBAL_STATION_KEY = "via:world-radio:station"
+const GLOBAL_STATION_EVENT = "via:world-radio:station"
 
 const styles = {
   form: { display: "flex", flexWrap: "wrap" as const, gap: "10px", margin: "0 0 18px" },
@@ -42,10 +44,8 @@ export default function RadioBrowser() {
   const [country, setCountry] = useState("")
   const [tag, setTag] = useState("")
   const [stations, setStations] = useState<Station[]>([])
-  const [selected, setSelected] = useState<Station | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
-  const [playerError, setPlayerError] = useState("")
   const [favorites, setFavorites] = useState<string[]>([])
   const [favoriteStations, setFavoriteStations] = useState<Station[]>([])
   const [showFavorites, setShowFavorites] = useState(false)
@@ -109,8 +109,12 @@ export default function RadioBrowser() {
   }
 
   const play = (station: Station) => {
-    setPlayerError("")
-    setSelected(station)
+    try {
+      localStorage.setItem(GLOBAL_STATION_KEY, JSON.stringify({ name: station.name, streamUrl: station.streamUrl }))
+      window.dispatchEvent(new Event(GLOBAL_STATION_EVENT))
+    } catch {
+      // Global playback can still be selected again if local storage is unavailable.
+    }
     void fetch("/api/via/radio", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -118,10 +122,6 @@ export default function RadioBrowser() {
     }).catch(() => undefined)
   }
 
-  const stop = () => {
-    setSelected(null)
-    setPlayerError("")
-  }
 
   const toggleFavorite = (station: Station) => {
     const removing = favoriteSet.has(station.id)
@@ -148,18 +148,8 @@ export default function RadioBrowser() {
         <button type="button" style={styles.button} aria-pressed={showFavorites} onClick={() => setShowFavorites((value) => !value)}>{showFavorites ? "Show search" : `Favorites (${favorites.length})`}</button>
       </form>
 
-      {selected ? (
-        <div style={styles.player}>
-          <strong>Now selected: {selected.name}</strong>
-          <p style={styles.status}>{selected.country || "Unknown country"} · {selected.codec || "stream"}{selected.bitrate ? ` · ${selected.bitrate} kbps` : ""}</p>
-          <audio key={selected.id} controls autoPlay preload="none" src={selected.streamUrl} style={styles.audio} onPlaying={() => setPlayerError("")} onError={() => setPlayerError("This station stream could not be played. Try another station.")}>Your browser does not support audio playback.</audio>
-          {playerError ? <p role="alert" style={styles.status}>{playerError}</p> : null}
-          <button type="button" style={styles.button} onClick={stop}>Stop / close player</button>
-        </div>
-      ) : null}
-
       {error ? <p role="alert" style={styles.status}>{error}</p> : null}
-      {!error ? <p style={styles.status}>Streams come directly from the station. VIA does not host or proxy the audio. Playback starts only after you choose Play.</p> : null}
+      {!error ? <p style={styles.status}>Streams come directly from the station. VIA does not host or proxy the audio. Choose Play here, then use the global World Radio control to turn the station on or off while navigating VIA.</p> : null}
       {showFavorites && visibleStations.length === 0 ? <p style={styles.status}>No saved favorite stations yet.</p> : null}
 
       <div style={styles.grid}>
