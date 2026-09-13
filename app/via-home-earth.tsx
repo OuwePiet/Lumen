@@ -31,62 +31,73 @@ export default function ViaHomeEarth() {
       aria-hidden="true"
       style={{
         position: "absolute",
-        right: "clamp(-150px, -8vw, -40px)",
-        top: "clamp(110px, 17vw, 220px)",
-        width: "clamp(280px, 38vw, 620px)",
+        left: "50%",
+        top: "clamp(150px, 16vw, 220px)",
+        width: "clamp(760px, 94vw, 1420px)",
         aspectRatio: "1",
+        transform: "translateX(-50%)",
         pointerEvents: "none",
         zIndex: 0,
-        opacity: 0.38,
+        opacity: 0.72,
       }}
     >
-      <svg viewBox="0 0 600 600" width="100%" height="100%" role="presentation">
+      <svg viewBox="0 0 1000 1000" width="100%" height="100%" role="presentation">
         <defs>
-          <radialGradient id="viaEarthShade" cx="34%" cy="28%" r="72%">
-            <stop offset="0%" stopColor="#183127" stopOpacity="0.58" />
-            <stop offset="58%" stopColor="#0b1713" stopOpacity="0.44" />
-            <stop offset="100%" stopColor="#020504" stopOpacity="0.12" />
+          <radialGradient id="viaEarthShade" cx="48%" cy="28%" r="70%">
+            <stop offset="0%" stopColor="#183127" stopOpacity="0.7" />
+            <stop offset="48%" stopColor="#0b1713" stopOpacity="0.58" />
+            <stop offset="100%" stopColor="#020504" stopOpacity="0.16" />
           </radialGradient>
           <radialGradient id="viaEarthHorizon" cx="50%" cy="50%" r="50%">
             <stop offset="82%" stopColor="#79b796" stopOpacity="0" />
-            <stop offset="96%" stopColor="#79b796" stopOpacity="0.1" />
-            <stop offset="100%" stopColor="#b9ffd4" stopOpacity="0.18" />
+            <stop offset="96%" stopColor="#79b796" stopOpacity="0.12" />
+            <stop offset="100%" stopColor="#9adbb2" stopOpacity="0.28" />
           </radialGradient>
+          <linearGradient id="viaEarthFade" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#ffffff" stopOpacity="1" />
+            <stop offset="62%" stopColor="#ffffff" stopOpacity=".92" />
+            <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
+          </linearGradient>
+          <mask id="viaEarthMask">
+            <rect width="1000" height="1000" fill="url(#viaEarthFade)" />
+          </mask>
           <clipPath id="viaEarthClip">
-            <circle cx="300" cy="300" r="228" />
+            <circle cx="500" cy="500" r="368" />
           </clipPath>
         </defs>
-        <circle cx="300" cy="300" r="232" fill="url(#viaEarthHorizon)" />
-        <circle cx="300" cy="300" r="228" fill="url(#viaEarthShade)" stroke="#35594a" strokeOpacity="0.34" strokeWidth="1.2" />
-        <g
-          clipPath="url(#viaEarthClip)"
-          fill="none"
-          stroke="#4b7462"
-          strokeOpacity="0.2"
-          strokeWidth="1"
-          style={{
-            transformOrigin: "300px 300px",
-            transform: `rotate(${rotation}deg)`,
-            transition: "transform 60s linear",
-          }}
-        >
-          <ellipse cx="300" cy="300" rx="228" ry="72" />
-          <ellipse cx="300" cy="300" rx="228" ry="142" />
-          <ellipse cx="300" cy="300" rx="86" ry="228" />
-          <ellipse cx="300" cy="300" rx="158" ry="228" />
-          <path d="M72 300h456" />
-          <path d="M168 153c36-30 70-43 104-39 28 4 45 23 71 30 25 7 49 0 75 12 24 11 37 32 45 57-25 8-49 17-63 39-15 24-10 54-29 75-17 19-44 23-61 42-20 22-23 54-39 79-17-18-30-40-38-65-9-27-10-57-26-81-14-21-39-33-49-52-21-25-22-61 10-97Z" />
-          <path d="M342 120c26 17 44 38 58 64 13 25 13 54 30 77 16 21 44 32 56 56-10 33-27 64-51 90-24-8-48-15-65-35-17-21-21-50-39-70-15-17-37-27-46-49-12-29 2-59 17-84 12-20 24-35 40-49Z" />
-          <g fill="#b9ffd4" stroke="none" opacity="0.48">
-            <circle cx="214" cy="218" r="1.6" />
-            <circle cx="252" cy="190" r="1.2" />
-            <circle cx="286" cy="232" r="1.4" />
-            <circle cx="332" cy="206" r="1.3" />
-            <circle cx="365" cy="252" r="1.5" />
-            <circle cx="405" cy="288" r="1.1" />
-            <circle cx="344" cy="330" r="1.4" />
-            <circle cx="276" cy="354" r="1.2" />
-            <circle cx="225" cy="318" r="1.3" />
+        <g mask="url(#viaEarthMask)">
+          <circle cx="500" cy="500" r="374" fill="url(#viaEarthHorizon)" />
+          <circle cx="500" cy="500" r="368" fill="url(#viaEarthShade)" stroke="#5a8b74" strokeOpacity="0.28" strokeWidth="1.2" />
+          <g
+            clipPath="url(#viaEarthClip)"
+            fill="none"
+            stroke="#6b9a84"
+            strokeOpacity="0.17"
+            strokeWidth="1"
+            style={{
+              transformOrigin: "500px 500px",
+              transform: `rotate(${rotation}deg)`,
+              transition: "transform 60s linear",
+            }}
+          >
+            <ellipse cx="500" cy="500" rx="368" ry="108" />
+            <ellipse cx="500" cy="500" rx="368" ry="226" />
+            <ellipse cx="500" cy="500" rx="142" ry="368" />
+            <ellipse cx="500" cy="500" rx="252" ry="368" />
+            <path d="M132 500h736" />
+            <path d="M286 290c74-54 142-67 204-48 48 15 78 55 124 66 46 10 91-4 139 18 43 20 67 57 82 101-49 14-92 36-119 78-28 45-19 99-55 137-32 34-82 40-114 75-37 40-42 97-72 142-32-32-58-72-72-117-16-49-18-103-47-146-26-38-70-59-99-94-38-45-39-109 29-212Z" />
+            <path d="M574 232c50 30 86 70 112 117 24 46 26 97 57 139 30 39 81 59 104 102-20 61-54 117-99 164-45-15-89-27-121-65-31-39-38-91-72-128-28-31-68-49-85-89-22-53 5-107 34-151 21-34 43-63 70-89Z" />
+            <g fill="#9adbb2" stroke="none" opacity="0.48">
+              <circle cx="362" cy="388" r="2.1" />
+              <circle cx="426" cy="342" r="1.8" />
+              <circle cx="484" cy="414" r="2" />
+              <circle cx="558" cy="372" r="1.8" />
+              <circle cx="616" cy="446" r="2.1" />
+              <circle cx="682" cy="506" r="1.7" />
+              <circle cx="578" cy="570" r="2" />
+              <circle cx="466" cy="604" r="1.8" />
+              <circle cx="382" cy="548" r="2" />
+            </g>
           </g>
         </g>
       </svg>
