@@ -8,6 +8,7 @@ import QuestGame from "./quest-game"
 import MahjongStack from "./mahjong-stack"
 import ShareButton from "./share-button"
 import ViaPong from "./via-pong"
+import VaultBreaker from "./vault-breaker"
 import styles from "./quest.module.css"
 
 export const metadata: Metadata = {
@@ -28,6 +29,7 @@ const games = [
   { href: "#alphabet-relay", title: "VIA Alphabet Relay", text: "Keep the letter chain moving." },
   { href: "#neo-pong", title: "VIA NEO PONG", text: "Fast local arcade play." },
   { href: "#mahjong-stack", title: "VIA Mahjong Stack", text: "Clear a polished three-layer tile stack." },
+  { href: "#vault-breaker", title: "VIA Vault Breaker", text: "Crack three cryptic mechanical vaults with UV clues." },
   { href: "#coffee-corner", title: "VIA Coffee Corner", text: "Three light VIA coffee mini games." },
   { href: "#blockchain-mosaic", title: "VIA Blockchain Mosaic", text: "Rebuild a chain image up to 500 pieces." },
   { href: "#world-quest", title: "VIA World Quest", text: "Discover VIA and DeSo through routes." },
@@ -103,6 +105,14 @@ export default function QuestPage() {
           </div>
         </section>
 
+        <section id="vault-breaker" style={{ scrollMarginTop: 24 }}>
+          <VaultBreaker />
+          <div style={shareRow}>
+            <ShareButton game="VIA Vault Breaker" path="/quest#vault-breaker" />
+            <SaveButton title="VIA Vault Breaker" href="/quest#vault-breaker" kind="Game" />
+          </div>
+        </section>
+
         <section id="coffee-corner" style={{ scrollMarginTop: 24 }}>
           <CoffeeGames />
           <div style={shareRow} aria-label="Share or save VIA Coffee Corner games">
@@ -134,7 +144,7 @@ export default function QuestPage() {
         <section className={styles.safety} aria-labelledby="quest-reward-heading">
           <h2 id="quest-reward-heading">Diamond Shower reward</h2>
           <p>
-            VIA Daily Grid, VIA Alphabet Relay, VIA NEO PONG, VIA Mahjong Stack, VIA Coffee Corner and VIA Blockchain Mosaic are casual
+            VIA Daily Grid, VIA Alphabet Relay, VIA NEO PONG, VIA Mahjong Stack, VIA Vault Breaker, VIA Coffee Corner and VIA Blockchain Mosaic are casual
             game experiences. Local or client-visible game state is not authoritative proof for a real
             DeSo reward. A future DeSo reward can never exceed one VIA Diamond Shower per winner and
             reward moment. Before any real payout, VIA must show the number of posts, diamond level,
