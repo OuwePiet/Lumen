@@ -125,7 +125,7 @@ function priceStatus(forSaleCount: number, buyNowPrice?: number, minBidAmount?: 
   if (forSaleCount === 0) return "Not for sale"
   if (typeof buyNowPrice === "number") return `Buy now: ${formatDeSo(buyNowPrice)} DESO`
   if (typeof minBidAmount === "number") return `Min bid: ${formatDeSo(minBidAmount)} DESO`
-  return "Claim not available"
+  return "For sale"
 }
 
 function cardTitle(body?: string) {
@@ -217,7 +217,7 @@ export default async function NFTGrid({ initialAccount }: { initialAccount?: str
           <>
             <p style={styles.owner}>
               {collectionOwner ? `@${collectionOwner.Username} · ${collectionNFTs.length} NFTs displayed` : `Collection unavailable: @${selectedAccount}`}
-              {automaticNFTResult === null ? " · live count unavailable" : automaticNFTResult.nftCount > collectionNFTs.length ? ` · ${automaticNFTResult.nftCount} NFTs detected` : ""}
+              {automaticNFTResult && automaticNFTResult.nftCount > collectionNFTs.length ? ` · ${automaticNFTResult.nftCount} NFTs detected` : ""}
             </p>
             <div id="collection-controls">
               <MediaFilter
