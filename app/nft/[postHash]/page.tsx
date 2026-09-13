@@ -50,6 +50,13 @@ export default async function NFTPage({ params, searchParams }: NFTPageProps) {
     typeof context.media === "string" && MEDIA_VALUES.has(context.media)
       ? context.media
       : undefined
+  const shown =
+    typeof context.shown === "string" &&
+    /^\d{1,4}$/.test(context.shown) &&
+    Number(context.shown) >= 25 &&
+    Number(context.shown) <= 1000
+      ? context.shown
+      : undefined
 
   if (account) returnParams.set("account", account)
   if (accountKey) returnParams.set("accountKey", accountKey)
@@ -58,6 +65,7 @@ export default async function NFTPage({ params, searchParams }: NFTPageProps) {
   if (sort) returnParams.set("sort", sort)
   if (sale) returnParams.set("sale", sale)
   if (media) returnParams.set("media", media)
+  if (shown) returnParams.set("shown", shown)
 
   const hasVerifiedAccountContext = Boolean(account && accountKey)
   const backHref = hasVerifiedAccountContext
