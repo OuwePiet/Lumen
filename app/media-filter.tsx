@@ -560,8 +560,8 @@ export default function MediaFilter({
     <>
         <input
           type="search"
-          aria-label="Search NFT collection"
-          placeholder="Search by title or creator"
+          aria-label="Filter NFT collection with your own search term"
+          placeholder="Filter collection… title, creator or your own word"
           value={searchQuery}
           style={styles.search}
           onChange={(event) => {
