@@ -142,7 +142,11 @@ export default function PollVoteControl({ postHash, options }: Props) {
     }
 
     window.addEventListener("message", onMessage)
-    return () => window.removeEventListener("message", onMessage)
+    return () => {
+      window.removeEventListener("message", onMessage)
+      popupRef.current?.close()
+      popupRef.current = null
+    }
   }, [pendingOption, postHash, session])
 
   async function vote(option: string) {
