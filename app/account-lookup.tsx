@@ -63,7 +63,7 @@ const styles = {
   text: { color: "#a9b8af", fontSize: "13px", lineHeight: 1.6, margin: "0 0 14px" },
   form: { display: "flex", flexWrap: "wrap" as const, gap: "10px" },
   input: { flex: "1 1 260px", minWidth: 0, color: "#f4f7f5", background: "#050807", border: "1px solid #254233", borderRadius: "10px", fontSize: "16px", padding: "11px 12px" },
-  button: { minHeight: "44px", color: "#050807", background: "#5cff9d", border: "1px solid #5cff9d", borderRadius: "999px", cursor: "pointer", fontSize: "13px", fontWeight: 800, padding: "10px 16px" },
+  button: { minHeight: "44px", color: "#050807", background: "#8fd4a9", border: "1px solid #8fd4a9", borderRadius: "999px", cursor: "pointer", fontSize: "13px", fontWeight: 800, padding: "10px 16px" },
   status: { color: "#a9b8af", fontSize: "13px", marginTop: "12px" },
   result: { color: "#b9ffd4", background: "#10261a", border: "1px solid #285f40", borderRadius: "12px", marginTop: "14px", padding: "14px" },
   error: { color: "#f1d89a", background: "#211a0c", border: "1px solid #6e5721", borderRadius: "12px", marginTop: "14px", padding: "14px" },
