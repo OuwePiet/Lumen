@@ -3,6 +3,7 @@ import CopyNFTLink from "./copy-nft-link"
 import { fetchDeSo } from "./deso-api"
 import EditionOwners from "./edition-owners"
 import NFTMedia from "./nft-media"
+import NFTBidControl from "./nft-bid-control"
 import NFTHistory from "./nft-history"
 import { inspectMediaIntegrity } from "../lib/via/digital-ownership"
 import { normalizeNftRecord } from "../lib/via/nft-record"
@@ -590,6 +591,8 @@ export default async function NFTView({
               {sortedEntries.length > 1 ? (
                 <EditionOwners editions={editionOwners} />
               ) : null}
+
+              <NFTBidControl postHash={postHash} editions={forSale.map((entry, index) => ({ serialNumber: entry.SerialNumber ?? index + 1, minBidAmountNanos: entry.MinBidAmountNanos, buyNowPriceNanos: entry.BuyNowPriceNanos, ownerPublicKey: entry.OwnerPublicKeyBase58Check }))} />
 
               <NFTHistory
                 postTimestampNanos={post.TimestampNanos}
