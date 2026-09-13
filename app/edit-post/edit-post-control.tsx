@@ -61,7 +61,7 @@ export default function EditPostControl() {
       setStatus("submitting")
       setMessage("Submitting the approved edit to DeSo…")
       try {
-        const response = await fetch("/api/via/social/post", {
+        const response = await fetch("/api/via/social/edit-post", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           cache: "no-store",
