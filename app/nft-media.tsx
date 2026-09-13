@@ -28,7 +28,7 @@ const mediaBadgeStyle: CSSProperties = {
   top: "12px",
   left: "12px",
   zIndex: 1,
-  color: "#5cff9d",
+  color: "#8fd4a9",
   background: "rgba(5, 8, 7, 0.88)",
   border: "1px solid #285f40",
   borderRadius: "999px",
