@@ -52,6 +52,7 @@ export default function NFTBidControl({ postHash, editions }: Props) {
   const [message, setMessage] = useState("")
   const [feeNanos, setFeeNanos] = useState<number | null>(null)
   const popupRef = useRef<Window | null>(null)
+  const popupWatch = useRef<number | null>(null)
 
   const edition = useMemo(() => editions.find((item) => item.serialNumber === serialNumber) ?? editions[0], [editions, serialNumber])
   const bidNanos = desoToSafeNanos(amount)
@@ -74,6 +75,8 @@ export default function NFTBidControl({ postHash, editions }: Props) {
       if (!signedTransactionHex) return
       popupRef.current?.close()
       popupRef.current = null
+      if (popupWatch.current !== null) window.clearInterval(popupWatch.current)
+      popupWatch.current = null
       setStatus("submitting")
       setMessage("Submitting the approved NFT bid to DeSo…")
       try {
@@ -96,6 +99,8 @@ export default function NFTBidControl({ postHash, editions }: Props) {
     window.addEventListener("message", onMessage)
     return () => {
       window.removeEventListener("message", onMessage)
+      if (popupWatch.current !== null) window.clearInterval(popupWatch.current)
+      popupWatch.current = null
       popupRef.current?.close()
       popupRef.current = null
     }
@@ -131,6 +136,16 @@ export default function NFTBidControl({ postHash, editions }: Props) {
       )
       if (!popup) throw new Error("POPUP_BLOCKED")
       popupRef.current = popup
+      if (popupWatch.current !== null) window.clearInterval(popupWatch.current)
+      popupWatch.current = window.setInterval(() => {
+        if (popupRef.current?.closed) {
+          popupRef.current = null
+          if (popupWatch.current !== null) window.clearInterval(popupWatch.current)
+          popupWatch.current = null
+          setStatus("idle")
+          setMessage("DeSo approval was closed. No bid was placed.")
+        }
+      }, 500)
       setStatus("approval")
       setMessage(forBuyNow ? "Review the exact Buy Now purchase in DeSo Identity. DeSo executes Buy Now when the bid meets the listed Buy Now price." : "Review the exact NFT bid and spend in DeSo Identity. VIA will submit only after your approval.")
     } catch (error) {
