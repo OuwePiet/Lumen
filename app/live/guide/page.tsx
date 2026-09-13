@@ -14,7 +14,7 @@ export default function LiveGuidePage() {
         <a href="/live" style={{color:"#b9ffd4",textDecoration:"none",fontWeight:800}}>← VIA LIVE</a>
         <a href="/" style={{color:"#b9ffd4",textDecoration:"none",fontWeight:800}}>VIA home</a>
       </nav>
-      <p style={{color:"#5cff9d",fontWeight:800,letterSpacing:".16em",textTransform:"uppercase"}}>VIA LIVE GUIDE</p>
+      <p style={{color:"#8fd4a9",fontWeight:800,letterSpacing:".16em",textTransform:"uppercase"}}>VIA LIVE GUIDE</p>
       <h1 style={{fontSize:"clamp(34px,6vw,58px)",margin:"8px 0 12px"}}>Live audio in one minute</h1>
       <p style={{color:"#a9b8af",fontSize:17,lineHeight:1.7,maxWidth:760}}>VIA LIVE is audio-first. A camera is not required. You can listen quietly, ask to speak, and return later to a Replay when the host has chosen to publish one.</p>
 
