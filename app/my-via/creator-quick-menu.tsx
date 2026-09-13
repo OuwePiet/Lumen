@@ -1,6 +1,6 @@
 "use client"
 
-import { FormEvent, useEffect, useState } from "react"
+import { FormEvent, useEffect, useRef, useState } from "react"
 
 const STORAGE_KEY = "via:creator-quick-menu:v1"
 const MAX_ITEMS = 12
@@ -17,6 +17,7 @@ export default function CreatorQuickMenu() {
   const [input, setInput] = useState("")
   const [status, setStatus] = useState("")
   const [checking, setChecking] = useState(false)
+  const checkController = useRef<AbortController | null>(null)
 
   useEffect(() => {
     try {
@@ -47,6 +48,7 @@ export default function CreatorQuickMenu() {
 
   async function addCreator(event: FormEvent) {
     event.preventDefault()
+    checkController.current?.abort()
     const username = normalizeUsername(input)
     if (!username) {
       setStatus("Enter a DeSo username first.")
@@ -61,6 +63,8 @@ export default function CreatorQuickMenu() {
       return
     }
 
+    const controller = new AbortController()
+    checkController.current = controller
     setChecking(true)
     setStatus(`Checking @${username} on DeSo…`)
     try {
@@ -68,6 +72,7 @@ export default function CreatorQuickMenu() {
         method: "GET",
         headers: { Accept: "application/json" },
         cache: "no-store",
+        signal: controller.signal,
       })
       const data = response.ok ? (await response.json()) as ViaProfileResponse : null
       const verifiedUsername = normalizeUsername(data?.profile?.username ?? "")
@@ -82,12 +87,17 @@ export default function CreatorQuickMenu() {
       const next = [...items, { username: verifiedUsername }]
       if (persist(next)) setStatus(`@${verifiedUsername} verified on DeSo and saved locally on this device.`)
       setInput("")
-    } catch {
-      setStatus("The DeSo profile could not be checked right now. Nothing was saved.")
+    } catch (error) {
+      if (!(error instanceof DOMException && error.name === "AbortError")) setStatus("The DeSo profile could not be checked right now. Nothing was saved.")
     } finally {
-      setChecking(false)
+      if (checkController.current === controller) {
+        checkController.current = null
+        setChecking(false)
+      }
     }
   }
+
+  useEffect(() => () => checkController.current?.abort(), [])
 
   function removeCreator(username: string) {
     const next = items.filter((item) => item.username !== username)
