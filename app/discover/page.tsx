@@ -6,7 +6,7 @@ const creatorWindows = [
   { title: "Music & Audio", text: "Discover musicians, voices, radio, sound experiments and independent releases." },
   { title: "Photography", text: "A place for photographers and visual creators to show a single image, a series, photo story, portfolio work or a growing body of work.", href: "/social?media=image", action: "Discover Images" },
   { title: "Film & Video", text: "Short film, moving image, documentary, animation, music video and creator-led video can all find an audience here.", href: "/social?media=video", action: "Discover Video" },
-  { title: "NFTs & Collecting", text: "Explore DeSo NFTs and creators without making collecting the price of admission to VIA.", href: "/social?media=nft", action: "Discover NFTs" },
+  { title: "NFTs & Collecting", text: "Explore native DeSo NFTs, collectors and creators publicly. Future external collectibles will remain clearly labelled and separate until a verified DeSo mint/ownership route exists.", href: "/social?media=nft", action: "Discover DeSo NFTs" },
   { title: "Museums & Heritage", text: "Museums, archives, history, collections and cultural heritage belong in the same daily world window." },
   { title: "Writing & Stories", text: "Writers, poets, reporters and storytellers need room to be discovered too." },
   { title: "New & Unexpected", text: "Leave room for new makers, small accounts and creative forms that do not fit an existing label yet." },
