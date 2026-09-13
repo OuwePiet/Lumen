@@ -65,13 +65,15 @@ const styles = {
   input: { flex: "1 1 260px", minWidth: 0, color: "#f4f7f5", background: "#050807", border: "1px solid #254233", borderRadius: "10px", fontSize: "16px", padding: "11px 12px" },
   button: { minHeight: "44px", color: "#050807", background: "#8fd4a9", border: "1px solid #8fd4a9", borderRadius: "999px", cursor: "pointer", fontSize: "13px", fontWeight: 800, padding: "10px 16px" },
   status: { color: "#a9b8af", fontSize: "13px", marginTop: "12px" },
-  result: { color: "#9adbb2", background: "rgba(143,212,169,.06)", border: "1px solid rgba(143,212,169,.28)", borderRadius: "12px", marginTop: "14px", padding: "14px" },
+  result: { color: "#9adbb2", background: "rgba(143,212,169,.06)", border: "1px solid rgba(143,212,169,.28)", borderRadius: "12px", marginTop: "14px", padding: "12px 14px" },
   error: { color: "#f1d89a", background: "#211a0c", border: "1px solid #6e5721", borderRadius: "12px", marginTop: "14px", padding: "14px" },
-  code: { display: "block", color: "#a9b8af", fontSize: "12px", marginTop: "6px", overflowWrap: "anywhere" as const },
-  profileHeader: { alignItems: "center", display: "flex", flexWrap: "wrap" as const, gap: "12px" },
+  code: { display: "block", color: "#a9b8af", fontSize: "12px", marginTop: "4px", overflowWrap: "anywhere" as const },
+  profileHeader: { alignItems: "center", display: "flex", flexWrap: "wrap" as const, gap: "10px" },
   profileText: { minWidth: 0, overflowWrap: "anywhere" as const },
-  description: { color: "#d5e2da", fontSize: "13px", lineHeight: 1.55, margin: "12px 0 0", overflowWrap: "anywhere" as const, whiteSpace: "pre-wrap" as const },
-  keyDetails: { color: "#a9b8af", fontSize: "12px", marginTop: "12px" },
+  descriptionDetails: { color: "#a9b8af", fontSize: "12px", marginTop: "10px" },
+  descriptionSummary: { color: "#9adbb2", cursor: "pointer", fontWeight: 700 },
+  description: { color: "#d5e2da", fontSize: "13px", lineHeight: 1.55, margin: "10px 0 0", overflowWrap: "anywhere" as const, whiteSpace: "pre-wrap" as const },
+  keyDetails: { color: "#a9b8af", fontSize: "12px", marginTop: "8px" },
   keySummary: { color: "#9adbb2", cursor: "pointer", fontWeight: 700 },
   choices: { background: "#07100b", border: "1px solid rgba(143,212,169,.28)", borderRadius: "12px", listStyle: "none", margin: "14px 0 0", padding: "8px" },
   choiceButton: { alignItems: "center", minHeight: "44px", background: "transparent", border: 0, borderRadius: "9px", color: "#9adbb2", cursor: "pointer", display: "flex", gap: "10px", padding: "10px", textAlign: "left" as const, width: "100%" },
@@ -234,10 +236,10 @@ export default function AccountLookup({ onAccountSelected }: { onAccountSelected
         {profile ? (
           <div style={styles.result}>
             <div style={styles.profileHeader}>
-              {profileImage ? <img src={profileImage} alt="" width={52} height={52} style={{ ...styles.avatar, height: "52px", width: "52px" }} referrerPolicy="no-referrer" /> : <span style={{ ...styles.avatarFallback, height: "52px", width: "52px" }} aria-hidden="true">{(profile.Username ?? "?").slice(0, 1).toUpperCase()}</span>}
+              {profileImage ? <img src={profileImage} alt="" width={44} height={44} style={{ ...styles.avatar, height: "44px", width: "44px" }} referrerPolicy="no-referrer" /> : <span style={{ ...styles.avatarFallback, height: "44px", width: "44px" }} aria-hidden="true">{(profile.Username ?? "?").slice(0, 1).toUpperCase()}</span>}
               <div style={styles.profileText}><strong>DeSo account found: @{profile.Username}</strong><code style={styles.code}>{shortKey(profile.PublicKeyBase58Check)}</code></div>
             </div>
-            {profile.Description ? <p style={styles.description}>{profile.Description}</p> : null}
+            {profile.Description ? <details style={styles.descriptionDetails}><summary style={styles.descriptionSummary}>Show profile details</summary><p style={styles.description}>{profile.Description}</p></details> : null}
             <details style={styles.keyDetails}><summary style={styles.keySummary}>View full public key</summary><code style={styles.code}>{profile.PublicKeyBase58Check}</code></details>
             <PublicAccountNFTs key={profile.PublicKeyBase58Check} publicKey={profile.PublicKeyBase58Check!} username={profile.Username!} autoLoad={autoLoadNFTs} />
           </div>
