@@ -14,20 +14,20 @@ export default function ReadPage() {
       <div className="mx-auto max-w-6xl">
         <header className="mb-8 flex flex-wrap items-start justify-between gap-5">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.25em] text-green-400">VIA</p>
+            <p className="text-sm font-semibold uppercase tracking-[0.25em] text-[#8fd4a9]">VIA</p>
             <h1 className="mt-2 text-3xl font-semibold sm:text-4xl">Read & Stories</h1>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-zinc-400 sm:text-base">
               A calm place for long-form creator and community work. Separate from Daily News.
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <Link href="/saved" className="rounded-full border border-zinc-700 px-4 py-2 text-sm text-zinc-200 hover:border-green-500 hover:text-green-300">Saved</Link>
-            <Link href="/my-via" className="rounded-full border border-zinc-700 px-4 py-2 text-sm text-zinc-200 hover:border-green-500 hover:text-green-300">Back to My VIA</Link>
+            <Link href="/saved" className="rounded-full border border-zinc-700 px-4 py-2 text-sm text-zinc-200 hover:border-[#8fd4a9]/70 hover:text-[#9adbb2]">Saved</Link>
+            <Link href="/my-via" className="rounded-full border border-zinc-700 px-4 py-2 text-sm text-zinc-200 hover:border-[#8fd4a9]/70 hover:text-[#9adbb2]">Back to My VIA</Link>
           </div>
         </header>
 
-        <section className="mb-7 rounded-2xl border border-green-900/60 bg-zinc-950 p-5">
-          <h2 className="text-lg font-medium text-green-300">Reading should not require buying</h2>
+        <section className="mb-7 rounded-2xl border border-[#285f40]/60 bg-zinc-950 p-5">
+          <h2 className="text-lg font-medium text-[#9adbb2]">Reading should not require buying</h2>
           <p className="mt-2 text-sm leading-6 text-zinc-400">
             VIA can support creator-owned editions later, but ordinary reading remains an open visitor experience unless an author explicitly offers something as unlockable content.
           </p>
@@ -48,8 +48,8 @@ export default function ReadPage() {
         </div>
 
         <div className="mt-7 flex flex-wrap gap-3">
-          <Link href="/news" className="rounded-full border border-zinc-700 px-4 py-2 text-sm text-zinc-300 hover:border-green-500">Go to Daily News</Link>
-          <Link href="/studio" className="rounded-full border border-green-900 bg-green-950/30 px-4 py-2 text-sm font-semibold text-green-300">Open Studio</Link>
+          <Link href="/news" className="rounded-full border border-zinc-700 px-4 py-2 text-sm text-zinc-300 hover:border-[#8fd4a9]/70">Go to Daily News</Link>
+          <Link href="/studio" className="rounded-full border border-[#285f40] bg-[#102018]/30 px-4 py-2 text-sm font-semibold text-[#9adbb2]">Open Studio</Link>
         </div>
       </div>
     </main>
