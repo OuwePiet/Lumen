@@ -26,11 +26,13 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
   const [feeNanos, setFeeNanos] = useState<number | null>(null)
   const [spendNanos, setSpendNanos] = useState<number | null>(null)
   const popupRef = useRef<Window | null>(null)
+  const popupWatch = useRef<number | null>(null)
 
   useEffect(() => {
     async function onMessage(event: MessageEvent) {
       const signedTransactionHex = signedTransactionFromMessage(event, popupRef.current)
       if (!signedTransactionHex) return
+      if (popupWatch.current !== null) window.clearInterval(popupWatch.current); popupWatch.current = null
       popupRef.current?.close(); popupRef.current = null
       setStatus("submitting"); setMessage("Submitting your explicitly approved Diamond to DeSo…")
       try {
@@ -43,6 +45,8 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
     window.addEventListener("message", onMessage)
     return () => {
       window.removeEventListener("message", onMessage)
+      if (popupWatch.current !== null) window.clearInterval(popupWatch.current)
+      popupWatch.current = null
       popupRef.current?.close()
       popupRef.current = null
     }
@@ -59,7 +63,18 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
       setFeeNanos(typeof data.feeNanos === "number" ? data.feeNanos : null); setSpendNanos(typeof data.spendAmountNanos === "number" ? data.spendAmountNanos : null)
       const popup = window.open(`${DESO_IDENTITY_ORIGIN}/approve?tx=${encodeURIComponent(data.transactionHex)}`, "via-deso-diamond-approve", `popup=yes,width=${Math.min(800, window.screen.availWidth)},height=${Math.min(900, window.screen.availHeight)}`)
       if (!popup) { setStatus("error"); setMessage("Approval window was blocked. No Diamond was sent."); return }
-      popupRef.current = popup; setStatus("approval"); setMessage("Review the exact Diamond value transfer in DeSo Identity. VIA cannot approve it for you.")
+      popupRef.current = popup
+      if (popupWatch.current !== null) window.clearInterval(popupWatch.current)
+      popupWatch.current = window.setInterval(() => {
+        if (popupRef.current?.closed) {
+          popupRef.current = null
+          if (popupWatch.current !== null) window.clearInterval(popupWatch.current)
+          popupWatch.current = null
+          setStatus("idle")
+          setMessage("DeSo approval was closed. No Diamond was sent.")
+        }
+      }, 500)
+      setStatus("approval"); setMessage("Review the exact Diamond value transfer in DeSo Identity. VIA cannot approve it for you.")
     } catch { setStatus("error"); setMessage("Diamond transaction could not be prepared. Nothing was sent.") }
   }
 
