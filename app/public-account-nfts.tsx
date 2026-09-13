@@ -345,6 +345,7 @@ export default function PublicAccountNFTs({
   const [restored, setRestored] = useState(false)
   const autoLoadStarted = useRef(false)
   const loadController = useRef<AbortController | null>(null)
+  const linkCopiedTimer = useRef<number | null>(null)
 
   useEffect(() => {
     if (!autoLoad || restored) return
@@ -427,7 +428,10 @@ export default function PublicAccountNFTs({
     }
   }, [cacheKey, publicKey])
 
-  useEffect(() => () => loadController.current?.abort(), [])
+  useEffect(() => () => {
+    loadController.current?.abort()
+    if (linkCopiedTimer.current !== null) window.clearTimeout(linkCopiedTimer.current)
+  }, [])
 
   useEffect(() => {
     if (autoLoad && restored && !autoLoadStarted.current) {
@@ -569,7 +573,11 @@ export default function PublicAccountNFTs({
       temporaryInput.remove()
     }
     setLinkCopied(true)
-    window.setTimeout(() => setLinkCopied(false), 2000)
+    if (linkCopiedTimer.current !== null) window.clearTimeout(linkCopiedTimer.current)
+    linkCopiedTimer.current = window.setTimeout(() => {
+      linkCopiedTimer.current = null
+      setLinkCopied(false)
+    }, 2000)
   }
 
   return (
