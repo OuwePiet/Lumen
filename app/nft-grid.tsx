@@ -30,6 +30,7 @@ type DeSoProfile = { Username?: string; PublicKeyBase58Check?: string }
 
 const VIDEO_EXTENSIONS = [".mp4", ".webm", ".mov", ".m4v"]
 const AUDIO_EXTENSIONS = [".mp3", ".wav", ".m4a", ".aac", ".flac", ".oga"]
+const MAX_AUTOMATIC_NFTS_DISPLAYED = 50
 
 function mediaFilterType(post: DeSoPost): MediaFilterType {
   const videoUrl = post.VideoURLs?.[0]
@@ -81,7 +82,7 @@ async function loadAutomaticNFTCount(publicKey: string) {
     const nftPosts = posts.filter((post) => post.IsNFT === true)
     nftCount += nftPosts.length
     for (const post of nftPosts) {
-      if (discoveredNFTPostHashes.length < 12 && post.PostHashHex && !NFT_POST_HASHES.includes(post.PostHashHex) && !discoveredNFTPostHashes.includes(post.PostHashHex)) {
+      if (discoveredNFTPostHashes.length < MAX_AUTOMATIC_NFTS_DISPLAYED && post.PostHashHex && !NFT_POST_HASHES.includes(post.PostHashHex) && !discoveredNFTPostHashes.includes(post.PostHashHex)) {
         discoveredNFTPostHashes.push(post.PostHashHex)
       }
     }
