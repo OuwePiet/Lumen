@@ -344,6 +344,7 @@ export default function PublicAccountNFTs({
   const [mediaFilter, setMediaFilter] = useState<MediaFilter>("all")
   const [restored, setRestored] = useState(false)
   const autoLoadStarted = useRef(false)
+  const loadController = useRef<AbortController | null>(null)
 
   useEffect(() => {
     if (!autoLoad || restored) return
@@ -393,11 +394,14 @@ export default function PublicAccountNFTs({
   }, [autoLoad, cacheKey, publicKey, restored])
 
   const loadNFTs = useCallback(async () => {
+    loadController.current?.abort()
+    const controller = new AbortController()
+    loadController.current = controller
     setLoading(true)
     setError("")
 
     try {
-      const collections = await getNFTsForUser(publicKey)
+      const collections = await getNFTsForUser(publicKey, controller.signal)
       const savedAt = Date.now()
       setNFTs(collections)
       setLastUpdated(savedAt)
@@ -413,12 +417,17 @@ export default function PublicAccountNFTs({
       } catch {
         // Session cache is an optimisation only.
       }
-    } catch {
-      setError("The public NFTs could not be retrieved from DeSo right now.")
+    } catch (error) {
+      if (!(error instanceof DOMException && error.name === "AbortError")) setError("The public NFTs could not be retrieved from DeSo right now.")
     } finally {
-      setLoading(false)
+      if (loadController.current === controller) {
+        loadController.current = null
+        setLoading(false)
+      }
     }
   }, [cacheKey, publicKey])
+
+  useEffect(() => () => loadController.current?.abort(), [])
 
   useEffect(() => {
     if (autoLoad && restored && !autoLoadStarted.current) {
