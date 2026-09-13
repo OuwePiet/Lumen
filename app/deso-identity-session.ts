@@ -4,6 +4,7 @@ export const DESO_LOGOUT_URL = `${DESO_IDENTITY_ORIGIN}/logout`
 
 const IDENTITY_USERS_KEY = "identityUsersV2"
 const VIA_ACTIVE_PUBLIC_KEY = "viaActivePublicKey"
+const PUBLIC_KEY_RE = /^[1-9A-HJ-NP-Za-km-z]{20,100}$/
 export const VIA_IDENTITY_EVENT = "via:identity-session"
 
 type DeSoIdentityCredentials = {
@@ -66,7 +67,7 @@ export function parseIdentityLoginMessage(event: MessageEvent): ViaIdentitySessi
 
   const publicKey = message.payload.publicKeyAdded
   const users = message.payload.users
-  if (typeof publicKey !== "string" || publicKey.length < 20 || !isRecord(users)) return null
+  if (typeof publicKey !== "string" || !PUBLIC_KEY_RE.test(publicKey) || !isRecord(users)) return null
 
   const credentials = users[publicKey]
   if (!isUsableCredentials(credentials)) return null
@@ -113,7 +114,7 @@ export function restoreIdentitySession(): ViaIdentitySession | null {
   try {
     const publicKey = localStorage.getItem(VIA_ACTIVE_PUBLIC_KEY)
     const rawUsers = localStorage.getItem(IDENTITY_USERS_KEY)
-    if (!publicKey || !rawUsers) return null
+    if (!publicKey || !PUBLIC_KEY_RE.test(publicKey) || !rawUsers) return null
 
     const users: unknown = JSON.parse(rawUsers)
     if (!isRecord(users)) return null
