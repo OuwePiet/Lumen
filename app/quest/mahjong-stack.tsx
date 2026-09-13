@@ -18,16 +18,25 @@ const LAYOUT: TilePos[] = [
 
 const SYMBOLS = ["🀄","🀅","🀆","🀇","🀈","🀉","🀐","🀑","🀒","🀙","🀚","🀛"]
 
-function shuffle<T>(items: T[]) {
+function seededRandom(seed: number) {
+  let state = seed >>> 0
+  return () => {
+    state = (state * 1664525 + 1013904223) >>> 0
+    return state / 0x100000000
+  }
+}
+
+function shuffle<T>(items: T[], random: () => number) {
   const next = [...items]
   for (let i = next.length - 1; i > 0; i -= 1) {
-    const j = Math.floor(Math.random() * (i + 1))
+    const j = Math.floor(random() * (i + 1))
     ;[next[i], next[j]] = [next[j], next[i]]
   }
   return next
 }
 
-function makeBoard(): Tile[] {
+function makeBoard(seed = 20260913): Tile[] {
+  const random = seededRandom(seed)
   const byLayer = [
     LAYOUT.filter((tile) => tile.z === 0),
     LAYOUT.filter((tile) => tile.z === 1),
@@ -39,9 +48,10 @@ function makeBoard(): Tile[] {
     const pairCount = layer.length / 2
     const layerSymbols = shuffle(
       Array.from({ length: pairCount }, () => SYMBOLS[symbolIndex++ % SYMBOLS.length])
-        .flatMap((symbol) => [symbol, symbol])
+        .flatMap((symbol) => [symbol, symbol]),
+      random
     )
-    shuffle(layer).forEach((position, index) => {
+    shuffle(layer, random).forEach((position, index) => {
       result.push({ ...position, symbol: layerSymbols[index], removed: false })
     })
   }
@@ -96,7 +106,7 @@ export default function MahjongStack() {
   const freeIds = useMemo(() => new Set(tiles.filter((tile) => isFree(tile, tiles)).map((tile) => tile.id)), [tiles])
 
   function newBoard() {
-    setTiles(makeBoard())
+    setTiles(makeBoard(Date.now()))
     setSelectedId(null)
     setMoves(0)
     setHintIds([])
