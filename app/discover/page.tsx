@@ -3,6 +3,10 @@ import SaveButton from "../saved/save-button"
 
 type CreatorWindow = { title: string; text: string; href?: string; action?: string }
 
+function isOpenCreatorWindow(window: CreatorWindow) {
+  return Boolean(window.href && window.action)
+}
+
 const creatorWindows: CreatorWindow[] = [
   { title: "Art & Painting", text: "A window for painters, illustrators, digital artists and people showing work for the first time.", href: "/social?media=image", action: "Discover Art Images" },
   { title: "Music & Audio", text: "Discover public radio now. Musicians, creator audio and independent releases will join this window only after their DeSo-compatible media/metadata path is verified.", href: "/radio", action: "Open World Radio" },
@@ -45,9 +49,9 @@ const styles = {
 }
 
 export default function DiscoverPage() {
-  const openCreatorWindows = creatorWindows.filter((window) => "href" in window && window.href).length
+  const openCreatorWindows = creatorWindows.filter(isOpenCreatorWindow).length
   const plannedCreatorWindows = creatorWindows.length - openCreatorWindows
-  const orderedCreatorWindows = [...creatorWindows].sort((a, b) => Number("href" in b && Boolean(b.href)) - Number("href" in a && Boolean(a.href)))
+  const orderedCreatorWindows = [...creatorWindows].sort((a, b) => Number(isOpenCreatorWindow(b)) - Number(isOpenCreatorWindow(a)))
 
   return (
     <main style={styles.main}>
@@ -65,7 +69,7 @@ export default function DiscoverPage() {
         <p style={styles.sectionLead}>Not every visitor has to buy something. Guests can browse, read, watch, listen and discover freely. {openCreatorWindows} creator windows already have public paths; participation such as posting, following, replying or giving a Diamond opens through DeSo.</p>
         <p style={{ ...styles.cardText, marginBottom: "12px" }}><strong>{openCreatorWindows} OPEN</strong> = working public VIA destinations. <strong>{plannedCreatorWindows} WINDOW</strong> = creator categories in VIA’s scope whose dedicated verified routes still have to come.</p>
         <section style={styles.grid} aria-label={`${openCreatorWindows} open creator discovery windows`}>
-          {orderedCreatorWindows.map((window) => <article key={window.title} style={styles.card}><div style={styles.cardTop}><h3 style={styles.cardTitle}>{window.title}</h3><span style={styles.badge}>{"href" in window && window.href ? "OPEN" : "WINDOW"}</span></div><p style={styles.cardText}>{window.text}</p>{"href" in window && window.href ? <div style={styles.cardAction}><Link href={window.href} style={styles.link}>{window.action}</Link></div> : null}</article>)}
+          {orderedCreatorWindows.map((window) => <article key={window.title} style={styles.card}><div style={styles.cardTop}><h3 style={styles.cardTitle}>{window.title}</h3><span style={styles.badge}>{isOpenCreatorWindow(window) ? "OPEN" : "WINDOW"}</span></div><p style={styles.cardText}>{window.text}</p>{isOpenCreatorWindow(window) ? <div style={styles.cardAction}><Link href={window.href!} style={styles.link}>{window.action}</Link></div> : null}</article>)}
         </section>
 
         <h2 style={styles.sectionTitle}>Discover VIA</h2>
