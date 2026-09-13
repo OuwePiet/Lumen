@@ -96,7 +96,7 @@ export default function MahjongStack() {
   const freeIds = useMemo(() => new Set(tiles.filter((tile) => isFree(tile, tiles)).map((tile) => tile.id)), [tiles])
 
   function newBoard() {
-    setTiles(makeBoard())
+    setTiles(makeBoard(Date.now()))
     setSelectedId(null)
     setMoves(0)
     setHintIds([])
