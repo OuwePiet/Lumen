@@ -90,7 +90,7 @@ export default async function MarketPage({ searchParams }: { searchParams: Promi
           <h1 className="mt-2 text-3xl font-semibold">Market</h1>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-400">One account view for bids, listed NFTs and pending transfers. Actions remain on the NFT detail page where VIA can apply the full confirmation flow.</p>
         </div>
-        <Link href="/nft" className="text-sm text-green-400">Back to NFTs</Link>
+        <Link href="/#collection-controls" className="text-sm text-green-400">Back to NFTs</Link>
       </div>
 
       <div className="mt-6 flex flex-wrap gap-2">
