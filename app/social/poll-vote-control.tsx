@@ -45,6 +45,7 @@ export default function PollVoteControl({ postHash, options }: Props) {
   const [existingOption, setExistingOption] = useState<string | null>(null)
   const [pendingOption, setPendingOption] = useState<string | null>(null)
   const popupRef = useRef<Window | null>(null)
+  const popupWatch = useRef<number | null>(null)
   const normalizedOptions = safeOptions(options)
 
   useEffect(() => {
@@ -113,6 +114,8 @@ export default function PollVoteControl({ postHash, options }: Props) {
     const onMessage = async (event: MessageEvent) => {
       const signedTransactionHex = signedTransactionFromMessage(event, popupRef.current)
       if (!signedTransactionHex) return
+      if (popupWatch.current !== null) window.clearInterval(popupWatch.current)
+      popupWatch.current = null
       popupRef.current?.close()
       popupRef.current = null
       setStatus("submitting")
@@ -144,6 +147,8 @@ export default function PollVoteControl({ postHash, options }: Props) {
     window.addEventListener("message", onMessage)
     return () => {
       window.removeEventListener("message", onMessage)
+      if (popupWatch.current !== null) window.clearInterval(popupWatch.current)
+      popupWatch.current = null
       popupRef.current?.close()
       popupRef.current = null
     }
@@ -185,6 +190,17 @@ export default function PollVoteControl({ postHash, options }: Props) {
         return
       }
       popupRef.current = popup
+      if (popupWatch.current !== null) window.clearInterval(popupWatch.current)
+      popupWatch.current = window.setInterval(() => {
+        if (popupRef.current?.closed) {
+          popupRef.current = null
+          if (popupWatch.current !== null) window.clearInterval(popupWatch.current)
+          popupWatch.current = null
+          setPendingOption(null)
+          setStatus("ready")
+          setMessage("DeSo approval was closed. No vote was submitted.")
+        }
+      }, 500)
       setStatus("approval")
       const fee = typeof data.feeNanos === "number" ? ` Network fee: ${data.feeNanos.toLocaleString()} nanos.` : ""
       setMessage(`Review the exact POLL_RESPONSE transaction in DeSo Identity.${fee}`)
