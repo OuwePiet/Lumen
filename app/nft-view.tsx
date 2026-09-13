@@ -605,7 +605,7 @@ export default async function NFTView({
 
               <NFTBidControl postHash={postHash} editions={forSale.map((entry, index) => ({ serialNumber: entry.SerialNumber ?? index + 1, minBidAmountNanos: entry.MinBidAmountNanos, buyNowPriceNanos: entry.BuyNowPriceNanos, isBuyNow: entry.IsBuyNow === true, ownerPublicKey: entry.OwnerPublicKeyBase58Check }))} />
 
-              <NFTOwnerSaleControl postHash={postHash} hasUnlockable={post.HasUnlockable === true} editions={sortedEntries.map((entry, index) => ({ serialNumber: entry.SerialNumber ?? index + 1, isForSale: entry.IsForSale === true, ownerPublicKey: entry.OwnerPublicKeyBase58Check, minBidAmountNanos: entry.MinBidAmountNanos, isBuyNow: entry.IsBuyNow === true, buyNowPriceNanos: entry.BuyNowPriceNanos }))} />
+              <NFTOwnerSaleControl postHash={postHash} hasUnlockable={post.HasUnlockable === true} editions={sortedEntries.map((entry, index) => ({ serialNumber: entry.SerialNumber ?? index + 1, isForSale: entry.IsForSale === true, isPending: entry.IsPending === true, ownerPublicKey: entry.OwnerPublicKeyBase58Check, minBidAmountNanos: entry.MinBidAmountNanos, isBuyNow: entry.IsBuyNow === true, buyNowPriceNanos: entry.BuyNowPriceNanos }))} />
 
               <NFTAcceptTransferControl postHash={postHash} editions={sortedEntries.map((entry, index) => ({ serialNumber: entry.SerialNumber ?? index + 1, isPending: entry.IsPending === true, ownerPublicKey: entry.OwnerPublicKeyBase58Check }))} />
 
