@@ -13,7 +13,7 @@ export default function ViaPaymentReadinessV2() {
 
   useEffect(() => {
     let active = true
-    fetch("/api/via/payment-readiness-v2", { cache: "no-store" })
+    fetch("/api/via/payment-readiness", { cache: "no-store" })
       .then((response) => response.ok ? response.json() : Promise.reject())
       .then((data) => active && setMethods(Array.isArray(data.methods) ? data.methods : []))
       .catch(() => active && setMethods([]))
