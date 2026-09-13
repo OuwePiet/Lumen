@@ -94,7 +94,11 @@ export default function NFTBidControl({ postHash, editions }: Props) {
       }
     }
     window.addEventListener("message", onMessage)
-    return () => window.removeEventListener("message", onMessage)
+    return () => {
+      window.removeEventListener("message", onMessage)
+      popupRef.current?.close()
+      popupRef.current = null
+    }
   }, [])
 
   async function prepare(forBuyNow = false) {
