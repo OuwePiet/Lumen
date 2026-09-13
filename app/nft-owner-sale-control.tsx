@@ -58,11 +58,12 @@ export default function NFTOwnerSaleControl({ postHash, editions, hasUnlockable 
   const [buyNowEnabled, setBuyNowEnabled] = useState(false)
   const [buyNowPrice, setBuyNowPrice] = useState("0")
   const [confirmed, setConfirmed] = useState(false)
+  const [receiverPublicKey, setReceiverPublicKey] = useState("")
   const [status, setStatus] = useState<"idle"|"preparing"|"approval"|"submitting"|"done"|"error">("idle")
   const [message, setMessage] = useState("")
   const [feeNanos, setFeeNanos] = useState<number | null>(null)
   const popupRef = useRef<Window | null>(null)
-  const pendingMode = useRef<"list"|"remove"|null>(null)
+  const pendingMode = useRef<"list"|"remove"|"transfer"|null>(null)
 
   const selected = owned.find((item) => item.serialNumber === serialNumber) ?? owned[0]
 
@@ -100,7 +101,7 @@ export default function NFTOwnerSaleControl({ postHash, editions, hasUnlockable 
         const data = await response.json() as { ok?: boolean; error?: string }
         if (!response.ok || !data.ok) throw new Error(data.error || "SUBMIT_FAILED")
         setStatus("done")
-        setMessage(pendingMode.current === "remove" ? "NFT removed from sale on DeSo." : "NFT listed for sale on DeSo.")
+        setMessage(pendingMode.current === "remove" ? "NFT removed from sale on DeSo." : pendingMode.current === "transfer" ? "NFT transfer submitted to DeSo. The receiver must accept the transfer before ownership changes." : "NFT listed for sale on DeSo.")
         setConfirmed(false)
       } catch {
         setStatus("error")
@@ -172,6 +173,22 @@ export default function NFTOwnerSaleControl({ postHash, editions, hasUnlockable 
     }
   }
 
+  async function prepareTransfer() {
+    if (!session || !selected || selected.isForSale || hasUnlockable || !confirmed || !receiverPublicKey.trim() || status === "preparing" || status === "approval" || status === "submitting") return
+    setStatus("preparing"); setMessage("Preparing the NFT transfer…"); setFeeNanos(null); pendingMode.current = "transfer"
+    try {
+      const response = await fetch("/api/via/nft/transfer", { method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store", body: JSON.stringify({ action: "prepare", senderPublicKey: session.publicKey, receiverPublicKey: receiverPublicKey.trim(), postHash, serialNumber: selected.serialNumber, hasUnlockable }) })
+      const data = await response.json() as PrepareResponse
+      if (!response.ok || !data.ok || !data.transactionHex) throw new Error(data.error || "PREPARE_FAILED")
+      setFeeNanos(typeof data.feeNanos === "number" ? data.feeNanos : null)
+      const popup = window.open(DESO_IDENTITY_ORIGIN + "/approve?tx=" + encodeURIComponent(data.transactionHex), "via-deso-nft-transfer-approve", "popup=yes,width=800,height=900")
+      if (!popup) throw new Error("POPUP_BLOCKED")
+      popupRef.current = popup; setStatus("approval"); setMessage("Review the NFT transfer in DeSo Identity. VIA submits only after your approval.")
+    } catch (error) {
+      pendingMode.current = null; setStatus("error"); setMessage(error instanceof Error && error.message === "POPUP_BLOCKED" ? "Approval window was blocked. VIA changed nothing." : "The NFT transfer could not be prepared. VIA changed nothing.")
+    }
+  }
+
   if (!session || owned.length === 0) return null
 
   const busy = status === "preparing" || status === "approval" || status === "submitting"
@@ -204,6 +221,16 @@ export default function NFTOwnerSaleControl({ postHash, editions, hasUnlockable 
         {status === "preparing" ? "Preparing…" : status === "approval" ? "Review in DeSo…" : status === "submitting" ? "Submitting…" : selected?.isForSale ? "Remove from sale" : "List for sale"}
       </button>
       {message ? <p className={"mt-3 text-xs " + (status === "error" ? "text-amber-300" : status === "done" ? "text-green-300" : "text-zinc-500")} role="status">{message}</p> : null}
+      {!selected?.isForSale ? <div className="mt-5 border-t border-zinc-800 pt-4">
+        <h3 className="text-sm font-semibold text-zinc-200">Transfer edition</h3>
+        {hasUnlockable ? <p className="mt-2 text-xs text-zinc-500">Protected for now: unlockable NFT transfers require receiver-specific encrypted unlockable content.</p> : <>
+          <label className="mt-3 block text-sm text-zinc-300">Receiver DeSo public key
+            <input value={receiverPublicKey} onChange={(event) => { setReceiverPublicKey(event.target.value); setConfirmed(false) }} placeholder="BC1…" className="mt-2 block w-full rounded-lg border border-zinc-800 bg-black px-3 py-2 text-sm" />
+          </label>
+          <p className="mt-2 text-xs text-zinc-500">The receiver must accept the native DeSo NFT transfer before ownership changes.</p>
+          <button type="button" disabled={!confirmed || !receiverPublicKey.trim() || busy} onClick={() => void prepareTransfer()} className="mt-3 rounded-lg border border-zinc-700 px-4 py-2 text-sm font-semibold text-zinc-300 disabled:text-zinc-600">Transfer NFT</button>
+        </>}
+      </div> : null}
     </section>
   )
 }
