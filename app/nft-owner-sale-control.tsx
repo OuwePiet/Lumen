@@ -216,7 +216,8 @@ export default function NFTOwnerSaleControl({ postHash, editions, hasUnlockable 
           setStatus("idle")
           setMessage("DeSo approval was closed. VIA changed nothing.")
         }
-      }, 500) setStatus("approval"); setMessage("Review the NFT transfer in DeSo Identity. VIA submits only after your approval.")
+      }, 500)
+      setStatus("approval"); setMessage("Review the NFT transfer in DeSo Identity. VIA submits only after your approval.")
     } catch (error) {
       pendingMode.current = null; setStatus("error"); setMessage(error instanceof Error && error.message === "POPUP_BLOCKED" ? "Approval window was blocked. VIA changed nothing." : "The NFT transfer could not be prepared. VIA changed nothing.")
     }
