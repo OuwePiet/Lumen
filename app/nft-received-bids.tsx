@@ -192,7 +192,7 @@ export default function NFTReceivedBids({ postHash, bids, editions, hasUnlockabl
                       }
                     }}
                     disabled={status === "preparing" || status === "approval" || status === "submitting"}
-                    className="rounded-lg border border-green-800 px-3 py-2 text-xs font-semibold text-green-300 disabled:text-zinc-600"
+                    className="rounded-lg border border-[#285f40] px-3 py-2 text-xs font-semibold text-[#9adbb2] disabled:text-zinc-600"
                   >
                     {confirmed ? "Confirm accept bid" : "Accept bid"}
                   </button>
@@ -203,7 +203,7 @@ export default function NFTReceivedBids({ postHash, bids, editions, hasUnlockabl
         })}
       </div>
 
-      {message ? <p className={"mt-3 text-xs " + (status === "error" ? "text-amber-300" : status === "done" ? "text-green-300" : "text-zinc-500")} role="status">{message}</p> : null}
+      {message ? <p className={"mt-3 text-xs " + (status === "error" ? "text-amber-300" : status === "done" ? "text-[#9adbb2]" : "text-zinc-500")} role="status">{message}</p> : null}
     </section>
   )
 }

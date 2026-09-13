@@ -159,8 +159,8 @@ export default function NFTBidControl({ postHash, editions }: Props) {
   if (editions.length === 0) return null
 
   return (
-    <section className="mt-5 rounded-xl border border-green-900/50 bg-black/30 p-4" aria-labelledby="via-nft-bid-heading">
-      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-green-400">Controlled DeSo NFT action</p>
+    <section className="mt-5 rounded-xl border border-[#285f40]/50 bg-black/30 p-4" aria-labelledby="via-nft-bid-heading">
+      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#8fd4a9]">Controlled DeSo NFT action</p>
       <h2 id="via-nft-bid-heading" className="mt-2 text-lg font-semibold">Place a bid</h2>
       <p className="mt-2 text-sm leading-6 text-zinc-400">This creates a native DeSo NFT bid. VIA never signs or submits it without your DeSo Identity approval.</p>
       {!session ? <p className="mt-3 text-sm text-zinc-500">Connect through DeSo Identity on VIA before bidding.</p> : <>
@@ -177,12 +177,12 @@ export default function NFTBidControl({ postHash, editions }: Props) {
         <label className="mt-3 flex items-start gap-2 text-xs text-amber-200"><input type="checkbox" checked={confirmed} onChange={(event) => setConfirmed(event.target.checked)} />I understand this creates a real on-chain bid that may reserve/spend $DESO according to DeSo rules.</label>
         {feeNanos !== null ? <p className="mt-2 text-xs text-zinc-500">Prepared network fee: {feeNanos.toLocaleString()} nanos.</p> : null}
         <div className="mt-3 flex flex-wrap gap-2">
-          <button type="button" onClick={() => void prepare(false)} disabled={!confirmed || !amountValid || isOwner || busy} className="rounded-lg border border-green-700 px-4 py-2 text-sm font-semibold text-green-300 disabled:border-zinc-800 disabled:text-zinc-600">
+          <button type="button" onClick={() => void prepare(false)} disabled={!confirmed || !amountValid || isOwner || busy} className="rounded-lg border border-[#8fd4a9]/55 px-4 py-2 text-sm font-semibold text-[#9adbb2] disabled:border-zinc-800 disabled:text-zinc-600">
             {status === "preparing" ? "Preparing…" : status === "approval" ? "Review in DeSo…" : status === "submitting" ? "Submitting…" : "Review bid in DeSo"}
           </button>
           {canBuyNow ? <button type="button" onClick={() => void prepare(true)} disabled={!confirmed || isOwner || busy} className="rounded-lg border border-emerald-600 px-4 py-2 text-sm font-semibold text-emerald-300 disabled:border-zinc-800 disabled:text-zinc-600">Buy now · {formatDeso(edition?.buyNowPriceNanos)} DESO</button> : null}
         </div>
-        {message ? <p className={"mt-3 text-xs " + (status === "error" ? "text-amber-300" : status === "done" ? "text-green-300" : "text-zinc-500")} role="status">{message}</p> : null}
+        {message ? <p className={"mt-3 text-xs " + (status === "error" ? "text-amber-300" : status === "done" ? "text-[#9adbb2]" : "text-zinc-500")} role="status">{message}</p> : null}
       </>}
     </section>
   )

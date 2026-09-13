@@ -257,10 +257,10 @@ export default function NFTOwnerSaleControl({ postHash, editions, hasUnlockable 
 
       <label className="mt-3 flex items-start gap-2 text-xs text-amber-200"><input type="checkbox" checked={confirmed} onChange={(event) => setConfirmed(event.target.checked)} />I understand this is a real on-chain NFT sale-status transaction.</label>
       {feeNanos !== null ? <p className="mt-2 text-xs text-zinc-500">Prepared network fee: {feeNanos.toLocaleString()} nanos.</p> : null}
-      <button type="button" disabled={!confirmed || busy} onClick={() => void prepare(selected?.isForSale ? "remove" : "list")} className="mt-3 rounded-lg border border-green-700 px-4 py-2 text-sm font-semibold text-green-300 disabled:border-zinc-800 disabled:text-zinc-600">
+      <button type="button" disabled={!confirmed || busy} onClick={() => void prepare(selected?.isForSale ? "remove" : "list")} className="mt-3 rounded-lg border border-[#8fd4a9]/55 px-4 py-2 text-sm font-semibold text-[#9adbb2] disabled:border-zinc-800 disabled:text-zinc-600">
         {status === "preparing" ? "Preparing…" : status === "approval" ? "Review in DeSo…" : status === "submitting" ? "Submitting…" : selected?.isForSale ? "Remove from sale" : "List for sale"}
       </button>
-      {message ? <p className={"mt-3 text-xs " + (status === "error" ? "text-amber-300" : status === "done" ? "text-green-300" : "text-zinc-500")} role="status">{message}</p> : null}
+      {message ? <p className={"mt-3 text-xs " + (status === "error" ? "text-amber-300" : status === "done" ? "text-[#9adbb2]" : "text-zinc-500")} role="status">{message}</p> : null}
 <div className="mt-5 border-t border-red-950/70 pt-4"><h3 className="text-sm font-semibold text-red-300">Permanent burn</h3><p className="mt-2 text-xs leading-5 text-zinc-500">Burn permanently destroys this NFT edition. VIA only enables this when the edition is not for sale and not pending transfer. This cannot be undone.</p><button type="button" disabled={!confirmed || busy || selected?.isForSale || selected?.isPending} onClick={() => void prepareBurn()} className="mt-3 rounded-lg border border-red-900 px-4 py-2 text-sm font-semibold text-red-300 disabled:border-zinc-800 disabled:text-zinc-600">Burn edition #{selected?.serialNumber}</button></div>
             {!selected?.isForSale ? <div className="mt-5 border-t border-zinc-800 pt-4">
         <h3 className="text-sm font-semibold text-zinc-200">Transfer edition</h3>
