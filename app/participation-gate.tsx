@@ -87,7 +87,7 @@ export default function ParticipationGate({
       </p>
       <p style={{ margin: "7px 0 0", color: "#aebbb4", lineHeight: 1.55, fontSize: 13 }}>
         {session
-          ? `VIA received a successful DeSo Identity login for ${shortPublicKey(session.publicKey)}. Social write controls can use this participation state as they are implemented.`
+          ? `VIA received a successful DeSo Identity login for ${shortPublicKey(session.publicKey)}. Released Social write controls can use this participation state; each write still follows its own guarded approval path.`
           : text}
       </p>
       <div style={{ marginTop: 12, display: "flex", gap: 9, flexWrap: "wrap" }}>
