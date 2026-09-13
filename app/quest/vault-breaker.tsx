@@ -125,15 +125,15 @@ export default function VaultBreaker() {
       </p>
 
       <div style={{display:"flex",gap:10,flexWrap:"wrap",alignItems:"center",margin:"16px 0"}}>
-        <button type="button" onClick={()=>setMode("normal")} style={{...button,borderColor:mode==="normal"?"#72d8df":"#416b50",color:mode==="normal"?"#a7fbff":"#dfffea"}}>🔦 Normal light</button>
-        <button type="button" onClick={()=>setMode("uv")} style={{...button,borderColor:mode==="uv"?"#9e68d8":"#416b50",color:mode==="uv"?"#e5c7ff":"#dfffea"}}>🔮 UV light</button>
+        <button type="button" aria-pressed={mode==="normal"} onClick={()=>setMode("normal")} style={{...button,borderColor:mode==="normal"?"#72d8df":"#416b50",color:mode==="normal"?"#a7fbff":"#dfffea"}}>🔦 Normal light</button>
+        <button type="button" aria-pressed={mode==="uv"} onClick={()=>setMode("uv")} style={{...button,borderColor:mode==="uv"?"#9e68d8":"#416b50",color:mode==="uv"?"#e5c7ff":"#dfffea"}}>🔮 UV light</button>
         <strong style={{color:"#f0d090"}}>Relic score {score}</strong>
         <span style={{color:"#8fa299"}}>{solvedCount}/3 vaults solved</span>
       </div>
 
       <div style={{
         display:"grid",
-        gridTemplateColumns:"minmax(150px,220px) 1fr",
+        gridTemplateColumns:"repeat(auto-fit,minmax(min(100%,280px),1fr))",
         gap:0,
         border:"1px solid #2c3f34",
         borderRadius:18,
@@ -142,7 +142,7 @@ export default function VaultBreaker() {
         background:mode==="uv"?"radial-gradient(circle at 60% 45%,#24112f 0%,#09040d 58%,#030304 100%)":"radial-gradient(circle at 60% 45%,#1b241f 0%,#090d0b 58%,#030504 100%)",
         boxShadow:"inset 0 0 50px rgba(0,0,0,.55)",
       }}>
-        <aside style={{padding:14,borderRight:"1px solid #2c3f34",background:"rgba(4,8,6,.72)",display:"grid",alignContent:"start",gap:10}}>
+        <aside style={{padding:14,borderRight:"1px solid #2c3f34",borderBottom:"1px solid #2c3f34",background:"rgba(4,8,6,.72)",display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(150px,1fr))",alignContent:"start",gap:10}}>
           {([1,2,3] as VaultId[]).map(id=>(
             <button key={id} type="button" onClick={()=>{setVault(id);setMessage(vaultTitle(id))}} style={{
               ...button,
