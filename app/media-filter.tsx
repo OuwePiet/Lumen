@@ -23,6 +23,7 @@ export type SortData = {
   title: string
   creator: string
   price?: number
+  searchText?: string
 }
 
 type SortType = "collection" | "title" | "price-low" | "price-high"
@@ -338,6 +339,7 @@ export default function MediaFilter({
       title: sortData[index]?.title ?? "",
       creator: sortData[index]?.creator ?? "",
       price: sortData[index]?.price,
+      searchText: sortData[index]?.searchText ?? "",
     }))
     .filter(
       ({ index }) =>
@@ -351,6 +353,9 @@ export default function MediaFilter({
             .includes(normalizedSearchQuery) ||
           sortData[index]?.creator
             .toLocaleLowerCase("en")
+            .includes(normalizedSearchQuery) ||
+          sortData[index]?.searchText
+            ?.toLocaleLowerCase("en")
             .includes(normalizedSearchQuery))
     )
 
