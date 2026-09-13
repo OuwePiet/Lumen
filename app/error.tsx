@@ -21,7 +21,7 @@ const styles = {
     padding: "28px",
   },
   brand: {
-    color: "#5cff9d",
+    color: "#8fd4a9",
     fontSize: "14px",
     fontWeight: 700,
     letterSpacing: "0.18em",
@@ -47,8 +47,8 @@ const styles = {
   button: {
     appearance: "none" as const,
     color: "#050807",
-    background: "#5cff9d",
-    border: "1px solid #5cff9d",
+    background: "#8fd4a9",
+    border: "1px solid #8fd4a9",
     borderRadius: "999px",
     cursor: "pointer",
     fontSize: "14px",
