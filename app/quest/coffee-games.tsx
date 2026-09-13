@@ -90,7 +90,7 @@ function CoffeeRush() {
 
       ctx.fillStyle = "rgba(92,255,157,.08)"
       ctx.fillRect(machineX - 28, 75, 56, 110)
-      ctx.strokeStyle = "#5cff9d"
+      ctx.strokeStyle = "#8fd4a9"
       ctx.lineWidth = 2
       ctx.setLineDash([5, 7])
       ctx.strokeRect(machineX - 22, 76, 44, 108)
@@ -354,7 +354,7 @@ function PerfectBlend() {
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(82px, 118px))", gap: 12, justifyContent: "center", marginTop: 20 }}>
         {cells.map((level, index) => (
-          <button key={index} type="button" onClick={() => chooseCell(index)} aria-pressed={selected === index} style={{ minHeight: 108, border: selected === index ? "2px solid #5cff9d" : level > 0 ? "1px solid #446b52" : "1px dashed #33463a", borderRadius: 16, background: level === 5 ? "linear-gradient(145deg,#21452f,#8d673d)" : level > 0 ? "linear-gradient(145deg,#17231b,#101712)" : "#0a100c", color: "#f4f7f5", padding: 10, cursor: level > 0 || selected !== null ? "pointer" : "default", boxShadow: selected === index ? "0 0 0 3px rgba(92,255,157,.1)" : "none" }}>
+          <button key={index} type="button" onClick={() => chooseCell(index)} aria-pressed={selected === index} style={{ minHeight: 108, border: selected === index ? "2px solid #8fd4a9" : level > 0 ? "1px solid #446b52" : "1px dashed #33463a", borderRadius: 16, background: level === 5 ? "linear-gradient(145deg,#21452f,#8d673d)" : level > 0 ? "linear-gradient(145deg,#17231b,#101712)" : "#0a100c", color: "#f4f7f5", padding: 10, cursor: level > 0 || selected !== null ? "pointer" : "default", boxShadow: selected === index ? "0 0 0 3px rgba(143,212,169,.1)" : "none" }}>
             <span style={{ display: "block", fontSize: level > 0 ? 18 : 14, fontWeight: 800 }}>{levelNames[level]}</span>
             {level > 0 && <small style={{ color: "#9db0a4" }}>{levelSub[level]}</small>}
           </button>
@@ -369,8 +369,8 @@ function PerfectBlend() {
 export default function CoffeeGames() {
   return (
     <section aria-labelledby="coffee-games-heading" style={{ marginTop: 44 }}>
-      <div style={{ borderLeft: "3px solid #5cff9d", paddingLeft: 16 }}>
-        <p style={{ color: "#5cff9d", fontWeight: 800, letterSpacing: ".12em", textTransform: "uppercase", marginBottom: 6 }}>VIA Mini Games</p>
+      <div style={{ borderLeft: "3px solid #8fd4a9", paddingLeft: 16 }}>
+        <p style={{ color: "#8fd4a9", fontWeight: 800, letterSpacing: ".12em", textTransform: "uppercase", marginBottom: 6 }}>VIA Mini Games</p>
         <h2 id="coffee-games-heading" style={{ margin: 0 }}>VIA Coffee Corner</h2>
         <p style={{ maxWidth: 760, color: "#a9b8af" }}>Three small VIA games with three different rhythms: timing, physics and merging. Free, local and designed for touch as well as desktop. No wallet or blockchain action is needed.</p>
       </div>
