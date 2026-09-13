@@ -1,0 +1,5 @@
+@media (min-width: 900px) {
+  #main-content > div {
+    max-width: 1480px !important;
+  }
+}
