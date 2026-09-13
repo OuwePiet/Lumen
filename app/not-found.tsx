@@ -53,13 +53,13 @@ export default function NotFound() {
     <main style={styles.page}>
       <section style={styles.panel}>
         <p style={styles.brand}>VIA</p>
-        <h1 style={styles.heading}>This NFT page was not found.</h1>
+        <h1 style={styles.heading}>This VIA page was not found.</h1>
         <p style={styles.message}>
-          The link may be incomplete or the NFT is not available through this
+          The link may be incomplete, outdated or unavailable through this
           address. Nothing has been changed.
         </p>
         <Link href="/" style={styles.link}>
-          Back to the NFT collection
+          Back to VIA
         </Link>
       </section>
     </main>
