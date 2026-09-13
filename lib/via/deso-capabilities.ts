@@ -21,7 +21,8 @@ export const VIA_DESO_CAPABILITIES: ViaCapability[] = [
   { id: "edit", label: "Edit own post", status: "released", note: "Ownership inspect, prepare, Identity approval and dedicated submit." },
   { id: "feeds", label: "Hot / Following / Recent feeds", status: "released", note: "Read-only DeSo feed sources." },
   { id: "messages", label: "Access-group messaging", status: "verified-next", note: "Native DeSo DM/group endpoints verified; secure encryption/decryption/session flow still required." },
-  { id: "poll", label: "Create a poll", status: "research", note: "DeSo UI has a poll component, but a native poll write contract is not yet verified for VIA." },
+  { id: "poll-vote", label: "Vote in DeSo polls", status: "released", note: "Released guarded POLL_RESPONSE post-association flow with duplicate-response checks and DeSo Identity approval. Creating a poll remains separate research." },
+  { id: "poll-create", label: "Create a poll", status: "research", note: "VIA has not yet verified a canonical DeSo poll-definition write format for creating new polls." },
   { id: "reactions", label: "Emoji reactions", status: "research", note: "DeSo UI has reaction UI, but a native reaction write contract is not yet verified for VIA." },
   { id: "audio", label: "Audio / release posts", status: "research", note: "Audio UI exists in DeSo UI; canonical DeSo metadata/write mapping still needs verification." },
 ]

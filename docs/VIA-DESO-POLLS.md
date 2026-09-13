@@ -1,6 +1,6 @@
 # VIA · DeSo-native polls
 
-Status: foundation only. Voting is not released yet.
+Status: guarded voting flow released; poll creation remains research.
 
 ## Principle
 
@@ -21,7 +21,7 @@ A VIA poll should therefore be split into two parts:
 
 ## Safe release path
 
-Before enabling the first vote button:
+The released vote path implements these controls:
 
 1. Verify the exact current DeSo association type/value convention used for polls.
 2. Verify how poll options are encoded and how duplicate/multiple votes are represented or prevented.
@@ -49,4 +49,4 @@ Before enabling the first vote button:
 - How deleted associations should affect counts.
 - Whether the poll definition itself is encoded in post ExtraData, BodyObj, or another convention used by current DeSo clients.
 
-Until those points are verified, polls stay visible only as a protected upcoming capability and are not presented as operational.
+VIA may present the guarded POLL_RESPONSE voting control only where poll options are already available and can be validated. Creating a new poll remains protected research until the canonical poll-definition write format is verified.
