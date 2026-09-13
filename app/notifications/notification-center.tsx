@@ -114,7 +114,10 @@ export default function NotificationCenter() {
       }
     }
     void load()
-    return () => { cancelled = true }
+    return () => {
+      cancelled = true
+      controller.abort()
+    }
   }, [session, refreshToken])
 
   const visible = useMemo(() => category === "all" ? items : items.filter((item) => categoryOf(item) === category), [items, category])
