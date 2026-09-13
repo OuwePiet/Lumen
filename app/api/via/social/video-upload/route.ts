@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server"
+import { fetchDeSo } from "../../../../deso-api"
 
 export const dynamic = "force-dynamic"
 
@@ -84,7 +85,7 @@ export async function POST(request: Request) {
     if (!validMediaId(mediaId)) return noStore({ ok: false, error: "INVALID_MEDIA_ID" }, 400)
 
     try {
-      const response = await fetch(`${nodeUrl()}/api/v0/get-video-status/${encodeURIComponent(mediaId)}`, {
+      const response = await fetchDeSo(`get-video-status/${encodeURIComponent(mediaId)}`, {
         method: "GET",
         cache: "no-store",
       })
