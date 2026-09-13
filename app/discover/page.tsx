@@ -3,7 +3,7 @@ import SaveButton from "../saved/save-button"
 
 const creatorWindows = [
   { title: "Art & Painting", text: "A window for painters, illustrators, digital artists and people showing work for the first time.", href: "/social?media=image", action: "Discover Art Images" },
-  { title: "Music & Audio", text: "Discover musicians, voices, radio, sound experiments and independent releases." },
+  { title: "Music & Audio", text: "Discover public radio now. Musicians, creator audio and independent releases will join this window only after their DeSo-compatible media/metadata path is verified.", href: "/radio", action: "Open World Radio" },
   { title: "Photography", text: "A place for photographers and visual creators to show a single image, a series, photo story, portfolio work or a growing body of work.", href: "/social?media=image", action: "Discover Images" },
   { title: "Film & Video", text: "Short film, moving image, documentary, animation, music video and creator-led video can all find an audience here.", href: "/social?media=video", action: "Discover Video" },
   { title: "NFTs & Collecting", text: "Explore native DeSo NFTs, collectors and creators publicly. Future external collectibles will remain clearly labelled and separate until a verified DeSo mint/ownership route exists.", href: "/social?media=nft", action: "Discover DeSo NFTs" },
