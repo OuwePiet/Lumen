@@ -164,7 +164,7 @@ export default function MahjongStack() {
       </p>
 
       <div style={{display:"flex",gap:10,flexWrap:"wrap",alignItems:"center",margin:"16px 0"}}>
-        <button type="button" onClick={newBoard} style={control}>New stack</button>
+        <button type="button" onClick={newBoard} style={control}>Shuffle / new stack</button>
         <button type="button" onClick={hint} disabled={won} style={{...control,opacity:won?.55:1}}>Hint</button>
         <strong style={{color:"#d8ffe7"}}>{remaining} tiles · {moves} matches</strong>
       </div>
