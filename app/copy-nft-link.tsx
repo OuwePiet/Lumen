@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, type CSSProperties } from "react"
+import { useEffect, useRef, useState, type CSSProperties } from "react"
 
 export default function CopyNFTLink({
   style,
@@ -8,6 +8,7 @@ export default function CopyNFTLink({
   style?: CSSProperties
 }) {
   const [copied, setCopied] = useState(false)
+  const copiedTimer = useRef<number | null>(null)
 
   const buttonStyle: CSSProperties = {
     ...style,
@@ -38,8 +39,16 @@ export default function CopyNFTLink({
     }
 
     setCopied(true)
-    window.setTimeout(() => setCopied(false), 2000)
+    if (copiedTimer.current !== null) window.clearTimeout(copiedTimer.current)
+    copiedTimer.current = window.setTimeout(() => {
+      copiedTimer.current = null
+      setCopied(false)
+    }, 2000)
   }
+
+  useEffect(() => () => {
+    if (copiedTimer.current !== null) window.clearTimeout(copiedTimer.current)
+  }, [])
 
   const shareWhatsApp = () => {
     const text = `View this NFT on VIA: ${currentNFTUrl()}`
