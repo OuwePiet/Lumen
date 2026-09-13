@@ -21,7 +21,7 @@ const releasedCapabilities = [
 ]
 
 const futureIdeas = [
-  { title: "Music & audio discovery", text: "Prepare VIA for creator-declared audio posts, releases and artist discovery once a durable DeSo-compatible audio metadata path is verified. VIA will not guess music from text or copy third-party streaming layouts." },
+  { title: "Music & audio discovery", text: "Prepare public discovery plus full community access for creator-declared audio posts, releases and artist discovery once a durable DeSo-compatible media path is verified. VIA uses no proprietary third-party layout and will not operate its own blockchain or node." },
   { title: "Language & region views", text: "A future preference for discovering public content by explicit language or region metadata. It will not silently translate posts, infer location in the background or require a paid translation service." },
 ]
 
