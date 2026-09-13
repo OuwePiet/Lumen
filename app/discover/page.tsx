@@ -60,13 +60,15 @@ const styles = {
   radio: { marginTop: "14px", border: "1px solid rgba(63,74,68,.72)", borderRadius: "14px", background: "rgba(9,13,11,.72)", padding: "18px" },
 }
 
-export default function DiscoverPage({ searchParams }: { searchParams?: { kind?: string } }) {
+export default function DiscoverPage({ searchParams }: { searchParams?: { kind?: string; availability?: string } }) {
   const openCreatorWindows = creatorWindows.filter(isOpenCreatorWindow).length
   const plannedCreatorWindows = creatorWindows.length - openCreatorWindows
   const creatorKinds = [...new Set(creatorWindows.map((window) => window.kind))]
   const creatorKindTargets = creatorKinds.map((kind) => { const windows = creatorWindowsForKind(kind); return { kind, window: windows[0]!, count: windows.length, openCount: windows.filter(isOpenCreatorWindow).length } })
   const selectedKind = creatorKinds.includes(searchParams?.kind as CreatorWindowKind) ? searchParams?.kind as CreatorWindowKind : undefined
-  const visibleCreatorWindows = selectedKind ? creatorWindowsForKind(selectedKind) : creatorWindows
+  const kindCreatorWindows = selectedKind ? creatorWindowsForKind(selectedKind) : creatorWindows
+  const openOnly = searchParams?.availability === "open"
+  const visibleCreatorWindows = openOnly ? kindCreatorWindows.filter(isOpenCreatorWindow) : kindCreatorWindows
   const orderedCreatorWindows = [...visibleCreatorWindows].sort((a, b) => Number(isOpenCreatorWindow(b)) - Number(isOpenCreatorWindow(a)))
   const visibleOpenCreatorWindows = visibleCreatorWindows.filter(isOpenCreatorWindow).length
 
@@ -86,6 +88,7 @@ export default function DiscoverPage({ searchParams }: { searchParams?: { kind?:
         <p style={styles.sectionLead}>Not every visitor has to buy something. Guests can browse, read, watch, listen and discover freely. {openCreatorWindows} creator windows already have public paths; participation such as posting, following, replying or giving a Diamond opens through DeSo.</p>
         <p style={{ ...styles.cardText, marginBottom: "12px" }}><strong>{openCreatorWindows} OPEN</strong> = working public VIA destinations. <strong>{plannedCreatorWindows} WINDOW</strong> = creator categories in VIA’s scope whose dedicated verified routes still have to come.</p>
         <div style={{ ...styles.nav, marginBottom: "12px" }} aria-label="Creator scope shortcuts"><a href="/discover" style={styles.scopeLink} aria-current={!selectedKind ? "page" : undefined} title="Show all creator windows">ALL</a>{creatorKindTargets.map(({ kind, window, count, openCount }) => <a key={kind} href={`/discover?kind=${kind}#${creatorWindowAnchor(window)}`} style={styles.scopeLink} aria-current={selectedKind === kind ? "page" : undefined} title={`Show ${kind} creator windows`} aria-label={`${kind} creator scope: ${openCount} of ${count} windows open`} data-creator-kind={kind} data-open-windows={openCount} data-total-windows={count} data-testid={`creator-scope-${kind}`}>{kind.toUpperCase()} {count > 1 ? `(${openCount}/${count} open)` : openCount ? "(open)" : "(window)"}</a>)}</div>
+        <div style={{ ...styles.nav, marginBottom: "12px" }} aria-label="Creator availability filters"><Link href={selectedKind ? `/discover?kind=${selectedKind}` : "/discover"} style={styles.scopeLink} aria-current={!openOnly ? "page" : undefined}>ALL WINDOWS</Link><Link href={selectedKind ? `/discover?kind=${selectedKind}&availability=open` : "/discover?availability=open"} style={styles.scopeLink} aria-current={openOnly ? "page" : undefined}>OPEN NOW</Link></div>
         <p style={{ ...styles.cardText, marginBottom: "12px" }} aria-live="polite">{selectedKind ? `Showing ${selectedKind.toUpperCase()} · ${orderedCreatorWindows.length} creator window${orderedCreatorWindows.length === 1 ? "" : "s"} · ${visibleOpenCreatorWindows} open` : `Showing ALL · ${orderedCreatorWindows.length} creator windows · ${visibleOpenCreatorWindows} open`}</p>
         <section style={styles.grid} aria-label={selectedKind ? `${selectedKind} creator discovery: ${orderedCreatorWindows.length} windows, ${visibleOpenCreatorWindows} open` : `All creator discovery: ${orderedCreatorWindows.length} windows, ${visibleOpenCreatorWindows} open`}>
           {orderedCreatorWindows.length === 0 && <p style={styles.cardText}>No creator windows match this filter yet. <Link href="/discover" style={styles.scopeLink}>Show all creator windows</Link>.</p>}
