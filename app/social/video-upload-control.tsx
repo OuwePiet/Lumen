@@ -114,7 +114,7 @@ export default function VideoUploadControl({ onReady, onBusyChange }: VideoUploa
       <p className="mt-1 text-xs leading-5 text-zinc-500">One video at a time · up to 250 MB · uploaded through DeSo&apos;s tokenized tus route. VIA keeps no permanent video copy.</p>
 
       <div className="mt-3 flex flex-wrap items-center gap-2">
-        <label className="inline-flex cursor-pointer items-center rounded-lg border border-green-800 px-3 py-2 text-xs font-semibold text-green-300">
+        <label className="inline-flex cursor-pointer items-center rounded-lg border border-[#285f40] px-3 py-2 text-xs font-semibold text-[#9adbb2]">
           {status === "uploading" ? `Uploading ${progress}%…` : status === "processing" ? "Processing on DeSo…" : "Choose video for DeSo upload"}
           <input
             type="file"
@@ -133,7 +133,7 @@ export default function VideoUploadControl({ onReady, onBusyChange }: VideoUploa
           <button
             type="button"
             onClick={() => void recheckPendingVideo()}
-            className="rounded-lg border border-zinc-700 px-3 py-2 text-xs font-semibold text-zinc-300 hover:border-green-700 hover:text-green-300"
+            className="rounded-lg border border-zinc-700 px-3 py-2 text-xs font-semibold text-zinc-300 hover:border-[#8fd4a9]/55 hover:text-[#9adbb2]"
           >
             Check processing again
           </button>
