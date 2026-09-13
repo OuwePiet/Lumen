@@ -13,6 +13,7 @@ const SAFE_POST_RETRY_ENDPOINTS = new Set([
   "get-hot-feed",
   "get-users-stateless",
   "get-nft-entries-for-nft-post",
+  "post-associations/query",
 ])
 
 let activeProfileLookups = 0
