@@ -62,10 +62,10 @@ export default function SavedList() {
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {items.map((item) => (
         <article key={item.href} className="rounded-2xl border border-zinc-800 bg-zinc-950 p-5">
-          <p className="text-xs font-semibold uppercase tracking-wider text-green-400">{item.kind}</p>
+          <p className="text-xs font-semibold uppercase tracking-wider text-[#8fd4a9]">{item.kind}</p>
           <h2 className="mt-2 font-medium text-white">{item.title}</h2>
           <div className="mt-4 flex flex-wrap gap-2">
-            <Link href={item.href} className="rounded-full border border-green-900 px-3 py-2 text-sm text-green-300 hover:border-green-500">Open</Link>
+            <Link href={item.href} className="rounded-full border border-[#285f40] px-3 py-2 text-sm text-[#9adbb2] hover:border-[#8fd4a9]/70">Open</Link>
             <button type="button" onClick={() => remove(item.href)} className="rounded-full border border-zinc-700 px-3 py-2 text-sm text-zinc-300 hover:border-zinc-500">Remove</button>
           </div>
         </article>
