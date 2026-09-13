@@ -102,9 +102,9 @@ const styles = {
     margin: "-8px 0 22px",
   },
   activeLabel: {
-    color: "#b9ffd4",
-    background: "#10261a",
-    border: "1px solid #285f40",
+    color: "#9adbb2",
+    background: "rgba(143,212,169,.08)",
+    border: "1px solid rgba(143,212,169,.28)",
     borderRadius: "999px",
     fontSize: "12px",
     fontWeight: 700,
@@ -263,7 +263,13 @@ export default function MediaFilter({
         }
       }
     } catch {
-      if (restoredKey) sessionStorage.removeItem(restoredKey)
+      if (restoredKey) {
+        try {
+          sessionStorage.removeItem(restoredKey)
+        } catch {
+          // Storage can be blocked entirely; collection controls still work in-memory.
+        }
+      }
     } finally {
       setIsStateRestored(true)
     }
@@ -281,7 +287,11 @@ export default function MediaFilter({
       density,
     }
 
-    sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(stored))
+    try {
+      sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(stored))
+    } catch {
+      // Storage can be unavailable or full; keep the current controls usable.
+    }
   }, [
     activeMediaFilter,
     activeSaleFilter,
