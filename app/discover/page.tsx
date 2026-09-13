@@ -1,21 +1,22 @@
 import Link from "next/link"
 import SaveButton from "../saved/save-button"
 
-type CreatorWindow = { title: string; text: string; href?: string; action?: string }
+type CreatorWindowKind = "visual" | "audio" | "video" | "collectible" | "heritage" | "writing" | "discovery"
+type CreatorWindow = { title: string; text: string; kind: CreatorWindowKind; href?: string; action?: string }
 
 function isOpenCreatorWindow(window: CreatorWindow) {
   return Boolean(window.href && window.action)
 }
 
 const creatorWindows: CreatorWindow[] = [
-  { title: "Art & Painting", text: "A window for painters, illustrators, digital artists and people showing work for the first time.", href: "/social?media=image", action: "Discover Art Images" },
-  { title: "Music & Audio", text: "Discover public radio now. Musicians, creator audio and independent releases will join this window only after their DeSo-compatible media/metadata path is verified.", href: "/radio", action: "Open World Radio" },
-  { title: "Photography", text: "A place for photographers and visual creators to show a single image, a series, photo story, portfolio work or a growing body of work.", href: "/social?media=image", action: "Discover Images" },
-  { title: "Film & Video", text: "Short film, moving image, documentary, animation, music video and creator-led video can all find an audience here.", href: "/social?media=video", action: "Discover Video" },
-  { title: "NFTs & Collecting", text: "Explore native DeSo NFTs, collectors and creators publicly. Future external collectibles will remain clearly labelled and separate until a verified DeSo mint/ownership route exists.", href: "/social?media=nft", action: "Discover DeSo NFTs" },
-  { title: "Museums & Heritage", text: "Museums, archives, history, collections and cultural heritage belong in the same daily world window. Start with VIA’s public world exploration while dedicated institution metadata remains future work.", href: "/discover/world", action: "Explore the World" },
-  { title: "Writing & Stories", text: "Discover writers, poets, reporters and storytellers through VIA’s public DeSo post window; dedicated long-form classification waits for verified metadata.", href: "/social", action: "Discover Posts" },
-  { title: "New & Unexpected", text: "Leave room for new makers, small accounts and creative forms that do not fit an existing label yet. VIA opens the existing deterministic Surprise route instead of pretending to rank people as new or important.", href: "/discover/surprise", action: "Surprise Me" },
+  { title: "Art & Painting", kind: "visual", text: "A window for painters, illustrators, digital artists and people showing work for the first time.", href: "/social?media=image", action: "Discover Art Images" },
+  { title: "Music & Audio", kind: "audio", text: "Discover public radio now. Musicians, creator audio and independent releases will join this window only after their DeSo-compatible media/metadata path is verified.", href: "/radio", action: "Open World Radio" },
+  { title: "Photography", kind: "visual", text: "A place for photographers and visual creators to show a single image, a series, photo story, portfolio work or a growing body of work.", href: "/social?media=image", action: "Discover Images" },
+  { title: "Film & Video", kind: "video", text: "Short film, moving image, documentary, animation, music video and creator-led video can all find an audience here.", href: "/social?media=video", action: "Discover Video" },
+  { title: "NFTs & Collecting", kind: "collectible", text: "Explore native DeSo NFTs, collectors and creators publicly. Future external collectibles will remain clearly labelled and separate until a verified DeSo mint/ownership route exists.", href: "/social?media=nft", action: "Discover DeSo NFTs" },
+  { title: "Museums & Heritage", kind: "heritage", text: "Museums, archives, history, collections and cultural heritage belong in the same daily world window. Start with VIA’s public world exploration while dedicated institution metadata remains future work.", href: "/discover/world", action: "Explore the World" },
+  { title: "Writing & Stories", kind: "writing", text: "Discover writers, poets, reporters and storytellers through VIA’s public DeSo post window; dedicated long-form classification waits for verified metadata.", href: "/social", action: "Discover Posts" },
+  { title: "New & Unexpected", kind: "discovery", text: "Leave room for new makers, small accounts and creative forms that do not fit an existing label yet. VIA opens the existing deterministic Surprise route instead of pretending to rank people as new or important.", href: "/discover/surprise", action: "Surprise Me" },
 ]
 
 const sections = [
