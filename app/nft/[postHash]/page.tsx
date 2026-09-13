@@ -60,7 +60,7 @@ export default async function NFTPage({ params, searchParams }: NFTPageProps) {
   if (media) returnParams.set("media", media)
 
   const backHref = account
-    ? `/?${returnParams.toString()}#account-lookup-heading`
+    ? `/?${returnParams.toString()}#collection-controls`
     : "/"
 
   return <NFTView postHash={postHash.toLowerCase()} backHref={backHref} />
