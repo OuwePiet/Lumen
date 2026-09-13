@@ -88,6 +88,7 @@ export default function NotificationCenter() {
     }
 
     const publicKey = session.publicKey
+    const controller = new AbortController()
     let cancelled = false
     async function load() {
       setStatus("loading")
@@ -97,6 +98,7 @@ export default function NotificationCenter() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           cache: "no-store",
+          signal: controller.signal,
           body: JSON.stringify({ publicKey, fetchStartIndex: -1, numToFetch: 40 }),
         })
         const data = await response.json() as NotificationResponse
