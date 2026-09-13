@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 
 type Health = {
   checkedAt?: string
@@ -26,15 +26,19 @@ export default function LivePanel(){
   const [loading,setLoading]=useState(false)
   const [recording,setRecording]=useState(false)
   const [speaker,setSpeaker]=useState(false)
+  const healthController=useRef<AbortController|null>(null)
 
   async function refresh(){
+    healthController.current?.abort()
+    const controller=new AbortController()
+    healthController.current=controller
     setLoading(true)
-    try { const r=await fetch("/api/via/health",{cache:"no-store"}); setHealth(await r.json()) }
-    catch { setHealth({via:{status:"FAILED"},deso:{status:"UNKNOWN"},mediaUpload:{status:"UNKNOWN"},mediaRetrieval:{status:"UNKNOWN"}}) }
-    finally { setLoading(false) }
+    try { const r=await fetch("/api/via/health",{cache:"no-store",signal:controller.signal}); setHealth(await r.json()) }
+    catch(error) { if(!(error instanceof DOMException&&error.name==="AbortError")) setHealth({via:{status:"FAILED"},deso:{status:"UNKNOWN"},mediaUpload:{status:"UNKNOWN"},mediaRetrieval:{status:"UNKNOWN"}}) }
+    finally { if(healthController.current===controller){healthController.current=null;setLoading(false)} }
   }
 
-  useEffect(()=>{void refresh()},[])
+  useEffect(()=>{void refresh();return()=>healthController.current?.abort()},[])
 
   return <>
     <section style={panelStyle}>
