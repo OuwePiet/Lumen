@@ -56,7 +56,7 @@ export default function DiscoverPage() {
         </nav>
 
         <h2 style={styles.sectionTitle}>A daily creator newspaper</h2>
-        <p style={styles.sectionLead}>Not every visitor has to buy something. Guests can browse, read, watch, listen and discover freely. Posting, following and other public participation opens through DeSo.</p>
+        <p style={styles.sectionLead}>Not every visitor has to buy something. Guests can browse, read, watch, listen and discover freely. Image, video and native DeSo NFT discovery already have public paths; participation such as posting, following, replying or giving a Diamond opens through DeSo.</p>
         <section style={styles.grid} aria-label="Creator windows">
           {creatorWindows.map((window) => <article key={window.title} style={styles.card}><h3 style={styles.cardTitle}>{window.title}</h3><p style={styles.cardText}>{window.text}</p>{"href" in window && window.href ? <div style={styles.cardAction}><Link href={window.href} style={styles.link}>{window.action}</Link></div> : null}</article>)}
         </section>
