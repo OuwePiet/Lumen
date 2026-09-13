@@ -226,7 +226,7 @@ export default function AccountLookup({ onAccountSelected }: { onAccountSelected
           <ul style={styles.choices} aria-label="Matching DeSo accounts">
             {matches.map((candidate) => {
               const candidateImage = safeProfileImage(candidate.ProfilePic)
-              return <li key={candidate.PublicKeyBase58Check}><button type="button" style={styles.choiceButton} onClick={() => void lookupAccount(candidate.Username ?? "")}>{candidateImage ? <img src={candidateImage} alt="" width={36} height={36} style={styles.avatar} referrerPolicy="no-referrer" /> : <span style={styles.avatarFallback} aria-hidden="true">{(candidate.Username ?? "?").slice(0, 1).toUpperCase()}</span>}<span><strong>@{candidate.Username}</strong><code style={styles.code}>{shortKey(candidate.PublicKeyBase58Check)}</code></span></button></li>
+              return <li key={candidate.PublicKeyBase58Check}><button type="button" style={styles.choiceButton} onClick={() => void lookupAccount(candidate.Username ?? "", candidate.PublicKeyBase58Check)}>{candidateImage ? <img src={candidateImage} alt="" width={36} height={36} style={styles.avatar} referrerPolicy="no-referrer" /> : <span style={styles.avatarFallback} aria-hidden="true">{(candidate.Username ?? "?").slice(0, 1).toUpperCase()}</span>}<span><strong>@{candidate.Username}</strong><code style={styles.code}>{shortKey(candidate.PublicKeyBase58Check)}</code></span></button></li>
             })}
           </ul>
         ) : null}
