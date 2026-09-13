@@ -43,6 +43,7 @@ const styles = {
   cardTitle: { margin: "0 0 8px", fontSize: "19px", fontWeight: 600 },
   badge: { color: "#8fd4a9", border: "1px solid rgba(143,212,169,.3)", borderRadius: "9px", padding: "4px 7px", fontSize: "10px", fontWeight: 750, letterSpacing: "0.08em", background: "rgba(12,23,17,.45)" },
   cardText: { margin: 0, color: "#9daaa3", lineHeight: 1.55, fontSize: "14px" },
+  metaLabel: { color: "#7f9187", fontSize: "10px", fontWeight: 700, letterSpacing: "0.12em" },
   cardAction: { marginTop: "14px", display: "flex", gap: "10px", flexWrap: "wrap" as const, alignItems: "center" },
   sectionTitle: { fontSize: "24px", margin: "32px 0 8px" },
   sectionLead: { color: "#9daaa3", lineHeight: 1.6, margin: "0 0 16px", maxWidth: "760px" },
@@ -70,7 +71,7 @@ export default function DiscoverPage() {
         <p style={styles.sectionLead}>Not every visitor has to buy something. Guests can browse, read, watch, listen and discover freely. {openCreatorWindows} creator windows already have public paths; participation such as posting, following, replying or giving a Diamond opens through DeSo.</p>
         <p style={{ ...styles.cardText, marginBottom: "12px" }}><strong>{openCreatorWindows} OPEN</strong> = working public VIA destinations. <strong>{plannedCreatorWindows} WINDOW</strong> = creator categories in VIA’s scope whose dedicated verified routes still have to come.</p>
         <section style={styles.grid} aria-label={`${openCreatorWindows} open creator discovery windows`}>
-          {orderedCreatorWindows.map((window) => <article key={window.title} style={styles.card}><div style={styles.cardTop}><h3 style={styles.cardTitle}>{window.title}</h3><span style={styles.badge}>{isOpenCreatorWindow(window) ? "OPEN" : "WINDOW"}</span></div><p style={styles.cardText}>{window.text}</p>{isOpenCreatorWindow(window) ? <div style={styles.cardAction}><Link href={window.href!} style={styles.link}>{window.action}</Link></div> : null}</article>)}
+          {orderedCreatorWindows.map((window) => <article key={window.title} style={styles.card}><div style={styles.cardTop}><h3 style={styles.cardTitle}>{window.title}</h3><span style={styles.badge}>{isOpenCreatorWindow(window) ? "OPEN" : "WINDOW"}</span></div><p style={{ ...styles.cardText, marginBottom: "6px" }}><span style={styles.metaLabel}>{window.kind.toUpperCase()}</span></p><p style={styles.cardText}>{window.text}</p>{isOpenCreatorWindow(window) ? <div style={styles.cardAction}><Link href={window.href!} style={styles.link}>{window.action}</Link></div> : null}</article>)}
         </section>
 
         <h2 style={styles.sectionTitle}>Discover VIA</h2>
