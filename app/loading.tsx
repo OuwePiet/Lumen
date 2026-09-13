@@ -25,7 +25,7 @@ const styles = {
     margin: "0 0 12px",
   },
   status: {
-    color: "#b9ffd4",
+    color: "#9adbb2",
     fontSize: "14px",
     fontWeight: 700,
     margin: "0 0 28px",
