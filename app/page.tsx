@@ -4,7 +4,6 @@ import ViaHomeSignature from "./via-home-signature"
 import ViaPriceBoard from "./via-price-board"
 import ViaStoragePriceBoard from "./via-storage-price-board"
 import ViaWorldClock from "./via-world-clock"
-import ViaCollectionGalleryShell from "./via-collection-gallery-shell"
 
 export const dynamic = "force-dynamic"
 
@@ -32,7 +31,6 @@ export default async function Home({ searchParams }: HomeProps) {
         <div style={{ maxWidth: 1180, margin: "0 auto", padding: "0 20px 8px" }}>
           <ViaPriceBoard />
           <ViaStoragePriceBoard />
-          <ViaCollectionGalleryShell />
         </div>
         <ViaWorldClock />
       </div>
