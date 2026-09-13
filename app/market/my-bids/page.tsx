@@ -50,7 +50,7 @@ export default async function MarketMyBidsPage({ searchParams }: { searchParams:
     }
   }
 
-  return (
+  const marketHref = publicKey ? "/market?publicKey=" + encodeURIComponent(publicKey) : "/market"\n\n  return (
     <main className="mx-auto min-h-screen max-w-5xl px-5 py-10 text-zinc-100">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
@@ -58,7 +58,7 @@ export default async function MarketMyBidsPage({ searchParams }: { searchParams:
           <h1 className="mt-2 text-3xl font-semibold">My bids</h1>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-400">One quiet overview of active NFT bids from a DeSo account. Open an NFT to change or withdraw its bid.</p>
         </div>
-        <Link href="/nft" className="text-sm text-green-400 hover:text-green-300">Back to NFTs</Link>
+        <Link href={marketHref} className="text-sm text-green-400 hover:text-green-300">Back to Market</Link>
       </div>
 
       {!publicKey ? (
