@@ -78,7 +78,7 @@ export default async function MarketMyBidsPage({ searchParams }: { searchParams:
             const hash = bid.PostHashHex ?? ""
             const post = posts[hash]
             return (
-              <Link key={hash+":"+bid.SerialNumber+":"+index} href={"/nft/"+hash} className="rounded-xl border border-zinc-800 bg-black/20 p-4 transition hover:border-zinc-700">
+              <Link key={hash+":"+bid.SerialNumber+":"+index} href={"/nft/"+hash+(publicKey?"?returnTo=my-bids&publicKey="+encodeURIComponent(publicKey):"")} className="rounded-xl border border-zinc-800 bg-black/20 p-4 transition hover:border-zinc-700">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
                     <p className="text-sm font-semibold">{title(post?.Body)}</p>
