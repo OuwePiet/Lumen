@@ -87,7 +87,11 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
       }
     }
     window.addEventListener("message", onMessage)
-    return () => window.removeEventListener("message", onMessage)
+    return () => {
+      window.removeEventListener("message", onMessage)
+      popupRef.current?.close()
+      popupRef.current = null
+    }
   }, [isReply, onDone])
 
   const parsedImages = imageInputs.map(httpsUrl)
