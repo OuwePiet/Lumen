@@ -60,12 +60,14 @@ const styles = {
   radio: { marginTop: "14px", border: "1px solid rgba(63,74,68,.72)", borderRadius: "14px", background: "rgba(9,13,11,.72)", padding: "18px" },
 }
 
-export default function DiscoverPage() {
+export default function DiscoverPage({ searchParams }: { searchParams?: { kind?: string } }) {
   const openCreatorWindows = creatorWindows.filter(isOpenCreatorWindow).length
   const plannedCreatorWindows = creatorWindows.length - openCreatorWindows
   const creatorKinds = [...new Set(creatorWindows.map((window) => window.kind))]
   const creatorKindTargets = creatorKinds.map((kind) => { const windows = creatorWindowsForKind(kind); return { kind, window: windows[0]!, count: windows.length, openCount: windows.filter(isOpenCreatorWindow).length } })
-  const orderedCreatorWindows = [...creatorWindows].sort((a, b) => Number(isOpenCreatorWindow(b)) - Number(isOpenCreatorWindow(a)))
+  const selectedKind = creatorKinds.includes(searchParams?.kind as CreatorWindowKind) ? searchParams?.kind as CreatorWindowKind : undefined
+  const visibleCreatorWindows = selectedKind ? creatorWindowsForKind(selectedKind) : creatorWindows
+  const orderedCreatorWindows = [...visibleCreatorWindows].sort((a, b) => Number(isOpenCreatorWindow(b)) - Number(isOpenCreatorWindow(a)))
 
   return (
     <main style={styles.main}>
