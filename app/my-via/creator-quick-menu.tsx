@@ -111,7 +111,7 @@ export default function CreatorQuickMenu() {
         <ul className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3" aria-label="Saved creator shortcuts">
           {items.map((item) => (
             <li key={item.username} className="flex items-center justify-between gap-3 rounded-[12px] border border-zinc-800/80 bg-black/30 p-3">
-              <a href={`/?account=${encodeURIComponent(item.username)}`} className="min-h-10 min-w-0 flex-1 rounded-[9px] px-2 py-2 text-sm font-medium text-zinc-200 hover:bg-[#0c1711]/45 hover:text-[#9adbb2] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8fd4a9]/15">@{item.username}</a>
+              <a href={`/?account=${encodeURIComponent(item.username)}#collection-controls`} className="min-h-10 min-w-0 flex-1 rounded-[9px] px-2 py-2 text-sm font-medium text-zinc-200 hover:bg-[#0c1711]/45 hover:text-[#9adbb2] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8fd4a9]/15">@{item.username}</a>
               <button type="button" onClick={() => removeCreator(item.username)} className="min-h-10 rounded-[9px] border border-zinc-800 px-3 text-xs text-zinc-500 hover:border-zinc-600 hover:text-zinc-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8fd4a9]/15">Remove</button>
             </li>
           ))}
