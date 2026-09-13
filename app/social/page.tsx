@@ -18,16 +18,16 @@ export default function SocialPage() {
       <div className="mx-auto max-w-6xl">
         <header className="mb-8 flex flex-wrap items-start justify-between gap-4">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.25em] text-green-400">VIA · DeSo Social</p>
+            <p className="text-sm font-semibold uppercase tracking-[0.25em] text-[#8fd4a9]">VIA · DeSo Social</p>
             <h1 className="mt-2 text-3xl font-semibold sm:text-4xl">Look around freely. Participate through DeSo.</h1>
             <p className="mt-3 max-w-3xl text-sm leading-6 text-zinc-400 sm:text-base">
               Guests can read public DeSo posts and move through the public VIA pages. Posting, replies, Likes, Follow/Unfollow, Repost/Quote, Diamonds and image/video attachments are available after DeSo login through their own guarded paths.
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <Link href="/edit-post" className="rounded-full border border-green-800 px-4 py-2 text-sm text-green-300 hover:border-green-500">Edit post</Link>
-            <Link href="/notifications" className="rounded-full border border-green-800 px-4 py-2 text-sm text-green-300 hover:border-green-500">Notifications</Link>
-            <Link href="/show-your-stuff" className="rounded-full border border-zinc-700 px-4 py-2 text-sm text-zinc-200 hover:border-green-500 hover:text-green-300">How participation works</Link>
+            <Link href="/edit-post" className="rounded-full border border-[#285f40] px-4 py-2 text-sm text-[#9adbb2] hover:border-[#8fd4a9]/70">Edit post</Link>
+            <Link href="/notifications" className="rounded-full border border-[#285f40] px-4 py-2 text-sm text-[#9adbb2] hover:border-[#8fd4a9]/70">Notifications</Link>
+            <Link href="/show-your-stuff" className="rounded-full border border-zinc-700 px-4 py-2 text-sm text-zinc-200 hover:border-[#8fd4a9]/70 hover:text-[#9adbb2]">How participation works</Link>
           </div>
         </header>
 
@@ -50,7 +50,7 @@ export default function SocialPage() {
         </section>
 
         <section className="mt-6 rounded-2xl border border-zinc-800 bg-zinc-950/70 p-5" aria-labelledby="composer-heading">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-green-400">Released participation controls</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#8fd4a9]">Released participation controls</p>
           <h2 id="composer-heading" className="mt-2 text-2xl font-semibold">Post, reply and add media through DeSo</h2>
           <p className="mt-2 max-w-3xl text-sm leading-6 text-zinc-400">
             Posts can contain up to 5,000 characters and four images, with optional video. Media upload stays technically separate from publishing, and publishing still requires the exact DeSo transaction to be reviewed and approved through DeSo Identity.
