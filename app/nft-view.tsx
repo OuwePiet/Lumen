@@ -7,6 +7,7 @@ import NFTBidControl from "./nft-bid-control"
 import NFTOwnerSaleControl from "./nft-owner-sale-control"
 import NFTAcceptTransferControl from "./nft-accept-transfer-control"
 import NFTReceivedBids from "./nft-received-bids"
+import NFTMyBids from "./nft-my-bids"
 import NFTHistory from "./nft-history"
 import { inspectMediaIntegrity } from "../lib/via/digital-ownership"
 import { normalizeNftRecord } from "../lib/via/nft-record"
@@ -619,6 +620,8 @@ export default async function NFTView({
               <NFTAcceptTransferControl postHash={postHash} editions={sortedEntries.map((entry, index) => ({ serialNumber: entry.SerialNumber ?? index + 1, isPending: entry.IsPending === true, ownerPublicKey: entry.OwnerPublicKeyBase58Check }))} />
 
               <NFTReceivedBids postHash={postHash} hasUnlockable={post.HasUnlockable === true} editions={sortedEntries.map((entry, index) => ({ serialNumber: entry.SerialNumber ?? index + 1, ownerPublicKey: entry.OwnerPublicKeyBase58Check }))} bids={bidEntries.filter((bid): bid is NFTBidEntry & { PublicKeyBase58Check: string; SerialNumber: number; BidAmountNanos: number } => typeof bid.PublicKeyBase58Check === "string" && typeof bid.SerialNumber === "number" && typeof bid.BidAmountNanos === "number" && bid.BidAmountNanos > 0).map((bid) => ({ serialNumber: bid.SerialNumber, bidderPublicKey: bid.PublicKeyBase58Check, bidAmountNanos: bid.BidAmountNanos }))} />
+
+              <NFTMyBids postHash={postHash} bids={bidEntries.filter((bid): bid is NFTBidEntry & { PublicKeyBase58Check: string; SerialNumber: number; BidAmountNanos: number } => typeof bid.PublicKeyBase58Check === "string" && typeof bid.SerialNumber === "number" && typeof bid.BidAmountNanos === "number" && bid.BidAmountNanos > 0).map((bid) => ({ serialNumber: bid.SerialNumber, bidderPublicKey: bid.PublicKeyBase58Check, bidAmountNanos: bid.BidAmountNanos }))} />
 
               <NFTHistory
                 postTimestampNanos={post.TimestampNanos}
