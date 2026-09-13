@@ -1,4 +1,4 @@
-import { releasedCapabilities, verifiedNextCapabilities, researchCapabilities } from "../../lib/via/deso-capabilities"
+import { releasedCapabilities } from "../../lib/via/deso-capabilities"
 import Link from "next/link"
 import FeedChoice from "./feed-choice"
 import PublicPosts from "./public-posts"
@@ -60,33 +60,6 @@ export default function SocialPage() {
 
         <FeedChoice />
         <PublicPosts />
-
-        <section className="mt-8" aria-labelledby="future-social-heading">
-          <h2 id="future-social-heading" className="text-2xl font-semibold">Ideas under evaluation</h2>
-          <p className="mt-2 max-w-3xl text-sm leading-6 text-zinc-400">Only generic product ideas are evaluated here. VIA will not copy proprietary code, branding or branded reward programs from another application.</p>
-          <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {futureIdeas.map((idea) => (
-              <article key={idea.title} className="rounded-2xl border border-zinc-800 bg-zinc-950 p-5">
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-green-400">Not released</p>
-                <h3 className="mt-2 text-lg font-medium">{idea.title}</h3>
-                <p className="mt-2 text-sm leading-6 text-zinc-400">{idea.text}</p>
-              </article>
-            ))}
-          </div>
-        </section>
-
-        <section className="mt-8 rounded-2xl border border-zinc-800 bg-zinc-950/70 p-5" aria-labelledby="remaining-controls-heading">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-green-400">Still protected</p>
-          <h2 id="remaining-controls-heading" className="mt-2 text-2xl font-semibold">Release remaining writes only after DeSo verification</h2>
-          <p className="mt-2 max-w-3xl text-sm leading-6 text-zinc-400">
-            Login is not permission for every action. A new DeSo write becomes operational only after its exact endpoint, validation, abuse protection and signing path are verified.
-          </p>
-          <div className="mt-4 flex flex-wrap gap-2" aria-label="Actions reserved for later DeSo controls">
-            {[...verifiedNextCapabilities, ...researchCapabilities].map((capability) => (
-              <span key={capability.id} title={capability.note} className="rounded-full border border-zinc-800 px-3 py-2 text-xs text-zinc-500">{capability.label} · {capability.status === "verified-next" ? "verified next" : "protected research"}</span>
-            ))}
-          </div>
-        </section>
 
         <section className="mt-8 grid gap-4 sm:grid-cols-2">
           <article className="rounded-2xl border border-zinc-800 bg-zinc-950 p-5">
