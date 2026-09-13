@@ -8,7 +8,7 @@ const creatorWindows = [
   { title: "Film & Video", text: "Short film, moving image, documentary, animation, music video and creator-led video can all find an audience here.", href: "/social?media=video", action: "Discover Video" },
   { title: "NFTs & Collecting", text: "Explore native DeSo NFTs, collectors and creators publicly. Future external collectibles will remain clearly labelled and separate until a verified DeSo mint/ownership route exists.", href: "/social?media=nft", action: "Discover DeSo NFTs" },
   { title: "Museums & Heritage", text: "Museums, archives, history, collections and cultural heritage belong in the same daily world window." },
-  { title: "Writing & Stories", text: "Writers, poets, reporters and storytellers need room to be discovered too." },
+  { title: "Writing & Stories", text: "Discover writers, poets, reporters and storytellers through VIA’s public DeSo post window; dedicated long-form classification waits for verified metadata.", href: "/social", action: "Discover Posts" },
   { title: "New & Unexpected", text: "Leave room for new makers, small accounts and creative forms that do not fit an existing label yet." },
 ]
 
