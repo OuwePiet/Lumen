@@ -117,7 +117,7 @@ export default async function MarketPage({ searchParams }: { searchParams: Promi
             </div>
             {sales.length === 0 ? <p className="mt-3 text-sm text-zinc-500">No NFT editions currently for sale.</p> : (
               <div className="mt-4 grid gap-3">
-                {sales.map(({hash,post,entry},index)=><Link key={hash+":"+entry.SerialNumber+":"+index} href={"/nft/"+hash} className="rounded-xl border border-zinc-800 bg-black/20 p-4">
+                {sales.map(({hash,post,entry},index)=><Link key={hash+":"+entry.SerialNumber+":"+index} href={"/nft/"+hash+(publicKey?"?returnTo=market&publicKey="+encodeURIComponent(publicKey):"")} className="rounded-xl border border-zinc-800 bg-black/20 p-4">
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div><p className="text-sm font-semibold">{title(post.Body)}</p><p className="mt-1 text-xs text-zinc-500">{post.ProfileEntryResponse?.Username ? "@"+post.ProfileEntryResponse.Username+" · " : ""}Edition #{entry.SerialNumber ?? "?"}</p></div>
                     <p className="text-sm text-green-300">{entry.IsBuyNow && typeof entry.BuyNowPriceNanos === "number" ? "Buy now "+formatDeso(entry.BuyNowPriceNanos) : "Min bid "+formatDeso(entry.MinBidAmountNanos)} DESO</p>
@@ -134,7 +134,7 @@ export default async function MarketPage({ searchParams }: { searchParams: Promi
             </div>
             {transfers.length === 0 ? <p className="mt-3 text-sm text-zinc-500">No pending NFT transfers found for this account.</p> : (
               <div className="mt-4 grid gap-3">
-                {transfers.map(({hash,post,entry},index)=><Link key={hash+":"+entry.SerialNumber+":"+index} href={"/nft/"+hash} className="rounded-xl border border-zinc-800 bg-black/20 p-4">
+                {transfers.map(({hash,post,entry},index)=><Link key={hash+":"+entry.SerialNumber+":"+index} href={"/nft/"+hash+(publicKey?"?returnTo=market&publicKey="+encodeURIComponent(publicKey):"")} className="rounded-xl border border-zinc-800 bg-black/20 p-4">
                   <p className="text-sm font-semibold">{title(post.Body)}</p>
                   <p className="mt-1 text-xs text-zinc-500">{post.ProfileEntryResponse?.Username ? "@"+post.ProfileEntryResponse.Username+" · " : ""}Edition #{entry.SerialNumber ?? "?"} · pending on DeSo</p>
                 </Link>)}
