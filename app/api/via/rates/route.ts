@@ -3,7 +3,18 @@ import { NextResponse } from "next/server"
 export const dynamic = "force-dynamic"
 
 const DEFAULT_RATE_URL = "https://api.coingecko.com/api/v3/simple/price?ids=deso&vs_currencies=usd,eur"
-const RATE_URL = process.env.VIA_RATE_URL || DEFAULT_RATE_URL
+function rateUrl() {
+  const raw = process.env.VIA_RATE_URL?.trim()
+  if (!raw) return DEFAULT_RATE_URL
+  try {
+    const url = new URL(raw)
+    return url.protocol === "https:" ? url.toString() : DEFAULT_RATE_URL
+  } catch {
+    return DEFAULT_RATE_URL
+  }
+}
+
+const RATE_URL = rateUrl()
 const TIMEOUT_MS = 4500
 
 type ProviderPayload = Record<string, { usd?: unknown; eur?: unknown } | undefined>
