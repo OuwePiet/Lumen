@@ -86,10 +86,10 @@ export default async function NFTPage({ params, searchParams }: NFTPageProps) {
 
   const hasVerifiedAccountContext = Boolean(account && accountKey)
   const backHref = marketBack ?? (hasVerifiedAccountContext
-    ? `/?${returnParams.toString()}#collection-controls`
+    ? `/collection?${returnParams.toString()}#collection-controls`
     : account
-      ? `/?account=${encodeURIComponent(account)}#account-lookup-heading`
-      : "/#account-lookup-heading")
+      ? `/collection?account=${encodeURIComponent(account)}#account-lookup-heading`
+      : "/collection#account-lookup-heading")
   const backLabel = marketBack
     ? returnTo === "received-bids"
       ? "Back to received bids"
