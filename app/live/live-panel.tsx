@@ -42,7 +42,8 @@ export default function LivePanel(){
       <p style={{margin:0,color:"#8fd4a9",fontWeight:700,letterSpacing:1.5,fontSize:12}}>VIA LIVE · AUDIO FIRST</p>
       <h2 style={{fontSize:"clamp(26px,4vw,38px)",margin:"8px 0",letterSpacing:"-.02em"}}>Community Room</h2>
       <p style={{color:"#aebbb4",lineHeight:1.6}}>Camera is optional. This first interface separates listening, speaking, recording and publishing so none of those actions happen silently.</p>
-      <p style={{fontSize:13,color:"#7f8a84",marginBottom:0}}>Live controls are intentionally not exposed until microphone, room and recording actions are backed by a real authorised service.</p>\n    </section>
+      <p style={{fontSize:13,color:"#7f8a84",marginBottom:0}}>Live controls are intentionally not exposed until microphone, room and recording actions are backed by a real authorised service.</p>
+    </section>
 
     <section style={panelStyle}>
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,flexWrap:"wrap"}}><div><p style={{margin:0,color:"#8fd4a9",fontWeight:700,fontSize:12,letterSpacing:1.3}}>MEDIA HEALTH</p><h2 style={{margin:"5px 0",fontWeight:650}}>What is actually failing?</h2></div><button type="button" onClick={refresh} disabled={loading} style={quietButton}>{loading?"Checking…":"Check now"}</button></div>
