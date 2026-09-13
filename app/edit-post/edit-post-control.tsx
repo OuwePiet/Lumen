@@ -38,6 +38,7 @@ export default function EditPostControl() {
   const [status, setStatus] = useState<"idle" | "loading" | "ready" | "preparing" | "awaiting" | "submitting" | "done" | "error">("idle")
   const [message, setMessage] = useState("")
   const popupRef = useRef<Window | null>(null)
+  const popupWatch = useRef<number | null>(null)
 
   useEffect(() => {
     const current = restoreIdentitySession()
@@ -56,6 +57,8 @@ export default function EditPostControl() {
     const onMessage = async (event: MessageEvent) => {
       const signedTransactionHex = signedTransactionFromMessage(event, popupRef.current)
       if (!signedTransactionHex) return
+      if (popupWatch.current !== null) window.clearInterval(popupWatch.current)
+      popupWatch.current = null
       popupRef.current?.close()
       popupRef.current = null
       setStatus("submitting")
@@ -80,6 +83,8 @@ export default function EditPostControl() {
     window.addEventListener("message", onMessage)
     return () => {
       window.removeEventListener("message", onMessage)
+      if (popupWatch.current !== null) window.clearInterval(popupWatch.current)
+      popupWatch.current = null
       popupRef.current?.close()
       popupRef.current = null
     }
@@ -141,6 +146,16 @@ export default function EditPostControl() {
       const popup = window.open(approveUrl, "via-deso-edit-approve", "popup=yes,width=800,height=900")
       if (!popup) throw new Error("POPUP_BLOCKED")
       popupRef.current = popup
+      if (popupWatch.current !== null) window.clearInterval(popupWatch.current)
+      popupWatch.current = window.setInterval(() => {
+        if (popupRef.current?.closed) {
+          popupRef.current = null
+          if (popupWatch.current !== null) window.clearInterval(popupWatch.current)
+          popupWatch.current = null
+          setStatus("ready")
+          setMessage("DeSo approval was closed. VIA changed nothing.")
+        }
+      }, 500)
       setStatus("awaiting")
       setMessage("Review the exact edit in DeSo Identity. VIA will submit it only after your approval.")
     } catch (error) {
