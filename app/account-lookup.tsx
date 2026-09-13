@@ -95,7 +95,7 @@ export default function AccountLookup({ onAccountSelected }: { onAccountSelected
     if (selectedProfile.PublicKeyBase58Check) params.set("accountKey", selectedProfile.PublicKeyBase58Check)
     if (openNFTs) {
       params.set("view", "nfts")
-      for (const key of ["query", "sort", "sale", "media"]) {
+      for (const key of ["query", "sort", "sale", "media", "shown"]) {
         const value = currentParams.get(key)
         if (value !== null) params.set(key, value)
       }
