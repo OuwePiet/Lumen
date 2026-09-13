@@ -45,22 +45,26 @@ export default function LocalSaveButton({ postHash, body, publicKey, timestampNa
   }, [postHash])
 
   function toggle() {
-    const current = readSaved()
-    if (current.some((item) => item.postHash === postHash)) {
-      writeSaved(current.filter((item) => item.postHash !== postHash))
-      setSaved(false)
-      window.dispatchEvent(new Event(SAVE_EVENT))
-      setMessage("Removed from this device.")
-      return
-    }
+    try {
+      const current = readSaved()
+      if (current.some((item) => item.postHash === postHash)) {
+        writeSaved(current.filter((item) => item.postHash !== postHash))
+        setSaved(false)
+        window.dispatchEvent(new Event(SAVE_EVENT))
+        setMessage("Removed from this device.")
+        return
+      }
 
-    writeSaved([
-      { postHash, body: body.slice(0, 1200), publicKey, timestampNanos, savedAt: Date.now() },
-      ...current.filter((item) => item.postHash !== postHash),
-    ])
-    setSaved(true)
-    window.dispatchEvent(new Event(SAVE_EVENT))
-    setMessage("Saved on this device.")
+      writeSaved([
+        { postHash, body: body.slice(0, 1200), publicKey, timestampNanos, savedAt: Date.now() },
+        ...current.filter((item) => item.postHash !== postHash),
+      ])
+      setSaved(true)
+      window.dispatchEvent(new Event(SAVE_EVENT))
+      setMessage("Saved on this device.")
+    } catch {
+      setMessage("Saving is unavailable on this device.")
+    }
   }
 
   return (
