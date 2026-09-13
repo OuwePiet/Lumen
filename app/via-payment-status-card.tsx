@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 
-type Method = { method: string; actionable: boolean }
+type Method = { method: string; actionable: boolean; checkoutEnabled?: boolean }
 
 export default function ViaPaymentStatusCard() {
   const [methods, setMethods] = useState<Method[] | null>(null)
@@ -16,7 +16,7 @@ export default function ViaPaymentStatusCard() {
     return () => { active = false }
   }, [])
 
-  const ready = methods?.filter((item) => item.actionable).length ?? 0
+  const ready = methods?.filter((item) => item.checkoutEnabled === true).length ?? 0
 
   return (
     <aside
