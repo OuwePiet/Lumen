@@ -62,10 +62,10 @@ export default function Loading() {
     <main style={styles.page} aria-busy="true" aria-live="polite">
       <div style={styles.container}>
         <p style={styles.brand}>VIA</p>
-        <h1 style={styles.heading}>NFT collection</h1>
-        <p style={styles.status}>Loading NFT collection from DeSo…</p>
+        <h1 style={styles.heading}>VIA</h1>
+        <p style={styles.status}>Loading the requested VIA view…</p>
 
-        <div style={styles.grid} aria-label="Loading NFT cards">
+        <div style={styles.grid} aria-label="Loading VIA content">
           {Array.from({ length: 8 }, (_, index) => (
             <div key={index} style={styles.card} aria-hidden="true">
               <div style={styles.media} />
