@@ -77,6 +77,14 @@ export default function MintPreflight() {
     setSession(restoreIdentitySession())
     const onSession = (event: Event) => {
       requestSequence.current += 1
+      if (mintPopupRef.current) {
+        if (mintPopupWatch.current !== null) window.clearInterval(mintPopupWatch.current)
+        mintPopupWatch.current = null
+        mintPopupRef.current.close()
+        mintPopupRef.current = null
+        setMintStatus("idle")
+        setMintMessage("DeSo Identity changed. The previous mint approval was closed; request a fresh quote and approval.")
+      }
       setSession((event as CustomEvent<ViaIdentitySession | null>).detail ?? restoreIdentitySession())
     }
     window.addEventListener(VIA_IDENTITY_EVENT, onSession)
