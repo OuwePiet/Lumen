@@ -7,7 +7,7 @@ const creatorWindows = [
   { title: "Photography", text: "A place for photographers and visual creators to show a single image, a series, photo story, portfolio work or a growing body of work.", href: "/social?media=image", action: "Discover Images" },
   { title: "Film & Video", text: "Short film, moving image, documentary, animation, music video and creator-led video can all find an audience here.", href: "/social?media=video", action: "Discover Video" },
   { title: "NFTs & Collecting", text: "Explore native DeSo NFTs, collectors and creators publicly. Future external collectibles will remain clearly labelled and separate until a verified DeSo mint/ownership route exists.", href: "/social?media=nft", action: "Discover DeSo NFTs" },
-  { title: "Museums & Heritage", text: "Museums, archives, history, collections and cultural heritage belong in the same daily world window." },
+  { title: "Museums & Heritage", text: "Museums, archives, history, collections and cultural heritage belong in the same daily world window. Start with VIA’s public world exploration while dedicated institution metadata remains future work.", href: "/discover/world", action: "Explore the World" },
   { title: "Writing & Stories", text: "Discover writers, poets, reporters and storytellers through VIA’s public DeSo post window; dedicated long-form classification waits for verified metadata.", href: "/social", action: "Discover Posts" },
   { title: "New & Unexpected", text: "Leave room for new makers, small accounts and creative forms that do not fit an existing label yet. VIA opens the existing deterministic Surprise route instead of pretending to rank people as new or important.", href: "/discover/surprise", action: "Surprise Me" },
 ]
