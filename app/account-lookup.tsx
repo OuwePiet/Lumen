@@ -59,24 +59,24 @@ function viaProfileToDeSo(profile: NonNullable<ViaProfileResponse["profile"]>): 
 
 const styles = {
   section: { background: "#0a100d", border: "1px solid #254233", borderRadius: "18px", marginBottom: "28px", padding: "20px" },
-  heading: { color: "#b9ffd4", fontSize: "16px", margin: "0 0 8px" },
+  heading: { color: "#9adbb2", fontSize: "16px", margin: "0 0 8px" },
   text: { color: "#a9b8af", fontSize: "13px", lineHeight: 1.6, margin: "0 0 14px" },
   form: { display: "flex", flexWrap: "wrap" as const, gap: "10px" },
   input: { flex: "1 1 260px", minWidth: 0, color: "#f4f7f5", background: "#050807", border: "1px solid #254233", borderRadius: "10px", fontSize: "16px", padding: "11px 12px" },
   button: { minHeight: "44px", color: "#050807", background: "#8fd4a9", border: "1px solid #8fd4a9", borderRadius: "999px", cursor: "pointer", fontSize: "13px", fontWeight: 800, padding: "10px 16px" },
   status: { color: "#a9b8af", fontSize: "13px", marginTop: "12px" },
-  result: { color: "#b9ffd4", background: "#10261a", border: "1px solid #285f40", borderRadius: "12px", marginTop: "14px", padding: "14px" },
+  result: { color: "#9adbb2", background: "rgba(143,212,169,.06)", border: "1px solid rgba(143,212,169,.28)", borderRadius: "12px", marginTop: "14px", padding: "14px" },
   error: { color: "#f1d89a", background: "#211a0c", border: "1px solid #6e5721", borderRadius: "12px", marginTop: "14px", padding: "14px" },
   code: { display: "block", color: "#a9b8af", fontSize: "12px", marginTop: "6px", overflowWrap: "anywhere" as const },
   profileHeader: { alignItems: "center", display: "flex", flexWrap: "wrap" as const, gap: "12px" },
   profileText: { minWidth: 0, overflowWrap: "anywhere" as const },
   description: { color: "#d5e2da", fontSize: "13px", lineHeight: 1.55, margin: "12px 0 0", overflowWrap: "anywhere" as const, whiteSpace: "pre-wrap" as const },
   keyDetails: { color: "#a9b8af", fontSize: "12px", marginTop: "12px" },
-  keySummary: { color: "#b9ffd4", cursor: "pointer", fontWeight: 700 },
-  choices: { background: "#07100b", border: "1px solid #285f40", borderRadius: "12px", listStyle: "none", margin: "14px 0 0", padding: "8px" },
-  choiceButton: { alignItems: "center", minHeight: "44px", background: "transparent", border: 0, borderRadius: "9px", color: "#b9ffd4", cursor: "pointer", display: "flex", gap: "10px", padding: "10px", textAlign: "left" as const, width: "100%" },
+  keySummary: { color: "#9adbb2", cursor: "pointer", fontWeight: 700 },
+  choices: { background: "#07100b", border: "1px solid rgba(143,212,169,.28)", borderRadius: "12px", listStyle: "none", margin: "14px 0 0", padding: "8px" },
+  choiceButton: { alignItems: "center", minHeight: "44px", background: "transparent", border: 0, borderRadius: "9px", color: "#9adbb2", cursor: "pointer", display: "flex", gap: "10px", padding: "10px", textAlign: "left" as const, width: "100%" },
   avatar: { borderRadius: "50%", height: "36px", objectFit: "cover" as const, width: "36px" },
-  avatarFallback: { alignItems: "center", background: "#254233", borderRadius: "50%", color: "#b9ffd4", display: "flex", flex: "0 0 auto", fontWeight: 800, height: "36px", justifyContent: "center", width: "36px" },
+  avatarFallback: { alignItems: "center", background: "#254233", borderRadius: "50%", color: "#9adbb2", display: "flex", flex: "0 0 auto", fontWeight: 800, height: "36px", justifyContent: "center", width: "36px" },
 }
 
 export default function AccountLookup({ onAccountSelected }: { onAccountSelected?: () => void }) {
