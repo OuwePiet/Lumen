@@ -41,7 +41,11 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
       } catch { setStatus("error"); setMessage("Diamond was not submitted by VIA.") }
     }
     window.addEventListener("message", onMessage)
-    return () => window.removeEventListener("message", onMessage)
+    return () => {
+      window.removeEventListener("message", onMessage)
+      popupRef.current?.close()
+      popupRef.current = null
+    }
   }, [level])
 
   async function prepare() {
