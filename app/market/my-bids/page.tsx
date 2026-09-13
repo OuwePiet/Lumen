@@ -43,7 +43,12 @@ export default async function MarketMyBidsPage({ searchParams }: { searchParams:
         NFTBidEntries?: Bid[]
         PostHashHexToPostEntryResponse?: Record<string, Post>
       }
-      bids = (data.NFTBidEntries ?? []).filter((bid) => typeof bid.BidAmountNanos === "number" && bid.BidAmountNanos > 0)
+      bids = (data.NFTBidEntries ?? []).filter((bid) =>
+        typeof bid.BidAmountNanos === "number" &&
+        bid.BidAmountNanos > 0 &&
+        typeof bid.PostHashHex === "string" &&
+        /^[0-9a-fA-F]{64}$/.test(bid.PostHashHex)
+      )
       posts = data.PostHashHexToPostEntryResponse ?? {}
     } catch {
       error = "VIA could not load your DeSo bids right now."
