@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 
 const ANSWERS = ["WORLD", "QUEST", "RADIO", "BADGE", "GREEN", "POINT", "SHARE"]
 const MAX_TRIES = 6
@@ -40,6 +40,7 @@ export default function DailyGrid() {
   const [input, setInput] = useState("")
   const [copied, setCopied] = useState<"idle" | "ok" | "error">("idle")
   const [hydratedKey, setHydratedKey] = useState<string | null>(null)
+  const copyTimer = useRef<number | null>(null)
 
   useEffect(() => {
     function refreshDay() {
@@ -47,7 +48,10 @@ export default function DailyGrid() {
       setDay((old) => old === current ? old : current)
     }
     const timer = window.setInterval(refreshDay, 30_000)
-    return () => window.clearInterval(timer)
+    return () => {
+      window.clearInterval(timer)
+      if (copyTimer.current !== null) window.clearTimeout(copyTimer.current)
+    }
   }, [])
 
   useEffect(() => {
@@ -97,7 +101,11 @@ export default function DailyGrid() {
     } catch {
       setCopied("error")
     }
-    window.setTimeout(() => setCopied("idle"), 1800)
+    if (copyTimer.current !== null) window.clearTimeout(copyTimer.current)
+    copyTimer.current = window.setTimeout(() => {
+      copyTimer.current = null
+      setCopied("idle")
+    }, 1800)
   }
 
   return (
