@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { fetchDeSo } from "../deso-api"
+import { fetchDeSo } from "../../deso-api"
 
 export const dynamic = "force-dynamic"
 
