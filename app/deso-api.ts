@@ -107,7 +107,9 @@ async function performDeSoRequest(
 ): Promise<Response> {
   let lastError: unknown
 
-  const maxAttempts = Math.max(MIN_ATTEMPTS, DESO_NODES.length)
+  const method = (requestInit.method ?? "GET").toUpperCase()
+  const retrySafe = method === "GET" || method === "HEAD"
+  const maxAttempts = retrySafe ? Math.max(MIN_ATTEMPTS, DESO_NODES.length) : 1
 
   for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
     const node = DESO_NODES[attempt % DESO_NODES.length] ?? DEFAULT_DESO_NODE
