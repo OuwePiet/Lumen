@@ -1,24 +1,9 @@
+import { releasedCapabilities, verifiedNextCapabilities, researchCapabilities } from "../../lib/via/deso-capabilities"
 import Link from "next/link"
 import FeedChoice from "./feed-choice"
 import PublicPosts from "./public-posts"
 import ParticipationGate from "../participation-gate"
 import PostComposer from "./post-composer"
-
-const releasedCapabilities = [
-  "5,000-character posts",
-  "Up to 4 images",
-  "Video",
-  "Replies",
-  "Likes",
-  "Follow / Unfollow",
-  "Repost / Quote",
-  "Diamonds",
-  "Polls",
-  "Saved posts",
-  "Notification filters",
-  "Edit own post",
-  "Hot feed",
-]
 
 const futureIdeas = [
   { title: "External creator collectible intake", text: "Evaluate a paid public creator route for preparing media and collectible metadata without operating a VIA blockchain or node. Any future external media storage must use an explicitly selected storage provider/path with disclosed retention and cost; the VIA application repository and Vercel deployment are not the collectible media archive. Public visitors may eventually View, Play/Watch and Share eligible external creator work without DeSo login; community members retain access everywhere and may use verified DeSo-native actions such as Follow, Reply, Repost/Quote and Diamond only when the external work has an explicitly verified DeSo post or creator identity; VIA must not infer that link from a matching name, handle or media title. Any external item shown in VIA must carry a clear External collectible label; native on-chain items keep the DeSo NFT label. A future Mint on DeSo action may only appear after creator consent, a creator rights/ownership declaration, media/metadata validation (supported type, size, integrity and required fields), an explicit live DeSo cost quote and final approval; purchase and ownership require their own verified flow." },
@@ -26,9 +11,6 @@ const futureIdeas = [
   { title: "Language & region views", text: "A future preference for discovering public content by explicit language or region metadata. It will not silently translate posts, infer location in the background or require a paid translation service." },
 ]
 
-const remainingActions = [
-  "Create a poll",
-]
 
 export default function SocialPage() {
   return (
@@ -62,7 +44,7 @@ export default function SocialPage() {
           </p>
           <div className="mt-4 flex flex-wrap gap-2" aria-label="Released VIA social capabilities">
             {releasedCapabilities.map((capability) => (
-              <span key={capability} className="rounded-full border border-zinc-800 px-3 py-1.5 text-xs text-zinc-300">{capability}</span>
+              <span key={capability.id} title={capability.note} className="rounded-full border border-zinc-800 px-3 py-1.5 text-xs text-zinc-300">{capability.label}</span>
             ))}
           </div>
         </section>
@@ -100,8 +82,8 @@ export default function SocialPage() {
             Login is not permission for every action. A new DeSo write becomes operational only after its exact endpoint, validation, abuse protection and signing path are verified.
           </p>
           <div className="mt-4 flex flex-wrap gap-2" aria-label="Actions reserved for later DeSo controls">
-            {remainingActions.map((action) => (
-              <span key={action} className="rounded-full border border-zinc-800 px-3 py-2 text-xs text-zinc-500">{action} · protected</span>
+            {[...verifiedNextCapabilities, ...researchCapabilities].map((capability) => (
+              <span key={capability.id} title={capability.note} className="rounded-full border border-zinc-800 px-3 py-2 text-xs text-zinc-500">{capability.label} · {capability.status === "verified-next" ? "verified next" : "protected research"}</span>
             ))}
           </div>
         </section>
