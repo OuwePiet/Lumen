@@ -37,6 +37,7 @@ type DeSoProfile = {
 
 type NFTEntry = {
   IsForSale?: boolean
+  IsBuyNow?: boolean
   MinBidAmountNanos?: number
   OwnerPublicKeyBase58Check?: string
   BuyNowPriceNanos?: number
@@ -592,7 +593,7 @@ export default async function NFTView({
                 <EditionOwners editions={editionOwners} />
               ) : null}
 
-              <NFTBidControl postHash={postHash} editions={forSale.map((entry, index) => ({ serialNumber: entry.SerialNumber ?? index + 1, minBidAmountNanos: entry.MinBidAmountNanos, buyNowPriceNanos: entry.BuyNowPriceNanos, ownerPublicKey: entry.OwnerPublicKeyBase58Check }))} />
+              <NFTBidControl postHash={postHash} editions={forSale.map((entry, index) => ({ serialNumber: entry.SerialNumber ?? index + 1, minBidAmountNanos: entry.MinBidAmountNanos, buyNowPriceNanos: entry.BuyNowPriceNanos, isBuyNow: entry.IsBuyNow === true, ownerPublicKey: entry.OwnerPublicKeyBase58Check }))} />
 
               <NFTHistory
                 postTimestampNanos={post.TimestampNanos}
