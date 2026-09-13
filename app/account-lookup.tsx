@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useState, type FormEvent } from "react"
+import { useCallback, useEffect, useRef, useState, type FormEvent } from "react"
 import { fetchDeSo } from "./deso-api"
 import PublicAccountNFTs from "./public-account-nfts"
 
@@ -86,6 +86,7 @@ export default function AccountLookup({ onAccountSelected }: { onAccountSelected
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
   const [autoLoadNFTs, setAutoLoadNFTs] = useState(false)
+  const lookupController = useRef<AbortController | null>(null)
 
   const rememberSelectedAccount = (selectedProfile: DeSoProfile, openNFTs = false) => {
     if (typeof window === "undefined" || !selectedProfile.Username) return
@@ -113,11 +114,12 @@ export default function AccountLookup({ onAccountSelected }: { onAccountSelected
     onAccountSelected?.()
   }
 
-  const readExactProfile = async (identity: string) => {
+  const readExactProfile = async (identity: string, signal: AbortSignal) => {
     const response = await fetch(`/api/via/profile?identity=${encodeURIComponent(identity)}`, {
       method: "GET",
       headers: { Accept: "application/json" },
       cache: "no-store",
+      signal,
     })
     if (!response.ok) return null
     const data = (await response.json()) as ViaProfileResponse
@@ -125,6 +127,9 @@ export default function AccountLookup({ onAccountSelected }: { onAccountSelected
   }
 
   const lookupAccount = useCallback(async (requestedUsername: string, expectedPublicKey?: string, openNFTs = false) => {
+    lookupController.current?.abort()
+    const controller = new AbortController()
+    lookupController.current = controller
     const requested = normalizedUsername(requestedUsername)
     const expectedKey = safeExpectedPublicKey(expectedPublicKey)
     setUsername(requested)
@@ -143,7 +148,7 @@ export default function AccountLookup({ onAccountSelected }: { onAccountSelected
 
     setLoading(true)
     try {
-      const exactProfile = await readExactProfile(requested)
+      const exactProfile = await readExactProfile(requested, controller.signal)
       if (exactProfile) {
         if (expectedKey && exactProfile.PublicKeyBase58Check !== expectedKey) {
           setError("This VIA link contains an account key that does not match the DeSo profile. Nothing was loaded.")
@@ -162,6 +167,7 @@ export default function AccountLookup({ onAccountSelected }: { onAccountSelected
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ UsernamePrefix: requested, NumToFetch: 25, ReaderPublicKeyBase58Check: "" }),
+        signal: controller.signal,
       })
       if (!response.ok) {
         setError("The DeSo account could not be checked right now.")
@@ -186,12 +192,17 @@ export default function AccountLookup({ onAccountSelected }: { onAccountSelected
         return
       }
       setMatches(usableProfiles.slice(0, 10))
-    } catch {
-      setError("The DeSo account could not be checked right now.")
+    } catch (error) {
+      if (!(error instanceof DOMException && error.name === "AbortError")) setError("The DeSo account could not be checked right now.")
     } finally {
-      setLoading(false)
+      if (lookupController.current === controller) {
+        lookupController.current = null
+        setLoading(false)
+      }
     }
   }, [onAccountSelected])
+
+  useEffect(() => () => lookupController.current?.abort(), [])
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
