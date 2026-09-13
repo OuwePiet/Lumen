@@ -102,9 +102,21 @@ export async function POST(request: Request) {
     ? ["action", "publicKey", "postHashHex"]
     : body.action === "prepare"
       ? ["action", "publicKey", "postHashHex", "body"]
-      : []
+      : body.action === "submit"
+        ? ["action", "signedTransactionHex"]
+        : []
   if (!allowed.length || Object.keys(body).some((key) => !allowed.includes(key))) {
     return json({ ok: false, error: "INVALID_REQUEST" }, 400)
+  }
+
+  if (body.action === "submit") {
+    const signedTransactionHex = body.signedTransactionHex
+    if (!validHex(signedTransactionHex)) return json({ ok: false, error: "INVALID_SIGNED_TRANSACTION" }, 400)
+    try {
+      const response = await fetchDeSo("submit-transaction", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ TransactionHex: signedTransactionHex }) })
+      if (!response.ok) return json({ ok: false, error: "DESO_EDIT_SUBMIT_REJECTED" }, 502)
+      return json({ ok: true, transaction: await response.json() as Record<string, unknown> })
+    } catch { return json({ ok: false, error: "DESO_EDIT_SUBMIT_UNAVAILABLE" }, 503) }
   }
 
   const publicKey = body.publicKey
