@@ -4,9 +4,9 @@ import SaveButton from "../saved/save-button"
 const creatorWindows = [
   { title: "Art & Painting", text: "A window for painters, illustrators, digital artists and people showing work for the first time." },
   { title: "Music & Audio", text: "Discover musicians, voices, radio, sound experiments and independent releases." },
-  { title: "Photography", text: "A place for photographers to show a single image, a series, a story or a growing body of work." },
-  { title: "Film & Video", text: "Short film, moving image, documentary, animation and new visual work can all find an audience here." },
-  { title: "NFTs & Collecting", text: "Explore DeSo NFTs and creators without making collecting the price of admission to VIA." },
+  { title: "Photography", text: "A place for photographers to show a single image, a series, a story or a growing body of work.", href: "/social?media=image", action: "Discover Images" },
+  { title: "Film & Video", text: "Short film, moving image, documentary, animation and new visual work can all find an audience here.", href: "/social?media=video", action: "Discover Video" },
+  { title: "NFTs & Collecting", text: "Explore DeSo NFTs and creators without making collecting the price of admission to VIA.", href: "/social?media=nft", action: "Discover NFTs" },
   { title: "Museums & Heritage", text: "Museums, archives, history, collections and cultural heritage belong in the same daily world window." },
   { title: "Writing & Stories", text: "Writers, poets, reporters and storytellers need room to be discovered too." },
   { title: "New & Unexpected", text: "Leave room for new makers, small accounts and creative forms that do not fit an existing label yet." },
@@ -58,7 +58,7 @@ export default function DiscoverPage() {
         <h2 style={styles.sectionTitle}>A daily creator newspaper</h2>
         <p style={styles.sectionLead}>Not every visitor has to buy something. Guests can browse, read, watch, listen and discover freely. Posting, following and other public participation opens through DeSo.</p>
         <section style={styles.grid} aria-label="Creator windows">
-          {creatorWindows.map((window) => <article key={window.title} style={styles.card}><h3 style={styles.cardTitle}>{window.title}</h3><p style={styles.cardText}>{window.text}</p></article>)}
+          {creatorWindows.map((window) => <article key={window.title} style={styles.card}><h3 style={styles.cardTitle}>{window.title}</h3><p style={styles.cardText}>{window.text}</p>{"href" in window && window.href ? <div style={styles.cardAction}><Link href={window.href} style={styles.link}>{window.action}</Link></div> : null}</article>)}
         </section>
 
         <h2 style={styles.sectionTitle}>Discover VIA</h2>
