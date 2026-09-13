@@ -212,37 +212,37 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
   if (!session) return <div className={`${compact ? "mt-3" : "mt-4"} rounded-xl border border-zinc-800 bg-black/30 p-4 text-sm text-zinc-500`}>Connect through the DeSo participation gate before {isReply ? "replying" : "composing a public post"}.</div>
 
   return (
-    <div className={`${compact ? "mt-3" : "mt-5"} rounded-2xl border border-green-900/60 bg-black/35 p-4`}>
+    <div className={`${compact ? "mt-3" : "mt-5"} rounded-2xl border border-[#285f40]/60 bg-black/35 p-4`}>
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-green-400">{isReply ? "Released write action · DeSo reply" : "Controlled write action · DeSo post + media"}</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#8fd4a9]">{isReply ? "Released write action · DeSo reply" : "Controlled write action · DeSo post + media"}</p>
           <p className="mt-1 text-xs text-zinc-500">Connected key: {session.publicKey.slice(0, 10)}…{session.publicKey.slice(-6)}</p>
         </div>
         <span className="rounded-full border border-zinc-800 px-3 py-1 text-xs text-zinc-400">Approval required every {isReply ? "reply" : "post"}</span>
       </div>
 
       <label htmlFor={isReply ? `via-reply-${parentStakeID}` : "via-post-body"} className="mt-4 block text-sm font-medium text-zinc-200">{isReply ? "Reply text" : "Post text"}</label>
-      <textarea id={isReply ? `via-reply-${parentStakeID}` : "via-post-body"} value={body} onChange={(event) => { setBody(event.target.value); if (status === "done" || status === "error") { setStatus("idle"); setMessage("") } }} maxLength={MAX_POST_LENGTH} rows={compact ? 3 : 5} placeholder={isReply ? "Write a public reply on DeSo…" : "What would you like to share on DeSo?"} className="mt-2 w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-3 text-sm text-zinc-100 outline-none focus:border-green-700" />
+      <textarea id={isReply ? `via-reply-${parentStakeID}` : "via-post-body"} value={body} onChange={(event) => { setBody(event.target.value); if (status === "done" || status === "error") { setStatus("idle"); setMessage("") } }} maxLength={MAX_POST_LENGTH} rows={compact ? 3 : 5} placeholder={isReply ? "Write a public reply on DeSo…" : "What would you like to share on DeSo?"} className="mt-2 w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-3 text-sm text-zinc-100 outline-none focus:border-[#8fd4a9]/55" />
 
       {!compact ? <div className="mt-4 rounded-xl border border-zinc-800 bg-zinc-950/70 p-3">
         <p className="text-sm font-medium text-zinc-200">Images</p>
         <p className="mt-1 text-xs leading-5 text-zinc-500">Choose an image to upload through DeSo, or paste an existing durable HTTPS URL. VIA does not keep a permanent copy. A short-lived Identity JWT is requested only for the upload.</p>
 
-        {imageUrls.length < MAX_IMAGES ? <label className="mt-3 inline-flex cursor-pointer items-center rounded-lg border border-green-800 px-3 py-2 text-xs font-semibold text-green-300">
+        {imageUrls.length < MAX_IMAGES ? <label className="mt-3 inline-flex cursor-pointer items-center rounded-lg border border-[#285f40] px-3 py-2 text-xs font-semibold text-[#9adbb2]">
           {imageUploading ? "Working with DeSo…" : "Choose image for DeSo upload"}
           <input type="file" accept="image/gif,image/jpeg,image/png,image/webp" className="sr-only" disabled={imageUploading} onChange={(event) => { const file = event.target.files?.[0] ?? null; event.currentTarget.value = ""; void uploadImage(file) }} />
         </label> : null}
         <p className="mt-2 text-xs text-zinc-600">GIF, JPEG, PNG or WebP · smaller than 10 MB · maximum {MAX_IMAGES} images per post.</p>
         {imageUploadMessage ? <p className={`mt-2 text-xs ${imageUploadStatus === "error" ? "text-amber-300" : "text-zinc-400"}`}>{imageUploadMessage}</p> : null}
 
-        <div className="mt-3 space-y-2">{imageInputs.map((value, index) => <input key={index} value={value} onChange={(event) => changeImage(index, event.target.value)} placeholder={`Image HTTPS URL ${index + 1}`} className="w-full rounded-lg border border-zinc-800 bg-black/40 px-3 py-2 text-sm text-zinc-200 outline-none focus:border-green-700" />)}</div>
-        {imageInputs.length < MAX_IMAGES ? <button type="button" onClick={() => setImageInputs((current) => [...current, ""])} className="mt-2 text-xs text-green-300">+ Add image URL</button> : null}
+        <div className="mt-3 space-y-2">{imageInputs.map((value, index) => <input key={index} value={value} onChange={(event) => changeImage(index, event.target.value)} placeholder={`Image HTTPS URL ${index + 1}`} className="w-full rounded-lg border border-zinc-800 bg-black/40 px-3 py-2 text-sm text-zinc-200 outline-none focus:border-[#8fd4a9]/55" />)}</div>
+        {imageInputs.length < MAX_IMAGES ? <button type="button" onClick={() => setImageInputs((current) => [...current, ""])} className="mt-2 text-xs text-[#9adbb2]">+ Add image URL</button> : null}
 
         <div className="mt-5 border-t border-zinc-800 pt-4">
           <p className="text-sm font-medium text-zinc-200">Video</p>
           <p className="mt-1 text-xs leading-5 text-zinc-500">Upload one video through DeSo&apos;s tokenized tus flow. VIA waits until the stream is ready and then attaches its HTTPS URL to this draft automatically.</p>
           <VideoUploadControl onReady={setVideoInput} onBusyChange={setVideoUploading} />
-          <input value={videoInput} onChange={(event) => setVideoInput(event.target.value)} placeholder="Ready DeSo video HTTPS URL (optional)" className="mt-3 w-full rounded-lg border border-zinc-800 bg-black/40 px-3 py-2 text-sm text-zinc-200 outline-none focus:border-green-700" />
+          <input value={videoInput} onChange={(event) => setVideoInput(event.target.value)} placeholder="Ready DeSo video HTTPS URL (optional)" className="mt-3 w-full rounded-lg border border-zinc-800 bg-black/40 px-3 py-2 text-sm text-zinc-200 outline-none focus:border-[#8fd4a9]/55" />
           <p className="mt-1 text-xs text-zinc-600">Uploading or processing a video temporarily disables post preparation. The post itself still requires DeSo Identity approval.</p>
         </div>
         {mediaInvalid ? <p className="mt-2 text-xs text-amber-300">Media links must be valid HTTPS URLs without embedded credentials.</p> : null}
@@ -250,10 +250,10 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
 
       <div className="mt-2 flex flex-wrap items-center justify-between gap-3 text-xs text-zinc-500"><span>{remaining.toLocaleString()} characters left</span>{feeLabel ? <span>{feeLabel}</span> : null}</div>
       <div className="mt-4 flex flex-wrap items-center gap-3">
-        <button type="button" onClick={preparePost} disabled={!canPrepare} className="rounded-xl border border-green-700 px-4 py-2 text-sm font-semibold text-green-300 disabled:cursor-not-allowed disabled:border-zinc-800 disabled:text-zinc-600">{status === "preparing" ? "Preparing…" : status === "awaiting-approval" ? "Awaiting DeSo approval…" : status === "submitting" ? "Submitting…" : isReply ? "Review in DeSo & reply" : "Review in DeSo & post"}</button>
+        <button type="button" onClick={preparePost} disabled={!canPrepare} className="rounded-xl border border-[#8fd4a9]/55 px-4 py-2 text-sm font-semibold text-[#9adbb2] disabled:cursor-not-allowed disabled:border-zinc-800 disabled:text-zinc-600">{status === "preparing" ? "Preparing…" : status === "awaiting-approval" ? "Awaiting DeSo approval…" : status === "submitting" ? "Submitting…" : isReply ? "Review in DeSo & reply" : "Review in DeSo & post"}</button>
         <span className="text-xs text-zinc-600">VIA never signs this transaction itself.</span>
       </div>
-      {message ? <p className={`mt-3 text-sm ${status === "done" ? "text-green-300" : status === "error" ? "text-amber-300" : "text-zinc-400"}`}>{message}</p> : null}
+      {message ? <p className={`mt-3 text-sm ${status === "done" ? "text-[#9adbb2]" : status === "error" ? "text-amber-300" : "text-zinc-400"}`}>{message}</p> : null}
     </div>
   )
 }
