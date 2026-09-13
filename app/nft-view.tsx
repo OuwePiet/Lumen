@@ -6,6 +6,7 @@ import NFTMedia from "./nft-media"
 import NFTBidControl from "./nft-bid-control"
 import NFTOwnerSaleControl from "./nft-owner-sale-control"
 import NFTAcceptTransferControl from "./nft-accept-transfer-control"
+import NFTReceivedBids from "./nft-received-bids"
 import NFTHistory from "./nft-history"
 import { inspectMediaIntegrity } from "../lib/via/digital-ownership"
 import { normalizeNftRecord } from "../lib/via/nft-record"
@@ -36,6 +37,12 @@ type DeSoPost = {
 
 type DeSoProfile = {
   Username?: string
+}
+
+type NFTBidEntry = {
+  PublicKeyBase58Check?: string
+  SerialNumber?: number
+  BidAmountNanos?: number
 }
 
 type NFTEntry = {
@@ -376,9 +383,10 @@ export default async function NFTView({
   backHref?: string
 }) {
   try {
-    const [postResponse, nftResponse] = await Promise.all([
+    const [postResponse, nftResponse, bidsResponse] = await Promise.all([
       requestDeSo("get-single-post", postHash),
       requestDeSo("get-nft-entries-for-nft-post", postHash),
+      requestDeSo("get-nft-bids-for-nft-post", postHash),
     ])
 
     const post: DeSoPost =
@@ -389,6 +397,7 @@ export default async function NFTView({
       nftResponse.NFTEntries ??
       nftResponse.NFTEntryResponse ??
       []
+    const bidEntries: NFTBidEntry[] = bidsResponse.BidEntryResponses ?? []
 
     const sortedEntries = [...entries].sort(
       (a, b) => (a.SerialNumber ?? 0) - (b.SerialNumber ?? 0)
@@ -608,6 +617,8 @@ export default async function NFTView({
               <NFTOwnerSaleControl postHash={postHash} hasUnlockable={post.HasUnlockable === true} editions={sortedEntries.map((entry, index) => ({ serialNumber: entry.SerialNumber ?? index + 1, isForSale: entry.IsForSale === true, isPending: entry.IsPending === true, ownerPublicKey: entry.OwnerPublicKeyBase58Check, minBidAmountNanos: entry.MinBidAmountNanos, isBuyNow: entry.IsBuyNow === true, buyNowPriceNanos: entry.BuyNowPriceNanos }))} />
 
               <NFTAcceptTransferControl postHash={postHash} editions={sortedEntries.map((entry, index) => ({ serialNumber: entry.SerialNumber ?? index + 1, isPending: entry.IsPending === true, ownerPublicKey: entry.OwnerPublicKeyBase58Check }))} />
+
+              <NFTReceivedBids postHash={postHash} hasUnlockable={post.HasUnlockable === true} editions={sortedEntries.map((entry, index) => ({ serialNumber: entry.SerialNumber ?? index + 1, ownerPublicKey: entry.OwnerPublicKeyBase58Check }))} bids={bidEntries.filter((bid): bid is NFTBidEntry & { PublicKeyBase58Check: string; SerialNumber: number; BidAmountNanos: number } => typeof bid.PublicKeyBase58Check === "string" && typeof bid.SerialNumber === "number" && typeof bid.BidAmountNanos === "number" && bid.BidAmountNanos > 0).map((bid) => ({ serialNumber: bid.SerialNumber, bidderPublicKey: bid.PublicKeyBase58Check, bidAmountNanos: bid.BidAmountNanos }))} />
 
               <NFTHistory
                 postTimestampNanos={post.TimestampNanos}
