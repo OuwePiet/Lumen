@@ -1,18 +1,8 @@
 import { NextResponse } from "next/server"
+import { fetchDeSo } from "../../../../deso-api"
 
-const DEFAULT_DESO_NODE = "https://node.deso.org"
 const POLL_ASSOCIATION_TYPE = "POLL_RESPONSE"
 const MAX_RESULTS = 100
-
-function desoNode() {
-  const raw = (process.env.DESO_NODE || DEFAULT_DESO_NODE).trim().replace(/\/$/, "")
-  try {
-    const url = new URL(raw)
-    return url.protocol === "https:" ? url.toString().replace(/\/$/, "") : DEFAULT_DESO_NODE
-  } catch {
-    return DEFAULT_DESO_NODE
-  }
-}
 
 function validPostHash(value: string | null) {
   return value && /^[0-9a-fA-F]{64}$/.test(value) ? value : null
@@ -53,7 +43,7 @@ export async function GET(request: Request) {
   }
 
   try {
-    const response = await fetch(`${desoNode()}/api/v0/post-associations/query`, {
+    const response = await fetchDeSo("post-associations/query", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       cache: "no-store",
