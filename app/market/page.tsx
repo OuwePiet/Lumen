@@ -54,6 +54,7 @@ async function loadNFTs(publicKey: string, filter: { IsForSale?: boolean; IsPend
 function flatten(map?: Record<string, NFTRecord>) {
   const rows: Array<{ hash: string; post: Post; entry: NFTEntry }> = []
   for (const [hash, record] of Object.entries(map ?? {})) {
+    if (!/^[0-9a-fA-F]{64}$/.test(hash)) continue
     for (const entry of record.NFTEntryResponses ?? []) {
       rows.push({ hash, post: record.PostEntryResponse ?? {}, entry })
     }
