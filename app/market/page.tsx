@@ -88,11 +88,11 @@ export default async function MarketPage({ searchParams }: { searchParams: Promi
     <main className="mx-auto min-h-screen max-w-6xl px-5 py-10 text-zinc-100">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-green-500">VIA Marketplace</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8fd4a9]">VIA Marketplace</p>
           <h1 className="mt-2 text-3xl font-semibold">Market</h1>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-400">One account view for bids, listed NFTs and pending transfers. Actions remain on the NFT detail page where VIA can apply the full confirmation flow.</p>
         </div>
-        <Link href={collectionHref} className="text-sm text-green-400">Back to NFTs</Link>
+        <Link href={collectionHref} className="text-sm text-[#8fd4a9]">Back to NFTs</Link>
       </div>
 
       <div className="mt-6 flex flex-wrap gap-2">
@@ -107,7 +107,7 @@ export default async function MarketPage({ searchParams }: { searchParams: Promi
           <label className="text-sm text-zinc-300">DeSo public key
             <input name="publicKey" required placeholder="BC1…" className="mt-2 block w-full rounded-lg border border-zinc-800 bg-black px-3 py-2 text-sm" />
           </label>
-          <button className="mt-3 rounded-lg border border-green-800 px-4 py-2 text-sm font-semibold text-green-300">Open market view</button>
+          <button className="mt-3 rounded-lg border border-[#285f40] px-4 py-2 text-sm font-semibold text-[#9adbb2]">Open market view</button>
         </form>
       ) : error ? <p className="mt-8 text-sm text-amber-300">{error}</p> : (
         <>
@@ -121,7 +121,7 @@ export default async function MarketPage({ searchParams }: { searchParams: Promi
                 {sales.map(({hash,post,entry},index)=><Link key={hash+":"+entry.SerialNumber+":"+index} href={"/nft/"+hash+(publicKey?"?returnTo=market&publicKey="+encodeURIComponent(publicKey):"")} className="rounded-xl border border-zinc-800 bg-black/20 p-4">
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div><p className="text-sm font-semibold">{title(post.Body)}</p><p className="mt-1 text-xs text-zinc-500">{post.ProfileEntryResponse?.Username ? "@"+post.ProfileEntryResponse.Username+" · " : ""}Edition #{entry.SerialNumber ?? "?"}</p></div>
-                    <p className="text-sm text-green-300">{entry.IsBuyNow && typeof entry.BuyNowPriceNanos === "number" ? "Buy now "+formatDeso(entry.BuyNowPriceNanos) : "Min bid "+formatDeso(entry.MinBidAmountNanos)} DESO</p>
+                    <p className="text-sm text-[#9adbb2]">{entry.IsBuyNow && typeof entry.BuyNowPriceNanos === "number" ? "Buy now "+formatDeso(entry.BuyNowPriceNanos) : "Min bid "+formatDeso(entry.MinBidAmountNanos)} DESO</p>
                   </div>
                 </Link>)}
               </div>
