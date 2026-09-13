@@ -50,7 +50,9 @@ export default async function MarketMyBidsPage({ searchParams }: { searchParams:
     }
   }
 
-  const marketHref = publicKey ? "/market?publicKey=" + encodeURIComponent(publicKey) : "/market"\n\n  return (
+  const marketHref = publicKey ? "/market?publicKey=" + encodeURIComponent(publicKey) : "/market"
+
+  return (
     <main className="mx-auto min-h-screen max-w-5xl px-5 py-10 text-zinc-100">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
