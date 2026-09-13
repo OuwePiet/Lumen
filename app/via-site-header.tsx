@@ -32,6 +32,92 @@ const nav = [
   ["My VIA", "/my-via"],
 ] as const
 
+const styles = {
+  header: {
+    position: "sticky" as const,
+    top: 0,
+    zIndex: 80,
+    borderBottom: "1px solid rgba(143,212,169,.12)",
+    background: "rgba(3,7,5,.92)",
+    backdropFilter: "blur(18px)",
+  },
+  inner: {
+    width: "min(1480px, calc(100% - 32px))",
+    margin: "0 auto",
+    minHeight: "68px",
+    display: "flex",
+    alignItems: "center",
+    gap: "18px",
+  },
+  brand: {
+    flex: "0 0 auto",
+    display: "flex",
+    alignItems: "center",
+    gap: "9px",
+    color: "inherit",
+    textDecoration: "none",
+  },
+  logo: { width: "78px", height: "34px", objectFit: "contain" as const },
+  domain: { color: "#77847c", fontSize: "10px", letterSpacing: ".04em", whiteSpace: "nowrap" as const },
+  nav: {
+    flex: "1 1 auto",
+    minWidth: 0,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: "2px",
+    overflowX: "auto" as const,
+    scrollbarWidth: "none" as const,
+  },
+  link: {
+    position: "relative" as const,
+    flex: "0 0 auto",
+    padding: "24px 10px 21px",
+    color: "#aeb9b2",
+    textDecoration: "none",
+    fontSize: "12px",
+    fontWeight: 650,
+    whiteSpace: "nowrap" as const,
+  },
+  activeLink: { color: "#eaf2ed" },
+  activeLine: {
+    position: "absolute" as const,
+    left: "10px",
+    right: "10px",
+    bottom: "14px",
+    height: "1px",
+    background: "#8fd4a9",
+  },
+  accountWrap: { flex: "0 0 auto", display: "grid", justifyItems: "end" as const, gap: "2px" },
+  accountButton: {
+    minHeight: "38px",
+    display: "inline-flex",
+    alignItems: "center",
+    gap: "8px",
+    border: "1px solid rgba(143,212,169,.28)",
+    borderRadius: "999px",
+    padding: "5px 10px 5px 6px",
+    color: "#dce6e0",
+    background: "rgba(7,16,11,.76)",
+    cursor: "pointer",
+    fontSize: "12px",
+    fontWeight: 700,
+  },
+  avatar: { width: "28px", height: "28px", borderRadius: "50%", objectFit: "cover" as const },
+  avatarFallback: {
+    width: "28px",
+    height: "28px",
+    borderRadius: "50%",
+    display: "grid",
+    placeItems: "center",
+    background: "#183326",
+    color: "#9adbb2",
+    fontSize: "11px",
+    fontWeight: 900,
+  },
+  status: { color: "#c6a97b", fontSize: "9px" },
+}
+
 function safeProfileImage(value?: string | null) {
   if (!value) return undefined
   try {
@@ -113,30 +199,31 @@ export default function ViaSiteHeader() {
   const accountLabel = profile?.username ? `@${profile.username}` : session ? "DeSo connected" : "Login"
 
   return (
-    <header className="via-site-header">
-      <div className="via-site-header__inner">
-        <Link href="/" className="via-site-brand" aria-label="VIA home">
-          <img src="/via-logo.svg" alt="VIA" className="via-site-brand__logo" />
-          <span className="via-site-brand__domain">viadeso.online</span>
+    <header style={styles.header}>
+      <div style={styles.inner}>
+        <Link href="/" style={styles.brand} aria-label="VIA home">
+          <img src="/via-logo.svg" alt="VIA" style={styles.logo} />
+          <span style={styles.domain}>viadeso.online</span>
         </Link>
 
-        <nav className="via-site-nav" aria-label="VIA main navigation">
+        <nav style={styles.nav} aria-label="VIA main navigation">
           {nav.map(([label, href]) => {
             const active = href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`)
             return (
-              <Link key={href} href={href} className={active ? "via-site-nav__link is-active" : "via-site-nav__link"}>
+              <Link key={href} href={href} style={{ ...styles.link, ...(active ? styles.activeLink : {}) }}>
                 {label}
+                {active ? <span style={styles.activeLine} aria-hidden="true" /> : null}
               </Link>
             )
           })}
         </nav>
 
-        <div className="via-site-account">
-          <button type="button" className="via-site-account__button" onClick={openDeSoIdentity} aria-label={session ? "Change DeSo account" : "Login with DeSo"}>
-            {avatar ? <img src={avatar} alt="" className="via-site-account__avatar" referrerPolicy="no-referrer" /> : <span className="via-site-account__avatar via-site-account__avatar--fallback" aria-hidden="true">{profile?.username?.slice(0, 1).toUpperCase() ?? "V"}</span>}
+        <div style={styles.accountWrap}>
+          <button type="button" style={styles.accountButton} onClick={openDeSoIdentity} aria-label={session ? "Change DeSo account" : "Login with DeSo"}>
+            {avatar ? <img src={avatar} alt="" style={styles.avatar} referrerPolicy="no-referrer" /> : <span style={styles.avatarFallback} aria-hidden="true">{profile?.username?.slice(0, 1).toUpperCase() ?? "V"}</span>}
             <span>{status === "waiting" ? "Connecting…" : accountLabel}</span>
           </button>
-          {status === "blocked" ? <span className="via-site-account__status" role="status">Allow pop-ups to log in.</span> : null}
+          {status === "blocked" ? <span style={styles.status} role="status">Allow pop-ups to log in.</span> : null}
         </div>
       </div>
     </header>
