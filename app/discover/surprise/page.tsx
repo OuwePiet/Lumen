@@ -3,10 +3,10 @@ import Link from "next/link"
 export const dynamic = "force-dynamic"
 
 const routes = [
-  { title: "NFT Window", text: "Explore a public DeSo NFT collection without signing or spending.", href: "/?account=OuwePiet#collection-controls" },
+  { title: "NFT Window", text: "Explore a public DeSo NFT collection without signing or spending.", href: "/#collection-controls" },
   { title: "World Radio", text: "Discover an external station directory through VIA. Playback starts only when you choose Play.", href: "/radio" },
   { title: "World Quest", text: "Open VIA's discovery games and local progress layer.", href: "/quest" },
-  { title: "VIA LIVE", text: "See VIA's audio-first community foundation and Replay status.", href: "/live" },
+  { title: "VIA LIVE", text: "Preview VIA's audio-room controls and current Replay/media status; live microphone rooms are not released yet.", href: "/live" },
 ]
 
 function utcDayNumber() {
