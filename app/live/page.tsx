@@ -3,7 +3,7 @@ import LivePanel from "./live-panel"
 
 export const metadata: Metadata = {
   title: "VIA LIVE",
-  description: "Audio-first community rooms, Replays and factual media diagnostics.",
+  description: "VIA LIVE concept, Replay foundation and factual media diagnostics.",
 }
 
 const navLink = {
@@ -31,9 +31,9 @@ export default function LivePage(){
       </nav>
       <header style={{padding:"42px 0 16px",maxWidth:780}}>
         <p style={{margin:0,color:"#8fd4a9",fontWeight:700,letterSpacing:2,fontSize:12}}>VIA · LIVE</p>
-        <h1 style={{fontSize:"clamp(32px,6vw,52px)",lineHeight:1.02,margin:"10px 0",letterSpacing:"-.025em"}}>Listen live. Speak without camera.</h1>
-        <p style={{fontSize:"clamp(16px,2vw,18px)",maxWidth:760,color:"#aebbb4",lineHeight:1.65}}>Audio-first community conversations with explicit recording controls, later Replay playback and a Media Health panel that reports only what VIA can actually verify.</p>
-        <p style={{fontSize:14,maxWidth:760,color:"#818d86",lineHeight:1.55}}>Listen first. Request to speak when you want. Recording is a separate explicit decision and never starts silently.</p>
+        <h1 style={{fontSize:"clamp(32px,6vw,52px)",lineHeight:1.02,margin:"10px 0",letterSpacing:"-.025em"}}>VIA LIVE · audio-first foundation</h1>
+        <p style={{fontSize:"clamp(16px,2vw,18px)",maxWidth:760,color:"#aebbb4",lineHeight:1.65}}>The audio-first room model is prepared, while Media Health reports only what VIA can actually verify today. Live speaker, microphone and recording controls stay hidden until a real authorised service is connected.</p>
+        <p style={{fontSize:14,maxWidth:760,color:"#818d86",lineHeight:1.55}}>The intended rule remains simple: listening, speaking, recording and publishing are separate actions. VIA will not present them as available before they are real.</p>
       </header>
       <LivePanel />
     </div>
