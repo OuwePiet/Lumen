@@ -1,7 +1,9 @@
 import Link from "next/link"
 import SaveButton from "../saved/save-button"
 
-const creatorWindows = [
+type CreatorWindow = { title: string; text: string; href?: string; action?: string }
+
+const creatorWindows: CreatorWindow[] = [
   { title: "Art & Painting", text: "A window for painters, illustrators, digital artists and people showing work for the first time.", href: "/social?media=image", action: "Discover Art Images" },
   { title: "Music & Audio", text: "Discover public radio now. Musicians, creator audio and independent releases will join this window only after their DeSo-compatible media/metadata path is verified.", href: "/radio", action: "Open World Radio" },
   { title: "Photography", text: "A place for photographers and visual creators to show a single image, a series, photo story, portfolio work or a growing body of work.", href: "/social?media=image", action: "Discover Images" },
