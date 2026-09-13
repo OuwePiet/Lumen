@@ -42,6 +42,7 @@ export default function NFTReceivedBids({ postHash, bids, editions, hasUnlockabl
   const [status, setStatus] = useState<"idle"|"preparing"|"approval"|"submitting"|"done"|"error">("idle")
   const [message, setMessage] = useState("")
   const popupRef = useRef<Window | null>(null)
+  const popupWatch = useRef<number | null>(null)
 
   useEffect(() => {
     setSession(restoreIdentitySession())
@@ -71,6 +72,8 @@ export default function NFTReceivedBids({ postHash, bids, editions, hasUnlockabl
       const signedTransactionHex = (payload as Record<string, unknown>).signedTransactionHex
       if (typeof signedTransactionHex !== "string" || !signedTransactionHex) return
 
+      if (popupWatch.current !== null) window.clearInterval(popupWatch.current)
+      popupWatch.current = null
       popupRef.current?.close()
       popupRef.current = null
       setStatus("submitting")
@@ -96,6 +99,8 @@ export default function NFTReceivedBids({ postHash, bids, editions, hasUnlockabl
     window.addEventListener("message", onMessage)
     return () => {
       window.removeEventListener("message", onMessage)
+      if (popupWatch.current !== null) window.clearInterval(popupWatch.current)
+      popupWatch.current = null
       popupRef.current?.close()
       popupRef.current = null
     }
@@ -132,6 +137,16 @@ export default function NFTReceivedBids({ postHash, bids, editions, hasUnlockabl
       )
       if (!popup) throw new Error("POPUP_BLOCKED")
       popupRef.current = popup
+      if (popupWatch.current !== null) window.clearInterval(popupWatch.current)
+      popupWatch.current = window.setInterval(() => {
+        if (popupRef.current?.closed) {
+          popupRef.current = null
+          if (popupWatch.current !== null) window.clearInterval(popupWatch.current)
+          popupWatch.current = null
+          setStatus("idle")
+          setMessage("DeSo approval was closed. VIA changed nothing.")
+        }
+      }, 500)
       setStatus("approval")
       setMessage("Review the exact sale in DeSo Identity. Accepting a bid transfers the NFT and settles DeSo royalties.")
     } catch (error) {
