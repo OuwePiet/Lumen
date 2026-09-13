@@ -21,6 +21,7 @@ const releasedCapabilities = [
 ]
 
 const futureIdeas = [
+  { title: "External creator collectible intake", text: "Evaluate a paid public creator route for preparing media and collectible metadata without operating a VIA blockchain or node. Any external item shown in VIA must be clearly distinguished from a native DeSo NFT; purchase, ownership and conversion to a DeSo NFT require a separately verified flow before release." },
   { title: "Music & audio discovery", text: "Prepare public discovery plus full community access for creator-declared audio posts, releases and artist discovery once a durable DeSo-compatible media path is verified. VIA uses no proprietary third-party layout and will not operate its own blockchain or node." },
   { title: "Language & region views", text: "A future preference for discovering public content by explicit language or region metadata. It will not silently translate posts, infer location in the background or require a paid translation service." },
 ]
