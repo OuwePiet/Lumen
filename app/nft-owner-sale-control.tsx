@@ -64,6 +64,7 @@ export default function NFTOwnerSaleControl({ postHash, editions, hasUnlockable 
   const [message, setMessage] = useState("")
   const [feeNanos, setFeeNanos] = useState<number | null>(null)
   const popupRef = useRef<Window | null>(null)
+  const popupWatch = useRef<number | null>(null)
   const pendingMode = useRef<"list"|"remove"|"transfer"|"burn"|null>(null)
 
   const selected = owned.find((item) => item.serialNumber === serialNumber) ?? owned[0]
@@ -90,6 +91,8 @@ export default function NFTOwnerSaleControl({ postHash, editions, hasUnlockable 
       if (!signedTransactionHex) return
       popupRef.current?.close()
       popupRef.current = null
+      if (popupWatch.current !== null) window.clearInterval(popupWatch.current)
+      popupWatch.current = null
       setStatus("submitting")
       setMessage("Submitting the approved NFT sale update to DeSo…")
       try {
@@ -114,6 +117,8 @@ export default function NFTOwnerSaleControl({ postHash, editions, hasUnlockable 
     window.addEventListener("message", onMessage)
     return () => {
       window.removeEventListener("message", onMessage)
+      if (popupWatch.current !== null) window.clearInterval(popupWatch.current)
+      popupWatch.current = null
       popupRef.current?.close()
       popupRef.current = null
     }
@@ -167,6 +172,18 @@ export default function NFTOwnerSaleControl({ postHash, editions, hasUnlockable 
       )
       if (!popup) throw new Error("POPUP_BLOCKED")
       popupRef.current = popup
+      
+      if (popupWatch.current !== null) window.clearInterval(popupWatch.current)
+      popupWatch.current = window.setInterval(() => {
+        if (popupRef.current?.closed) {
+          popupRef.current = null
+          if (popupWatch.current !== null) window.clearInterval(popupWatch.current)
+          popupWatch.current = null
+          pendingMode.current = null
+          setStatus("idle")
+          setMessage("DeSo approval was closed. VIA changed nothing.")
+        }
+      }, 500)
       setStatus("approval")
       setMessage("Review this NFT sale change in DeSo Identity. VIA submits only after your approval.")
     } catch (error) {
@@ -188,7 +205,19 @@ export default function NFTOwnerSaleControl({ postHash, editions, hasUnlockable 
       setFeeNanos(typeof data.feeNanos === "number" ? data.feeNanos : null)
       const popup = window.open(DESO_IDENTITY_ORIGIN + "/approve?tx=" + encodeURIComponent(data.transactionHex), "via-deso-nft-transfer-approve", "popup=yes,width=800,height=900")
       if (!popup) throw new Error("POPUP_BLOCKED")
-      popupRef.current = popup; setStatus("approval"); setMessage("Review the NFT transfer in DeSo Identity. VIA submits only after your approval.")
+      popupRef.current = popup;
+      if (popupWatch.current !== null) window.clearInterval(popupWatch.current)
+      popupWatch.current = window.setInterval(() => {
+        if (popupRef.current?.closed) {
+          popupRef.current = null
+          if (popupWatch.current !== null) window.clearInterval(popupWatch.current)
+          popupWatch.current = null
+          pendingMode.current = null
+          setStatus("idle")
+          setMessage("DeSo approval was closed. VIA changed nothing.")
+        }
+      }, 500)
+      setStatus("approval"); setMessage("Review the NFT transfer in DeSo Identity. VIA submits only after your approval.")
     } catch (error) {
       pendingMode.current = null; setStatus("error"); setMessage(error instanceof Error && error.message === "POPUP_BLOCKED" ? "Approval window was blocked. VIA changed nothing." : "The NFT transfer could not be prepared. VIA changed nothing.")
     }
