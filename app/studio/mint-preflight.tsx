@@ -102,7 +102,7 @@ export default function MintPreflight() {
   const quoteSecondsLeft = quoteExpired || !Number.isFinite(quoteExpiresAt) ? 0 : Math.max(0, Math.ceil((quoteExpiresAt - effectiveNow) / 1000))
   const clockSkewAcceptable = Math.abs(serverClockOffset) <= 60000
   const quoteContractSupported = result?.quoteContractVersion === 1
-  const quoteSourceSupported = result?.source === "DeSo create-nft constructor"
+  const quoteSourceSupported = result?.source === "deso-create-nft-constructor"
   const quoteReadinessCode = !result?.resolved ? "unresolved" : !quoteContractSupported ? "unsupported_contract" : !quoteSourceSupported ? "unsupported_source" : quoteSessionMismatch ? "identity_changed" : !quotedPublicKey || quotedPublicKey !== session?.publicKey ? "owner_mismatch" : !clockSkewAcceptable ? "clock_skew" : quoteExpired ? "expired" : "ready"
   const quoteReadinessReason = quoteReadinessCode === "unresolved" ? "No resolved quote" : quoteReadinessCode === "unsupported_contract" ? "Unsupported quote contract" : quoteReadinessCode === "unsupported_source" ? "Unsupported quote source" : quoteReadinessCode === "identity_changed" ? "Identity changed" : quoteReadinessCode === "owner_mismatch" ? "Quote owner mismatch" : quoteReadinessCode === "clock_skew" ? "Device clock differs from server" : quoteReadinessCode === "expired" ? "Quote expired" : ""
   const quoteUsable = quoteReadinessCode === "ready"
