@@ -47,6 +47,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
   const [imageUploadMessage, setImageUploadMessage] = useState("")
   const [videoUploading, setVideoUploading] = useState(false)
   const popupRef = useRef<Window | null>(null)
+  const popupWatch = useRef<number | null>(null)
   const isReply = Boolean(parentStakeID)
 
   useEffect(() => {
@@ -60,6 +61,8 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
     const onMessage = async (event: MessageEvent) => {
       const signedTransactionHex = signedTransactionFromMessage(event, popupRef.current)
       if (!signedTransactionHex) return
+      if (popupWatch.current !== null) window.clearInterval(popupWatch.current)
+      popupWatch.current = null
       popupRef.current?.close()
       popupRef.current = null
       setStatus("submitting")
@@ -89,6 +92,8 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
     window.addEventListener("message", onMessage)
     return () => {
       window.removeEventListener("message", onMessage)
+      if (popupWatch.current !== null) window.clearInterval(popupWatch.current)
+      popupWatch.current = null
       popupRef.current?.close()
       popupRef.current = null
     }
@@ -186,6 +191,16 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
         return
       }
       popupRef.current = popup
+      if (popupWatch.current !== null) window.clearInterval(popupWatch.current)
+      popupWatch.current = window.setInterval(() => {
+        if (popupRef.current?.closed) {
+          popupRef.current = null
+          if (popupWatch.current !== null) window.clearInterval(popupWatch.current)
+          popupWatch.current = null
+          setStatus("idle")
+          setMessage(isReply ? "DeSo approval was closed. VIA posted no reply." : "DeSo approval was closed. VIA posted nothing.")
+        }
+      }, 500)
       setStatus("awaiting-approval")
       setMessage("Review the exact text and media post in DeSo Identity. VIA will not submit it without that approval.")
     } catch {
