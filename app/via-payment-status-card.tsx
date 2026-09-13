@@ -3,24 +3,34 @@
 import { useEffect, useState } from "react"
 
 type Method = { method: string; actionable: boolean; checkoutEnabled?: boolean }
+type LoadState = "loading" | "ready" | "error"
 
 export default function ViaPaymentStatusCard() {
-  const [methods, setMethods] = useState<Method[] | null>(null)
+  const [methods, setMethods] = useState<Method[]>([])
+  const [loadState, setLoadState] = useState<LoadState>("loading")
 
   useEffect(() => {
     let active = true
     const controller = new AbortController()
     fetch("/api/via/payment-readiness", { cache: "no-store", signal: controller.signal })
       .then((response) => response.ok ? response.json() : Promise.reject())
-      .then((data) => active && setMethods(Array.isArray(data.methods) ? data.methods : []))
-      .catch(() => active && setMethods([]))
+      .then((data) => {
+        if (!active) return
+        setMethods(Array.isArray(data.methods) ? data.methods : [])
+        setLoadState("ready")
+      })
+      .catch((error) => {
+        if (!active || (error instanceof DOMException && error.name === "AbortError")) return
+        setMethods([])
+        setLoadState("error")
+      })
     return () => {
       active = false
       controller.abort()
     }
   }, [])
 
-  const ready = methods?.filter((item) => item.checkoutEnabled === true).length ?? 0
+  const ready = methods.filter((item) => item.checkoutEnabled === true).length
 
   return (
     <aside
@@ -34,11 +44,13 @@ export default function ViaPaymentStatusCard() {
     >
       <strong style={{ color: "#9adbb2" }}>Payment status</strong>
       <p style={{ color: "#a9b8af", fontSize: 13, marginBottom: 0 }}>
-        {methods === null
+        {loadState === "loading"
           ? "Checking availability…"
-          : ready > 0
-            ? ready + " payment method" + (ready === 1 ? "" : "s") + " currently available."
-            : "Payments are not available yet."}
+          : loadState === "error"
+            ? "Payment availability could not be checked right now."
+            : ready > 0
+              ? ready + " payment method" + (ready === 1 ? "" : "s") + " currently available."
+              : "Payments are not available yet."}
       </p>
       <a href="/payments" style={{ color: "#9adbb2", fontSize: 12 }}>
         View payment availability
