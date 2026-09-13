@@ -69,7 +69,11 @@ export default function LikeButton({ postHash, initialCount }: Props) {
       }
     }
     window.addEventListener("message", onMessage)
-    return () => window.removeEventListener("message", onMessage)
+    return () => {
+      window.removeEventListener("message", onMessage)
+      popupRef.current?.close()
+      popupRef.current = null
+    }
   }, [])
 
   async function toggleLike() {
