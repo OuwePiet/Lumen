@@ -91,7 +91,7 @@ export default function AccountLookup({ onAccountSelected }: { onAccountSelected
     if (typeof window === "undefined" || !selectedProfile.Username) return
     const params = new URLSearchParams({ account: selectedProfile.Username })
     if (openNFTs) params.set("view", "nfts")
-    window.history.replaceState({}, "", `${window.location.pathname}?${params.toString()}#account-lookup-heading`)
+    const targetHash = openNFTs ? "#collection-controls" : "#account-lookup-heading"\n    window.history.replaceState({}, "", `${window.location.pathname}?${params.toString()}${targetHash}`)
   }
 
   const applyProfile = (selectedProfile: DeSoProfile, openNFTs = false) => {
