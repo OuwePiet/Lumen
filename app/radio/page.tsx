@@ -22,7 +22,7 @@ const styles = {
     marginBottom: "28px",
   },
   brand: {
-    color: "#5cff9d",
+    color: "#8fd4a9",
     fontSize: "14px",
     fontWeight: 800,
     letterSpacing: "0.18em",
@@ -42,7 +42,7 @@ const styles = {
     fontWeight: 800,
   },
   eyebrow: {
-    color: "#5cff9d",
+    color: "#8fd4a9",
     fontSize: "13px",
     fontWeight: 800,
     letterSpacing: "0.12em",
