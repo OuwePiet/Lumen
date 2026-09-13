@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 
 export type SavedItem = {
   title: string
@@ -31,9 +31,13 @@ function readSaved(): SavedItem[] {
 export default function SaveButton({ title, href, kind }: { title: string; href: string; kind: string }) {
   const [saved, setSaved] = useState(false)
   const [status, setStatus] = useState("")
+  const statusTimer = useRef<number | null>(null)
 
   useEffect(() => {
     setSaved(readSaved().some((item) => item.href === href))
+    return () => {
+      if (statusTimer.current !== null) window.clearTimeout(statusTimer.current)
+    }
   }, [href])
 
   function toggleSaved() {
@@ -56,7 +60,11 @@ export default function SaveButton({ title, href, kind }: { title: string; href:
     } catch {
       setStatus("Saving is unavailable in this browser")
     }
-    window.setTimeout(() => setStatus(""), 1800)
+    if (statusTimer.current !== null) window.clearTimeout(statusTimer.current)
+    statusTimer.current = window.setTimeout(() => {
+      statusTimer.current = null
+      setStatus("")
+    }, 1800)
   }
 
   return (
