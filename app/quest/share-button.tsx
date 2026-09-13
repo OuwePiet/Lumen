@@ -1,26 +1,40 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 
 type Props = { game: string; path?: string }
 
 export default function ShareButton({ game, path = "/quest" }: Props) {
   const [status, setStatus] = useState("")
+  const statusTimer = useRef<number | null>(null)
   const url = `https://viadeso.online${path}`
   const text = `I played ${game} on VIA — viadeso.online`
+
+  useEffect(() => () => {
+    if (statusTimer.current !== null) window.clearTimeout(statusTimer.current)
+  }, [])
+
+  function showStatus(next: string) {
+    setStatus(next)
+    if (statusTimer.current !== null) window.clearTimeout(statusTimer.current)
+    statusTimer.current = window.setTimeout(() => {
+      statusTimer.current = null
+      setStatus("")
+    }, 2200)
+  }
 
   async function share() {
     try {
       if (navigator.share) {
         await navigator.share({ title: `${game} · VIA`, text, url })
-        setStatus("Shared")
+        showStatus("Shared")
         return
       }
       await navigator.clipboard.writeText(`${text} ${url}`)
-      setStatus("Link copied")
+      showStatus("Link copied")
     } catch (error) {
       if (error instanceof DOMException && error.name === "AbortError") return
-      setStatus("Sharing unavailable")
+      showStatus("Sharing unavailable")
     }
   }
 
