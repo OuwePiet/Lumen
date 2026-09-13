@@ -1,6 +1,6 @@
 "use client"
 
-import { FormEvent, useEffect, useMemo, useState } from "react"
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react"
 
 type Station = {
   id: string
@@ -49,8 +49,12 @@ export default function RadioBrowser() {
   const [favorites, setFavorites] = useState<string[]>([])
   const [favoriteStations, setFavoriteStations] = useState<Station[]>([])
   const [showFavorites, setShowFavorites] = useState(false)
+  const searchController = useRef<AbortController | null>(null)
 
   const loadStations = async (nextCountry: string, nextTag: string) => {
+    searchController.current?.abort()
+    const controller = new AbortController()
+    searchController.current = controller
     setLoading(true)
     setError("")
     setShowFavorites(false)
@@ -58,15 +62,20 @@ export default function RadioBrowser() {
       const params = new URLSearchParams()
       if (nextCountry.trim()) params.set("country", nextCountry.trim())
       if (nextTag.trim()) params.set("tag", nextTag.trim())
-      const response = await fetch(`/api/via/radio?${params.toString()}`, { cache: "no-store" })
+      const response = await fetch(`/api/via/radio?${params.toString()}`, { cache: "no-store", signal: controller.signal })
       const data = await response.json()
       if (!response.ok) throw new Error(data?.error ?? "Radio directory unavailable")
       setStations(Array.isArray(data.stations) ? data.stations : [])
-    } catch {
-      setStations([])
-      setError("World Radio could not load stations right now.")
+    } catch (error) {
+      if (!(error instanceof DOMException && error.name === "AbortError")) {
+        setStations([])
+        setError("World Radio could not load stations right now.")
+      }
     } finally {
-      setLoading(false)
+      if (searchController.current === controller) {
+        searchController.current = null
+        setLoading(false)
+      }
     }
   }
 
@@ -88,6 +97,7 @@ export default function RadioBrowser() {
       setTag(initialTag)
       void loadStations(initialCountry, initialTag)
     }
+    return () => searchController.current?.abort()
   }, [])
 
   const favoriteSet = useMemo(() => new Set(favorites), [favorites])
