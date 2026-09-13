@@ -352,6 +352,10 @@ export default function PublicAccountNFTs({
 
     const params = new URLSearchParams(window.location.search)
     setQuery((params.get("query") ?? "").slice(0, QUERY_LIMIT))
+    const requestedShown = Number(params.get("shown"))
+    if (Number.isSafeInteger(requestedShown) && requestedShown >= PAGE_SIZE) {
+      setVisibleCount(Math.min(requestedShown, 1000))
+    }
 
     const requestedSort = params.get("sort")
     if (
@@ -728,6 +732,7 @@ export default function PublicAccountNFTs({
               sort: sortMode,
               sale: saleFilter,
               media: mediaFilter,
+              shown: String(visibleCount),
             })
 
             return (
