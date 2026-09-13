@@ -81,6 +81,7 @@ export default async function MarketPage({ searchParams }: { searchParams: Promi
   }
 
   const query = publicKey ? "?publicKey=" + encodeURIComponent(publicKey) : ""
+  const collectionHref = publicKey ? `/?account=${encodeURIComponent(publicKey)}#collection-controls` : "/#collection-controls"
 
   return (
     <main className="mx-auto min-h-screen max-w-6xl px-5 py-10 text-zinc-100">
@@ -90,7 +91,7 @@ export default async function MarketPage({ searchParams }: { searchParams: Promi
           <h1 className="mt-2 text-3xl font-semibold">Market</h1>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-400">One account view for bids, listed NFTs and pending transfers. Actions remain on the NFT detail page where VIA can apply the full confirmation flow.</p>
         </div>
-        <Link href="/#collection-controls" className="text-sm text-green-400">Back to NFTs</Link>
+        <Link href={collectionHref} className="text-sm text-green-400">Back to NFTs</Link>
       </div>
 
       <div className="mt-6 flex flex-wrap gap-2">
