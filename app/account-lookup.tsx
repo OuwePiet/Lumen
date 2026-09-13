@@ -138,10 +138,12 @@ export default function AccountLookup({ onAccountSelected }: { onAccountSelected
     setError("")
 
     if (!requested) {
+      if (lookupController.current === controller) lookupController.current = null
       setError("Enter a DeSo username.")
       return
     }
     if (expectedPublicKey && !expectedKey) {
+      if (lookupController.current === controller) lookupController.current = null
       setError("This VIA account link contains an invalid account key. Nothing was loaded.")
       return
     }
