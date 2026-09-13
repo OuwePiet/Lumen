@@ -379,9 +379,11 @@ const styles = {
 export default async function NFTView({
   postHash,
   backHref = "/",
+  backLabel = "Back to collection",
 }: {
   postHash: string
   backHref?: string
+  backLabel?: string
 }) {
   try {
     const [postResponse, nftResponse, bidsResponse] = await Promise.all([
@@ -532,7 +534,7 @@ export default async function NFTView({
       <main style={styles.page}>
         <div style={styles.container}>
           <div style={styles.topActions}>
-            <BackToCollection href={backHref} style={styles.backLink} />
+            <BackToCollection href={backHref} label={backLabel} style={styles.backLink} />
             <CopyNFTLink style={styles.shareButton} />
           </div>
           <p style={styles.brand}>VIA</p>
@@ -664,7 +666,7 @@ export default async function NFTView({
       <main style={styles.page}>
         <div style={styles.container}>
           <div style={styles.topActions}>
-            <BackToCollection href={backHref} style={styles.backLink} />
+            <BackToCollection href={backHref} label={backLabel} style={styles.backLink} />
             <CopyNFTLink style={styles.shareButton} />
           </div>
           <p style={styles.brand}>VIA</p>
