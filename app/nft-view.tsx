@@ -5,6 +5,7 @@ import EditionOwners from "./edition-owners"
 import NFTMedia from "./nft-media"
 import NFTBidControl from "./nft-bid-control"
 import NFTOwnerSaleControl from "./nft-owner-sale-control"
+import NFTAcceptTransferControl from "./nft-accept-transfer-control"
 import NFTHistory from "./nft-history"
 import { inspectMediaIntegrity } from "../lib/via/digital-ownership"
 import { normalizeNftRecord } from "../lib/via/nft-record"
@@ -39,6 +40,7 @@ type DeSoProfile = {
 
 type NFTEntry = {
   IsForSale?: boolean
+  IsPending?: boolean
   IsBuyNow?: boolean
   MinBidAmountNanos?: number
   OwnerPublicKeyBase58Check?: string
@@ -604,6 +606,8 @@ export default async function NFTView({
               <NFTBidControl postHash={postHash} editions={forSale.map((entry, index) => ({ serialNumber: entry.SerialNumber ?? index + 1, minBidAmountNanos: entry.MinBidAmountNanos, buyNowPriceNanos: entry.BuyNowPriceNanos, isBuyNow: entry.IsBuyNow === true, ownerPublicKey: entry.OwnerPublicKeyBase58Check }))} />
 
               <NFTOwnerSaleControl postHash={postHash} hasUnlockable={post.HasUnlockable === true} editions={sortedEntries.map((entry, index) => ({ serialNumber: entry.SerialNumber ?? index + 1, isForSale: entry.IsForSale === true, ownerPublicKey: entry.OwnerPublicKeyBase58Check, minBidAmountNanos: entry.MinBidAmountNanos, isBuyNow: entry.IsBuyNow === true, buyNowPriceNanos: entry.BuyNowPriceNanos }))} />
+
+              <NFTAcceptTransferControl postHash={postHash} editions={sortedEntries.map((entry, index) => ({ serialNumber: entry.SerialNumber ?? index + 1, isPending: entry.IsPending === true, ownerPublicKey: entry.OwnerPublicKeyBase58Check }))} />
 
               <NFTHistory
                 postTimestampNanos={post.TimestampNanos}
