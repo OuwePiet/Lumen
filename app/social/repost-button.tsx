@@ -32,6 +32,7 @@ export default function RepostButton({ postHash, initialCount }: Props) {
   const [quote, setQuote] = useState("")
   const [message, setMessage] = useState("")
   const popupRef = useRef<Window | null>(null)
+  const popupWatch = useRef<number | null>(null)
   const pendingQuote = useRef(false)
 
   useEffect(() => {
@@ -50,6 +51,8 @@ export default function RepostButton({ postHash, initialCount }: Props) {
     const onMessage = async (event: MessageEvent) => {
       const signedTransactionHex = signedTransactionFromMessage(event, popupRef.current)
       if (!signedTransactionHex) return
+      if (popupWatch.current !== null) window.clearInterval(popupWatch.current)
+      popupWatch.current = null
       popupRef.current?.close()
       popupRef.current = null
       try {
@@ -74,6 +77,8 @@ export default function RepostButton({ postHash, initialCount }: Props) {
     window.addEventListener("message", onMessage)
     return () => {
       window.removeEventListener("message", onMessage)
+      if (popupWatch.current !== null) window.clearInterval(popupWatch.current)
+      popupWatch.current = null
       popupRef.current?.close()
       popupRef.current = null
     }
@@ -110,6 +115,16 @@ export default function RepostButton({ postHash, initialCount }: Props) {
         return
       }
       popupRef.current = popup
+      if (popupWatch.current !== null) window.clearInterval(popupWatch.current)
+      popupWatch.current = window.setInterval(() => {
+        if (popupRef.current?.closed) {
+          popupRef.current = null
+          if (popupWatch.current !== null) window.clearInterval(popupWatch.current)
+          popupWatch.current = null
+          setBusy(false)
+          setMessage("DeSo approval was closed. VIA changed nothing.")
+        }
+      }, 500)
       setMessage(typeof data.feeNanos === "number"
         ? `Review in DeSo Identity · network fee ${data.feeNanos.toLocaleString()} nanos`
         : `Review this ${asQuote ? "Quote Repost" : "repost"} in DeSo Identity.`)
