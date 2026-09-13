@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react"
 
 const STORAGE_KEY = "via:world-radio:station"
 const EVENT = "via:world-radio:station"
+const PLAY_EVENT = "via:world-radio:play"
 
 type Station = { name: string; streamUrl: string }
 
@@ -25,10 +26,17 @@ export default function ViaGlobalRadio() {
 
   useEffect(() => {
     const sync = () => setStation(readStation())
+    const playSelected = () => {
+      const next = readStation()
+      setStation(next)
+      if (!next) return
+      window.setTimeout(() => { void audio.current?.play().catch(() => setPlaying(false)) }, 0)
+    }
     sync()
     window.addEventListener(EVENT, sync)
+    window.addEventListener(PLAY_EVENT, playSelected)
     window.addEventListener("storage", sync)
-    return () => { window.removeEventListener(EVENT, sync); window.removeEventListener("storage", sync) }
+    return () => { window.removeEventListener(EVENT, sync); window.removeEventListener(PLAY_EVENT, playSelected); window.removeEventListener("storage", sync) }
   }, [])
 
   useEffect(() => {
