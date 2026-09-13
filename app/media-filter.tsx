@@ -142,8 +142,8 @@ const styles = {
   },
   activeButton: {
     color: "#050807",
-    background: "#5cff9d",
-    borderColor: "#5cff9d",
+    background: "#8fd4a9",
+    borderColor: "#8fd4a9",
   },
   search: {
     width: "min(100%, 360px)",
