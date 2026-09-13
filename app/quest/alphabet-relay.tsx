@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 
 const LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("")
 const CATEGORIES = ["Free theme", "Animals", "Food", "Countries", "Music", "Art", "DeSo"]
@@ -28,6 +28,7 @@ export default function AlphabetRelay() {
   const [running, setRunning] = useState(false)
   const [finished, setFinished] = useState(false)
   const [copied, setCopied] = useState(false)
+  const copyTimer = useRef<number | null>(null)
 
   useEffect(() => {
     if (!running) return
@@ -44,6 +45,10 @@ export default function AlphabetRelay() {
     }, 1000)
     return () => window.clearInterval(id)
   }, [running])
+
+  useEffect(() => () => {
+    if (copyTimer.current !== null) window.clearTimeout(copyTimer.current)
+  }, [])
 
   const total = useMemo(() => LETTERS.reduce((sum, letter) => sum + scoreWord(words[letter] || "", letter), 0), [words])
   const completed = useMemo(() => LETTERS.filter((letter) => isValidForLetter(words[letter] || "", letter)).length, [words])
@@ -79,7 +84,11 @@ export default function AlphabetRelay() {
     try {
       await navigator.clipboard.writeText(resultText())
       setCopied(true)
-      window.setTimeout(() => setCopied(false), 1800)
+      if (copyTimer.current !== null) window.clearTimeout(copyTimer.current)
+      copyTimer.current = window.setTimeout(() => {
+        copyTimer.current = null
+        setCopied(false)
+      }, 1800)
     } catch {}
   }
 
