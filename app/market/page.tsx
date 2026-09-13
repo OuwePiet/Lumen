@@ -112,10 +112,10 @@ export default async function MarketPage({ searchParams }: { searchParams: Promi
         <>
           <section id="sales" className="mt-10">
             <div className="flex items-baseline justify-between gap-4">
-              <h2 className="text-xl font-semibold">Sales</h2>
+              <h2 className="text-xl font-semibold">For sale</h2>
               <span className="text-xs text-zinc-500">{sales.length} listed edition{sales.length === 1 ? "" : "s"}</span>
             </div>
-            {sales.length === 0 ? <p className="mt-3 text-sm text-zinc-500">No NFT editions currently listed for sale.</p> : (
+            {sales.length === 0 ? <p className="mt-3 text-sm text-zinc-500">No NFT editions currently for sale.</p> : (
               <div className="mt-4 grid gap-3">
                 {sales.map(({hash,post,entry},index)=><Link key={hash+":"+entry.SerialNumber+":"+index} href={"/nft/"+hash} className="rounded-xl border border-zinc-800 bg-black/20 p-4">
                   <div className="flex flex-wrap items-center justify-between gap-3">
