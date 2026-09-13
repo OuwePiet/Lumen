@@ -130,6 +130,14 @@ export default function MintPreflight() {
   }, [])
 
   useEffect(() => {
+    if (mintPopupRef.current) {
+      if (mintPopupWatch.current !== null) window.clearInterval(mintPopupWatch.current)
+      mintPopupWatch.current = null
+      mintPopupRef.current.close()
+      mintPopupRef.current = null
+      setMintStatus("idle")
+      setMintMessage("Mint terms changed. The previous DeSo approval was closed; request a fresh quote and approval.")
+    }
     setResult(null)
     setQuotedPublicKey("")
     setServerClockOffset(0)
