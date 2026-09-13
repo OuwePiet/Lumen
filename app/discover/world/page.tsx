@@ -13,7 +13,7 @@ const styles = {
   main: { minHeight: "100vh", background: "#020403", color: "#f4f7f5", padding: "24px 16px 56px" },
   shell: { width: "min(980px, 100%)", margin: "0 auto" },
   eyebrow: { color: "#78f0a8", fontWeight: 800, letterSpacing: "0.12em", fontSize: "12px" },
-  title: { fontSize: "clamp(34px, 7vw, 68px)", lineHeight: 0.98, margin: "12px 0" },
+  title: { fontSize: "clamp(30px, 6vw, 52px)", lineHeight: 1.02, margin: "12px 0" },
   lead: { color: "#b7c5bd", lineHeight: 1.65, maxWidth: "760px", marginBottom: "24px" },
   nav: { display: "flex", gap: "10px", flexWrap: "wrap" as const, marginBottom: "28px" },
   link: { border: "1px solid #285f40", borderRadius: "999px", padding: "9px 14px", color: "#b9ffd4", textDecoration: "none", fontWeight: 800, display: "inline-flex" },
