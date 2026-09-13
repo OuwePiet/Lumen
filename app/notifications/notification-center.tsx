@@ -88,6 +88,7 @@ export default function NotificationCenter() {
     }
 
     const publicKey = session.publicKey
+    const controller = new AbortController()
     let cancelled = false
     async function load() {
       setStatus("loading")
@@ -97,6 +98,7 @@ export default function NotificationCenter() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           cache: "no-store",
+          signal: controller.signal,
           body: JSON.stringify({ publicKey, fetchStartIndex: -1, numToFetch: 40 }),
         })
         const data = await response.json() as NotificationResponse
@@ -114,7 +116,10 @@ export default function NotificationCenter() {
       }
     }
     void load()
-    return () => { cancelled = true }
+    return () => {
+      cancelled = true
+      controller.abort()
+    }
   }, [session, refreshToken])
 
   const visible = useMemo(() => category === "all" ? items : items.filter((item) => categoryOf(item) === category), [items, category])
