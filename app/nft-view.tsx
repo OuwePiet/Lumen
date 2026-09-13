@@ -4,6 +4,7 @@ import { fetchDeSo } from "./deso-api"
 import EditionOwners from "./edition-owners"
 import NFTMedia from "./nft-media"
 import NFTBidControl from "./nft-bid-control"
+import NFTOwnerSaleControl from "./nft-owner-sale-control"
 import NFTHistory from "./nft-history"
 import { inspectMediaIntegrity } from "../lib/via/digital-ownership"
 import { normalizeNftRecord } from "../lib/via/nft-record"
@@ -22,6 +23,7 @@ type DeSoPost = {
   ImageURLs?: string[]
   VideoURLs?: string[]
   NumNFTCopies?: number
+  HasUnlockable?: boolean
   PosterPublicKeyBase58Check?: string
   TimestampNanos?: number
   PostExtraData?: Record<string, unknown>
@@ -600,6 +602,8 @@ export default async function NFTView({
               ) : null}
 
               <NFTBidControl postHash={postHash} editions={forSale.map((entry, index) => ({ serialNumber: entry.SerialNumber ?? index + 1, minBidAmountNanos: entry.MinBidAmountNanos, buyNowPriceNanos: entry.BuyNowPriceNanos, isBuyNow: entry.IsBuyNow === true, ownerPublicKey: entry.OwnerPublicKeyBase58Check }))} />
+
+              <NFTOwnerSaleControl postHash={postHash} hasUnlockable={post.HasUnlockable === true} editions={sortedEntries.map((entry, index) => ({ serialNumber: entry.SerialNumber ?? index + 1, isForSale: entry.IsForSale === true, ownerPublicKey: entry.OwnerPublicKeyBase58Check, minBidAmountNanos: entry.MinBidAmountNanos, isBuyNow: entry.IsBuyNow === true, buyNowPriceNanos: entry.BuyNowPriceNanos }))} />
 
               <NFTHistory
                 postTimestampNanos={post.TimestampNanos}
