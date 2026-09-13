@@ -47,7 +47,7 @@ export default function StudioDraft() {
       if (!raw) return
       const parsed: unknown = JSON.parse(raw)
       if (!validDraft(parsed)) {
-        window.localStorage.removeItem(STORAGE_KEY)
+        try { window.localStorage.removeItem(STORAGE_KEY) } catch { /* Ignore blocked local storage during recovery. */ }
         return
       }
       setTitle(parsed.title)
@@ -57,7 +57,10 @@ export default function StudioDraft() {
       setPollEnabled(Boolean(parsed.pollEnabled))
       if (parsed.pollOptions && parsed.pollOptions.length >= 2) setPollOptions(parsed.pollOptions.slice(0, 4))
       setStatus(`Draft restored from ${new Date(parsed.updatedAt).toLocaleString()}.`)
-    } catch { window.localStorage.removeItem(STORAGE_KEY) }
+    } catch {
+      try { window.localStorage.removeItem(STORAGE_KEY) } catch { /* Keep Studio usable when local storage is blocked. */ }
+      setStatus("Local Studio drafts are unavailable in this browser.")
+    }
   }, [])
 
   const remaining = useMemo(() => MAX_BODY - body.length, [body.length])
@@ -81,8 +84,12 @@ export default function StudioDraft() {
 
   function clearDraft() {
     setTitle(""); setBody(""); setLanguage("Dutch"); setFeed("Hot Feed"); setPollEnabled(false); setPollOptions(["", ""])
-    window.localStorage.removeItem(STORAGE_KEY)
-    setStatus("Local Studio draft cleared.")
+    try {
+      window.localStorage.removeItem(STORAGE_KEY)
+      setStatus("Local Studio draft cleared.")
+    } catch {
+      setStatus("Draft cleared from the editor, but local browser storage is unavailable.")
+    }
   }
 
   return (
