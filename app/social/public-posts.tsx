@@ -19,6 +19,13 @@ function feedReadyMessage(choice: ChoiceId) { if (choice === "following") return
 
 export default function PublicPosts() {
   const [identity, setIdentity] = useState(""); const [posts, setPosts] = useState<PublicPost[]>([]); const [mediaFilter, setMediaFilter] = useState<"all"|"image"|"video"|"nft">("all"); const [loading, setLoading] = useState(false); const [message, setMessage] = useState("Public DeSo posts are read-only in VIA."); const [feedChoice, setFeedChoice] = useState<ChoiceId>("following"); const [session, setSession] = useState<ViaIdentitySession | null>(null); const [replyingTo, setReplyingTo] = useState<string | null>(null)
+  useEffect(() => {
+    try {
+      const media = new URLSearchParams(window.location.search).get("media")
+      if (media === "image" || media === "video" || media === "nft") setMediaFilter(media)
+    } catch {}
+  }, [])
+
   useEffect(() => { setSession(restoreIdentitySession()); const onIdentity = (event: Event) => { const custom = event as CustomEvent<ViaIdentitySession | null>; setSession(custom.detail ?? restoreIdentitySession()); if (!custom.detail && !restoreIdentitySession()) setReplyingTo(null) }; window.addEventListener(VIA_IDENTITY_EVENT, onIdentity); return () => window.removeEventListener(VIA_IDENTITY_EVENT, onIdentity) }, [])
   useEffect(() => { try { const stored = window.localStorage.getItem(VIA_SOCIAL_FEED_STORAGE_KEY); const normalized = stored === "discovery" ? "hot" : stored; if (normalized === "following" || normalized === "recent" || normalized === "hot") setFeedChoice(normalized) } catch {} function onFeedChoice(event: Event) { const choice = (event as CustomEvent<ChoiceId>).detail; if (choice === "following" || choice === "recent" || choice === "hot") { setFeedChoice(choice); setPosts([]); setMediaFilter("all"); setLoading(false); setReplyingTo(null); setMessage(feedReadyMessage(choice)) } } window.addEventListener(VIA_SOCIAL_FEED_EVENT, onFeedChoice); return () => window.removeEventListener(VIA_SOCIAL_FEED_EVENT, onFeedChoice) }, [])
   const visiblePosts = useMemo(() => { const ordered=feedChoice !== "recent" ? posts : [...posts].sort((a,b) => b.timestampNanos-a.timestampNanos); return ordered.filter(post=>mediaFilter==="all"||(mediaFilter==="image"&&post.imageUrls.length>0)||(mediaFilter==="video"&&post.videoUrls.length>0)||(mediaFilter==="nft"&&post.isNft)) }, [feedChoice, posts, mediaFilter])
