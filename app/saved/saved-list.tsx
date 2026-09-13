@@ -4,7 +4,11 @@ import Link from "next/link"
 import { useEffect, useState } from "react"
 import { SAVED_KEY, type SavedItem } from "./save-button"
 
-function isSafeViaHref(href: string) {\n  return href.startsWith("/") && !href.startsWith("//")\n}\n\nfunction readSaved(): SavedItem[] {
+function isSafeViaHref(href: string) {
+  return href.startsWith("/") && !href.startsWith("//")
+}
+
+function readSaved(): SavedItem[] {
   try {
     const raw = window.localStorage.getItem(SAVED_KEY)
     const parsed = raw ? JSON.parse(raw) : []
@@ -13,6 +17,7 @@ function isSafeViaHref(href: string) {\n  return href.startsWith("/") && !href.s
       Boolean(item) &&
       typeof item.title === "string" &&
       typeof item.href === "string" &&
+      isSafeViaHref(item.href) &&
       typeof item.kind === "string" &&
       typeof item.savedAt === "string"
     ).slice(0, 100)
