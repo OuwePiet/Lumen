@@ -71,6 +71,7 @@ export default function MintPreflight() {
   const [mintStatus, setMintStatus] = useState<"idle"|"preparing"|"approval"|"submitting"|"done"|"error">("idle")
   const [mintMessage, setMintMessage] = useState("")
   const mintPopupRef = useRef<Window | null>(null)
+  const mintPopupWatch = useRef<number | null>(null)
 
   useEffect(() => {
     setSession(restoreIdentitySession())
@@ -95,6 +96,8 @@ export default function MintPreflight() {
       if (!payload || typeof payload !== "object" || Array.isArray(payload)) return
       const signedTransactionHex = (payload as Record<string, unknown>).signedTransactionHex
       if (typeof signedTransactionHex !== "string" || !signedTransactionHex) return
+      if (mintPopupWatch.current !== null) window.clearInterval(mintPopupWatch.current)
+      mintPopupWatch.current = null
       mintPopupRef.current?.close()
       mintPopupRef.current = null
       setMintStatus("submitting")
@@ -119,6 +122,8 @@ export default function MintPreflight() {
     window.addEventListener("message", onMessage)
     return () => {
       window.removeEventListener("message", onMessage)
+      if (mintPopupWatch.current !== null) window.clearInterval(mintPopupWatch.current)
+      mintPopupWatch.current = null
       mintPopupRef.current?.close()
       mintPopupRef.current = null
     }
@@ -240,6 +245,16 @@ export default function MintPreflight() {
       )
       if (!popup) throw new Error("POPUP_BLOCKED")
       mintPopupRef.current = popup
+      if (mintPopupWatch.current !== null) window.clearInterval(mintPopupWatch.current)
+      mintPopupWatch.current = window.setInterval(() => {
+        if (mintPopupRef.current?.closed) {
+          mintPopupRef.current = null
+          if (mintPopupWatch.current !== null) window.clearInterval(mintPopupWatch.current)
+          mintPopupWatch.current = null
+          setMintStatus("idle")
+          setMintMessage("DeSo approval was closed. Nothing was minted.")
+        }
+      }, 500)
       setMintStatus("approval")
       setMintMessage("Review the freshly prepared NFT mint in DeSo Identity. VIA submits only after your approval.")
     } catch (error) {
