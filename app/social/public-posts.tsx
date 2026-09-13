@@ -14,6 +14,7 @@ import { restoreIdentitySession, VIA_IDENTITY_EVENT, type ViaIdentitySession } f
 
 type PublicPost = { postHash: string; publicKey: string; body: string; imageUrls: string[]; videoUrls: string[]; timestampNanos: number; likeCount: number; diamondCount: number; commentCount: number; repostCount: number; quoteRepostCount: number; isNft: boolean; postExtraData?: Record<string, string>; sourcePublicKey?: string }
 type PostsResponse = { ok?: boolean; posts?: PublicPost[] }
+type SinglePostResponse = { ok?: boolean; post?: PublicPost }
 function safeHttps(url: string) { try { const parsed = new URL(url); return parsed.protocol === "https:" ? parsed.toString() : null } catch { return null } }
 function postTime(timestampNanos: number) { if (!Number.isFinite(timestampNanos) || timestampNanos <= 0) return ""; const date = new Date(timestampNanos / 1_000_000); return Number.isNaN(date.getTime()) ? "" : date.toLocaleString() }
 function pollOptions(extraData?: Record<string, string>) {
@@ -35,8 +36,37 @@ export default function PublicPosts() {
   const [identity, setIdentity] = useState(""); const [posts, setPosts] = useState<PublicPost[]>([]); const [mediaFilter, setMediaFilter] = useState<"all"|"image"|"video"|"nft">("all"); const [loading, setLoading] = useState(false); const [message, setMessage] = useState("Public DeSo posts are read-only in VIA."); const [feedChoice, setFeedChoice] = useState<ChoiceId>("following"); const [session, setSession] = useState<ViaIdentitySession | null>(null); const [replyingTo, setReplyingTo] = useState<string | null>(null)
   useEffect(() => {
     try {
-      const media = new URLSearchParams(window.location.search).get("media")
+      const params = new URLSearchParams(window.location.search)
+      const media = params.get("media")
       if (media === "image" || media === "video" || media === "nft") setMediaFilter(media)
+
+      const sharedPost = params.get("post")?.trim().toLowerCase() ?? ""
+      if (/^[0-9a-f]{64}$/.test(sharedPost)) {
+        const controller = new AbortController()
+        requestController.current?.abort()
+        requestController.current = controller
+        setLoading(true)
+        setMessage("Loading shared DeSo post…")
+        void fetch(`/api/via/post?hash=${encodeURIComponent(sharedPost)}`, { signal: controller.signal })
+          .then(async (response) => {
+            const data = await response.json() as SinglePostResponse
+            if (!response.ok || !data.ok || !data.post) throw new Error("POST_UNAVAILABLE")
+            setPosts([data.post])
+            setMessage("Shared DeSo post loaded.")
+          })
+          .catch((error) => {
+            if (!(error instanceof DOMException && error.name === "AbortError")) {
+              setPosts([])
+              setMessage("This shared DeSo post is unavailable.")
+            }
+          })
+          .finally(() => {
+            if (requestController.current === controller) {
+              requestController.current = null
+              setLoading(false)
+            }
+          })
+      }
     } catch {}
   }, [])
 
