@@ -10,6 +10,7 @@ const SAFE_POST_RETRY_ENDPOINTS = new Set([
   "get-posts-stateless",
   "get-notifications",
   "get-follows-stateless",
+  "get-hot-feed",
 ])
 
 let activeProfileLookups = 0
