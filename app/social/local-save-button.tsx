@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 
 const STORAGE_KEY = "via:social:saved-posts:v1"
+const SAVE_EVENT = "via:social:saved-posts-changed"
 
 type SavedPost = {
   postHash: string
@@ -33,7 +34,14 @@ export default function LocalSaveButton({ postHash, body, publicKey, timestampNa
   const [message, setMessage] = useState("")
 
   useEffect(() => {
-    setSaved(readSaved().some((item) => item.postHash === postHash))
+    const sync = () => setSaved(readSaved().some((item) => item.postHash === postHash))
+    sync()
+    window.addEventListener(SAVE_EVENT, sync)
+    window.addEventListener("storage", sync)
+    return () => {
+      window.removeEventListener(SAVE_EVENT, sync)
+      window.removeEventListener("storage", sync)
+    }
   }, [postHash])
 
   function toggle() {
@@ -41,6 +49,7 @@ export default function LocalSaveButton({ postHash, body, publicKey, timestampNa
     if (current.some((item) => item.postHash === postHash)) {
       writeSaved(current.filter((item) => item.postHash !== postHash))
       setSaved(false)
+      window.dispatchEvent(new Event(SAVE_EVENT))
       setMessage("Removed from this device.")
       return
     }
@@ -50,6 +59,7 @@ export default function LocalSaveButton({ postHash, body, publicKey, timestampNa
       ...current.filter((item) => item.postHash !== postHash),
     ])
     setSaved(true)
+    window.dispatchEvent(new Event(SAVE_EVENT))
     setMessage("Saved on this device.")
   }
 
