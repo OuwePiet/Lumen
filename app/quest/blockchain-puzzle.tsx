@@ -262,10 +262,10 @@ export default function BlockchainPuzzle() {
       </div>
 
       <div style={{ display: "flex", gap: 10, flexWrap: "wrap", margin: "16px 0" }}>
-        {difficulties.map((item, index) => <button key={item.label} type="button" onClick={() => { setDifficulty(index); setComplete(false); setStartedAt(null); setPlaced(new Set()); setActive(null); setMessage(`${item.label} selected.`) }} style={{ ...button, background: difficulty === index ? "#18482c" : button.background }}>{item.label}</button>)}
+        {difficulties.map((item, index) => <button key={item.label} type="button" aria-pressed={difficulty === index} onClick={() => { setDifficulty(index); setComplete(false); setStartedAt(null); setPlaced(new Set()); setActive(null); setMessage(`${item.label} selected.`) }} style={{ ...button, background: difficulty === index ? "#18482c" : button.background }}>{item.label}</button>)}
         <button type="button" onClick={startGame} style={button}>Start / shuffle</button>
         <label style={{ ...button, display: "inline-flex", alignItems: "center" }}>Own image<input type="file" accept="image/*" onChange={loadImage} style={{ display: "none" }} /></label>
-        <button type="button" onClick={() => setShowGuide(value => !value)} style={button}>{showGuide ? "Hide guide" : "Show guide"}</button>
+        <button type="button" aria-pressed={showGuide} onClick={() => setShowGuide(value => !value)} style={button}>{showGuide ? "Hide guide" : "Show guide"}</button>
       </div>
 
       <div style={{ display: "flex", gap: 18, flexWrap: "wrap", color: "#d8ffe5", marginBottom: 12 }}><strong>Time {formatTime(elapsed)}</strong><strong>{mode.label}</strong><span role="status">{message}</span></div>
