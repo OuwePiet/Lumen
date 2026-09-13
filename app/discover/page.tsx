@@ -2,7 +2,7 @@ import Link from "next/link"
 import SaveButton from "../saved/save-button"
 
 const creatorWindows = [
-  { title: "Art & Painting", text: "A window for painters, illustrators, digital artists and people showing work for the first time." },
+  { title: "Art & Painting", text: "A window for painters, illustrators, digital artists and people showing work for the first time.", href: "/social?media=image", action: "Discover Art Images" },
   { title: "Music & Audio", text: "Discover musicians, voices, radio, sound experiments and independent releases." },
   { title: "Photography", text: "A place for photographers and visual creators to show a single image, a series, photo story, portfolio work or a growing body of work.", href: "/social?media=image", action: "Discover Images" },
   { title: "Film & Video", text: "Short film, moving image, documentary, animation, music video and creator-led video can all find an audience here.", href: "/social?media=video", action: "Discover Video" },
