@@ -16,13 +16,15 @@ function safeCollectionHref(href: string) {
 export default function BackToCollection({
   href,
   style,
+  label = "Back to collection",
 }: {
   href: string
   style?: CSSProperties
+  label?: string
 }) {
   return (
     <a href={safeCollectionHref(href)} style={style}>
-      ← Back to collection
+      ← {label}
     </a>
   )
 }

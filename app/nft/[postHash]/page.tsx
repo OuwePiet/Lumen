@@ -67,12 +67,36 @@ export default async function NFTPage({ params, searchParams }: NFTPageProps) {
   if (media) returnParams.set("media", media)
   if (shown) returnParams.set("shown", shown)
 
+  const returnTo =
+    context.returnTo === "market" ||
+    context.returnTo === "received-bids" ||
+    context.returnTo === "my-bids"
+      ? context.returnTo
+      : undefined
+  const marketPublicKey = safeText(context.publicKey, 128)
+
+  const marketBack =
+    returnTo && marketPublicKey
+      ? returnTo === "received-bids"
+        ? `/market/received-bids?publicKey=${encodeURIComponent(marketPublicKey)}`
+        : returnTo === "my-bids"
+          ? `/market/my-bids?publicKey=${encodeURIComponent(marketPublicKey)}`
+          : `/market?publicKey=${encodeURIComponent(marketPublicKey)}`
+      : undefined
+
   const hasVerifiedAccountContext = Boolean(account && accountKey)
-  const backHref = hasVerifiedAccountContext
+  const backHref = marketBack ?? (hasVerifiedAccountContext
     ? `/?${returnParams.toString()}#collection-controls`
     : account
       ? `/?account=${encodeURIComponent(account)}#account-lookup-heading`
-      : "/#account-lookup-heading"
+      : "/#account-lookup-heading")
+  const backLabel = marketBack
+    ? returnTo === "received-bids"
+      ? "Back to received bids"
+      : returnTo === "my-bids"
+        ? "Back to my bids"
+        : "Back to market"
+    : "Back to collection"
 
-  return <NFTView postHash={postHash.toLowerCase()} backHref={backHref} />
+  return <NFTView postHash={postHash.toLowerCase()} backHref={backHref} backLabel={backLabel} />
 }
