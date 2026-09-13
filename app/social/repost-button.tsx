@@ -138,7 +138,7 @@ export default function RepostButton({ postHash, initialCount }: Props) {
 
   return (
     <span className="inline-flex flex-wrap items-center gap-2">
-      <button type="button" onClick={() => void prepareRepost(false)} disabled={busy} className="rounded-full border border-green-900/70 px-3 py-1 text-green-300 hover:border-green-700 disabled:cursor-wait disabled:opacity-60">
+      <button type="button" onClick={() => void prepareRepost(false)} disabled={busy} className="rounded-full border border-[#285f40]/70 px-3 py-1 text-[#9adbb2] hover:border-[#8fd4a9]/55 disabled:cursor-wait disabled:opacity-60">
         {busy && !pendingQuote.current ? "Waiting…" : `Repost · ${count}`}
       </button>
       <button type="button" onClick={() => setQuoteOpen((open) => !open)} disabled={busy} className="rounded-full border border-zinc-800 px-3 py-1 text-zinc-300 hover:border-zinc-700 disabled:opacity-60">
@@ -146,8 +146,8 @@ export default function RepostButton({ postHash, initialCount }: Props) {
       </button>
       {quoteOpen ? <span className="basis-full rounded-xl border border-zinc-800 bg-black/30 p-3">
         <label className="sr-only" htmlFor={`via-quote-${postHash}`}>Quote Repost text</label>
-        <textarea id={`via-quote-${postHash}`} value={quote} onChange={(event) => setQuote(event.target.value)} maxLength={MAX_QUOTE_LENGTH} rows={3} placeholder="Add your public quote…" className="w-full rounded-lg border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm text-zinc-100 outline-none focus:border-green-700" />
-        <button type="button" onClick={() => void prepareRepost(true)} disabled={busy || !quote.trim()} className="mt-2 rounded-lg border border-green-800 px-3 py-1.5 text-xs font-medium text-green-300 disabled:border-zinc-800 disabled:text-zinc-600">Review Quote Repost in DeSo</button>
+        <textarea id={`via-quote-${postHash}`} value={quote} onChange={(event) => setQuote(event.target.value)} maxLength={MAX_QUOTE_LENGTH} rows={3} placeholder="Add your public quote…" className="w-full rounded-lg border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm text-zinc-100 outline-none focus:border-[#8fd4a9]/55" />
+        <button type="button" onClick={() => void prepareRepost(true)} disabled={busy || !quote.trim()} className="mt-2 rounded-lg border border-[#285f40] px-3 py-1.5 text-xs font-medium text-[#9adbb2] disabled:border-zinc-800 disabled:text-zinc-600">Review Quote Repost in DeSo</button>
       </span> : null}
       {message ? <span className="sr-only" role="status" aria-live="polite">{message}</span> : null}
     </span>
