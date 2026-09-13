@@ -81,7 +81,7 @@ export default async function MarketPage({ searchParams }: { searchParams: Promi
   }
 
   const query = publicKey ? "?publicKey=" + encodeURIComponent(publicKey) : ""
-  const collectionHref = publicKey ? `/?account=${encodeURIComponent(publicKey)}#collection-controls` : "/#collection-controls"
+  const collectionHref = publicKey ? `/?account=${encodeURIComponent(publicKey)}&accountKey=${encodeURIComponent(publicKey)}&view=nfts#collection-controls` : "/#account-lookup-heading"
 
   return (
     <main className="mx-auto min-h-screen max-w-6xl px-5 py-10 text-zinc-100">
@@ -95,7 +95,8 @@ export default async function MarketPage({ searchParams }: { searchParams: Promi
       </div>
 
       <div className="mt-6 flex flex-wrap gap-2">
-        <Link href={"/market/received-bids" + query} className="rounded-lg border border-zinc-800 px-3 py-2 text-sm text-zinc-300">Received Bids</Link>\n        <Link href={"/market/my-bids" + query} className="rounded-lg border border-zinc-800 px-3 py-2 text-sm text-zinc-300">My Bids</Link>
+        <Link href={"/market/received-bids" + query} className="rounded-lg border border-zinc-800 px-3 py-2 text-sm text-zinc-300">Received Bids</Link>
+        <Link href={"/market/my-bids" + query} className="rounded-lg border border-zinc-800 px-3 py-2 text-sm text-zinc-300">My Bids</Link>
         <a href="#sales" className="rounded-lg border border-zinc-800 px-3 py-2 text-sm text-zinc-300">Sales</a>
         <a href="#transfers" className="rounded-lg border border-zinc-800 px-3 py-2 text-sm text-zinc-300">Transfers</a>
       </div>
