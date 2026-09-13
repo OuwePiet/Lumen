@@ -7,7 +7,7 @@ export default function CopyNFTLink({
 }: {
   style?: CSSProperties
 }) {
-  const [copied, setCopied] = useState(false)
+  const [copyStatus, setCopyStatus] = useState<"idle" | "copied" | "failed">("idle")
   const copiedTimer = useRef<number | null>(null)
 
   const buttonStyle: CSSProperties = {
@@ -24,25 +24,32 @@ export default function CopyNFTLink({
 
   const copyLink = async () => {
     const nftUrl = currentNFTUrl()
+    let copied = false
 
     try {
       await navigator.clipboard.writeText(nftUrl)
+      copied = true
     } catch {
       const temporaryInput = document.createElement("textarea")
-      temporaryInput.value = nftUrl
-      temporaryInput.style.position = "fixed"
-      temporaryInput.style.opacity = "0"
-      document.body.appendChild(temporaryInput)
-      temporaryInput.select()
-      document.execCommand("copy")
-      temporaryInput.remove()
+      try {
+        temporaryInput.value = nftUrl
+        temporaryInput.style.position = "fixed"
+        temporaryInput.style.opacity = "0"
+        document.body.appendChild(temporaryInput)
+        temporaryInput.select()
+        copied = document.execCommand("copy")
+      } catch {
+        copied = false
+      } finally {
+        temporaryInput.remove()
+      }
     }
 
-    setCopied(true)
+    setCopyStatus(copied ? "copied" : "failed")
     if (copiedTimer.current !== null) window.clearTimeout(copiedTimer.current)
     copiedTimer.current = window.setTimeout(() => {
       copiedTimer.current = null
-      setCopied(false)
+      setCopyStatus("idle")
     }, 2000)
   }
 
@@ -65,8 +72,8 @@ export default function CopyNFTLink({
       aria-label="Share NFT"
       style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}
     >
-      <button type="button" style={buttonStyle} onClick={copyLink}>
-        {copied ? "NFT link copied" : "Copy link"}
+      <button type="button" style={buttonStyle} onClick={copyLink} aria-live="polite">
+        {copyStatus === "copied" ? "NFT link copied" : copyStatus === "failed" ? "Copy unavailable" : "Copy link"}
       </button>
       <button
         type="button"
