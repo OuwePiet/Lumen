@@ -67,7 +67,7 @@ const styles = {
   head: { display: "flex", justifyContent: "space-between", alignItems: "center", gap: "16px", marginBottom: "14px" },
   title: { margin: 0, fontSize: "18px", color: "#9adbb2", fontWeight: 650 },
   viewAll: { color: "#c2cbc6", textDecoration: "none", fontSize: "12px" },
-  grid: { display: "grid", gridTemplateColumns: "repeat(6, minmax(0, 1fr))", gap: "12px" },
+  grid: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: "12px" },
   card: { display: "block", minWidth: 0, border: "1px solid rgba(90,112,101,.35)", borderRadius: "12px", overflow: "hidden", background: "rgba(4,8,6,.82)", color: "inherit", textDecoration: "none" },
   media: { position: "relative" as const, aspectRatio: "1 / 1", overflow: "hidden", background: "#080c0a" },
   image: { width: "100%", height: "100%", objectFit: "cover" as const, display: "block", filter: "saturate(.78) contrast(1.03)" },
