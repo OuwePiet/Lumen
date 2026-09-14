@@ -18,7 +18,7 @@ const styles = {
   kicker: { color: "#9adbb2", fontSize: "clamp(12px, 1.35vw, 16px)", fontWeight: 700, letterSpacing: ".46em", textTransform: "uppercase" as const, marginBottom: "18px" },
   title: { margin: 0, color: "#edf2ef", fontSize: "clamp(29px, 4vw, 52px)", fontWeight: 500, letterSpacing: "-.035em", lineHeight: 1.06 },
   intro: { margin: "15px auto 0", maxWidth: "620px", color: "#abb7b0", fontSize: "clamp(14px, 1.5vw, 17px)", fontStyle: "italic" as const, lineHeight: 1.55 },
-  actions: { display: "grid", gridTemplateColumns: "repeat(4, minmax(0, 1fr))", gap: "14px", maxWidth: "1000px", margin: "clamp(230px, 28vw, 350px) auto 0", position: "relative" as const, zIndex: 4 },
+  actions: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "14px", maxWidth: "1000px", margin: "clamp(230px, 28vw, 350px) auto 0", position: "relative" as const, zIndex: 4 },
   action: { minHeight: "58px", display: "flex", alignItems: "center", justifyContent: "center", gap: "12px", border: "1px solid rgba(143,212,169,.42)", borderRadius: "12px", background: "rgba(3,8,5,.76)", color: "#bfe8cc", textDecoration: "none", fontSize: "14px", fontWeight: 700, backdropFilter: "blur(9px)", boxShadow: "0 12px 35px rgba(0,0,0,.16)" },
   icon: { color: "#9adbb2", fontSize: "20px", lineHeight: 1 },
   footer: { marginTop: "28px", borderTop: "1px solid rgba(143,212,169,.14)", paddingTop: "16px", position: "relative" as const, zIndex: 4 },
