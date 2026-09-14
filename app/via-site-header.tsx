@@ -319,6 +319,7 @@ export default function ViaSiteHeader() {
               <Link href="/wallet" style={styles.menuLink} role="menuitem">Wallet</Link>
               <Link href="/saved" style={styles.menuLink} role="menuitem">Saved</Link>
               <Link href="/studio#drafts" style={styles.menuLink} role="menuitem">Drafts</Link>
+              <Link href="/settings" style={styles.menuLink} role="menuitem">Settings</Link>
               <div style={styles.divider} />
               <button type="button" style={styles.menuButton} onClick={openDeSoIdentity} role="menuitem">Switch / add account</button>
               <button type="button" style={styles.menuButton} onClick={logout} role="menuitem">Logout from VIA</button>
