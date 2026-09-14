@@ -316,6 +316,7 @@ export default function ViaSiteHeader() {
               <div style={styles.menuLabel}>{profile?.username ? `@${profile.username}` : "DeSo account"}</div>
               <Link href="/my-via" style={styles.menuLink} role="menuitem">My VIA</Link>
               <Link href="/profile" style={styles.menuLink} role="menuitem">Profile</Link>
+              <Link href="/wallet" style={styles.menuLink} role="menuitem">Wallet</Link>
               <Link href="/saved" style={styles.menuLink} role="menuitem">Saved</Link>
               <Link href="/studio#drafts" style={styles.menuLink} role="menuitem">Drafts</Link>
               <div style={styles.divider} />
