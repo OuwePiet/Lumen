@@ -38,25 +38,37 @@ export default function LivePanel(){
   useEffect(()=>{void refresh();return()=>healthController.current?.abort()},[])
 
   return <>
-    <section style={panelStyle}>
-      <p style={{margin:0,color:"#8fd4a9",fontWeight:700,letterSpacing:1.5,fontSize:12}}>VIA LIVE · AUDIO FIRST</p>
+    <section id="live-room" style={panelStyle}>
+      <p style={{margin:0,color:"#8fd4a9",fontWeight:700,letterSpacing:1.5,fontSize:12}}>LIVE</p>
       <h2 style={{fontSize:"clamp(26px,4vw,38px)",margin:"8px 0",letterSpacing:"-.02em"}}>Community Room</h2>
-      <p style={{color:"#aebbb4",lineHeight:1.6}}>Camera is optional. This first interface separates listening, speaking, recording and publishing so none of those actions happen silently.</p>
-      <p style={{fontSize:13,color:"#7f8a84",marginBottom:0}}>Live controls are intentionally not exposed until microphone, room and recording actions are backed by a real authorised service.</p>
+      <p style={{color:"#aebbb4",lineHeight:1.6}}>Audio comes first; camera is optional. Listening, speaking, recording and publishing remain separate actions so none of them happen silently.</p>
+      <p style={{fontSize:13,color:"#7f8a84",marginBottom:0}}>Room controls are intentionally not exposed until microphone, speaker moderation and recording are backed by a real authorised service.</p>
     </section>
 
-    <section style={panelStyle}>
-      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,flexWrap:"wrap"}}><div><p style={{margin:0,color:"#8fd4a9",fontWeight:700,fontSize:12,letterSpacing:1.3}}>MEDIA HEALTH</p><h2 style={{margin:"5px 0",fontWeight:650}}>What is actually failing?</h2></div><button type="button" onClick={refresh} disabled={loading} style={quietButton}>{loading?"Checking…":"Check now"}</button></div>
-      <Status label="VIA application" value={health.via?.status}/>
-      <Status label="DeSo node/API" value={health.deso?.status} detail={health.deso?.latencyMs!=null?`${health.deso.latencyMs} ms${health.deso.httpStatus?` · HTTP ${health.deso.httpStatus}`:""}`:health.deso?.error}/>
-      <Status label="Media upload" value={health.mediaUpload?.status} detail={health.mediaUpload?.reason}/>
-      <Status label="Media retrieval" value={health.mediaRetrieval?.status} detail={health.mediaRetrieval?.reason}/>
-      <p style={{fontSize:12,color:"#78847d",marginBottom:0}}>Checked {health.checkedAt?new Date(health.checkedAt).toLocaleString():"not yet"}. UNKNOWN means VIA does not yet have enough verified evidence to blame that service.</p>
-    </section>
-
-    <section style={panelStyle}>
-      <p style={{margin:0,color:"#8fd4a9",fontWeight:700,fontSize:12,letterSpacing:1.3}}>REPLAYS</p><h2 style={{fontWeight:650}}>Listen later</h2>
+    <section id="replay" style={panelStyle}>
+      <p style={{margin:0,color:"#8fd4a9",fontWeight:700,fontSize:12,letterSpacing:1.3}}>REPLAY</p>
+      <h2 style={{fontWeight:650}}>Listen later</h2>
       <p style={{color:"#aebbb4",lineHeight:1.6}}>No Replay is published yet. A recording will only appear here after an authorised host deliberately publishes it.</p>
+    </section>
+
+    <section style={{...panelStyle,padding:0,overflow:"hidden"}} aria-label="VIA LIVE diagnostics">
+      <details>
+        <summary style={{cursor:"pointer",padding:20,color:"#b8c3bd",fontWeight:650}}>Status & diagnostics</summary>
+        <div style={{padding:"0 20px 20px"}}>
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,flexWrap:"wrap"}}>
+            <div>
+              <p style={{margin:0,color:"#8fd4a9",fontWeight:700,fontSize:12,letterSpacing:1.3}}>MEDIA HEALTH</p>
+              <h2 style={{margin:"5px 0",fontWeight:650}}>Connection status</h2>
+            </div>
+            <button type="button" onClick={refresh} disabled={loading} style={quietButton}>{loading?"Checking…":"Check now"}</button>
+          </div>
+          <Status label="VIA application" value={health.via?.status}/>
+          <Status label="DeSo node/API" value={health.deso?.status} detail={health.deso?.latencyMs!=null?`${health.deso.latencyMs} ms${health.deso.httpStatus?` · HTTP ${health.deso.httpStatus}`:""}`:health.deso?.error}/>
+          <Status label="Media upload" value={health.mediaUpload?.status} detail={health.mediaUpload?.reason}/>
+          <Status label="Media retrieval" value={health.mediaRetrieval?.status} detail={health.mediaRetrieval?.reason}/>
+          <p style={{fontSize:12,color:"#78847d",marginBottom:0}}>Checked {health.checkedAt?new Date(health.checkedAt).toLocaleString():"not yet"}. UNKNOWN means VIA does not yet have enough verified evidence to identify that service as the cause.</p>
+        </div>
+      </details>
     </section>
   </>
 }
