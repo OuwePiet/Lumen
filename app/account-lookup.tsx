@@ -8,7 +8,6 @@ type DeSoProfile = {
   Username?: string
   PublicKeyBase58Check?: string
   ProfilePic?: string
-  Description?: string
 }
 
 type ViaProfileResponse = {
@@ -16,18 +15,12 @@ type ViaProfileResponse = {
   profile?: {
     publicKey?: string
     username?: string
-    description?: string
     profilePic?: string | null
   }
 }
 
 const MAX_USERNAME_LENGTH = 64
 const MAX_PUBLIC_KEY_LENGTH = 128
-
-function shortKey(publicKey?: string) {
-  if (!publicKey) return "Public key unavailable"
-  return `${publicKey.slice(0, 10)}...${publicKey.slice(-8)}`
-}
 
 function safeProfileImage(url?: string) {
   if (!url) return undefined
@@ -52,33 +45,26 @@ function viaProfileToDeSo(profile: NonNullable<ViaProfileResponse["profile"]>): 
   return {
     Username: profile.username,
     PublicKeyBase58Check: profile.publicKey,
-    Description: profile.description,
     ProfilePic: profile.profilePic ?? undefined,
   }
 }
 
 const styles = {
-  section: { background: "#0a100d", border: "1px solid #254233", borderRadius: "18px", marginBottom: "28px", padding: "20px" },
-  heading: { color: "#9adbb2", fontSize: "16px", margin: "0 0 8px" },
-  text: { color: "#a9b8af", fontSize: "13px", lineHeight: 1.6, margin: "0 0 14px" },
-  form: { display: "flex", flexWrap: "wrap" as const, gap: "10px" },
-  input: { flex: "1 1 260px", minWidth: 0, color: "#f4f7f5", background: "#050807", border: "1px solid #254233", borderRadius: "10px", fontSize: "16px", padding: "11px 12px" },
-  button: { minHeight: "44px", color: "#050807", background: "#8fd4a9", border: "1px solid #8fd4a9", borderRadius: "999px", cursor: "pointer", fontSize: "13px", fontWeight: 800, padding: "10px 16px" },
-  status: { color: "#a9b8af", fontSize: "13px", marginTop: "12px" },
-  result: { color: "#9adbb2", background: "rgba(143,212,169,.06)", border: "1px solid rgba(143,212,169,.28)", borderRadius: "12px", marginTop: "14px", padding: "12px 14px" },
-  error: { color: "#f1d89a", background: "#211a0c", border: "1px solid #6e5721", borderRadius: "12px", marginTop: "14px", padding: "14px" },
-  code: { display: "block", color: "#a9b8af", fontSize: "12px", marginTop: "4px", overflowWrap: "anywhere" as const },
-  profileHeader: { alignItems: "center", display: "flex", flexWrap: "wrap" as const, gap: "10px" },
-  profileText: { minWidth: 0, overflowWrap: "anywhere" as const },
-  descriptionDetails: { color: "#a9b8af", fontSize: "12px", marginTop: "10px" },
-  descriptionSummary: { color: "#9adbb2", cursor: "pointer", fontWeight: 700 },
-  description: { color: "#d5e2da", fontSize: "13px", lineHeight: 1.55, margin: "10px 0 0", overflowWrap: "anywhere" as const, whiteSpace: "pre-wrap" as const },
-  keyDetails: { color: "#a9b8af", fontSize: "12px", marginTop: "8px" },
-  keySummary: { color: "#9adbb2", cursor: "pointer", fontWeight: 700 },
-  choices: { background: "#07100b", border: "1px solid rgba(143,212,169,.28)", borderRadius: "12px", listStyle: "none", margin: "14px 0 0", padding: "8px" },
-  choiceButton: { alignItems: "center", minHeight: "44px", background: "transparent", border: 0, borderRadius: "9px", color: "#9adbb2", cursor: "pointer", display: "flex", gap: "10px", padding: "10px", textAlign: "left" as const, width: "100%" },
+  section: { background: "rgba(9,13,11,.72)", border: "1px solid rgba(63,74,68,.72)", borderRadius: "14px", marginBottom: "24px", padding: "16px" },
+  heading: { color: "#f4f7f5", fontSize: "15px", margin: "0 0 6px", fontWeight: 650 },
+  text: { color: "#8d9a92", fontSize: "12px", lineHeight: 1.5, margin: "0 0 12px" },
+  form: { display: "flex", flexWrap: "wrap" as const, gap: "8px" },
+  input: { flex: "1 1 240px", minWidth: 0, color: "#f4f7f5", background: "#050807", border: "1px solid rgba(113,130,120,.5)", borderRadius: "10px", fontSize: "15px", padding: "10px 12px" },
+  button: { minHeight: "40px", color: "#07100b", background: "#8fd4a9", border: "1px solid #8fd4a9", borderRadius: "999px", cursor: "pointer", fontSize: "12px", fontWeight: 800, padding: "9px 15px" },
+  status: { color: "#8d9a92", fontSize: "12px", marginTop: "10px" },
+  result: { color: "#f4f7f5", background: "rgba(143,212,169,.045)", border: "1px solid rgba(143,212,169,.2)", borderRadius: "12px", marginTop: "12px", padding: "12px" },
+  error: { color: "#f1d89a", background: "#211a0c", border: "1px solid #6e5721", borderRadius: "12px", marginTop: "12px", padding: "12px" },
+  profileHeader: { alignItems: "center", display: "flex", gap: "10px" },
+  choices: { background: "#07100b", border: "1px solid rgba(143,212,169,.2)", borderRadius: "12px", listStyle: "none", margin: "12px 0 0", padding: "6px" },
+  choiceButton: { alignItems: "center", minHeight: "42px", background: "transparent", border: 0, borderRadius: "9px", color: "#d8e2dc", cursor: "pointer", display: "flex", gap: "10px", padding: "8px", textAlign: "left" as const, width: "100%" },
   avatar: { borderRadius: "50%", height: "36px", objectFit: "cover" as const, width: "36px" },
   avatarFallback: { alignItems: "center", background: "#254233", borderRadius: "50%", color: "#9adbb2", display: "flex", flex: "0 0 auto", fontWeight: 800, height: "36px", justifyContent: "center", width: "36px" },
+  username: { color: "#f4f7f5", fontSize: "14px", fontWeight: 700 },
 }
 
 export default function AccountLookup({ onAccountSelected }: { onAccountSelected?: () => void }) {
@@ -196,8 +182,8 @@ export default function AccountLookup({ onAccountSelected }: { onAccountSelected
         return
       }
       setMatches(usableProfiles.slice(0, 10))
-    } catch (error) {
-      if (!(error instanceof DOMException && error.name === "AbortError")) setError("The DeSo account could not be checked right now.")
+    } catch (lookupError) {
+      if (!(lookupError instanceof DOMException && lookupError.name === "AbortError")) setError("The DeSo account could not be checked right now.")
     } finally {
       if (lookupController.current === controller) {
         lookupController.current = null
@@ -225,22 +211,20 @@ export default function AccountLookup({ onAccountSelected }: { onAccountSelected
 
   return (
     <section style={styles.section} aria-labelledby="account-lookup-heading" aria-busy={loading}>
-      <h2 id="account-lookup-heading" style={styles.heading}>Find DeSo account</h2>
-      <p style={styles.text}>Read-only public profile check. No login, wallet connection or storage.</p>
+      <h2 id="account-lookup-heading" style={styles.heading}>Find NFT creator</h2>
+      <p style={styles.text}>Search a public DeSo account and open its NFT collection.</p>
       <form style={styles.form} onSubmit={findAccount}>
-        <input type="search" aria-label="DeSo username" autoComplete="off" autoCapitalize="none" spellCheck={false} maxLength={MAX_USERNAME_LENGTH + 1} placeholder="Enter DeSo username" value={username} style={styles.input} onChange={(event) => setUsername(event.target.value)} />
-        <button type="submit" disabled={loading} style={{ ...styles.button, opacity: loading ? 0.65 : 1 }}>{loading ? "Checking…" : "Find DeSo account"}</button>
+        <input type="search" aria-label="DeSo username" autoComplete="off" autoCapitalize="none" spellCheck={false} maxLength={MAX_USERNAME_LENGTH + 1} placeholder="DeSo username" value={username} style={styles.input} onChange={(event) => setUsername(event.target.value)} />
+        <button type="submit" disabled={loading} style={{ ...styles.button, opacity: loading ? 0.65 : 1 }}>{loading ? "Checking…" : "Find creator"}</button>
       </form>
       <div aria-live="polite" aria-atomic="true">
-        {loading ? <p style={styles.status}>Checking the public DeSo profile…</p> : null}
+        {loading ? <p style={styles.status}>Checking DeSo…</p> : null}
         {profile ? (
           <div style={styles.result}>
             <div style={styles.profileHeader}>
               {profileImage ? <img src={profileImage} alt="" width={44} height={44} style={{ ...styles.avatar, height: "44px", width: "44px" }} referrerPolicy="no-referrer" /> : <span style={{ ...styles.avatarFallback, height: "44px", width: "44px" }} aria-hidden="true">{(profile.Username ?? "?").slice(0, 1).toUpperCase()}</span>}
-              <div style={styles.profileText}><strong>DeSo account found: @{profile.Username}</strong><code style={styles.code}>{shortKey(profile.PublicKeyBase58Check)}</code></div>
+              <span style={styles.username}>@{profile.Username}</span>
             </div>
-            {profile.Description ? <details style={styles.descriptionDetails}><summary style={styles.descriptionSummary}>Show profile details</summary><p style={styles.description}>{profile.Description}</p></details> : null}
-            <details style={styles.keyDetails}><summary style={styles.keySummary}>View full public key</summary><code style={styles.code}>{profile.PublicKeyBase58Check}</code></details>
             <PublicAccountNFTs key={profile.PublicKeyBase58Check} publicKey={profile.PublicKeyBase58Check!} username={profile.Username!} autoLoad={autoLoadNFTs} />
           </div>
         ) : null}
@@ -248,7 +232,7 @@ export default function AccountLookup({ onAccountSelected }: { onAccountSelected
           <ul style={styles.choices} aria-label="Matching DeSo accounts">
             {matches.map((candidate) => {
               const candidateImage = safeProfileImage(candidate.ProfilePic)
-              return <li key={candidate.PublicKeyBase58Check}><button type="button" style={styles.choiceButton} onClick={() => void lookupAccount(candidate.Username ?? "", candidate.PublicKeyBase58Check)}>{candidateImage ? <img src={candidateImage} alt="" width={36} height={36} style={styles.avatar} referrerPolicy="no-referrer" /> : <span style={styles.avatarFallback} aria-hidden="true">{(candidate.Username ?? "?").slice(0, 1).toUpperCase()}</span>}<span><strong>@{candidate.Username}</strong><code style={styles.code}>{shortKey(candidate.PublicKeyBase58Check)}</code></span></button></li>
+              return <li key={candidate.PublicKeyBase58Check}><button type="button" style={styles.choiceButton} onClick={() => void lookupAccount(candidate.Username ?? "", candidate.PublicKeyBase58Check)}>{candidateImage ? <img src={candidateImage} alt="" width={36} height={36} style={styles.avatar} referrerPolicy="no-referrer" /> : <span style={styles.avatarFallback} aria-hidden="true">{(candidate.Username ?? "?").slice(0, 1).toUpperCase()}</span>}<span style={styles.username}>@{candidate.Username}</span></button></li>
             })}
           </ul>
         ) : null}
