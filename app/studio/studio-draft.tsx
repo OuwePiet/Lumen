@@ -2,14 +2,18 @@
 
 import { useEffect, useMemo, useState } from "react"
 import YouTubeEmbed from "../youtube-embed"
+import {
+  readViaLocalSettings,
+  VIA_FEEDS,
+  VIA_LANGUAGES,
+  VIA_STUDIO_DRAFT_KEY,
+  type ViaFeed,
+  type ViaLanguage,
+} from "../via-local-settings"
 
-const STORAGE_KEY = "via:studio:draft:v1"
 const MAX_TITLE = 120
 const MAX_BODY = 5000
 const MAX_POLL_OPTION = 120
-
-const languages = ["Dutch", "English", "French", "Spanish", "Chinese"] as const
-const feeds = ["Hot Feed", "Following", "Recent"] as const
 
 type DraftState = {
   title: string
@@ -35,30 +39,38 @@ const selectClass = "min-h-11 w-full rounded-[10px] border border-zinc-700/80 bg
 export default function StudioDraft() {
   const [title, setTitle] = useState("")
   const [body, setBody] = useState("")
-  const [language, setLanguage] = useState<(typeof languages)[number]>("Dutch")
-  const [feed, setFeed] = useState<(typeof feeds)[number]>("Hot Feed")
+  const [language, setLanguage] = useState<ViaLanguage>("Dutch")
+  const [feed, setFeed] = useState<ViaFeed>("Hot Feed")
   const [pollEnabled, setPollEnabled] = useState(false)
   const [pollOptions, setPollOptions] = useState(["", ""])
   const [status, setStatus] = useState("No draft saved on this device.")
 
   useEffect(() => {
+    const defaults = readViaLocalSettings()
+    setLanguage(defaults.defaultLanguage)
+    setFeed(defaults.defaultFeed)
+
     try {
-      const raw = window.localStorage.getItem(STORAGE_KEY)
-      if (!raw) return
+      const raw = window.localStorage.getItem(VIA_STUDIO_DRAFT_KEY)
+      if (!raw) {
+        setStatus(`Using Settings defaults: ${defaults.defaultLanguage} / ${defaults.defaultFeed}.`)
+        return
+      }
       const parsed: unknown = JSON.parse(raw)
       if (!validDraft(parsed)) {
-        try { window.localStorage.removeItem(STORAGE_KEY) } catch { /* Ignore blocked local storage during recovery. */ }
+        try { window.localStorage.removeItem(VIA_STUDIO_DRAFT_KEY) } catch { /* Ignore blocked local storage during recovery. */ }
+        setStatus(`Using Settings defaults: ${defaults.defaultLanguage} / ${defaults.defaultFeed}.`)
         return
       }
       setTitle(parsed.title)
       setBody(parsed.body)
-      if (languages.includes(parsed.language as (typeof languages)[number])) setLanguage(parsed.language as (typeof languages)[number])
-      if (feeds.includes(parsed.feed as (typeof feeds)[number])) setFeed(parsed.feed as (typeof feeds)[number])
+      if (VIA_LANGUAGES.includes(parsed.language as ViaLanguage)) setLanguage(parsed.language as ViaLanguage)
+      if (VIA_FEEDS.includes(parsed.feed as ViaFeed)) setFeed(parsed.feed as ViaFeed)
       setPollEnabled(Boolean(parsed.pollEnabled))
       if (parsed.pollOptions && parsed.pollOptions.length >= 2) setPollOptions(parsed.pollOptions.slice(0, 4))
       setStatus(`Draft restored from ${new Date(parsed.updatedAt).toLocaleString()}.`)
     } catch {
-      try { window.localStorage.removeItem(STORAGE_KEY) } catch { /* Keep Studio usable when local storage is blocked. */ }
+      try { window.localStorage.removeItem(VIA_STUDIO_DRAFT_KEY) } catch { /* Keep Studio usable when local storage is blocked. */ }
       setStatus("Local Studio drafts are unavailable in this browser.")
     }
   }, [])
@@ -78,15 +90,16 @@ export default function StudioDraft() {
 
   function saveDraft() {
     const next: DraftState = { title: title.trim(), body, language, feed, pollEnabled, pollOptions: pollEnabled ? pollOptions : [], updatedAt: Date.now() }
-    try { window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); setStatus("Draft saved locally on this device.") }
+    try { window.localStorage.setItem(VIA_STUDIO_DRAFT_KEY, JSON.stringify(next)); setStatus("Draft saved locally on this device.") }
     catch { setStatus("Draft could not be saved in this browser.") }
   }
 
   function clearDraft() {
-    setTitle(""); setBody(""); setLanguage("Dutch"); setFeed("Hot Feed"); setPollEnabled(false); setPollOptions(["", ""])
+    const defaults = readViaLocalSettings()
+    setTitle(""); setBody(""); setLanguage(defaults.defaultLanguage); setFeed(defaults.defaultFeed); setPollEnabled(false); setPollOptions(["", ""])
     try {
-      window.localStorage.removeItem(STORAGE_KEY)
-      setStatus("Local Studio draft cleared.")
+      window.localStorage.removeItem(VIA_STUDIO_DRAFT_KEY)
+      setStatus(`Local Studio draft cleared. Settings defaults restored: ${defaults.defaultLanguage} / ${defaults.defaultFeed}.`)
     } catch {
       setStatus("Draft cleared from the editor, but local browser storage is unavailable.")
     }
@@ -134,8 +147,8 @@ export default function StudioDraft() {
       ) : null}
 
       <div className="mb-4 grid gap-2 sm:grid-cols-2">
-        <label><span className="sr-only">Post language</span><select value={language} onChange={(event) => setLanguage(event.target.value as (typeof languages)[number])} className={selectClass} aria-label="Post language">{languages.map((item) => <option value={item} key={item}>{item}</option>)}</select></label>
-        <label><span className="sr-only">Preferred feed</span><select value={feed} onChange={(event) => setFeed(event.target.value as (typeof feeds)[number])} className={selectClass} aria-label="Preferred feed">{feeds.map((item) => <option value={item} key={item}>{item}</option>)}</select></label>
+        <label><span className="sr-only">Post language</span><select value={language} onChange={(event) => setLanguage(event.target.value as ViaLanguage)} className={selectClass} aria-label="Post language">{VIA_LANGUAGES.map((item) => <option value={item} key={item}>{item}</option>)}</select></label>
+        <label><span className="sr-only">Preferred feed</span><select value={feed} onChange={(event) => setFeed(event.target.value as ViaFeed)} className={selectClass} aria-label="Preferred feed">{VIA_FEEDS.map((item) => <option value={item} key={item}>{item}</option>)}</select></label>
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
