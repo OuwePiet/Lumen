@@ -7,9 +7,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
     '',
     '/social',
     '/discover',
-    '/communities',
+    '/collection',
+    '/market',
     '/studio',
-    '/via-live',
+    '/live',
+    '/communities',
     '/news',
   ]
 
