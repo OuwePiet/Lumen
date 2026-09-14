@@ -82,38 +82,36 @@ export default async function MarketPage({ searchParams }: { searchParams: Promi
   }
 
   const query = publicKey ? "?publicKey=" + encodeURIComponent(publicKey) : ""
-  const collectionHref = publicKey ? `/?account=${encodeURIComponent(publicKey)}&accountKey=${encodeURIComponent(publicKey)}&view=nfts#collection-controls` : "/#account-lookup-heading"
 
   return (
     <main className="mx-auto min-h-screen max-w-6xl px-5 py-10 text-zinc-100">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8fd4a9]">VIA Marketplace</p>
-          <h1 className="mt-2 text-3xl font-semibold">Market</h1>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-400">One account view for bids, listed NFTs and pending transfers. Actions remain on the NFT detail page where VIA can apply the full confirmation flow.</p>
-        </div>
-        <Link href={collectionHref} className="text-sm text-[#8fd4a9]">Back to NFTs</Link>
-      </div>
+      <header className="max-w-3xl">
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8fd4a9]">VIA Marketplace</p>
+        <h1 className="mt-2 text-3xl font-semibold">Market</h1>
+        <p className="mt-2 text-sm leading-6 text-zinc-400">Bids, listings, sales and transfers for one DeSo account. Transaction actions stay on the NFT detail page where VIA keeps the full confirmation flow.</p>
+      </header>
 
-      <div className="mt-6 flex flex-wrap gap-2">
+      <nav aria-label="Marketplace sections" className="mt-6 flex flex-wrap gap-2">
         <Link href={"/market/received-bids" + query} className="rounded-lg border border-zinc-800 px-3 py-2 text-sm text-zinc-300">Received Bids</Link>
         <Link href={"/market/my-bids" + query} className="rounded-lg border border-zinc-800 px-3 py-2 text-sm text-zinc-300">My Bids</Link>
         <a href="#sales" className="rounded-lg border border-zinc-800 px-3 py-2 text-sm text-zinc-300">Sales</a>
         <a href="#transfers" className="rounded-lg border border-zinc-800 px-3 py-2 text-sm text-zinc-300">Transfers</a>
-      </div>
+      </nav>
 
       {!publicKey ? (
-        <form className="mt-8 rounded-xl border border-zinc-800 bg-black/20 p-4">
-          <label className="text-sm text-zinc-300">DeSo public key
-            <input name="publicKey" required placeholder="BC1…" className="mt-2 block w-full rounded-lg border border-zinc-800 bg-black px-3 py-2 text-sm" />
-          </label>
-          <button className="mt-3 rounded-lg border border-[#285f40] px-4 py-2 text-sm font-semibold text-[#9adbb2]">Open market view</button>
-        </form>
+        <section className="mt-8 rounded-xl border border-zinc-800 bg-black/20 p-4" aria-labelledby="market-account-heading">
+          <h2 id="market-account-heading" className="text-sm font-semibold text-zinc-200">Choose a DeSo account</h2>
+          <p className="mt-1 text-sm text-zinc-500">This is a read-only market lookup. VIA does not sign or spend from this form.</p>
+          <form className="mt-4 flex flex-wrap gap-3">
+            <input name="publicKey" required placeholder="DeSo public key (BC1…)" aria-label="DeSo public key" className="min-w-0 flex-1 rounded-lg border border-zinc-800 bg-black px-3 py-2 text-sm" />
+            <button className="rounded-lg border border-[#285f40] px-4 py-2 text-sm font-semibold text-[#9adbb2]">Open market</button>
+          </form>
+        </section>
       ) : error ? <p className="mt-8 text-sm text-amber-300">{error}</p> : (
         <>
-          <section id="sales" className="mt-10">
+          <section id="sales" className="mt-10 scroll-mt-24">
             <div className="flex items-baseline justify-between gap-4">
-              <h2 className="text-xl font-semibold">For sale</h2>
+              <h2 className="text-xl font-semibold">Sales</h2>
               <span className="text-xs text-zinc-500">{sales.length} listed edition{sales.length === 1 ? "" : "s"}</span>
             </div>
             {sales.length === 0 ? <p className="mt-3 text-sm text-zinc-500">No NFT editions currently for sale.</p> : (
@@ -128,9 +126,9 @@ export default async function MarketPage({ searchParams }: { searchParams: Promi
             )}
           </section>
 
-          <section id="transfers" className="mt-10">
+          <section id="transfers" className="mt-10 scroll-mt-24">
             <div className="flex items-baseline justify-between gap-4">
-              <h2 className="text-xl font-semibold">Pending transfers</h2>
+              <h2 className="text-xl font-semibold">Transfers</h2>
               <span className="text-xs text-zinc-500">{transfers.length} pending edition{transfers.length === 1 ? "" : "s"}</span>
             </div>
             {transfers.length === 0 ? <p className="mt-3 text-sm text-zinc-500">No pending NFT transfers found for this account.</p> : (
