@@ -2,12 +2,12 @@ import Link from "next/link";
 import CreatorQuickMenu from "./creator-quick-menu";
 
 const released = [
+  { title: "Profile", text: "Open your signed-in public DeSo profile inside VIA.", href: "/profile", action: "Open Profile" },
   { title: "Saved", text: "Return to posts and content you explicitly saved.", href: "/saved", action: "Open Saved" },
   { title: "Drafts", text: "Continue local creator drafts inside VIA Studio.", href: "/studio#drafts", action: "Open Drafts" },
 ];
 
 const accountSections = [
-  { title: "Profile", text: "Your signed-in DeSo profile belongs here. Until a dedicated VIA profile route is released, use the avatar/account menu for account access." },
   { title: "Wallet", text: "Balance and wallet actions stay account-level. VIA does not expose a separate Wallet page until that route is complete and verified." },
   { title: "Settings", text: "Personal preferences and security controls remain account-level until the dedicated Settings surface is released." },
 ];
@@ -28,7 +28,7 @@ export default function MyViaPage() {
           <Link href="/" className={quietAction}>Back to VIA</Link>
         </header>
 
-        <section className="grid gap-4 sm:grid-cols-2">
+        <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {released.map((item) => (
             <article key={item.title} className="rounded-[14px] border border-zinc-800/80 bg-zinc-950/50 p-5">
               <h2 className="text-xl font-medium text-zinc-100">{item.title}</h2>
@@ -40,8 +40,8 @@ export default function MyViaPage() {
 
         <section className="mt-8" aria-labelledby="account-heading">
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#8fd4a9]">Account</p>
-          <h2 id="account-heading" className="mt-2 text-2xl font-semibold text-zinc-100">Profile · Wallet · Settings</h2>
-          <div className="mt-4 grid gap-4 md:grid-cols-3">
+          <h2 id="account-heading" className="mt-2 text-2xl font-semibold text-zinc-100">Wallet · Settings</h2>
+          <div className="mt-4 grid gap-4 md:grid-cols-2">
             {accountSections.map((item) => (
               <article key={item.title} className="rounded-[14px] border border-zinc-800/80 bg-zinc-950/45 p-5">
                 <h3 className="text-lg font-medium text-zinc-100">{item.title}</h3>
