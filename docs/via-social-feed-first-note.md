@@ -1,0 +1,1 @@
+Social page cleanup: composer/feed first; participation and safety moved behind a compact disclosure. No DeSo transaction flow changed.
