@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation"
 import { useEffect, useRef, useState } from "react"
 import {
   DESO_LOGIN_URL,
+  clearIdentitySession,
   persistIdentityLogin,
   restoreIdentitySession,
   type ViaIdentitySession,
@@ -88,7 +89,7 @@ const styles = {
     height: "1px",
     background: "#8fd4a9",
   },
-  accountWrap: { flex: "0 0 auto", display: "grid", justifyItems: "end" as const, gap: "2px" },
+  accountWrap: { position: "relative" as const, flex: "0 0 auto", display: "grid", justifyItems: "end" as const, gap: "2px" },
   accountButton: {
     minHeight: "38px",
     display: "inline-flex",
@@ -116,6 +117,47 @@ const styles = {
     fontWeight: 900,
   },
   status: { color: "#c6a97b", fontSize: "9px" },
+  menu: {
+    position: "absolute" as const,
+    right: 0,
+    top: "48px",
+    width: "210px",
+    padding: "8px",
+    border: "1px solid rgba(143,212,169,.18)",
+    borderRadius: "14px",
+    background: "rgba(5,10,7,.98)",
+    boxShadow: "0 18px 44px rgba(0,0,0,.38)",
+  },
+  menuLabel: {
+    padding: "7px 9px 9px",
+    color: "#78867e",
+    fontSize: "10px",
+    letterSpacing: ".08em",
+    textTransform: "uppercase" as const,
+  },
+  menuLink: {
+    display: "block",
+    minHeight: "38px",
+    padding: "9px 10px",
+    borderRadius: "9px",
+    color: "#d3ddd7",
+    textDecoration: "none",
+    fontSize: "12px",
+    lineHeight: "20px",
+  },
+  menuButton: {
+    width: "100%",
+    minHeight: "38px",
+    padding: "9px 10px",
+    border: 0,
+    borderRadius: "9px",
+    color: "#b7c3bc",
+    background: "transparent",
+    cursor: "pointer",
+    textAlign: "left" as const,
+    fontSize: "12px",
+  },
+  divider: { height: "1px", margin: "6px 4px", background: "rgba(143,212,169,.10)" },
 }
 
 function safeProfileImage(value?: string | null) {
@@ -131,9 +173,11 @@ function safeProfileImage(value?: string | null) {
 export default function ViaSiteHeader() {
   const pathname = usePathname()
   const identityWindowRef = useRef<Window | null>(null)
+  const accountWrapRef = useRef<HTMLDivElement | null>(null)
   const [session, setSession] = useState<ViaIdentitySession | null>(null)
   const [profile, setProfile] = useState<PublicProfile | null>(null)
   const [status, setStatus] = useState<"idle" | "waiting" | "blocked">("idle")
+  const [menuOpen, setMenuOpen] = useState(false)
 
   useEffect(() => {
     setSession(restoreIdentitySession())
@@ -144,6 +188,7 @@ export default function ViaSiteHeader() {
       const nextSession = persistIdentityLogin(event)
       if (!nextSession) return
       setSession(nextSession)
+      setMenuOpen(false)
       setStatus("idle")
       identityWindowRef.current?.close()
       identityWindowRef.current = null
@@ -152,6 +197,23 @@ export default function ViaSiteHeader() {
     window.addEventListener("message", handleIdentityMessage)
     return () => window.removeEventListener("message", handleIdentityMessage)
   }, [])
+
+  useEffect(() => {
+    function closeOnOutsideClick(event: MouseEvent) {
+      if (!accountWrapRef.current?.contains(event.target as Node)) setMenuOpen(false)
+    }
+    function closeOnEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") setMenuOpen(false)
+    }
+    document.addEventListener("mousedown", closeOnOutsideClick)
+    document.addEventListener("keydown", closeOnEscape)
+    return () => {
+      document.removeEventListener("mousedown", closeOnOutsideClick)
+      document.removeEventListener("keydown", closeOnEscape)
+    }
+  }, [])
+
+  useEffect(() => setMenuOpen(false), [pathname])
 
   useEffect(() => {
     if (!session?.publicKey) {
@@ -177,6 +239,7 @@ export default function ViaSiteHeader() {
   }, [session?.publicKey])
 
   function openDeSoIdentity() {
+    setMenuOpen(false)
     const width = Math.min(800, window.screen.availWidth)
     const height = Math.min(900, window.screen.availHeight)
     const left = Math.max(0, window.screenX + (window.outerWidth - width) / 2)
@@ -193,6 +256,22 @@ export default function ViaSiteHeader() {
     identityWindowRef.current = identityWindow
     setStatus("waiting")
     identityWindow.focus()
+  }
+
+  function handleAccountButton() {
+    if (!session) {
+      openDeSoIdentity()
+      return
+    }
+    setMenuOpen((open) => !open)
+  }
+
+  function logout() {
+    clearIdentitySession()
+    setSession(null)
+    setProfile(null)
+    setMenuOpen(false)
+    setStatus("idle")
   }
 
   const avatar = safeProfileImage(profile?.profilePic)
@@ -218,12 +297,31 @@ export default function ViaSiteHeader() {
           })}
         </nav>
 
-        <div style={styles.accountWrap}>
-          <button type="button" style={styles.accountButton} onClick={openDeSoIdentity} aria-label={session ? "Change DeSo account" : "Login with DeSo"}>
+        <div ref={accountWrapRef} style={styles.accountWrap}>
+          <button
+            type="button"
+            style={styles.accountButton}
+            onClick={handleAccountButton}
+            aria-label={session ? "Open VIA account menu" : "Login with DeSo"}
+            aria-expanded={session ? menuOpen : undefined}
+            aria-haspopup={session ? "menu" : undefined}
+          >
             {avatar ? <img src={avatar} alt="" style={styles.avatar} referrerPolicy="no-referrer" /> : <span style={styles.avatarFallback} aria-hidden="true">{profile?.username?.slice(0, 1).toUpperCase() ?? "V"}</span>}
             <span>{status === "waiting" ? "Connecting…" : accountLabel}</span>
           </button>
           {status === "blocked" ? <span style={styles.status} role="status">Allow pop-ups to log in.</span> : null}
+
+          {session && menuOpen ? (
+            <div style={styles.menu} role="menu" aria-label="VIA account menu">
+              <div style={styles.menuLabel}>{profile?.username ? `@${profile.username}` : "DeSo account"}</div>
+              <Link href="/my-via" style={styles.menuLink} role="menuitem">My VIA</Link>
+              <Link href="/saved" style={styles.menuLink} role="menuitem">Saved</Link>
+              <Link href="/studio#drafts" style={styles.menuLink} role="menuitem">Drafts</Link>
+              <div style={styles.divider} />
+              <button type="button" style={styles.menuButton} onClick={openDeSoIdentity} role="menuitem">Switch / add account</button>
+              <button type="button" style={styles.menuButton} onClick={logout} role="menuitem">Logout from VIA</button>
+            </div>
+          ) : null}
         </div>
       </div>
     </header>
