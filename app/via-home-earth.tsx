@@ -69,19 +69,14 @@ export default function ViaHomeEarth() {
           inset: 0;
           width: 100%;
           height: 100%;
-          object-fit: cover;
-          object-position: center 44%;
+          object-fit: contain;
+          object-position: center center;
           display: block;
           background: #000;
         }
 
-        .via-nasa-earth-poster {
-          z-index: 0;
-        }
-
-        .via-nasa-earth-video {
-          z-index: 1;
-        }
+        .via-nasa-earth-poster { z-index: 0; }
+        .via-nasa-earth-video { z-index: 1; }
       `}</style>
     </div>
   )
