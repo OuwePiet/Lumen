@@ -68,7 +68,7 @@ function pollOptions(extraData?: Record<string, string>) {
 
 function feedReadyMessage(choice: ChoiceId) {
   if (choice === "following") return "Enter a DeSo username or public key to open Following."
-  if (choice === "recent") return "Enter a creator to open New."
+  if (choice === "recent") return "Newest public DeSo posts are ready."
   return "Hot is ready."
 }
 
@@ -173,9 +173,9 @@ export default function PublicPosts() {
     requestController.current = controller
     const value = identity.trim().replace(/^@/, "")
 
-    if (feedChoice !== "hot" && !value) {
+    if (feedChoice === "following" && !value) {
       setPosts([])
-      setMessage(feedChoice === "following" ? "Enter a username or public key for Following." : "Enter a creator for New.")
+      setMessage("Enter a username or public key for Following.")
       return
     }
 
@@ -186,7 +186,7 @@ export default function PublicPosts() {
         ? `/api/via/following?identity=${encodeURIComponent(value)}`
         : feedChoice === "hot"
           ? "/api/via/discovery?limit=20"
-          : `/api/via/posts?identity=${encodeURIComponent(value)}&limit=20`
+          : "/api/via/discovery?limit=20&sort=new"
       const response = await fetch(endpoint, { signal: controller.signal })
       const data = (await response.json()) as PostsResponse
       const nextPosts = response.ok && data.ok && Array.isArray(data.posts) ? data.posts : []
@@ -204,9 +204,6 @@ export default function PublicPosts() {
       }
     }
   }
-
-  const identityLabel = feedChoice === "following" ? "DeSo identity for Following" : "Creator for New"
-  const identityPlaceholder = feedChoice === "following" ? "Username or public key" : "Creator username or public key"
 
   return (
     <section className="rounded-2xl border border-white/10 bg-black/35 p-4 sm:p-5" aria-labelledby="public-posts-heading">
@@ -231,9 +228,9 @@ export default function PublicPosts() {
       </div>
 
       <form onSubmit={loadPosts} className="mt-4 flex max-w-2xl flex-col gap-3 sm:flex-row">
-        {feedChoice !== "hot" ? (
+        {feedChoice === "following" ? (
           <>
-            <label className="sr-only" htmlFor="social-public-identity">{identityLabel}</label>
+            <label className="sr-only" htmlFor="social-public-identity">DeSo identity for Following</label>
             <input
               id="social-public-identity"
               value={identity}
@@ -241,12 +238,12 @@ export default function PublicPosts() {
               maxLength={128}
               autoCapitalize="none"
               autoCorrect="off"
-              placeholder={identityPlaceholder}
+              placeholder="Username or public key"
               className="min-w-0 flex-1 rounded-xl border border-zinc-800 bg-black/35 px-4 py-3 text-sm text-zinc-100 outline-none focus:border-[#8fd4a9]/45"
             />
           </>
         ) : (
-          <p className="flex-1 self-center text-sm text-zinc-500">Public Hot feed</p>
+          <p className="flex-1 self-center text-sm text-zinc-500">{feedChoice === "hot" ? "Public Hot feed" : "Newest public DeSo posts"}</p>
         )}
         <button type="submit" disabled={loading} className="rounded-xl border border-[#8fd4a9]/45 px-5 py-3 text-sm font-medium text-[#9adbb2] disabled:opacity-50">
           {loading ? "Loading…" : feedChoice === "following" ? "Open Following" : feedChoice === "hot" ? "Open Hot" : "Open New"}
