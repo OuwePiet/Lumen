@@ -55,9 +55,7 @@ export default function ViaWorldClock() {
           setRateUnavailable(false)
         }
       } catch (error) {
-        if (active && !(error instanceof DOMException && error.name === "AbortError")) {
-          setRateUnavailable(true)
-        }
+        if (active && !(error instanceof DOMException && error.name === "AbortError")) setRateUnavailable(true)
       }
     }
 
@@ -75,11 +73,8 @@ export default function ViaWorldClock() {
 
     function handleIdentitySession(event: Event) {
       const detail = event instanceof CustomEvent ? event.detail : undefined
-      if (detail && typeof detail.publicKey === "string") {
-        setSession(detail as ViaIdentitySession)
-      } else {
-        setSession(restoreIdentitySession())
-      }
+      if (detail && typeof detail.publicKey === "string") setSession(detail as ViaIdentitySession)
+      else setSession(restoreIdentitySession())
     }
 
     window.addEventListener(VIA_IDENTITY_EVENT, handleIdentitySession)
@@ -111,9 +106,7 @@ export default function ViaWorldClock() {
         })
         const data = (await response.json()) as WalletResponse
         const nextBalance = data.wallet?.balanceDeSo
-        if (!response.ok || !data.ok || typeof nextBalance !== "number" || !Number.isFinite(nextBalance)) {
-          throw new Error("Wallet balance unavailable")
-        }
+        if (!response.ok || !data.ok || typeof nextBalance !== "number" || !Number.isFinite(nextBalance)) throw new Error("Wallet balance unavailable")
         if (active) {
           setBalanceDeSo(nextBalance)
           setWalletUnavailable(false)
@@ -135,10 +128,7 @@ export default function ViaWorldClock() {
     }
   }, [session?.publicKey])
 
-  const clocks = useMemo(
-    () => zones.map((zone) => ({ ...zone, time: formatTime(now, zone.timeZone) })),
-    [now],
-  )
+  const clocks = useMemo(() => zones.map((zone) => ({ ...zone, time: formatTime(now, zone.timeZone) })), [now])
   const stale = rates ? isViaRateStale(rates.checkedAt, now.getTime()) : false
   const usd = rates?.rates && !stale && !rateUnavailable ? rates.rates.USD : null
   const yourDeso = session?.publicKey && !walletUnavailable && balanceDeSo !== null
@@ -149,49 +139,46 @@ export default function ViaWorldClock() {
     <section
       aria-label="World clock, live DESO price and signed-in DESO balance"
       style={{
-        position: "relative",
-        zIndex: 2,
-        width: "min(1480px, calc(100% - 32px))",
-        margin: "22px auto 0",
-        paddingTop: "11px",
-        borderTop: "1px solid rgba(79,116,98,.16)",
+        position: "absolute",
+        zIndex: 3,
+        left: "286px",
+        right: "318px",
+        bottom: "18px",
+        minHeight: "42px",
+        padding: "9px 14px",
+        border: "1px solid rgba(79,116,98,.15)",
+        borderRadius: "999px",
+        background: "rgba(2,7,4,.50)",
+        backdropFilter: "blur(8px)",
         display: "flex",
         flexWrap: "wrap",
         alignItems: "center",
         justifyContent: "center",
-        gap: "8px 16px",
-        color: "#9aa8a0",
-        fontSize: "11px",
-        letterSpacing: ".02em",
+        gap: "7px 13px",
+        color: "#93a097",
+        fontSize: "10px",
+        letterSpacing: ".01em",
       }}
     >
-      <span style={{ color: "#8fd4a9", fontWeight: 750, letterSpacing: ".1em", textTransform: "uppercase", whiteSpace: "nowrap" }}>
-        World Clock
-      </span>
+      <span style={{ color: "#8fd4a9", fontWeight: 750, letterSpacing: ".09em", textTransform: "uppercase", whiteSpace: "nowrap" }}>World Clock</span>
 
       {clocks.map((clock) => (
         <span key={clock.timeZone} style={{ whiteSpace: "nowrap" }}>
-          <span style={{ color: "#6e7f76" }}>{clock.label}</span>{" "}
-          <strong style={{ color: "#c8d1cc", fontWeight: 600 }}>{clock.time}</strong>
+          <span style={{ color: "#69776f" }}>{clock.label}</span>{" "}
+          <strong style={{ color: "#c2cbc6", fontWeight: 600 }}>{clock.time}</strong>
         </span>
       ))}
 
-      <span
-        style={{ whiteSpace: "nowrap" }}
-        title={stale ? "DESO rate is stale" : rateUnavailable ? "DESO rate is temporarily unavailable" : "Current DESO reference price in USD"}
-      >
-        <span style={{ color: "#6e7f76" }}>$DESO</span>{" "}
+      <span style={{ whiteSpace: "nowrap" }} title={stale ? "DESO rate is stale" : rateUnavailable ? "DESO rate is temporarily unavailable" : "Current DESO reference price in USD"}>
+        <span style={{ color: "#69776f" }}>$DESO</span>{" "}
         <strong style={{ color: usd === null ? "#7f8b85" : "#9adbb2", fontWeight: 700 }}>
           {usd === null ? "—" : `$${usd.toLocaleString(undefined, { maximumFractionDigits: 4 })}`}
         </strong>
       </span>
 
-      <span
-        style={{ whiteSpace: "nowrap" }}
-        title={!session ? "Log in with DeSo to show your balance" : walletUnavailable ? "Your DESO balance is temporarily unavailable" : "DESO balance for the currently signed-in account"}
-      >
-        <span style={{ color: "#6e7f76" }}>Your DESO</span>{" "}
-        <strong style={{ color: yourDeso === "—" ? "#7f8b85" : "#f1f5f2", fontWeight: 700 }}>{yourDeso}</strong>
+      <span style={{ whiteSpace: "nowrap" }} title={!session ? "Log in with DeSo to show your balance" : walletUnavailable ? "Your DESO balance is temporarily unavailable" : "DESO balance for the currently signed-in account"}>
+        <span style={{ color: "#69776f" }}>Your DESO</span>{" "}
+        <strong style={{ color: yourDeso === "—" ? "#7f8b85" : "#eef4f0", fontWeight: 700 }}>{yourDeso}</strong>
       </span>
     </section>
   )
