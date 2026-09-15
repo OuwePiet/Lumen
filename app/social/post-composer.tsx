@@ -11,6 +11,7 @@ const MAX_IMAGE_BYTES = 10 * 1024 * 1024
 const MAX_POLL_OPTIONS = 5
 const MAX_POLL_OPTION_LENGTH = 120
 const SOCIAL_DRAFT_STORAGE_KEY = "via:social:draft:v1"
+const COMPOSER_EMOJI = ["😀", "😄", "😂", "😍", "😎", "🤔", "👏", "👍", "❤️", "🔥", "🎉", "🚀", "🌍", "🎨", "🎵", "✨"] as const
 const ALLOWED_IMAGE_TYPES = new Set(["image/gif", "image/jpeg", "image/png", "image/webp"])
 
 type PrepareResponse = { ok?: boolean; transactionHex?: string; feeNanos?: number | null; error?: string }
@@ -45,6 +46,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
   const [videoInput, setVideoInput] = useState("")
   const [pollOpen, setPollOpen] = useState(false)
   const [pollOptions, setPollOptions] = useState(["", ""])
+  const [emojiOpen, setEmojiOpen] = useState(false)
   const [status, setStatus] = useState<"idle" | "preparing" | "awaiting-approval" | "submitting" | "done" | "error">("idle")
   const [message, setMessage] = useState("")
   const [feeNanos, setFeeNanos] = useState<number | null>(null)
@@ -55,6 +57,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
   const [draftMessage, setDraftMessage] = useState("")
   const popupRef = useRef<Window | null>(null)
   const popupWatch = useRef<number | null>(null)
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null)
   const isReply = Boolean(parentStakeID)
 
   useEffect(() => {
@@ -101,6 +104,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
         setVideoInput("")
         setPollOpen(false)
         setPollOptions(["", ""])
+        setEmojiOpen(false)
         setFeeNanos(null)
         setImageUploadStatus("idle")
         setImageUploadMessage("")
@@ -140,6 +144,21 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
   const canPrepare = Boolean(session && hasContent && body.length <= MAX_POST_LENGTH && !mediaInvalid && pollValid && !busy && !imageUploading && !videoUploading)
   const remaining = MAX_POST_LENGTH - body.length
   const feeLabel = useMemo(() => feeNanos === null ? null : `${feeNanos.toLocaleString()} nanos network fee in the prepared transaction`, [feeNanos])
+
+  function insertEmoji(emoji: string) {
+    if (body.length + emoji.length > MAX_POST_LENGTH) return
+    const textarea = textareaRef.current
+    const start = textarea?.selectionStart ?? body.length
+    const end = textarea?.selectionEnd ?? body.length
+    const next = `${body.slice(0, start)}${emoji}${body.slice(end)}`.slice(0, MAX_POST_LENGTH)
+    setBody(next)
+    setDraftMessage("")
+    window.requestAnimationFrame(() => {
+      textarea?.focus()
+      const cursor = Math.min(start + emoji.length, next.length)
+      textarea?.setSelectionRange(cursor, cursor)
+    })
+  }
 
   function saveDraft() {
     if (isReply) return
@@ -274,13 +293,20 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
       </div>
 
       <label htmlFor={isReply ? `via-reply-${parentStakeID}` : "via-post-body"} className="mt-4 block text-sm font-medium text-zinc-200">{isReply ? "Reply text" : "Post text"}</label>
-      <textarea id={isReply ? `via-reply-${parentStakeID}` : "via-post-body"} value={body} onChange={(event) => { setBody(event.target.value); setDraftMessage(""); if (status === "done" || status === "error") { setStatus("idle"); setMessage("") } }} maxLength={MAX_POST_LENGTH} rows={compact ? 3 : 5} placeholder={isReply ? "Write a public reply on DeSo…" : "What would you like to share on DeSo?"} className="mt-2 w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-3 text-sm text-zinc-100 outline-none focus:border-[#8fd4a9]/55" />
+      <textarea ref={textareaRef} id={isReply ? `via-reply-${parentStakeID}` : "via-post-body"} value={body} onChange={(event) => { setBody(event.target.value); setDraftMessage(""); if (status === "done" || status === "error") { setStatus("idle"); setMessage("") } }} maxLength={MAX_POST_LENGTH} rows={compact ? 3 : 5} placeholder={isReply ? "Write a public reply on DeSo…" : "What would you like to share on DeSo?"} className="mt-2 w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-3 text-sm text-zinc-100 outline-none focus:border-[#8fd4a9]/55" />
 
-      {!isReply ? <div className="mt-3 flex flex-wrap items-center gap-2">
-        <button type="button" onClick={saveDraft} disabled={busy} className="rounded-lg border border-zinc-800 px-3 py-1.5 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2] disabled:opacity-50">Save draft</button>
-        <button type="button" onClick={clearDraft} disabled={busy || (!body && !draftMessage)} className="rounded-lg border border-zinc-800 px-3 py-1.5 text-xs text-zinc-500 hover:border-zinc-700 hover:text-zinc-300 disabled:opacity-40">Clear draft</button>
-        <button type="button" onClick={() => { setPollOpen((open) => !open); if (pollOpen) setPollOptions(["", ""]) }} disabled={busy} className="rounded-lg border border-zinc-800 px-3 py-1.5 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2] disabled:opacity-50">{pollOpen ? "Remove poll" : "Add poll"}</button>
-        <span className="text-xs text-zinc-600">Drafts stay only in this browser.</span>
+      <div className="mt-3 flex flex-wrap items-center gap-2">
+        <button type="button" onClick={() => setEmojiOpen((open) => !open)} disabled={busy} className="rounded-lg border border-zinc-800 px-3 py-1.5 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2] disabled:opacity-50">{emojiOpen ? "Hide emoji" : "Emoji"}</button>
+        {!isReply ? <>
+          <button type="button" onClick={saveDraft} disabled={busy} className="rounded-lg border border-zinc-800 px-3 py-1.5 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2] disabled:opacity-50">Save draft</button>
+          <button type="button" onClick={clearDraft} disabled={busy || (!body && !draftMessage)} className="rounded-lg border border-zinc-800 px-3 py-1.5 text-xs text-zinc-500 hover:border-zinc-700 hover:text-zinc-300 disabled:opacity-40">Clear draft</button>
+          <button type="button" onClick={() => { setPollOpen((open) => !open); if (pollOpen) setPollOptions(["", ""]) }} disabled={busy} className="rounded-lg border border-zinc-800 px-3 py-1.5 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2] disabled:opacity-50">{pollOpen ? "Remove poll" : "Add poll"}</button>
+          <span className="text-xs text-zinc-600">Drafts stay only in this browser.</span>
+        </> : null}
+      </div>
+
+      {emojiOpen ? <div className="mt-2 flex flex-wrap gap-1 rounded-xl border border-zinc-800 bg-zinc-950/70 p-2" aria-label="Insert emoji">
+        {COMPOSER_EMOJI.map((emoji) => <button key={emoji} type="button" onClick={() => insertEmoji(emoji)} disabled={busy || body.length + emoji.length > MAX_POST_LENGTH} className="rounded-lg px-2 py-1 text-lg hover:bg-white/[0.06] disabled:opacity-40" aria-label={`Insert ${emoji}`}>{emoji}</button>)}
       </div> : null}
       {!isReply && draftMessage ? <p className="mt-2 text-xs text-zinc-500" role="status" aria-live="polite">{draftMessage}</p> : null}
 
