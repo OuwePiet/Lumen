@@ -3,7 +3,7 @@
 export default function ViaHomeEarth() {
   return (
     <div aria-hidden="true" className="via-official-earth">
-      <img src="/via-earth-official.webp" alt="" className="via-official-earth-image" />
+      <img src="/via-earth-home.webp" alt="" className="via-official-earth-image" />
       <style jsx>{`
         .via-official-earth {
           position: absolute;
