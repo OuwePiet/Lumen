@@ -1,106 +1,72 @@
 "use client"
 
-import { useEffect, useState } from "react"
-
-const DAY_MS = 86_400_000
-
-function utcRotation(date = new Date()) {
-  const utcMs =
-    date.getUTCHours() * 3_600_000 +
-    date.getUTCMinutes() * 60_000 +
-    date.getUTCSeconds() * 1_000 +
-    date.getUTCMilliseconds()
-  return (utcMs / DAY_MS) * 360 - 180
-}
-
 export default function ViaHomeEarth() {
-  const [rotation, setRotation] = useState(0)
-
-  useEffect(() => {
-    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)")
-    if (reduceMotion.matches) return
-
-    const update = () => setRotation(utcRotation())
-    update()
-    const timer = window.setInterval(update, 60_000)
-    return () => window.clearInterval(timer)
-  }, [])
-
   return (
-    <div
-      aria-hidden="true"
-      style={{
-        position: "absolute",
-        left: "50%",
-        top: "clamp(150px, 16vw, 220px)",
-        width: "clamp(760px, 94vw, 1420px)",
-        aspectRatio: "1",
-        transform: "translateX(-50%)",
-        pointerEvents: "none",
-        zIndex: 0,
-        opacity: 0.72,
-      }}
-    >
-      <svg viewBox="0 0 1000 1000" width="100%" height="100%" role="presentation">
-        <defs>
-          <radialGradient id="viaEarthShade" cx="48%" cy="28%" r="70%">
-            <stop offset="0%" stopColor="#183127" stopOpacity="0.7" />
-            <stop offset="48%" stopColor="#0b1713" stopOpacity="0.58" />
-            <stop offset="100%" stopColor="#020504" stopOpacity="0.16" />
-          </radialGradient>
-          <radialGradient id="viaEarthHorizon" cx="50%" cy="50%" r="50%">
-            <stop offset="82%" stopColor="#79b796" stopOpacity="0" />
-            <stop offset="96%" stopColor="#79b796" stopOpacity="0.12" />
-            <stop offset="100%" stopColor="#9adbb2" stopOpacity="0.28" />
-          </radialGradient>
-          <linearGradient id="viaEarthFade" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#ffffff" stopOpacity="1" />
-            <stop offset="62%" stopColor="#ffffff" stopOpacity=".92" />
-            <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
-          </linearGradient>
-          <mask id="viaEarthMask">
-            <rect width="1000" height="1000" fill="url(#viaEarthFade)" />
-          </mask>
-          <clipPath id="viaEarthClip">
-            <circle cx="500" cy="500" r="368" />
-          </clipPath>
-        </defs>
-        <g mask="url(#viaEarthMask)">
-          <circle cx="500" cy="500" r="374" fill="url(#viaEarthHorizon)" />
-          <circle cx="500" cy="500" r="368" fill="url(#viaEarthShade)" stroke="#5a8b74" strokeOpacity="0.28" strokeWidth="1.2" />
-          <g
-            clipPath="url(#viaEarthClip)"
-            fill="none"
-            stroke="#6b9a84"
-            strokeOpacity="0.17"
-            strokeWidth="1"
-            style={{
-              transformOrigin: "500px 500px",
-              transform: `rotate(${rotation}deg)`,
-              transition: "transform 60s linear",
-            }}
-          >
-            <ellipse cx="500" cy="500" rx="368" ry="108" />
-            <ellipse cx="500" cy="500" rx="368" ry="226" />
-            <ellipse cx="500" cy="500" rx="142" ry="368" />
-            <ellipse cx="500" cy="500" rx="252" ry="368" />
-            <path d="M132 500h736" />
-            <path d="M286 290c74-54 142-67 204-48 48 15 78 55 124 66 46 10 91-4 139 18 43 20 67 57 82 101-49 14-92 36-119 78-28 45-19 99-55 137-32 34-82 40-114 75-37 40-42 97-72 142-32-32-58-72-72-117-16-49-18-103-47-146-26-38-70-59-99-94-38-45-39-109 29-212Z" />
-            <path d="M574 232c50 30 86 70 112 117 24 46 26 97 57 139 30 39 81 59 104 102-20 61-54 117-99 164-45-15-89-27-121-65-31-39-38-91-72-128-28-31-68-49-85-89-22-53 5-107 34-151 21-34 43-63 70-89Z" />
-            <g fill="#9adbb2" stroke="none" opacity="0.48">
-              <circle cx="362" cy="388" r="2.1" />
-              <circle cx="426" cy="342" r="1.8" />
-              <circle cx="484" cy="414" r="2" />
-              <circle cx="558" cy="372" r="1.8" />
-              <circle cx="616" cy="446" r="2.1" />
-              <circle cx="682" cy="506" r="1.7" />
-              <circle cx="578" cy="570" r="2" />
-              <circle cx="466" cy="604" r="1.8" />
-              <circle cx="382" cy="548" r="2" />
-            </g>
-          </g>
-        </g>
-      </svg>
+    <div aria-hidden="true" className="via-cinematic-earth">
+      <div className="via-cinematic-earth-image" />
+      <div className="via-cinematic-earth-shade" />
+      <style jsx>{`
+        .via-cinematic-earth {
+          position: absolute;
+          inset: 0;
+          overflow: hidden;
+          pointer-events: none;
+          z-index: 0;
+          background:
+            radial-gradient(ellipse 72% 42% at 50% 28%, rgba(60, 112, 84, .11), transparent 70%),
+            linear-gradient(180deg, #010403 0%, #020705 48%, #010302 100%);
+        }
+        .via-cinematic-earth-image {
+          position: absolute;
+          left: 50%;
+          bottom: -14%;
+          width: max(1440px, 112vw);
+          height: min(790px, 64vw);
+          min-height: 610px;
+          transform: translateX(-50%) scale(1.035);
+          transform-origin: 50% 74%;
+          border-radius: 50% 50% 0 0 / 64% 64% 0 0;
+          background-image:
+            linear-gradient(180deg, rgba(0,0,0,.02) 0%, rgba(0,0,0,.06) 58%, rgba(0,0,0,.42) 100%),
+            url('https://images.unsplash.com/photo-1614732414444-096e5f1122d5?auto=format&fit=crop&w=2400&q=88');
+          background-position: center 58%;
+          background-size: cover;
+          filter: brightness(.73) contrast(1.18) saturate(.88) hue-rotate(15deg);
+          box-shadow:
+            0 -2px 18px rgba(143,212,169,.40),
+            0 -8px 54px rgba(103,188,139,.18);
+          animation: viaEarthDrift 1800s ease-in-out infinite alternate;
+          will-change: transform, background-position;
+        }
+        .via-cinematic-earth-image::before {
+          content: "";
+          position: absolute;
+          inset: 0;
+          border-radius: inherit;
+          box-shadow: inset 0 16px 28px rgba(154,219,178,.12);
+        }
+        .via-cinematic-earth-shade {
+          position: absolute;
+          inset: 0;
+          background:
+            radial-gradient(ellipse 34% 18% at 50% 43%, rgba(228,245,213,.13), transparent 70%),
+            linear-gradient(180deg, rgba(0,0,0,.03), rgba(0,0,0,0) 40%, rgba(0,4,2,.15) 76%, rgba(0,4,2,.82) 100%);
+        }
+        @keyframes viaEarthDrift {
+          0% { transform: translateX(-50%) scale(1.035) rotate(-0.18deg); background-position: 49.4% 58%; }
+          100% { transform: translateX(-50%) scale(1.035) rotate(0.18deg); background-position: 50.6% 58%; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .via-cinematic-earth-image { animation: none; }
+        }
+        @media (max-width: 760px) {
+          .via-cinematic-earth-image {
+            width: 1320px;
+            height: 680px;
+            bottom: -8%;
+          }
+        }
+      `}</style>
     </div>
   )
 }
