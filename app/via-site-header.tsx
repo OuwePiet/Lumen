@@ -23,7 +23,7 @@ type ProfileResponse = {
 
 const nav = [
   ["Home", "/"],
-  ["Social", "/social"],
+  ["Feed", "/social"],
   ["Discover", "/discover"],
   ["NFTs", "/collection"],
   ["Market", "/market"],
@@ -39,13 +39,13 @@ const styles = {
     top: 0,
     zIndex: 80,
     borderBottom: "1px solid rgba(143,212,169,.12)",
-    background: "rgba(3,7,5,.92)",
+    background: "rgba(3,7,5,.94)",
     backdropFilter: "blur(18px)",
   },
   inner: {
     width: "min(1480px, calc(100% - 32px))",
     margin: "0 auto",
-    minHeight: "68px",
+    minHeight: "76px",
     display: "flex",
     alignItems: "center",
     gap: "18px",
@@ -58,7 +58,7 @@ const styles = {
     color: "inherit",
     textDecoration: "none",
   },
-  logo: { width: "78px", height: "34px", objectFit: "contain" as const },
+  logo: { width: "108px", height: "46px", objectFit: "contain" as const },
   domain: { color: "#77847c", fontSize: "10px", letterSpacing: ".04em", whiteSpace: "nowrap" as const },
   nav: {
     flex: "1 1 auto",
@@ -73,7 +73,7 @@ const styles = {
   link: {
     position: "relative" as const,
     flex: "0 0 auto",
-    padding: "24px 10px 21px",
+    padding: "27px 10px 24px",
     color: "#aeb9b2",
     textDecoration: "none",
     fontSize: "12px",
@@ -85,7 +85,7 @@ const styles = {
     position: "absolute" as const,
     left: "10px",
     right: "10px",
-    bottom: "14px",
+    bottom: "16px",
     height: "1px",
     background: "#8fd4a9",
   },
