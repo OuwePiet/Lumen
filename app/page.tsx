@@ -52,31 +52,20 @@ export default function Home() {
         style={{
           position: "relative",
           zIndex: 2,
-          width: "min(340px, calc(100% - 40px))",
-          marginLeft: "clamp(20px, 5vw, 78px)",
-          marginTop: "18px",
+          width: "min(1480px, calc(100% - 32px))",
+          margin: "18px auto 0",
+          display: "grid",
+          gridTemplateColumns: "260px minmax(0,1fr)",
+          columnGap: "18px",
         }}
       >
-        <img
-          src="/via-logo.svg"
-          alt="VIA"
-          style={{
-            display: "block",
-            width: "auto",
-            height: "130px",
-            maxWidth: "100%",
-            objectFit: "contain",
-            objectPosition: "left center",
-          }}
-        />
-
         <nav
           aria-label="VIA direct actions"
           style={{
+            gridColumn: "1",
             display: "grid",
             gap: "9px",
-            width: "min(270px, 100%)",
-            marginTop: "14px",
+            width: "100%",
           }}
         >
           {homeActions.map(([label, href]) => (
