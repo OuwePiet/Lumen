@@ -6,21 +6,27 @@ import ViaWorldClock from "./via-world-clock"
 
 export default function Home() {
   return (
-    <main
-      className="via-home-free-earth"
-      style={{
-        position: "relative",
-        minHeight: "100vh",
-        overflow: "hidden",
-        background: "#000",
-      }}
-      aria-label="VIA homepage"
-    >
-      <ViaHomeEarth />
-      <ViaSeasonal />
-      <ViaHomeControls />
-      <ViaFeatured />
-      <ViaWorldClock />
-    </main>
+    <>
+      <style>{`
+        body:has(> .via-home-free-earth) > header { display: none !important; }
+        body:has(> .via-home-free-earth) { margin: 0; background: #000; }
+      `}</style>
+      <main
+        className="via-home-free-earth"
+        style={{
+          position: "relative",
+          minHeight: "100vh",
+          overflow: "hidden",
+          background: "#000",
+        }}
+        aria-label="VIA homepage"
+      >
+        <ViaHomeEarth />
+        <ViaSeasonal />
+        <ViaHomeControls />
+        <ViaFeatured />
+        <ViaWorldClock />
+      </main>
+    </>
   )
 }
