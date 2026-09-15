@@ -7,6 +7,8 @@ const MAX_POST_LENGTH = 5000
 const MAX_MEDIA_URL_LENGTH = 2048
 const MAX_IMAGE_URLS = 4
 const MAX_VIDEO_URLS = 1
+const MAX_POLL_OPTIONS = 5
+const MAX_POLL_OPTION_LENGTH = 120
 const DEFAULT_MIN_FEE_RATE_NANOS_PER_KB = 1000
 
 function noStore(data: unknown, status = 200) {
@@ -43,6 +45,22 @@ function parseHttpsUrls(value: unknown, maxItems: number) {
   return urls
 }
 
+function parsePollOptions(value: unknown) {
+  if (value === undefined) return [] as string[]
+  if (!Array.isArray(value) || value.length < 2 || value.length > MAX_POLL_OPTIONS) return null
+
+  const options: string[] = []
+  for (const item of value) {
+    if (typeof item !== "string") return null
+    const option = item.trim()
+    if (!option || option.length > MAX_POLL_OPTION_LENGTH || option.includes("\u0000")) return null
+    options.push(option)
+  }
+
+  const unique = new Set(options.map((option) => option.toLocaleLowerCase()))
+  return unique.size === options.length ? options : null
+}
+
 export async function POST(request: Request) {
   let input: unknown
   try {
@@ -64,13 +82,16 @@ export async function POST(request: Request) {
     const parentStakeID = typeof body.parentStakeID === "string" ? body.parentStakeID.trim() : ""
     const imageUrls = parseHttpsUrls(body.imageUrls, MAX_IMAGE_URLS)
     const videoUrls = parseHttpsUrls(body.videoUrls, MAX_VIDEO_URLS)
+    const pollOptions = parsePollOptions(body.pollOptions)
 
     if (!validPublicKey(publicKey)) return noStore({ ok: false, error: "INVALID_PUBLIC_KEY" }, 400)
     if (text.length > MAX_POST_LENGTH || text.includes("\u0000")) return noStore({ ok: false, error: "INVALID_POST_BODY" }, 400)
     if (!imageUrls) return noStore({ ok: false, error: "INVALID_IMAGE_URLS" }, 400)
     if (!videoUrls) return noStore({ ok: false, error: "INVALID_VIDEO_URLS" }, 400)
+    if (!pollOptions) return noStore({ ok: false, error: "INVALID_POLL_OPTIONS" }, 400)
     if (!text && imageUrls.length === 0 && videoUrls.length === 0) return noStore({ ok: false, error: "EMPTY_POST" }, 400)
     if (parentStakeID && !validPostHash(parentStakeID)) return noStore({ ok: false, error: "INVALID_PARENT_POST" }, 400)
+    if (parentStakeID && pollOptions.length) return noStore({ ok: false, error: "POLL_REPLY_UNSUPPORTED" }, 400)
 
     const configuredRate = Number(process.env.DESO_MIN_FEE_RATE_NANOS_PER_KB)
     const minFeeRate = Number.isFinite(configuredRate) && configuredRate > 0
@@ -78,6 +99,9 @@ export async function POST(request: Request) {
       : DEFAULT_MIN_FEE_RATE_NANOS_PER_KB
 
     try {
+      const postExtraData: Record<string, string> = { ViaClient: "viadeso.online" }
+      if (pollOptions.length >= 2) postExtraData.PollOptions = JSON.stringify(pollOptions)
+
       const response = await fetchDeSo("submit-post", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -88,7 +112,7 @@ export async function POST(request: Request) {
           RepostedPostHashHex: "",
           Title: "",
           BodyObj: { Body: text, ImageURLs: imageUrls, VideoURLs: videoUrls },
-          PostExtraData: { ViaClient: "viadeso.online" },
+          PostExtraData: postExtraData,
           Sub: "",
           IsHidden: false,
           MinFeeRateNanosPerKB: minFeeRate,
@@ -107,6 +131,7 @@ export async function POST(request: Request) {
         transactionHex,
         feeNanos: typeof feeNanos === "number" && Number.isFinite(feeNanos) ? feeNanos : null,
         media: { images: imageUrls.length, videos: videoUrls.length },
+        poll: pollOptions.length ? { options: pollOptions.length } : null,
       })
     } catch {
       return noStore({ ok: false, error: "DESO_PREPARE_UNAVAILABLE" }, 503)
