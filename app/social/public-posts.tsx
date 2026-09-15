@@ -68,7 +68,7 @@ function pollOptions(extraData?: Record<string, string>) {
 
 function feedReadyMessage(choice: ChoiceId) {
   if (choice === "following") return "Enter a DeSo username or public key to open Following."
-  if (choice === "recent") return "Enter a creator to open Recent."
+  if (choice === "recent") return "Enter a creator to open New."
   return "Hot is ready."
 }
 
@@ -175,7 +175,7 @@ export default function PublicPosts() {
 
     if (feedChoice !== "hot" && !value) {
       setPosts([])
-      setMessage(feedChoice === "following" ? "Enter a username or public key for Following." : "Enter a creator for Recent.")
+      setMessage(feedChoice === "following" ? "Enter a username or public key for Following." : "Enter a creator for New.")
       return
     }
 
@@ -205,7 +205,7 @@ export default function PublicPosts() {
     }
   }
 
-  const identityLabel = feedChoice === "following" ? "DeSo identity for Following" : "Creator for Recent"
+  const identityLabel = feedChoice === "following" ? "DeSo identity for Following" : "Creator for New"
   const identityPlaceholder = feedChoice === "following" ? "Username or public key" : "Creator username or public key"
 
   return (
@@ -249,7 +249,7 @@ export default function PublicPosts() {
           <p className="flex-1 self-center text-sm text-zinc-500">Public Hot feed</p>
         )}
         <button type="submit" disabled={loading} className="rounded-xl border border-[#8fd4a9]/45 px-5 py-3 text-sm font-medium text-[#9adbb2] disabled:opacity-50">
-          {loading ? "Loading…" : feedChoice === "following" ? "Open Following" : feedChoice === "hot" ? "Open Hot" : "Open Recent"}
+          {loading ? "Loading…" : feedChoice === "following" ? "Open Following" : feedChoice === "hot" ? "Open Hot" : "Open New"}
         </button>
       </form>
 
