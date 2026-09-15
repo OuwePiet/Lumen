@@ -39,10 +39,13 @@ export default function SettingsPage() {
 
   function reset() {
     try {
-      saveViaLocalSettings(DEFAULT_VIA_SETTINGS)
+      saveViaLocalSettings({
+        defaultLanguage: DEFAULT_VIA_SETTINGS.defaultLanguage,
+        defaultFeed: DEFAULT_VIA_SETTINGS.defaultFeed,
+      })
       setLanguage(DEFAULT_VIA_SETTINGS.defaultLanguage)
       setFeed(DEFAULT_VIA_SETTINGS.defaultFeed)
-      setStatus("VIA preferences reset to Dutch / Hot Feed.")
+      setStatus("Creator defaults reset to Dutch / Hot Feed. VIA interface language was kept.")
     } catch {
       setStatus("Preferences could not be reset in this browser.")
     }
