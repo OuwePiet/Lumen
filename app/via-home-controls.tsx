@@ -117,12 +117,27 @@ export default function ViaHomeControls() {
         paddingRight: "4px",
       }}
     >
-      <Link href="/" aria-label="VIA home" style={{ display: "block", textDecoration: "none" }}>
+      <Link
+        href="/"
+        aria-label="VIA home"
+        style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "3px", textDecoration: "none" }}
+      >
         <img
           src="/via-logo-original.jpg?v=2"
           alt="VIA"
           style={{ width: "100%", maxHeight: "118px", objectFit: "contain", display: "block", borderRadius: "14px" }}
         />
+        <span
+          style={{
+            color: "#8fd4a9",
+            fontSize: "11px",
+            fontWeight: 650,
+            letterSpacing: ".12em",
+            lineHeight: 1.2,
+          }}
+        >
+          viadeso.online
+        </span>
       </Link>
 
       <nav aria-label="VIA main navigation" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px" }}>
