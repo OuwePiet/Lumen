@@ -8,6 +8,7 @@ import VideoUploadControl from "./video-upload-control"
 const MAX_QUOTE_LENGTH = 5000
 const MAX_IMAGES = 4
 const MAX_IMAGE_BYTES = 10 * 1024 * 1024
+const QUOTE_EMOJI = ["😀", "😄", "😂", "😍", "😎", "🤔", "👏", "👍", "❤️", "🔥", "🎉", "🚀", "🌍", "🎨", "🎵", "✨"] as const
 const ALLOWED_IMAGE_TYPES = new Set(["image/gif", "image/jpeg", "image/png", "image/webp"])
 
 type Props = {
@@ -45,6 +46,7 @@ export default function RepostButton({ postHash, initialCount }: Props) {
   const [busy, setBusy] = useState(false)
   const [quoteOpen, setQuoteOpen] = useState(false)
   const [quote, setQuote] = useState("")
+  const [emojiOpen, setEmojiOpen] = useState(false)
   const [imageInputs, setImageInputs] = useState([""])
   const [videoInput, setVideoInput] = useState("")
   const [imageUploadStatus, setImageUploadStatus] = useState<"idle" | "jwt" | "uploading" | "error">("idle")
@@ -54,6 +56,7 @@ export default function RepostButton({ postHash, initialCount }: Props) {
   const popupRef = useRef<Window | null>(null)
   const popupWatch = useRef<number | null>(null)
   const pendingQuote = useRef(false)
+  const quoteRef = useRef<HTMLTextAreaElement | null>(null)
 
   useEffect(() => {
     setSession(restoreIdentitySession())
@@ -87,6 +90,7 @@ export default function RepostButton({ postHash, initialCount }: Props) {
         setCount((current) => current + 1)
         setMessage(pendingQuote.current ? "Quote Repost submitted to DeSo." : "Reposted on DeSo.")
         setQuote("")
+        setEmojiOpen(false)
         setImageInputs([""])
         setVideoInput("")
         setImageUploadStatus("idle")
@@ -115,6 +119,20 @@ export default function RepostButton({ postHash, initialCount }: Props) {
   const imageUrls = parsedImages.filter((value): value is string => typeof value === "string" && value.length > 0)
   const videoUrls = typeof parsedVideo === "string" && parsedVideo ? [parsedVideo] : []
   const imageUploading = imageUploadStatus === "jwt" || imageUploadStatus === "uploading"
+
+  function insertEmoji(emoji: string) {
+    if (quote.length + emoji.length > MAX_QUOTE_LENGTH) return
+    const textarea = quoteRef.current
+    const start = textarea?.selectionStart ?? quote.length
+    const end = textarea?.selectionEnd ?? quote.length
+    const next = `${quote.slice(0, start)}${emoji}${quote.slice(end)}`.slice(0, MAX_QUOTE_LENGTH)
+    setQuote(next)
+    window.requestAnimationFrame(() => {
+      textarea?.focus()
+      const cursor = Math.min(start + emoji.length, next.length)
+      textarea?.setSelectionRange(cursor, cursor)
+    })
+  }
 
   function changeImage(index: number, value: string) {
     setImageInputs((current) => current.map((item, itemIndex) => itemIndex === index ? value : item))
@@ -240,7 +258,14 @@ export default function RepostButton({ postHash, initialCount }: Props) {
 
       {quoteOpen ? <div className="basis-full rounded-xl border border-zinc-800 bg-black/30 p-3">
         <label className="sr-only" htmlFor={`via-quote-${postHash}`}>Quote Repost text</label>
-        <textarea id={`via-quote-${postHash}`} value={quote} onChange={(event) => setQuote(event.target.value)} maxLength={MAX_QUOTE_LENGTH} rows={3} placeholder="Add your public quote…" className="w-full rounded-lg border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm text-zinc-100 outline-none focus:border-[#8fd4a9]/55" />
+        <textarea ref={quoteRef} id={`via-quote-${postHash}`} value={quote} onChange={(event) => setQuote(event.target.value)} maxLength={MAX_QUOTE_LENGTH} rows={3} placeholder="Add your public quote…" className="w-full rounded-lg border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm text-zinc-100 outline-none focus:border-[#8fd4a9]/55" />
+        <div className="mt-2 flex flex-wrap items-center gap-2">
+          <button type="button" onClick={() => setEmojiOpen((open) => !open)} aria-expanded={emojiOpen} className="rounded-full border border-zinc-800 px-3 py-1 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2]">Emoji</button>
+          <span className="text-[11px] text-zinc-600">{MAX_QUOTE_LENGTH - quote.length} characters left</span>
+        </div>
+        {emojiOpen ? <div className="mt-2 flex flex-wrap gap-1.5 rounded-lg border border-zinc-800 bg-zinc-950/80 p-2" aria-label="Quote emoji picker">
+          {QUOTE_EMOJI.map((emoji) => <button key={emoji} type="button" onClick={() => insertEmoji(emoji)} className="grid h-8 w-8 place-items-center rounded-md border border-zinc-800 text-base hover:border-[#8fd4a9]/45" aria-label={`Insert ${emoji}`}>{emoji}</button>)}
+        </div> : null}
 
         <div className="mt-3 rounded-xl border border-zinc-800 bg-zinc-950/70 p-3">
           <p className="text-xs font-medium text-zinc-300">Photo</p>
