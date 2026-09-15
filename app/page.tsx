@@ -1,4 +1,5 @@
 import Link from "next/link"
+import ViaFeatured from "./via-featured"
 import ViaHomeEarth from "./via-home-earth"
 
 const homeActions = [
@@ -16,6 +17,7 @@ export default function Home() {
         minHeight: "calc(100vh - 130px)",
         overflow: "hidden",
         background: "#000",
+        paddingBottom: "38px",
       }}
       aria-label="VIA homepage review"
     >
@@ -110,6 +112,8 @@ export default function Home() {
           ))}
         </nav>
       </section>
+
+      <ViaFeatured />
     </main>
   )
 }
