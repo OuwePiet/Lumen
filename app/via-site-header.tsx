@@ -116,7 +116,7 @@ export default function ViaSiteHeader() {
   useEffect(() => {
     setSession(restoreIdentitySession())
     refreshKnownAccounts()
-    setLanguage(readViaLocalSettings().defaultLanguage)
+    setLanguage(readViaLocalSettings().interfaceLanguage)
     function handleIdentityMessage(event: MessageEvent) {
       const identityWindow = identityWindowRef.current
       if (identityWindow && event.source !== identityWindow) return
@@ -172,8 +172,7 @@ export default function ViaSiteHeader() {
   }
 
   function changeLanguage(next: ViaLanguage) {
-    const current = readViaLocalSettings()
-    saveViaLocalSettings({ ...current, defaultLanguage: next })
+    saveViaLocalSettings({ interfaceLanguage: next })
     setLanguage(next)
   }
 
