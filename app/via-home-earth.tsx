@@ -2,19 +2,31 @@
 
 export default function ViaHomeEarth() {
   return (
-    <div aria-hidden="true" className="via-official-earth">
-      <img src="/via-earth-approved.jpg" alt="" className="via-official-earth-image" />
+    <div aria-hidden="true" className="via-nasa-earth">
+      <video
+        className="via-nasa-earth-video"
+        autoPlay
+        muted
+        loop
+        playsInline
+        preload="auto"
+      >
+        <source
+          src="https://svs.gsfc.nasa.gov/vis/a030000/a030000/a030082/viirs_dnb_night_lights_rotating_earth_1080p.mp4"
+          type="video/mp4"
+        />
+      </video>
       <style jsx>{`
-        .via-official-earth {
+        .via-nasa-earth {
           position: absolute;
           inset: 0;
           overflow: hidden;
           pointer-events: none;
           z-index: 0;
-          background: #010403;
+          background: #000;
         }
 
-        .via-official-earth-image {
+        .via-nasa-earth-video {
           position: absolute;
           inset: 0;
           width: 100%;
@@ -22,6 +34,7 @@ export default function ViaHomeEarth() {
           object-fit: cover;
           object-position: center center;
           display: block;
+          background: #000;
         }
       `}</style>
     </div>
