@@ -19,7 +19,7 @@ export default function Home() {
         minHeight: "calc(100vh - 130px)",
         overflow: "hidden",
         background: "#000",
-        paddingBottom: "38px",
+        paddingBottom: "34px",
       }}
       aria-label="VIA homepage review"
     >
@@ -31,9 +31,8 @@ export default function Home() {
           position: "relative",
           zIndex: 2,
           display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          paddingTop: "18px",
+          justifyContent: "center",
+          padding: "18px 18px 2px",
           pointerEvents: "none",
         }}
       >
@@ -41,31 +40,16 @@ export default function Home() {
           style={{
             margin: 0,
             color: "#8fd4a9",
-            fontSize: "12px",
-            fontWeight: 700,
+            fontSize: "clamp(11px, 1.05vw, 13px)",
+            fontWeight: 750,
             letterSpacing: "0.16em",
             textTransform: "uppercase",
             textAlign: "center",
-            whiteSpace: "nowrap",
+            lineHeight: 1.7,
           }}
         >
           ART · PEOPLE · IDEAS · CREATORS · COLLECTORS · COMMUNITIES · MUSICIANS
         </p>
-
-        <h1
-          style={{
-            margin: "14px 20px 0",
-            color: "#f4f7f5",
-            fontSize: "clamp(28px, 4vw, 54px)",
-            lineHeight: 1.08,
-            fontWeight: 650,
-            letterSpacing: "-0.025em",
-            textAlign: "center",
-            whiteSpace: "nowrap",
-          }}
-        >
-          A global space for creators, collectors and communities.
-        </h1>
       </div>
 
       <section
@@ -74,7 +58,7 @@ export default function Home() {
           position: "relative",
           zIndex: 2,
           width: "min(1480px, calc(100% - 32px))",
-          margin: "18px auto 0",
+          margin: "14px auto 0",
           display: "grid",
           gridTemplateColumns: "260px minmax(0,1fr)",
           columnGap: "18px",
@@ -99,9 +83,9 @@ export default function Home() {
                 alignItems: "center",
                 justifyContent: "center",
                 padding: "10px 16px",
-                border: "1px solid rgba(143,212,169,.34)",
+                border: "1px solid rgba(143,212,169,.28)",
                 borderRadius: "999px",
-                background: "rgba(3,10,6,.74)",
+                background: "rgba(3,10,6,.66)",
                 backdropFilter: "blur(8px)",
                 color: "#e1eae5",
                 textDecoration: "none",
