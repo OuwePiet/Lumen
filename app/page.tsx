@@ -2,6 +2,7 @@ import Link from "next/link"
 import ViaFeatured from "./via-featured"
 import ViaHomeEarth from "./via-home-earth"
 import ViaSeasonal from "./via-seasonal"
+import ViaWorldClock from "./via-world-clock"
 
 const homeActions = [
   ["Explore NFTs", "/collection"],
@@ -116,6 +117,7 @@ export default function Home() {
       </section>
 
       <ViaFeatured />
+      <ViaWorldClock />
     </main>
   )
 }
