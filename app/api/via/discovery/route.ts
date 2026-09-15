@@ -7,11 +7,17 @@ export async function GET(request: Request) {
   const url = new URL(request.url)
   const rawLimit = Number(url.searchParams.get("limit") ?? "20")
   const limit = Number.isFinite(rawLimit) ? rawLimit : 20
+  const sortByNew = url.searchParams.get("sort") === "new"
 
   try {
-    const posts = await readDiscoveryPosts(limit)
+    const posts = await readDiscoveryPosts(limit, sortByNew)
     return NextResponse.json(
-      { ok: true, posts, source: "deso-hot-feed", ranking: "experimental" },
+      {
+        ok: true,
+        posts,
+        source: sortByNew ? "deso-new-feed" : "deso-hot-feed",
+        ranking: sortByNew ? "newest-first" : "experimental",
+      },
       {
         status: 200,
         headers: {
