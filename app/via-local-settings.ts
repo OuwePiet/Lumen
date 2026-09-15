@@ -2,17 +2,19 @@ export const VIA_SETTINGS_KEY = "via:settings:v1"
 export const VIA_STUDIO_DRAFT_KEY = "via:studio:draft:v1"
 
 export const VIA_LANGUAGES = ["Dutch", "English", "French", "Spanish", "Chinese"] as const
-export const VIA_FEEDS = ["Hot Feed", "Following", "Recent"] as const
+export const VIA_FEEDS = ["Hot Feed", "Following", "New"] as const
 
 export type ViaLanguage = (typeof VIA_LANGUAGES)[number]
 export type ViaFeed = (typeof VIA_FEEDS)[number]
 
 export type ViaLocalSettings = {
+  interfaceLanguage: ViaLanguage
   defaultLanguage: ViaLanguage
   defaultFeed: ViaFeed
 }
 
 export const DEFAULT_VIA_SETTINGS: ViaLocalSettings = {
+  interfaceLanguage: "Dutch",
   defaultLanguage: "Dutch",
   defaultFeed: "Hot Feed",
 }
@@ -22,16 +24,22 @@ export function readViaLocalSettings(): ViaLocalSettings {
   try {
     const raw = window.localStorage.getItem(VIA_SETTINGS_KEY)
     if (!raw) return DEFAULT_VIA_SETTINGS
-    const parsed = JSON.parse(raw) as Partial<ViaLocalSettings>
+    const parsed = JSON.parse(raw) as Record<string, unknown>
+    const storedLanguage = typeof parsed.defaultLanguage === "string" ? parsed.defaultLanguage : ""
+    const storedInterfaceLanguage = typeof parsed.interfaceLanguage === "string" ? parsed.interfaceLanguage : storedLanguage
+    const rawFeed = typeof parsed.defaultFeed === "string" ? parsed.defaultFeed : ""
+    const storedFeed = rawFeed === "Recent" ? "New" : rawFeed
     return {
-      defaultLanguage: VIA_LANGUAGES.includes(parsed.defaultLanguage as ViaLanguage) ? parsed.defaultLanguage as ViaLanguage : DEFAULT_VIA_SETTINGS.defaultLanguage,
-      defaultFeed: VIA_FEEDS.includes(parsed.defaultFeed as ViaFeed) ? parsed.defaultFeed as ViaFeed : DEFAULT_VIA_SETTINGS.defaultFeed,
+      interfaceLanguage: VIA_LANGUAGES.includes(storedInterfaceLanguage as ViaLanguage) ? storedInterfaceLanguage as ViaLanguage : DEFAULT_VIA_SETTINGS.interfaceLanguage,
+      defaultLanguage: VIA_LANGUAGES.includes(storedLanguage as ViaLanguage) ? storedLanguage as ViaLanguage : DEFAULT_VIA_SETTINGS.defaultLanguage,
+      defaultFeed: VIA_FEEDS.includes(storedFeed as ViaFeed) ? storedFeed as ViaFeed : DEFAULT_VIA_SETTINGS.defaultFeed,
     }
   } catch {
     return DEFAULT_VIA_SETTINGS
   }
 }
 
-export function saveViaLocalSettings(settings: ViaLocalSettings) {
-  window.localStorage.setItem(VIA_SETTINGS_KEY, JSON.stringify(settings))
+export function saveViaLocalSettings(settings: Partial<ViaLocalSettings>) {
+  const current = readViaLocalSettings()
+  window.localStorage.setItem(VIA_SETTINGS_KEY, JSON.stringify({ ...current, ...settings }))
 }

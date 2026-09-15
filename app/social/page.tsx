@@ -6,40 +6,40 @@ import PostComposer from "./post-composer"
 
 export default function SocialPage() {
   return (
-    <main className="min-h-screen bg-[#050706] px-4 py-6 text-white sm:px-6 lg:px-10">
-      <div className="mx-auto max-w-5xl">
-        <header className="mb-5 flex flex-wrap items-end justify-between gap-4 border-b border-white/10 pb-5">
+    <main className="min-h-screen bg-[#030504] px-4 py-6 text-white sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-6xl">
+        <header className="mb-5 flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-4">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#8fd4a9]">VIA · SOCIAL</p>
-            <h1 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">DeSo conversation, without the clutter.</h1>
+            <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Social</h1>
+            <p className="mt-1 text-sm text-zinc-500">Public DeSo conversation on VIA.</p>
           </div>
-          <div className="flex flex-wrap gap-2">
-            <Link href="/notifications" className="rounded-full border border-white/10 bg-white/[0.02] px-4 py-2 text-sm text-zinc-300 transition hover:border-[#8fd4a9]/45 hover:text-[#9adbb2]">Notifications</Link>
-            <Link href="/saved" className="rounded-full border border-white/10 bg-white/[0.02] px-4 py-2 text-sm text-zinc-300 transition hover:border-[#8fd4a9]/45 hover:text-[#9adbb2]">Saved</Link>
-          </div>
+          <nav className="flex flex-wrap gap-2" aria-label="Social shortcuts">
+            <Link href="/notifications" className="rounded-full border border-white/10 bg-white/[0.02] px-4 py-2 text-sm text-zinc-300 transition hover:border-[#8fd4a9]/40 hover:text-[#9adbb2]">Notifications</Link>
+            <Link href="/saved" className="rounded-full border border-white/10 bg-white/[0.02] px-4 py-2 text-sm text-zinc-300 transition hover:border-[#8fd4a9]/40 hover:text-[#9adbb2]">Saved</Link>
+          </nav>
         </header>
 
-        <section className="rounded-2xl border border-white/10 bg-zinc-950/65 p-4 sm:p-5" aria-labelledby="composer-heading">
-          <div className="flex flex-wrap items-center justify-between gap-3">
+        <section className="rounded-2xl border border-white/10 bg-black/35 p-4 sm:p-5" aria-labelledby="composer-heading">
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#8fd4a9]">Create</p>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#8fd4a9]">Create</p>
               <h2 id="composer-heading" className="mt-1 text-lg font-semibold">Share a post</h2>
             </div>
-            <Link href="/edit-post" className="text-sm text-zinc-400 transition hover:text-[#9adbb2]">Edit one of your posts</Link>
+            <Link href="/edit-post" className="text-xs text-zinc-500 transition hover:text-[#9adbb2]">Edit your post</Link>
           </div>
           <PostComposer />
         </section>
 
-        <div className="mt-5">
+        <div className="mt-4">
           <FeedChoice />
         </div>
 
-        <div className="mt-5">
+        <section className="mt-4" aria-label="VIA social feed">
           <PublicPosts />
-        </div>
+        </section>
 
-        <details className="mt-6 rounded-2xl border border-white/10 bg-zinc-950/45 p-4 text-sm text-zinc-400">
-          <summary className="cursor-pointer font-medium text-zinc-200">Participation & safety</summary>
+        <details className="mt-5 rounded-2xl border border-white/10 bg-black/25 p-4 text-sm text-zinc-500">
+          <summary className="cursor-pointer font-medium text-zinc-300">Participation & safety</summary>
           <div className="mt-4">
             <ParticipationGate
               title="Public view · DeSo participation"

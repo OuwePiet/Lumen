@@ -220,6 +220,13 @@ export default function PollVoteControl({ postHash, options }: Props) {
       <div className="mt-3 grid gap-2">
         {normalizedOptions.map((option, index) => {
           const selected = existingOption === option
+          if (!session) {
+            return (
+              <div key={`${index}-${option}`} className="rounded-lg border border-zinc-800 px-3 py-2 text-left text-sm text-zinc-200">
+                {option}
+              </div>
+            )
+          }
           return (
             <button
               key={`${index}-${option}`}

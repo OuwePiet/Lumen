@@ -57,6 +57,24 @@ function isUsableCredentials(value: unknown): value is DeSoIdentityCredentials &
   )
 }
 
+function readIdentityUsers(): Record<string, unknown> {
+  try {
+    const rawUsers = localStorage.getItem(IDENTITY_USERS_KEY)
+    if (!rawUsers) return {}
+    const users: unknown = JSON.parse(rawUsers)
+    return isRecord(users) ? users : {}
+  } catch {
+    return {}
+  }
+}
+
+function sessionForPublicKey(publicKey: string, signedUp = false): ViaIdentitySession | null {
+  if (!PUBLIC_KEY_RE.test(publicKey)) return null
+  const credentials = readIdentityUsers()[publicKey]
+  if (!isUsableCredentials(credentials)) return null
+  return { publicKey, accessLevel: credentials.accessLevel, signedUp }
+}
+
 export function parseIdentityLoginMessage(event: MessageEvent): ViaIdentitySession | null {
   if (event.origin !== DESO_IDENTITY_ORIGIN) return null
   if (!isRecord(event.data)) return null
@@ -86,7 +104,9 @@ export function persistIdentityLogin(event: MessageEvent): ViaIdentitySession | 
   const payload = (event.data as LoginMessage).payload
   if (!payload || !isRecord(payload.users)) return null
 
-  localStorage.setItem(IDENTITY_USERS_KEY, JSON.stringify(payload.users))
+  const existingUsers = readIdentityUsers()
+  const mergedUsers = { ...existingUsers, ...payload.users }
+  localStorage.setItem(IDENTITY_USERS_KEY, JSON.stringify(mergedUsers))
   localStorage.setItem(VIA_ACTIVE_PUBLIC_KEY, session.publicKey)
   window.dispatchEvent(new CustomEvent(VIA_IDENTITY_EVENT, { detail: session }))
   return session
@@ -94,11 +114,7 @@ export function persistIdentityLogin(event: MessageEvent): ViaIdentitySession | 
 
 export function getIdentityCredentials(publicKey: string): ViaIdentityCredentials | null {
   try {
-    const rawUsers = localStorage.getItem(IDENTITY_USERS_KEY)
-    if (!rawUsers) return null
-    const users: unknown = JSON.parse(rawUsers)
-    if (!isRecord(users)) return null
-    const credentials = users[publicKey]
+    const credentials = readIdentityUsers()[publicKey]
     if (!isUsableCredentials(credentials)) return null
     return {
       encryptedSeedHex: credentials.encryptedSeedHex,
@@ -110,18 +126,28 @@ export function getIdentityCredentials(publicKey: string): ViaIdentityCredential
   }
 }
 
+export function listIdentitySessions(): ViaIdentitySession[] {
+  return Object.entries(readIdentityUsers())
+    .filter(([publicKey, credentials]) => PUBLIC_KEY_RE.test(publicKey) && isUsableCredentials(credentials))
+    .map(([publicKey, credentials]) => ({
+      publicKey,
+      accessLevel: (credentials as DeSoIdentityCredentials & ViaIdentityCredentials).accessLevel,
+      signedUp: false,
+    }))
+}
+
+export function switchIdentitySession(publicKey: string): ViaIdentitySession | null {
+  const session = sessionForPublicKey(publicKey)
+  if (!session) return null
+  localStorage.setItem(VIA_ACTIVE_PUBLIC_KEY, publicKey)
+  window.dispatchEvent(new CustomEvent(VIA_IDENTITY_EVENT, { detail: session }))
+  return session
+}
+
 export function restoreIdentitySession(): ViaIdentitySession | null {
   try {
     const publicKey = localStorage.getItem(VIA_ACTIVE_PUBLIC_KEY)
-    const rawUsers = localStorage.getItem(IDENTITY_USERS_KEY)
-    if (!publicKey || !PUBLIC_KEY_RE.test(publicKey) || !rawUsers) return null
-
-    const users: unknown = JSON.parse(rawUsers)
-    if (!isRecord(users)) return null
-    const credentials = users[publicKey]
-    if (!isUsableCredentials(credentials)) return null
-
-    return { publicKey, accessLevel: credentials.accessLevel, signedUp: false }
+    return publicKey ? sessionForPublicKey(publicKey) : null
   } catch {
     return null
   }
@@ -129,6 +155,10 @@ export function restoreIdentitySession(): ViaIdentitySession | null {
 
 export function clearIdentitySession(publicKey?: string) {
   localStorage.removeItem(VIA_ACTIVE_PUBLIC_KEY)
-  if (!publicKey) localStorage.removeItem(IDENTITY_USERS_KEY)
+  if (publicKey) {
+    const users = readIdentityUsers()
+    delete users[publicKey]
+    localStorage.setItem(IDENTITY_USERS_KEY, JSON.stringify(users))
+  }
   window.dispatchEvent(new CustomEvent(VIA_IDENTITY_EVENT, { detail: null }))
 }
