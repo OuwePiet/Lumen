@@ -47,6 +47,12 @@ function postTime(timestampNanos: number) {
   return Number.isNaN(date.getTime()) ? "" : date.toLocaleString()
 }
 
+function shortPublicKey(publicKey: string) {
+  if (!publicKey) return "Unknown DeSo account"
+  if (publicKey.length <= 20) return publicKey
+  return `${publicKey.slice(0, 10)}…${publicKey.slice(-6)}`
+}
+
 function pollOptions(extraData?: Record<string, string>) {
   if (!extraData) return []
   const direct = ["PollOptions", "pollOptions", "PollOptionsJSON", "poll_options"]
@@ -269,8 +275,11 @@ export default function PublicPosts() {
 
             return (
               <article key={post.postHash} className="rounded-2xl border border-zinc-800/80 bg-[#050806]/80 p-4 sm:p-5">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <span className="text-xs text-zinc-600">{time}</span>
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-xs font-semibold text-zinc-300">DeSo · <span className="font-mono text-zinc-400">{shortPublicKey(post.publicKey)}</span></p>
+                    {time ? <p className="mt-1 text-[11px] text-zinc-600">{time}</p> : null}
+                  </div>
                   {post.isNft ? <span className="rounded-full border border-[#8fd4a9]/35 px-2.5 py-1 text-[11px] text-[#9adbb2]">NFT</span> : null}
                 </div>
 
@@ -293,14 +302,14 @@ export default function PublicPosts() {
                   {session ? <button type="button" onClick={() => setReplyingTo(isReplying ? null : post.postHash)} className="rounded-full border border-zinc-800 px-3 py-1 text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2]">Reply · {post.commentCount}</button> : <span>Reply · {post.commentCount}</span>}
                   {session ? <RepostButton postHash={post.postHash} initialCount={totalReposts} /> : <span>Repost · {totalReposts}</span>}
                   {session ? <DiamondButton postHash={post.postHash} receiverPublicKey={post.publicKey} initialCount={post.diamondCount} /> : <span>Diamond · {post.diamondCount}</span>}
-                  <LocalSaveButton postHash={post.postHash} body={post.body} publicKey={post.publicKey} timestampNanos={post.timestampNanos} />
-                  {session ? <FollowButton followedPublicKey={post.publicKey} /> : <span className="text-zinc-600">Follow</span>}
-                  <button type="button" onClick={() => {
+                  {session ? <LocalSaveButton postHash={post.postHash} body={post.body} publicKey={post.publicKey} timestampNanos={post.timestampNanos} /> : null}
+                  {session ? <FollowButton followedPublicKey={post.publicKey} /> : null}
+                  {session ? <button type="button" onClick={() => {
                     const url = `${window.location.origin}/social?post=${encodeURIComponent(post.postHash)}`
                     if (navigator.share) void navigator.share({ title: "VIA · DeSo post", url }).catch(() => {})
                     else void navigator.clipboard?.writeText(url)
-                  }} className="rounded-full border border-zinc-800 px-3 py-1 text-zinc-400 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2]">Share</button>
-                  <Link href={`/?account=${encodeURIComponent(post.publicKey)}#collection-controls`} className="rounded-full border border-zinc-800 px-3 py-1 text-zinc-400 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2]">NFTs</Link>
+                  }} className="rounded-full border border-zinc-800 px-3 py-1 text-zinc-400 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2]">Share</button> : null}
+                  {session ? <Link href={`/?account=${encodeURIComponent(post.publicKey)}#collection-controls`} className="rounded-full border border-zinc-800 px-3 py-1 text-zinc-400 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2]">NFTs</Link> : null}
                   {isOwnPost ? <Link href={`/edit-post?post=${encodeURIComponent(post.postHash)}`} className="rounded-full border border-[#8fd4a9]/45 px-3 py-1 text-[#9adbb2]">Edit</Link> : null}
                 </div>
 
