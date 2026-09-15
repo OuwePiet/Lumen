@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 76 28" role="img" aria-label="NASA">
+  <rect width="76" height="28" rx="14" fill="#07131f" stroke="#4f6f87" stroke-width="1"/>
+  <circle cx="16" cy="14" r="9" fill="#0b3d91"/>
+  <path d="M8.7 17.2c5-4.2 10-7.3 15.4-8.7" fill="none" stroke="#e04b3f" stroke-width="1.2" stroke-linecap="round"/>
+  <circle cx="13" cy="10" r=".8" fill="#fff"/><circle cx="20.4" cy="15.4" r=".65" fill="#fff"/><circle cx="17.2" cy="7.6" r=".55" fill="#fff"/>
+  <text x="31" y="18" fill="#f4f7f5" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="700" letter-spacing=".08em">NASA</text>
+</svg>
