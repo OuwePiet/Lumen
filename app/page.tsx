@@ -26,7 +26,8 @@ export default function Home() {
           position: "relative",
           zIndex: 2,
           display: "flex",
-          justifyContent: "center",
+          flexDirection: "column",
+          alignItems: "center",
           paddingTop: "18px",
           pointerEvents: "none",
         }}
@@ -45,6 +46,21 @@ export default function Home() {
         >
           ART · PEOPLE · IDEAS · CREATORS · COLLECTORS · COMMUNITIES · MUSICIANS
         </p>
+
+        <h1
+          style={{
+            margin: "14px 20px 0",
+            color: "#f4f7f5",
+            fontSize: "clamp(28px, 4vw, 54px)",
+            lineHeight: 1.08,
+            fontWeight: 650,
+            letterSpacing: "-0.025em",
+            textAlign: "center",
+            whiteSpace: "nowrap",
+          }}
+        >
+          A global space for creators, collectors and communities.
+        </h1>
       </div>
 
       <section
