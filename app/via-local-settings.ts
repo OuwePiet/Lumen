@@ -22,10 +22,12 @@ export function readViaLocalSettings(): ViaLocalSettings {
   try {
     const raw = window.localStorage.getItem(VIA_SETTINGS_KEY)
     if (!raw) return DEFAULT_VIA_SETTINGS
-    const parsed = JSON.parse(raw) as Partial<ViaLocalSettings> & { defaultFeed?: string }
-    const storedFeed = parsed.defaultFeed === "Recent" ? "New" : parsed.defaultFeed
+    const parsed = JSON.parse(raw) as Record<string, unknown>
+    const storedLanguage = typeof parsed.defaultLanguage === "string" ? parsed.defaultLanguage : ""
+    const rawFeed = typeof parsed.defaultFeed === "string" ? parsed.defaultFeed : ""
+    const storedFeed = rawFeed === "Recent" ? "New" : rawFeed
     return {
-      defaultLanguage: VIA_LANGUAGES.includes(parsed.defaultLanguage as ViaLanguage) ? parsed.defaultLanguage as ViaLanguage : DEFAULT_VIA_SETTINGS.defaultLanguage,
+      defaultLanguage: VIA_LANGUAGES.includes(storedLanguage as ViaLanguage) ? storedLanguage as ViaLanguage : DEFAULT_VIA_SETTINGS.defaultLanguage,
       defaultFeed: VIA_FEEDS.includes(storedFeed as ViaFeed) ? storedFeed as ViaFeed : DEFAULT_VIA_SETTINGS.defaultFeed,
     }
   } catch {
