@@ -1,14 +1,14 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 
 export const VIA_SOCIAL_FEED_STORAGE_KEY = "via:social:feed-choice:v1"
 export const VIA_SOCIAL_FEED_EVENT = "via:social:feed-choice"
 
 const choices = [
-  { id: "following", title: "Following", text: "Read a bounded newest-first view of public posts from accounts the selected DeSo identity follows." },
-  { id: "recent", title: "Recent", text: "A recency-first public DeSo view. Loaded public posts are shown newest first; newest does not automatically mean trusted or recommended." },
-  { id: "hot", title: "Hot", text: "Read DeSo's documented Hot feed, ranked by recency and public engagement signals such as likes, diamonds, comments and reposts. Hot is not a VIA trust signal." },
+  { id: "following", title: "Following", text: "Newest public posts from accounts followed by the selected DeSo identity." },
+  { id: "recent", title: "Recent", text: "Public DeSo posts in a recency-first view." },
+  { id: "hot", title: "Hot", text: "DeSo's documented Hot feed, ranked by public engagement and recency signals." },
 ] as const
 
 export type ChoiceId = (typeof choices)[number]["id"]
@@ -21,55 +21,52 @@ export default function FeedChoice() {
     try {
       const stored = window.localStorage.getItem(VIA_SOCIAL_FEED_STORAGE_KEY)
       const normalized = stored === "discovery" ? "hot" : stored
-      if (choices.some((choice) => choice.id === normalized)) {
-        setSelected(normalized as ChoiceId)
-      }
+      if (choices.some((choice) => choice.id === normalized)) setSelected(normalized as ChoiceId)
     } catch {
       setStatus("Feed preference could not be read from this browser.")
     }
   }, [])
 
+  const activeChoice = useMemo(() => choices.find((choice) => choice.id === selected) ?? choices[0], [selected])
+
   function choose(next: ChoiceId) {
     setSelected(next)
     window.dispatchEvent(new CustomEvent<ChoiceId>(VIA_SOCIAL_FEED_EVENT, { detail: next }))
-
     try {
       window.localStorage.setItem(VIA_SOCIAL_FEED_STORAGE_KEY, next)
-      setStatus(`${choices.find((choice) => choice.id === next)?.title} saved as your local VIA feed preference.`)
+      setStatus(`${choices.find((choice) => choice.id === next)?.title} selected.`)
     } catch {
       setStatus("Preference changed for this visit, but could not be saved locally.")
     }
   }
 
   return (
-    <section className="mb-8 rounded-2xl border border-zinc-800/80 bg-zinc-950/55 p-5" aria-labelledby="feed-choice-heading">
-      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#8fd4a9]">Your entry point</p>
-      <h2 id="feed-choice-heading" className="mt-2 text-2xl font-semibold">Choose your social view</h2>
-      <p className="mt-2 max-w-3xl text-sm leading-6 text-zinc-400">
-        Following, Recent and Hot all use public read-only DeSo data. Your choice is stored locally in this browser and never changes DeSo data or follows accounts.
-      </p>
-      <div className="mt-4 grid gap-3 md:grid-cols-3">
-        {choices.map((choice) => {
-          const active = selected === choice.id
-          return (
-            <button
-              key={choice.id}
-              type="button"
-              aria-pressed={active}
-              onClick={() => choose(choice.id)}
-              className={`min-h-32 rounded-[14px] border p-4 text-left transition duration-200 ease-out focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#8fd4a9]/70 ${active ? "border-[#8fd4a9]/65 bg-[#0c1711]/55 shadow-[0_0_0_1px_rgba(143,212,169,0.08),0_0_22px_rgba(143,212,169,0.08)]" : "border-zinc-800/80 bg-transparent hover:border-[#8fd4a9]/35 hover:bg-[#0b120e]/35"}`}
-            >
-              <span className={active ? "text-base font-semibold text-[#9adbb2]" : "text-base font-semibold text-zinc-100"}>{choice.title}</span>
-              <span className="mt-2 block text-sm leading-6 text-zinc-400">{choice.text}</span>
-              <span className={active ? "mt-3 block text-xs text-[#8fd4a9]/80" : "mt-3 block text-xs text-zinc-500"}>{active ? "Active on this device" : "Choose this view"}</span>
-            </button>
-          )
-        })}
+    <section className="rounded-2xl border border-white/10 bg-black/30 p-3 sm:p-4" aria-labelledby="feed-choice-heading">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#8fd4a9]">Feed</p>
+          <h2 id="feed-choice-heading" className="mt-1 text-base font-semibold text-zinc-100">Choose your view</h2>
+        </div>
+        <div className="flex flex-wrap gap-2" role="group" aria-label="Social feed view">
+          {choices.map((choice) => {
+            const active = selected === choice.id
+            return (
+              <button
+                key={choice.id}
+                type="button"
+                aria-pressed={active}
+                onClick={() => choose(choice.id)}
+                className={`rounded-full border px-4 py-2 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#8fd4a9]/70 ${active ? "border-[#8fd4a9]/55 bg-[#0d1b13]/80 text-[#9adbb2]" : "border-white/10 bg-white/[0.02] text-zinc-400 hover:border-[#8fd4a9]/30 hover:text-zinc-200"}`}
+              >
+                {choice.title}
+              </button>
+            )
+          })}
+        </div>
       </div>
-      <p className="mt-4 text-xs leading-5 text-zinc-500">
-        Hot is DeSo ranking, not VIA endorsement. VIA keeps public reading separate from account authority and blockchain writes.
-      </p>
-      <p className="mt-3 min-h-5 text-xs text-zinc-400" role="status" aria-live="polite">{status}</p>
+      <p className="mt-3 text-sm leading-6 text-zinc-400">{activeChoice.text}</p>
+      <p className="mt-1 text-[11px] text-zinc-600">Hot is DeSo ranking, not VIA endorsement. Feed choice is stored only in this browser.</p>
+      <p className="mt-2 min-h-4 text-[11px] text-zinc-500" role="status" aria-live="polite">{status}</p>
     </section>
   )
 }
