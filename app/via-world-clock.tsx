@@ -147,28 +147,24 @@ export default function ViaWorldClock() {
 
   return (
     <section
-      aria-label="NASA Earth credit, world clock, live DESO price and signed-in DESO balance"
+      aria-label="World clock, live DESO price and signed-in DESO balance"
       style={{
         position: "relative",
         zIndex: 2,
         width: "min(1480px, calc(100% - 32px))",
-        margin: "24px auto 0",
-        paddingTop: "12px",
-        borderTop: "1px solid rgba(79,116,98,.2)",
+        margin: "22px auto 0",
+        paddingTop: "11px",
+        borderTop: "1px solid rgba(79,116,98,.16)",
         display: "flex",
         flexWrap: "wrap",
         alignItems: "center",
-        gap: "10px 18px",
+        justifyContent: "center",
+        gap: "8px 16px",
         color: "#9aa8a0",
         fontSize: "11px",
         letterSpacing: ".02em",
       }}
     >
-      <span style={{ display: "inline-flex", alignItems: "center", gap: "8px", whiteSpace: "nowrap" }}>
-        <img src="/nasa-credit.svg" alt="NASA" style={{ width: "58px", height: "22px", objectFit: "contain" }} />
-        <span style={{ color: "#77847c" }}>Earth imagery/video: NASA</span>
-      </span>
-
       <span style={{ color: "#8fd4a9", fontWeight: 750, letterSpacing: ".1em", textTransform: "uppercase", whiteSpace: "nowrap" }}>
         World Clock
       </span>
