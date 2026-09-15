@@ -173,7 +173,7 @@ export default function ViaSiteHeader() {
           <Link href="/discover" style={pill}>Public Entrance</Link>
           {!session ? <button type="button" style={styles.login} onClick={openDeSoIdentity}>{status === "waiting" ? "Connecting…" : "DeSo Login"}</button> : null}
           <Link href="/wallet" style={pill}>Buy $DESO</Link>
-          <span style={styles.visitor}>Visitors —</span>
+          <span style={styles.visitor}>Visitors</span>
           <Link href="/notifications" style={pill}>Notifications</Link>
 
           {session ? (
