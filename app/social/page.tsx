@@ -10,8 +10,7 @@ export default function SocialPage() {
       <div className="mx-auto max-w-6xl">
         <header className="mb-5 flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-4">
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#8fd4a9]">VIA · SOCIAL</p>
-            <h1 className="mt-1 text-2xl font-semibold tracking-tight sm:text-3xl">Social</h1>
+            <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Social</h1>
             <p className="mt-1 text-sm text-zinc-500">Public DeSo conversation on VIA.</p>
           </div>
           <nav className="flex flex-wrap gap-2" aria-label="Social shortcuts">
