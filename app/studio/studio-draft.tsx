@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react"
 import YouTubeEmbed from "../youtube-embed"
+import { restoreIdentitySession, VIA_IDENTITY_EVENT } from "../deso-identity-session"
 import {
   readViaLocalSettings,
   VIA_FEEDS,
@@ -37,6 +38,7 @@ const field = "w-full rounded-[11px] border border-zinc-700/80 bg-[#050807] px-3
 const selectClass = "min-h-11 w-full rounded-[10px] border border-zinc-700/80 bg-[#050807] px-3 py-2 text-sm text-zinc-100 outline-none focus:border-[#8fd4a9]/55 focus:ring-2 focus:ring-[#8fd4a9]/10"
 
 export default function StudioDraft() {
+  const [canEdit, setCanEdit] = useState(false)
   const [title, setTitle] = useState("")
   const [body, setBody] = useState("")
   const [language, setLanguage] = useState<ViaLanguage>("Dutch")
@@ -46,6 +48,25 @@ export default function StudioDraft() {
   const [status, setStatus] = useState("No draft saved on this device.")
 
   useEffect(() => {
+    function syncIdentity() {
+      const active = Boolean(restoreIdentitySession())
+      setCanEdit(active)
+      if (!active) {
+        setTitle("")
+        setBody("")
+        setPollEnabled(false)
+        setPollOptions(["", ""])
+        setStatus("DeSo login is required to prepare or open local drafts.")
+      }
+    }
+
+    syncIdentity()
+    window.addEventListener(VIA_IDENTITY_EVENT, syncIdentity)
+    return () => window.removeEventListener(VIA_IDENTITY_EVENT, syncIdentity)
+  }, [])
+
+  useEffect(() => {
+    if (!canEdit) return
     const defaults = readViaLocalSettings()
     setLanguage(defaults.defaultLanguage)
     setFeed(defaults.defaultFeed)
@@ -73,7 +94,7 @@ export default function StudioDraft() {
       try { window.localStorage.removeItem(VIA_STUDIO_DRAFT_KEY) } catch { /* Keep Studio usable when local storage is blocked. */ }
       setStatus("Local Studio drafts are unavailable in this browser.")
     }
-  }, [])
+  }, [canEdit])
 
   const remaining = useMemo(() => MAX_BODY - body.length, [body.length])
 
@@ -103,6 +124,16 @@ export default function StudioDraft() {
     } catch {
       setStatus("Draft cleared from the editor, but local browser storage is unavailable.")
     }
+  }
+
+  if (!canEdit) {
+    return (
+      <section className="mb-4 rounded-[14px] border border-zinc-800/80 bg-zinc-950/55 p-5 sm:p-6" aria-labelledby="studio-draft-heading">
+        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#8fd4a9]">Creator draft</p>
+        <h2 id="studio-draft-heading" className="mt-2 text-2xl font-semibold tracking-tight text-zinc-100">Prepare your next post</h2>
+        <p className="mt-3 text-sm leading-6 text-zinc-400">Public Entrance is read-only. Log in with DeSo to prepare, save or open local VIA drafts.</p>
+      </section>
+    )
   }
 
   return (
