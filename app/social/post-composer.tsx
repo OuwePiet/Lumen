@@ -8,6 +8,7 @@ import VideoUploadControl from "./video-upload-control"
 const MAX_POST_LENGTH = 5000
 const MAX_IMAGES = 4
 const MAX_IMAGE_BYTES = 10 * 1024 * 1024
+const SOCIAL_DRAFT_STORAGE_KEY = "via:social:draft:v1"
 const ALLOWED_IMAGE_TYPES = new Set(["image/gif", "image/jpeg", "image/png", "image/webp"])
 
 type PrepareResponse = { ok?: boolean; transactionHex?: string; feeNanos?: number | null; error?: string }
@@ -47,6 +48,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
   const [imageUploadMessage, setImageUploadMessage] = useState("")
   const [videoUploading, setVideoUploading] = useState(false)
   const [mediaOpen, setMediaOpen] = useState(!compact)
+  const [draftMessage, setDraftMessage] = useState("")
   const popupRef = useRef<Window | null>(null)
   const popupWatch = useRef<number | null>(null)
   const isReply = Boolean(parentStakeID)
@@ -57,6 +59,19 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
     window.addEventListener(VIA_IDENTITY_EVENT, onSession)
     return () => window.removeEventListener(VIA_IDENTITY_EVENT, onSession)
   }, [])
+
+  useEffect(() => {
+    if (isReply) return
+    try {
+      const stored = window.localStorage.getItem(SOCIAL_DRAFT_STORAGE_KEY)
+      if (stored) {
+        setBody(stored.slice(0, MAX_POST_LENGTH))
+        setDraftMessage("Local draft restored from this device.")
+      }
+    } catch {
+      setDraftMessage("Local drafts are unavailable in this browser.")
+    }
+  }, [isReply])
 
   useEffect(() => {
     const onMessage = async (event: MessageEvent) => {
@@ -85,6 +100,10 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
         setImageUploadMessage("")
         setVideoUploading(false)
         setMediaOpen(!compact)
+        if (!isReply) {
+          try { window.localStorage.removeItem(SOCIAL_DRAFT_STORAGE_KEY) } catch {}
+          setDraftMessage("Local draft cleared after publishing.")
+        }
         onDone?.()
       } catch {
         setStatus("error")
@@ -112,6 +131,28 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
   const canPrepare = Boolean(session && hasContent && body.length <= MAX_POST_LENGTH && !mediaInvalid && !busy && !imageUploading && !videoUploading)
   const remaining = MAX_POST_LENGTH - body.length
   const feeLabel = useMemo(() => feeNanos === null ? null : `${feeNanos.toLocaleString()} nanos network fee in the prepared transaction`, [feeNanos])
+
+  function saveDraft() {
+    if (isReply) return
+    try {
+      if (body.trim()) {
+        window.localStorage.setItem(SOCIAL_DRAFT_STORAGE_KEY, body.slice(0, MAX_POST_LENGTH))
+        setDraftMessage("Draft saved on this device.")
+      } else {
+        window.localStorage.removeItem(SOCIAL_DRAFT_STORAGE_KEY)
+        setDraftMessage("Empty draft cleared.")
+      }
+    } catch {
+      setDraftMessage("Draft could not be saved locally.")
+    }
+  }
+
+  function clearDraft() {
+    if (isReply) return
+    try { window.localStorage.removeItem(SOCIAL_DRAFT_STORAGE_KEY) } catch {}
+    setBody("")
+    setDraftMessage("Draft cleared.")
+  }
 
   function changeImage(index: number, value: string) {
     setImageInputs((current) => current.map((item, itemIndex) => itemIndex === index ? value : item))
@@ -224,7 +265,14 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
       </div>
 
       <label htmlFor={isReply ? `via-reply-${parentStakeID}` : "via-post-body"} className="mt-4 block text-sm font-medium text-zinc-200">{isReply ? "Reply text" : "Post text"}</label>
-      <textarea id={isReply ? `via-reply-${parentStakeID}` : "via-post-body"} value={body} onChange={(event) => { setBody(event.target.value); if (status === "done" || status === "error") { setStatus("idle"); setMessage("") } }} maxLength={MAX_POST_LENGTH} rows={compact ? 3 : 5} placeholder={isReply ? "Write a public reply on DeSo…" : "What would you like to share on DeSo?"} className="mt-2 w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-3 text-sm text-zinc-100 outline-none focus:border-[#8fd4a9]/55" />
+      <textarea id={isReply ? `via-reply-${parentStakeID}` : "via-post-body"} value={body} onChange={(event) => { setBody(event.target.value); setDraftMessage(""); if (status === "done" || status === "error") { setStatus("idle"); setMessage("") } }} maxLength={MAX_POST_LENGTH} rows={compact ? 3 : 5} placeholder={isReply ? "Write a public reply on DeSo…" : "What would you like to share on DeSo?"} className="mt-2 w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-3 text-sm text-zinc-100 outline-none focus:border-[#8fd4a9]/55" />
+
+      {!isReply ? <div className="mt-3 flex flex-wrap items-center gap-2">
+        <button type="button" onClick={saveDraft} disabled={busy} className="rounded-lg border border-zinc-800 px-3 py-1.5 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2] disabled:opacity-50">Save draft</button>
+        <button type="button" onClick={clearDraft} disabled={busy || (!body && !draftMessage)} className="rounded-lg border border-zinc-800 px-3 py-1.5 text-xs text-zinc-500 hover:border-zinc-700 hover:text-zinc-300 disabled:opacity-40">Clear draft</button>
+        <span className="text-xs text-zinc-600">Stored only in this browser.</span>
+      </div> : null}
+      {!isReply && draftMessage ? <p className="mt-2 text-xs text-zinc-500" role="status" aria-live="polite">{draftMessage}</p> : null}
 
       {compact ? <button type="button" onClick={() => setMediaOpen((open) => !open)} className="mt-3 rounded-lg border border-zinc-800 px-3 py-1.5 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2]">{mediaOpen ? "Hide photo/video" : "Add photo/video"}</button> : null}
 
