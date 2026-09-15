@@ -2,28 +2,43 @@
 
 import Link from "next/link"
 import { useEffect, useState } from "react"
+import { readViaLocalSettings } from "../via-local-settings"
 
 export const VIA_SOCIAL_FEED_STORAGE_KEY = "via:social:feed-choice:v1"
 export const VIA_SOCIAL_FEED_EVENT = "via:social:feed-choice"
 
 const choices = [
-  { id: "following", title: "Following", text: "Posts from accounts followed by the selected DeSo identity." },
+  { id: "following", title: "Following", text: "Posts from accounts followed by the active DeSo identity." },
   { id: "hot", title: "Hot", text: "DeSo Hot ranking." },
   { id: "recent", title: "New", text: "Newest public posts first." },
 ] as const
 
 export type ChoiceId = (typeof choices)[number]["id"]
 
+export function defaultSocialFeedChoice(): ChoiceId {
+  const preferred = readViaLocalSettings().defaultFeed
+  if (preferred === "Following") return "following"
+  if (preferred === "New") return "recent"
+  return "hot"
+}
+
 export default function FeedChoice() {
-  const [selected, setSelected] = useState<ChoiceId>("following")
+  const [selected, setSelected] = useState<ChoiceId>("hot")
   const [status, setStatus] = useState("")
 
   useEffect(() => {
     try {
       const stored = window.localStorage.getItem(VIA_SOCIAL_FEED_STORAGE_KEY)
       const normalized = stored === "discovery" ? "hot" : stored
-      if (choices.some((choice) => choice.id === normalized)) setSelected(normalized as ChoiceId)
+      const initial = choices.some((choice) => choice.id === normalized)
+        ? normalized as ChoiceId
+        : defaultSocialFeedChoice()
+      setSelected(initial)
+      window.dispatchEvent(new CustomEvent<ChoiceId>(VIA_SOCIAL_FEED_EVENT, { detail: initial }))
     } catch {
+      const initial = defaultSocialFeedChoice()
+      setSelected(initial)
+      window.dispatchEvent(new CustomEvent<ChoiceId>(VIA_SOCIAL_FEED_EVENT, { detail: initial }))
       setStatus("Feed preference could not be read from this browser.")
     }
   }, [])
