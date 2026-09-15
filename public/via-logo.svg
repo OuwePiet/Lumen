@@ -1,16 +1,26 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 92" role="img" aria-label="VIA">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 558 311" role="img" aria-label="VIA">
   <defs>
-    <linearGradient id="viaLeaf" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#d9f7e4"/>
-      <stop offset="0.72" stop-color="#78bf93"/>
-      <stop offset="1" stop-color="#8d5a45"/>
+    <linearGradient id="letter" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#e9eceb"/>
+    </linearGradient>
+    <linearGradient id="leafTop" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#dff7e7"/>
+      <stop offset="0.58" stop-color="#a9e0b7"/>
+      <stop offset="1" stop-color="#6fbe8d"/>
+    </linearGradient>
+    <linearGradient id="leafBottom" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#bfe9c9"/>
+      <stop offset="0.65" stop-color="#70bd8c"/>
+      <stop offset="1" stop-color="#3f8f69"/>
     </linearGradient>
   </defs>
-  <g fill="none" stroke="#f4f7f5" stroke-width="11" stroke-linecap="square" stroke-linejoin="miter">
-    <path d="M18 18l34 58 34-58"/>
-    <path d="M112 18v58"/>
-    <path d="M148 76l34-58 34 58M165 50h34"/>
-  </g>
-  <path d="M188 64c18-20 36-23 52-20-8 17-21 31-40 38-10 4-19 4-28 0 6-8 11-13 16-18Z" fill="url(#viaLeaf)"/>
-  <path d="M177 84c13-15 28-27 46-36" fill="none" stroke="#8a6654" stroke-width="3.2" stroke-linecap="round"/>
+
+  <path d="M4 4h33l72 193L181 4h33L109 243Z" fill="url(#letter)"/>
+  <rect x="266" y="4" width="27" height="238" fill="url(#letter)"/>
+  <path d="M341 241 434 4h28l94 237h-32l-30-77H401l-29 77Zm70-104h72l-36-94Z" fill="url(#letter)"/>
+
+  <path d="M498 108c-5 31-24 49-49 63-35 20-59 40-70 68-8 20-8 43 4 66-5-37 9-64 38-82 38-24 68-45 77-115Z" fill="url(#leafTop)"/>
+  <path d="M498 108c-18 23-42 37-69 50-39 18-58 44-52 83 4 25 19 45 44 60-28-28-33-57-16-84 14-22 39-37 66-56 17-12 27-29 27-53Z" fill="url(#leafBottom)" opacity=".96"/>
+  <path d="M379 245c19-33 49-59 90-78" fill="none" stroke="#d5f0dc" stroke-width="2.2" stroke-linecap="round" opacity=".7"/>
 </svg>
