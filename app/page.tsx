@@ -4,13 +4,12 @@ export default function Home() {
   return (
     <main
       style={{
-        position: "fixed",
-        inset: 0,
-        zIndex: 9999,
+        position: "relative",
+        minHeight: "calc(100vh - 130px)",
         overflow: "hidden",
-        background: "#010403",
+        background: "#000",
       }}
-      aria-label="VIA homepage background review"
+      aria-label="VIA homepage review"
     >
       <ViaHomeEarth />
     </main>
