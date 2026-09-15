@@ -23,7 +23,6 @@ export default function ViaHomeEarth() {
           preload="auto"
           poster="/via-earth-approved.jpg"
           onError={() => setVideoFailed(true)}
-          onStalled={() => setVideoFailed(true)}
         >
           <source src="/api/nasa-earth" type="video/mp4" />
         </video>
