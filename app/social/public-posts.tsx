@@ -15,6 +15,7 @@ import { restoreIdentitySession, VIA_IDENTITY_EVENT, type ViaIdentitySession } f
 type PublicPost = {
   postHash: string
   publicKey: string
+  username?: string
   body: string
   imageUrls: string[]
   videoUrls: string[]
@@ -281,12 +282,13 @@ export default function PublicPosts() {
             const totalReposts = post.repostCount + post.quoteRepostCount
             const isOwnPost = session?.publicKey === post.publicKey
             const options = pollOptions(post.postExtraData)
+            const username = typeof post.username === "string" ? post.username.trim().replace(/^@/, "") : ""
 
             return (
               <article key={post.postHash} className="rounded-2xl border border-zinc-800/80 bg-[#050806]/80 p-4 sm:p-5">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <p className="text-xs font-semibold text-zinc-300">DeSo · <span className="font-mono text-zinc-400">{shortPublicKey(post.publicKey)}</span></p>
+                    <p className="text-xs font-semibold text-zinc-300">DeSo · {username ? <span className="text-zinc-200">@{username}</span> : <span className="font-mono text-zinc-400">{shortPublicKey(post.publicKey)}</span>}</p>
                     {time ? <p className="mt-1 text-[11px] text-zinc-600">{time}</p> : null}
                   </div>
                   {post.isNft ? <span className="rounded-full border border-[#8fd4a9]/35 px-2.5 py-1 text-[11px] text-[#9adbb2]">NFT</span> : null}
