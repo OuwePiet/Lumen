@@ -10,6 +10,12 @@ import {
   restoreIdentitySession,
   type ViaIdentitySession,
 } from "./deso-identity-session"
+import {
+  readViaLocalSettings,
+  saveViaLocalSettings,
+  VIA_LANGUAGES,
+  type ViaLanguage,
+} from "./via-local-settings"
 
 type PublicProfile = { username?: string; profilePic?: string | null }
 type ProfileResponse = { ok?: boolean; profile?: PublicProfile }
@@ -24,6 +30,14 @@ const nav = [
   ["Communities", "/communities"],
   ["My VIA", "/my-via"],
 ] as const
+
+const languageCodes: Record<ViaLanguage, string> = {
+  Dutch: "NL",
+  English: "EN",
+  French: "FR",
+  Spanish: "ES",
+  Chinese: "中文",
+}
 
 const pill = {
   minHeight: "38px",
@@ -54,6 +68,7 @@ const styles = {
   activeLink: { color: "#eef5f0" },
   activeLine: { position: "absolute" as const, left: "10px", right: "10px", bottom: "14px", height: "1px", background: "#8fd4a9" },
   search: { ...pill, minWidth: "205px", justifyContent: "flex-start" },
+  language: { ...pill, appearance: "none" as const, cursor: "pointer", paddingRight: "14px", outline: "none" },
   login: { ...pill, cursor: "pointer" },
   visitor: { ...pill, color: "#98a69e" },
   accountWrap: { position: "relative" as const, flex: "0 0 auto", display: "grid", justifyItems: "end" as const, gap: "2px" },
@@ -84,9 +99,11 @@ export default function ViaSiteHeader() {
   const [profile, setProfile] = useState<PublicProfile | null>(null)
   const [status, setStatus] = useState<"idle" | "waiting" | "blocked">("idle")
   const [menuOpen, setMenuOpen] = useState(false)
+  const [language, setLanguage] = useState<ViaLanguage>("Dutch")
 
   useEffect(() => {
     setSession(restoreIdentitySession())
+    setLanguage(readViaLocalSettings().defaultLanguage)
     function handleIdentityMessage(event: MessageEvent) {
       const identityWindow = identityWindowRef.current
       if (identityWindow && event.source !== identityWindow) return
@@ -140,6 +157,12 @@ export default function ViaSiteHeader() {
     identityWindow.focus()
   }
 
+  function changeLanguage(next: ViaLanguage) {
+    const current = readViaLocalSettings()
+    saveViaLocalSettings({ ...current, defaultLanguage: next })
+    setLanguage(next)
+  }
+
   function logout() {
     clearIdentitySession()
     setSession(null)
@@ -169,7 +192,10 @@ export default function ViaSiteHeader() {
 
         <div style={styles.toolsRow} aria-label="VIA utility controls">
           <Link href="/discover" style={styles.search}>⌕&nbsp;&nbsp; Search members</Link>
-          <Link href="/settings" style={pill}>EN</Link>
+          <label className="sr-only" htmlFor="via-header-language">VIA language</label>
+          <select id="via-header-language" value={language} onChange={(event) => changeLanguage(event.target.value as ViaLanguage)} style={styles.language} aria-label="VIA language">
+            {VIA_LANGUAGES.map((item) => <option key={item} value={item}>{languageCodes[item]}</option>)}
+          </select>
           <Link href="/discover" style={pill}>Public Entrance</Link>
           {!session ? <button type="button" style={styles.login} onClick={openDeSoIdentity}>{status === "waiting" ? "Connecting…" : "DeSo Login"}</button> : null}
           <Link href="/wallet" style={pill}>Buy $DESO</Link>
