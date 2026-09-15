@@ -73,14 +73,13 @@ function pollOptions(extraData?: Record<string, string>) {
 }
 
 function feedReadyMessage(choice: ChoiceId) {
-  if (choice === "following") return "Enter a DeSo username or public key to open Following."
+  if (choice === "following") return "Following uses your active DeSo account."
   if (choice === "recent") return "Newest public DeSo posts are ready."
   return "Hot is ready."
 }
 
 export default function PublicPosts() {
   const requestController = useRef<AbortController | null>(null)
-  const [identity, setIdentity] = useState("")
   const [posts, setPosts] = useState<PublicPost[]>([])
   const [mediaFilter, setMediaFilter] = useState<"all" | "image" | "video" | "nft">("all")
   const [loading, setLoading] = useState(false)
@@ -129,12 +128,20 @@ export default function PublicPosts() {
     setSession(restoreIdentitySession())
     const onIdentity = (event: Event) => {
       const custom = event as CustomEvent<ViaIdentitySession | null>
-      setSession(custom.detail ?? restoreIdentitySession())
-      if (!custom.detail && !restoreIdentitySession()) setReplyingTo(null)
+      const nextSession = custom.detail ?? restoreIdentitySession()
+      setSession(nextSession)
+      if (!nextSession) setReplyingTo(null)
+      if (feedChoice === "following") {
+        requestController.current?.abort()
+        requestController.current = null
+        setPosts([])
+        setLoading(false)
+        setMessage(nextSession ? "Following uses your active DeSo account." : "Log in with DeSo to open Following.")
+      }
     }
     window.addEventListener(VIA_IDENTITY_EVENT, onIdentity)
     return () => window.removeEventListener(VIA_IDENTITY_EVENT, onIdentity)
-  }, [])
+  }, [feedChoice])
 
   useEffect(() => {
     try {
@@ -153,7 +160,8 @@ export default function PublicPosts() {
       setMediaFilter("all")
       setLoading(false)
       setReplyingTo(null)
-      setMessage(feedReadyMessage(choice))
+      if (choice === "following" && !restoreIdentitySession()) setMessage("Log in with DeSo to open Following.")
+      else setMessage(feedReadyMessage(choice))
     }
 
     window.addEventListener(VIA_SOCIAL_FEED_EVENT, onFeedChoice)
@@ -177,11 +185,11 @@ export default function PublicPosts() {
     requestController.current?.abort()
     const controller = new AbortController()
     requestController.current = controller
-    const value = identity.trim().replace(/^@/, "")
 
-    if (feedChoice === "following" && !value) {
+    if (feedChoice === "following" && !session) {
       setPosts([])
-      setMessage("Enter a username or public key for Following.")
+      setMessage("Log in with DeSo to open Following.")
+      requestController.current = null
       return
     }
 
@@ -189,7 +197,7 @@ export default function PublicPosts() {
     setMessage("Loading…")
     try {
       const endpoint = feedChoice === "following"
-        ? `/api/via/following?identity=${encodeURIComponent(value)}`
+        ? `/api/via/following?identity=${encodeURIComponent(session?.publicKey ?? "")}`
         : feedChoice === "hot"
           ? "/api/via/discovery?limit=20"
           : "/api/via/discovery?limit=20&sort=new"
@@ -234,24 +242,16 @@ export default function PublicPosts() {
       </div>
 
       <form onSubmit={loadPosts} className="mt-4 flex max-w-2xl flex-col gap-3 sm:flex-row">
-        {feedChoice === "following" ? (
-          <>
-            <label className="sr-only" htmlFor="social-public-identity">DeSo identity for Following</label>
-            <input
-              id="social-public-identity"
-              value={identity}
-              onChange={(event) => setIdentity(event.target.value)}
-              maxLength={128}
-              autoCapitalize="none"
-              autoCorrect="off"
-              placeholder="Username or public key"
-              className="min-w-0 flex-1 rounded-xl border border-zinc-800 bg-black/35 px-4 py-3 text-sm text-zinc-100 outline-none focus:border-[#8fd4a9]/45"
-            />
-          </>
-        ) : (
-          <p className="flex-1 self-center text-sm text-zinc-500">{feedChoice === "hot" ? "Public Hot feed" : "Newest public DeSo posts"}</p>
-        )}
-        <button type="submit" disabled={loading} className="rounded-xl border border-[#8fd4a9]/45 px-5 py-3 text-sm font-medium text-[#9adbb2] disabled:opacity-50">
+        <p className="flex-1 self-center text-sm text-zinc-500">
+          {feedChoice === "following"
+            ? session
+              ? `Following for ${shortPublicKey(session.publicKey)}`
+              : "DeSo login required for Following"
+            : feedChoice === "hot"
+              ? "Public Hot feed"
+              : "Newest public DeSo posts"}
+        </p>
+        <button type="submit" disabled={loading || (feedChoice === "following" && !session)} className="rounded-xl border border-[#8fd4a9]/45 px-5 py-3 text-sm font-medium text-[#9adbb2] disabled:opacity-50">
           {loading ? "Loading…" : feedChoice === "following" ? "Open Following" : feedChoice === "hot" ? "Open Hot" : "Open New"}
         </button>
       </form>
