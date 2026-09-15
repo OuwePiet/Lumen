@@ -51,7 +51,7 @@ export default function ViaFeatured() {
         position: "relative",
         zIndex: 2,
         width: "min(1480px, calc(100% - 32px))",
-        margin: "24px auto 0",
+        margin: "82px auto 0",
       }}
     >
       <h2
