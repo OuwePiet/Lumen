@@ -44,12 +44,11 @@ function safePostExtraData(value: unknown) {
 }
 
 /**
- * Reads a bounded public DeSo hot-feed page for VIA Discovery.
- * DeSo documents the hotness algorithm as experimental, so VIA exposes this
- * only as a discovery source, never as a trust, quality or endorsement signal.
+ * Reads a bounded public DeSo hot-feed page for VIA Social/Discovery.
+ * sortByNew switches DeSo's own get-hot-feed endpoint to newest-first order.
  * No wallet authority or write action is requested.
  */
-export async function readDiscoveryPosts(limit = 20): Promise<ViaPublicPost[]> {
+export async function readDiscoveryPosts(limit = 20, sortByNew = false): Promise<ViaPublicPost[]> {
   const responseLimit = Math.max(1, Math.min(30, Math.trunc(limit) || 20))
   const response = await fetchDeSo("get-hot-feed", {
     method: "POST",
@@ -59,7 +58,7 @@ export async function readDiscoveryPosts(limit = 20): Promise<ViaPublicPost[]> {
       SeenPosts: [],
       ResponseLimit: responseLimit,
       Tag: "",
-      SortByNew: false,
+      SortByNew: sortByNew,
     }),
   })
 
