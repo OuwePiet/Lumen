@@ -1,5 +1,6 @@
 "use client"
 
+import Link from "next/link"
 import { useEffect, useState } from "react"
 
 export const VIA_SOCIAL_FEED_STORAGE_KEY = "via:social:feed-choice:v1"
@@ -7,8 +8,8 @@ export const VIA_SOCIAL_FEED_EVENT = "via:social:feed-choice"
 
 const choices = [
   { id: "following", title: "Following", text: "Posts from accounts followed by the selected DeSo identity." },
-  { id: "recent", title: "Recent", text: "Newest public posts first." },
   { id: "hot", title: "Hot", text: "DeSo Hot ranking." },
+  { id: "recent", title: "New", text: "Newest public posts first." },
 ] as const
 
 export type ChoiceId = (typeof choices)[number]["id"]
@@ -40,6 +41,8 @@ export default function FeedChoice() {
 
   const active = choices.find((choice) => choice.id === selected) ?? choices[0]
 
+  const inactiveClass = "rounded-full border border-zinc-800 px-4 py-2 text-sm text-zinc-400 transition hover:border-zinc-700 hover:text-zinc-200"
+
   return (
     <section className="rounded-2xl border border-white/10 bg-black/35 px-4 py-3 sm:px-5" aria-labelledby="feed-choice-heading">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -57,12 +60,13 @@ export default function FeedChoice() {
                 type="button"
                 aria-pressed={isActive}
                 onClick={() => choose(choice.id)}
-                className={`rounded-full border px-4 py-2 text-sm transition ${isActive ? "border-[#8fd4a9]/55 bg-[#102117]/70 text-[#9adbb2]" : "border-zinc-800 text-zinc-400 hover:border-zinc-700 hover:text-zinc-200"}`}
+                className={isActive ? "rounded-full border border-[#8fd4a9]/55 bg-[#102117]/70 px-4 py-2 text-sm text-[#9adbb2] transition" : inactiveClass}
               >
                 {choice.title}
               </button>
             )
           })}
+          <Link href="/discover" className={inactiveClass}>#Explore</Link>
         </div>
       </div>
       <p className="mt-2 min-h-4 text-[11px] text-zinc-600" role="status" aria-live="polite">{status}</p>
