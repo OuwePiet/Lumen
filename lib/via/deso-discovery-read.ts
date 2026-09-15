@@ -4,6 +4,7 @@ import type { ViaPublicPost } from "./deso-post-read"
 type DeSoPost = {
   PostHashHex?: unknown
   PosterPublicKeyBase58Check?: unknown
+  ProfileEntryResponse?: { Username?: unknown } | null
   Body?: unknown
   ImageURLs?: unknown
   VideoURLs?: unknown
@@ -73,6 +74,7 @@ export async function readDiscoveryPosts(limit = 20, sortByNew = false): Promise
     .map((post) => ({
       postHash: text(post.PostHashHex),
       publicKey: text(post.PosterPublicKeyBase58Check),
+      username: text(post.ProfileEntryResponse?.Username),
       body: text(post.Body),
       imageUrls: safeHttpsUrls(post.ImageURLs),
       videoUrls: safeHttpsUrls(post.VideoURLs),
