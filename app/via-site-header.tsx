@@ -44,17 +44,15 @@ const pill = {
 
 const styles = {
   header: { position: "sticky" as const, top: 0, zIndex: 80, background: "rgba(2,7,4,.95)", backdropFilter: "blur(18px)", borderBottom: "1px solid rgba(143,212,169,.13)" },
-  row: { width: "min(1480px, calc(100% - 32px))", margin: "0 auto", display: "flex", alignItems: "center", gap: "18px" },
-  top: { minHeight: "72px" },
-  brand: { flex: "0 0 auto", display: "flex", alignItems: "center", gap: "9px", color: "inherit", textDecoration: "none" },
-  logo: { width: "108px", height: "46px", objectFit: "contain" as const },
-  domain: { color: "#77847c", fontSize: "10px", letterSpacing: ".04em", whiteSpace: "nowrap" as const },
+  shell: { width: "min(1480px, calc(100% - 32px))", margin: "0 auto", display: "grid", gridTemplateColumns: "260px minmax(0,1fr)", gridTemplateRows: "72px 58px", columnGap: "18px", alignItems: "stretch" },
+  brand: { gridColumn: "1", gridRow: "1 / span 2", display: "flex", alignItems: "center", justifyContent: "center", color: "inherit", textDecoration: "none" },
+  logo: { width: "250px", height: "130px", objectFit: "contain" as const, display: "block" },
+  topRow: { gridColumn: "2", gridRow: "1", minWidth: 0, display: "flex", alignItems: "center" },
+  toolsRow: { gridColumn: "2", gridRow: "2", minWidth: 0, display: "flex", alignItems: "center", justifyContent: "center", gap: "9px", overflowX: "auto" as const, padding: "9px 0", scrollbarWidth: "none" as const, borderTop: "1px solid rgba(143,212,169,.08)" },
   nav: { flex: "1 1 auto", minWidth: 0, display: "flex", alignItems: "center", justifyContent: "center", gap: "2px", overflowX: "auto" as const, scrollbarWidth: "none" as const },
   link: { position: "relative" as const, flex: "0 0 auto", padding: "25px 10px 22px", color: "#aeb9b2", textDecoration: "none", fontSize: "12px", fontWeight: 650, whiteSpace: "nowrap" as const },
   activeLink: { color: "#eef5f0" },
   activeLine: { position: "absolute" as const, left: "10px", right: "10px", bottom: "14px", height: "1px", background: "#8fd4a9" },
-  toolsWrap: { borderTop: "1px solid rgba(143,212,169,.08)" },
-  tools: { minHeight: "58px", justifyContent: "center", gap: "9px", overflowX: "auto" as const, padding: "9px 0", scrollbarWidth: "none" as const },
   search: { ...pill, minWidth: "205px", justifyContent: "flex-start" },
   login: { ...pill, cursor: "pointer" },
   visitor: { ...pill, color: "#98a69e" },
@@ -155,21 +153,21 @@ export default function ViaSiteHeader() {
 
   return (
     <header style={styles.header}>
-      <div style={{ ...styles.row, ...styles.top }}>
+      <div style={styles.shell}>
         <Link href="/" style={styles.brand} aria-label="VIA home">
           <img src="/via-logo.svg" alt="VIA" style={styles.logo} />
-          <span style={styles.domain}>viadeso.online</span>
         </Link>
-        <nav style={styles.nav} aria-label="VIA main navigation">
-          {nav.map(([label, href]) => {
-            const active = href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`)
-            return <Link key={href} href={href} style={{ ...styles.link, ...(active ? styles.activeLink : {}) }}>{label}{active ? <span style={styles.activeLine} aria-hidden="true" /> : null}</Link>
-          })}
-        </nav>
-      </div>
 
-      <div style={styles.toolsWrap}>
-        <div style={{ ...styles.row, ...styles.tools }} aria-label="VIA utility controls">
+        <div style={styles.topRow}>
+          <nav style={styles.nav} aria-label="VIA main navigation">
+            {nav.map(([label, href]) => {
+              const active = href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`)
+              return <Link key={href} href={href} style={{ ...styles.link, ...(active ? styles.activeLink : {}) }}>{label}{active ? <span style={styles.activeLine} aria-hidden="true" /> : null}</Link>
+            })}
+          </nav>
+        </div>
+
+        <div style={styles.toolsRow} aria-label="VIA utility controls">
           <Link href="/discover" style={styles.search}>⌕&nbsp;&nbsp; Search members</Link>
           <Link href="/settings" style={pill}>EN</Link>
           <Link href="/discover" style={pill}>Public Entrance</Link>
