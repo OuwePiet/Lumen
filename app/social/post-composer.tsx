@@ -46,6 +46,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
   const [imageUploadStatus, setImageUploadStatus] = useState<"idle" | "jwt" | "uploading" | "error">("idle")
   const [imageUploadMessage, setImageUploadMessage] = useState("")
   const [videoUploading, setVideoUploading] = useState(false)
+  const [mediaOpen, setMediaOpen] = useState(!compact)
   const popupRef = useRef<Window | null>(null)
   const popupWatch = useRef<number | null>(null)
   const isReply = Boolean(parentStakeID)
@@ -83,6 +84,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
         setImageUploadStatus("idle")
         setImageUploadMessage("")
         setVideoUploading(false)
+        setMediaOpen(!compact)
         onDone?.()
       } catch {
         setStatus("error")
@@ -97,7 +99,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
       popupRef.current?.close()
       popupRef.current = null
     }
-  }, [isReply, onDone])
+  }, [compact, isReply, onDone])
 
   const parsedImages = imageInputs.map(httpsUrl)
   const parsedVideo = httpsUrl(videoInput)
@@ -224,7 +226,9 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
       <label htmlFor={isReply ? `via-reply-${parentStakeID}` : "via-post-body"} className="mt-4 block text-sm font-medium text-zinc-200">{isReply ? "Reply text" : "Post text"}</label>
       <textarea id={isReply ? `via-reply-${parentStakeID}` : "via-post-body"} value={body} onChange={(event) => { setBody(event.target.value); if (status === "done" || status === "error") { setStatus("idle"); setMessage("") } }} maxLength={MAX_POST_LENGTH} rows={compact ? 3 : 5} placeholder={isReply ? "Write a public reply on DeSo…" : "What would you like to share on DeSo?"} className="mt-2 w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-3 text-sm text-zinc-100 outline-none focus:border-[#8fd4a9]/55" />
 
-      {!compact ? <div className="mt-4 rounded-xl border border-zinc-800 bg-zinc-950/70 p-3">
+      {compact ? <button type="button" onClick={() => setMediaOpen((open) => !open)} className="mt-3 rounded-lg border border-zinc-800 px-3 py-1.5 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2]">{mediaOpen ? "Hide photo/video" : "Add photo/video"}</button> : null}
+
+      {(!compact || mediaOpen) ? <div className="mt-4 rounded-xl border border-zinc-800 bg-zinc-950/70 p-3">
         <p className="text-sm font-medium text-zinc-200">Images</p>
         <p className="mt-1 text-xs leading-5 text-zinc-500">Choose an image to upload through DeSo, or paste an existing durable HTTPS URL. VIA does not keep a permanent copy. A short-lived Identity JWT is requested only for the upload.</p>
 
