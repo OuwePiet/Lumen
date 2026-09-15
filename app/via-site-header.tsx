@@ -6,8 +6,10 @@ import { useEffect, useRef, useState } from "react"
 import {
   DESO_LOGIN_URL,
   clearIdentitySession,
+  listIdentitySessions,
   persistIdentityLogin,
   restoreIdentitySession,
+  switchIdentitySession,
   type ViaIdentitySession,
 } from "./deso-identity-session"
 import {
@@ -76,10 +78,11 @@ const styles = {
   avatar: { width: "28px", height: "28px", borderRadius: "50%", objectFit: "cover" as const },
   avatarFallback: { width: "28px", height: "28px", borderRadius: "50%", display: "grid", placeItems: "center", background: "#183326", color: "#9adbb2", fontSize: "11px", fontWeight: 900 },
   status: { color: "#c6a97b", fontSize: "9px" },
-  menu: { position: "absolute" as const, right: 0, top: "48px", width: "210px", padding: "8px", border: "1px solid rgba(143,212,169,.18)", borderRadius: "14px", background: "rgba(5,10,7,.99)", boxShadow: "0 18px 44px rgba(0,0,0,.38)" },
+  menu: { position: "absolute" as const, right: 0, top: "48px", width: "240px", padding: "8px", border: "1px solid rgba(143,212,169,.18)", borderRadius: "14px", background: "rgba(5,10,7,.99)", boxShadow: "0 18px 44px rgba(0,0,0,.38)" },
   menuLabel: { padding: "7px 9px 9px", color: "#78867e", fontSize: "10px", letterSpacing: ".08em", textTransform: "uppercase" as const },
   menuLink: { display: "block", minHeight: "38px", padding: "9px 10px", borderRadius: "9px", color: "#d3ddd7", textDecoration: "none", fontSize: "12px", lineHeight: "20px" },
   menuButton: { width: "100%", minHeight: "38px", padding: "9px 10px", border: 0, borderRadius: "9px", color: "#b7c3bc", background: "transparent", cursor: "pointer", textAlign: "left" as const, fontSize: "12px" },
+  accountChoice: { width: "100%", minHeight: "36px", padding: "8px 10px", border: 0, borderRadius: "9px", color: "#aeb9b2", background: "transparent", cursor: "pointer", textAlign: "left" as const, fontSize: "11px", fontFamily: "monospace" },
   divider: { height: "1px", margin: "6px 4px", background: "rgba(143,212,169,.10)" },
 }
 
@@ -91,18 +94,28 @@ function safeProfileImage(value?: string | null) {
   } catch { return undefined }
 }
 
+function shortPublicKey(publicKey: string) {
+  return `${publicKey.slice(0, 9)}…${publicKey.slice(-6)}`
+}
+
 export default function ViaSiteHeader() {
   const pathname = usePathname()
   const identityWindowRef = useRef<Window | null>(null)
   const accountWrapRef = useRef<HTMLDivElement | null>(null)
   const [session, setSession] = useState<ViaIdentitySession | null>(null)
+  const [knownAccounts, setKnownAccounts] = useState<ViaIdentitySession[]>([])
   const [profile, setProfile] = useState<PublicProfile | null>(null)
   const [status, setStatus] = useState<"idle" | "waiting" | "blocked">("idle")
   const [menuOpen, setMenuOpen] = useState(false)
   const [language, setLanguage] = useState<ViaLanguage>("Dutch")
 
+  function refreshKnownAccounts() {
+    setKnownAccounts(listIdentitySessions())
+  }
+
   useEffect(() => {
     setSession(restoreIdentitySession())
+    refreshKnownAccounts()
     setLanguage(readViaLocalSettings().defaultLanguage)
     function handleIdentityMessage(event: MessageEvent) {
       const identityWindow = identityWindowRef.current
@@ -110,6 +123,7 @@ export default function ViaSiteHeader() {
       const nextSession = persistIdentityLogin(event)
       if (!nextSession) return
       setSession(nextSession)
+      refreshKnownAccounts()
       setMenuOpen(false)
       setStatus("idle")
       identityWindowRef.current?.close()
@@ -163,6 +177,15 @@ export default function ViaSiteHeader() {
     setLanguage(next)
   }
 
+  function chooseAccount(publicKey: string) {
+    const nextSession = switchIdentitySession(publicKey)
+    if (!nextSession) return
+    setSession(nextSession)
+    setProfile(null)
+    setMenuOpen(false)
+    setStatus("idle")
+  }
+
   function logout() {
     clearIdentitySession()
     setSession(null)
@@ -173,6 +196,7 @@ export default function ViaSiteHeader() {
 
   const avatar = safeProfileImage(profile?.profilePic)
   const accountLabel = profile?.username ? `@${profile.username}` : "DeSo connected"
+  const otherAccounts = knownAccounts.filter((account) => account.publicKey !== session?.publicKey)
 
   return (
     <header style={styles.header}>
@@ -204,21 +228,26 @@ export default function ViaSiteHeader() {
 
           {session ? (
             <div ref={accountWrapRef} style={styles.accountWrap}>
-              <button type="button" style={styles.accountButton} onClick={() => setMenuOpen((open) => !open)} aria-label="Open VIA account menu" aria-expanded={menuOpen} aria-haspopup="menu">
+              <button type="button" style={styles.accountButton} onClick={() => { refreshKnownAccounts(); setMenuOpen((open) => !open) }} aria-label="Open VIA account menu" aria-expanded={menuOpen} aria-haspopup="menu">
                 {avatar ? <img src={avatar} alt="" style={styles.avatar} referrerPolicy="no-referrer" /> : <span style={styles.avatarFallback} aria-hidden="true">{profile?.username?.slice(0, 1).toUpperCase() ?? "V"}</span>}
                 <span>{accountLabel}</span><span aria-hidden="true">▾</span>
               </button>
               {menuOpen ? (
                 <div style={styles.menu} role="menu" aria-label="VIA account menu">
-                  <div style={styles.menuLabel}>{profile?.username ? `@${profile.username}` : "DeSo account"}</div>
+                  <div style={styles.menuLabel}>{profile?.username ? `@${profile.username}` : shortPublicKey(session.publicKey)}</div>
                   <Link href="/my-via" style={styles.menuLink} role="menuitem">My VIA</Link>
                   <Link href="/profile" style={styles.menuLink} role="menuitem">Profile</Link>
                   <Link href="/wallet" style={styles.menuLink} role="menuitem">Wallet</Link>
                   <Link href="/saved" style={styles.menuLink} role="menuitem">Saved</Link>
                   <Link href="/studio#drafts" style={styles.menuLink} role="menuitem">Drafts</Link>
                   <Link href="/settings" style={styles.menuLink} role="menuitem">Settings</Link>
+                  {otherAccounts.length ? <>
+                    <div style={styles.divider} />
+                    <div style={styles.menuLabel}>Switch account</div>
+                    {otherAccounts.map((account) => <button key={account.publicKey} type="button" style={styles.accountChoice} onClick={() => chooseAccount(account.publicKey)} role="menuitem">{shortPublicKey(account.publicKey)}</button>)}
+                  </> : null}
                   <div style={styles.divider} />
-                  <button type="button" style={styles.menuButton} onClick={openDeSoIdentity} role="menuitem">Switch / add account</button>
+                  <button type="button" style={styles.menuButton} onClick={openDeSoIdentity} role="menuitem">Add DeSo account</button>
                   <button type="button" style={styles.menuButton} onClick={logout} role="menuitem">Logout from VIA</button>
                 </div>
               ) : null}
