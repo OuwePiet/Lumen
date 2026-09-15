@@ -1,6 +1,7 @@
 import Link from "next/link"
 import ViaFeatured from "./via-featured"
 import ViaHomeEarth from "./via-home-earth"
+import ViaSeasonal from "./via-seasonal"
 
 const homeActions = [
   ["Explore NFTs", "/collection"],
@@ -22,6 +23,7 @@ export default function Home() {
       aria-label="VIA homepage review"
     >
       <ViaHomeEarth />
+      <ViaSeasonal />
 
       <div
         style={{
