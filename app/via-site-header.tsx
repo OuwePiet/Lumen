@@ -45,7 +45,7 @@ const pill = {
 const styles = {
   header: { position: "sticky" as const, top: 0, zIndex: 80, background: "rgba(2,7,4,.95)", backdropFilter: "blur(18px)", borderBottom: "1px solid rgba(143,212,169,.13)" },
   shell: { width: "min(1480px, calc(100% - 32px))", margin: "0 auto", display: "grid", gridTemplateColumns: "260px minmax(0,1fr)", gridTemplateRows: "72px 58px", columnGap: "18px", alignItems: "stretch" },
-  brand: { gridColumn: "1", gridRow: "1 / span 2", display: "flex", alignItems: "center", justifyContent: "center", color: "inherit", textDecoration: "none" },
+  brand: { gridColumn: "1", gridRow: "1 / span 2", display: "flex", alignItems: "center", justifyContent: "center", color: "inherit", textDecoration: "none", overflow: "hidden" },
   logo: { width: "250px", height: "130px", objectFit: "contain" as const, display: "block" },
   topRow: { gridColumn: "2", gridRow: "1", minWidth: 0, display: "flex", alignItems: "center" },
   toolsRow: { gridColumn: "2", gridRow: "2", minWidth: 0, display: "flex", alignItems: "center", justifyContent: "center", gap: "9px", overflowX: "auto" as const, padding: "9px 0", scrollbarWidth: "none" as const, borderTop: "1px solid rgba(143,212,169,.08)" },
@@ -155,7 +155,7 @@ export default function ViaSiteHeader() {
     <header style={styles.header}>
       <div style={styles.shell}>
         <Link href="/" style={styles.brand} aria-label="VIA home">
-          <img src="/via-logo.svg" alt="VIA" style={styles.logo} />
+          <img src="/via-logo-original.jpg?v=1" alt="VIA" style={styles.logo} />
         </Link>
 
         <div style={styles.topRow}>
