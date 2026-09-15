@@ -142,7 +142,7 @@ export default function ViaHomeControls() {
         ) : (
           <button type="button" onClick={logout} style={{ ...linkStyle, cursor: "pointer" }}>Logout</button>
         )}
-        <span style={{ ...linkStyle, color: "#7f8d85" }}>Visitors —</span>
+        <span style={{ ...linkStyle, color: "#7f8d85" }}>Visitors</span>
       </div>
 
       <div style={{ height: "1px", background: "rgba(143,212,169,.12)", margin: "2px 4px" }} />
