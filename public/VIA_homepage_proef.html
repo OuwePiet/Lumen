@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VIA — Art • People • Ideas on DeSo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #05080f;
+      --card-bg: rgba(15, 20, 30, 0.75);
+      --border: rgba(255, 255, 255, 0.08);
+      --text: #e8eef7;
+      --text-muted: #9aa8bc;
+      --accent: #7dd3c0;
+      --glow: rgba(125, 211, 192, 0.25);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: var(--bg-dark);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .hero-bg {
+      position: fixed;
+      inset: 0;
+      z-index: -2;
+      background:
+        radial-gradient(ellipse 80% 50% at 50% 20%, rgba(30, 60, 90, 0.4) 0%, transparent 60%),
+        radial-gradient(ellipse 100% 80% at 50% 100%, rgba(10, 25, 45, 0.9) 0%, transparent 50%),
+        linear-gradient(180deg, #02040a 0%, #0a1424 40%, #05080f 100%);
+    }
+
+    .earth {
+      position: fixed;
+      bottom: -35%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 140%;
+      max-width: 1600px;
+      aspect-ratio: 2/1;
+      background:
+        radial-gradient(ellipse at 50% 30%, rgba(100, 180, 255, 0.15) 0%, transparent 50%),
+        url('https://images.unsplash.com/photo-1614732414444-096e5f1122d5?auto=format&fit=crop&w=1920&q=80') center bottom / cover no-repeat;
+      border-radius: 50%;
+      filter: brightness(0.85) contrast(1.1);
+      z-index: -1;
+      pointer-events: none;
+      mask-image: linear-gradient(to top, black 40%, transparent 95%);
+    }
+
+    .top-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 28px;
+      background: rgba(5, 8, 15, 0.7);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .nav-links { display: flex; gap: 4px; list-style: none; }
+
+    .nav-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      padding: 8px 14px;
+      border-radius: 20px;
+      transition: all 0.2s;
+    }
+
+    .nav-links a:hover,
+    .nav-links a.active {
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    .nav-links a.active {
+      background: rgba(125, 211, 192, 0.12);
+      color: var(--accent);
+    }
+
+    .nav-right { display: flex; align-items: center; gap: 12px; }
+
+    .icon-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.04);
+      color: var(--text-muted);
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .icon-btn:hover { background: rgba(255,255,255,0.08); color: var(--text); }
+
+    .btn-pill {
+      background: #fff;
+      color: #111;
+      border: none;
+      border-radius: 999px;
+      padding: 8px 18px;
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 32px 10px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .logo { display: flex; flex-direction: column; line-height: 1; }
+
+    .logo-main {
+      font-size: 42px;
+      font-weight: 700;
+      letter-spacing: -1px;
+      background: linear-gradient(90deg, #e8f4ff, #a8d4c4);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .logo-sub {
+      font-size: 11px;
+      letter-spacing: 3px;
+      color: var(--text-muted);
+      margin-top: 2px;
+      text-transform: uppercase;
+    }
+
+    .header-controls { display: flex; align-items: center; gap: 10px; }
+
+    .search-box {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 8px 16px;
+      min-width: 200px;
+    }
+
+    .search-box input {
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text);
+      font-size: 13px;
+      width: 100%;
+    }
+
+    .search-box input::placeholder { color: var(--text-muted); }
+
+    .control-btn {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 999px;
+      padding: 7px 14px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .control-btn:hover { background: rgba(255,255,255,0.1); }
+
+    .profile {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(125, 211, 192, 0.1);
+      border: 1px solid rgba(125, 211, 192, 0.25);
+      border-radius: 999px;
+      padding: 5px 12px 5px 6px;
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .profile-avatar {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #7dd3c0, #4a9b8a);
+      display: grid;
+      place-items: center;
+      font-size: 11px;
+      font-weight: 700;
+      color: #04120e;
+    }
+
+    .hero {
+      text-align: center;
+      padding: 40px 24px 60px;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .tagline {
+      font-size: 12px;
+      letter-spacing: 4px;
+      color: var(--accent);
+      margin-bottom: 18px;
+      font-weight: 500;
+    }
+
+    .hero h1 {
+      font-size: clamp(32px, 5vw, 48px);
+      font-weight: 700;
+      line-height: 1.2;
+      margin-bottom: 16px;
+      letter-spacing: -0.5px;
+    }
+
+    .hero p {
+      font-size: 16px;
+      color: var(--text-muted);
+      max-width: 520px;
+      margin: 0 auto 32px;
+      line-height: 1.5;
+    }
+
+    .cta-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
+
+    .cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 12px;
+      padding: 12px 20px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+    }
+
+    .cta:hover {
+      background: rgba(255,255,255,0.1);
+      border-color: rgba(255,255,255,0.15);
+      transform: translateY(-1px);
+    }
+
+    .cta svg { width: 18px; height: 18px; opacity: 0.85; }
+
+    .featured {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 0 28px 80px;
+    }
+
+    .featured-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .featured-header h2 { font-size: 18px; font-weight: 600; }
+    .featured-header a { color: var(--text-muted); font-size: 13px; text-decoration: none; }
+    .featured-header a:hover { color: var(--accent); }
+
+    .cards { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; }
+
+    @media (max-width: 1100px) { .cards { grid-template-columns: repeat(3, 1fr); } }
+    @media (max-width: 700px) {
+      .cards { grid-template-columns: repeat(2, 1fr); }
+      .nav-links { display: none; }
+      .header { flex-direction: column; gap: 16px; align-items: flex-start; }
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      transition: all 0.25s;
+      cursor: pointer;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(125, 211, 192, 0.3);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+    }
+
+    .card-img { aspect-ratio: 1; background: #111; position: relative; overflow: hidden; }
+    .card-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .card-img.dutch   { background: linear-gradient(145deg, #1a2a3a, #0d1520); }
+    .card-img.thinker { background: linear-gradient(145deg, #2a2218, #120e0a); }
+    .card-img.ship    { background: linear-gradient(145deg, #1a2535, #0a121c); }
+    .card-img.light   { background: linear-gradient(145deg, #1c2a38, #0c141e); }
+    .card-img.bird    { background: linear-gradient(145deg, #1e2a28, #0e1614); }
+    .card-body { padding: 14px 16px 16px; }
+    .card-title { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+    .card-author { font-size: 12px; color: var(--text-muted); }
+
+    .bottom-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(5, 8, 15, 0.85);
+      backdrop-filter: blur(16px);
+      border-top: 1px solid var(--border);
+      padding: 10px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      color: var(--text-muted);
+      z-index: 50;
+    }
+
+    .bottom-left { display: flex; gap: 20px; }
+    .bottom-right { display: flex; gap: 24px; align-items: center; }
+    .stat strong { color: var(--text); font-weight: 600; }
+  </style>
+</head>
+<body>
+  <div class="hero-bg"></div>
+  <div class="earth"></div>
+
+  <nav class="top-nav">
+    <ul class="nav-links">
+      <li><a href="#" class="active">Home</a></li>
+      <li><a href="#">Feed</a></li>
+      <li><a href="#">Discover</a></li>
+      <li><a href="#">NFTs</a></li>
+      <li><a href="#">Market</a></li>
+      <li><a href="#">Studio</a></li>
+      <li><a href="#">Live</a></li>
+      <li><a href="#">Communities</a></li>
+      <li><a href="#">My VIA</a></li>
+    </ul>
+    <div class="nav-right">
+      <button class="icon-btn" title="More">⋯</button>
+      <button class="icon-btn" title="Share">↗</button>
+      <button class="btn-pill">Delen</button>
+    </div>
+  </nav>
+
+  <header class="header">
+    <div class="logo">
+      <div class="logo-main">VIA</div>
+      <div class="logo-sub">VIADESO.ONLINE</div>
+    </div>
+
+    <div class="header-controls">
+      <div class="search-box">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+        </svg>
+        <input type="text" placeholder="Search members" />
+      </div>
+      <button class="control-btn">EN</button>
+      <button class="control-btn">Public Entrance</button>
+      <button class="control-btn">DeSo Login</button>
+      <button class="control-btn">Visitors —</button>
+      <div class="profile">
+        <div class="profile-avatar">OP</div>
+        <span>OuwePiet</span>
+        <span style="opacity:0.5">▾</span>
+      </div>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="tagline">ART • PEOPLE • IDEAS • ON DESO</div>
+    <h1>A global space for creators, collectors<br>and communities.</h1>
+    <p>Discover, collect, create and meet — all through VIA on DeSo.</p>
+
+    <div class="cta-row">
+      <a href="#" class="cta">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/>
+        </svg>
+        Explore NFTs
+      </a>
+      <a href="#" class="cta">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+        Join the Community
+      </a>
+      <a href="#" class="cta">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/>
+        </svg>
+        Create a Post
+      </a>
+      <a href="#" class="cta">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <circle cx="12" cy="12" r="2"/><path d="M16.24 7.76a6 6 0 0 1 0 8.49m-8.48-.01a6 6 0 0 1 0-8.49m11.31-2.82a10 10 0 0 1 0 14.14m-14.14 0a10 10 0 0 1 0-14.14"/>
+        </svg>
+        Go Live
+      </a>
+    </div>
+  </section>
+
+  <section class="featured">
+    <div class="featured-header">
+      <h2>Featured on VIA</h2>
+      <a href="#">View all →</a>
+    </div>
+
+    <div class="cards">
+      <div class="card">
+        <div class="card-img dutch"><img src="https://images.unsplash.com/photo-1596484552834-6a58f850faa9?auto=format&fit=crop&w=400&q=80" alt="Dutch Heritage" style="opacity:0.9; filter: grayscale(30%) contrast(1.1);"></div>
+        <div class="card-body"><div class="card-title">Dutch Heritage</div><div class="card-author">@OuwePiet</div></div>
+      </div>
+      <div class="card">
+        <div class="card-img thinker"><img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=400&q=80" alt="The Thinker" style="opacity:0.85; filter: grayscale(40%) contrast(1.15);"></div>
+        <div class="card-body"><div class="card-title">The Thinker</div><div class="card-author">@OuwePiet</div></div>
+      </div>
+      <div class="card">
+        <div class="card-img ship"><img src="https://images.unsplash.com/photo-1505118380757-91f5f5632de8?auto=format&fit=crop&w=400&q=80" alt="Beyond Horizons" style="opacity:0.9; filter: grayscale(35%) contrast(1.1);"></div>
+        <div class="card-body"><div class="card-title">Beyond Horizons</div><div class="card-author">@OuwePiet</div></div>
+      </div>
+      <div class="card">
+        <div class="card-img light"><img src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=400&q=80" alt="The Light" style="opacity:0.9; filter: grayscale(30%) contrast(1.1);"></div>
+        <div class="card-body"><div class="card-title">The Light</div><div class="card-author">@OuwePiet</div></div>
+      </div>
+      <div class="card">
+        <div class="card-img bird"><img src="https://images.unsplash.com/photo-1444464666168-49d633b86797?auto=format&fit=crop&w=400&q=80" alt="Nature Speaks" style="opacity:0.9; filter: grayscale(25%) contrast(1.05);"></div>
+        <div class="card-body"><div class="card-title">Nature Speaks</div><div class="card-author">@OuwePiet</div></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="bottom-bar">
+    <div class="bottom-left"><span>Art • Community • Freedom • On DeSo</span></div>
+    <div class="bottom-right">
+      <div class="stat">NEW YORK <strong>05:32</strong></div>
+      <div class="stat">LONDON <strong>10:32</strong></div>
+      <div class="stat">AMSTERDAM <strong>11:32</strong></div>
+      <div class="stat">TOKYO <strong>18:32</strong></div>
+      <div class="stat">DESO VALUE <strong>$12.48</strong></div>
+      <div class="stat">YOUR $DESO <strong>1,250</strong></div>
+    </div>
+  </div>
+</body>
+</html>
