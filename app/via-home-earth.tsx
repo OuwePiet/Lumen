@@ -11,10 +11,7 @@ export default function ViaHomeEarth() {
         playsInline
         preload="auto"
       >
-        <source
-          src="https://svs.gsfc.nasa.gov/vis/a030000/a030000/a030082/viirs_dnb_night_lights_rotating_earth_1080p.mp4"
-          type="video/mp4"
-        />
+        <source src="/api/nasa-earth" type="video/mp4" />
       </video>
       <style jsx>{`
         .via-nasa-earth {
