@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react"
-import { ChoiceId, VIA_SOCIAL_FEED_EVENT, VIA_SOCIAL_FEED_STORAGE_KEY } from "./feed-choice"
+import { ChoiceId, defaultSocialFeedChoice, VIA_SOCIAL_FEED_EVENT, VIA_SOCIAL_FEED_STORAGE_KEY } from "./feed-choice"
 import PostComposer from "./post-composer"
 import LikeButton from "./like-button"
 import FollowButton from "./follow-button"
@@ -84,7 +84,7 @@ export default function PublicPosts() {
   const [mediaFilter, setMediaFilter] = useState<"all" | "image" | "video" | "nft">("all")
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState("Choose a feed and load posts.")
-  const [feedChoice, setFeedChoice] = useState<ChoiceId>("following")
+  const [feedChoice, setFeedChoice] = useState<ChoiceId>("hot")
   const [session, setSession] = useState<ViaIdentitySession | null>(null)
   const [replyingTo, setReplyingTo] = useState<string | null>(null)
 
@@ -147,8 +147,17 @@ export default function PublicPosts() {
     try {
       const stored = window.localStorage.getItem(VIA_SOCIAL_FEED_STORAGE_KEY)
       const normalized = stored === "discovery" ? "hot" : stored
-      if (normalized === "following" || normalized === "recent" || normalized === "hot") setFeedChoice(normalized)
-    } catch {}
+      const initial = normalized === "following" || normalized === "recent" || normalized === "hot"
+        ? normalized
+        : defaultSocialFeedChoice()
+      setFeedChoice(initial)
+      if (initial === "following" && !restoreIdentitySession()) setMessage("Log in with DeSo to open Following.")
+      else setMessage(feedReadyMessage(initial))
+    } catch {
+      const initial = defaultSocialFeedChoice()
+      setFeedChoice(initial)
+      setMessage(initial === "following" && !restoreIdentitySession() ? "Log in with DeSo to open Following." : feedReadyMessage(initial))
+    }
 
     function onFeedChoice(event: Event) {
       const choice = (event as CustomEvent<ChoiceId>).detail
