@@ -8,6 +8,8 @@ import VideoUploadControl from "./video-upload-control"
 const MAX_POST_LENGTH = 5000
 const MAX_IMAGES = 4
 const MAX_IMAGE_BYTES = 10 * 1024 * 1024
+const MAX_POLL_OPTIONS = 5
+const MAX_POLL_OPTION_LENGTH = 120
 const SOCIAL_DRAFT_STORAGE_KEY = "via:social:draft:v1"
 const ALLOWED_IMAGE_TYPES = new Set(["image/gif", "image/jpeg", "image/png", "image/webp"])
 
@@ -41,6 +43,8 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
   const [body, setBody] = useState("")
   const [imageInputs, setImageInputs] = useState([""])
   const [videoInput, setVideoInput] = useState("")
+  const [pollOpen, setPollOpen] = useState(false)
+  const [pollOptions, setPollOptions] = useState(["", ""])
   const [status, setStatus] = useState<"idle" | "preparing" | "awaiting-approval" | "submitting" | "done" | "error">("idle")
   const [message, setMessage] = useState("")
   const [feeNanos, setFeeNanos] = useState<number | null>(null)
@@ -95,6 +99,8 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
         setBody("")
         setImageInputs([""])
         setVideoInput("")
+        setPollOpen(false)
+        setPollOptions(["", ""])
         setFeeNanos(null)
         setImageUploadStatus("idle")
         setImageUploadMessage("")
@@ -125,10 +131,13 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
   const mediaInvalid = parsedImages.some((value) => value === null) || parsedVideo === null
   const imageUrls = parsedImages.filter((value): value is string => typeof value === "string" && value.length > 0)
   const videoUrls = typeof parsedVideo === "string" && parsedVideo ? [parsedVideo] : []
+  const preparedPollOptions = pollOpen ? pollOptions.map((option) => option.trim()).filter(Boolean) : []
+  const pollUnique = new Set(preparedPollOptions.map((option) => option.toLocaleLowerCase())).size === preparedPollOptions.length
+  const pollValid = !pollOpen || (preparedPollOptions.length >= 2 && preparedPollOptions.length <= MAX_POLL_OPTIONS && pollUnique)
   const hasContent = Boolean(body.trim() || imageUrls.length || videoUrls.length)
   const busy = status === "preparing" || status === "awaiting-approval" || status === "submitting"
   const imageUploading = imageUploadStatus === "jwt" || imageUploadStatus === "uploading"
-  const canPrepare = Boolean(session && hasContent && body.length <= MAX_POST_LENGTH && !mediaInvalid && !busy && !imageUploading && !videoUploading)
+  const canPrepare = Boolean(session && hasContent && body.length <= MAX_POST_LENGTH && !mediaInvalid && pollValid && !busy && !imageUploading && !videoUploading)
   const remaining = MAX_POST_LENGTH - body.length
   const feeLabel = useMemo(() => feeNanos === null ? null : `${feeNanos.toLocaleString()} nanos network fee in the prepared transaction`, [feeNanos])
 
@@ -214,12 +223,12 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
   async function preparePost() {
     if (!session || !canPrepare) return
     setStatus("preparing")
-    setMessage(isReply ? "Preparing the exact DeSo reply transaction…" : "Preparing the exact DeSo post transaction with its media URLs…")
+    setMessage(isReply ? "Preparing the exact DeSo reply transaction…" : "Preparing the exact DeSo post transaction with its media and poll data…")
     setFeeNanos(null)
     try {
       const response = await fetch("/api/via/social/post", {
         method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store",
-        body: JSON.stringify({ action: "prepare", publicKey: session.publicKey, body, parentStakeID, imageUrls, videoUrls }),
+        body: JSON.stringify({ action: "prepare", publicKey: session.publicKey, body, parentStakeID, imageUrls, videoUrls, pollOptions: preparedPollOptions }),
       })
       const data = await response.json() as PrepareResponse
       if (!response.ok || !data.ok || !data.transactionHex) throw new Error(data.error || "PREPARE_FAILED")
@@ -245,7 +254,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
         }
       }, 500)
       setStatus("awaiting-approval")
-      setMessage("Review the exact text and media post in DeSo Identity. VIA will not submit it without that approval.")
+      setMessage("Review the exact text, media and poll post in DeSo Identity. VIA will not submit it without that approval.")
     } catch {
       setStatus("error")
       setMessage("The post transaction could not be prepared. Nothing was posted.")
@@ -270,9 +279,23 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
       {!isReply ? <div className="mt-3 flex flex-wrap items-center gap-2">
         <button type="button" onClick={saveDraft} disabled={busy} className="rounded-lg border border-zinc-800 px-3 py-1.5 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2] disabled:opacity-50">Save draft</button>
         <button type="button" onClick={clearDraft} disabled={busy || (!body && !draftMessage)} className="rounded-lg border border-zinc-800 px-3 py-1.5 text-xs text-zinc-500 hover:border-zinc-700 hover:text-zinc-300 disabled:opacity-40">Clear draft</button>
-        <span className="text-xs text-zinc-600">Stored only in this browser.</span>
+        <button type="button" onClick={() => { setPollOpen((open) => !open); if (pollOpen) setPollOptions(["", ""]) }} disabled={busy} className="rounded-lg border border-zinc-800 px-3 py-1.5 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2] disabled:opacity-50">{pollOpen ? "Remove poll" : "Add poll"}</button>
+        <span className="text-xs text-zinc-600">Drafts stay only in this browser.</span>
       </div> : null}
       {!isReply && draftMessage ? <p className="mt-2 text-xs text-zinc-500" role="status" aria-live="polite">{draftMessage}</p> : null}
+
+      {!isReply && pollOpen ? <div className="mt-4 rounded-xl border border-zinc-800 bg-zinc-950/70 p-3">
+        <p className="text-sm font-medium text-zinc-200">Poll options</p>
+        <p className="mt-1 text-xs text-zinc-500">Add 2–5 unique choices. Voting uses VIA&apos;s existing DeSo poll response flow.</p>
+        <div className="mt-3 space-y-2">
+          {pollOptions.map((option, index) => <div key={index} className="flex gap-2">
+            <input value={option} maxLength={MAX_POLL_OPTION_LENGTH} onChange={(event) => setPollOptions((current) => current.map((item, itemIndex) => itemIndex === index ? event.target.value : item))} placeholder={`Option ${index + 1}`} className="min-w-0 flex-1 rounded-lg border border-zinc-800 bg-black/40 px-3 py-2 text-sm text-zinc-200 outline-none focus:border-[#8fd4a9]/55" />
+            {pollOptions.length > 2 ? <button type="button" onClick={() => setPollOptions((current) => current.filter((_, itemIndex) => itemIndex !== index))} className="rounded-lg border border-zinc-800 px-3 text-xs text-zinc-500 hover:text-zinc-300">Remove</button> : null}
+          </div>)}
+        </div>
+        {pollOptions.length < MAX_POLL_OPTIONS ? <button type="button" onClick={() => setPollOptions((current) => [...current, ""])} className="mt-2 text-xs text-[#9adbb2]">+ Add option</button> : null}
+        {!pollValid ? <p className="mt-2 text-xs text-amber-300">Use at least two different, non-empty poll options.</p> : null}
+      </div> : null}
 
       {compact ? <button type="button" onClick={() => setMediaOpen((open) => !open)} className="mt-3 rounded-lg border border-zinc-800 px-3 py-1.5 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2]">{mediaOpen ? "Hide photo/video" : "Add photo/video"}</button> : null}
 
