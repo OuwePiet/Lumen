@@ -113,6 +113,8 @@ export default function ProfileConnectionsPage() {
     window.history.replaceState(null, "", url)
   }
 
+  const profileHref = identity ? `/profile/${encodeURIComponent(identity)}` : "/profile"
+
   return (
     <main className="min-h-screen bg-[#050807] px-5 py-8 text-zinc-100 sm:px-8 lg:px-12">
       <div className="mx-auto max-w-5xl">
@@ -122,7 +124,7 @@ export default function ProfileConnectionsPage() {
             <h1 className="mt-2 text-3xl font-semibold tracking-tight">Connections</h1>
             <p className="mt-2 text-sm text-zinc-400">Public DeSo followers and following, arranged in VIA.</p>
           </div>
-          <Link href="/profile" className="rounded-[10px] border border-zinc-700/80 px-3 py-2 text-sm text-zinc-300 transition hover:border-[#8fd4a9]/50 hover:text-[#9adbb2]">Back to profile</Link>
+          <Link href={profileHref} className="rounded-[10px] border border-zinc-700/80 px-3 py-2 text-sm text-zinc-300 transition hover:border-[#8fd4a9]/50 hover:text-[#9adbb2]">Back to profile</Link>
         </header>
 
         <section className="mt-7 rounded-[16px] border border-zinc-800/80 bg-zinc-950/55 p-4 sm:p-5">
