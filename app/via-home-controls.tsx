@@ -79,6 +79,7 @@ export default function ViaHomeControls() {
     return () => window.removeEventListener("message", handleIdentityMessage)
   }, [])
 
+  // Keep this aligned with DeSo's documented window-context login flow.
   function openDeSoIdentity() {
     const h = 1000
     const w = 800
