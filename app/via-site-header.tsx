@@ -199,7 +199,7 @@ export default function ViaSiteHeader() {
           </select>
           <Link href="/discover" style={pill}>Public Entrance</Link>
           {!session ? <a href={DESO_LOGIN_URL} target="via-deso-identity" style={styles.login}>DeSo Login</a> : null}
-          <Link href="/wallet" style={pill}>Buy $DESO</Link>
+          <Link href="/wallet" style={pill}>Wallet</Link>
           <span style={styles.visitor}>Visitors</span>
           <Link href="/notifications" style={pill}>Notifications</Link>
 
