@@ -29,6 +29,7 @@ const nav = [
   ["Market", "/market"],
   ["Studio", "/studio"],
   ["Live", "/live"],
+  ["Games", "/quest"],
   ["Communities", "/communities"],
   ["My VIA", "/my-via"],
 ] as const
