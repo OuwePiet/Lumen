@@ -21,6 +21,7 @@ type LoginPayload = {
 }
 
 type LoginMessage = {
+  id?: unknown
   service?: unknown
   method?: unknown
   payload?: LoginPayload
@@ -75,6 +76,24 @@ function sessionForPublicKey(publicKey: string, signedUp = false): ViaIdentitySe
   return { publicKey, accessLevel: credentials.accessLevel, signedUp }
 }
 
+function acknowledgeIdentityInitialize(event: MessageEvent): boolean {
+  if (event.origin !== DESO_IDENTITY_ORIGIN || !isRecord(event.data)) return false
+
+  const message = event.data as LoginMessage
+  if (message.service !== "identity" || message.method !== "initialize" || typeof message.id !== "string") return false
+  if (!event.source) return false
+
+  ;(event.source as WindowProxy).postMessage(
+    {
+      id: message.id,
+      service: "identity",
+      payload: {},
+    },
+    DESO_IDENTITY_ORIGIN,
+  )
+  return true
+}
+
 export function parseIdentityLoginMessage(event: MessageEvent): ViaIdentitySession | null {
   if (event.origin !== DESO_IDENTITY_ORIGIN) return null
   if (!isRecord(event.data)) return null
@@ -98,6 +117,8 @@ export function parseIdentityLoginMessage(event: MessageEvent): ViaIdentitySessi
 }
 
 export function persistIdentityLogin(event: MessageEvent): ViaIdentitySession | null {
+  if (acknowledgeIdentityInitialize(event)) return null
+
   const session = parseIdentityLoginMessage(event)
   if (!session) return null
 
