@@ -235,7 +235,11 @@ export default function PublicProfilePage() {
                         </div>
                       ) : null}
                       {post.videoUrls.length > 0 ? (
-                        <p className="mt-3 text-xs text-zinc-500">Video post · media available on DeSo</p>
+                        <div className="mt-3 space-y-2">
+                          {post.videoUrls.slice(0, 2).map((url) => (
+                            <video key={url} src={url} controls preload="none" playsInline className="max-h-[32rem] w-full rounded-[12px] border border-zinc-800" />
+                          ))}
+                        </div>
                       ) : null}
                       <div className="mt-4 flex flex-wrap gap-x-4 gap-y-1 border-t border-zinc-800/70 pt-3 text-xs text-zinc-500">
                         <span>{formatNumber(post.commentCount)} replies</span>
