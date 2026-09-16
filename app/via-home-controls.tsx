@@ -19,6 +19,7 @@ const nav = [
   ["Live", "/live"],
   ["Communities", "/communities"],
   ["Games", "/quest"],
+  ["My Profile", "/profile"],
   ["My VIA", "/my-via"],
 ] as const
 
@@ -143,13 +144,7 @@ export default function ViaHomeControls() {
 
       <nav aria-label="VIA main navigation" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px" }}>
         {nav.map(([label, href]) => (
-          <Link
-            key={href}
-            href={href}
-            style={{ ...linkStyle, ...(label === "My VIA" ? { gridColumn: "1 / -1" } : {}) }}
-          >
-            {label}
-          </Link>
+          <Link key={href} href={href} style={linkStyle}>{label}</Link>
         ))}
       </nav>
 
