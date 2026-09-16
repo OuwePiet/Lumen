@@ -78,7 +78,6 @@ const styles = {
   accountButton: { ...pill, cursor: "pointer", padding: "5px 12px 5px 6px", color: "#e3ebe6" },
   avatar: { width: "28px", height: "28px", borderRadius: "50%", objectFit: "cover" as const },
   avatarFallback: { width: "28px", height: "28px", borderRadius: "50%", display: "grid", placeItems: "center", background: "#183326", color: "#9adbb2", fontSize: "11px", fontWeight: 900 },
-  status: { color: "#c6a97b", fontSize: "9px" },
   menu: { position: "absolute" as const, right: 0, top: "48px", width: "240px", padding: "8px", border: "1px solid rgba(143,212,169,.18)", borderRadius: "14px", background: "rgba(5,10,7,.99)", boxShadow: "0 18px 44px rgba(0,0,0,.38)" },
   menuLabel: { padding: "7px 9px 9px", color: "#78867e", fontSize: "10px", letterSpacing: ".08em", textTransform: "uppercase" as const },
   menuLink: { display: "block", minHeight: "38px", padding: "9px 10px", borderRadius: "9px", color: "#d3ddd7", textDecoration: "none", fontSize: "12px", lineHeight: "20px" },
@@ -101,12 +100,10 @@ function shortPublicKey(publicKey: string) {
 
 export default function ViaSiteHeader() {
   const pathname = usePathname()
-  const identityWindowRef = useRef<Window | null>(null)
   const accountWrapRef = useRef<HTMLDivElement | null>(null)
   const [session, setSession] = useState<ViaIdentitySession | null>(null)
   const [knownAccounts, setKnownAccounts] = useState<ViaIdentitySession[]>([])
   const [profile, setProfile] = useState<PublicProfile | null>(null)
-  const [status, setStatus] = useState<"idle" | "waiting" | "blocked">("idle")
   const [menuOpen, setMenuOpen] = useState(false)
   const [language, setLanguage] = useState<ViaLanguage>("Dutch")
 
@@ -119,16 +116,11 @@ export default function ViaSiteHeader() {
     refreshKnownAccounts()
     setLanguage(readViaLocalSettings().interfaceLanguage)
     function handleIdentityMessage(event: MessageEvent) {
-      const identityWindow = identityWindowRef.current
-      if (identityWindow && event.source !== identityWindow) return
       const nextSession = persistIdentityLogin(event)
       if (!nextSession) return
       setSession(nextSession)
       refreshKnownAccounts()
       setMenuOpen(false)
-      setStatus("idle")
-      identityWindowRef.current?.close()
-      identityWindowRef.current = null
     }
     window.addEventListener("message", handleIdentityMessage)
     return () => window.removeEventListener("message", handleIdentityMessage)
@@ -159,15 +151,6 @@ export default function ViaSiteHeader() {
     return () => controller.abort()
   }, [session?.publicKey])
 
-  function openDeSoIdentity() {
-    setMenuOpen(false)
-    const identityWindow = window.open(DESO_LOGIN_URL, "via-deso-identity")
-    if (!identityWindow) { setStatus("blocked"); return }
-    identityWindowRef.current = identityWindow
-    setStatus("waiting")
-    identityWindow.focus()
-  }
-
   function changeLanguage(next: ViaLanguage) {
     saveViaLocalSettings({ interfaceLanguage: next })
     setLanguage(next)
@@ -179,7 +162,6 @@ export default function ViaSiteHeader() {
     setSession(nextSession)
     setProfile(null)
     setMenuOpen(false)
-    setStatus("idle")
   }
 
   function logout() {
@@ -187,7 +169,6 @@ export default function ViaSiteHeader() {
     setSession(null)
     setProfile(null)
     setMenuOpen(false)
-    setStatus("idle")
   }
 
   const avatar = safeProfileImage(profile?.profilePic)
@@ -217,7 +198,7 @@ export default function ViaSiteHeader() {
             {VIA_LANGUAGES.map((item) => <option key={item} value={item}>{languageCodes[item]}</option>)}
           </select>
           <Link href="/discover" style={pill}>Public Entrance</Link>
-          {!session ? <button type="button" style={styles.login} onClick={openDeSoIdentity}>{status === "waiting" ? "Connecting…" : "DeSo Login"}</button> : null}
+          {!session ? <a href={DESO_LOGIN_URL} target="via-deso-identity" style={styles.login}>DeSo Login</a> : null}
           <Link href="/wallet" style={pill}>Buy $DESO</Link>
           <span style={styles.visitor}>Visitors</span>
           <Link href="/notifications" style={pill}>Notifications</Link>
@@ -243,13 +224,12 @@ export default function ViaSiteHeader() {
                     {otherAccounts.map((account) => <button key={account.publicKey} type="button" style={styles.accountChoice} onClick={() => chooseAccount(account.publicKey)} role="menuitem">{shortPublicKey(account.publicKey)}</button>)}
                   </> : null}
                   <div style={styles.divider} />
-                  <button type="button" style={styles.menuButton} onClick={openDeSoIdentity} role="menuitem">Add DeSo account</button>
+                  <a href={DESO_LOGIN_URL} target="via-deso-identity" style={styles.menuLink} role="menuitem">Add DeSo account</a>
                   <button type="button" style={styles.menuButton} onClick={logout} role="menuitem">Logout from VIA</button>
                 </div>
               ) : null}
             </div>
           ) : null}
-          {status === "blocked" ? <span style={styles.status} role="status">Allow pop-ups to log in.</span> : null}
         </div>
       </div>
     </header>
