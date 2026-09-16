@@ -18,14 +18,14 @@ const nav = [
   ["Studio", "/studio"],
   ["Live", "/live"],
   ["Communities", "/communities"],
-  ["My VIA", "/my-via"],
   ["Games", "/quest"],
+  ["My VIA", "/my-via"],
 ] as const
 
 const utilities = [
   ["Search members", "/discover"],
-  ["EN", "/settings"],
   ["Public Entrance", "/discover"],
+  ["EN", "/settings"],
   ["Buy $DESO", "/wallet"],
   ["Notifications", "/notifications"],
 ] as const
@@ -143,7 +143,13 @@ export default function ViaHomeControls() {
 
       <nav aria-label="VIA main navigation" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px" }}>
         {nav.map(([label, href]) => (
-          <Link key={href} href={href} style={linkStyle}>{label}</Link>
+          <Link
+            key={href}
+            href={href}
+            style={{ ...linkStyle, ...(label === "My VIA" ? { gridColumn: "1 / -1" } : {}) }}
+          >
+            {label}
+          </Link>
         ))}
       </nav>
 
@@ -158,7 +164,7 @@ export default function ViaHomeControls() {
         ) : (
           <button type="button" onClick={logout} style={{ ...linkStyle, cursor: "pointer" }}>Logout</button>
         )}
-        <span style={{ ...linkStyle, color: "#7f8d85" }}>Visitors</span>
+        <span style={{ ...linkStyle, gridColumn: "1 / -1", color: "#7f8d85" }}>Visitors</span>
       </div>
 
       <div style={{ height: "1px", background: "rgba(143,212,169,.12)", margin: "2px 4px" }} />
