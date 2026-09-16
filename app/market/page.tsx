@@ -92,6 +92,7 @@ export default async function MarketPage({ searchParams }: { searchParams: Promi
       </header>
 
       <nav aria-label="Marketplace sections" className="mt-6 flex flex-wrap gap-2">
+        <Link href="/collection" className="rounded-lg border border-zinc-800 px-3 py-2 text-sm text-zinc-300">Collection</Link>
         <Link href={"/market/received-bids" + query} className="rounded-lg border border-zinc-800 px-3 py-2 text-sm text-zinc-300">Received Bids</Link>
         <Link href={"/market/my-bids" + query} className="rounded-lg border border-zinc-800 px-3 py-2 text-sm text-zinc-300">My Bids</Link>
         <a href="#listings" className="rounded-lg border border-zinc-800 px-3 py-2 text-sm text-zinc-300">Listings</a>
