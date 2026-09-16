@@ -145,7 +145,8 @@ export default function ViaHomeControls() {
         {!session ? (
           <a
             href={DESO_LOGIN_URL}
-            target="via-deso-identity"
+            target="_blank"
+            rel="opener"
             onClick={() => setStatus("waiting")}
             style={{ ...linkStyle, cursor: "pointer" }}
           >
