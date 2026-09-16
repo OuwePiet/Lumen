@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import {
   DESO_LOGIN_URL,
   clearIdentitySession,
@@ -55,22 +55,49 @@ const linkStyle = {
 } as const
 
 export default function ViaHomeControls() {
+  const identityWindowRef = useRef<Window | null>(null)
   const [session, setSession] = useState<ViaIdentitySession | null>(null)
-  const [status, setStatus] = useState<"idle" | "waiting">("idle")
+  const [status, setStatus] = useState<"idle" | "waiting" | "blocked">("idle")
 
   useEffect(() => {
     setSession(restoreIdentitySession())
 
     function handleIdentityMessage(event: MessageEvent) {
+      const identityWindow = identityWindowRef.current
+      if (identityWindow && event.source !== identityWindow) return
+
       const nextSession = persistIdentityLogin(event)
       if (!nextSession) return
+
       setSession(nextSession)
       setStatus("idle")
+      identityWindowRef.current?.close()
+      identityWindowRef.current = null
     }
 
     window.addEventListener("message", handleIdentityMessage)
     return () => window.removeEventListener("message", handleIdentityMessage)
   }, [])
+
+  function openDeSoIdentity() {
+    const h = 1000
+    const w = 800
+    const y = window.outerHeight / 2 + window.screenY - h / 2
+    const x = window.outerWidth / 2 + window.screenX - w / 2
+    const identityWindow = window.open(
+      DESO_LOGIN_URL,
+      undefined,
+      `toolbar=no, width=${w}, height=${h}, top=${y}, left=${x}`,
+    )
+
+    if (!identityWindow) {
+      setStatus("blocked")
+      return
+    }
+
+    identityWindowRef.current = identityWindow
+    setStatus("waiting")
+  }
 
   function logout() {
     clearIdentitySession()
@@ -143,15 +170,9 @@ export default function ViaHomeControls() {
           <Link key={label} href={href} style={linkStyle}>{label}</Link>
         ))}
         {!session ? (
-          <a
-            href={DESO_LOGIN_URL}
-            target="_blank"
-            rel="opener"
-            onClick={() => setStatus("waiting")}
-            style={{ ...linkStyle, cursor: "pointer" }}
-          >
+          <button type="button" onClick={openDeSoIdentity} style={{ ...linkStyle, cursor: "pointer" }}>
             {status === "waiting" ? "Connecting…" : "DeSo Login"}
-          </a>
+          </button>
         ) : (
           <button type="button" onClick={logout} style={{ ...linkStyle, cursor: "pointer" }}>Logout</button>
         )}
@@ -171,6 +192,10 @@ export default function ViaHomeControls() {
           </Link>
         ))}
       </nav>
+
+      {status === "blocked" ? (
+        <span style={{ color: "#c6a97b", fontSize: "10px", lineHeight: 1.4 }}>Safari blocked the DeSo Identity window.</span>
+      ) : null}
     </aside>
   )
 }
