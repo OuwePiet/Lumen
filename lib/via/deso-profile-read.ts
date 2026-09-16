@@ -10,6 +10,8 @@ export type ViaPublicProfile = {
   coinPriceDeSoNanos: number | null
   numberOfHolders: number | null
   coinsInCirculationNanos: number | null
+  followersCount: number | null
+  followingCount: number | null
 }
 
 type DeSoProfileResponse = {
@@ -28,12 +30,34 @@ type DeSoProfileResponse = {
   } | null
 }
 
+type DeSoFollowsResponse = {
+  NumFollowers?: unknown
+}
+
 function text(value: unknown) {
   return typeof value === "string" ? value : ""
 }
 
 function numberOrNull(value: unknown) {
   return typeof value === "number" && Number.isFinite(value) ? value : null
+}
+
+async function readFollowCount(publicKey: string, followers: boolean) {
+  const response = await fetchDeSo("get-follows-stateless", {
+    method: "POST",
+    headers: { "content-type": "application/json", accept: "application/json" },
+    body: JSON.stringify({
+      PublicKeyBase58Check: publicKey,
+      Username: "",
+      GetEntriesFollowingUsername: followers,
+      LastPublicKeyBase58Check: "",
+      NumToFetch: 1,
+    }),
+  })
+
+  if (!response.ok) return null
+  const data = (await response.json()) as DeSoFollowsResponse
+  return numberOrNull(data.NumFollowers)
 }
 
 /**
@@ -71,6 +95,12 @@ export async function readPublicProfile(
 
   const profilePic = text(profile.ProfilePic)
   const coinEntry = profile.CoinEntry ?? null
+  const [followersCount, followingCount] = publicKey
+    ? await Promise.all([
+        readFollowCount(publicKey, true),
+        readFollowCount(publicKey, false),
+      ])
+    : [null, null]
 
   return {
     publicKey,
@@ -82,5 +112,7 @@ export async function readPublicProfile(
     coinPriceDeSoNanos: numberOrNull(profile.CoinPriceDeSoNanos),
     numberOfHolders: numberOrNull(coinEntry?.NumberOfHolders),
     coinsInCirculationNanos: numberOrNull(coinEntry?.CoinsInCirculationNanos),
+    followersCount,
+    followingCount,
   }
 }
