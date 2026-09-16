@@ -152,7 +152,12 @@ export default function ProfilePage() {
             <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-[2.25rem]">Profile</h1>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-zinc-400">Your signed-in public DeSo identity, shown without requesting extra wallet authority.</p>
           </div>
-          <Link href="/my-via" className={quietAction}>Back to My VIA</Link>
+          <div className="flex flex-wrap gap-2">
+            {session?.publicKey ? (
+              <Link href={`/collection?account=${encodeURIComponent(session.publicKey)}`} className={quietAction}>My NFTs</Link>
+            ) : null}
+            <Link href="/my-via" className={quietAction}>Back to My VIA</Link>
+          </div>
         </header>
 
         {!session ? (
