@@ -3,7 +3,6 @@ import "../home-wide.css"
 import NFTGrid from "../nft-grid"
 import ViaPriceBoard from "../via-price-board"
 import ViaStoragePriceBoard from "../via-storage-price-board"
-import ViaWorldClock from "../via-world-clock"
 
 export const dynamic = "force-dynamic"
 
@@ -23,7 +22,6 @@ export default async function CollectionPage({ searchParams }: CollectionPagePro
           <ViaPriceBoard />
           <ViaStoragePriceBoard />
         </div>
-        <ViaWorldClock />
       </div>
     </div>
   )
