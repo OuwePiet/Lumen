@@ -89,30 +89,42 @@ export default function WalletPage() {
       return
     }
 
-    const controller = new AbortController()
-    setLoading(true)
-    setError("")
+    let active = true
+    let controller: AbortController | null = null
 
-    void fetch(`/api/via/wallet?publicKey=${encodeURIComponent(session.publicKey)}`, {
-      cache: "no-store",
-      signal: controller.signal,
-      headers: { Accept: "application/json" },
-    })
-      .then(async (response) => {
+    const refreshWallet = async () => {
+      controller?.abort()
+      controller = new AbortController()
+      try {
+        const response = await fetch(`/api/via/wallet?publicKey=${encodeURIComponent(session.publicKey)}`, {
+          cache: "no-store",
+          signal: controller.signal,
+          headers: { Accept: "application/json" },
+        })
         const data = response.ok ? (await response.json()) as WalletResponse : null
         if (!response.ok || !data?.ok || !data.wallet) throw new Error("WALLET_UNAVAILABLE")
-        return data.wallet
-      })
-      .then(setWallet)
-      .catch((reason) => {
-        if (!(reason instanceof DOMException && reason.name === "AbortError")) {
-          setWallet(null)
+        if (!active) return
+        setWallet(data.wallet)
+        setError("")
+      } catch (reason) {
+        if (active && !(reason instanceof DOMException && reason.name === "AbortError")) {
           setError("Wallet balance is temporarily unavailable.")
         }
-      })
-      .finally(() => setLoading(false))
+      } finally {
+        if (active) setLoading(false)
+      }
+    }
 
-    return () => controller.abort()
+    setLoading(true)
+    setError("")
+    void refreshWallet()
+    const timer = window.setInterval(refreshWallet, 60_000)
+
+    return () => {
+      active = false
+      controller?.abort()
+      window.clearInterval(timer)
+    }
   }, [session?.publicKey])
 
   useEffect(() => {
@@ -178,10 +190,11 @@ export default function WalletPage() {
           </section>
         ) : loading ? (
           <section className="rounded-[16px] border border-zinc-800/80 bg-zinc-950/50 p-6 text-sm text-zinc-400">Loading wallet…</section>
-        ) : error ? (
+        ) : error && !wallet ? (
           <section className="rounded-[16px] border border-amber-900/40 bg-amber-950/10 p-6 text-sm text-amber-200">{error}</section>
         ) : wallet ? (
           <div className="grid gap-5">
+            {error ? <section className="rounded-[14px] border border-amber-900/30 bg-amber-950/10 px-4 py-3 text-xs text-amber-200">{error} Showing the last available wallet data.</section> : null}
             <section className="rounded-[18px] border border-[#8fd4a9]/25 bg-zinc-950/55 p-6 sm:p-8">
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#8fd4a9]">Available balance</p>
               <div className="mt-3 text-4xl font-semibold tracking-tight text-zinc-100 sm:text-5xl">{formatDeSo(wallet.balanceDeSo)} <span className="text-xl text-zinc-400">DESO</span></div>
