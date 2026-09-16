@@ -10,6 +10,7 @@ export type ViaPublicProfile = {
   coinPriceDeSoNanos: number | null
   numberOfHolders: number | null
   coinsInCirculationNanos: number | null
+  desoLockedNanos: number | null
   followersCount: number | null
   followingCount: number | null
 }
@@ -26,6 +27,7 @@ type DeSoProfileResponse = {
       CreatorBasisPoints?: unknown
       NumberOfHolders?: unknown
       CoinsInCirculationNanos?: unknown
+      DeSoLockedNanos?: unknown
     } | null
   } | null
 }
@@ -112,6 +114,7 @@ export async function readPublicProfile(
     coinPriceDeSoNanos: numberOrNull(profile.CoinPriceDeSoNanos),
     numberOfHolders: numberOrNull(coinEntry?.NumberOfHolders),
     coinsInCirculationNanos: numberOrNull(coinEntry?.CoinsInCirculationNanos),
+    desoLockedNanos: numberOrNull(coinEntry?.DeSoLockedNanos),
     followersCount,
     followingCount,
   }
