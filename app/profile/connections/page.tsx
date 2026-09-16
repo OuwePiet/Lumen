@@ -156,7 +156,12 @@ export default function ProfileConnectionsPage() {
           ) : filtered.length === 0 ? (
             <div className="rounded-[14px] border border-zinc-800/80 bg-zinc-950/50 p-5 text-sm text-zinc-500">No matching connections.</div>
           ) : filtered.map((entry) => (
-            <article key={entry.publicKey} className="flex items-start gap-4 rounded-[14px] border border-zinc-800/80 bg-zinc-950/50 p-4">
+            <Link
+              key={entry.publicKey}
+              href={`/profile/${encodeURIComponent(entry.publicKey)}`}
+              className="flex items-start gap-4 rounded-[14px] border border-zinc-800/80 bg-zinc-950/50 p-4 transition hover:border-[#8fd4a9]/50 hover:bg-zinc-950/70"
+              aria-label={`Open profile for ${entry.username ? `@${entry.username}` : entry.publicKey}`}
+            >
               {entry.profilePic ? (
                 <img src={entry.profilePic} alt="" className="h-12 w-12 rounded-full border border-zinc-800 object-cover" referrerPolicy="no-referrer" />
               ) : (
@@ -173,7 +178,7 @@ export default function ProfileConnectionsPage() {
                   <span>FR {formatFr(entry.creatorBasisPoints)}</span>
                 </div>
               </div>
-            </article>
+            </Link>
           ))}
         </section>
       </div>
