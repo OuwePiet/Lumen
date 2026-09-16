@@ -27,6 +27,7 @@ function signedTransactionFromMessage(event: MessageEvent, source: Window | null
 export default function FollowButton({ followedPublicKey, variant = "default", followedUsername = "this user" }: Props) {
   const [session, setSession] = useState<ViaIdentitySession | null>(null)
   const [following, setFollowing] = useState(false)
+  const [followsYou, setFollowsYou] = useState(false)
   const [statusReady, setStatusReady] = useState(false)
   const [busy, setBusy] = useState(false)
   const [message, setMessage] = useState("")
@@ -49,13 +50,27 @@ export default function FollowButton({ followedPublicKey, variant = "default", f
     let cancelled = false
     async function loadStatus() {
       setStatusReady(false)
+      setFollowsYou(false)
       if (!session || session.publicKey === followedPublicKey) return
       try {
-        const response = await fetch(`/api/via/social/follow?follower=${encodeURIComponent(session.publicKey)}&followed=${encodeURIComponent(followedPublicKey)}`, { cache: "no-store" })
+        const followingRequest = fetch(`/api/via/social/follow?follower=${encodeURIComponent(session.publicKey)}&followed=${encodeURIComponent(followedPublicKey)}`, { cache: "no-store" })
+        const followsYouRequest = variant === "profile"
+          ? fetch(`/api/via/social/follow?follower=${encodeURIComponent(followedPublicKey)}&followed=${encodeURIComponent(session.publicKey)}`, { cache: "no-store" })
+          : null
+
+        const response = await followingRequest
         const data = await response.json() as StatusResponse
         if (!cancelled && response.ok && data.ok) {
           setFollowing(data.following === true)
           setStatusReady(true)
+        }
+
+        if (followsYouRequest) {
+          const reverseResponse = await followsYouRequest
+          const reverseData = await reverseResponse.json() as StatusResponse
+          if (!cancelled && reverseResponse.ok && reverseData.ok) {
+            setFollowsYou(reverseData.following === true)
+          }
         }
       } catch {
         if (!cancelled) setMessage("Follow status is temporarily unavailable.")
@@ -63,7 +78,7 @@ export default function FollowButton({ followedPublicKey, variant = "default", f
     }
     void loadStatus()
     return () => { cancelled = true }
-  }, [session, followedPublicKey])
+  }, [session, followedPublicKey, variant])
 
   useEffect(() => {
     const onMessage = async (event: MessageEvent) => {
@@ -159,14 +174,21 @@ export default function FollowButton({ followedPublicKey, variant = "default", f
 
   if (!session || session.publicKey === followedPublicKey) return null
 
+  const mutual = variant === "profile" && following && followsYou
+
   return (
     <span className="inline-flex items-center gap-2">
+      {mutual ? (
+        <span className="rounded-full border border-zinc-700/80 bg-black/25 px-2.5 py-1 text-[11px] font-medium text-zinc-400" title={`You and @${followedUsername} follow each other`}>
+          Mutual
+        </span>
+      ) : null}
       <button
         type="button"
         onClick={toggleFollow}
         disabled={busy || !statusReady}
         aria-label={variant === "profile" ? (following ? `Unfollow @${followedUsername}` : `Follow @${followedUsername}`) : undefined}
-        title={variant === "profile" ? (following ? "Following" : "Follow") : undefined}
+        title={variant === "profile" ? (mutual ? "Following · mutual" : following ? "Following" : followsYou ? "Follows you" : "Follow") : undefined}
         className={variant === "profile"
           ? `grid h-10 w-10 place-items-center rounded-full border text-base transition ${following ? "border-[#8fd4a9]/55 bg-[#102019] text-[#9adbb2]" : "border-zinc-700 text-zinc-300 hover:border-[#8fd4a9]/55 hover:text-[#9adbb2]"} disabled:cursor-wait disabled:opacity-60`
           : "rounded-full border border-[#285f40]/70 px-3 py-1 text-[#9adbb2] hover:border-[#8fd4a9]/55 disabled:cursor-wait disabled:opacity-60"}
