@@ -32,8 +32,8 @@ function formatDeSo(value: number) {
   return new Intl.NumberFormat(undefined, { maximumFractionDigits: 9 }).format(value)
 }
 
-function formatUsd(value: number) {
-  return new Intl.NumberFormat(undefined, { style: "currency", currency: "USD", maximumFractionDigits: 2 }).format(value)
+function formatCurrency(value: number, currency: "USD" | "EUR") {
+  return new Intl.NumberFormat(undefined, { style: "currency", currency, maximumFractionDigits: 2 }).format(value)
 }
 
 function shortPublicKey(publicKey: string) {
@@ -73,6 +73,7 @@ export default function WalletPage() {
   const [error, setError] = useState("")
   const [copied, setCopied] = useState(false)
   const [desoUsd, setDesoUsd] = useState<number | null>(null)
+  const [desoEur, setDesoEur] = useState<number | null>(null)
 
   useEffect(() => {
     const restore = () => setSession(restoreIdentitySession())
@@ -119,11 +120,16 @@ export default function WalletPage() {
     void fetchViaRates(controller.signal)
       .then((rates) => {
         const usd = rates.rates?.USD
-        if (!isViaRateStale(rates.checkedAt) && typeof usd === "number" && Number.isFinite(usd) && usd > 0) setDesoUsd(usd)
-        else setDesoUsd(null)
+        const eur = rates.rates?.EUR
+        const current = !isViaRateStale(rates.checkedAt)
+        setDesoUsd(current && typeof usd === "number" && Number.isFinite(usd) && usd > 0 ? usd : null)
+        setDesoEur(current && typeof eur === "number" && Number.isFinite(eur) && eur > 0 ? eur : null)
       })
       .catch((reason) => {
-        if (!(reason instanceof DOMException && reason.name === "AbortError")) setDesoUsd(null)
+        if (!(reason instanceof DOMException && reason.name === "AbortError")) {
+          setDesoUsd(null)
+          setDesoEur(null)
+        }
       })
     return () => controller.abort()
   }, [])
@@ -131,6 +137,7 @@ export default function WalletPage() {
   const bought = wallet?.creatorCoinHoldings.filter((holding) => holding.hasPurchased) ?? []
   const received = wallet?.creatorCoinHoldings.filter((holding) => !holding.hasPurchased) ?? []
   const balanceUsd = wallet && desoUsd !== null ? wallet.balanceDeSo * desoUsd : null
+  const balanceEur = wallet && desoEur !== null ? wallet.balanceDeSo * desoEur : null
 
   async function copyPublicKey() {
     if (!wallet?.publicKey || !navigator.clipboard) return
@@ -165,7 +172,11 @@ export default function WalletPage() {
             <section className="rounded-[18px] border border-[#8fd4a9]/25 bg-zinc-950/55 p-6 sm:p-8">
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#8fd4a9]">Available balance</p>
               <div className="mt-3 text-4xl font-semibold tracking-tight text-zinc-100 sm:text-5xl">{formatDeSo(wallet.balanceDeSo)} <span className="text-xl text-zinc-400">DESO</span></div>
-              {balanceUsd !== null ? <p className="mt-2 text-sm font-medium text-zinc-400">≈ {formatUsd(balanceUsd)} at the current VIA DESO reference rate</p> : null}
+              {balanceUsd !== null || balanceEur !== null ? (
+                <p className="mt-2 text-sm font-medium text-zinc-400">
+                  ≈ {[balanceUsd !== null ? formatCurrency(balanceUsd, "USD") : null, balanceEur !== null ? formatCurrency(balanceEur, "EUR") : null].filter(Boolean).join(" · ")} at the current VIA DESO reference rate
+                </p>
+              ) : null}
               <div className="mt-5 flex flex-wrap gap-2 text-xs text-zinc-400">
                 <span className="rounded-full border border-zinc-800 px-3 py-1.5">{wallet.creatorCoinHoldings.length} creator coins</span>
                 <span className="rounded-full border border-zinc-800 px-3 py-1.5">{bought.length} bought</span>
