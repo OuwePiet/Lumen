@@ -1,7 +1,6 @@
 "use client"
 
 import { useEffect, useMemo, useState } from "react"
-import { restoreIdentitySession, VIA_IDENTITY_EVENT, type ViaIdentitySession } from "./deso-identity-session"
 import { fetchViaRates, isViaRateStale, VIA_RATE_REFRESH_MS, type ViaRates } from "./via-live-rates"
 
 const zones = [
@@ -12,13 +11,6 @@ const zones = [
   { label: "Los Angeles", timeZone: "America/Los_Angeles" },
 ] as const
 
-type WalletResponse = {
-  ok?: boolean
-  wallet?: {
-    balanceDeSo?: number
-  }
-}
-
 function formatTime(date: Date, timeZone: string) {
   return new Intl.DateTimeFormat("en-GB", {
     timeZone,
@@ -28,13 +20,18 @@ function formatTime(date: Date, timeZone: string) {
   }).format(date)
 }
 
+function formatLocalDate(date: Date) {
+  return new Intl.DateTimeFormat(undefined, {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  }).format(date)
+}
+
 export default function ViaWorldClock() {
   const [now, setNow] = useState(() => new Date())
   const [rates, setRates] = useState<ViaRates | null>(null)
   const [rateUnavailable, setRateUnavailable] = useState(false)
-  const [session, setSession] = useState<ViaIdentitySession | null>(null)
-  const [balanceDeSo, setBalanceDeSo] = useState<number | null>(null)
-  const [walletUnavailable, setWalletUnavailable] = useState(false)
 
   useEffect(() => {
     const timer = window.setInterval(() => setNow(new Date()), 30_000)
@@ -68,76 +65,14 @@ export default function ViaWorldClock() {
     }
   }, [])
 
-  useEffect(() => {
-    setSession(restoreIdentitySession())
-
-    function handleIdentitySession(event: Event) {
-      const detail = event instanceof CustomEvent ? event.detail : undefined
-      if (detail && typeof detail.publicKey === "string") setSession(detail as ViaIdentitySession)
-      else setSession(restoreIdentitySession())
-    }
-
-    window.addEventListener(VIA_IDENTITY_EVENT, handleIdentitySession)
-    window.addEventListener("storage", handleIdentitySession)
-    return () => {
-      window.removeEventListener(VIA_IDENTITY_EVENT, handleIdentitySession)
-      window.removeEventListener("storage", handleIdentitySession)
-    }
-  }, [])
-
-  useEffect(() => {
-    if (!session?.publicKey) {
-      setBalanceDeSo(null)
-      setWalletUnavailable(false)
-      return
-    }
-
-    let active = true
-    let controller: AbortController | null = null
-
-    const refreshWallet = async () => {
-      controller?.abort()
-      controller = new AbortController()
-      try {
-        const response = await fetch(`/api/via/wallet?publicKey=${encodeURIComponent(session.publicKey)}`, {
-          cache: "no-store",
-          headers: { Accept: "application/json" },
-          signal: controller.signal,
-        })
-        const data = (await response.json()) as WalletResponse
-        const nextBalance = data.wallet?.balanceDeSo
-        if (!response.ok || !data.ok || typeof nextBalance !== "number" || !Number.isFinite(nextBalance)) throw new Error("Wallet balance unavailable")
-        if (active) {
-          setBalanceDeSo(nextBalance)
-          setWalletUnavailable(false)
-        }
-      } catch (error) {
-        if (active && !(error instanceof DOMException && error.name === "AbortError")) {
-          setBalanceDeSo(null)
-          setWalletUnavailable(true)
-        }
-      }
-    }
-
-    void refreshWallet()
-    const timer = window.setInterval(refreshWallet, 60_000)
-    return () => {
-      active = false
-      controller?.abort()
-      window.clearInterval(timer)
-    }
-  }, [session?.publicKey])
-
   const clocks = useMemo(() => zones.map((zone) => ({ ...zone, time: formatTime(now, zone.timeZone) })), [now])
+  const localDate = useMemo(() => formatLocalDate(now), [now])
   const stale = rates ? isViaRateStale(rates.checkedAt, now.getTime()) : false
   const usd = rates?.rates && !stale && !rateUnavailable ? rates.rates.USD : null
-  const yourDeso = session?.publicKey && !walletUnavailable && balanceDeSo !== null
-    ? balanceDeSo.toLocaleString(undefined, { maximumFractionDigits: 4 })
-    : "—"
 
   return (
     <section
-      aria-label="World clock, live DESO price and signed-in DESO balance"
+      aria-label="World clock, local date and live DESO price"
       style={{
         position: "absolute",
         zIndex: 3,
@@ -162,6 +97,11 @@ export default function ViaWorldClock() {
     >
       <span style={{ color: "#8fd4a9", fontWeight: 750, letterSpacing: ".09em", textTransform: "uppercase", whiteSpace: "nowrap" }}>World Clock</span>
 
+      <span style={{ whiteSpace: "nowrap" }} title="Date on this device">
+        <span style={{ color: "#69776f" }}>Date</span>{" "}
+        <strong style={{ color: "#c2cbc6", fontWeight: 600 }}>{localDate}</strong>
+      </span>
+
       {clocks.map((clock) => (
         <span key={clock.timeZone} style={{ whiteSpace: "nowrap" }}>
           <span style={{ color: "#69776f" }}>{clock.label}</span>{" "}
@@ -174,11 +114,6 @@ export default function ViaWorldClock() {
         <strong style={{ color: usd === null ? "#7f8b85" : "#9adbb2", fontWeight: 700 }}>
           {usd === null ? "—" : `$${usd.toLocaleString(undefined, { maximumFractionDigits: 4 })}`}
         </strong>
-      </span>
-
-      <span style={{ whiteSpace: "nowrap" }} title={!session ? "Log in with DeSo to show your balance" : walletUnavailable ? "Your DESO balance is temporarily unavailable" : "DESO balance for the currently signed-in account"}>
-        <span style={{ color: "#69776f" }}>Your DESO</span>{" "}
-        <strong style={{ color: yourDeso === "—" ? "#7f8b85" : "#eef4f0", fontWeight: 700 }}>{yourDeso}</strong>
       </span>
     </section>
   )
