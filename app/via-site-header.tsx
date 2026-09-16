@@ -161,11 +161,7 @@ export default function ViaSiteHeader() {
 
   function openDeSoIdentity() {
     setMenuOpen(false)
-    const width = Math.min(800, window.screen.availWidth)
-    const height = Math.min(900, window.screen.availHeight)
-    const left = Math.max(0, window.screenX + (window.outerWidth - width) / 2)
-    const top = Math.max(0, window.screenY + (window.outerHeight - height) / 2)
-    const identityWindow = window.open(DESO_LOGIN_URL, "via-deso-identity", `popup=yes,width=${Math.round(width)},height=${Math.round(height)},left=${Math.round(left)},top=${Math.round(top)}`)
+    const identityWindow = window.open(DESO_LOGIN_URL, "via-deso-identity")
     if (!identityWindow) { setStatus("blocked"); return }
     identityWindowRef.current = identityWindow
     setStatus("waiting")
