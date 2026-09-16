@@ -26,6 +26,7 @@ const nav = [
   ["Home", "/"],
   ["Social", "/social"],
   ["Discover", "/discover"],
+  ["NFTs", "/collection"],
   ["Market", "/market"],
   ["Studio", "/studio"],
   ["Live", "/live"],
