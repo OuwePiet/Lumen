@@ -198,7 +198,7 @@ export default function ViaSiteHeader() {
           <select id="via-header-language" value={language} onChange={(event) => changeLanguage(event.target.value as ViaLanguage)} style={styles.language} aria-label="VIA language">
             {VIA_LANGUAGES.map((item) => <option key={item} value={item}>{languageCodes[item]}</option>)}
           </select>
-          <Link href="/discover" style={pill}>Public Entrance</Link>
+          <Link href="/" style={pill}>Public Entrance</Link>
           {!session ? <a href={DESO_LOGIN_URL} target="via-deso-identity" style={styles.login}>DeSo Login</a> : null}
           <Link href="/wallet" style={pill}>Wallet</Link>
           <span style={styles.visitor}>Visitors</span>
