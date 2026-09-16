@@ -19,6 +19,7 @@ type PublicProfile = {
 }
 
 type ProfileResponse = { ok?: boolean; profile?: PublicProfile }
+type WalletResponse = { ok?: boolean; wallet?: { balanceDeSo?: number } }
 
 const quietAction = "inline-flex min-h-10 items-center rounded-[10px] border border-zinc-700/80 bg-transparent px-3 py-2 text-sm text-zinc-300 transition-colors hover:border-[#8fd4a9]/50 hover:text-[#9adbb2] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8fd4a9]/15"
 const metricLink = "rounded-[12px] border border-zinc-800/80 bg-black/25 p-3 transition-colors hover:border-[#8fd4a9]/45 hover:bg-[#0d1712] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8fd4a9]/15"
@@ -37,6 +38,11 @@ function formatDeSoNanos(value: number | null) {
   if (value === null) return "—"
   const deso = value / 1_000_000_000
   return `${new Intl.NumberFormat("en-US", { maximumFractionDigits: 4 }).format(deso)} DESO`
+}
+
+function formatDeSo(value: number | null) {
+  if (value === null) return "—"
+  return `${new Intl.NumberFormat("en-US", { maximumFractionDigits: 4 }).format(value)} DESO`
 }
 
 function formatBasisPoints(value: number | null) {
@@ -59,6 +65,8 @@ export default function ProfilePage() {
   const [profile, setProfile] = useState<PublicProfile | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
+  const [balanceDeSo, setBalanceDeSo] = useState<number | null>(null)
+  const [walletUnavailable, setWalletUnavailable] = useState(false)
 
   useEffect(() => {
     const restore = () => setSession(restoreIdentitySession())
@@ -95,6 +103,40 @@ export default function ProfilePage() {
         }
       })
       .finally(() => setLoading(false))
+
+    return () => controller.abort()
+  }, [session?.publicKey])
+
+  useEffect(() => {
+    if (!session?.publicKey) {
+      setBalanceDeSo(null)
+      setWalletUnavailable(false)
+      return
+    }
+
+    const controller = new AbortController()
+    setWalletUnavailable(false)
+    void fetch(`/api/via/wallet?publicKey=${encodeURIComponent(session.publicKey)}`, {
+      cache: "no-store",
+      signal: controller.signal,
+      headers: { Accept: "application/json" },
+    })
+      .then(async (response) => {
+        const data = response.ok ? (await response.json()) as WalletResponse : null
+        const balance = data?.wallet?.balanceDeSo
+        if (!response.ok || !data?.ok || typeof balance !== "number" || !Number.isFinite(balance)) throw new Error("WALLET_UNAVAILABLE")
+        return balance
+      })
+      .then((balance) => {
+        setBalanceDeSo(balance)
+        setWalletUnavailable(false)
+      })
+      .catch((reason) => {
+        if (!(reason instanceof DOMException && reason.name === "AbortError")) {
+          setBalanceDeSo(null)
+          setWalletUnavailable(true)
+        }
+      })
 
     return () => controller.abort()
   }, [session?.publicKey])
@@ -139,6 +181,10 @@ export default function ProfilePage() {
                 </div>
 
                 <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-3">
+                  <Link href="/wallet" className={metricLink} title={walletUnavailable ? "Your DESO balance is temporarily unavailable" : "Open your VIA wallet"}>
+                    <p className="text-[11px] uppercase tracking-[0.12em] text-zinc-500">Your DESO</p>
+                    <p className="mt-1 text-sm font-medium text-zinc-100">{walletUnavailable ? "—" : formatDeSo(balanceDeSo)}</p>
+                  </Link>
                   <div className="rounded-[12px] border border-zinc-800/80 bg-black/25 p-3">
                     <p className="text-[11px] uppercase tracking-[0.12em] text-zinc-500">Coin price</p>
                     <p className="mt-1 text-sm font-medium text-zinc-100">{formatDeSoNanos(profile.coinPriceDeSoNanos)}</p>
