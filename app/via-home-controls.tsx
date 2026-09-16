@@ -144,7 +144,21 @@ export default function ViaHomeControls() {
 
       <nav aria-label="VIA main navigation" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px" }}>
         {nav.map(([label, href]) => (
-          <Link key={href} href={href} style={linkStyle}>{label}</Link>
+          <Link
+            key={href}
+            href={href}
+            style={{
+              ...linkStyle,
+              ...(label === "My Profile" ? {
+                borderColor: "rgba(143,212,169,.5)",
+                background: "rgba(20,55,35,.5)",
+                color: "#9adbb2",
+                boxShadow: "inset 0 0 0 1px rgba(143,212,169,.08)",
+              } : {}),
+            }}
+          >
+            {label}
+          </Link>
         ))}
       </nav>
 
