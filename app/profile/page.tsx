@@ -21,6 +21,7 @@ type PublicProfile = {
 type ProfileResponse = { ok?: boolean; profile?: PublicProfile }
 
 const quietAction = "inline-flex min-h-10 items-center rounded-[10px] border border-zinc-700/80 bg-transparent px-3 py-2 text-sm text-zinc-300 transition-colors hover:border-[#8fd4a9]/50 hover:text-[#9adbb2] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8fd4a9]/15"
+const metricLink = "rounded-[12px] border border-zinc-800/80 bg-black/25 p-3 transition-colors hover:border-[#8fd4a9]/45 hover:bg-[#0d1712] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8fd4a9]/15"
 
 function safeImage(value: string | null) {
   if (!value) return null
@@ -142,14 +143,14 @@ export default function ProfilePage() {
                     <p className="text-[11px] uppercase tracking-[0.12em] text-zinc-500">Coin price</p>
                     <p className="mt-1 text-sm font-medium text-zinc-100">{formatDeSoNanos(profile.coinPriceDeSoNanos)}</p>
                   </div>
-                  <div className="rounded-[12px] border border-zinc-800/80 bg-black/25 p-3">
+                  <Link href={`/profile/connections?mode=followers&identity=${encodeURIComponent(profile.publicKey)}`} className={metricLink}>
                     <p className="text-[11px] uppercase tracking-[0.12em] text-zinc-500">Followers</p>
                     <p className="mt-1 text-sm font-medium text-zinc-100">{formatCompact(profile.followersCount)}</p>
-                  </div>
-                  <div className="rounded-[12px] border border-zinc-800/80 bg-black/25 p-3">
+                  </Link>
+                  <Link href={`/profile/connections?mode=following&identity=${encodeURIComponent(profile.publicKey)}`} className={metricLink}>
                     <p className="text-[11px] uppercase tracking-[0.12em] text-zinc-500">Following</p>
                     <p className="mt-1 text-sm font-medium text-zinc-100">{formatCompact(profile.followingCount)}</p>
-                  </div>
+                  </Link>
                   <div className="rounded-[12px] border border-zinc-800/80 bg-black/25 p-3">
                     <p className="text-[11px] uppercase tracking-[0.12em] text-zinc-500">FR</p>
                     <p className="mt-1 text-sm font-medium text-zinc-100">{formatBasisPoints(profile.creatorBasisPoints)}</p>
