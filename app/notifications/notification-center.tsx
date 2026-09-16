@@ -19,7 +19,7 @@ type Category = "all" | "post" | "like" | "diamond" | "follow" | "nft" | "other"
 
 const categories: Array<{ id: Category; label: string }> = [
   { id: "all", label: "All" },
-  { id: "post", label: "Replies & posts" },
+  { id: "post", label: "Replies & mentions" },
   { id: "like", label: "Likes" },
   { id: "diamond", label: "Diamonds" },
   { id: "follow", label: "Follows" },
@@ -53,14 +53,14 @@ function describe(item: NotificationItem) {
   const actor = shortKey(metadata.TransactorPublicKeyBase58Check)
   const category = categoryOf(item)
   if (category === "diamond") return `${actor} sent a diamond.`
-  if (category === "like") return `${actor} liked a post.`
-  if (category === "follow") return `${actor} changed a follow relationship.`
+  if (category === "like") return `${actor} liked one of your posts.`
+  if (category === "follow") return `${actor} changed a follow relationship with your account.`
   if (category === "post") {
     const post = record(metadata.SubmitPostTxindexMetadata)
-    return post?.ParentPostHashHex ? `${actor} replied to a post.` : `${actor} created or updated a post.`
+    return post?.ParentPostHashHex ? `${actor} replied to a post involving you.` : `${actor} mentioned you in a post.`
   }
-  if (category === "nft") return `${actor} generated an NFT activity notification.`
-  return `${actor} generated a DeSo activity notification.`
+  if (category === "nft") return `${actor} generated NFT activity for your account.`
+  return `${actor} generated account activity for you.`
 }
 
 export default function NotificationCenter() {
@@ -127,7 +127,7 @@ export default function NotificationCenter() {
     <section className="rounded-2xl border border-zinc-800 bg-zinc-950/60 p-5" aria-labelledby="notification-center-heading">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 id="notification-center-heading" className="text-xl font-semibold text-white">What do you want to see?</h2>
+          <h2 id="notification-center-heading" className="text-xl font-semibold text-white">What reached your account?</h2>
           <p className="mt-1 text-xs text-zinc-500">Active account: {shortKey(session.publicKey)}</p>
         </div>
         <button type="button" onClick={() => setRefreshToken((value) => value + 1)} disabled={status === "loading"} className="rounded-full border border-zinc-700 px-3 py-1.5 text-xs text-zinc-300 hover:border-[#8fd4a9]/55 hover:text-[#9adbb2] disabled:cursor-wait disabled:opacity-60">{status === "loading" ? "Refreshing…" : "Refresh"}</button>
