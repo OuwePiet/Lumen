@@ -241,11 +241,12 @@ export default function PublicProfilePage() {
                           ))}
                         </div>
                       ) : null}
-                      <div className="mt-4 flex flex-wrap gap-x-4 gap-y-1 border-t border-zinc-800/70 pt-3 text-xs text-zinc-500">
+                      <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-zinc-800/70 pt-3 text-xs text-zinc-500">
                         <span>{formatNumber(post.commentCount)} replies</span>
                         <span>{formatNumber(post.likeCount)} likes</span>
                         <span>{formatNumber(post.diamondCount)} diamonds</span>
                         <span>{formatNumber(post.repostCount + post.quoteRepostCount)} reposts</span>
+                        <Link href={`/social?post=${encodeURIComponent(post.postHash)}`} className="ml-auto rounded-full border border-zinc-800 px-3 py-1 text-zinc-400 transition hover:border-[#8fd4a9]/45 hover:text-[#9adbb2]">Open in Social</Link>
                       </div>
                     </article>
                   ))}
