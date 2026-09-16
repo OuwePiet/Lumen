@@ -4,11 +4,20 @@ import Link from "next/link"
 import { useEffect, useState } from "react"
 import { restoreIdentitySession, VIA_IDENTITY_EVENT, type ViaIdentitySession } from "../deso-identity-session"
 
+type CreatorCoinHolding = {
+  creatorPublicKey: string
+  username: string
+  balanceNanos: number
+  balanceCoins: number
+  hasPurchased: boolean
+}
+
 type WalletData = {
   publicKey: string
   balanceNanos: number
   unminedBalanceNanos: number
   balanceDeSo: number
+  creatorCoinHoldings: CreatorCoinHolding[]
 }
 
 type WalletResponse = {
@@ -20,6 +29,36 @@ const quietAction = "inline-flex min-h-10 items-center rounded-[10px] border bor
 
 function formatDeSo(value: number) {
   return new Intl.NumberFormat(undefined, { maximumFractionDigits: 9 }).format(value)
+}
+
+function shortPublicKey(publicKey: string) {
+  if (publicKey.length <= 20) return publicKey
+  return `${publicKey.slice(0, 10)}…${publicKey.slice(-6)}`
+}
+
+function CoinList({ title, holdings }: { title: string; holdings: CreatorCoinHolding[] }) {
+  return (
+    <section className="rounded-[16px] border border-zinc-800/80 bg-zinc-950/45 p-6">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h2 className="text-lg font-medium text-zinc-100">{title}</h2>
+        <span className="rounded-full border border-zinc-800 px-2.5 py-1 text-xs text-zinc-500">{holdings.length}</span>
+      </div>
+      {holdings.length ? (
+        <div className="mt-4 divide-y divide-zinc-800/80">
+          {holdings.map((holding) => (
+            <div key={`${title}-${holding.creatorPublicKey}`} className="flex flex-wrap items-center justify-between gap-3 py-3 first:pt-0 last:pb-0">
+              <Link href={`/profile/${encodeURIComponent(holding.creatorPublicKey)}`} className="min-w-0 text-sm text-zinc-200 transition hover:text-[#9adbb2]">
+                {holding.username ? `@${holding.username}` : shortPublicKey(holding.creatorPublicKey)}
+              </Link>
+              <span className="text-sm font-medium text-zinc-300">{formatDeSo(holding.balanceCoins)} coins</span>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="mt-3 text-sm text-zinc-500">No creator coins in this category.</p>
+      )}
+    </section>
+  )
 }
 
 export default function WalletPage() {
@@ -68,13 +107,16 @@ export default function WalletPage() {
     return () => controller.abort()
   }, [session?.publicKey])
 
+  const bought = wallet?.creatorCoinHoldings.filter((holding) => holding.hasPurchased) ?? []
+  const received = wallet?.creatorCoinHoldings.filter((holding) => !holding.hasPurchased) ?? []
+
   return (
     <main className="min-h-screen bg-[#050807] px-5 py-8 text-zinc-100 sm:px-8 lg:px-12">
       <div className="mx-auto max-w-4xl">
         <header className="mb-8 flex flex-wrap items-start justify-between gap-5">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8fd4a9]">VIA · WALLET</p>
-            <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-[2.25rem]">Your DeSo balance</h1>
+            <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-[2.25rem]">Your DeSo wallet</h1>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-zinc-400 sm:text-base">Read-only wallet information for the DeSo account currently connected to VIA.</p>
           </div>
           <Link href="/my-via" className={quietAction}>Back to My VIA</Link>
@@ -86,7 +128,7 @@ export default function WalletPage() {
             <p className="mt-2 text-sm leading-6 text-zinc-400">Use the VIA account button above to log in with DeSo Identity.</p>
           </section>
         ) : loading ? (
-          <section className="rounded-[16px] border border-zinc-800/80 bg-zinc-950/50 p-6 text-sm text-zinc-400">Loading wallet balance…</section>
+          <section className="rounded-[16px] border border-zinc-800/80 bg-zinc-950/50 p-6 text-sm text-zinc-400">Loading wallet…</section>
         ) : error ? (
           <section className="rounded-[16px] border border-amber-900/40 bg-amber-950/10 p-6 text-sm text-amber-200">{error}</section>
         ) : wallet ? (
@@ -94,8 +136,18 @@ export default function WalletPage() {
             <section className="rounded-[18px] border border-[#8fd4a9]/25 bg-zinc-950/55 p-6 sm:p-8">
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#8fd4a9]">Available balance</p>
               <div className="mt-3 text-4xl font-semibold tracking-tight text-zinc-100 sm:text-5xl">{formatDeSo(wallet.balanceDeSo)} <span className="text-xl text-zinc-400">DESO</span></div>
-              <p className="mt-4 text-xs leading-5 text-zinc-500">Balance is read directly from the DeSo node. VIA does not hold these funds.</p>
+              <div className="mt-5 flex flex-wrap gap-2 text-xs text-zinc-400">
+                <span className="rounded-full border border-zinc-800 px-3 py-1.5">{wallet.creatorCoinHoldings.length} creator coins</span>
+                <span className="rounded-full border border-zinc-800 px-3 py-1.5">{bought.length} bought</span>
+                <span className="rounded-full border border-zinc-800 px-3 py-1.5">{received.length} received</span>
+              </div>
+              <p className="mt-4 text-xs leading-5 text-zinc-500">Balances are read directly from DeSo. VIA does not hold these funds or coins.</p>
             </section>
+
+            <div className="grid gap-5 md:grid-cols-2">
+              <CoinList title="Creator coins · Bought" holdings={bought} />
+              <CoinList title="Creator coins · Received" holdings={received} />
+            </div>
 
             <section className="rounded-[16px] border border-zinc-800/80 bg-zinc-950/45 p-6">
               <h2 className="text-lg font-medium text-zinc-100">Public key</h2>
