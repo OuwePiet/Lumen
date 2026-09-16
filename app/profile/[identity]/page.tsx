@@ -16,6 +16,7 @@ type PublicProfile = {
   coinPriceDeSoNanos: number | null
   numberOfHolders: number | null
   coinsInCirculationNanos: number | null
+  desoLockedNanos: number | null
   followersCount: number | null
   followingCount: number | null
 }
@@ -204,6 +205,10 @@ export default function PublicProfilePage() {
                     <div className="rounded-[12px] border border-zinc-800/80 bg-black/25 p-3">
                       <p className="text-[11px] uppercase tracking-[0.12em] text-zinc-500">Coins in circulation</p>
                       <p className="mt-1 text-sm font-medium">{formatCoinUnits(profile.coinsInCirculationNanos)}</p>
+                    </div>
+                    <div className="rounded-[12px] border border-zinc-800/80 bg-black/25 p-3">
+                      <p className="text-[11px] uppercase tracking-[0.12em] text-zinc-500">DeSo locked</p>
+                      <p className="mt-1 text-sm font-medium">{formatCoin(profile.desoLockedNanos)}</p>
                     </div>
                   </div>
 
