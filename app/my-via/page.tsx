@@ -4,6 +4,7 @@ import CreatorQuickMenu from "./creator-quick-menu";
 const released = [
   { title: "Profile", text: "Open your signed-in public DeSo profile inside VIA.", href: "/profile", action: "Open Profile" },
   { title: "Wallet", text: "See the read-only DESO balance for your connected DeSo account.", href: "/wallet", action: "Open Wallet" },
+  { title: "NFTs", text: "Open VIA Collection to browse DeSo NFTs and creator collections.", href: "/collection", action: "Open NFTs" },
   { title: "Saved", text: "Return to posts and content you explicitly saved.", href: "/saved", action: "Open Saved" },
   { title: "Drafts", text: "Continue local creator drafts inside VIA Studio.", href: "/studio#drafts", action: "Open Drafts" },
   { title: "Settings", text: "Choose local creator defaults and manage local Studio draft data.", href: "/settings", action: "Open Settings" },
@@ -20,7 +21,7 @@ export default function MyViaPage() {
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8fd4a9]">VIA · PERSONAL</p>
             <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-[2.25rem]">My VIA</h1>
-            <p className="mt-3 max-w-2xl text-sm leading-6 text-zinc-400 sm:text-base">Your personal VIA hub for account, saved work, drafts, settings and creator shortcuts.</p>
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-zinc-400 sm:text-base">Your personal VIA hub for account, NFTs, saved work, drafts, settings and creator shortcuts.</p>
           </div>
           <Link href="/" className={quietAction}>Back to VIA</Link>
         </header>
