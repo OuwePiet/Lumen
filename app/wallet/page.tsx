@@ -66,6 +66,7 @@ export default function WalletPage() {
   const [wallet, setWallet] = useState<WalletData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
+  const [copied, setCopied] = useState(false)
 
   useEffect(() => {
     const restore = () => setSession(restoreIdentitySession())
@@ -110,6 +111,13 @@ export default function WalletPage() {
   const bought = wallet?.creatorCoinHoldings.filter((holding) => holding.hasPurchased) ?? []
   const received = wallet?.creatorCoinHoldings.filter((holding) => !holding.hasPurchased) ?? []
 
+  async function copyPublicKey() {
+    if (!wallet?.publicKey || !navigator.clipboard) return
+    await navigator.clipboard.writeText(wallet.publicKey)
+    setCopied(true)
+    window.setTimeout(() => setCopied(false), 1600)
+  }
+
   return (
     <main className="min-h-screen bg-[#050807] px-5 py-8 text-zinc-100 sm:px-8 lg:px-12">
       <div className="mx-auto max-w-4xl">
@@ -150,7 +158,10 @@ export default function WalletPage() {
             </div>
 
             <section className="rounded-[16px] border border-zinc-800/80 bg-zinc-950/45 p-6">
-              <h2 className="text-lg font-medium text-zinc-100">Public key</h2>
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <h2 className="text-lg font-medium text-zinc-100">Public key</h2>
+                <button type="button" onClick={() => void copyPublicKey()} className={quietAction}>{copied ? "Copied" : "Copy public key"}</button>
+              </div>
               <p className="mt-3 break-all font-mono text-xs leading-6 text-zinc-400">{wallet.publicKey}</p>
             </section>
 
