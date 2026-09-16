@@ -74,6 +74,7 @@ export default function WalletPage() {
   const [copied, setCopied] = useState(false)
   const [desoUsd, setDesoUsd] = useState<number | null>(null)
   const [desoEur, setDesoEur] = useState<number | null>(null)
+  const [lastUpdated, setLastUpdated] = useState<number | null>(null)
 
   useEffect(() => {
     const restore = () => setSession(restoreIdentitySession())
@@ -85,6 +86,7 @@ export default function WalletPage() {
   useEffect(() => {
     if (!session?.publicKey) {
       setWallet(null)
+      setLastUpdated(null)
       setLoading(false)
       return
     }
@@ -105,6 +107,7 @@ export default function WalletPage() {
         if (!response.ok || !data?.ok || !data.wallet) throw new Error("WALLET_UNAVAILABLE")
         if (!active) return
         setWallet(data.wallet)
+        setLastUpdated(Date.now())
         setError("")
       } catch (reason) {
         if (active && !(reason instanceof DOMException && reason.name === "AbortError")) {
@@ -196,7 +199,10 @@ export default function WalletPage() {
           <div className="grid gap-5">
             {error ? <section className="rounded-[14px] border border-amber-900/30 bg-amber-950/10 px-4 py-3 text-xs text-amber-200">{error} Showing the last available wallet data.</section> : null}
             <section className="rounded-[18px] border border-[#8fd4a9]/25 bg-zinc-950/55 p-6 sm:p-8">
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#8fd4a9]">Available balance</p>
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#8fd4a9]">Available balance</p>
+                {lastUpdated ? <p className="text-xs text-zinc-500">Last updated {new Date(lastUpdated).toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit", second: "2-digit" })}</p> : null}
+              </div>
               <div className="mt-3 text-4xl font-semibold tracking-tight text-zinc-100 sm:text-5xl">{formatDeSo(wallet.balanceDeSo)} <span className="text-xl text-zinc-400">DESO</span></div>
               {balanceUsd !== null || balanceEur !== null ? (
                 <p className="mt-2 text-sm font-medium text-zinc-400">
