@@ -1,4 +1,5 @@
 export const VIA_SETTINGS_KEY = "via:settings:v1"
+export const VIA_SETTINGS_EVENT = "via:settings"
 export const VIA_STUDIO_DRAFT_KEY = "via:studio:draft:v1"
 
 export const VIA_LANGUAGES = ["Dutch", "English", "French", "Spanish", "Chinese"] as const
@@ -42,4 +43,5 @@ export function readViaLocalSettings(): ViaLocalSettings {
 export function saveViaLocalSettings(settings: Partial<ViaLocalSettings>) {
   const current = readViaLocalSettings()
   window.localStorage.setItem(VIA_SETTINGS_KEY, JSON.stringify({ ...current, ...settings }))
+  window.dispatchEvent(new CustomEvent(VIA_SETTINGS_EVENT))
 }
