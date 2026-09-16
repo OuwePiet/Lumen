@@ -90,7 +90,7 @@ export default function ViaFeatured() {
         <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", padding: "11px 13px" }}>
           <span style={eyebrow}>Best Performer</span>
           <strong style={middleTitle}>VIA creator recognition</strong>
-          <span style={middleSub}>Special badge · $0.50 bonus</span>
+          <span style={middleSub}>Special badge</span>
         </div>
       </div>
 
