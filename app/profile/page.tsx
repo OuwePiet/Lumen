@@ -9,6 +9,11 @@ type PublicProfile = {
   username: string
   description: string
   profilePic: string | null
+  isVerified: boolean
+  creatorBasisPoints: number | null
+  coinPriceDeSoNanos: number | null
+  numberOfHolders: number | null
+  coinsInCirculationNanos: number | null
 }
 
 type ProfileResponse = { ok?: boolean; profile?: PublicProfile }
@@ -23,6 +28,27 @@ function safeImage(value: string | null) {
   } catch {
     return null
   }
+}
+
+function formatDeSoNanos(value: number | null) {
+  if (value === null) return "—"
+  const deso = value / 1_000_000_000
+  return `${new Intl.NumberFormat("en-US", { maximumFractionDigits: 4 }).format(deso)} DESO`
+}
+
+function formatBasisPoints(value: number | null) {
+  if (value === null) return "—"
+  return `${new Intl.NumberFormat("en-US", { maximumFractionDigits: 2 }).format(value / 100)}%`
+}
+
+function formatCompact(value: number | null) {
+  if (value === null) return "—"
+  return new Intl.NumberFormat("en-US", { notation: "compact", maximumFractionDigits: 2 }).format(value)
+}
+
+function formatCoins(value: number | null) {
+  if (value === null) return "—"
+  return new Intl.NumberFormat("en-US", { maximumFractionDigits: 4 }).format(value / 1_000_000_000)
 }
 
 export default function ProfilePage() {
@@ -102,8 +128,33 @@ export default function ProfilePage() {
                 <div className="grid h-24 w-24 place-items-center rounded-full border border-[#8fd4a9]/30 bg-[#112019] text-2xl font-semibold text-[#9adbb2]" aria-hidden="true">{profile.username.slice(0, 1).toUpperCase() || "V"}</div>
               )}
               <div className="min-w-0 flex-1">
-                <h2 className="text-2xl font-semibold text-zinc-100">@{profile.username}</h2>
-                <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-zinc-300">{profile.description || "No public bio on this DeSo profile."}</p>
+                <div className="flex flex-wrap items-center gap-2">
+                  <h2 className="text-2xl font-semibold text-zinc-100">@{profile.username}</h2>
+                  {profile.isVerified ? (
+                    <span className="inline-flex items-center rounded-full border border-sky-400/30 bg-sky-400/10 px-2 py-1 text-xs font-medium text-sky-300" title="Verified by the connected DeSo profile source">✓ DeSo verified</span>
+                  ) : null}
+                </div>
+
+                <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                  <div className="rounded-[12px] border border-zinc-800/80 bg-black/25 p-3">
+                    <p className="text-[11px] uppercase tracking-[0.12em] text-zinc-500">Coin price</p>
+                    <p className="mt-1 text-sm font-medium text-zinc-100">{formatDeSoNanos(profile.coinPriceDeSoNanos)}</p>
+                  </div>
+                  <div className="rounded-[12px] border border-zinc-800/80 bg-black/25 p-3">
+                    <p className="text-[11px] uppercase tracking-[0.12em] text-zinc-500">FR</p>
+                    <p className="mt-1 text-sm font-medium text-zinc-100">{formatBasisPoints(profile.creatorBasisPoints)}</p>
+                  </div>
+                  <div className="rounded-[12px] border border-zinc-800/80 bg-black/25 p-3">
+                    <p className="text-[11px] uppercase tracking-[0.12em] text-zinc-500">Coin holders</p>
+                    <p className="mt-1 text-sm font-medium text-zinc-100">{formatCompact(profile.numberOfHolders)}</p>
+                  </div>
+                  <div className="rounded-[12px] border border-zinc-800/80 bg-black/25 p-3">
+                    <p className="text-[11px] uppercase tracking-[0.12em] text-zinc-500">Coins in circulation</p>
+                    <p className="mt-1 text-sm font-medium text-zinc-100">{formatCoins(profile.coinsInCirculationNanos)}</p>
+                  </div>
+                </div>
+
+                <p className="mt-5 whitespace-pre-wrap text-sm leading-6 text-zinc-300">{profile.description || "No public bio on this DeSo profile."}</p>
                 <div className="mt-5 rounded-[12px] border border-zinc-800/80 bg-black/25 p-4">
                   <p className="text-xs font-semibold uppercase tracking-[0.14em] text-zinc-500">Public key</p>
                   <p className="mt-2 break-all font-mono text-xs leading-5 text-zinc-400">{profile.publicKey}</p>
