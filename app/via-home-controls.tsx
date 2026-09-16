@@ -169,7 +169,7 @@ export default function ViaHomeControls() {
           <Link
             key={label}
             href={href}
-            style={{ ...linkStyle, minHeight: "40px", color: "#e7eee9", fontSize: "12px", borderColor: "rgba(143,212,169,.28)" }}
+            style={{ ...linkStyle, minHeight: "40px", fontSize: "12px" }}
           >
             {label}
           </Link>
