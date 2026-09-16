@@ -5,6 +5,11 @@ export type ViaPublicProfile = {
   username: string
   description: string
   profilePic: string | null
+  isVerified: boolean
+  creatorBasisPoints: number | null
+  coinPriceDeSoNanos: number | null
+  numberOfHolders: number | null
+  coinsInCirculationNanos: number | null
 }
 
 type DeSoProfileResponse = {
@@ -13,6 +18,13 @@ type DeSoProfileResponse = {
     Username?: unknown
     Description?: unknown
     ProfilePic?: unknown
+    IsVerified?: unknown
+    CoinPriceDeSoNanos?: unknown
+    CoinEntry?: {
+      CreatorBasisPoints?: unknown
+      NumberOfHolders?: unknown
+      CoinsInCirculationNanos?: unknown
+    } | null
   } | null
 }
 
@@ -20,10 +32,17 @@ function text(value: unknown) {
   return typeof value === "string" ? value : ""
 }
 
+function numberOrNull(value: unknown) {
+  return typeof value === "number" && Number.isFinite(value) ? value : null
+}
+
 /**
  * Read a public DeSo profile without requesting wallet authority.
  * DeSo's get-single-profile endpoint is a POST transport, but this operation
  * only requests public data. No transaction is constructed, signed or sent.
+ *
+ * IsVerified is deliberately exposed as a DeSo-source fact. VIA must not
+ * present it as a VIA-issued identity guarantee.
  */
 export async function readPublicProfile(
   usernameOrPublicKey: string,
@@ -51,11 +70,17 @@ export async function readPublicProfile(
   if (!publicKey && !username) return null
 
   const profilePic = text(profile.ProfilePic)
+  const coinEntry = profile.CoinEntry ?? null
 
   return {
     publicKey,
     username,
     description: text(profile.Description),
     profilePic: /^https:\/\//i.test(profilePic) ? profilePic : null,
+    isVerified: profile.IsVerified === true,
+    creatorBasisPoints: numberOrNull(coinEntry?.CreatorBasisPoints),
+    coinPriceDeSoNanos: numberOrNull(profile.CoinPriceDeSoNanos),
+    numberOfHolders: numberOrNull(coinEntry?.NumberOfHolders),
+    coinsInCirculationNanos: numberOrNull(coinEntry?.CoinsInCirculationNanos),
   }
 }
