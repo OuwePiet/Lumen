@@ -74,7 +74,7 @@ const styles = {
   search: { ...pill, minWidth: "205px", justifyContent: "flex-start" },
   language: { ...pill, appearance: "none" as const, cursor: "pointer", paddingRight: "14px", outline: "none" },
   login: { ...pill, cursor: "pointer" },
-  visitor: { ...pill, color: "#98a69e" },
+  visitor: { ...pill, color: "#d6e2db", border: "1px solid rgba(143,212,169,.30)", background: "rgba(8,16,11,.88)" },
   accountWrap: { position: "relative" as const, flex: "0 0 auto", display: "grid", justifyItems: "end" as const, gap: "2px" },
   accountButton: { ...pill, cursor: "pointer", padding: "5px 12px 5px 6px", color: "#e3ebe6" },
   avatar: { width: "28px", height: "28px", borderRadius: "50%", objectFit: "cover" as const },
