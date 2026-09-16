@@ -42,6 +42,11 @@ function formatCoin(value: number | null) {
   return `${new Intl.NumberFormat("en-US", { maximumFractionDigits: 4 }).format(value / 1_000_000_000)} DESO`
 }
 
+function formatCoinUnits(value: number | null) {
+  if (value === null) return "—"
+  return new Intl.NumberFormat("en-US", { maximumFractionDigits: 4 }).format(value / 1_000_000_000)
+}
+
 function formatFr(value: number | null) {
   if (value === null) return "—"
   return `${new Intl.NumberFormat("en-US", { maximumFractionDigits: 2 }).format(value / 100)}%`
@@ -195,6 +200,10 @@ export default function PublicProfilePage() {
                     <div className="rounded-[12px] border border-zinc-800/80 bg-black/25 p-3">
                       <p className="text-[11px] uppercase tracking-[0.12em] text-zinc-500">Coin holders</p>
                       <p className="mt-1 text-sm font-medium">{formatNumber(profile.numberOfHolders)}</p>
+                    </div>
+                    <div className="rounded-[12px] border border-zinc-800/80 bg-black/25 p-3">
+                      <p className="text-[11px] uppercase tracking-[0.12em] text-zinc-500">Coins in circulation</p>
+                      <p className="mt-1 text-sm font-medium">{formatCoinUnits(profile.coinsInCirculationNanos)}</p>
                     </div>
                   </div>
 
