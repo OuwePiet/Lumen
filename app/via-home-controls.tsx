@@ -27,7 +27,7 @@ const utilities = [
   ["Search members", "/discover"],
   ["Public Entrance", "/discover"],
   ["EN", "/settings"],
-  ["Buy $DESO", "/wallet"],
+  ["Wallet", "/wallet"],
   ["Notifications", "/notifications"],
 ] as const
 
