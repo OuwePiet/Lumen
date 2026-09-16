@@ -14,6 +14,8 @@ type PublicProfile = {
   coinPriceDeSoNanos: number | null
   numberOfHolders: number | null
   coinsInCirculationNanos: number | null
+  followersCount: number | null
+  followingCount: number | null
 }
 
 type ProfileResponse = { ok?: boolean; profile?: PublicProfile }
@@ -135,10 +137,18 @@ export default function ProfilePage() {
                   ) : null}
                 </div>
 
-                <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-3">
                   <div className="rounded-[12px] border border-zinc-800/80 bg-black/25 p-3">
                     <p className="text-[11px] uppercase tracking-[0.12em] text-zinc-500">Coin price</p>
                     <p className="mt-1 text-sm font-medium text-zinc-100">{formatDeSoNanos(profile.coinPriceDeSoNanos)}</p>
+                  </div>
+                  <div className="rounded-[12px] border border-zinc-800/80 bg-black/25 p-3">
+                    <p className="text-[11px] uppercase tracking-[0.12em] text-zinc-500">Followers</p>
+                    <p className="mt-1 text-sm font-medium text-zinc-100">{formatCompact(profile.followersCount)}</p>
+                  </div>
+                  <div className="rounded-[12px] border border-zinc-800/80 bg-black/25 p-3">
+                    <p className="text-[11px] uppercase tracking-[0.12em] text-zinc-500">Following</p>
+                    <p className="mt-1 text-sm font-medium text-zinc-100">{formatCompact(profile.followingCount)}</p>
                   </div>
                   <div className="rounded-[12px] border border-zinc-800/80 bg-black/25 p-3">
                     <p className="text-[11px] uppercase tracking-[0.12em] text-zinc-500">FR</p>
