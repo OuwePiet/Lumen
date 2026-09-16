@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { useEffect, useState } from "react"
 import { restoreIdentitySession, VIA_IDENTITY_EVENT, type ViaIdentitySession } from "../deso-identity-session"
-import { fetchViaRates, isViaRateStale } from "../via-live-rates"
+import { fetchViaRates, isViaRateStale, VIA_RATE_REFRESH_MS } from "../via-live-rates"
 
 type CreatorCoinHolding = {
   creatorPublicKey: string
@@ -116,22 +116,35 @@ export default function WalletPage() {
   }, [session?.publicKey])
 
   useEffect(() => {
-    const controller = new AbortController()
-    void fetchViaRates(controller.signal)
-      .then((rates) => {
+    let active = true
+    let controller: AbortController | null = null
+
+    const refreshRates = async () => {
+      controller?.abort()
+      controller = new AbortController()
+      try {
+        const rates = await fetchViaRates(controller.signal)
         const usd = rates.rates?.USD
         const eur = rates.rates?.EUR
         const current = !isViaRateStale(rates.checkedAt)
+        if (!active) return
         setDesoUsd(current && typeof usd === "number" && Number.isFinite(usd) && usd > 0 ? usd : null)
         setDesoEur(current && typeof eur === "number" && Number.isFinite(eur) && eur > 0 ? eur : null)
-      })
-      .catch((reason) => {
-        if (!(reason instanceof DOMException && reason.name === "AbortError")) {
+      } catch (reason) {
+        if (active && !(reason instanceof DOMException && reason.name === "AbortError")) {
           setDesoUsd(null)
           setDesoEur(null)
         }
-      })
-    return () => controller.abort()
+      }
+    }
+
+    void refreshRates()
+    const timer = window.setInterval(refreshRates, VIA_RATE_REFRESH_MS)
+    return () => {
+      active = false
+      controller?.abort()
+      window.clearInterval(timer)
+    }
   }, [])
 
   const bought = wallet?.creatorCoinHoldings.filter((holding) => holding.hasPurchased) ?? []
