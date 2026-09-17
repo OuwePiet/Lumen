@@ -27,7 +27,7 @@ export default function NewVoicesPage() {
         <section style={styles.panel} aria-label="Open a public creator">
           <h2>Open creator collection</h2>
           <p style={styles.text}>Enter a public DeSo username. VIA opens the existing public collection browser; no signing, follow, like, payment, or Diamond action is performed.</p>
-          <form action="/" method="get" style={styles.form}>
+          <form action="/collection" method="get" style={styles.form}>
             <input name="account" aria-label="DeSo username" placeholder="DeSo username" autoComplete="off" style={styles.input} />
             <button type="submit" style={styles.button}>Explore creator</button>
           </form>

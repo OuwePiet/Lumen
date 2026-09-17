@@ -1,40 +1,52 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { SAVED_KEY, type SavedItem } from "../saved/save-button"
 
-const STORAGE_KEY = "via:social:saved-posts:v1"
-const SAVE_EVENT = "via:social:saved-posts-changed"
+const SAVE_EVENT = "via:saved:changed"
 
-type SavedPost = {
+type Props = {
   postHash: string
   body: string
   publicKey: string
   timestampNanos: number
-  savedAt: number
 }
 
-function readSaved(): SavedPost[] {
+function postHref(postHash: string) {
+  return `/social?post=${encodeURIComponent(postHash)}`
+}
+
+function postTitle(body: string, publicKey: string) {
+  const text = body.trim().replace(/\s+/g, " ")
+  if (text) return text.length > 72 ? `${text.slice(0, 69)}...` : text
+  const account = publicKey.length > 18 ? `${publicKey.slice(0, 10)}…${publicKey.slice(-6)}` : publicKey
+  return `DeSo post · ${account}`
+}
+
+function readSaved(): SavedItem[] {
   try {
-    const raw = window.localStorage.getItem(STORAGE_KEY)
-    if (!raw) return []
-    const parsed = JSON.parse(raw)
+    const raw = window.localStorage.getItem(SAVED_KEY)
+    const parsed = raw ? JSON.parse(raw) : []
     if (!Array.isArray(parsed)) return []
-    return parsed.filter((item): item is SavedPost => Boolean(item) && typeof item === "object" && typeof item.postHash === "string")
+    return parsed.filter((item): item is SavedItem =>
+      Boolean(item) &&
+      typeof item.title === "string" &&
+      typeof item.href === "string" &&
+      typeof item.kind === "string" &&
+      typeof item.savedAt === "string"
+    ).slice(0, 100)
   } catch {
     return []
   }
 }
 
-function writeSaved(items: SavedPost[]) {
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(items.slice(0, 100)))
-}
-
-export default function LocalSaveButton({ postHash, body, publicKey, timestampNanos }: Omit<SavedPost, "savedAt">) {
+export default function LocalSaveButton({ postHash, body, publicKey }: Props) {
+  const href = postHref(postHash)
   const [saved, setSaved] = useState(false)
   const [message, setMessage] = useState("")
 
   useEffect(() => {
-    const sync = () => setSaved(readSaved().some((item) => item.postHash === postHash))
+    const sync = () => setSaved(readSaved().some((item) => item.href === href))
     sync()
     window.addEventListener(SAVE_EVENT, sync)
     window.addEventListener("storage", sync)
@@ -42,26 +54,33 @@ export default function LocalSaveButton({ postHash, body, publicKey, timestampNa
       window.removeEventListener(SAVE_EVENT, sync)
       window.removeEventListener("storage", sync)
     }
-  }, [postHash])
+  }, [href])
 
   function toggle() {
     try {
       const current = readSaved()
-      if (current.some((item) => item.postHash === postHash)) {
-        writeSaved(current.filter((item) => item.postHash !== postHash))
+      if (current.some((item) => item.href === href)) {
+        const next = current.filter((item) => item.href !== href)
+        window.localStorage.setItem(SAVED_KEY, JSON.stringify(next))
         setSaved(false)
         window.dispatchEvent(new Event(SAVE_EVENT))
-        setMessage("Removed from this device.")
+        setMessage("Removed from Saved.")
         return
       }
 
-      writeSaved([
-        { postHash, body: body.slice(0, 1200), publicKey, timestampNanos, savedAt: Date.now() },
-        ...current.filter((item) => item.postHash !== postHash),
-      ])
+      const next: SavedItem[] = [
+        {
+          title: postTitle(body, publicKey),
+          href,
+          kind: "Post",
+          savedAt: new Date().toISOString(),
+        },
+        ...current.filter((item) => item.href !== href),
+      ].slice(0, 100)
+      window.localStorage.setItem(SAVED_KEY, JSON.stringify(next))
       setSaved(true)
       window.dispatchEvent(new Event(SAVE_EVENT))
-      setMessage("Saved on this device.")
+      setMessage("Saved in VIA Saved on this device.")
     } catch {
       setMessage("Saving is unavailable on this device.")
     }

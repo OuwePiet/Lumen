@@ -1,5 +1,6 @@
 import accessibilityStyles from "./accessibility.module.css"
 import CollectionBrowser from "./collection-browser"
+import CollectionLocalizedText from "./collection-localized-text"
 import { fetchDeSo } from "./deso-api"
 import MediaFilter, { type MediaFilterType } from "./media-filter"
 import NFTMedia from "./nft-media"
@@ -117,17 +118,6 @@ async function loadNFT(postHash: string) {
   return { postHash, post, forSaleCount, lowestBuyNowPrice, lowestMinBidAmount }
 }
 
-function formatDeSo(nanos: number) {
-  return new Intl.NumberFormat("en-US", { maximumFractionDigits: 9 }).format(nanos / 1_000_000_000)
-}
-
-function priceStatus(forSaleCount: number, buyNowPrice?: number, minBidAmount?: number) {
-  if (forSaleCount === 0) return "Not for sale"
-  if (typeof buyNowPrice === "number") return `Buy now: ${formatDeSo(buyNowPrice)} DESO`
-  if (typeof minBidAmount === "number") return `Min bid: ${formatDeSo(minBidAmount)} DESO`
-  return "For sale"
-}
-
 function cardTitle(body?: string) {
   if (!body) return "DeSo NFT"
   const cleaned = body.replace(/https?:\/\/nftz\.me\/\S+/gi, "").replace(/\s+/g, " ").trim()
@@ -170,7 +160,8 @@ export default async function NFTGrid({ initialAccount }: { initialAccount?: str
   const collectionNFTs = [...nfts, ...discoveredNFTs]
 
   const renderNFTCard = ({ postHash, post, forSaleCount, lowestBuyNowPrice, lowestMinBidAmount }: NonNullable<Awaited<ReturnType<typeof loadNFT>>>) => {
-    const creator = post.ProfileEntryResponse?.Username ? `@${post.ProfileEntryResponse.Username}` : "DeSo creator"
+    const creatorUsername = post.ProfileEntryResponse?.Username
+    const creator = creatorUsername ? `@${creatorUsername}` : "DeSo creator"
     return (
       <a key={postHash} href={`/nft/${postHash}`} aria-label={`Open NFT: ${cardTitle(post.Body)} by ${creator}`} style={styles.card}>
         <div style={styles.mediaFrame}>
@@ -178,11 +169,11 @@ export default async function NFTGrid({ initialAccount }: { initialAccount?: str
           <ViaWatermark />
         </div>
         <div style={styles.content}>
-          <span style={styles.badge}>On-chain NFT</span>
+          <span style={styles.badge}><CollectionLocalizedText kind="onChain" /></span>
           <h2 style={styles.title}>{cardTitle(post.Body)}</h2>
           <div style={styles.facts}>
-            <span>{creator}</span>
-            <span>{post.NumNFTCopies ?? 0} {post.NumNFTCopies === 1 ? "copy" : "copies"} · {forSaleCount} for sale · {priceStatus(forSaleCount, lowestBuyNowPrice, lowestMinBidAmount)}</span>
+            <span>{creatorUsername ? `@${creatorUsername}` : <CollectionLocalizedText kind="creator" />}</span>
+            <span><CollectionLocalizedText kind="cardFacts" copies={post.NumNFTCopies ?? 0} forSaleCount={forSaleCount} buyNowPrice={lowestBuyNowPrice} minBidAmount={lowestMinBidAmount} /></span>
           </div>
         </div>
       </a>
@@ -203,21 +194,26 @@ export default async function NFTGrid({ initialAccount }: { initialAccount?: str
           </a>
           <nav aria-label="VIA main navigation" style={styles.nav}>
             <a href="/social" style={styles.navLink}>Social</a>
-            <a href="/my-via" style={styles.navLink}>My VIA</a>
-            <a href="/communities" style={styles.navLink}>Communities</a>
+            <a href="/my-via" style={styles.navLink}><CollectionLocalizedText kind="myVia" /></a>
+            <a href="/communities" style={styles.navLink}><CollectionLocalizedText kind="communities" /></a>
             <a href="/studio" style={styles.navLink}>Studio</a>
-            <a href="/discover" style={styles.navLink}>Discover</a>
+            <a href="/discover" style={styles.navLink}><CollectionLocalizedText kind="discover" /></a>
             <a href="/live" style={styles.navLink}>VIA LIVE</a>
-            <a href="/news" style={styles.navLink}>News</a>
+            <a href="/news" style={styles.navLink}><CollectionLocalizedText kind="news" /></a>
           </nav>
         </div>
-        <h1 style={styles.heading}>NFT collection</h1>
-        <p style={styles.introduction}>Explore public DeSo NFTs through VIA. Collection data is loaded read-only from the DeSo network.</p>
+        <h1 style={styles.heading}><CollectionLocalizedText kind="heading" /></h1>
+        <p style={styles.introduction}><CollectionLocalizedText kind="intro" /></p>
         <CollectionBrowser initialAccount={initialAccount}>
           <>
             <p style={styles.owner}>
-              {collectionOwner ? `@${collectionOwner.Username} · ${collectionNFTs.length} NFTs displayed` : `Collection unavailable: @${selectedAccount}`}
-              {automaticNFTResult && automaticNFTResult.nftCount > collectionNFTs.length ? ` · ${automaticNFTResult.nftCount} NFTs detected` : ""}
+              <CollectionLocalizedText
+                kind="ownerStatus"
+                username={collectionOwner?.Username}
+                displayedCount={collectionNFTs.length}
+                detectedCount={automaticNFTResult?.nftCount}
+                selectedAccount={selectedAccount}
+              />
             </p>
             <div id="collection-controls">
               <MediaFilter

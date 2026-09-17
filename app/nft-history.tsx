@@ -69,8 +69,6 @@ export default function NFTHistory({
   postTimestampNanos,
   editionCount,
   uniqueOwnerCount,
-  forSaleCount,
-  saleStatus,
 }: NFTHistoryProps) {
   const events = [
     {
@@ -84,10 +82,6 @@ export default function NFTHistory({
     {
       title: "Current ownership snapshot",
       text: `${uniqueOwnerCount} unique owner${uniqueOwnerCount === 1 ? "" : "s"} across ${editionCount} edition${editionCount === 1 ? "" : "s"}.`,
-    },
-    {
-      title: "Current market snapshot",
-      text: `${forSaleCount} edition${forSaleCount === 1 ? "" : "s"} for sale. ${saleStatus}.`,
     },
   ]
 

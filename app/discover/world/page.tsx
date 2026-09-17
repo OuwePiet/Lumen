@@ -40,7 +40,7 @@ export default function AroundTheWorldPage() {
           <Link href="/discover" style={styles.link}>World Discovery</Link>
           <Link href="/radio" style={styles.link}>World Radio</Link>
           <Link href="/discover/voices" style={styles.link}>New Voices</Link>
-          <Link href="/#collection-controls" style={styles.link}>NFT Window</Link>
+          <Link href="/collection#collection-controls" style={styles.link}>NFT Window</Link>
         </nav>
 
         <section style={styles.grid} aria-label="World regions">

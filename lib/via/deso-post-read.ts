@@ -3,6 +3,7 @@ import { fetchDeSo } from "../../app/deso-api"
 export type ViaPublicPost = {
   postHash: string
   publicKey: string
+  username: string
   body: string
   imageUrls: string[]
   videoUrls: string[]
@@ -19,6 +20,7 @@ export type ViaPublicPost = {
 type DeSoPost = {
   PostHashHex?: unknown
   PosterPublicKeyBase58Check?: unknown
+  ProfileEntryResponse?: { Username?: unknown } | null
   Body?: unknown
   ImageURLs?: unknown
   VideoURLs?: unknown
@@ -76,6 +78,7 @@ function normalizePublicPost(post: DeSoPost): ViaPublicPost {
   return {
     postHash: text(post.PostHashHex),
     publicKey: text(post.PosterPublicKeyBase58Check),
+    username: text(post.ProfileEntryResponse?.Username),
     body: text(post.Body),
     imageUrls: safeHttpsUrls(post.ImageURLs),
     videoUrls: safeHttpsUrls(post.VideoURLs),
@@ -128,7 +131,6 @@ export async function readPublicPosts(
     .map(normalizePublicPost)
     .filter((post) => Boolean(post.postHash))
 }
-
 
 export async function readPublicPostByHash(postHash: string): Promise<ViaPublicPost | null> {
   const hash = postHash.trim().toLowerCase()

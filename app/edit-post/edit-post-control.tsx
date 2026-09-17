@@ -32,6 +32,7 @@ export default function EditPostControl() {
   const [session, setSession] = useState<ViaIdentitySession | null>(null)
   const [postHashHex, setPostHashHex] = useState("")
   const [body, setBody] = useState("")
+  const [originalBody, setOriginalBody] = useState("")
   const [mediaSummary, setMediaSummary] = useState("")
   const [loadedHash, setLoadedHash] = useState("")
   const [feeNanos, setFeeNanos] = useState<number | null>(null)
@@ -73,6 +74,7 @@ export default function EditPostControl() {
         const data = await response.json() as SubmitResponse
         if (!response.ok || !data.ok) throw new Error(data.error || "SUBMIT_FAILED")
         setStatus("done")
+        setOriginalBody(body)
         setMessage("Edited post submitted to DeSo.")
         setFeeNanos(null)
       } catch {
@@ -88,10 +90,10 @@ export default function EditPostControl() {
       popupRef.current?.close()
       popupRef.current = null
     }
-  }, [])
+  }, [body])
 
   const hashValid = /^[0-9a-fA-F]{64}$/.test(postHashHex.trim())
-  const changed = Boolean(loadedHash && body.trim())
+  const changed = Boolean(loadedHash && body !== originalBody)
   const remaining = 5000 - body.length
   const feeLabel = useMemo(() => feeNanos === null ? "" : `${feeNanos.toLocaleString()} nanos network fee in the prepared transaction`, [feeNanos])
 
@@ -113,6 +115,7 @@ export default function EditPostControl() {
       setLoadedHash(data.post.postHashHex)
       setPostHashHex(data.post.postHashHex)
       setBody(data.post.body)
+      setOriginalBody(data.post.body)
       setMediaSummary(`${data.post.imageUrls.length} image(s) · ${data.post.videoUrls.length} video(s) preserved`)
       setStatus("ready")
       setMessage("Post verified for the active DeSo key. Edit the text below; existing media will be preserved.")
@@ -120,6 +123,7 @@ export default function EditPostControl() {
       const code = error instanceof Error ? error.message : "LOOKUP_FAILED"
       setLoadedHash("")
       setBody("")
+      setOriginalBody("")
       setMediaSummary("")
       setStatus("error")
       setMessage(code === "POST_NOT_OWNED_BY_ACTIVE_KEY" ? "This post does not belong to the active DeSo key." : "This post could not be verified for safe editing.")
@@ -177,7 +181,7 @@ export default function EditPostControl() {
 
       <label className="mt-5 block text-sm text-zinc-300" htmlFor="edit-post-hash">Post hash</label>
       <div className="mt-2 flex flex-col gap-2 sm:flex-row">
-        <input id="edit-post-hash" value={postHashHex} onChange={(event) => { setPostHashHex(event.target.value); setLoadedHash(""); setBody(""); setMediaSummary(""); setStatus("idle"); setMessage("") }} placeholder="64-character DeSo post hash" className="min-w-0 flex-1 rounded-xl border border-zinc-800 bg-black/40 px-3 py-2 text-sm text-zinc-200 outline-none focus:border-green-700" />
+        <input id="edit-post-hash" value={postHashHex} onChange={(event) => { setPostHashHex(event.target.value); setLoadedHash(""); setBody(""); setOriginalBody(""); setMediaSummary(""); setStatus("idle"); setMessage("") }} placeholder="64-character DeSo post hash" className="min-w-0 flex-1 rounded-xl border border-zinc-800 bg-black/40 px-3 py-2 text-sm text-zinc-200 outline-none focus:border-green-700" />
         <button type="button" onClick={inspect} disabled={!hashValid || status === "loading"} className="rounded-xl border border-green-800 px-4 py-2 text-sm font-semibold text-green-300 disabled:border-zinc-800 disabled:text-zinc-600">{status === "loading" ? "Checking…" : "Load my post"}</button>
       </div>
 

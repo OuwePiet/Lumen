@@ -64,17 +64,17 @@ function flatten(map?: Record<string, NFTRecord>) {
 
 export default async function MarketPage({ searchParams }: { searchParams: Promise<{ publicKey?: string }> }) {
   const { publicKey } = await searchParams
-  let sales: ReturnType<typeof flatten> = []
+  let listings: ReturnType<typeof flatten> = []
   let transfers: ReturnType<typeof flatten> = []
   let error = ""
 
   if (publicKey) {
     try {
-      const [salesData, pendingData] = await Promise.all([
+      const [listingData, pendingData] = await Promise.all([
         loadNFTs(publicKey, { IsForSale: true }),
         loadNFTs(publicKey, { IsPending: true }),
       ])
-      sales = flatten(salesData.NFTsMap)
+      listings = flatten(listingData.NFTsMap)
       transfers = flatten(pendingData.NFTsMap)
     } catch {
       error = "VIA could not load the marketplace state for this DeSo account right now."
@@ -88,13 +88,14 @@ export default async function MarketPage({ searchParams }: { searchParams: Promi
       <header className="max-w-3xl">
         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8fd4a9]">VIA Marketplace</p>
         <h1 className="mt-2 text-3xl font-semibold">Market</h1>
-        <p className="mt-2 text-sm leading-6 text-zinc-400">Bids, listings, sales and transfers for one DeSo account. Transaction actions stay on the NFT detail page where VIA keeps the full confirmation flow.</p>
+        <p className="mt-2 text-sm leading-6 text-zinc-400">Bids, active listings and pending transfers for one DeSo account. Transaction actions stay on the NFT detail page where VIA keeps the full confirmation flow.</p>
       </header>
 
       <nav aria-label="Marketplace sections" className="mt-6 flex flex-wrap gap-2">
+        <Link href="/collection" className="rounded-lg border border-zinc-800 px-3 py-2 text-sm text-zinc-300">Collection</Link>
         <Link href={"/market/received-bids" + query} className="rounded-lg border border-zinc-800 px-3 py-2 text-sm text-zinc-300">Received Bids</Link>
         <Link href={"/market/my-bids" + query} className="rounded-lg border border-zinc-800 px-3 py-2 text-sm text-zinc-300">My Bids</Link>
-        <a href="#sales" className="rounded-lg border border-zinc-800 px-3 py-2 text-sm text-zinc-300">Sales</a>
+        <a href="#listings" className="rounded-lg border border-zinc-800 px-3 py-2 text-sm text-zinc-300">Listings</a>
         <a href="#transfers" className="rounded-lg border border-zinc-800 px-3 py-2 text-sm text-zinc-300">Transfers</a>
       </nav>
 
@@ -109,14 +110,14 @@ export default async function MarketPage({ searchParams }: { searchParams: Promi
         </section>
       ) : error ? <p className="mt-8 text-sm text-amber-300">{error}</p> : (
         <>
-          <section id="sales" className="mt-10 scroll-mt-24">
+          <section id="listings" className="mt-10 scroll-mt-24">
             <div className="flex items-baseline justify-between gap-4">
-              <h2 className="text-xl font-semibold">Sales</h2>
-              <span className="text-xs text-zinc-500">{sales.length} listed edition{sales.length === 1 ? "" : "s"}</span>
+              <h2 className="text-xl font-semibold">Listings</h2>
+              <span className="text-xs text-zinc-500">{listings.length} listed edition{listings.length === 1 ? "" : "s"}</span>
             </div>
-            {sales.length === 0 ? <p className="mt-3 text-sm text-zinc-500">No NFT editions currently for sale.</p> : (
+            {listings.length === 0 ? <p className="mt-3 text-sm text-zinc-500">No NFT editions currently for sale.</p> : (
               <div className="mt-4 grid gap-3">
-                {sales.map(({hash,post,entry},index)=><Link key={hash+":"+entry.SerialNumber+":"+index} href={"/nft/"+hash+(publicKey?"?returnTo=market&publicKey="+encodeURIComponent(publicKey):"")} className="rounded-xl border border-zinc-800 bg-black/20 p-4">
+                {listings.map(({hash,post,entry},index)=><Link key={hash+":"+entry.SerialNumber+":"+index} href={"/nft/"+hash+(publicKey?"?returnTo=market&publicKey="+encodeURIComponent(publicKey):"")} className="rounded-xl border border-zinc-800 bg-black/20 p-4">
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div><p className="text-sm font-semibold">{title(post.Body)}</p><p className="mt-1 text-xs text-zinc-500">{post.ProfileEntryResponse?.Username ? "@"+post.ProfileEntryResponse.Username+" · " : ""}Edition #{entry.SerialNumber ?? "?"}</p></div>
                     <p className="text-sm text-[#9adbb2]">{entry.IsBuyNow && typeof entry.BuyNowPriceNanos === "number" ? "Buy now "+formatDeso(entry.BuyNowPriceNanos) : "Min bid "+formatDeso(entry.MinBidAmountNanos)} DESO</p>

@@ -5,6 +5,14 @@ export type ViaPublicProfile = {
   username: string
   description: string
   profilePic: string | null
+  isVerified: boolean
+  creatorBasisPoints: number | null
+  coinPriceDeSoNanos: number | null
+  numberOfHolders: number | null
+  coinsInCirculationNanos: number | null
+  desoLockedNanos: number | null
+  followersCount: number | null
+  followingCount: number | null
 }
 
 type DeSoProfileResponse = {
@@ -13,17 +21,54 @@ type DeSoProfileResponse = {
     Username?: unknown
     Description?: unknown
     ProfilePic?: unknown
+    IsVerified?: unknown
+    CoinPriceDeSoNanos?: unknown
+    CoinEntry?: {
+      CreatorBasisPoints?: unknown
+      NumberOfHolders?: unknown
+      CoinsInCirculationNanos?: unknown
+      DeSoLockedNanos?: unknown
+    } | null
   } | null
+}
+
+type DeSoFollowsResponse = {
+  NumFollowers?: unknown
 }
 
 function text(value: unknown) {
   return typeof value === "string" ? value : ""
 }
 
+function numberOrNull(value: unknown) {
+  return typeof value === "number" && Number.isFinite(value) ? value : null
+}
+
+async function readFollowCount(publicKey: string, followers: boolean) {
+  const response = await fetchDeSo("get-follows-stateless", {
+    method: "POST",
+    headers: { "content-type": "application/json", accept: "application/json" },
+    body: JSON.stringify({
+      PublicKeyBase58Check: publicKey,
+      Username: "",
+      GetEntriesFollowingUsername: followers,
+      LastPublicKeyBase58Check: "",
+      NumToFetch: 1,
+    }),
+  })
+
+  if (!response.ok) return null
+  const data = (await response.json()) as DeSoFollowsResponse
+  return numberOrNull(data.NumFollowers)
+}
+
 /**
  * Read a public DeSo profile without requesting wallet authority.
  * DeSo's get-single-profile endpoint is a POST transport, but this operation
  * only requests public data. No transaction is constructed, signed or sent.
+ *
+ * IsVerified is deliberately exposed as a DeSo-source fact. VIA must not
+ * present it as a VIA-issued identity guarantee.
  */
 export async function readPublicProfile(
   usernameOrPublicKey: string,
@@ -51,11 +96,26 @@ export async function readPublicProfile(
   if (!publicKey && !username) return null
 
   const profilePic = text(profile.ProfilePic)
+  const coinEntry = profile.CoinEntry ?? null
+  const [followersCount, followingCount] = publicKey
+    ? await Promise.all([
+        readFollowCount(publicKey, true),
+        readFollowCount(publicKey, false),
+      ])
+    : [null, null]
 
   return {
     publicKey,
     username,
     description: text(profile.Description),
     profilePic: /^https:\/\//i.test(profilePic) ? profilePic : null,
+    isVerified: profile.IsVerified === true,
+    creatorBasisPoints: numberOrNull(coinEntry?.CreatorBasisPoints),
+    coinPriceDeSoNanos: numberOrNull(profile.CoinPriceDeSoNanos),
+    numberOfHolders: numberOrNull(coinEntry?.NumberOfHolders),
+    coinsInCirculationNanos: numberOrNull(coinEntry?.CoinsInCirculationNanos),
+    desoLockedNanos: numberOrNull(coinEntry?.DeSoLockedNanos),
+    followersCount,
+    followingCount,
   }
 }
