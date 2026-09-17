@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { useEffect, useRef, useState } from "react"
 import {
   DESO_LOGIN_URL,
@@ -51,11 +52,7 @@ type HomeText = {
   publicEntrance: string
   wallet: string
   notifications: string
-  visitors: string
   exploreNfts: string
-  joinCommunity: string
-  createPost: string
-  goLive: string
   login: string
   connecting: string
   logout: string
@@ -66,36 +63,36 @@ const copy: Record<ViaLanguage, HomeText> = {
   Dutch: {
     social: "Sociaal", discover: "Ontdekken", market: "Markt", studio: "Studio", live: "Live",
     communities: "Community's", games: "Spellen", profile: "Mijn profiel", myVia: "Mijn VIA",
-    search: "Zoek leden", publicEntrance: "Publieke ingang", wallet: "Wallet", notifications: "Meldingen", visitors: "Bezoekers",
-    exploreNfts: "Ontdek NFT's", joinCommunity: "Naar de community", createPost: "Maak een post", goLive: "Ga live",
+    search: "Zoek leden", publicEntrance: "Publieke ingang", wallet: "Wallet", notifications: "Meldingen",
+    exploreNfts: "Ontdek NFT's",
     login: "DeSo Login", connecting: "Verbinden…", logout: "Uitloggen", blocked: "Safari heeft het DeSo Identity-venster geblokkeerd.",
   },
   English: {
     social: "Social", discover: "Discover", market: "Market", studio: "Studio", live: "Live",
     communities: "Communities", games: "Games", profile: "My Profile", myVia: "My VIA",
-    search: "Search members", publicEntrance: "Public Entrance", wallet: "Wallet", notifications: "Notifications", visitors: "Visitors",
-    exploreNfts: "Explore NFTs", joinCommunity: "Join the Community", createPost: "Create a Post", goLive: "Go Live",
+    search: "Search members", publicEntrance: "Public Entrance", wallet: "Wallet", notifications: "Notifications",
+    exploreNfts: "Explore NFTs",
     login: "DeSo Login", connecting: "Connecting…", logout: "Logout", blocked: "Safari blocked the DeSo Identity window.",
   },
   French: {
     social: "Social", discover: "Découvrir", market: "Marché", studio: "Studio", live: "Live",
     communities: "Communautés", games: "Jeux", profile: "Mon profil", myVia: "Mon VIA",
-    search: "Rechercher des membres", publicEntrance: "Entrée publique", wallet: "Wallet", notifications: "Notifications", visitors: "Visiteurs",
-    exploreNfts: "Découvrir les NFT", joinCommunity: "Rejoindre la communauté", createPost: "Créer un post", goLive: "Passer en direct",
+    search: "Rechercher des membres", publicEntrance: "Entrée publique", wallet: "Wallet", notifications: "Notifications",
+    exploreNfts: "Découvrir les NFT",
     login: "Connexion DeSo", connecting: "Connexion…", logout: "Déconnexion", blocked: "Safari a bloqué la fenêtre DeSo Identity.",
   },
   Spanish: {
     social: "Social", discover: "Descubrir", market: "Mercado", studio: "Studio", live: "Live",
     communities: "Comunidades", games: "Juegos", profile: "Mi perfil", myVia: "Mi VIA",
-    search: "Buscar miembros", publicEntrance: "Entrada pública", wallet: "Wallet", notifications: "Notificaciones", visitors: "Visitantes",
-    exploreNfts: "Explorar NFT", joinCommunity: "Unirse a la comunidad", createPost: "Crear una publicación", goLive: "Emitir en directo",
+    search: "Buscar miembros", publicEntrance: "Entrada pública", wallet: "Wallet", notifications: "Notificaciones",
+    exploreNfts: "Explorar NFT",
     login: "Acceso DeSo", connecting: "Conectando…", logout: "Cerrar sesión", blocked: "Safari bloqueó la ventana de DeSo Identity.",
   },
   Chinese: {
     social: "社交", discover: "发现", market: "市场", studio: "工作室", live: "直播",
     communities: "社区", games: "游戏", profile: "我的资料", myVia: "我的 VIA",
-    search: "搜索成员", publicEntrance: "公开入口", wallet: "钱包", notifications: "通知", visitors: "访客",
-    exploreNfts: "探索 NFT", joinCommunity: "加入社区", createPost: "发布内容", goLive: "开始直播",
+    search: "搜索成员", publicEntrance: "公开入口", wallet: "钱包", notifications: "通知",
+    exploreNfts: "探索 NFT",
     login: "DeSo 登录", connecting: "连接中…", logout: "退出", blocked: "Safari 阻止了 DeSo Identity 窗口。",
   },
 }
@@ -117,6 +114,7 @@ const linkStyle = {
 } as const
 
 export default function ViaHomeControls() {
+  const router = useRouter()
   const identityWindowRef = useRef<Window | null>(null)
   const [session, setSession] = useState<ViaIdentitySession | null>(null)
   const [status, setStatus] = useState<"idle" | "waiting" | "blocked">("idle")
@@ -153,7 +151,6 @@ export default function ViaHomeControls() {
     setLanguage(next)
   }
 
-  // Keep this aligned with DeSo's documented window-context login flow.
   function openDeSoIdentity() {
     const h = 1000
     const w = 800
@@ -178,6 +175,13 @@ export default function ViaHomeControls() {
     clearIdentitySession()
     setSession(null)
     setStatus("idle")
+  }
+
+  function enterPublicMode() {
+    clearIdentitySession()
+    setSession(null)
+    setStatus("idle")
+    router.push("/public")
   }
 
   const t = copy[language]
@@ -243,8 +247,8 @@ export default function ViaHomeControls() {
       </nav>
 
       <div aria-label="VIA utility controls" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px" }}>
-        <Link href="/discover" style={linkStyle}>{t.search}</Link>
-        <Link href="/" style={linkStyle}>{t.publicEntrance}</Link>
+        <Link href="/discover/voices" style={linkStyle}>{t.search}</Link>
+        <button type="button" onClick={enterPublicMode} style={{ ...linkStyle, cursor: "pointer" }}>{t.publicEntrance}</button>
         <select
           value={language}
           onChange={(event) => changeLanguage(event.target.value as ViaLanguage)}
@@ -262,16 +266,12 @@ export default function ViaHomeControls() {
         ) : (
           <button type="button" onClick={logout} style={{ ...linkStyle, cursor: "pointer" }}>{t.logout}</button>
         )}
-        <span style={{ ...linkStyle, gridColumn: "1 / -1", color: "#aebbb4" }}>{t.visitors}</span>
       </div>
 
       <div style={{ height: "1px", background: "rgba(143,212,169,.12)", margin: "2px 4px" }} />
 
       <nav aria-label="VIA direct actions" style={{ display: "grid", gap: "7px" }}>
         <Link href="/collection" style={{ ...linkStyle, minHeight: "40px", fontSize: "12px" }}>{t.exploreNfts}</Link>
-        <Link href="/communities" style={{ ...linkStyle, minHeight: "40px", fontSize: "12px" }}>{t.joinCommunity}</Link>
-        <Link href="/social" style={{ ...linkStyle, minHeight: "40px", fontSize: "12px" }}>{t.createPost}</Link>
-        <Link href="/live" style={{ ...linkStyle, minHeight: "40px", fontSize: "12px" }}>{t.goLive}</Link>
       </nav>
 
       {status === "blocked" ? (
