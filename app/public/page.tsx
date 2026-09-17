@@ -15,6 +15,10 @@ type Copy = {
   discover: string
   nfts: string
   market: string
+  infoTitle: string
+  payments: string
+  transparency: string
+  storage: string
   home: string
 }
 
@@ -29,6 +33,10 @@ const copy: Record<ViaLanguage, Copy> = {
     discover: "Ontdek creators",
     nfts: "Bekijk NFT's",
     market: "Bekijk markt",
+    infoTitle: "Duidelijkheid voor bezoekers",
+    payments: "Betaalinformatie",
+    transparency: "Kosten & transparantie",
+    storage: "Externe opslag",
     home: "Terug naar homepage",
   },
   English: {
@@ -41,6 +49,10 @@ const copy: Record<ViaLanguage, Copy> = {
     discover: "Discover creators",
     nfts: "Browse NFTs",
     market: "Browse market",
+    infoTitle: "Visitor information",
+    payments: "Payment information",
+    transparency: "Costs & transparency",
+    storage: "External storage",
     home: "Back to homepage",
   },
   French: {
@@ -53,6 +65,10 @@ const copy: Record<ViaLanguage, Copy> = {
     discover: "Découvrir des créateurs",
     nfts: "Voir les NFT",
     market: "Voir le marché",
+    infoTitle: "Informations visiteurs",
+    payments: "Informations de paiement",
+    transparency: "Coûts & transparence",
+    storage: "Stockage externe",
     home: "Retour à l'accueil",
   },
   Spanish: {
@@ -65,6 +81,10 @@ const copy: Record<ViaLanguage, Copy> = {
     discover: "Descubrir creadores",
     nfts: "Ver NFT",
     market: "Ver mercado",
+    infoTitle: "Información para visitantes",
+    payments: "Información de pagos",
+    transparency: "Costes y transparencia",
+    storage: "Almacenamiento externo",
     home: "Volver al inicio",
   },
   Chinese: {
@@ -77,6 +97,10 @@ const copy: Record<ViaLanguage, Copy> = {
     discover: "发现创作者",
     nfts: "浏览 NFT",
     market: "浏览市场",
+    infoTitle: "访客信息",
+    payments: "支付信息",
+    transparency: "费用与透明度",
+    storage: "外部存储",
     home: "返回主页",
   },
 }
@@ -112,6 +136,15 @@ export default function PublicEntrancePage() {
           <Link href="/discover/voices" className={card}>{t.discover}</Link>
           <Link href="/collection" className={card}>{t.nfts}</Link>
           <Link href="/market" className={card}>{t.market}</Link>
+        </section>
+
+        <section className="mt-7" aria-label="VIA visitor information">
+          <p className="mb-3 text-xs font-semibold uppercase tracking-[0.14em] text-[#8fd4a9]">{t.infoTitle}</p>
+          <div className="grid gap-3 sm:grid-cols-3">
+            <Link href="/payment-info" className={card}>{t.payments}</Link>
+            <Link href="/transparency" className={card}>{t.transparency}</Link>
+            <Link href="/storage" className={card}>{t.storage}</Link>
+          </div>
         </section>
 
         <Link href="/" className="mt-6 inline-flex rounded-full border border-[#285f40] px-4 py-2 text-sm font-medium text-[#9adbb2] hover:border-[#8fd4a9]/70">{t.home}</Link>
