@@ -248,7 +248,9 @@ export default function ViaHomeControls() {
 
       <div aria-label="VIA utility controls" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px" }}>
         <Link href="/discover/voices" style={linkStyle}>{t.search}</Link>
-        <button type="button" onClick={enterPublicMode} style={{ ...linkStyle, cursor: "pointer" }}>{t.publicEntrance}</button>
+        {!session ? (
+          <button type="button" onClick={enterPublicMode} style={{ ...linkStyle, cursor: "pointer" }}>{t.publicEntrance}</button>
+        ) : null}
         <select
           value={language}
           onChange={(event) => changeLanguage(event.target.value as ViaLanguage)}
