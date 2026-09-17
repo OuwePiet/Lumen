@@ -5,9 +5,12 @@ import { useRouter } from "next/navigation"
 import { useEffect, useRef, useState } from "react"
 import {
   DESO_LOGIN_URL,
+  VIA_IDENTITY_EVENT,
   clearIdentitySession,
+  listIdentitySessions,
   persistIdentityLogin,
   restoreIdentitySession,
+  switchIdentitySession,
   type ViaIdentitySession,
 } from "./deso-identity-session"
 import {
@@ -18,14 +21,21 @@ import {
   type ViaLanguage,
 } from "./via-local-settings"
 
-const nav = [
+type PublicProfile = { username?: string; profilePic?: string | null }
+type ProfileResponse = { ok?: boolean; profile?: PublicProfile }
+
+const mainNav = [
   ["social", "/social"],
   ["discover", "/discover"],
+  ["nfts", "/collection"],
   ["market", "/market"],
   ["studio", "/studio"],
   ["live", "/live"],
   ["communities", "/communities"],
   ["games", "/quest"],
+] as const
+
+const personalNav = [
   ["profile", "/profile"],
   ["myVia", "/my-via"],
 ] as const
@@ -39,8 +49,12 @@ const languageCodes: Record<ViaLanguage, string> = {
 }
 
 type HomeText = {
+  explore: string
+  personal: string
+  account: string
   social: string
   discover: string
+  nfts: string
   market: string
   studio: string
   live: string
@@ -52,87 +66,130 @@ type HomeText = {
   publicEntrance: string
   wallet: string
   notifications: string
-  exploreNfts: string
   login: string
   connecting: string
   logout: string
   blocked: string
+  connected: string
+  switchAccount: string
+  addAccount: string
 }
 
 const copy: Record<ViaLanguage, HomeText> = {
   Dutch: {
-    social: "Sociaal", discover: "Ontdekken", market: "Markt", studio: "Studio", live: "Live",
+    explore: "Ontdek VIA", personal: "Persoonlijk", account: "Account",
+    social: "Sociaal", discover: "Ontdekken", nfts: "NFT's", market: "Markt", studio: "Studio", live: "Live",
     communities: "Community's", games: "Spellen", profile: "Mijn profiel", myVia: "Mijn VIA",
     search: "Zoek leden", publicEntrance: "Publieke ingang", wallet: "Wallet", notifications: "Meldingen",
-    exploreNfts: "Ontdek NFT's",
     login: "DeSo Login", connecting: "Verbinden…", logout: "Uitloggen", blocked: "Safari heeft het DeSo Identity-venster geblokkeerd.",
+    connected: "Verbonden", switchAccount: "Wissel account", addAccount: "DeSo-account toevoegen",
   },
   English: {
-    social: "Social", discover: "Discover", market: "Market", studio: "Studio", live: "Live",
+    explore: "Explore VIA", personal: "Personal", account: "Account",
+    social: "Social", discover: "Discover", nfts: "NFTs", market: "Market", studio: "Studio", live: "Live",
     communities: "Communities", games: "Games", profile: "My Profile", myVia: "My VIA",
     search: "Search members", publicEntrance: "Public Entrance", wallet: "Wallet", notifications: "Notifications",
-    exploreNfts: "Explore NFTs",
     login: "DeSo Login", connecting: "Connecting…", logout: "Logout", blocked: "Safari blocked the DeSo Identity window.",
+    connected: "Connected", switchAccount: "Switch account", addAccount: "Add DeSo account",
   },
   French: {
-    social: "Social", discover: "Découvrir", market: "Marché", studio: "Studio", live: "Live",
+    explore: "Découvrir VIA", personal: "Personnel", account: "Compte",
+    social: "Social", discover: "Découvrir", nfts: "NFT", market: "Marché", studio: "Studio", live: "Live",
     communities: "Communautés", games: "Jeux", profile: "Mon profil", myVia: "Mon VIA",
     search: "Rechercher des membres", publicEntrance: "Entrée publique", wallet: "Wallet", notifications: "Notifications",
-    exploreNfts: "Découvrir les NFT",
     login: "Connexion DeSo", connecting: "Connexion…", logout: "Déconnexion", blocked: "Safari a bloqué la fenêtre DeSo Identity.",
+    connected: "Connecté", switchAccount: "Changer de compte", addAccount: "Ajouter un compte DeSo",
   },
   Spanish: {
-    social: "Social", discover: "Descubrir", market: "Mercado", studio: "Studio", live: "Live",
+    explore: "Explorar VIA", personal: "Personal", account: "Cuenta",
+    social: "Social", discover: "Descubrir", nfts: "NFT", market: "Mercado", studio: "Studio", live: "Live",
     communities: "Comunidades", games: "Juegos", profile: "Mi perfil", myVia: "Mi VIA",
     search: "Buscar miembros", publicEntrance: "Entrada pública", wallet: "Wallet", notifications: "Notificaciones",
-    exploreNfts: "Explorar NFT",
     login: "Acceso DeSo", connecting: "Conectando…", logout: "Cerrar sesión", blocked: "Safari bloqueó la ventana de DeSo Identity.",
+    connected: "Conectado", switchAccount: "Cambiar cuenta", addAccount: "Añadir cuenta DeSo",
   },
   Chinese: {
-    social: "社交", discover: "发现", market: "市场", studio: "工作室", live: "直播",
+    explore: "探索 VIA", personal: "个人", account: "账户",
+    social: "社交", discover: "发现", nfts: "NFT", market: "市场", studio: "工作室", live: "直播",
     communities: "社区", games: "游戏", profile: "我的资料", myVia: "我的 VIA",
     search: "搜索成员", publicEntrance: "公开入口", wallet: "钱包", notifications: "通知",
-    exploreNfts: "探索 NFT",
     login: "DeSo 登录", connecting: "连接中…", logout: "退出", blocked: "Safari 阻止了 DeSo Identity 窗口。",
+    connected: "已连接", switchAccount: "切换账户", addAccount: "添加 DeSo 账户",
   },
 }
 
-const linkStyle = {
-  minHeight: "34px",
+const buttonStyle = {
+  minHeight: "39px",
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
   border: "1px solid rgba(143,212,169,.18)",
-  borderRadius: "999px",
-  padding: "7px 12px",
-  background: "rgba(3,10,6,.58)",
-  color: "#cbd6d0",
+  borderRadius: "12px",
+  padding: "8px 10px",
+  background: "linear-gradient(180deg, rgba(8,20,13,.82), rgba(3,10,6,.72))",
+  color: "#d2dcd6",
   textDecoration: "none",
   fontSize: "11px",
-  fontWeight: 650,
-  backdropFilter: "blur(8px)",
+  fontWeight: 680,
+  backdropFilter: "blur(9px)",
+  boxShadow: "inset 0 1px 0 rgba(255,255,255,.018)",
 } as const
+
+const sectionLabel = {
+  color: "#6f8f7c",
+  fontSize: "8px",
+  fontWeight: 800,
+  letterSpacing: ".16em",
+  textTransform: "uppercase" as const,
+}
+
+function safeProfileImage(value?: string | null) {
+  if (!value) return undefined
+  try {
+    const parsed = new URL(value)
+    return parsed.protocol === "https:" ? parsed.toString() : undefined
+  } catch {
+    return undefined
+  }
+}
+
+function shortPublicKey(publicKey: string) {
+  return `${publicKey.slice(0, 8)}…${publicKey.slice(-5)}`
+}
 
 export default function ViaHomeControls() {
   const router = useRouter()
   const identityWindowRef = useRef<Window | null>(null)
   const [session, setSession] = useState<ViaIdentitySession | null>(null)
+  const [knownAccounts, setKnownAccounts] = useState<ViaIdentitySession[]>([])
+  const [profile, setProfile] = useState<PublicProfile | null>(null)
+  const [profiles, setProfiles] = useState<Record<string, PublicProfile>>({})
+  const [accountsOpen, setAccountsOpen] = useState(false)
   const [status, setStatus] = useState<"idle" | "waiting" | "blocked">("idle")
   const [language, setLanguage] = useState<ViaLanguage>("English")
 
+  function refreshAccounts() {
+    setKnownAccounts(listIdentitySessions())
+  }
+
   useEffect(() => {
     setSession(restoreIdentitySession())
+    refreshAccounts()
     const syncLanguage = () => setLanguage(readViaLocalSettings().interfaceLanguage)
+    const syncIdentity = () => {
+      setSession(restoreIdentitySession())
+      refreshAccounts()
+    }
     syncLanguage()
 
     function handleIdentityMessage(event: MessageEvent) {
       const identityWindow = identityWindowRef.current
       if (identityWindow && event.source !== identityWindow) return
-
       const nextSession = persistIdentityLogin(event)
       if (!nextSession) return
-
       setSession(nextSession)
+      refreshAccounts()
+      setAccountsOpen(false)
       setStatus("idle")
       identityWindowRef.current?.close()
       identityWindowRef.current = null
@@ -140,11 +197,54 @@ export default function ViaHomeControls() {
 
     window.addEventListener("message", handleIdentityMessage)
     window.addEventListener(VIA_SETTINGS_EVENT, syncLanguage)
+    window.addEventListener(VIA_IDENTITY_EVENT, syncIdentity)
     return () => {
       window.removeEventListener("message", handleIdentityMessage)
       window.removeEventListener(VIA_SETTINGS_EVENT, syncLanguage)
+      window.removeEventListener(VIA_IDENTITY_EVENT, syncIdentity)
     }
   }, [])
+
+  useEffect(() => {
+    if (!session?.publicKey) {
+      setProfile(null)
+      return
+    }
+    const controller = new AbortController()
+    void fetch(`/api/via/profile?identity=${encodeURIComponent(session.publicKey)}`, {
+      cache: "no-store",
+      signal: controller.signal,
+      headers: { Accept: "application/json" },
+    })
+      .then(async (response) => response.ok ? (await response.json()) as ProfileResponse : null)
+      .then((data) => setProfile(data?.ok && data.profile ? data.profile : null))
+      .catch(() => setProfile(null))
+    return () => controller.abort()
+  }, [session?.publicKey])
+
+  useEffect(() => {
+    if (!knownAccounts.length) {
+      setProfiles({})
+      return
+    }
+    const controller = new AbortController()
+    void Promise.all(knownAccounts.map(async (account) => {
+      try {
+        const response = await fetch(`/api/via/profile?identity=${encodeURIComponent(account.publicKey)}`, {
+          cache: "no-store",
+          signal: controller.signal,
+          headers: { Accept: "application/json" },
+        })
+        const data = response.ok ? (await response.json()) as ProfileResponse : null
+        return [account.publicKey, data?.ok && data.profile ? data.profile : {}] as const
+      } catch {
+        return [account.publicKey, {}] as const
+      }
+    })).then((entries) => {
+      if (!controller.signal.aborted) setProfiles(Object.fromEntries(entries))
+    })
+    return () => controller.abort()
+  }, [knownAccounts])
 
   function changeLanguage(next: ViaLanguage) {
     saveViaLocalSettings({ interfaceLanguage: next })
@@ -156,35 +256,45 @@ export default function ViaHomeControls() {
     const w = 800
     const y = window.outerHeight / 2 + window.screenY - h / 2
     const x = window.outerWidth / 2 + window.screenX - w / 2
-    const identityWindow = window.open(
-      DESO_LOGIN_URL,
-      undefined,
-      `toolbar=no, width=${w}, height=${h}, top=${y}, left=${x}`,
-    )
-
+    const identityWindow = window.open(DESO_LOGIN_URL, undefined, `toolbar=no, width=${w}, height=${h}, top=${y}, left=${x}`)
     if (!identityWindow) {
       setStatus("blocked")
       return
     }
-
     identityWindowRef.current = identityWindow
     setStatus("waiting")
+  }
+
+  function chooseAccount(publicKey: string) {
+    const nextSession = switchIdentitySession(publicKey)
+    if (!nextSession) return
+    setSession(nextSession)
+    setProfile(profiles[publicKey] ?? null)
+    setAccountsOpen(false)
+    router.refresh()
   }
 
   function logout() {
     clearIdentitySession()
     setSession(null)
+    setProfile(null)
+    setAccountsOpen(false)
     setStatus("idle")
   }
 
   function enterPublicMode() {
     clearIdentitySession()
     setSession(null)
+    setProfile(null)
+    setAccountsOpen(false)
     setStatus("idle")
     router.push("/public")
   }
 
   const t = copy[language]
+  const avatar = safeProfileImage(profile?.profilePic)
+  const accountName = profile?.username ? `@${profile.username}` : session ? shortPublicKey(session.publicKey) : "DeSo"
+  const otherAccounts = knownAccounts.filter((account) => account.publicKey !== session?.publicKey)
 
   return (
     <aside
@@ -195,7 +305,7 @@ export default function ViaHomeControls() {
         left: "16px",
         top: "16px",
         bottom: "74px",
-        width: "250px",
+        width: "252px",
         display: "flex",
         flexDirection: "column",
         gap: "10px",
@@ -203,82 +313,82 @@ export default function ViaHomeControls() {
         paddingRight: "4px",
       }}
     >
-      <Link
-        href="/"
-        aria-label="VIA home"
-        style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "3px", textDecoration: "none" }}
-      >
-        <img
-          src="/via-logo-original.jpg?v=2"
-          alt="VIA"
-          style={{ width: "100%", maxHeight: "118px", objectFit: "contain", display: "block", borderRadius: "14px" }}
-        />
-        <span
-          style={{
-            color: "#8fd4a9",
-            fontSize: "11px",
-            fontWeight: 650,
-            letterSpacing: ".12em",
-            lineHeight: 1.2,
-          }}
-        >
-          viadeso.online
-        </span>
+      <Link href="/" aria-label="VIA home" style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "2px", textDecoration: "none" }}>
+        <img src="/via-logo-original.jpg?v=2" alt="VIA" style={{ width: "100%", maxHeight: "108px", objectFit: "contain", display: "block", borderRadius: "14px" }} />
+        <span style={{ color: "#8fd4a9", fontSize: "10px", fontWeight: 650, letterSpacing: ".14em", lineHeight: 1.2 }}>viadeso.online</span>
       </Link>
 
-      <nav aria-label="VIA main navigation" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px" }}>
-        {nav.map(([key, href]) => (
-          <Link
-            key={href}
-            href={href}
-            style={{
-              ...linkStyle,
-              ...(key === "profile" ? {
-                borderColor: "rgba(143,212,169,.5)",
-                background: "rgba(20,55,35,.5)",
-                color: "#9adbb2",
-                boxShadow: "inset 0 0 0 1px rgba(143,212,169,.08)",
-              } : {}),
-            }}
-          >
-            {t[key]}
-          </Link>
-        ))}
-      </nav>
+      <section style={{ display: "grid", gap: "6px" }}>
+        <span style={sectionLabel}>{t.explore}</span>
+        <nav aria-label="VIA main navigation" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "7px" }}>
+          {mainNav.map(([key, href]) => <Link key={href} href={href} style={buttonStyle}>{t[key]}</Link>)}
+        </nav>
+      </section>
 
-      <div aria-label="VIA utility controls" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px" }}>
-        <Link href="/discover/voices" style={linkStyle}>{t.search}</Link>
-        {!session ? (
-          <button type="button" onClick={enterPublicMode} style={{ ...linkStyle, cursor: "pointer" }}>{t.publicEntrance}</button>
-        ) : null}
-        <select
-          value={language}
-          onChange={(event) => changeLanguage(event.target.value as ViaLanguage)}
-          aria-label="VIA language"
-          style={{ ...linkStyle, width: "100%", appearance: "none", cursor: "pointer", textAlign: "center" }}
-        >
-          {VIA_LANGUAGES.map((item) => <option key={item} value={item}>{languageCodes[item]}</option>)}
-        </select>
-        <Link href="/wallet" style={linkStyle}>{t.wallet}</Link>
-        <Link href="/notifications" style={linkStyle}>{t.notifications}</Link>
-        {!session ? (
-          <button type="button" onClick={openDeSoIdentity} style={{ ...linkStyle, cursor: "pointer" }}>
+      <section style={{ display: "grid", gap: "6px" }}>
+        <span style={sectionLabel}>{t.personal}</span>
+        <nav aria-label="VIA personal navigation" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "7px" }}>
+          {personalNav.map(([key, href]) => (
+            <Link key={href} href={href} style={{ ...buttonStyle, borderColor: "rgba(143,212,169,.34)", background: "linear-gradient(180deg, rgba(20,55,35,.52), rgba(8,24,14,.68))", color: "#b5e8c7" }}>{t[key]}</Link>
+          ))}
+        </nav>
+        <Link href="/discover/voices" style={{ ...buttonStyle, minHeight: "41px" }}>⌕&nbsp;&nbsp;{t.search}</Link>
+      </section>
+
+      <section style={{ display: "grid", gap: "6px" }}>
+        <span style={sectionLabel}>{t.account}</span>
+        <div aria-label="VIA utility controls" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "7px" }}>
+          <select value={language} onChange={(event) => changeLanguage(event.target.value as ViaLanguage)} aria-label="VIA language" style={{ ...buttonStyle, width: "100%", appearance: "none", cursor: "pointer", textAlign: "center" }}>
+            {VIA_LANGUAGES.map((item) => <option key={item} value={item}>{languageCodes[item]}</option>)}
+          </select>
+          <Link href="/wallet" style={buttonStyle}>{t.wallet}</Link>
+          <Link href="/notifications" style={buttonStyle}>{t.notifications}</Link>
+          {!session ? <button type="button" onClick={enterPublicMode} style={{ ...buttonStyle, cursor: "pointer" }}>{t.publicEntrance}</button> : null}
+        </div>
+
+        {session ? (
+          <div style={{ display: "grid", gap: "6px" }}>
+            <button
+              type="button"
+              onClick={() => { refreshAccounts(); setAccountsOpen((open) => !open) }}
+              aria-expanded={accountsOpen}
+              style={{ ...buttonStyle, width: "100%", minHeight: "48px", justifyContent: "flex-start", gap: "9px", cursor: "pointer", paddingInline: "9px" }}
+            >
+              {avatar ? <img src={avatar} alt="" referrerPolicy="no-referrer" style={{ width: "31px", height: "31px", borderRadius: "50%", objectFit: "cover" }} /> : <span aria-hidden="true" style={{ width: "31px", height: "31px", borderRadius: "50%", display: "grid", placeItems: "center", background: "#173326", color: "#9adbb2", fontWeight: 850 }}>{profile?.username?.slice(0, 1).toUpperCase() ?? "V"}</span>}
+              <span style={{ minWidth: 0, flex: 1, display: "grid", textAlign: "left", gap: "1px" }}>
+                <strong style={{ color: "#e5eee8", fontSize: "11px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{accountName}</strong>
+                <span style={{ color: "#74877b", fontSize: "8px", letterSpacing: ".08em", textTransform: "uppercase" }}>{t.connected}</span>
+              </span>
+              <span aria-hidden="true" style={{ color: "#7fa88e" }}>{accountsOpen ? "▴" : "▾"}</span>
+            </button>
+
+            {accountsOpen ? (
+              <div style={{ display: "grid", gap: "5px", padding: "7px", border: "1px solid rgba(143,212,169,.16)", borderRadius: "13px", background: "rgba(2,8,5,.88)" }}>
+                {otherAccounts.length ? <span style={{ ...sectionLabel, padding: "2px 4px" }}>{t.switchAccount}</span> : null}
+                {otherAccounts.map((account) => {
+                  const itemProfile = profiles[account.publicKey]
+                  const itemAvatar = safeProfileImage(itemProfile?.profilePic)
+                  const itemName = itemProfile?.username ? `@${itemProfile.username}` : shortPublicKey(account.publicKey)
+                  return (
+                    <button key={account.publicKey} type="button" onClick={() => chooseAccount(account.publicKey)} style={{ ...buttonStyle, width: "100%", minHeight: "42px", justifyContent: "flex-start", gap: "8px", cursor: "pointer", paddingInline: "8px" }}>
+                      {itemAvatar ? <img src={itemAvatar} alt="" referrerPolicy="no-referrer" style={{ width: "27px", height: "27px", borderRadius: "50%", objectFit: "cover" }} /> : <span aria-hidden="true" style={{ width: "27px", height: "27px", borderRadius: "50%", display: "grid", placeItems: "center", background: "#142b20", color: "#91caa6", fontSize: "9px", fontWeight: 800 }}>{itemProfile?.username?.slice(0, 1).toUpperCase() ?? "D"}</span>}
+                      <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{itemName}</span>
+                    </button>
+                  )
+                })}
+                <button type="button" onClick={openDeSoIdentity} style={{ ...buttonStyle, width: "100%", cursor: "pointer", color: "#aee2bf" }}>{status === "waiting" ? t.connecting : `＋ ${t.addAccount}`}</button>
+                <button type="button" onClick={logout} style={{ ...buttonStyle, width: "100%", cursor: "pointer", color: "#a7b2ab", background: "rgba(8,10,9,.7)" }}>{t.logout}</button>
+              </div>
+            ) : null}
+          </div>
+        ) : (
+          <button type="button" onClick={openDeSoIdentity} style={{ ...buttonStyle, width: "100%", minHeight: "42px", cursor: "pointer", borderColor: "rgba(143,212,169,.34)", color: "#b5e8c7" }}>
             {status === "waiting" ? t.connecting : t.login}
           </button>
-        ) : (
-          <button type="button" onClick={logout} style={{ ...linkStyle, cursor: "pointer" }}>{t.logout}</button>
         )}
-      </div>
+      </section>
 
-      <div style={{ height: "1px", background: "rgba(143,212,169,.12)", margin: "2px 4px" }} />
-
-      <nav aria-label="VIA direct actions" style={{ display: "grid", gap: "7px" }}>
-        <Link href="/collection" style={{ ...linkStyle, minHeight: "40px", fontSize: "12px" }}>{t.exploreNfts}</Link>
-      </nav>
-
-      {status === "blocked" ? (
-        <span style={{ color: "#c6a97b", fontSize: "10px", lineHeight: 1.4 }}>{t.blocked}</span>
-      ) : null}
+      {status === "blocked" ? <span style={{ color: "#c6a97b", fontSize: "9px", lineHeight: 1.45 }}>{t.blocked}</span> : null}
     </aside>
   )
 }
