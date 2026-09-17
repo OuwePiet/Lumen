@@ -1,0 +1,16 @@
+body.via-session-pending a[href^="/discover/voices"],
+body.via-no-deso-session a[href^="/discover/voices"],
+body.via-session-pending section:has(#account-lookup-heading),
+body.via-no-deso-session section:has(#account-lookup-heading),
+body.via-session-pending section:has(input[name="publicKey"]),
+body.via-no-deso-session section:has(input[name="publicKey"]),
+body.via-session-pending section:has(input[name="account"]),
+body.via-no-deso-session section:has(input[name="account"]) {
+  display: none !important;
+}
+
+body.via-session-pending a[href^="/profile/"],
+body.via-no-deso-session a[href^="/profile/"] {
+  pointer-events: none !important;
+  cursor: default !important;
+}

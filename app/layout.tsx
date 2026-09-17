@@ -1,8 +1,10 @@
 import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
 import './global.css'
+import './visitor-account-access.css'
 import RadioLocalizer from './radio/radio-localizer'
 import ViaGlobalRadio from './via-global-radio'
+import ViaPublicAccountGuard from './via-public-account-guard'
 import ViaSiteHeader from './via-site-header'
 import WalletLocalizer from './wallet/wallet-localizer'
 
@@ -66,7 +68,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark">
-      <body className="antialiased">
+      <body className="antialiased via-session-pending">
+        <ViaPublicAccountGuard />
         <ViaSiteHeader />
         {children}
         <WalletLocalizer />
