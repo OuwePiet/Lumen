@@ -26,36 +26,73 @@ export default function Home() {
         <ViaSeasonal />
         <ViaHomeControls />
 
-        <Link
-          href="/ideas"
-          aria-label="Open VIA Ideas Box"
+        <section
+          aria-label="VIA Ideas Box"
           style={{
             position: "absolute",
             zIndex: 5,
-            top: "34px",
+            top: "24px",
             left: "50%",
             transform: "translateX(-50%)",
-            minHeight: "42px",
-            display: "inline-flex",
-            alignItems: "center",
-            justifyContent: "center",
-            padding: "10px 18px",
-            border: "1px solid rgba(143,212,169,.58)",
-            borderRadius: "999px",
-            background: "rgba(4,18,10,.80)",
-            color: "#b9ffd4",
-            textDecoration: "none",
-            fontSize: "12px",
-            fontWeight: 800,
-            letterSpacing: ".08em",
-            textTransform: "uppercase",
+            width: "min(330px, calc(100vw - 620px))",
+            minWidth: "260px",
+            padding: "12px 14px",
+            border: "1px solid rgba(143,212,169,.38)",
+            borderRadius: "16px",
+            background: "rgba(3,12,7,.78)",
             backdropFilter: "blur(10px)",
-            boxShadow: "0 0 24px rgba(82,177,118,.16)",
-            whiteSpace: "nowrap",
+            boxShadow: "0 0 28px rgba(82,177,118,.12)",
+            textAlign: "center",
           }}
         >
-          Ideeënbus
-        </Link>
+          <strong
+            style={{
+              display: "block",
+              color: "#dce8e0",
+              fontSize: "12px",
+              fontWeight: 800,
+              letterSpacing: ".06em",
+              textTransform: "uppercase",
+            }}
+          >
+            Heb je een idee voor VIA?
+          </strong>
+          <span
+            style={{
+              display: "block",
+              marginTop: "5px",
+              color: "#94a59b",
+              fontSize: "10px",
+              lineHeight: 1.45,
+            }}
+          >
+            Mis je iets, kan iets beter of heb je een nieuw voorstel? Deel het via de Ideeënbus.
+          </span>
+          <Link
+            href="/ideas"
+            aria-label="Open VIA Ideas Box"
+            style={{
+              marginTop: "9px",
+              minHeight: "36px",
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: "8px 16px",
+              border: "1px solid rgba(143,212,169,.58)",
+              borderRadius: "999px",
+              background: "rgba(4,18,10,.88)",
+              color: "#b9ffd4",
+              textDecoration: "none",
+              fontSize: "11px",
+              fontWeight: 800,
+              letterSpacing: ".08em",
+              textTransform: "uppercase",
+              whiteSpace: "nowrap",
+            }}
+          >
+            Ideeënbus
+          </Link>
+        </section>
 
         <Link
           href="/storage"
@@ -63,7 +100,7 @@ export default function Home() {
           style={{
             position: "absolute",
             zIndex: 5,
-            top: "86px",
+            top: "146px",
             left: "50%",
             transform: "translateX(-50%)",
             minHeight: "38px",
