@@ -29,6 +29,9 @@ const COPY: Record<ViaLanguage, Copy> = {
       { title: "NFT’s", href: "/collection" },
       { title: "Wereldradio", href: "/radio" },
       { title: "Wereldnieuws", href: "/news" },
+      { title: "Evenementen", href: "/events" },
+      { title: "Leren", href: "/learn" },
+      { title: "Laat zien wat je maakt", href: "/show-your-stuff" },
     ],
   },
   English: {
@@ -47,6 +50,9 @@ const COPY: Record<ViaLanguage, Copy> = {
       { title: "NFTs", href: "/collection" },
       { title: "World Radio", href: "/radio" },
       { title: "The World News", href: "/news" },
+      { title: "Events", href: "/events" },
+      { title: "Learn", href: "/learn" },
+      { title: "Show Your Stuff", href: "/show-your-stuff" },
     ],
   },
   French: {
@@ -65,6 +71,9 @@ const COPY: Record<ViaLanguage, Copy> = {
       { title: "NFT", href: "/collection" },
       { title: "Radio mondiale", href: "/radio" },
       { title: "Actualités mondiales", href: "/news" },
+      { title: "Événements", href: "/events" },
+      { title: "Apprendre", href: "/learn" },
+      { title: "Montrez votre travail", href: "/show-your-stuff" },
     ],
   },
   Spanish: {
@@ -83,6 +92,9 @@ const COPY: Record<ViaLanguage, Copy> = {
       { title: "NFT", href: "/collection" },
       { title: "Radio mundial", href: "/radio" },
       { title: "Noticias del mundo", href: "/news" },
+      { title: "Eventos", href: "/events" },
+      { title: "Aprender", href: "/learn" },
+      { title: "Muestra lo que haces", href: "/show-your-stuff" },
     ],
   },
   Chinese: {
@@ -101,6 +113,9 @@ const COPY: Record<ViaLanguage, Copy> = {
       { title: "NFT", href: "/collection" },
       { title: "世界电台", href: "/radio" },
       { title: "世界新闻", href: "/news" },
+      { title: "活动", href: "/events" },
+      { title: "学习", href: "/learn" },
+      { title: "展示你的作品", href: "/show-your-stuff" },
     ],
   },
 }
