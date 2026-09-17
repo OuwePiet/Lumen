@@ -22,6 +22,7 @@ function formatTime(date: Date, timeZone: string) {
 
 function formatLocalDate(date: Date) {
   return new Intl.DateTimeFormat(undefined, {
+    weekday: "long",
     day: "2-digit",
     month: "short",
     year: "numeric",
@@ -78,7 +79,7 @@ export default function ViaWorldClock() {
         zIndex: 3,
         left: "286px",
         right: "318px",
-        bottom: "18px",
+        bottom: "56px",
         minHeight: "42px",
         padding: "9px 14px",
         border: "1px solid rgba(79,116,98,.15)",

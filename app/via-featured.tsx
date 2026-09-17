@@ -56,7 +56,7 @@ export default function ViaFeatured() {
         width: "286px",
         display: "flex",
         flexDirection: "column",
-        gap: "8px",
+        gap: "14px",
         overflowY: "auto",
       }}
     >
