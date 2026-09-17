@@ -24,7 +24,7 @@ type ProfileResponse = { ok?: boolean; profile?: PublicProfile }
 
 const nav = [
   ["Home", "/"],
-  ["Social", "/social"],
+  ["Feed", "/social"],
   ["Discover", "/discover"],
   ["NFTs", "/collection"],
   ["Market", "/market"],
