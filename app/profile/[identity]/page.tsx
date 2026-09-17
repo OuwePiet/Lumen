@@ -146,8 +146,8 @@ export default function PublicProfilePage() {
       <div className="mx-auto max-w-5xl">
         <header className="mb-6 flex flex-wrap items-start justify-between gap-4">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8fd4a9]">VIA · PUBLIC PROFILE</p>
-            <h1 className="mt-2 text-3xl font-semibold tracking-tight">Profile</h1>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8fd4a9]">VIA · AURA PROFILE</p>
+            <h1 className="mt-2 text-3xl font-semibold tracking-tight">Creator profile</h1>
           </div>
           <Link href="/social" className="rounded-[10px] border border-zinc-700/80 px-3 py-2 text-sm text-zinc-300 transition hover:border-[#8fd4a9]/50 hover:text-[#9adbb2]">Back to Social</Link>
         </header>
@@ -158,30 +158,50 @@ export default function PublicProfilePage() {
           <div className="rounded-[16px] border border-zinc-800/80 bg-zinc-950/55 p-6 text-sm text-zinc-400" role="status">{error}</div>
         ) : profile ? (
           <>
-            <section className="rounded-[18px] border border-zinc-800/80 bg-zinc-950/55 p-6 sm:p-7">
-              <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
+            <section className="relative overflow-hidden rounded-[22px] border border-[#8fd4a9]/30 bg-[radial-gradient(circle_at_top_right,rgba(143,212,169,.10),transparent_34%),rgba(9,13,11,.92)] p-6 shadow-[0_18px_60px_rgba(0,0,0,.28)] sm:p-7">
+              <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#8fd4a9]/60 to-transparent" />
+              <div className="flex flex-col gap-6 sm:flex-row sm:items-start">
                 <div className="shrink-0">
-                  {profile.profilePic ? (
-                    <button type="button" onClick={() => setShowAvatar(true)} className="group relative block rounded-full" aria-label="View profile photo">
-                      <img src={profile.profilePic} alt="" className="h-28 w-28 rounded-full border border-zinc-800 object-cover" referrerPolicy="no-referrer" />
-                      <span className="absolute bottom-0 right-0 grid h-8 w-8 place-items-center rounded-full border border-zinc-700 bg-black/80 text-sm text-zinc-200 group-hover:border-[#8fd4a9]/50" aria-hidden="true">◉</span>
-                    </button>
-                  ) : (
-                    <div className="grid h-28 w-28 place-items-center rounded-full border border-[#8fd4a9]/30 bg-[#112019] text-3xl font-semibold text-[#9adbb2]">{profile.username.slice(0, 1).toUpperCase() || "V"}</div>
-                  )}
+                  <div className="relative inline-block rounded-full p-1 ring-1 ring-[#8fd4a9]/30">
+                    {profile.profilePic ? (
+                      <button type="button" onClick={() => setShowAvatar(true)} className="group relative block rounded-full" aria-label="View profile photo">
+                        <img src={profile.profilePic} alt="" className="h-32 w-32 rounded-full border border-zinc-800 object-cover" referrerPolicy="no-referrer" />
+                        <span className="absolute bottom-1 right-1 grid h-8 w-8 place-items-center rounded-full border border-[#8fd4a9]/35 bg-black/85 text-sm text-[#b9ffd4] group-hover:border-[#8fd4a9]/70" aria-hidden="true">◉</span>
+                      </button>
+                    ) : (
+                      <div className="grid h-32 w-32 place-items-center rounded-full border border-[#8fd4a9]/30 bg-[#112019] text-4xl font-semibold text-[#9adbb2]">{profile.username.slice(0, 1).toUpperCase() || "V"}</div>
+                    )}
+                    <span className="absolute bottom-2 left-1 h-4 w-4 rounded-full border-[3px] border-[#08110c] bg-[#8fd4a9]" aria-label="Active" title="Active creator" />
+                  </div>
                 </div>
 
                 <div className="min-w-0 flex-1">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <h2 className="text-2xl font-semibold">@{profile.username}</h2>
-                    {profile.isVerified ? <span className="rounded-full border border-sky-400/30 bg-sky-400/10 px-2 py-1 text-xs text-sky-300">✓ DeSo verified</span> : null}
-                    <span className="ml-auto inline-flex items-center gap-2">
+                  <div className="flex flex-wrap items-start gap-3">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h2 className="truncate text-2xl font-semibold sm:text-3xl">@{profile.username}</h2>
+                        {profile.isVerified ? (
+                          <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-sky-500 text-sm font-black text-white shadow-[0_0_0_2px_rgba(14,165,233,.14)]" title="DeSo verified" aria-label="DeSo verified">✓</span>
+                        ) : null}
+                      </div>
+
+                      <div className="mt-3 flex flex-wrap items-center gap-2">
+                        <span className="rounded-full border border-[#8fd4a9]/30 bg-[#0c1711]/65 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-[#9adbb2]">Creator</span>
+                        <span className="rounded-full border border-[#8fd4a9]/40 bg-[#0c1711]/45 px-2.5 py-1 text-[10px] font-black tracking-[0.12em] text-[#b9ffd4]">VIA</span>
+                        <span className="inline-flex items-center gap-1.5 rounded-full border border-zinc-800 bg-black/25 px-2.5 py-1 text-[10px] font-semibold text-zinc-400"><span className="h-1.5 w-1.5 rounded-full bg-[#8fd4a9]" />Active</span>
+                        <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-zinc-600">AURA CARD</span>
+                      </div>
+                    </div>
+
+                    <span className="inline-flex items-center gap-2">
                       <FollowButton followedPublicKey={profile.publicKey} followedUsername={profile.username} variant="profile" />
                       <ProfileActionMenu publicKey={profile.publicKey} username={profile.username} />
                     </span>
                   </div>
 
-                  <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3">
+                  <p className="mt-5 whitespace-pre-wrap text-sm leading-6 text-zinc-300">{profile.description || "No public bio on this DeSo profile."}</p>
+
+                  <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-3">
                     <Link href={`/profile/connections?identity=${encodeURIComponent(profile.publicKey)}&mode=followers`} className="rounded-[12px] border border-zinc-800/80 bg-black/25 p-3 transition hover:border-[#8fd4a9]/50">
                       <p className="text-[11px] uppercase tracking-[0.12em] text-zinc-500">Followers</p>
                       <p className="mt-1 text-sm font-medium">{formatNumber(profile.followersCount)}</p>
@@ -211,8 +231,6 @@ export default function PublicProfilePage() {
                       <p className="mt-1 text-sm font-medium">{formatCoin(profile.desoLockedNanos)}</p>
                     </div>
                   </div>
-
-                  <p className="mt-5 whitespace-pre-wrap text-sm leading-6 text-zinc-300">{profile.description || "No public bio on this DeSo profile."}</p>
                 </div>
               </div>
             </section>
