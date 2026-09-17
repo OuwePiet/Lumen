@@ -22,6 +22,8 @@ type DeSoProfileResponse = {
     Description?: unknown
     ProfilePic?: unknown
     IsVerified?: unknown
+    ExtraData?: unknown
+    extraData?: unknown
     CoinPriceDeSoNanos?: unknown
     CoinEntry?: {
       CreatorBasisPoints?: unknown
@@ -50,6 +52,25 @@ function profilePictureUrl(publicKey: string, profilePic: string) {
   return `https://node.deso.org/api/v0/get-single-profile-picture/${encodeURIComponent(publicKey)}`
 }
 
+function extraDataRecord(value: unknown): Record<string, unknown> | null {
+  if (value && typeof value === "object" && !Array.isArray(value)) return value as Record<string, unknown>
+  if (typeof value !== "string" || !value.trim()) return null
+  try {
+    const parsed = JSON.parse(value)
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed as Record<string, unknown> : null
+  } catch {
+    return null
+  }
+}
+
+function verificationFromProfile(profile: NonNullable<DeSoProfileResponse["Profile"]>) {
+  const extraData = extraDataRecord(profile.ExtraData) ?? extraDataRecord(profile.extraData)
+  const current = extraData?.IsVerified
+  if (current === true || current === "true") return true
+  if (current === false || current === "false") return false
+  return profile.IsVerified === true
+}
+
 async function readFollowCount(publicKey: string, followers: boolean) {
   const response = await fetchDeSo("get-follows-stateless", {
     method: "POST",
@@ -73,8 +94,9 @@ async function readFollowCount(publicKey: string, followers: boolean) {
  * DeSo's get-single-profile endpoint is a POST transport, but this operation
  * only requests public data. No transaction is constructed, signed or sent.
  *
- * IsVerified is deliberately exposed as a DeSo-source fact. VIA must not
- * present it as a VIA-issued identity guarantee.
+ * Verification is exposed only as a DeSo-source fact. Current DeSo UI reads
+ * ExtraData.IsVerified; the legacy top-level IsVerified boolean remains a
+ * fallback for older node responses. VIA does not issue this verification.
  */
 export async function readPublicProfile(
   usernameOrPublicKey: string,
@@ -115,7 +137,7 @@ export async function readPublicProfile(
     username,
     description: text(profile.Description),
     profilePic: profilePictureUrl(publicKey, profilePic),
-    isVerified: profile.IsVerified === true,
+    isVerified: verificationFromProfile(profile),
     creatorBasisPoints: numberOrNull(coinEntry?.CreatorBasisPoints),
     coinPriceDeSoNanos: numberOrNull(profile.CoinPriceDeSoNanos),
     numberOfHolders: numberOrNull(coinEntry?.NumberOfHolders),
