@@ -16,6 +16,7 @@ import {
   readViaLocalSettings,
   saveViaLocalSettings,
   VIA_LANGUAGES,
+  VIA_SETTINGS_EVENT,
   type ViaLanguage,
 } from "./via-local-settings"
 
@@ -66,7 +67,7 @@ const styles = {
   brand: { gridColumn: "1", gridRow: "1 / span 2", display: "flex", alignItems: "center", justifyContent: "center", color: "inherit", textDecoration: "none", overflow: "hidden" },
   logo: { width: "250px", height: "130px", objectFit: "contain" as const, display: "block" },
   topRow: { gridColumn: "2", gridRow: "1", minWidth: 0, display: "flex", alignItems: "center" },
-  toolsRow: { gridColumn: "2", gridRow: "2", minWidth: 0, display: "flex", alignItems: "center", justifyContent: "center", gap: "9px", overflowX: "auto" as const, padding: "9px 0", scrollbarWidth: "none" as const, borderTop: "1px solid rgba(143,212,169,.08)" },
+  toolsRow: { gridColumn: "2", gridRow: "2", minWidth: 0, display: "flex", alignItems: "center", justifyContent: "center", gap: "9px", overflow: "visible", padding: "9px 0", borderTop: "1px solid rgba(143,212,169,.08)" },
   nav: { flex: "1 1 auto", minWidth: 0, display: "flex", alignItems: "center", justifyContent: "center", gap: "2px", overflowX: "auto" as const, scrollbarWidth: "none" as const },
   link: { position: "relative" as const, flex: "0 0 auto", padding: "25px 10px 22px", color: "#aeb9b2", textDecoration: "none", fontSize: "12px", fontWeight: 650, whiteSpace: "nowrap" as const },
   activeLink: { color: "#eef5f0" },
@@ -74,15 +75,18 @@ const styles = {
   search: { ...pill, minWidth: "205px", justifyContent: "flex-start" },
   language: { ...pill, appearance: "none" as const, cursor: "pointer", paddingRight: "14px", outline: "none" },
   login: { ...pill, cursor: "pointer" },
-  accountWrap: { position: "relative" as const, flex: "0 0 auto", display: "grid", justifyItems: "end" as const, gap: "2px" },
+  accountWrap: { position: "relative" as const, zIndex: 120, flex: "0 0 auto", display: "grid", justifyItems: "end" as const, gap: "2px" },
   accountButton: { ...pill, cursor: "pointer", padding: "5px 12px 5px 6px", color: "#e3ebe6" },
   avatar: { width: "28px", height: "28px", borderRadius: "50%", objectFit: "cover" as const },
   avatarFallback: { width: "28px", height: "28px", borderRadius: "50%", display: "grid", placeItems: "center", background: "#183326", color: "#9adbb2", fontSize: "11px", fontWeight: 900 },
-  menu: { position: "absolute" as const, right: 0, top: "48px", width: "240px", padding: "8px", border: "1px solid rgba(143,212,169,.18)", borderRadius: "14px", background: "rgba(5,10,7,.99)", boxShadow: "0 18px 44px rgba(0,0,0,.38)" },
+  menu: { position: "absolute" as const, right: 0, top: "48px", zIndex: 200, width: "270px", maxHeight: "min(70vh, 520px)", overflowY: "auto" as const, padding: "8px", border: "1px solid rgba(143,212,169,.18)", borderRadius: "14px", background: "rgba(5,10,7,.99)", boxShadow: "0 18px 44px rgba(0,0,0,.38)" },
   menuLabel: { padding: "7px 9px 9px", color: "#78867e", fontSize: "10px", letterSpacing: ".08em", textTransform: "uppercase" as const },
   menuLink: { display: "block", minHeight: "38px", padding: "9px 10px", borderRadius: "9px", color: "#d3ddd7", textDecoration: "none", fontSize: "12px", lineHeight: "20px" },
   menuButton: { width: "100%", minHeight: "38px", padding: "9px 10px", border: 0, borderRadius: "9px", color: "#b7c3bc", background: "transparent", cursor: "pointer", textAlign: "left" as const, fontSize: "12px" },
-  accountChoice: { width: "100%", minHeight: "36px", padding: "8px 10px", border: 0, borderRadius: "9px", color: "#aeb9b2", background: "transparent", cursor: "pointer", textAlign: "left" as const, fontSize: "11px", fontFamily: "monospace" },
+  accountChoice: { width: "100%", minHeight: "44px", padding: "7px 9px", border: 0, borderRadius: "9px", color: "#d3ddd7", background: "transparent", cursor: "pointer", textAlign: "left" as const, display: "flex", alignItems: "center", gap: "9px" },
+  accountChoiceText: { minWidth: 0, display: "grid", gap: "1px" },
+  accountChoiceName: { fontSize: "12px", fontWeight: 700, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const },
+  accountChoiceKey: { color: "#78867e", fontSize: "9px", fontFamily: "monospace", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const },
   divider: { height: "1px", margin: "6px 4px", background: "rgba(143,212,169,.10)" },
 }
 
@@ -105,6 +109,7 @@ export default function ViaSiteHeader() {
   const [session, setSession] = useState<ViaIdentitySession | null>(null)
   const [knownAccounts, setKnownAccounts] = useState<ViaIdentitySession[]>([])
   const [profile, setProfile] = useState<PublicProfile | null>(null)
+  const [profiles, setProfiles] = useState<Record<string, PublicProfile>>({})
   const [menuOpen, setMenuOpen] = useState(false)
   const [language, setLanguage] = useState<ViaLanguage>("Dutch")
 
@@ -113,9 +118,10 @@ export default function ViaSiteHeader() {
   }
 
   useEffect(() => {
+    const syncSettings = () => setLanguage(readViaLocalSettings().interfaceLanguage)
     setSession(restoreIdentitySession())
     refreshKnownAccounts()
-    setLanguage(readViaLocalSettings().interfaceLanguage)
+    syncSettings()
     function handleIdentityMessage(event: MessageEvent) {
       const nextSession = persistIdentityLogin(event)
       if (!nextSession) return
@@ -124,7 +130,11 @@ export default function ViaSiteHeader() {
       setMenuOpen(false)
     }
     window.addEventListener("message", handleIdentityMessage)
-    return () => window.removeEventListener("message", handleIdentityMessage)
+    window.addEventListener(VIA_SETTINGS_EVENT, syncSettings)
+    return () => {
+      window.removeEventListener("message", handleIdentityMessage)
+      window.removeEventListener(VIA_SETTINGS_EVENT, syncSettings)
+    }
   }, [])
 
   useEffect(() => {
@@ -152,6 +162,23 @@ export default function ViaSiteHeader() {
     return () => controller.abort()
   }, [session?.publicKey])
 
+  useEffect(() => {
+    if (!knownAccounts.length) { setProfiles({}); return }
+    const controller = new AbortController()
+    void Promise.all(knownAccounts.map(async (account) => {
+      try {
+        const response = await fetch(`/api/via/profile?identity=${encodeURIComponent(account.publicKey)}`, { cache: "no-store", signal: controller.signal, headers: { Accept: "application/json" } })
+        const data = response.ok ? (await response.json()) as ProfileResponse : null
+        return [account.publicKey, data?.ok && data.profile ? data.profile : {}] as const
+      } catch {
+        return [account.publicKey, {}] as const
+      }
+    })).then((entries) => {
+      if (!controller.signal.aborted) setProfiles(Object.fromEntries(entries))
+    })
+    return () => controller.abort()
+  }, [knownAccounts])
+
   function changeLanguage(next: ViaLanguage) {
     saveViaLocalSettings({ interfaceLanguage: next })
     setLanguage(next)
@@ -161,8 +188,9 @@ export default function ViaSiteHeader() {
     const nextSession = switchIdentitySession(publicKey)
     if (!nextSession) return
     setSession(nextSession)
-    setProfile(null)
+    setProfile(profiles[publicKey] ?? null)
     setMenuOpen(false)
+    router.refresh()
   }
 
   function enterPublicMode() {
@@ -229,7 +257,20 @@ export default function ViaSiteHeader() {
                   {otherAccounts.length ? <>
                     <div style={styles.divider} />
                     <div style={styles.menuLabel}>Switch account</div>
-                    {otherAccounts.map((account) => <button key={account.publicKey} type="button" style={styles.accountChoice} onClick={() => chooseAccount(account.publicKey)} role="menuitem">{shortPublicKey(account.publicKey)}</button>)}
+                    {otherAccounts.map((account) => {
+                      const accountProfile = profiles[account.publicKey]
+                      const accountAvatar = safeProfileImage(accountProfile?.profilePic)
+                      const accountName = accountProfile?.username ? `@${accountProfile.username}` : "DeSo account"
+                      return (
+                        <button key={account.publicKey} type="button" style={styles.accountChoice} onClick={() => chooseAccount(account.publicKey)} role="menuitem">
+                          {accountAvatar ? <img src={accountAvatar} alt="" style={styles.avatar} referrerPolicy="no-referrer" /> : <span style={styles.avatarFallback} aria-hidden="true">{accountProfile?.username?.slice(0, 1).toUpperCase() ?? "V"}</span>}
+                          <span style={styles.accountChoiceText}>
+                            <span style={styles.accountChoiceName}>{accountName}</span>
+                            <span style={styles.accountChoiceKey}>{shortPublicKey(account.publicKey)}</span>
+                          </span>
+                        </button>
+                      )
+                    })}
                   </> : null}
                   <div style={styles.divider} />
                   <a href={DESO_LOGIN_URL} target="via-deso-identity" style={styles.menuLink} role="menuitem">Add DeSo account</a>
