@@ -1,4 +1,5 @@
 import RadioBrowser from "./radio-browser"
+import RadioLocalizer from "./radio-localizer"
 
 const styles = {
   main: {
@@ -76,6 +77,7 @@ const styles = {
 export default function WorldRadioPage() {
   return (
     <main style={styles.main}>
+      <RadioLocalizer />
       <div style={styles.container}>
         <div style={styles.top}>
           <p style={styles.brand}>VIA</p>
