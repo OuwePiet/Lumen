@@ -22,6 +22,7 @@ function formatTime(date: Date, timeZone: string) {
 
 function formatLocalDate(date: Date) {
   return new Intl.DateTimeFormat(undefined, {
+    weekday: "long",
     day: "2-digit",
     month: "short",
     year: "numeric",
