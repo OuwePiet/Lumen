@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
 import LivePanel from "./live-panel"
+import LiveLocalizer from "./live-localizer"
 
 export const metadata: Metadata = {
   title: "VIA LIVE",
@@ -17,7 +18,8 @@ const navLink = {
 }
 
 export default function LivePage(){
-  return <main style={{minHeight:"100vh",background:"#050807",color:"#f4f7f5",padding:"24px 16px 60px"}}>
+  return <main id="via-live-page" style={{minHeight:"100vh",background:"#050807",color:"#f4f7f5",padding:"24px 16px 60px"}}>
+    <LiveLocalizer />
     <div style={{width:"min(980px,100%)",margin:"0 auto"}}>
       <nav style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:12,flexWrap:"wrap"}} aria-label="VIA LIVE navigation">
         <a href="/" style={{...navLink,color:"#9adbb2",borderColor:"rgba(143,212,169,.45)"}}>← VIA</a>
