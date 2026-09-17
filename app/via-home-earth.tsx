@@ -1,13 +1,26 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 
-const NASA_EARTH_DIRECT =
-  "https://svs.gsfc.nasa.gov/vis/a030000/a030000/a030082/viirs_dnb_night_lights_rotating_earth_1080p.mp4"
+const NASA_EARTHS = [
+  {
+    id: "night-lights-2012",
+    src: "https://svs.gsfc.nasa.gov/vis/a030000/a030000/a030082/viirs_dnb_night_lights_rotating_earth_1080p.mp4",
+  },
+  {
+    id: "earth-clouds-night-2025",
+    src: "https://svs.gsfc.nasa.gov/vis/a000000/a005500/a005570/Earth_wAtmos_spin_02_1080p60.mp4",
+  },
+] as const
 
 export default function ViaHomeEarth() {
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const [videoFailed, setVideoFailed] = useState(false)
+  const earth = useMemo(() => NASA_EARTHS[new Date().getMonth() % NASA_EARTHS.length], [])
+
+  useEffect(() => {
+    setVideoFailed(false)
+  }, [earth.id])
 
   useEffect(() => {
     function keepPlaying() {
@@ -26,14 +39,15 @@ export default function ViaHomeEarth() {
       window.removeEventListener("pageshow", keepPlaying)
       window.removeEventListener("focus", keepPlaying)
     }
-  }, [videoFailed])
+  }, [videoFailed, earth.id])
 
   return (
-    <div aria-hidden="true" className="via-nasa-earth">
+    <div aria-hidden="true" className="via-nasa-earth" data-nasa-visual={earth.id}>
       <img src="/via-earth-approved.jpg" alt="" className="via-nasa-earth-poster" />
 
       {!videoFailed && (
         <video
+          key={earth.id}
           ref={videoRef}
           className="via-nasa-earth-video"
           autoPlay
@@ -48,8 +62,8 @@ export default function ViaHomeEarth() {
           }}
           onError={() => setVideoFailed(true)}
         >
-          <source src={NASA_EARTH_DIRECT} type="video/mp4" />
-          <source src="/api/nasa-earth" type="video/mp4" />
+          <source src={earth.src} type="video/mp4" />
+          {earth.id === "night-lights-2012" ? <source src="/api/nasa-earth" type="video/mp4" /> : null}
         </video>
       )}
 
