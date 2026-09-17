@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react"
 import { restoreIdentitySession, VIA_IDENTITY_EVENT, type ViaIdentitySession } from "../deso-identity-session"
+import type { ViaLanguage } from "../via-local-settings"
 
 type NotificationItem = {
   Index?: number
@@ -15,40 +16,176 @@ type NotificationResponse = {
   notifications?: NotificationItem[]
 }
 
-type Category = "all" | "post" | "like" | "diamond" | "follow" | "nft" | "other"
+type Category = "all" | "mention" | "reply" | "like" | "diamond" | "follow" | "repost" | "nft" | "other"
 
-const categories: Array<{ id: Category; label: string }> = [
-  { id: "all", label: "All" },
-  { id: "post", label: "Replies & mentions" },
-  { id: "like", label: "Likes" },
-  { id: "diamond", label: "Diamonds" },
-  { id: "follow", label: "Follows" },
-  { id: "nft", label: "NFT" },
-  { id: "other", label: "Other" },
-]
+type Copy = {
+  categories: Record<Category, string>
+  login: string
+  heading: string
+  active: string
+  refresh: string
+  refreshing: string
+  loadingNotifications: string
+  recentLoaded: (count: number) => string
+  noRecent: string
+  unavailable: string
+  filters: string
+  loading: string
+  nothing: string
+  open: string
+  fresh: string
+  actor: string
+  descriptions: Record<Exclude<Category, "all">, (actor: string) => string>
+}
+
+const COPY: Record<ViaLanguage, Copy> = {
+  Dutch: {
+    categories: { all: "Alles", mention: "Vermeldingen", reply: "Reacties", like: "Likes", diamond: "Diamanten", follow: "Volgen", repost: "Reposts", nft: "NFT", other: "Overig" },
+    login: "Log in met DeSo om meldingen voor je actieve account te zien.",
+    heading: "Wat bereikte jouw account?",
+    active: "Actief account",
+    refresh: "Vernieuwen",
+    refreshing: "Vernieuwen…",
+    loadingNotifications: "Meldingen laden…",
+    recentLoaded: (count) => `${count} recente meldingen geladen.`,
+    noRecent: "Geen recente meldingen.",
+    unavailable: "Meldingen zijn tijdelijk niet beschikbaar.",
+    filters: "Meldingsfilters",
+    loading: "Laden…",
+    nothing: "Niets in dit filter.",
+    open: "Openen",
+    fresh: "Nieuw",
+    actor: "DeSo-account",
+    descriptions: {
+      mention: (actor) => `${actor} heeft je vermeld in een bericht.`,
+      reply: (actor) => `${actor} reageerde op een bericht waarbij jij betrokken bent.`,
+      like: (actor) => `${actor} vond een van je berichten leuk.`,
+      diamond: (actor) => `${actor} stuurde een diamant.`,
+      follow: (actor) => `${actor} wijzigde de volgrelatie met jouw account.`,
+      repost: (actor) => `${actor} heeft een bericht opnieuw gedeeld waarbij jij betrokken bent.`,
+      nft: (actor) => `${actor} veroorzaakte NFT-activiteit voor jouw account.`,
+      other: (actor) => `${actor} veroorzaakte accountactiviteit voor jou.`,
+    },
+  },
+  English: {
+    categories: { all: "All", mention: "Mentions", reply: "Replies", like: "Likes", diamond: "Diamonds", follow: "Follows", repost: "Reposts", nft: "NFT", other: "Other" },
+    login: "Log in with DeSo to see notifications for your active account.",
+    heading: "What reached your account?",
+    active: "Active account",
+    refresh: "Refresh",
+    refreshing: "Refreshing…",
+    loadingNotifications: "Loading notifications…",
+    recentLoaded: (count) => `${count} recent notifications loaded.`,
+    noRecent: "No recent notifications.",
+    unavailable: "Notifications are temporarily unavailable.",
+    filters: "Notification filters",
+    loading: "Loading…",
+    nothing: "Nothing in this filter.",
+    open: "Open",
+    fresh: "New",
+    actor: "DeSo account",
+    descriptions: {
+      mention: (actor) => `${actor} mentioned you in a post.`,
+      reply: (actor) => `${actor} replied to a post involving you.`,
+      like: (actor) => `${actor} liked one of your posts.`,
+      diamond: (actor) => `${actor} sent a diamond.`,
+      follow: (actor) => `${actor} changed a follow relationship with your account.`,
+      repost: (actor) => `${actor} reposted content involving you.`,
+      nft: (actor) => `${actor} generated NFT activity for your account.`,
+      other: (actor) => `${actor} generated account activity for you.`,
+    },
+  },
+  French: {
+    categories: { all: "Tout", mention: "Mentions", reply: "Réponses", like: "J’aime", diamond: "Diamants", follow: "Abonnements", repost: "Reposts", nft: "NFT", other: "Autre" },
+    login: "Connectez-vous avec DeSo pour voir les notifications du compte actif.",
+    heading: "Qu’est-ce qui a atteint votre compte ?",
+    active: "Compte actif",
+    refresh: "Actualiser",
+    refreshing: "Actualisation…",
+    loadingNotifications: "Chargement des notifications…",
+    recentLoaded: (count) => `${count} notifications récentes chargées.`,
+    noRecent: "Aucune notification récente.",
+    unavailable: "Les notifications sont temporairement indisponibles.",
+    filters: "Filtres de notifications",
+    loading: "Chargement…",
+    nothing: "Aucun élément dans ce filtre.",
+    open: "Ouvrir",
+    fresh: "Nouveau",
+    actor: "Compte DeSo",
+    descriptions: {
+      mention: (actor) => `${actor} vous a mentionné dans une publication.`,
+      reply: (actor) => `${actor} a répondu à une publication qui vous concerne.`,
+      like: (actor) => `${actor} a aimé l’une de vos publications.`,
+      diamond: (actor) => `${actor} a envoyé un diamant.`,
+      follow: (actor) => `${actor} a modifié sa relation d’abonnement avec votre compte.`,
+      repost: (actor) => `${actor} a repartagé du contenu qui vous concerne.`,
+      nft: (actor) => `${actor} a généré une activité NFT pour votre compte.`,
+      other: (actor) => `${actor} a généré une activité de compte pour vous.`,
+    },
+  },
+  Spanish: {
+    categories: { all: "Todo", mention: "Menciones", reply: "Respuestas", like: "Me gusta", diamond: "Diamantes", follow: "Seguimientos", repost: "Reposts", nft: "NFT", other: "Otros" },
+    login: "Inicia sesión con DeSo para ver las notificaciones de tu cuenta activa.",
+    heading: "¿Qué llegó a tu cuenta?",
+    active: "Cuenta activa",
+    refresh: "Actualizar",
+    refreshing: "Actualizando…",
+    loadingNotifications: "Cargando notificaciones…",
+    recentLoaded: (count) => `${count} notificaciones recientes cargadas.`,
+    noRecent: "No hay notificaciones recientes.",
+    unavailable: "Las notificaciones no están disponibles temporalmente.",
+    filters: "Filtros de notificaciones",
+    loading: "Cargando…",
+    nothing: "No hay nada en este filtro.",
+    open: "Abrir",
+    fresh: "Nuevo",
+    actor: "Cuenta DeSo",
+    descriptions: {
+      mention: (actor) => `${actor} te mencionó en una publicación.`,
+      reply: (actor) => `${actor} respondió a una publicación en la que participas.`,
+      like: (actor) => `${actor} indicó que le gusta una de tus publicaciones.`,
+      diamond: (actor) => `${actor} envió un diamante.`,
+      follow: (actor) => `${actor} cambió la relación de seguimiento con tu cuenta.`,
+      repost: (actor) => `${actor} volvió a compartir contenido relacionado contigo.`,
+      nft: (actor) => `${actor} generó actividad NFT para tu cuenta.`,
+      other: (actor) => `${actor} generó actividad de cuenta para ti.`,
+    },
+  },
+  Chinese: {
+    categories: { all: "全部", mention: "提及", reply: "回复", like: "点赞", diamond: "钻石", follow: "关注", repost: "转发", nft: "NFT", other: "其他" },
+    login: "使用 DeSo 登录以查看当前账户的通知。",
+    heading: "你的账户收到了什么？",
+    active: "当前账户",
+    refresh: "刷新",
+    refreshing: "正在刷新…",
+    loadingNotifications: "正在加载通知…",
+    recentLoaded: (count) => `已加载 ${count} 条最近通知。`,
+    noRecent: "没有最近通知。",
+    unavailable: "通知暂时不可用。",
+    filters: "通知筛选",
+    loading: "正在加载…",
+    nothing: "此筛选中没有内容。",
+    open: "打开",
+    fresh: "新",
+    actor: "DeSo 账户",
+    descriptions: {
+      mention: (actor) => `${actor} 在帖子中提到了你。`,
+      reply: (actor) => `${actor} 回复了与你相关的帖子。`,
+      like: (actor) => `${actor} 点赞了你的帖子。`,
+      diamond: (actor) => `${actor} 发送了一颗钻石。`,
+      follow: (actor) => `${actor} 更改了与你账户的关注关系。`,
+      repost: (actor) => `${actor} 转发了与你相关的内容。`,
+      nft: (actor) => `${actor} 为你的账户产生了 NFT 活动。`,
+      other: (actor) => `${actor} 为你的账户产生了活动。`,
+    },
+  },
+}
 
 const POST_HASH_RE = /^[0-9a-fA-F]{64}$/
 const PUBLIC_KEY_RE = /^[1-9A-HJ-NP-Za-km-z]{20,100}$/
 
 function record(value: unknown): Record<string, unknown> | null {
   return value && typeof value === "object" && !Array.isArray(value) ? value as Record<string, unknown> : null
-}
-
-function categoryOf(item: NotificationItem): Exclude<Category, "all"> {
-  const metadata = record(item.Metadata) ?? {}
-  const basic = record(metadata.BasicTransferTxindexMetadata)
-  const creatorTransfer = record(metadata.CreatorCoinTransferTxindexMetadata)
-  if ((typeof basic?.DiamondLevel === "number" && basic.DiamondLevel > 0) || (typeof creatorTransfer?.DiamondLevel === "number" && creatorTransfer.DiamondLevel > 0)) return "diamond"
-  if (record(metadata.LikeTxindexMetadata)) return "like"
-  if (record(metadata.FollowTxindexMetadata)) return "follow"
-  if (record(metadata.SubmitPostTxindexMetadata)) return "post"
-  if (record(metadata.NFTBidTxindexMetadata) || record(metadata.AcceptNFTBidTxindexMetadata) || record(metadata.NFTTransferTxindexMetadata) || record(metadata.CreateNFTTxindexMetadata) || record(metadata.UpdateNFTTxindexMetadata)) return "nft"
-  return "other"
-}
-
-function shortKey(value: unknown) {
-  if (typeof value !== "string" || value.length < 12) return "DeSo account"
-  return `${value.slice(0, 8)}…${value.slice(-5)}`
 }
 
 function firstHash(source: Record<string, unknown> | null, keys: string[]) {
@@ -58,6 +195,28 @@ function firstHash(source: Record<string, unknown> | null, keys: string[]) {
     if (typeof value === "string" && POST_HASH_RE.test(value)) return value
   }
   return null
+}
+
+function categoryOf(item: NotificationItem): Exclude<Category, "all"> {
+  const metadata = record(item.Metadata) ?? {}
+  const basic = record(metadata.BasicTransferTxindexMetadata)
+  const creatorTransfer = record(metadata.CreatorCoinTransferTxindexMetadata)
+  if ((typeof basic?.DiamondLevel === "number" && basic.DiamondLevel > 0) || (typeof creatorTransfer?.DiamondLevel === "number" && creatorTransfer.DiamondLevel > 0)) return "diamond"
+  if (record(metadata.LikeTxindexMetadata)) return "like"
+  if (record(metadata.FollowTxindexMetadata)) return "follow"
+  const post = record(metadata.SubmitPostTxindexMetadata)
+  if (post) {
+    if (firstHash(post, ["RepostedPostHashHex", "RepostPostHashHex"])) return "repost"
+    if (firstHash(post, ["ParentPostHashHex"])) return "reply"
+    return "mention"
+  }
+  if (record(metadata.NFTBidTxindexMetadata) || record(metadata.AcceptNFTBidTxindexMetadata) || record(metadata.NFTTransferTxindexMetadata) || record(metadata.CreateNFTTxindexMetadata) || record(metadata.UpdateNFTTxindexMetadata)) return "nft"
+  return "other"
+}
+
+function shortKey(value: unknown, fallback: string) {
+  if (typeof value !== "string" || value.length < 12) return fallback
+  return `${value.slice(0, 8)}…${value.slice(-5)}`
 }
 
 function notificationDestination(item: NotificationItem) {
@@ -71,9 +230,12 @@ function notificationDestination(item: NotificationItem) {
       : null
   }
 
-  if (category === "post") {
+  if (category === "mention" || category === "reply" || category === "repost") {
     const post = record(metadata.SubmitPostTxindexMetadata)
-    const hash = firstHash(post, ["PostHashHex", "PostHashBeingModifiedHex", "ParentPostHashHex"])
+    const keys = category === "repost"
+      ? ["RepostedPostHashHex", "RepostPostHashHex", "PostHashHex"]
+      : ["PostHashHex", "PostHashBeingModifiedHex", "ParentPostHashHex"]
+    const hash = firstHash(post, keys)
     return hash ? `/social?post=${encodeURIComponent(hash)}` : null
   }
 
@@ -107,27 +269,14 @@ function notificationDestination(item: NotificationItem) {
   return null
 }
 
-function describe(item: NotificationItem) {
-  const metadata = record(item.Metadata) ?? {}
-  const actor = shortKey(metadata.TransactorPublicKeyBase58Check)
-  const category = categoryOf(item)
-  if (category === "diamond") return `${actor} sent a diamond.`
-  if (category === "like") return `${actor} liked one of your posts.`
-  if (category === "follow") return `${actor} changed a follow relationship with your account.`
-  if (category === "post") {
-    const post = record(metadata.SubmitPostTxindexMetadata)
-    return post?.ParentPostHashHex ? `${actor} replied to a post involving you.` : `${actor} mentioned you in a post.`
-  }
-  if (category === "nft") return `${actor} generated NFT activity for your account.`
-  return `${actor} generated account activity for you.`
-}
-
-export default function NotificationCenter() {
+export default function NotificationCenter({ language }: { language: ViaLanguage }) {
+  const copy = COPY[language]
+  const categories = useMemo(() => (Object.keys(copy.categories) as Category[]).map((id) => ({ id, label: copy.categories[id] })), [copy])
   const [session, setSession] = useState<ViaIdentitySession | null>(null)
   const [items, setItems] = useState<NotificationItem[]>([])
   const [category, setCategory] = useState<Category>("all")
   const [status, setStatus] = useState<"idle" | "loading" | "ready" | "error">("idle")
-  const [message, setMessage] = useState("")
+  const [messageKey, setMessageKey] = useState<"loading" | "loaded" | "empty" | "error" | "">("")
   const [lastSeenIndex, setLastSeenIndex] = useState<number | null>(null)
   const [refreshToken, setRefreshToken] = useState(0)
 
@@ -143,6 +292,7 @@ export default function NotificationCenter() {
     if (!session) {
       setItems([])
       setStatus("idle")
+      setMessageKey("")
       return
     }
 
@@ -150,7 +300,7 @@ export default function NotificationCenter() {
     const controller = new AbortController()
     async function load() {
       setStatus("loading")
-      setMessage("Loading notifications…")
+      setMessageKey("loading")
       try {
         const response = await fetch("/api/via/social/notifications", {
           method: "POST",
@@ -164,12 +314,12 @@ export default function NotificationCenter() {
         setItems(data.notifications)
         setLastSeenIndex(typeof data.lastSeenIndex === "number" ? data.lastSeenIndex : null)
         setStatus("ready")
-        setMessage(data.notifications.length ? `${data.notifications.length} recent notifications loaded.` : "No recent notifications.")
+        setMessageKey(data.notifications.length ? "loaded" : "empty")
       } catch (error) {
         if (error instanceof DOMException && error.name === "AbortError") return
         setItems([])
         setStatus("error")
-        setMessage("Notifications are temporarily unavailable.")
+        setMessageKey("error")
       }
     }
     void load()
@@ -177,22 +327,27 @@ export default function NotificationCenter() {
   }, [session, refreshToken])
 
   const visible = useMemo(() => category === "all" ? items : items.filter((item) => categoryOf(item) === category), [items, category])
+  const message = messageKey === "loading" ? copy.loadingNotifications
+    : messageKey === "loaded" ? copy.recentLoaded(items.length)
+    : messageKey === "empty" ? copy.noRecent
+    : messageKey === "error" ? copy.unavailable
+    : ""
 
   if (!session) {
-    return <section className="rounded-2xl border border-zinc-800 bg-zinc-950/60 p-5 text-sm leading-6 text-zinc-400">Log in with DeSo to see notifications for your active account.</section>
+    return <section className="rounded-2xl border border-zinc-800 bg-zinc-950/60 p-5 text-sm leading-6 text-zinc-400">{copy.login}</section>
   }
 
   return (
     <section className="rounded-2xl border border-zinc-800 bg-zinc-950/60 p-5" aria-labelledby="notification-center-heading">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 id="notification-center-heading" className="text-xl font-semibold text-white">What reached your account?</h2>
-          <p className="mt-1 text-xs text-zinc-500">Active account: {shortKey(session.publicKey)}</p>
+          <h2 id="notification-center-heading" className="text-xl font-semibold text-white">{copy.heading}</h2>
+          <p className="mt-1 text-xs text-zinc-500">{copy.active}: {shortKey(session.publicKey, copy.actor)}</p>
         </div>
-        <button type="button" onClick={() => setRefreshToken((value) => value + 1)} disabled={status === "loading"} className="rounded-full border border-zinc-700 px-3 py-1.5 text-xs text-zinc-300 hover:border-[#8fd4a9]/55 hover:text-[#9adbb2] disabled:cursor-wait disabled:opacity-60">{status === "loading" ? "Refreshing…" : "Refresh"}</button>
+        <button type="button" onClick={() => setRefreshToken((value) => value + 1)} disabled={status === "loading"} className="rounded-full border border-zinc-700 px-3 py-1.5 text-xs text-zinc-300 hover:border-[#8fd4a9]/55 hover:text-[#9adbb2] disabled:cursor-wait disabled:opacity-60">{status === "loading" ? copy.refreshing : copy.refresh}</button>
       </div>
 
-      <div className="mt-4 flex flex-wrap gap-2" aria-label="Notification filters">
+      <div className="mt-4 flex flex-wrap gap-2" aria-label={copy.filters}>
         {categories.map((option) => {
           const active = option.id === category
           const count = option.id === "all" ? items.length : items.filter((item) => categoryOf(item) === option.id).length
@@ -203,21 +358,23 @@ export default function NotificationCenter() {
       <p className={`mt-4 text-xs ${status === "error" ? "text-amber-300" : "text-zinc-500"}`} role="status" aria-live="polite">{message}</p>
 
       <div className="mt-4 space-y-2">
-        {status === "loading" ? <div className="rounded-xl border border-zinc-800 p-4 text-sm text-zinc-500">Loading…</div> : null}
-        {status === "ready" && visible.length === 0 ? <div className="rounded-xl border border-zinc-800 p-4 text-sm text-zinc-500">Nothing in this filter.</div> : null}
+        {status === "loading" ? <div className="rounded-xl border border-zinc-800 p-4 text-sm text-zinc-500">{copy.loading}</div> : null}
+        {status === "ready" && visible.length === 0 ? <div className="rounded-xl border border-zinc-800 p-4 text-sm text-zinc-500">{copy.nothing}</div> : null}
         {visible.map((item, index) => {
           const itemCategory = categoryOf(item)
           const unread = typeof item.Index === "number" && lastSeenIndex !== null && item.Index > lastSeenIndex
           const destination = notificationDestination(item)
+          const metadata = record(item.Metadata) ?? {}
+          const actor = shortKey(metadata.TransactorPublicKeyBase58Check, copy.actor)
           return <article key={`${item.Index ?? "n"}-${index}`} className="rounded-xl border border-zinc-800 bg-black/25 p-4">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <span className="text-xs font-semibold uppercase tracking-[0.12em] text-[#8fd4a9]">{categories.find((entry) => entry.id === itemCategory)?.label ?? itemCategory}</span>
+              <span className="text-xs font-semibold uppercase tracking-[0.12em] text-[#8fd4a9]">{copy.categories[itemCategory]}</span>
               <div className="flex items-center gap-2">
-                {destination ? <a href={destination} className="rounded-full border border-zinc-700 px-2.5 py-0.5 text-[10px] text-zinc-300 transition hover:border-[#8fd4a9]/55 hover:text-[#9adbb2]">Open</a> : null}
-                {unread ? <span className="rounded-full border border-[#285f40] px-2 py-0.5 text-[10px] text-[#9adbb2]">New</span> : null}
+                {destination ? <a href={destination} className="rounded-full border border-zinc-700 px-2.5 py-0.5 text-[10px] text-zinc-300 transition hover:border-[#8fd4a9]/55 hover:text-[#9adbb2]">{copy.open}</a> : null}
+                {unread ? <span className="rounded-full border border-[#285f40] px-2 py-0.5 text-[10px] text-[#9adbb2]">{copy.fresh}</span> : null}
               </div>
             </div>
-            <p className="mt-2 text-sm leading-6 text-zinc-300">{describe(item)}</p>
+            <p className="mt-2 text-sm leading-6 text-zinc-300">{copy.descriptions[itemCategory](actor)}</p>
           </article>
         })}
       </div>
