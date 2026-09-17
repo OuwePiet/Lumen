@@ -1,4 +1,5 @@
 import "../home-wide.css"
+import "../creator-nft-watermark.css"
 
 import NFTGrid from "../nft-grid"
 import ViaPriceBoard from "../via-price-board"

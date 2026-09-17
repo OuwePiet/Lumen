@@ -1,0 +1,17 @@
+section[aria-label^="Public NFTs owned by"] a[href^="/nft/"] > div:first-child {
+  position: relative;
+}
+
+section[aria-label^="Public NFTs owned by"] a[href^="/nft/"] > div:first-child::after {
+  content: "";
+  position: absolute;
+  right: 4%;
+  bottom: 4%;
+  z-index: 2;
+  width: 22%;
+  max-width: 92px;
+  aspect-ratio: 1 / 1;
+  background: url("/via-leaf.svg") center / contain no-repeat;
+  opacity: 0.16;
+  pointer-events: none;
+}
