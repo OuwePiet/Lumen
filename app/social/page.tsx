@@ -3,10 +3,12 @@ import FeedChoice from "./feed-choice"
 import PublicPosts from "./public-posts"
 import ParticipationGate from "../participation-gate"
 import PostComposer from "./post-composer"
+import SocialLocalizer from "./social-localizer"
 
 export default function SocialPage() {
   return (
-    <main className="min-h-screen bg-[#030504] px-4 py-6 text-white sm:px-6 lg:px-8">
+    <main data-via-social-page className="min-h-screen bg-[#030504] px-4 py-6 text-white sm:px-6 lg:px-8">
+      <SocialLocalizer />
       <div className="mx-auto max-w-6xl">
         <header className="mb-5 flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-4">
           <div>
