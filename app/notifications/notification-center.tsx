@@ -27,6 +27,9 @@ const categories: Array<{ id: Category; label: string }> = [
   { id: "other", label: "Other" },
 ]
 
+const POST_HASH_RE = /^[0-9a-fA-F]{64}$/
+const PUBLIC_KEY_RE = /^[1-9A-HJ-NP-Za-km-z]{20,100}$/
+
 function record(value: unknown): Record<string, unknown> | null {
   return value && typeof value === "object" && !Array.isArray(value) ? value as Record<string, unknown> : null
 }
@@ -46,6 +49,62 @@ function categoryOf(item: NotificationItem): Exclude<Category, "all"> {
 function shortKey(value: unknown) {
   if (typeof value !== "string" || value.length < 12) return "DeSo account"
   return `${value.slice(0, 8)}…${value.slice(-5)}`
+}
+
+function firstHash(source: Record<string, unknown> | null, keys: string[]) {
+  if (!source) return null
+  for (const key of keys) {
+    const value = source[key]
+    if (typeof value === "string" && POST_HASH_RE.test(value)) return value
+  }
+  return null
+}
+
+function notificationDestination(item: NotificationItem) {
+  const metadata = record(item.Metadata) ?? {}
+  const category = categoryOf(item)
+
+  if (category === "follow") {
+    const actor = metadata.TransactorPublicKeyBase58Check
+    return typeof actor === "string" && PUBLIC_KEY_RE.test(actor)
+      ? `/profile/${encodeURIComponent(actor)}`
+      : null
+  }
+
+  if (category === "post") {
+    const post = record(metadata.SubmitPostTxindexMetadata)
+    const hash = firstHash(post, ["PostHashHex", "PostHashBeingModifiedHex", "ParentPostHashHex"])
+    return hash ? `/social?post=${encodeURIComponent(hash)}` : null
+  }
+
+  if (category === "like") {
+    const like = record(metadata.LikeTxindexMetadata)
+    const hash = firstHash(like, ["LikedPostHashHex", "PostHashHex"])
+    return hash ? `/social?post=${encodeURIComponent(hash)}` : null
+  }
+
+  if (category === "diamond") {
+    const basic = record(metadata.BasicTransferTxindexMetadata)
+    const creatorTransfer = record(metadata.CreatorCoinTransferTxindexMetadata)
+    const hash = firstHash(basic, ["PostHashHex"]) ?? firstHash(creatorTransfer, ["PostHashHex"])
+    return hash ? `/social?post=${encodeURIComponent(hash)}` : null
+  }
+
+  if (category === "nft") {
+    const nftMetadata = [
+      record(metadata.NFTBidTxindexMetadata),
+      record(metadata.AcceptNFTBidTxindexMetadata),
+      record(metadata.NFTTransferTxindexMetadata),
+      record(metadata.CreateNFTTxindexMetadata),
+      record(metadata.UpdateNFTTxindexMetadata),
+    ]
+    for (const entry of nftMetadata) {
+      const hash = firstHash(entry, ["NFTPostHashHex", "PostHashHex"])
+      if (hash) return `/nft/${encodeURIComponent(hash)}`
+    }
+  }
+
+  return null
 }
 
 function describe(item: NotificationItem) {
@@ -149,10 +208,14 @@ export default function NotificationCenter() {
         {visible.map((item, index) => {
           const itemCategory = categoryOf(item)
           const unread = typeof item.Index === "number" && lastSeenIndex !== null && item.Index > lastSeenIndex
+          const destination = notificationDestination(item)
           return <article key={`${item.Index ?? "n"}-${index}`} className="rounded-xl border border-zinc-800 bg-black/25 p-4">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <span className="text-xs font-semibold uppercase tracking-[0.12em] text-[#8fd4a9]">{categories.find((entry) => entry.id === itemCategory)?.label ?? itemCategory}</span>
-              {unread ? <span className="rounded-full border border-[#285f40] px-2 py-0.5 text-[10px] text-[#9adbb2]">New</span> : null}
+              <div className="flex items-center gap-2">
+                {destination ? <a href={destination} className="rounded-full border border-zinc-700 px-2.5 py-0.5 text-[10px] text-zinc-300 transition hover:border-[#8fd4a9]/55 hover:text-[#9adbb2]">Open</a> : null}
+                {unread ? <span className="rounded-full border border-[#285f40] px-2 py-0.5 text-[10px] text-[#9adbb2]">New</span> : null}
+              </div>
             </div>
             <p className="mt-2 text-sm leading-6 text-zinc-300">{describe(item)}</p>
           </article>
