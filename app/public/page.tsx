@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { useEffect, useState } from "react"
+import { clearIdentitySession } from "../deso-identity-session"
 import { readViaLocalSettings, VIA_SETTINGS_EVENT, type ViaLanguage } from "../via-local-settings"
 
 type Copy = {
@@ -9,6 +10,7 @@ type Copy = {
   title: string
   intro: string
   note: string
+  limited: string
   social: string
   discover: string
   nfts: string
@@ -22,6 +24,7 @@ const copy: Record<ViaLanguage, Copy> = {
     title: "Kijken zonder DeSo-login",
     intro: "Deze ingang is bedoeld voor bezoekers. Je kunt publieke VIA- en DeSo-inhoud bekijken zonder blockchain-acties uit te voeren.",
     note: "Plaatsen, volgen, liken, diamonds, bieden, kopen en andere acties blijven uitgeschakeld totdat je bewust met DeSo Identity inlogt.",
+    limited: "Publieke modus actief · DeSo-functies zijn beperkt",
     social: "Bekijk publieke posts",
     discover: "Ontdek creators",
     nfts: "Bekijk NFT's",
@@ -33,6 +36,7 @@ const copy: Record<ViaLanguage, Copy> = {
     title: "Browse without a DeSo login",
     intro: "This entrance is for visitors. You can browse public VIA and DeSo content without performing blockchain actions.",
     note: "Posting, following, liking, diamonds, bidding, buying and other actions stay unavailable until you deliberately sign in with DeSo Identity.",
+    limited: "Public mode active · DeSo functions are limited",
     social: "View public posts",
     discover: "Discover creators",
     nfts: "Browse NFTs",
@@ -44,6 +48,7 @@ const copy: Record<ViaLanguage, Copy> = {
     title: "Consulter sans connexion DeSo",
     intro: "Cette entrée est destinée aux visiteurs. Vous pouvez consulter le contenu public VIA et DeSo sans effectuer d'actions blockchain.",
     note: "Publier, suivre, aimer, envoyer des diamonds, enchérir, acheter et les autres actions restent indisponibles jusqu'à une connexion volontaire via DeSo Identity.",
+    limited: "Mode public actif · les fonctions DeSo sont limitées",
     social: "Voir les posts publics",
     discover: "Découvrir des créateurs",
     nfts: "Voir les NFT",
@@ -55,6 +60,7 @@ const copy: Record<ViaLanguage, Copy> = {
     title: "Explorar sin iniciar sesión en DeSo",
     intro: "Esta entrada es para visitantes. Puedes consultar contenido público de VIA y DeSo sin realizar acciones blockchain.",
     note: "Publicar, seguir, dar me gusta, enviar diamonds, pujar, comprar y otras acciones permanecen desactivadas hasta iniciar sesión conscientemente con DeSo Identity.",
+    limited: "Modo público activo · las funciones de DeSo están limitadas",
     social: "Ver publicaciones públicas",
     discover: "Descubrir creadores",
     nfts: "Ver NFT",
@@ -66,6 +72,7 @@ const copy: Record<ViaLanguage, Copy> = {
     title: "无需 DeSo 登录即可浏览",
     intro: "此入口面向访客。你可以查看 VIA 和 DeSo 的公开内容，而无需执行区块链操作。",
     note: "发布、关注、点赞、Diamonds、出价、购买等操作在你主动使用 DeSo Identity 登录前保持不可用。",
+    limited: "公开模式已启用 · DeSo 功能受限",
     social: "查看公开帖子",
     discover: "发现创作者",
     nfts: "浏览 NFT",
@@ -80,6 +87,7 @@ export default function PublicEntrancePage() {
   const [language, setLanguage] = useState<ViaLanguage>("English")
 
   useEffect(() => {
+    clearIdentitySession()
     const refresh = () => setLanguage(readViaLocalSettings().interfaceLanguage)
     refresh()
     window.addEventListener(VIA_SETTINGS_EVENT, refresh)
@@ -94,6 +102,7 @@ export default function PublicEntrancePage() {
         <header className="border-b border-zinc-900 pb-6">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8fd4a9]">{t.kicker}</p>
           <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">{t.title}</h1>
+          <div className="mt-4 inline-flex rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1.5 text-xs font-semibold text-amber-200">{t.limited}</div>
           <p className="mt-3 max-w-3xl text-sm leading-6 text-zinc-400 sm:text-base">{t.intro}</p>
           <p className="mt-2 max-w-3xl text-xs leading-5 text-zinc-500">{t.note}</p>
         </header>
