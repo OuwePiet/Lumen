@@ -3,11 +3,14 @@
 import Link from "next/link"
 import { useEffect, useState } from "react"
 import { restoreIdentitySession, VIA_IDENTITY_EVENT, type ViaIdentitySession } from "../deso-identity-session"
+import ViaAuraCompact from "../via-aura-compact"
 import { fetchViaRates, isViaRateStale, VIA_RATE_REFRESH_MS } from "../via-live-rates"
 
 type CreatorCoinHolding = {
   creatorPublicKey: string
   username: string
+  profilePic: string | null
+  isVerified: boolean
   balanceNanos: number
   balanceCoins: number
   hasPurchased: boolean
@@ -36,11 +39,6 @@ function formatCurrency(value: number, currency: "USD" | "EUR") {
   return new Intl.NumberFormat(undefined, { style: "currency", currency, maximumFractionDigits: 2 }).format(value)
 }
 
-function shortPublicKey(publicKey: string) {
-  if (publicKey.length <= 20) return publicKey
-  return `${publicKey.slice(0, 10)}…${publicKey.slice(-6)}`
-}
-
 function CoinList({ title, holdings }: { title: string; holdings: CreatorCoinHolding[] }) {
   return (
     <section className="rounded-[16px] border border-zinc-800/80 bg-zinc-950/45 p-6">
@@ -49,14 +47,16 @@ function CoinList({ title, holdings }: { title: string; holdings: CreatorCoinHol
         <span className="rounded-full border border-zinc-800 px-2.5 py-1 text-xs text-zinc-500">{holdings.length}</span>
       </div>
       {holdings.length ? (
-        <div className="mt-4 divide-y divide-zinc-800/80">
+        <div className="mt-4 grid gap-2.5">
           {holdings.map((holding) => (
-            <div key={`${title}-${holding.creatorPublicKey}`} className="flex flex-wrap items-center justify-between gap-3 py-3 first:pt-0 last:pb-0">
-              <Link href={`/profile/${encodeURIComponent(holding.creatorPublicKey)}`} className="min-w-0 text-sm text-zinc-200 transition hover:text-[#9adbb2]">
-                {holding.username ? `@${holding.username}` : shortPublicKey(holding.creatorPublicKey)}
-              </Link>
-              <span className="text-sm font-medium text-zinc-300">{formatDeSo(holding.balanceCoins)} coins</span>
-            </div>
+            <ViaAuraCompact
+              key={`${title}-${holding.creatorPublicKey}`}
+              publicKey={holding.creatorPublicKey}
+              username={holding.username}
+              profilePic={holding.profilePic}
+              isVerified={holding.isVerified}
+              valueLabel={`${formatDeSo(holding.balanceCoins)} coins`}
+            />
           ))}
         </div>
       ) : (

@@ -8,6 +8,8 @@ const PUBLIC_KEY_RE = /^[1-9A-HJ-NP-Za-km-z]{20,100}$/
 type DeSoProfile = {
   Username?: unknown
   PublicKeyBase58Check?: unknown
+  ProfilePic?: unknown
+  IsVerified?: unknown
 }
 
 type DeSoCreatorCoinHolding = {
@@ -34,6 +36,11 @@ function safeNanos(value: unknown) {
 
 function text(value: unknown) {
   return typeof value === "string" ? value.trim() : ""
+}
+
+function safeProfilePic(value: unknown) {
+  const candidate = text(value)
+  return /^https:\/\//i.test(candidate) ? candidate : null
 }
 
 export async function GET(request: Request) {
@@ -80,6 +87,8 @@ export async function GET(request: Request) {
         return {
           creatorPublicKey,
           username: text(profile?.Username),
+          profilePic: safeProfilePic(profile?.ProfilePic),
+          isVerified: profile?.IsVerified === true,
           balanceNanos: holdingBalanceNanos,
           balanceCoins: holdingBalanceNanos / 1_000_000_000,
           hasPurchased: entry?.HasPurchased === true,
