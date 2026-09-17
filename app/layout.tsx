@@ -1,6 +1,7 @@
 import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
 import './global.css'
+import './visitor-account-access.css'
 import RadioLocalizer from './radio/radio-localizer'
 import ViaGlobalRadio from './via-global-radio'
 import ViaPublicAccountGuard from './via-public-account-guard'
