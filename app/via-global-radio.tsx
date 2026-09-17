@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { useEffect, useRef, useState } from "react"
+import { readViaLocalSettings, VIA_SETTINGS_EVENT, type ViaLanguage } from "./via-local-settings"
 
 const STORAGE_KEY = "via:world-radio:station"
 const EVENT = "via:world-radio:station"
@@ -9,6 +10,15 @@ const PLAY_EVENT = "via:world-radio:play"
 const PAUSE_EVENT = "via:world-radio:pause"
 
 type Station = { name: string; streamUrl: string }
+type RadioCopy = { radio: string; choose: string; on: string; off: string; turnOn: string; turnOff: string; chooseAria: string }
+
+const COPY: Record<ViaLanguage, RadioCopy> = {
+  Dutch: { radio: "Wereldradio", choose: "Kiezen", on: "Aan", off: "Uit", turnOn: "Wereldradio aanzetten", turnOff: "Wereldradio uitzetten", chooseAria: "Kies een Wereldradio-zender" },
+  English: { radio: "World Radio", choose: "Choose", on: "On", off: "Off", turnOn: "Turn on World Radio", turnOff: "Turn off World Radio", chooseAria: "Choose a World Radio station" },
+  French: { radio: "Radio mondiale", choose: "Choisir", on: "Marche", off: "Arrêt", turnOn: "Activer la radio mondiale", turnOff: "Désactiver la radio mondiale", chooseAria: "Choisir une station de radio mondiale" },
+  Spanish: { radio: "Radio mundial", choose: "Elegir", on: "Encender", off: "Apagar", turnOn: "Encender la radio mundial", turnOff: "Apagar la radio mundial", chooseAria: "Elegir una emisora de radio mundial" },
+  Chinese: { radio: "世界电台", choose: "选择", on: "开启", off: "关闭", turnOn: "开启世界电台", turnOff: "关闭世界电台", chooseAria: "选择世界电台" },
+}
 
 function readStation(): Station | null {
   try {
@@ -24,6 +34,18 @@ export default function ViaGlobalRadio() {
   const audio = useRef<HTMLAudioElement | null>(null)
   const [station, setStation] = useState<Station | null>(null)
   const [playing, setPlaying] = useState(false)
+  const [language, setLanguage] = useState<ViaLanguage>("English")
+
+  useEffect(() => {
+    const syncLanguage = () => setLanguage(readViaLocalSettings().interfaceLanguage)
+    syncLanguage()
+    window.addEventListener(VIA_SETTINGS_EVENT, syncLanguage)
+    window.addEventListener("storage", syncLanguage)
+    return () => {
+      window.removeEventListener(VIA_SETTINGS_EVENT, syncLanguage)
+      window.removeEventListener("storage", syncLanguage)
+    }
+  }, [])
 
   useEffect(() => {
     const sync = () => {
@@ -79,9 +101,11 @@ export default function ViaGlobalRadio() {
     else { player.pause(); setPlaying(false) }
   }
 
-  return <aside aria-label="World Radio" className="fixed bottom-3 right-3 z-[80] flex max-w-[calc(100vw-1.5rem)] items-center gap-2 rounded-full border border-[#285f40] bg-[#07100b]/95 px-3 py-2 text-xs shadow-xl backdrop-blur">
+  const copy = COPY[language]
+
+  return <aside aria-label={copy.radio} className="fixed bottom-3 right-3 z-[80] flex max-w-[calc(100vw-1.5rem)] items-center gap-2 rounded-full border border-[#285f40] bg-[#07100b]/95 px-3 py-2 text-xs shadow-xl backdrop-blur">
     <audio ref={audio} onPause={()=>setPlaying(false)} onPlay={()=>setPlaying(true)} />
-    <Link href="/radio" className="max-w-40 truncate text-[#b8ddc5]">{station ? station.name : "World Radio"}</Link>
-    <button type="button" disabled={!station} aria-pressed={playing} aria-label={station ? `${playing ? "Turn off" : "Turn on"} World Radio: ${station.name}` : "Choose a World Radio station"} onClick={toggle} className="min-h-9 rounded-full border border-[#8fd4a9]/45 px-3 font-semibold text-[#b8ddc5] disabled:opacity-45">{station ? (playing ? "Off" : "On") : "Choose"}</button>
+    <Link href="/radio" className="max-w-40 truncate text-[#b8ddc5]">{station ? station.name : copy.radio}</Link>
+    <button type="button" disabled={!station} aria-pressed={playing} aria-label={station ? `${playing ? copy.turnOff : copy.turnOn}: ${station.name}` : copy.chooseAria} onClick={toggle} className="min-h-9 rounded-full border border-[#8fd4a9]/45 px-3 font-semibold text-[#b8ddc5] disabled:opacity-45">{station ? (playing ? copy.off : copy.on) : copy.choose}</button>
   </aside>
 }
