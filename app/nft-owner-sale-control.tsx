@@ -65,7 +65,7 @@ export default function NFTOwnerSaleControl({ postHash, editions, hasUnlockable 
   const [feeNanos, setFeeNanos] = useState<number | null>(null)
   const popupRef = useRef<Window | null>(null)
   const popupWatch = useRef<number | null>(null)
-  const pendingMode = useRef<"list"|"remove"|"transfer"|"burn"|null>(null)
+  const pendingMode = useRef<"list"|"update"|"remove"|"transfer"|"burn"|null>(null)
 
   const selected = owned.find((item) => item.serialNumber === serialNumber) ?? owned[0]
 
@@ -105,7 +105,13 @@ export default function NFTOwnerSaleControl({ postHash, editions, hasUnlockable 
         const data = await response.json() as { ok?: boolean; error?: string }
         if (!response.ok || !data.ok) throw new Error(data.error || "SUBMIT_FAILED")
         setStatus("done")
-        setMessage(pendingMode.current === "remove" ? "NFT removed from sale on DeSo." : pendingMode.current === "transfer" ? "NFT transfer submitted to DeSo. The receiver must accept the transfer before ownership changes." : pendingMode.current === "burn" ? "NFT burn submitted to DeSo." : "NFT listed for sale on DeSo.")
+        setMessage(
+          pendingMode.current === "remove" ? "NFT removed from sale on DeSo."
+            : pendingMode.current === "update" ? "NFT sale price updated on DeSo."
+              : pendingMode.current === "transfer" ? "NFT transfer submitted to DeSo. The receiver must accept the transfer before ownership changes."
+                : pendingMode.current === "burn" ? "NFT burn submitted to DeSo."
+                  : "NFT listed for sale on DeSo.",
+        )
         setConfirmed(false)
       } catch {
         setStatus("error")
@@ -124,25 +130,25 @@ export default function NFTOwnerSaleControl({ postHash, editions, hasUnlockable 
     }
   }, [])
 
-  async function prepare(mode: "list" | "remove") {
+  async function prepare(mode: "list" | "update" | "remove") {
     if (!session || !selected || !confirmed || status === "preparing" || status === "approval" || status === "submitting") return
 
     const minBidNanos = mode === "remove" ? 0 : desoToSafeNanos(minBid)
     const buyNowNanos = mode === "remove" || !buyNowEnabled ? 0 : desoToSafeNanos(buyNowPrice)
 
-    if (mode === "list" && minBidNanos === null) {
+    if (mode !== "remove" && minBidNanos === null) {
       setStatus("error")
       setMessage("Enter a valid minimum bid in DESO.")
       return
     }
-    if (mode === "list" && buyNowEnabled && (buyNowNanos === null || buyNowNanos < (minBidNanos ?? 0))) {
+    if (mode !== "remove" && buyNowEnabled && (buyNowNanos === null || buyNowNanos < (minBidNanos ?? 0))) {
       setStatus("error")
       setMessage("Buy Now must be at least the minimum bid.")
       return
     }
 
     setStatus("preparing")
-    setMessage(mode === "remove" ? "Preparing removal from sale…" : "Preparing the NFT sale listing…")
+    setMessage(mode === "remove" ? "Preparing removal from sale…" : mode === "update" ? "Preparing the NFT price update…" : "Preparing the NFT sale listing…")
     setFeeNanos(null)
     pendingMode.current = mode
 
@@ -156,9 +162,9 @@ export default function NFTOwnerSaleControl({ postHash, editions, hasUnlockable 
           publicKey: session.publicKey,
           postHash,
           serialNumber: selected.serialNumber,
-          isForSale: mode === "list",
+          isForSale: mode !== "remove",
           minBidAmountNanos: mode === "remove" ? 0 : minBidNanos,
-          isBuyNow: mode === "list" && buyNowEnabled,
+          isBuyNow: mode !== "remove" && buyNowEnabled,
           buyNowPriceNanos: mode === "remove" || !buyNowEnabled ? 0 : buyNowNanos,
         }),
       })
@@ -172,7 +178,7 @@ export default function NFTOwnerSaleControl({ postHash, editions, hasUnlockable 
       )
       if (!popup) throw new Error("POPUP_BLOCKED")
       popupRef.current = popup
-      
+
       if (popupWatch.current !== null) window.clearInterval(popupWatch.current)
       popupWatch.current = window.setInterval(() => {
         if (popupRef.current?.closed) {
@@ -205,7 +211,7 @@ export default function NFTOwnerSaleControl({ postHash, editions, hasUnlockable 
       setFeeNanos(typeof data.feeNanos === "number" ? data.feeNanos : null)
       const popup = window.open(DESO_IDENTITY_ORIGIN + "/approve?tx=" + encodeURIComponent(data.transactionHex), "via-deso-nft-transfer-approve", "popup=yes,width=800,height=900")
       if (!popup) throw new Error("POPUP_BLOCKED")
-      popupRef.current = popup;
+      popupRef.current = popup
       if (popupWatch.current !== null) window.clearInterval(popupWatch.current)
       popupWatch.current = window.setInterval(() => {
         if (popupRef.current?.closed) {
@@ -225,8 +231,22 @@ export default function NFTOwnerSaleControl({ postHash, editions, hasUnlockable 
 
   async function prepareBurn() {
     if (!session || !selected || selected.isForSale || selected.isPending || !confirmed || busy) return
-    setStatus("preparing"); setMessage("Preparing irreversible NFT burn…"); setFeeNanos(null); pendingMode.current="burn"
-    try { const response=await fetch("/api/via/nft/burn",{method:"POST",headers:{"Content-Type":"application/json"},cache:"no-store",body:JSON.stringify({action:"prepare",publicKey:session.publicKey,postHash,serialNumber:selected.serialNumber,isForSale:selected.isForSale,isPending:false})}); const data=await response.json() as PrepareResponse; if(!response.ok||!data.ok||!data.transactionHex)throw new Error(); setFeeNanos(typeof data.feeNanos==="number"?data.feeNanos:null); const popup=window.open(DESO_IDENTITY_ORIGIN+"/approve?tx="+encodeURIComponent(data.transactionHex),"via-deso-nft-burn","popup=yes,width=800,height=900"); if(!popup)throw new Error(); popupRef.current=popup; setStatus("approval"); setMessage("Review the irreversible burn in DeSo Identity.") } catch { pendingMode.current=null; setStatus("error"); setMessage("NFT burn could not be prepared. VIA changed nothing.") }
+    setStatus("preparing"); setMessage("Preparing irreversible NFT burn…"); setFeeNanos(null); pendingMode.current = "burn"
+    try {
+      const response = await fetch("/api/via/nft/burn", { method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store", body: JSON.stringify({ action: "prepare", publicKey: session.publicKey, postHash, serialNumber: selected.serialNumber, isForSale: selected.isForSale, isPending: false }) })
+      const data = await response.json() as PrepareResponse
+      if (!response.ok || !data.ok || !data.transactionHex) throw new Error()
+      setFeeNanos(typeof data.feeNanos === "number" ? data.feeNanos : null)
+      const popup = window.open(DESO_IDENTITY_ORIGIN + "/approve?tx=" + encodeURIComponent(data.transactionHex), "via-deso-nft-burn", "popup=yes,width=800,height=900")
+      if (!popup) throw new Error()
+      popupRef.current = popup
+      setStatus("approval")
+      setMessage("Review the irreversible burn in DeSo Identity.")
+    } catch {
+      pendingMode.current = null
+      setStatus("error")
+      setMessage("NFT burn could not be prepared. VIA changed nothing.")
+    }
   }
 
   if (!session || owned.length === 0) return null
@@ -245,24 +265,32 @@ export default function NFTOwnerSaleControl({ postHash, editions, hasUnlockable 
         </select>
       </label>
 
-      {!selected?.isForSale ? <>
-        <label className="mt-3 block text-sm text-zinc-300">Minimum bid in DESO
-          <input value={minBid} onChange={(event) => { setMinBid(event.target.value); setConfirmed(false) }} inputMode="decimal" className="mt-2 block w-full rounded-lg border border-zinc-800 bg-black px-3 py-2 text-sm" />
-        </label>
-        {!hasUnlockable ? <label className="mt-3 flex items-center gap-2 text-sm text-zinc-300"><input type="checkbox" checked={buyNowEnabled} onChange={(event) => { setBuyNowEnabled(event.target.checked); setConfirmed(false) }} />Enable native DeSo Buy Now</label> : <p className="mt-3 text-xs text-zinc-500">Buy Now is unavailable for unlockable NFTs under DeSo rules.</p>}
-        {buyNowEnabled && !hasUnlockable ? <label className="mt-3 block text-sm text-zinc-300">Buy Now price in DESO
-          <input value={buyNowPrice} onChange={(event) => { setBuyNowPrice(event.target.value); setConfirmed(false) }} inputMode="decimal" className="mt-2 block w-full rounded-lg border border-zinc-800 bg-black px-3 py-2 text-sm" />
-        </label> : null}
-      </> : <p className="mt-3 text-sm text-zinc-400">This edition is currently listed. Removing it from sale also clears outstanding bids according to DeSo rules.</p>}
+      <label className="mt-3 block text-sm text-zinc-300">Minimum bid in DESO
+        <input value={minBid} onChange={(event) => { setMinBid(event.target.value); setConfirmed(false) }} inputMode="decimal" className="mt-2 block w-full rounded-lg border border-zinc-800 bg-black px-3 py-2 text-sm" />
+      </label>
+      {!hasUnlockable ? <label className="mt-3 flex items-center gap-2 text-sm text-zinc-300"><input type="checkbox" checked={buyNowEnabled} onChange={(event) => { setBuyNowEnabled(event.target.checked); setConfirmed(false) }} />Enable native DeSo Buy Now</label> : <p className="mt-3 text-xs text-zinc-500">Buy Now is unavailable for unlockable NFTs under DeSo rules.</p>}
+      {buyNowEnabled && !hasUnlockable ? <label className="mt-3 block text-sm text-zinc-300">Buy Now price in DESO
+        <input value={buyNowPrice} onChange={(event) => { setBuyNowPrice(event.target.value); setConfirmed(false) }} inputMode="decimal" className="mt-2 block w-full rounded-lg border border-zinc-800 bg-black px-3 py-2 text-sm" />
+      </label> : null}
+      {selected?.isForSale ? <p className="mt-3 text-sm text-zinc-400">This edition is currently listed. You can update its sale price or remove it from sale. Removing it from sale also clears outstanding bids according to DeSo rules.</p> : null}
 
       <label className="mt-3 flex items-start gap-2 text-xs text-amber-200"><input type="checkbox" checked={confirmed} onChange={(event) => setConfirmed(event.target.checked)} />I understand this is a real on-chain NFT sale-status transaction.</label>
       {feeNanos !== null ? <p className="mt-2 text-xs text-zinc-500">Prepared network fee: {feeNanos.toLocaleString()} nanos.</p> : null}
-      <button type="button" disabled={!confirmed || busy} onClick={() => void prepare(selected?.isForSale ? "remove" : "list")} className="mt-3 rounded-lg border border-[#8fd4a9]/55 px-4 py-2 text-sm font-semibold text-[#9adbb2] disabled:border-zinc-800 disabled:text-zinc-600">
-        {status === "preparing" ? "Preparing…" : status === "approval" ? "Review in DeSo…" : status === "submitting" ? "Submitting…" : selected?.isForSale ? "Remove from sale" : "List for sale"}
-      </button>
+      <div className="mt-3 flex flex-wrap gap-2">
+        <button type="button" disabled={!confirmed || busy} onClick={() => void prepare(selected?.isForSale ? "update" : "list")} className="rounded-lg border border-[#8fd4a9]/55 px-4 py-2 text-sm font-semibold text-[#9adbb2] disabled:border-zinc-800 disabled:text-zinc-600">
+          {status === "preparing" ? "Preparing…" : status === "approval" ? "Review in DeSo…" : status === "submitting" ? "Submitting…" : selected?.isForSale ? "Update price" : "List for sale"}
+        </button>
+        {selected?.isForSale ? <button type="button" disabled={!confirmed || busy} onClick={() => void prepare("remove")} className="rounded-lg border border-zinc-700 px-4 py-2 text-sm font-semibold text-zinc-300 disabled:border-zinc-800 disabled:text-zinc-600">Remove from sale</button> : null}
+      </div>
       {message ? <p className={"mt-3 text-xs " + (status === "error" ? "text-amber-300" : status === "done" ? "text-[#9adbb2]" : "text-zinc-500")} role="status">{message}</p> : null}
-<div className="mt-5 border-t border-red-950/70 pt-4"><h3 className="text-sm font-semibold text-red-300">Permanent burn</h3><p className="mt-2 text-xs leading-5 text-zinc-500">Burn permanently destroys this NFT edition. VIA only enables this when the edition is not for sale and not pending transfer. This cannot be undone.</p><button type="button" disabled={!confirmed || busy || selected?.isForSale || selected?.isPending} onClick={() => void prepareBurn()} className="mt-3 rounded-lg border border-red-900 px-4 py-2 text-sm font-semibold text-red-300 disabled:border-zinc-800 disabled:text-zinc-600">Burn edition #{selected?.serialNumber}</button></div>
-            {!selected?.isForSale ? <div className="mt-5 border-t border-zinc-800 pt-4">
+
+      <div className="mt-5 border-t border-red-950/70 pt-4">
+        <h3 className="text-sm font-semibold text-red-300">Permanent burn</h3>
+        <p className="mt-2 text-xs leading-5 text-zinc-500">Burn permanently destroys this NFT edition. VIA only enables this when the edition is not for sale and not pending transfer. This cannot be undone.</p>
+        <button type="button" disabled={!confirmed || busy || selected?.isForSale || selected?.isPending} onClick={() => void prepareBurn()} className="mt-3 rounded-lg border border-red-900 px-4 py-2 text-sm font-semibold text-red-300 disabled:border-zinc-800 disabled:text-zinc-600">Burn edition #{selected?.serialNumber}</button>
+      </div>
+
+      {!selected?.isForSale ? <div className="mt-5 border-t border-zinc-800 pt-4">
         <h3 className="text-sm font-semibold text-zinc-200">Transfer edition</h3>
         {hasUnlockable ? <p className="mt-2 text-xs text-zinc-500">Protected for now: unlockable NFT transfers require receiver-specific encrypted unlockable content.</p> : <>
           <label className="mt-3 block text-sm text-zinc-300">Receiver DeSo public key
