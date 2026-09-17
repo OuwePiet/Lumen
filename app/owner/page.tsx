@@ -1,5 +1,6 @@
 import Link from "next/link"
 import { fetchDeSo } from "../deso-api"
+import CentralIdeasInbox from "./central-ideas-inbox"
 import OwnerDashboard from "./owner-dashboard"
 
 async function getOwnerPublicKey() {
@@ -34,6 +35,7 @@ export default async function OwnerPage() {
         </div>
 
         <OwnerDashboard ownerPublicKey={ownerPublicKey} />
+        <CentralIdeasInbox ownerPublicKey={ownerPublicKey} />
       </div>
     </main>
   )
