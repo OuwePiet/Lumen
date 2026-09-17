@@ -57,6 +57,36 @@ export default function Home() {
           Ideeënbus
         </Link>
 
+        <Link
+          href="/storage"
+          aria-label="Open VIA external storage"
+          style={{
+            position: "absolute",
+            zIndex: 5,
+            top: "86px",
+            left: "50%",
+            transform: "translateX(-50%)",
+            minHeight: "38px",
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "8px 16px",
+            border: "1px solid rgba(143,212,169,.34)",
+            borderRadius: "999px",
+            background: "rgba(3,12,7,.72)",
+            color: "#9adbb2",
+            textDecoration: "none",
+            fontSize: "11px",
+            fontWeight: 750,
+            letterSpacing: ".06em",
+            textTransform: "uppercase",
+            backdropFilter: "blur(9px)",
+            whiteSpace: "nowrap",
+          }}
+        >
+          Externe opslag
+        </Link>
+
         <ViaFeatured />
         <ViaWorldClock />
       </main>
