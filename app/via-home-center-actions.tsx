@@ -4,26 +4,25 @@ import Link from "next/link"
 import { useEffect, useState } from "react"
 import { readViaLocalSettings, VIA_SETTINGS_EVENT, type ViaLanguage } from "./via-local-settings"
 
-type Copy = { title: string; body: string; ideas: string; storage: string }
+type Copy = { title: string; ideas: string; storage: string }
 
 const copy: Record<ViaLanguage, Copy> = {
-  Dutch: { title: "Heb je een idee voor VIA?", body: "Mis je iets, kan iets beter of heb je een nieuw voorstel? Deel het via de Ideeënbus.", ideas: "Ideeënbus", storage: "Externe opslag" },
-  English: { title: "Have an idea for VIA?", body: "Missing something, see an improvement, or have a new proposal? Share it through the Ideas Box.", ideas: "Ideas Box", storage: "External storage" },
-  French: { title: "Une idée pour VIA ?", body: "Il manque quelque chose, une amélioration est possible ou vous avez une nouvelle proposition ? Partagez-la via la boîte à idées.", ideas: "Boîte à idées", storage: "Stockage externe" },
-  Spanish: { title: "¿Tienes una idea para VIA?", body: "¿Falta algo, puede mejorarse o tienes una nueva propuesta? Compártela en el buzón de ideas.", ideas: "Buzón de ideas", storage: "Almacenamiento externo" },
-  Chinese: { title: "对 VIA 有想法吗？", body: "缺少什么、哪里可以改进，或有新的建议？请通过意见箱告诉我们。", ideas: "意见箱", storage: "外部存储" },
+  Dutch: { title: "Ideeën & opslag", ideas: "Ideeënbus", storage: "Externe opslag" },
+  English: { title: "Ideas & storage", ideas: "Ideas Box", storage: "External storage" },
+  French: { title: "Idées & stockage", ideas: "Boîte à idées", storage: "Stockage externe" },
+  Spanish: { title: "Ideas y almacenamiento", ideas: "Buzón de ideas", storage: "Almacenamiento externo" },
+  Chinese: { title: "想法与存储", ideas: "意见箱", storage: "外部存储" },
 }
 
 const buttonStyle = {
-  minHeight: "42px",
-  width: "100%",
+  minHeight: "40px",
   display: "inline-flex",
   alignItems: "center",
   justifyContent: "center",
-  padding: "9px 18px",
-  border: "1px solid rgba(143,212,169,.42)",
+  padding: "8px 18px",
+  border: "1px solid rgba(143,212,169,.44)",
   borderRadius: "999px",
-  background: "rgba(4,18,10,.88)",
+  background: "rgba(4,18,10,.86)",
   color: "#b9ffd4",
   textDecoration: "none",
   fontSize: "11px",
@@ -51,25 +50,36 @@ export default function ViaHomeCenterActions() {
       style={{
         position: "absolute",
         zIndex: 5,
-        top: "20px",
+        top: "18px",
         left: "50%",
         transform: "translateX(-50%)",
-        width: "min(350px, calc(100vw - 640px))",
-        minWidth: "280px",
-        padding: "13px 15px 14px",
-        border: "1px solid rgba(143,212,169,.34)",
-        borderRadius: "17px",
-        background: "rgba(3,12,7,.80)",
-        backdropFilter: "blur(10px)",
-        boxShadow: "0 0 28px rgba(82,177,118,.10)",
+        width: "min(430px, calc(100vw - 650px))",
+        minWidth: "320px",
+        padding: "8px 10px 10px",
+        border: "1px solid rgba(143,212,169,.24)",
+        borderRadius: "18px",
+        background: "rgba(3,12,7,.62)",
+        backdropFilter: "blur(9px)",
+        boxShadow: "0 0 20px rgba(82,177,118,.07)",
         textAlign: "center",
       }}
     >
-      <strong style={{ display: "block", color: "#dce8e0", fontSize: "12px", fontWeight: 800, letterSpacing: ".06em", textTransform: "uppercase" }}>{t.title}</strong>
-      <span style={{ display: "block", marginTop: "5px", color: "#94a59b", fontSize: "10px", lineHeight: 1.45 }}>{t.body}</span>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "8px", marginTop: "10px" }}>
+      <span
+        style={{
+          display: "block",
+          marginBottom: "7px",
+          color: "#8fa89a",
+          fontSize: "9px",
+          fontWeight: 750,
+          letterSpacing: ".11em",
+          textTransform: "uppercase",
+        }}
+      >
+        VIA · {t.title}
+      </span>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
         <Link href="/ideas" style={buttonStyle}>{t.ideas}</Link>
-        <Link href="/storage" style={{ ...buttonStyle, background: "rgba(3,12,7,.72)", color: "#9adbb2" }}>{t.storage}</Link>
+        <Link href="/storage" style={{ ...buttonStyle, background: "rgba(3,12,7,.74)", color: "#9adbb2" }}>{t.storage}</Link>
       </div>
     </section>
   )
