@@ -1,6 +1,7 @@
 import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
 import './global.css'
+import RadioLocalizer from './radio/radio-localizer'
 import ViaGlobalRadio from './via-global-radio'
 import ViaSiteHeader from './via-site-header'
 import WalletLocalizer from './wallet/wallet-localizer'
@@ -69,6 +70,7 @@ export default function RootLayout({
         <ViaSiteHeader />
         {children}
         <WalletLocalizer />
+        <RadioLocalizer />
         <ViaGlobalRadio />
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
