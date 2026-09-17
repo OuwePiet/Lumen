@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import StudioDraft from "./studio-draft"
 import MintPreflight from "./mint-preflight"
+import MintPreflightLocalizer from "./mint-preflight-localizer"
 import StudioLocalizedShell from "./studio-localized-shell"
 
 export const metadata: Metadata = {
@@ -19,6 +20,7 @@ export default function StudioPage() {
         </section>
 
         <section id="mint-nft" aria-label="Mint NFT">
+          <MintPreflightLocalizer />
           <MintPreflight />
         </section>
       </div>
