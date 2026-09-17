@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { useEffect, useRef, useState } from "react"
 import {
   DESO_LOGIN_URL,
@@ -74,7 +74,6 @@ const styles = {
   search: { ...pill, minWidth: "205px", justifyContent: "flex-start" },
   language: { ...pill, appearance: "none" as const, cursor: "pointer", paddingRight: "14px", outline: "none" },
   login: { ...pill, cursor: "pointer" },
-  visitor: { ...pill, color: "#d6e2db", border: "1px solid rgba(143,212,169,.30)", background: "rgba(8,16,11,.88)" },
   accountWrap: { position: "relative" as const, flex: "0 0 auto", display: "grid", justifyItems: "end" as const, gap: "2px" },
   accountButton: { ...pill, cursor: "pointer", padding: "5px 12px 5px 6px", color: "#e3ebe6" },
   avatar: { width: "28px", height: "28px", borderRadius: "50%", objectFit: "cover" as const },
@@ -101,6 +100,7 @@ function shortPublicKey(publicKey: string) {
 
 export default function ViaSiteHeader() {
   const pathname = usePathname()
+  const router = useRouter()
   const accountWrapRef = useRef<HTMLDivElement | null>(null)
   const [session, setSession] = useState<ViaIdentitySession | null>(null)
   const [knownAccounts, setKnownAccounts] = useState<ViaIdentitySession[]>([])
@@ -165,6 +165,14 @@ export default function ViaSiteHeader() {
     setMenuOpen(false)
   }
 
+  function enterPublicMode() {
+    clearIdentitySession()
+    setSession(null)
+    setProfile(null)
+    setMenuOpen(false)
+    router.push("/public")
+  }
+
   function logout() {
     clearIdentitySession()
     setSession(null)
@@ -193,15 +201,14 @@ export default function ViaSiteHeader() {
         </div>
 
         <div style={styles.toolsRow} aria-label="VIA utility controls">
-          <Link href="/discover" style={styles.search}>⌕&nbsp;&nbsp; Search members</Link>
+          <Link href="/discover/voices" style={styles.search}>⌕&nbsp;&nbsp; Search members</Link>
           <label className="sr-only" htmlFor="via-header-language">VIA language</label>
           <select id="via-header-language" value={language} onChange={(event) => changeLanguage(event.target.value as ViaLanguage)} style={styles.language} aria-label="VIA language">
             {VIA_LANGUAGES.map((item) => <option key={item} value={item}>{languageCodes[item]}</option>)}
           </select>
-          <Link href="/" style={pill}>Public Entrance</Link>
+          {!session ? <button type="button" onClick={enterPublicMode} style={{ ...pill, cursor: "pointer" }}>Public Entrance</button> : null}
           {!session ? <a href={DESO_LOGIN_URL} target="via-deso-identity" style={styles.login}>DeSo Login</a> : null}
           <Link href="/wallet" style={pill}>Wallet</Link>
-          <span style={styles.visitor}>Visitors</span>
           <Link href="/notifications" style={pill}>Notifications</Link>
 
           {session ? (
