@@ -21,11 +21,11 @@ const localeByLanguage: Record<ViaLanguage, string> = {
 }
 
 const labels: Record<ViaLanguage, { clock: string; date: string; source: string }> = {
-  Dutch: { clock: "Wereldklok", date: "Datum", source: "Bron: NASA Scientific Visualization Studio" },
-  English: { clock: "World Clock", date: "Date", source: "Source: NASA Scientific Visualization Studio" },
-  French: { clock: "Horloge mondiale", date: "Date", source: "Source : NASA Scientific Visualization Studio" },
-  Spanish: { clock: "Reloj mundial", date: "Fecha", source: "Fuente: NASA Scientific Visualization Studio" },
-  Chinese: { clock: "世界时钟", date: "日期", source: "来源：NASA Scientific Visualization Studio" },
+  Dutch: { clock: "Wereldklok", date: "Datum", source: "Aardvisualisatie van NASA Scientific Visualization Studio" },
+  English: { clock: "World Clock", date: "Date", source: "Earth visualization by NASA Scientific Visualization Studio" },
+  French: { clock: "Horloge mondiale", date: "Date", source: "Visualisation de la Terre par NASA Scientific Visualization Studio" },
+  Spanish: { clock: "Reloj mundial", date: "Fecha", source: "Visualización de la Tierra por NASA Scientific Visualization Studio" },
+  Chinese: { clock: "世界时钟", date: "日期", source: "地球可视化来源：NASA Scientific Visualization Studio" },
 }
 
 function formatTime(date: Date, timeZone: string, locale: string) {
@@ -98,6 +98,8 @@ export default function ViaWorldClock() {
   const stale = rates ? isViaRateStale(rates.checkedAt, now.getTime()) : false
   const usd = rates?.rates && !stale && !rateUnavailable ? rates.rates.USD : null
 
+  const frame = { left: "250px", right: "330px" } as const
+
   return (
     <>
       <section
@@ -105,8 +107,7 @@ export default function ViaWorldClock() {
         style={{
           position: "absolute",
           zIndex: 3,
-          left: "270px",
-          right: "330px",
+          ...frame,
           bottom: "58px",
           minHeight: "42px",
           padding: "9px 12px",
@@ -144,25 +145,47 @@ export default function ViaWorldClock() {
           </strong>
         </span>
       </section>
-      <a
-        href="https://svs.gsfc.nasa.gov/"
-        target="_blank"
-        rel="noreferrer"
-        aria-label={t.source}
+
+      <div
         style={{
           position: "absolute",
           zIndex: 3,
-          left: "270px",
-          bottom: "35px",
-          color: "#68766e",
-          fontSize: "8.5px",
-          letterSpacing: ".02em",
-          textDecoration: "none",
-          whiteSpace: "nowrap",
+          ...frame,
+          bottom: "27px",
+          display: "flex",
+          justifyContent: "center",
+          pointerEvents: "none",
         }}
       >
-        ◉ NASA SVS · {t.source.replace(/^.*NASA /, "NASA ")}
-      </a>
+        <a
+          href="https://svs.gsfc.nasa.gov/"
+          target="_blank"
+          rel="noreferrer"
+          aria-label={t.source}
+          style={{
+            pointerEvents: "auto",
+            minHeight: "22px",
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "6px",
+            padding: "3px 10px",
+            border: "1px solid rgba(143,212,169,.13)",
+            borderRadius: "999px",
+            background: "rgba(2,7,4,.46)",
+            color: "#75837b",
+            fontSize: "8.5px",
+            letterSpacing: ".02em",
+            textDecoration: "none",
+            whiteSpace: "nowrap",
+          }}
+        >
+          <span aria-hidden="true" style={{ width: "15px", height: "15px", display: "inline-flex", alignItems: "center", justifyContent: "center", border: "1px solid rgba(143,212,169,.28)", borderRadius: "50%", color: "#8fd4a9", fontSize: "9px" }}>◎</span>
+          <strong style={{ color: "#8fa89a", fontWeight: 750 }}>NASA SVS</strong>
+          <span>·</span>
+          <span>{t.source}</span>
+        </a>
+      </div>
     </>
   )
 }
