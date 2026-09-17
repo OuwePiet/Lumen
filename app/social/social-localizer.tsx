@@ -54,12 +54,10 @@ const COPY: Record<ViaLanguage, Copy> = {
       "Clear draft": "Concept wissen",
       "Photo": "Foto",
       "Choose image": "Kies afbeelding",
-      "Video": "Video",
       "Poll": "Poll",
       "Emoji": "Emoji",
       "Publish": "Publiceren",
-      "Reply": "Reageren",
-      "Quote Repost": "Quote Repost",
+      "Quote Repost": "Quote Repost"
     },
     patterns: [
       [/^(\d+) posts loaded\.$/u, (count) => `${count} berichten geladen.`],
@@ -69,8 +67,8 @@ const COPY: Record<ViaLanguage, Copy> = {
       [/^Repost · (\d+)$/u, (count) => `Repost · ${count}`],
       [/^Diamond · (\d+)$/u, (count) => `Diamond · ${count}`],
       [/^(\d+) reposts$/u, (count) => `${count} reposts`],
-      [/^(\d+) characters left$/u, (count) => `${count} tekens over`],
-    ],
+      [/^(\d+) characters left$/u, (count) => `${count} tekens over`]
+    ]
   },
   French: {
     exact: {
@@ -103,7 +101,7 @@ const COPY: Record<ViaLanguage, Copy> = {
       "Choose image": "Choisir une image",
       "Poll": "Sondage",
       "Emoji": "Emoji",
-      "Publish": "Publier",
+      "Publish": "Publier"
     },
     patterns: [
       [/^(\d+) posts loaded\.$/u, (count) => `${count} publications chargées.`],
@@ -112,8 +110,8 @@ const COPY: Record<ViaLanguage, Copy> = {
       [/^Reply · (\d+)$/u, (count) => `Répondre · ${count}`],
       [/^Repost · (\d+)$/u, (count) => `Repost · ${count}`],
       [/^Diamond · (\d+)$/u, (count) => `Diamond · ${count}`],
-      [/^(\d+) characters left$/u, (count) => `${count} caractères restants`],
-    ],
+      [/^(\d+) characters left$/u, (count) => `${count} caractères restants`]
+    ]
   },
   Spanish: {
     exact: {
@@ -146,7 +144,7 @@ const COPY: Record<ViaLanguage, Copy> = {
       "Choose image": "Elegir imagen",
       "Poll": "Encuesta",
       "Emoji": "Emoji",
-      "Publish": "Publicar",
+      "Publish": "Publicar"
     },
     patterns: [
       [/^(\d+) posts loaded\.$/u, (count) => `${count} publicaciones cargadas.`],
@@ -155,8 +153,8 @@ const COPY: Record<ViaLanguage, Copy> = {
       [/^Reply · (\d+)$/u, (count) => `Responder · ${count}`],
       [/^Repost · (\d+)$/u, (count) => `Repost · ${count}`],
       [/^Diamond · (\d+)$/u, (count) => `Diamond · ${count}`],
-      [/^(\d+) characters left$/u, (count) => `${count} caracteres restantes`],
-    ],
+      [/^(\d+) characters left$/u, (count) => `${count} caracteres restantes`]
+    ]
   },
   Chinese: {
     exact: {
@@ -189,7 +187,7 @@ const COPY: Record<ViaLanguage, Copy> = {
       "Choose image": "选择图片",
       "Poll": "投票",
       "Emoji": "表情",
-      "Publish": "发布",
+      "Publish": "发布"
     },
     patterns: [
       [/^(\d+) posts loaded\.$/u, (count) => `已加载 ${count} 个帖子。`],
@@ -198,9 +196,9 @@ const COPY: Record<ViaLanguage, Copy> = {
       [/^Reply · (\d+)$/u, (count) => `回复 · ${count}`],
       [/^Repost · (\d+)$/u, (count) => `转发 · ${count}`],
       [/^Diamond · (\d+)$/u, (count) => `Diamond · ${count}`],
-      [/^(\d+) characters left$/u, (count) => `还可输入 ${count} 个字符`],
-    ],
-  },
+      [/^(\d+) characters left$/u, (count) => `还可输入 ${count} 个字符`]
+    ]
+  }
 }
 
 const originalText = new WeakMap<Text, string>()
