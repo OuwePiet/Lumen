@@ -44,6 +44,12 @@ function numberOrNull(value: unknown) {
   return typeof value === "number" && Number.isFinite(value) ? value : null
 }
 
+function profilePictureUrl(publicKey: string, profilePic: string) {
+  if (/^https:\/\//i.test(profilePic)) return profilePic
+  if (!publicKey) return null
+  return `https://node.deso.org/api/v0/get-single-profile-picture/${encodeURIComponent(publicKey)}`
+}
+
 async function readFollowCount(publicKey: string, followers: boolean) {
   const response = await fetchDeSo("get-follows-stateless", {
     method: "POST",
@@ -108,7 +114,7 @@ export async function readPublicProfile(
     publicKey,
     username,
     description: text(profile.Description),
-    profilePic: /^https:\/\//i.test(profilePic) ? profilePic : null,
+    profilePic: profilePictureUrl(publicKey, profilePic),
     isVerified: profile.IsVerified === true,
     creatorBasisPoints: numberOrNull(coinEntry?.CreatorBasisPoints),
     coinPriceDeSoNanos: numberOrNull(profile.CoinPriceDeSoNanos),
