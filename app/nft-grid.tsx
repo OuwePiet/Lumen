@@ -184,24 +184,6 @@ export default async function NFTGrid({ initialAccount }: { initialAccount?: str
     <main id="main-content" style={styles.section}>
       <a className={accessibilityStyles.skipLink} href="#collection-controls">Skip to collection controls</a>
       <div style={styles.container}>
-        <div style={styles.brandRow}>
-          <a href="/" aria-label="VIA home" style={styles.brandLockup}>
-            <span aria-hidden="true" style={styles.brandMark}>V</span>
-            <span style={styles.brandText}>
-              <span style={styles.brand}>VIA</span>
-              <span style={styles.domain}>viadeso.online</span>
-            </span>
-          </a>
-          <nav aria-label="VIA main navigation" style={styles.nav}>
-            <a href="/social" style={styles.navLink}>Social</a>
-            <a href="/my-via" style={styles.navLink}><CollectionLocalizedText kind="myVia" /></a>
-            <a href="/communities" style={styles.navLink}><CollectionLocalizedText kind="communities" /></a>
-            <a href="/studio" style={styles.navLink}>Studio</a>
-            <a href="/discover" style={styles.navLink}><CollectionLocalizedText kind="discover" /></a>
-            <a href="/live" style={styles.navLink}>VIA LIVE</a>
-            <a href="/news" style={styles.navLink}><CollectionLocalizedText kind="news" /></a>
-          </nav>
-        </div>
         <h1 style={styles.heading}><CollectionLocalizedText kind="heading" /></h1>
         <p style={styles.introduction}><CollectionLocalizedText kind="intro" /></p>
         <CollectionBrowser initialAccount={initialAccount}>
