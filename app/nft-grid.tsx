@@ -146,8 +146,8 @@ const styles = {
 }
 
 export default async function NFTGrid({ initialAccount }: { initialAccount?: string }) {
-  const selectedAccount = initialAccount?.trim().replace(/^@/, "") || "OuwePiet"
-  const collectionOwner = await loadCollectionOwner(selectedAccount)
+  const selectedAccount = initialAccount?.trim().replace(/^@/, "") || ""
+  const collectionOwner = selectedAccount ? await loadCollectionOwner(selectedAccount) : null
   const automaticNFTResult = collectionOwner ? await loadAutomaticNFTCount(collectionOwner.PublicKeyBase58Check!) : null
   const discoveredResults = automaticNFTResult ? await Promise.all(automaticNFTResult.discoveredNFTPostHashes.map(loadNFT)) : []
   const collectionNFTs = discoveredResults.filter((result): result is NonNullable<Awaited<ReturnType<typeof loadNFT>>> => result !== null)
@@ -180,32 +180,34 @@ export default async function NFTGrid({ initialAccount }: { initialAccount?: str
         <h1 style={styles.heading}><CollectionLocalizedText kind="heading" /></h1>
         <p style={styles.introduction}><CollectionLocalizedText kind="intro" /></p>
         <CollectionBrowser initialAccount={initialAccount}>
-          <>
-            <p style={styles.owner}>
-              <CollectionLocalizedText
-                kind="ownerStatus"
-                username={collectionOwner?.Username}
-                displayedCount={collectionNFTs.length}
-                detectedCount={automaticNFTResult?.nftCount}
-                selectedAccount={selectedAccount}
-              />
-            </p>
-            <div id="collection-controls">
-              <MediaFilter
-                mediaTypes={collectionNFTs.map(({ post }) => mediaFilterType(post))}
-                saleStatuses={collectionNFTs.map(({ forSaleCount }) => forSaleCount > 0 ? "for-sale" : "not-for-sale")}
-                sortData={collectionNFTs.map(({ postHash, post, forSaleCount, lowestBuyNowPrice, lowestMinBidAmount }) => ({
-                  title: cardTitle(post.Body),
-                  creator: post.ProfileEntryResponse?.Username ? `@${post.ProfileEntryResponse.Username}` : "DeSo creator",
-                  price: lowestBuyNowPrice ?? lowestMinBidAmount,
-                  searchText: [post.Body ?? "", postHash, forSaleCount > 0 ? "for sale te koop" : "not for sale niet te koop", mediaFilterType(post)].join(" "),
-                }))}
-                gridStyle={styles.grid}
-              >
-                {collectionNFTs.map(renderNFTCard)}
-              </MediaFilter>
-            </div>
-          </>
+          {selectedAccount ? (
+            <>
+              <p style={styles.owner}>
+                <CollectionLocalizedText
+                  kind="ownerStatus"
+                  username={collectionOwner?.Username}
+                  displayedCount={collectionNFTs.length}
+                  detectedCount={automaticNFTResult?.nftCount}
+                  selectedAccount={selectedAccount}
+                />
+              </p>
+              <div id="collection-controls">
+                <MediaFilter
+                  mediaTypes={collectionNFTs.map(({ post }) => mediaFilterType(post))}
+                  saleStatuses={collectionNFTs.map(({ forSaleCount }) => forSaleCount > 0 ? "for-sale" : "not-for-sale")}
+                  sortData={collectionNFTs.map(({ postHash, post, forSaleCount, lowestBuyNowPrice, lowestMinBidAmount }) => ({
+                    title: cardTitle(post.Body),
+                    creator: post.ProfileEntryResponse?.Username ? `@${post.ProfileEntryResponse.Username}` : "DeSo creator",
+                    price: lowestBuyNowPrice ?? lowestMinBidAmount,
+                    searchText: [post.Body ?? "", postHash, forSaleCount > 0 ? "for sale te koop" : "not for sale niet te koop", mediaFilterType(post)].join(" "),
+                  }))}
+                  gridStyle={styles.grid}
+                >
+                  {collectionNFTs.map(renderNFTCard)}
+                </MediaFilter>
+              </div>
+            </>
+          ) : null}
         </CollectionBrowser>
       </div>
     </main>
