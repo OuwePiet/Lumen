@@ -6,6 +6,7 @@ export type ViaPublicProfile = {
   description: string
   profilePic: string | null
   isVerified: boolean
+  verificationSources: string[]
   creatorBasisPoints: number | null
   coinPriceDeSoNanos: number | null
   numberOfHolders: number | null
@@ -46,6 +47,14 @@ type DeSoPostsResponse = {
 
 const INACTIVE_AFTER_MS = 90 * 24 * 60 * 60 * 1000
 
+const TRUSTED_VERIFICATION_NODES = [
+  { label: "Diamond", origin: "https://diamondapp.com" },
+  { label: "DeSocialWorld", origin: "https://desocialworld.com" },
+  { label: "SafetyNet / MyDeSoSpace", origin: "https://consensus.safetynet.social" },
+] as const
+
+const VERIFICATION_TIMEOUT_MS = 3_500
+
 function text(value: unknown) {
   return typeof value === "string" ? value : ""
 }
@@ -77,6 +86,60 @@ function verificationFromProfile(profile: NonNullable<DeSoProfileResponse["Profi
   if (current === true || current === "true") return true
   if (current === false || current === "false") return false
   return profile.IsVerified === true
+}
+
+
+async function readVerificationFromTrustedNode(
+  origin: string,
+  publicKey: string,
+) {
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), VERIFICATION_TIMEOUT_MS)
+
+  try {
+    const response = await fetch(`${origin}/api/v0/get-single-profile`, {
+      method: "POST",
+      headers: { "content-type": "application/json", accept: "application/json" },
+      body: JSON.stringify({
+        PublicKeyBase58Check: publicKey,
+        Username: "",
+      }),
+      cache: "no-store",
+      signal: controller.signal,
+      credentials: "omit",
+      referrerPolicy: "no-referrer",
+    })
+
+    if (!response.ok) return false
+    const data = (await response.json()) as DeSoProfileResponse
+    const profile = data.Profile
+    if (!profile) return false
+    if (text(profile.PublicKeyBase58Check) !== publicKey) return false
+    return verificationFromProfile(profile)
+  } catch {
+    return false
+  } finally {
+    clearTimeout(timeout)
+  }
+}
+
+async function readTrustedVerificationSources(
+  publicKey: string,
+  canonicalVerified: boolean,
+) {
+  const sources: string[] = canonicalVerified ? ["DeSo"] : []
+  const results = await Promise.all(
+    TRUSTED_VERIFICATION_NODES.map(async (node) => ({
+      label: node.label,
+      verified: await readVerificationFromTrustedNode(node.origin, publicKey),
+    })),
+  )
+
+  for (const result of results) {
+    if (result.verified) sources.push(result.label)
+  }
+
+  return sources
 }
 
 async function readFollowCount(publicKey: string, followers: boolean) {
@@ -165,13 +228,15 @@ export async function readPublicProfile(
 
   const profilePic = text(profile.ProfilePic)
   const coinEntry = profile.CoinEntry ?? null
-  const [followersCount, followingCount, latestPublicActivity] = publicKey
+  const canonicalVerified = verificationFromProfile(profile)
+  const [followersCount, followingCount, latestPublicActivity, verificationSources] = publicKey
     ? await Promise.all([
         readFollowCount(publicKey, true),
         readFollowCount(publicKey, false),
         readLatestPublicActivity(publicKey),
+        readTrustedVerificationSources(publicKey, canonicalVerified),
       ])
-    : [null, null, null]
+    : [null, null, null, canonicalVerified ? ["DeSo"] : []]
 
   const lastPublicActivityAt = latestPublicActivity?.toISOString() ?? null
   const isInactive = latestPublicActivity
@@ -183,7 +248,8 @@ export async function readPublicProfile(
     username,
     description: text(profile.Description),
     profilePic: profilePictureUrl(publicKey, profilePic),
-    isVerified: verificationFromProfile(profile),
+    isVerified: verificationSources.length > 0,
+    verificationSources,
     creatorBasisPoints: numberOrNull(coinEntry?.CreatorBasisPoints),
     coinPriceDeSoNanos: numberOrNull(profile.CoinPriceDeSoNanos),
     numberOfHolders: numberOrNull(coinEntry?.NumberOfHolders),
