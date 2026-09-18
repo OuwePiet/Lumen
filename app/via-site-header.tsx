@@ -213,40 +213,40 @@ export default function ViaSiteHeader() {
   const otherAccounts = knownAccounts.filter((account) => account.publicKey !== session?.publicKey)
 
   return (
-    <header style={styles.header}>
-      <div style={styles.shell}>
-        <Link href="/" style={styles.brand} aria-label="VIA home">
-          <img src="/via-logo-original.jpg?v=1" alt="VIA" style={styles.logo} />
+    <header style={styles.header} className="via-site-header">
+      <div style={styles.shell} className="via-site-header-shell">
+        <Link href="/" style={styles.brand} className="via-site-header-brand" aria-label="VIA home">
+          <img src="/via-logo-original.jpg?v=1" alt="VIA" style={styles.logo} className="via-site-header-logo" />
         </Link>
 
-        <div style={styles.topRow}>
-          <nav style={styles.nav} aria-label="VIA main navigation">
+        <div style={styles.topRow} className="via-site-header-top">
+          <nav style={styles.nav} className="via-site-header-nav" aria-label="VIA main navigation">
             {nav.map(([label, href]) => {
               const active = href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`)
-              return <Link key={href} href={href} style={{ ...styles.link, ...(active ? styles.activeLink : {}) }}>{label}{active ? <span style={styles.activeLine} aria-hidden="true" /> : null}</Link>
+              return <Link key={href} href={href} className="via-site-header-link" style={{ ...styles.link, ...(active ? styles.activeLink : {}) }}>{label}{active ? <span style={styles.activeLine} aria-hidden="true" /> : null}</Link>
             })}
           </nav>
         </div>
 
-        <div style={styles.toolsRow} aria-label="VIA utility controls">
-          <Link href="/discover/voices" style={styles.search}>⌕&nbsp;&nbsp; Search members</Link>
+        <div style={styles.toolsRow} className="via-site-header-tools" aria-label="VIA utility controls">
+          <Link href="/discover/voices" style={styles.search} className="via-site-header-search">⌕&nbsp;&nbsp; Search members</Link>
           <label className="sr-only" htmlFor="via-header-language">VIA language</label>
-          <select id="via-header-language" value={language} onChange={(event) => changeLanguage(event.target.value as ViaLanguage)} style={styles.language} aria-label="VIA language">
+          <select id="via-header-language" value={language} onChange={(event) => changeLanguage(event.target.value as ViaLanguage)} style={styles.language} className="via-site-header-language" aria-label="VIA language">
             {VIA_LANGUAGES.map((item) => <option key={item} value={item}>{languageCodes[item]}</option>)}
           </select>
           {!session ? <button type="button" onClick={enterPublicMode} style={{ ...pill, cursor: "pointer" }}>Public Entrance</button> : null}
           {!session ? <a href={DESO_LOGIN_URL} target="via-deso-identity" style={styles.login}>DeSo Login</a> : null}
-          <Link href="/wallet" style={pill}>Wallet</Link>
-          <Link href="/notifications" style={pill}>Notifications</Link>
+          <Link href="/wallet" style={pill} className="via-site-header-utility">Wallet</Link>
+          <Link href="/notifications" style={pill} className="via-site-header-utility">Notifications</Link>
 
           {session ? (
-            <div ref={accountWrapRef} style={styles.accountWrap}>
-              <button type="button" style={styles.accountButton} onClick={() => { refreshKnownAccounts(); setMenuOpen((open) => !open) }} aria-label="Open VIA account menu" aria-expanded={menuOpen} aria-haspopup="menu">
-                {avatar ? <img src={avatar} alt="" style={styles.avatar} referrerPolicy="no-referrer" /> : <span style={styles.avatarFallback} aria-hidden="true">{profile?.username?.slice(0, 1).toUpperCase() ?? "V"}</span>}
-                <span>{accountLabel}</span><span aria-hidden="true">▾</span>
+            <div ref={accountWrapRef} style={styles.accountWrap} className="via-site-header-account-wrap">
+              <button type="button" style={styles.accountButton} className="via-site-header-account-button" onClick={() => { refreshKnownAccounts(); setMenuOpen((open) => !open) }} aria-label="Open VIA account menu" aria-expanded={menuOpen} aria-haspopup="menu">
+                {avatar ? <img src={avatar} alt="" style={styles.avatar} className="via-site-header-avatar" referrerPolicy="no-referrer" /> : <span style={styles.avatarFallback} className="via-site-header-avatar-fallback" aria-hidden="true">{profile?.username?.slice(0, 1).toUpperCase() ?? "V"}</span>}
+                <span className="via-site-header-account-label">{accountLabel}</span><span className="via-site-header-account-caret" aria-hidden="true">▾</span>
               </button>
               {menuOpen ? (
-                <div style={styles.menu} role="menu" aria-label="VIA account menu">
+                <div style={styles.menu} className="via-site-header-account-menu" role="menu" aria-label="VIA account menu">
                   <div style={styles.menuLabel}>{profile?.username ? `@${profile.username}` : shortPublicKey(session.publicKey)}</div>
                   <Link href="/my-via" style={styles.menuLink} role="menuitem">My VIA</Link>
                   <Link href="/profile" style={styles.menuLink} role="menuitem">Profile</Link>
@@ -281,6 +281,24 @@ export default function ViaSiteHeader() {
           ) : null}
         </div>
       </div>
+      <style>{`
+        @media (max-width: 720px) {
+          .via-site-header-shell { width: 100% !important; padding: 0 10px !important; box-sizing: border-box !important; grid-template-columns: 72px minmax(0, 1fr) !important; grid-template-rows: 58px 50px !important; column-gap: 6px !important; }
+          .via-site-header-brand { grid-column: 1 !important; grid-row: 1 !important; justify-content: flex-start !important; overflow: visible !important; }
+          .via-site-header-logo { width: 68px !important; height: 52px !important; }
+          .via-site-header-top { grid-column: 2 !important; grid-row: 1 !important; padding-right: 46px !important; }
+          .via-site-header-nav { justify-content: flex-start !important; overflow-x: auto !important; scrollbar-width: none !important; }
+          .via-site-header-nav::-webkit-scrollbar, .via-site-header-tools::-webkit-scrollbar { display: none; }
+          .via-site-header-link { padding: 18px 8px 15px !important; font-size: 11px !important; }
+          .via-site-header-tools { grid-column: 1 / span 2 !important; grid-row: 2 !important; justify-content: flex-start !important; overflow-x: auto !important; overflow-y: hidden !important; gap: 6px !important; padding: 6px 8px !important; }
+          .via-site-header-search { min-width: 168px !important; }
+          .via-site-header-account-wrap { position: absolute !important; right: 10px !important; top: 10px !important; z-index: 180 !important; }
+          .via-site-header-account-button { min-width: 38px !important; width: 38px !important; height: 38px !important; padding: 4px !important; gap: 0 !important; border-radius: 50% !important; }
+          .via-site-header-avatar, .via-site-header-avatar-fallback { width: 28px !important; height: 28px !important; }
+          .via-site-header-account-label, .via-site-header-account-caret { display: none !important; }
+          .via-site-header-account-menu { top: 44px !important; right: 0 !important; width: min(280px, calc(100vw - 20px)) !important; }
+        }
+      `}</style>
     </header>
   )
 }
