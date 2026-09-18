@@ -377,7 +377,7 @@ export default function ViaHomeControls() {
                 <span style={{ minWidth: 0, flex: 1, display: "grid", textAlign: "left", gap: "2px" }}>
                   <span style={{ display: "flex", alignItems: "center", gap: "6px", minWidth: 0 }}>
                     <strong style={{ color: "#e5eee8", fontSize: "11px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{accountName}</strong>
-                    <ViaIdentityStatusMarks verified={Boolean(profile?.isVerified)} inactive={Boolean(profile?.isInactive)} compact />
+                    <ViaIdentityStatusMarks verified={Boolean(profile?.isVerified)} inactive={Boolean(profile?.isInactive)} compact language={language} />
                   </span>
                   <span style={{ color: profile?.isInactive ? "#818985" : "#74877b", fontSize: "8px", letterSpacing: ".08em", textTransform: "uppercase" }}>{profile?.isInactive ? t.inactive90 : t.connected}</span>
                 </span>
