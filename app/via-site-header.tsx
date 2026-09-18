@@ -284,25 +284,31 @@ export default function ViaSiteHeader() {
                 className="via-profile-shortcut"
                 style={{
                   ...pill,
-                  width: "40px",
-                  minWidth: "40px",
-                  height: "40px",
-                  padding: "5px",
-                  borderRadius: "50%",
+                  width: "48px",
+                  minWidth: "48px",
+                  height: "44px",
+                  padding: "4px",
+                  borderRadius: "14px",
                   flex: "0 0 auto",
                   position: "relative",
-                  borderColor: profile?.isInactive ? "rgba(137,145,141,.42)" : "rgba(143,212,169,.34)",
-                  boxShadow: profile?.isInactive ? "none" : "0 0 14px rgba(143,212,169,.08)",
+                  overflow: "visible",
+                  borderColor: profile?.isInactive ? "rgba(137,145,141,.42)" : "rgba(143,212,169,.38)",
+                  background: profile?.isInactive
+                    ? "linear-gradient(145deg, rgba(66,72,68,.42), rgba(5,12,8,.90))"
+                    : "linear-gradient(145deg, rgba(34,74,52,.66), rgba(4,15,9,.92))",
+                  boxShadow: profile?.isInactive
+                    ? "inset 0 1px 0 rgba(255,255,255,.05)"
+                    : "0 0 18px rgba(143,212,169,.10), inset 0 1px 0 rgba(255,255,255,.07)",
                 }}
               >
                 {avatar ? (
-                  <img src={avatar} alt="" referrerPolicy="no-referrer" style={{ width: "30px", height: "30px", borderRadius: "50%", objectFit: "cover" }} />
+                  <img src={avatar} alt="" referrerPolicy="no-referrer" style={{ width: "36px", height: "36px", borderRadius: "50%", objectFit: "cover", border: "1px solid rgba(143,212,169,.30)", boxShadow: "0 0 10px rgba(143,212,169,.10)" }} />
                 ) : (
-                  <span aria-hidden="true" style={{ width: "30px", height: "30px", display: "grid", placeItems: "center", borderRadius: "50%", background: "#183326", color: "#9adbb2", fontSize: "15px", fontWeight: 900 }}>
+                  <span aria-hidden="true" style={{ width: "36px", height: "36px", display: "grid", placeItems: "center", borderRadius: "50%", background: "#183326", color: "#9adbb2", fontSize: "15px", fontWeight: 900, border: "1px solid rgba(143,212,169,.30)" }}>
                     {profile?.username?.slice(0, 1).toUpperCase() ?? "V"}
                   </span>
                 )}
-                <span style={{ position: "absolute", right: "-5px", bottom: "-5px", transform: "scale(.82)", transformOrigin: "center" }}>
+                <span style={{ position: "absolute", right: "-7px", bottom: "-7px", zIndex: 2 }}>
                   <ViaIdentityStatusMarks verified={Boolean(profile?.isVerified)} inactive={Boolean(profile?.isInactive)} compact showLeaf={false} language={language} />
                 </span>
               </Link>
@@ -361,7 +367,7 @@ export default function ViaSiteHeader() {
           .via-site-header-link { padding: 18px 8px 15px !important; font-size: 11px !important; }
           .via-site-header-tools { grid-column: 1 / span 2 !important; grid-row: 2 !important; justify-content: flex-start !important; overflow-x: auto !important; overflow-y: hidden !important; gap: 6px !important; padding: 6px 8px !important; }
           .via-site-header-search { min-width: 168px !important; }
-          .via-profile-shortcut { position: absolute !important; right: 54px !important; top: 10px !important; z-index: 181 !important; width: 38px !important; min-width: 38px !important; height: 38px !important; padding: 4px !important; }
+          .via-profile-shortcut { position: absolute !important; right: 54px !important; top: 8px !important; z-index: 181 !important; width: 46px !important; min-width: 46px !important; height: 42px !important; padding: 3px !important; border-radius: 13px !important; overflow: visible !important; }
           .via-site-header-account-wrap { position: absolute !important; right: 10px !important; top: 10px !important; z-index: 180 !important; }
           .via-site-header-account-button { min-width: 38px !important; width: 38px !important; height: 38px !important; padding: 4px !important; gap: 0 !important; border-radius: 50% !important; }
           .via-site-header-avatar, .via-site-header-avatar-fallback { width: 28px !important; height: 28px !important; }
