@@ -1,0 +1,50 @@
+# VIA Aura Identity — vaste regels
+
+Datum vastgelegd: 18-09-2026
+
+## Doel
+VIA presenteert DeSo-profielinformatie op een eigen, originelere, mooiere en controleerbare manier. VIA verzint geen statussen en neemt geen DeSo-verificatie over.
+
+## Statusmarkeringen
+
+### Blauw vinkje — DeSo Verified
+- Komt uitsluitend uit de openbare DeSo-profieldata.
+- VIA kan dit vinkje niet toekennen.
+- VIA kan dit vinkje niet wijzigen.
+- VIA kan dit vinkje niet verwijderen.
+- Bij aanraken/klik verschijnt uitleg dat dit originele DeSo-verificatie is.
+
+### Grijs vinkje — 90+ dagen inactief
+- Wordt alleen getoond wanneer VIA uit openbare DeSo-data betrouwbaar kan vaststellen dat er minstens 90 dagen geen openbare DeSo-activiteit is geweest.
+- Als de benodigde datum niet betrouwbaar beschikbaar is, toont VIA geen grijze status.
+- De grijze status vervangt het blauwe DeSo-vinkje niet; beide feiten kunnen naast elkaar bestaan.
+- Bij nieuwe aantoonbare openbare activiteit vervalt de inactiefstatus.
+
+### VIA-blaadje — VIA Recognition
+- Is een eigen VIA-erkenning en geen DeSo-verificatie.
+- Wordt verdiend door aantoonbare positieve betrokkenheid bij VIA volgens vaste VIA-criteria.
+- Is niet te koop.
+- Wordt niet automatisch aan ieder account gegeven.
+- Wordt pas zichtbaar zodra VIA de erkenning betrouwbaar en controleerbaar kan vaststellen.
+- Bij aanraken/klik verschijnt een korte uitleg.
+
+## Profielpresentatie
+- Echte DeSo-avatar/foto gebruiken.
+- Rijke VIA Aura Card op profielpagina.
+- Compacte identiteit in header/home.
+- Geen dubbele avatar.
+- Rustige luxe glasstijl in VIA-groen, donker en zilver.
+- Statusinformatie moet op iPhone/iPad met aanraken en op desktop met klik/toetsenbord uitlegbaar zijn.
+
+## DeSo-verjaardag
+- VIA gebruikt de term **Verjaardag** voor de datum waarop het profiel voor het eerst aantoonbaar op DeSo is ontstaan via de eerste profielupdate/BirthBlock.
+- We tonen bijvoorbeeld: **Verjaardag · 18-09-2026**.
+- VIA berekent deze datum pas zodra de BirthBlock/first-profile-update bron betrouwbaar is geïmplementeerd.
+- Niet vervangen door een verzonnen of afgeleide datum uit de eerste post.
+
+## Implementatiestatus
+- 90-dagen publieke activiteitsbron toegevoegd op branch `via-aura-status-90d`.
+- VIA statuscomponent toegevoegd met blauw verified, grijs inactive en voorbereid VIA-blaadje.
+- Blauw en grijs kunnen gelijktijdig zichtbaar zijn.
+- Uitleg-popovers zijn meertalig en werken via aanraken/klik/toetsenbord.
+- VIA-blaadje is technisch voorbereid maar wordt niet getoond zonder echte VIA Recognition-bron.

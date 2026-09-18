@@ -4,6 +4,7 @@ import Link from "next/link"
 import { useEffect, useState } from "react"
 import { restoreIdentitySession, VIA_IDENTITY_EVENT, type ViaIdentitySession } from "../deso-identity-session"
 import { readViaLocalSettings, VIA_SETTINGS_EVENT, type ViaLanguage } from "../via-local-settings"
+import ViaIdentityStatusMarks from "../via-identity-status"
 
 type PublicProfile = {
   publicKey: string
@@ -17,6 +18,8 @@ type PublicProfile = {
   coinsInCirculationNanos: number | null
   followersCount: number | null
   followingCount: number | null
+  lastPublicActivityAt: string | null
+  isInactive: boolean
 }
 
 type ProfileResponse = { ok?: boolean; profile?: PublicProfile }
@@ -42,6 +45,9 @@ type Copy = {
   coinsCirculation: string
   noBio: string
   publicKey: string
+  active: string
+  inactive90: string
+  lastActivity: string
 }
 
 const copy: Record<ViaLanguage, Copy> = {
@@ -64,7 +70,7 @@ const copy: Record<ViaLanguage, Copy> = {
     coinHolders: "Coin-houders",
     coinsCirculation: "Coins in omloop",
     noBio: "Geen openbare bio op dit DeSo-profiel.",
-    publicKey: "Public key",
+    publicKey: "Public key", active: "Actief", inactive90: "90+ dagen inactief", lastActivity: "Laatste openbare activiteit",
   },
   English: {
     kicker: "VIA · PROFILE",
@@ -85,7 +91,7 @@ const copy: Record<ViaLanguage, Copy> = {
     coinHolders: "Coin holders",
     coinsCirculation: "Coins in circulation",
     noBio: "No public bio on this DeSo profile.",
-    publicKey: "Public key",
+    publicKey: "Public key", active: "Active", inactive90: "Inactive 90+ days", lastActivity: "Last public activity",
   },
   French: {
     kicker: "VIA · PROFIL",
@@ -106,7 +112,7 @@ const copy: Record<ViaLanguage, Copy> = {
     coinHolders: "Détenteurs du coin",
     coinsCirculation: "Coins en circulation",
     noBio: "Aucune bio publique sur ce profil DeSo.",
-    publicKey: "Clé publique",
+    publicKey: "Clé publique", active: "Actif", inactive90: "Inactif depuis 90+ jours", lastActivity: "Dernière activité publique",
   },
   Spanish: {
     kicker: "VIA · PERFIL",
@@ -127,7 +133,7 @@ const copy: Record<ViaLanguage, Copy> = {
     coinHolders: "Titulares del coin",
     coinsCirculation: "Coins en circulación",
     noBio: "Este perfil DeSo no tiene biografía pública.",
-    publicKey: "Clave pública",
+    publicKey: "Clave pública", active: "Activo", inactive90: "Inactivo 90+ días", lastActivity: "Última actividad pública",
   },
   Chinese: {
     kicker: "VIA · 个人资料",
@@ -148,7 +154,7 @@ const copy: Record<ViaLanguage, Copy> = {
     coinHolders: "Coin 持有者",
     coinsCirculation: "流通中的 Coins",
     noBio: "此 DeSo 个人资料没有公开简介。",
-    publicKey: "公钥",
+    publicKey: "公钥", active: "活跃", inactive90: "90+ 天未活跃", lastActivity: "最近公开活动",
   },
 }
 
@@ -311,18 +317,42 @@ export default function ProfilePage() {
         ) : profileUnavailable ? (
           <section className="rounded-[14px] border border-zinc-800/80 bg-zinc-950/50 p-6 text-sm text-zinc-400" role="status">{t.unavailable}</section>
         ) : profile ? (
-          <section className="rounded-[16px] border border-zinc-800/80 bg-zinc-950/55 p-6 sm:p-7">
-            <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
-              {image ? (
-                <img src={image} alt="" className="h-24 w-24 rounded-full border border-zinc-800 object-cover" referrerPolicy="no-referrer" />
-              ) : (
-                <div className="grid h-24 w-24 place-items-center rounded-full border border-[#8fd4a9]/30 bg-[#112019] text-2xl font-semibold text-[#9adbb2]" aria-hidden="true">{profile.username.slice(0, 1).toUpperCase() || "V"}</div>
-              )}
+          <section
+            className="relative overflow-hidden rounded-[28px] border border-[#8fd4a9]/25 p-6 shadow-[0_24px_80px_rgba(0,0,0,.45)] sm:p-8"
+            style={{
+              background: profile.isInactive
+                ? "linear-gradient(145deg, rgba(48,55,51,.82), rgba(5,10,7,.96) 62%)"
+                : "linear-gradient(145deg, rgba(36,75,53,.72), rgba(5,14,9,.94) 58%, rgba(12,29,20,.88))",
+              boxShadow: profile.isInactive
+                ? "0 24px 80px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.06)"
+                : "0 24px 80px rgba(0,0,0,.45), 0 0 44px rgba(143,212,169,.08), inset 0 1px 0 rgba(255,255,255,.08)",
+              backdropFilter: "blur(18px)",
+            }}
+          >
+            <div className="pointer-events-none absolute -right-20 -top-24 h-56 w-56 rounded-full bg-[#8fd4a9]/10 blur-3xl" aria-hidden="true" />
+            <div className="relative flex flex-col gap-6 sm:flex-row sm:items-start">
+              <div className="relative shrink-0 self-start">
+                {image ? (
+                  <img src={image} alt="" className="h-28 w-28 rounded-full border border-[#8fd4a9]/35 object-cover shadow-[0_0_28px_rgba(143,212,169,.12)] sm:h-32 sm:w-32" referrerPolicy="no-referrer" />
+                ) : (
+                  <div className="grid h-28 w-28 place-items-center rounded-full border border-[#8fd4a9]/30 bg-[#112019] text-3xl font-semibold text-[#9adbb2] sm:h-32 sm:w-32" aria-hidden="true">{profile.username.slice(0, 1).toUpperCase() || "V"}</div>
+                )}
+                <span className="absolute -bottom-2 -right-2 rounded-full bg-[#06100a]/95 p-1.5 shadow-lg">
+                  <ViaIdentityStatusMarks verified={profile.isVerified} inactive={profile.isInactive} compact={false} showLeaf={false} language={language} />
+                </span>
+              </div>
               <div className="min-w-0 flex-1">
-                <div className="flex flex-wrap items-center gap-2">
-                  <h2 className="text-2xl font-semibold text-zinc-100">@{profile.username}</h2>
-                  {profile.isVerified ? (
-                    <span className="inline-flex items-center rounded-full border border-sky-400/30 bg-sky-400/10 px-2 py-1 text-xs font-medium text-sky-300" title={t.verified}>{t.verified}</span>
+                <div className="flex flex-wrap items-center gap-3">
+                  <h2 className="text-3xl font-semibold tracking-tight text-zinc-50">@{profile.username}</h2>
+                  <ViaIdentityStatusMarks verified={profile.isVerified} inactive={profile.isInactive} compact={false} language={language} />
+                </div>
+                <div className="mt-3 flex flex-wrap items-center gap-2">
+                  <span className={profile.isInactive ? "rounded-full border border-zinc-500/35 bg-zinc-500/10 px-3 py-1 text-xs font-semibold text-zinc-400" : "rounded-full border border-[#8fd4a9]/30 bg-[#8fd4a9]/10 px-3 py-1 text-xs font-semibold text-[#a9dfbc]"}>
+                    {profile.isInactive ? t.inactive90 : t.active}
+                  </span>
+                  {profile.isVerified ? <span className="text-xs text-sky-300/90">{t.verified}</span> : null}
+                  {profile.lastPublicActivityAt ? (
+                    <span className="text-xs text-zinc-500">{t.lastActivity}: {new Date(profile.lastPublicActivityAt).toLocaleDateString()}</span>
                   ) : null}
                 </div>
 

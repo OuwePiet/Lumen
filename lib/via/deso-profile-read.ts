@@ -13,6 +13,8 @@ export type ViaPublicProfile = {
   desoLockedNanos: number | null
   followersCount: number | null
   followingCount: number | null
+  lastPublicActivityAt: string | null
+  isInactive: boolean
 }
 
 type DeSoProfileResponse = {
@@ -37,6 +39,12 @@ type DeSoProfileResponse = {
 type DeSoFollowsResponse = {
   NumFollowers?: unknown
 }
+
+type DeSoPostsResponse = {
+  Posts?: Array<{ TimestampNanos?: unknown }>
+}
+
+const INACTIVE_AFTER_MS = 90 * 24 * 60 * 60 * 1000
 
 function text(value: unknown) {
   return typeof value === "string" ? value : ""
@@ -89,6 +97,38 @@ async function readFollowCount(publicKey: string, followers: boolean) {
   return numberOrNull(data.NumFollowers)
 }
 
+
+function timestampFromNanos(value: unknown) {
+  const nanos = typeof value === "number"
+    ? value
+    : typeof value === "string"
+      ? Number(value)
+      : Number.NaN
+  if (!Number.isFinite(nanos) || nanos <= 0) return null
+  const milliseconds = Math.floor(nanos / 1_000_000)
+  if (!Number.isFinite(milliseconds) || milliseconds <= 0) return null
+  const date = new Date(milliseconds)
+  return Number.isNaN(date.getTime()) ? null : date
+}
+
+async function readLatestPublicActivity(publicKey: string) {
+  const response = await fetchDeSo("get-posts-for-public-key", {
+    method: "POST",
+    headers: { "content-type": "application/json", accept: "application/json" },
+    body: JSON.stringify({
+      PublicKeyBase58Check: publicKey,
+      ReaderPublicKeyBase58Check: "",
+      LastPostHashHex: "",
+      NumToFetch: 1,
+      MediaRequired: false,
+    }),
+  })
+
+  if (!response.ok) return null
+  const data = (await response.json()) as DeSoPostsResponse
+  return timestampFromNanos(data.Posts?.[0]?.TimestampNanos)
+}
+
 /**
  * Read a public DeSo profile without requesting wallet authority.
  * DeSo's get-single-profile endpoint is a POST transport, but this operation
@@ -125,12 +165,18 @@ export async function readPublicProfile(
 
   const profilePic = text(profile.ProfilePic)
   const coinEntry = profile.CoinEntry ?? null
-  const [followersCount, followingCount] = publicKey
+  const [followersCount, followingCount, latestPublicActivity] = publicKey
     ? await Promise.all([
         readFollowCount(publicKey, true),
         readFollowCount(publicKey, false),
+        readLatestPublicActivity(publicKey),
       ])
-    : [null, null]
+    : [null, null, null]
+
+  const lastPublicActivityAt = latestPublicActivity?.toISOString() ?? null
+  const isInactive = latestPublicActivity
+    ? Date.now() - latestPublicActivity.getTime() >= INACTIVE_AFTER_MS
+    : false
 
   return {
     publicKey,
@@ -145,5 +191,7 @@ export async function readPublicProfile(
     desoLockedNanos: numberOrNull(coinEntry?.DeSoLockedNanos),
     followersCount,
     followingCount,
+    lastPublicActivityAt,
+    isInactive,
   }
 }
