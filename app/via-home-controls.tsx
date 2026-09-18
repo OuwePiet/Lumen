@@ -36,7 +36,10 @@ const mainNav = [
 ] as const
 
 const personalNav = [
+  ["notifications", "/notifications"],
+  ["bookmarks", "/saved"],
   ["profile", "/profile"],
+  ["wallet", "/wallet"],
   ["myVia", "/my-via"],
 ] as const
 
@@ -61,6 +64,9 @@ type HomeText = {
   world: string
   profile: string
   myVia: string
+  bookmarks: string
+  messages: string
+  more: string
   search: string
   publicEntrance: string
   wallet: string
@@ -80,7 +86,8 @@ const copy: Record<ViaLanguage, HomeText> = {
     explore: "Ontdek VIA", personal: "Persoonlijk", account: "Account",
     social: "Sociaal", discover: "Ontdekken", nfts: "NFT's", live: "Live",
     communities: "Community's", games: "Spellen", world: "Wereld", profile: "Mijn profiel", myVia: "Mijn VIA",
-    search: "Zoek leden", publicEntrance: "Publieke ingang", wallet: "Wallet", notifications: "Meldingen",
+    bookmarks: "Bookmarks", messages: "Berichten", more: "Meer",
+    search: "Zoek leden", publicEntrance: "Publieke ingang", wallet: "Mijn Wallet", notifications: "Meldingen",
     login: "DeSo Login", connecting: "Verbinden…", logout: "Uitloggen", blocked: "Safari heeft het DeSo Identity-venster geblokkeerd.",
     connected: "Verbonden", switchAccount: "Wissel account", addAccount: "DeSo-account toevoegen", inactive90: "90+ dagen inactief",
   },
@@ -88,7 +95,8 @@ const copy: Record<ViaLanguage, HomeText> = {
     explore: "Explore VIA", personal: "Personal", account: "Account",
     social: "Social", discover: "Discover", nfts: "NFTs", live: "Live",
     communities: "Communities", games: "Games", world: "World", profile: "My Profile", myVia: "My VIA",
-    search: "Search members", publicEntrance: "Public Entrance", wallet: "Wallet", notifications: "Notifications",
+    bookmarks: "Bookmarks", messages: "Messages", more: "More",
+    search: "Search members", publicEntrance: "Public Entrance", wallet: "My Wallet", notifications: "Notifications",
     login: "DeSo Login", connecting: "Connecting…", logout: "Logout", blocked: "Safari blocked the DeSo Identity window.",
     connected: "Connected", switchAccount: "Switch account", addAccount: "Add DeSo account", inactive90: "Inactive 90+ days",
   },
@@ -96,7 +104,8 @@ const copy: Record<ViaLanguage, HomeText> = {
     explore: "Découvrir VIA", personal: "Personnel", account: "Compte",
     social: "Social", discover: "Découvrir", nfts: "NFT", live: "Live",
     communities: "Communautés", games: "Jeux", world: "Monde", profile: "Mon profil", myVia: "Mon VIA",
-    search: "Rechercher des membres", publicEntrance: "Entrée publique", wallet: "Wallet", notifications: "Notifications",
+    bookmarks: "Favoris", messages: "Messages", more: "Plus",
+    search: "Rechercher des membres", publicEntrance: "Entrée publique", wallet: "Mon Wallet", notifications: "Notifications",
     login: "Connexion DeSo", connecting: "Connexion…", logout: "Déconnexion", blocked: "Safari a bloqué la fenêtre DeSo Identity.",
     connected: "Connecté", switchAccount: "Changer de compte", addAccount: "Ajouter un compte DeSo", inactive90: "Inactif depuis 90+ jours",
   },
@@ -104,7 +113,8 @@ const copy: Record<ViaLanguage, HomeText> = {
     explore: "Explorar VIA", personal: "Personal", account: "Cuenta",
     social: "Social", discover: "Descubrir", nfts: "NFT", live: "Live",
     communities: "Comunidades", games: "Juegos", world: "Mundo", profile: "Mi perfil", myVia: "Mi VIA",
-    search: "Buscar miembros", publicEntrance: "Entrada pública", wallet: "Wallet", notifications: "Notificaciones",
+    bookmarks: "Guardados", messages: "Mensajes", more: "Más",
+    search: "Buscar miembros", publicEntrance: "Entrada pública", wallet: "Mi Wallet", notifications: "Notificaciones",
     login: "Acceso DeSo", connecting: "Conectando…", logout: "Cerrar sesión", blocked: "Safari bloqueó la ventana de DeSo Identity.",
     connected: "Conectado", switchAccount: "Cambiar cuenta", addAccount: "Añadir cuenta DeSo", inactive90: "Inactivo 90+ días",
   },
@@ -112,7 +122,8 @@ const copy: Record<ViaLanguage, HomeText> = {
     explore: "探索 VIA", personal: "个人", account: "账户",
     social: "社交", discover: "发现", nfts: "NFT", live: "直播",
     communities: "社区", games: "游戏", world: "世界", profile: "我的资料", myVia: "我的 VIA",
-    search: "搜索成员", publicEntrance: "公开入口", wallet: "钱包", notifications: "通知",
+    bookmarks: "书签", messages: "消息", more: "更多",
+    search: "搜索成员", publicEntrance: "公开入口", wallet: "我的钱包", notifications: "通知",
     login: "DeSo 登录", connecting: "连接中…", logout: "退出", blocked: "Safari 阻止了 DeSo Identity 窗口。",
     connected: "已连接", switchAccount: "切换账户", addAccount: "添加 DeSo 账户", inactive90: "90+ 天未活跃",
   },
@@ -133,6 +144,16 @@ const buttonStyle = {
   fontWeight: 680,
   backdropFilter: "blur(9px)",
   boxShadow: "inset 0 1px 0 rgba(255,255,255,.018)",
+} as const
+
+
+const disabledButtonStyle = {
+  ...buttonStyle,
+  color: "#66716b",
+  borderColor: "rgba(118,128,122,.16)",
+  background: "linear-gradient(180deg, rgba(20,24,22,.62), rgba(9,12,10,.62))",
+  cursor: "default",
+  opacity: .72,
 } as const
 
 const sectionLabel = {
@@ -332,8 +353,9 @@ export default function ViaHomeControls() {
           {personalNav.map(([key, href]) => (
             <Link key={href} href={href} style={{ ...buttonStyle, borderColor: "rgba(143,212,169,.34)", background: "linear-gradient(180deg, rgba(20,55,35,.52), rgba(8,24,14,.68))", color: "#b5e8c7" }}>{t[key]}</Link>
           ))}
+          <span aria-disabled="true" title="Wordt op de eigen Berichten-pagina aangesloten" style={disabledButtonStyle}>{t.messages}</span>
+          <span aria-disabled="true" title="Wordt op de eigen Meer-pagina aangesloten" style={disabledButtonStyle}>{t.more}</span>
         </nav>
-        <Link href="/discover/voices" style={{ ...buttonStyle, minHeight: "41px" }}>⌕&nbsp;&nbsp;{t.search}</Link>
       </section>
 
       <section style={{ display: "grid", gap: "6px" }}>
@@ -342,8 +364,6 @@ export default function ViaHomeControls() {
           <select value={language} onChange={(event) => changeLanguage(event.target.value as ViaLanguage)} aria-label="VIA language" style={{ ...buttonStyle, width: "100%", appearance: "none", cursor: "pointer", textAlign: "center" }}>
             {VIA_LANGUAGES.map((item) => <option key={item} value={item}>{languageCodes[item]}</option>)}
           </select>
-          <Link href="/wallet" style={buttonStyle}>{t.wallet}</Link>
-          <Link href="/notifications" style={buttonStyle}>{t.notifications}</Link>
           {!session ? <button type="button" onClick={enterPublicMode} style={{ ...buttonStyle, cursor: "pointer" }}>{t.publicEntrance}</button> : null}
         </div>
 
