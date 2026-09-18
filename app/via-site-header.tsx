@@ -12,6 +12,7 @@ import {
   switchIdentitySession,
   type ViaIdentitySession,
 } from "./deso-identity-session"
+import ViaIdentityStatusMarks from "./via-identity-status"
 import {
   readViaLocalSettings,
   saveViaLocalSettings,
@@ -20,7 +21,7 @@ import {
   type ViaLanguage,
 } from "./via-local-settings"
 
-type PublicProfile = { username?: string; profilePic?: string | null }
+type PublicProfile = { username?: string; profilePic?: string | null; isVerified?: boolean; isInactive?: boolean }
 type ProfileResponse = { ok?: boolean; profile?: PublicProfile }
 
 const nav = [
@@ -289,6 +290,9 @@ export default function ViaSiteHeader() {
                   padding: "5px",
                   borderRadius: "50%",
                   flex: "0 0 auto",
+                  position: "relative",
+                  borderColor: profile?.isInactive ? "rgba(137,145,141,.42)" : "rgba(143,212,169,.34)",
+                  boxShadow: profile?.isInactive ? "none" : "0 0 14px rgba(143,212,169,.08)",
                 }}
               >
                 {avatar ? (
@@ -298,11 +302,16 @@ export default function ViaSiteHeader() {
                     {profile?.username?.slice(0, 1).toUpperCase() ?? "V"}
                   </span>
                 )}
+                <span style={{ position: "absolute", right: "-5px", bottom: "-5px", transform: "scale(.82)", transformOrigin: "center" }}>
+                  <ViaIdentityStatusMarks verified={Boolean(profile?.isVerified)} inactive={Boolean(profile?.isInactive)} compact showLeaf={false} />
+                </span>
               </Link>
               <div ref={accountWrapRef} style={styles.accountWrap} className="via-site-header-account-wrap">
               <button type="button" style={styles.accountButton} className="via-site-header-account-button" onClick={() => { refreshKnownAccounts(); setMenuOpen((open) => !open) }} aria-label="Open VIA account menu" aria-expanded={menuOpen} aria-haspopup="menu">
                 <span className="via-site-header-account-menu-icon" aria-hidden="true">⋯</span>
-                <span className="via-site-header-account-label">{accountLabel}</span><span className="via-site-header-account-caret" aria-hidden="true">▾</span>
+                <span className="via-site-header-account-label">{accountLabel}</span>
+                <span className="via-site-header-account-label"><ViaIdentityStatusMarks verified={Boolean(profile?.isVerified)} inactive={Boolean(profile?.isInactive)} compact /></span>
+                <span className="via-site-header-account-caret" aria-hidden="true">▾</span>
               </button>
               {menuOpen ? (
                 <div style={styles.menu} className="via-site-header-account-menu" role="menu" aria-label="VIA account menu">
