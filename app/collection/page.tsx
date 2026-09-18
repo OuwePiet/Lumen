@@ -36,7 +36,7 @@ export default function CollectionPage() {
             <nav style={{ display: "flex", flexWrap: "wrap", gap: 8 }} aria-label="NFT sections">
               <a href="#collection-controls" style={hubLink}>Collection</a>
               <Link href="/studio#mint-nft" style={hubLink}>Create & Mint</Link>
-              <Link href="/market" style={hubLink}>Buy & Sell</Link>
+              <Link href="/market" style={hubLink}>Market</Link>
               <Link href="/market/received-bids" style={hubLink}>Received Bids</Link>
               <Link href="/market/my-bids" style={hubLink}>My Bids</Link>
             </nav>
