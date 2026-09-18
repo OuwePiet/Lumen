@@ -51,7 +51,7 @@ const headerCopy: Record<ViaLanguage, HeaderCopy> = {
   English: {
     home: "Home", feed: "Social", discover: "Discover", nfts: "NFTs", market: "Market", studio: "Studio", live: "Live", games: "Games", communities: "Communities", myVia: "My VIA",
     search: "Search members", publicEntrance: "Public Entrance", login: "DeSo Login", wallet: "Wallet", notifications: "Notifications", connected: "DeSo connected",
-    profile: "Profile", saved: "Saved", drafts: "Drafts", settings: "Settings", switchAccount: "Switch account", desoAccount: t.desoAccount, addAccount: "Add DeSo account", logout: "Logout from VIA",
+    profile: "Profile", saved: "Saved", drafts: "Drafts", settings: "Settings", switchAccount: "Switch account", desoAccount: "DeSo account", addAccount: "Add DeSo account", logout: "Logout from VIA",
   },
   French: {
     home: "Accueil", feed: "Social", discover: "Découvrir", nfts: "NFT", market: "Marché", studio: "Studio", live: "Live", games: "Jeux", communities: "Communautés", myVia: "Mon VIA",
