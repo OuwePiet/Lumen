@@ -104,6 +104,7 @@ export default function ViaWorldClock() {
     <>
       <section
         aria-label="World clock, local date and live DESO price"
+        className="via-home-world-clock"
         style={{
           position: "absolute",
           zIndex: 3,
@@ -147,6 +148,7 @@ export default function ViaWorldClock() {
       </section>
 
       <div
+        className="via-home-nasa-source"
         style={{
           position: "absolute",
           zIndex: 3,
@@ -162,6 +164,7 @@ export default function ViaWorldClock() {
           target="_blank"
           rel="noreferrer"
           aria-label={t.source}
+          className="via-home-nasa-source-link"
           style={{
             pointerEvents: "auto",
             minHeight: "22px",
@@ -186,6 +189,31 @@ export default function ViaWorldClock() {
           <span>{t.source}</span>
         </a>
       </div>
+      <style>{`
+        @media (max-width: 720px) {
+          .via-home-world-clock {
+            position: relative !important;
+            left: auto !important;
+            right: auto !important;
+            bottom: auto !important;
+            margin: 10px !important;
+            border-radius: 18px !important;
+            justify-content: flex-start !important;
+          }
+          .via-home-nasa-source {
+            position: relative !important;
+            left: auto !important;
+            right: auto !important;
+            bottom: auto !important;
+            margin: 0 10px 84px !important;
+          }
+          .via-home-nasa-source-link {
+            max-width: 100% !important;
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
+          }
+        }
+      `}</style>
     </>
   )
 }
