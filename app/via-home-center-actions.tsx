@@ -45,6 +45,7 @@ export default function ViaHomeCenterActions() {
   const t = copy[language]
 
   return (
+    <>
     <section
       aria-label="VIA ideas and storage"
       className="via-home-center-actions"
@@ -96,5 +97,6 @@ export default function ViaHomeCenterActions() {
           }
         }
       `}</style>
+    </>
   )
 }
