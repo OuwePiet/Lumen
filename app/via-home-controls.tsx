@@ -373,9 +373,6 @@ export default function ViaHomeControls() {
                 }}
               >
                 {avatar ? <img src={avatar} alt="" referrerPolicy="no-referrer" style={{ width: "42px", height: "42px", borderRadius: "50%", objectFit: "cover", display: "block", border: "1px solid rgba(143,212,169,.32)", boxShadow: "0 0 10px rgba(143,212,169,.10)" }} /> : <span aria-hidden="true" style={{ width: "42px", height: "42px", borderRadius: "50%", display: "grid", placeItems: "center", background: "#173326", color: "#9adbb2", fontSize: "15px", fontWeight: 850, border: "1px solid rgba(143,212,169,.30)" }}>{profile?.username?.slice(0, 1).toUpperCase() ?? "V"}</span>}
-                <span style={{ position: "absolute", right: "-7px", bottom: "-7px", zIndex: 2 }}>
-                  <ViaIdentityStatusMarks verified={Boolean(profile?.isVerified)} inactive={Boolean(profile?.isInactive)} compact showLeaf={false} language={language} />
-                </span>
               </Link>
               <button
                 type="button"
