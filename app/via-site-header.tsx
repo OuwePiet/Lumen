@@ -275,7 +275,31 @@ export default function ViaSiteHeader() {
           <Link href="/notifications" style={pill} className="via-site-header-utility">{t.notifications}</Link>
 
           {session ? (
-            <div ref={accountWrapRef} style={styles.accountWrap} className="via-site-header-account-wrap">
+            <>
+              <Link
+                href="/profile"
+                aria-label={t.profile}
+                title={t.profile}
+                className="via-profile-shortcut"
+                style={{
+                  ...pill,
+                  width: "40px",
+                  minWidth: "40px",
+                  height: "40px",
+                  padding: "5px",
+                  borderRadius: "50%",
+                  flex: "0 0 auto",
+                }}
+              >
+                {avatar ? (
+                  <img src={avatar} alt="" referrerPolicy="no-referrer" style={{ width: "30px", height: "30px", borderRadius: "50%", objectFit: "cover" }} />
+                ) : (
+                  <span aria-hidden="true" style={{ width: "30px", height: "30px", display: "grid", placeItems: "center", borderRadius: "50%", background: "#183326", color: "#9adbb2", fontSize: "15px", fontWeight: 900 }}>
+                    {profile?.username?.slice(0, 1).toUpperCase() ?? "V"}
+                  </span>
+                )}
+              </Link>
+              <div ref={accountWrapRef} style={styles.accountWrap} className="via-site-header-account-wrap">
               <button type="button" style={styles.accountButton} className="via-site-header-account-button" onClick={() => { refreshKnownAccounts(); setMenuOpen((open) => !open) }} aria-label="Open VIA account menu" aria-expanded={menuOpen} aria-haspopup="menu">
                 {avatar ? <img src={avatar} alt="" style={styles.avatar} className="via-site-header-avatar" referrerPolicy="no-referrer" /> : <span style={styles.avatarFallback} className="via-site-header-avatar-fallback" aria-hidden="true">{profile?.username?.slice(0, 1).toUpperCase() ?? "V"}</span>}
                 <span className="via-site-header-account-label">{accountLabel}</span><span className="via-site-header-account-caret" aria-hidden="true">▾</span>
@@ -312,7 +336,8 @@ export default function ViaSiteHeader() {
                   <button type="button" style={styles.menuButton} onClick={logout} role="menuitem">{t.logout}</button>
                 </div>
               ) : null}
-            </div>
+              </div>
+            </>
           ) : null}
         </div>
       </div>
@@ -327,6 +352,7 @@ export default function ViaSiteHeader() {
           .via-site-header-link { padding: 18px 8px 15px !important; font-size: 11px !important; }
           .via-site-header-tools { grid-column: 1 / span 2 !important; grid-row: 2 !important; justify-content: flex-start !important; overflow-x: auto !important; overflow-y: hidden !important; gap: 6px !important; padding: 6px 8px !important; }
           .via-site-header-search { min-width: 168px !important; }
+          .via-profile-shortcut { position: absolute !important; right: 54px !important; top: 10px !important; z-index: 181 !important; width: 38px !important; min-width: 38px !important; height: 38px !important; padding: 4px !important; }
           .via-site-header-account-wrap { position: absolute !important; right: 10px !important; top: 10px !important; z-index: 180 !important; }
           .via-site-header-account-button { min-width: 38px !important; width: 38px !important; height: 38px !important; padding: 4px !important; gap: 0 !important; border-radius: 50% !important; }
           .via-site-header-avatar, .via-site-header-avatar-fallback { width: 28px !important; height: 28px !important; }
