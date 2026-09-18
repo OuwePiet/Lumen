@@ -303,14 +303,14 @@ export default function ViaSiteHeader() {
                   </span>
                 )}
                 <span style={{ position: "absolute", right: "-5px", bottom: "-5px", transform: "scale(.82)", transformOrigin: "center" }}>
-                  <ViaIdentityStatusMarks verified={Boolean(profile?.isVerified)} inactive={Boolean(profile?.isInactive)} compact showLeaf={false} />
+                  <ViaIdentityStatusMarks verified={Boolean(profile?.isVerified)} inactive={Boolean(profile?.isInactive)} compact showLeaf={false} language={language} />
                 </span>
               </Link>
               <div ref={accountWrapRef} style={styles.accountWrap} className="via-site-header-account-wrap">
               <button type="button" style={styles.accountButton} className="via-site-header-account-button" onClick={() => { refreshKnownAccounts(); setMenuOpen((open) => !open) }} aria-label="Open VIA account menu" aria-expanded={menuOpen} aria-haspopup="menu">
                 <span className="via-site-header-account-menu-icon" aria-hidden="true">⋯</span>
                 <span className="via-site-header-account-label">{accountLabel}</span>
-                <span className="via-site-header-account-label"><ViaIdentityStatusMarks verified={Boolean(profile?.isVerified)} inactive={Boolean(profile?.isInactive)} compact /></span>
+                <span className="via-site-header-account-label"><ViaIdentityStatusMarks verified={Boolean(profile?.isVerified)} inactive={Boolean(profile?.isInactive)} compact language={language} /></span>
                 <span className="via-site-header-account-caret" aria-hidden="true">▾</span>
               </button>
               {menuOpen ? (
