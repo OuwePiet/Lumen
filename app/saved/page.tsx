@@ -8,7 +8,7 @@ export default function SavedPage() {
         <header className="mb-8 flex flex-wrap items-start justify-between gap-4">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.25em] text-[#8fd4a9]">VIA</p>
-            <h1 className="mt-2 text-3xl font-semibold sm:text-4xl">Saved</h1>
+            <h1 className="mt-2 text-3xl font-semibold sm:text-4xl">Bookmarks</h1>
             <p className="mt-3 max-w-2xl text-zinc-400">One calm place for things you explicitly choose to find again.</p>
           </div>
           <Link href="/my-via" className="rounded-full border border-zinc-700 px-4 py-2 text-sm hover:border-[#8fd4a9]/70 hover:text-[#9adbb2]">My VIA</Link>
@@ -17,14 +17,14 @@ export default function SavedPage() {
         <section className="mb-6 rounded-2xl border border-[#285f40]/70 bg-zinc-950 p-5">
           <h2 className="text-lg text-[#9adbb2]">Your choice, not hidden profiling</h2>
           <p className="mt-2 text-sm leading-6 text-zinc-400">
-            VIA Saved only contains things you explicitly save. This first working version stores the list locally in this browser; it is not sent to VIA, used for hidden profiling, or treated as a signal for paid ranking.
+            VIA Bookmarks only contains things you explicitly save. This first working version stores the list locally in this browser; it is not sent to VIA, used for hidden profiling, or treated as a signal for paid ranking.
           </p>
         </section>
 
         <SavedList />
 
         <p className="mt-8 text-xs leading-5 text-zinc-600">
-          Clearing this browser&apos;s site data can remove local Saved items. Account sync can be considered later only with a clear privacy design and explicit visitor choice.
+          Clearing this browser&apos;s site data can remove local Bookmarks. Account sync can be considered later only with a clear privacy design and explicit visitor choice.
         </p>
       </div>
     </main>

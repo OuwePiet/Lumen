@@ -25,21 +25,24 @@ import {
 type PublicProfile = { username?: string; profilePic?: string | null; isVerified?: boolean; isInactive?: boolean }
 type ProfileResponse = { ok?: boolean; profile?: PublicProfile }
 
-const mainNav = [
-  ["social", "/social"],
+const standardNav = [
+  ["home", "/"],
+  ["notifications", "/notifications"],
+  ["messages", null],
   ["discover", "/discover"],
+  ["bookmarks", "/saved"],
+  ["profile", "/profile"],
+  ["wallet", "/wallet"],
+  ["more", "/more"],
+] as const
+
+const viaExtraNav = [
+  ["social", "/social"],
   ["nfts", "/collection"],
   ["live", "/live"],
   ["communities", "/communities"],
   ["games", "/quest"],
   ["world", "/world"],
-] as const
-
-const personalNav = [
-  ["notifications", "/notifications"],
-  ["bookmarks", "/saved"],
-  ["profile", "/profile"],
-  ["wallet", "/wallet"],
   ["myVia", "/my-via"],
 ] as const
 
@@ -52,9 +55,10 @@ const languageCodes: Record<ViaLanguage, string> = {
 }
 
 type HomeText = {
-  explore: string
-  personal: string
+  standard: string
+  viaExtra: string
   account: string
+  home: string
   social: string
   discover: string
   nfts: string
@@ -83,7 +87,7 @@ type HomeText = {
 
 const copy: Record<ViaLanguage, HomeText> = {
   Dutch: {
-    explore: "Ontdek VIA", personal: "Persoonlijk", account: "Account",
+    standard: "VIA", viaExtra: "Extra VIA", account: "Account", home: "Home",
     social: "Sociaal", discover: "Ontdekken", nfts: "NFT's", live: "Live",
     communities: "Community's", games: "Spellen", world: "Wereld", profile: "Mijn profiel", myVia: "Mijn VIA",
     bookmarks: "Bookmarks", messages: "Berichten", more: "Meer",
@@ -92,7 +96,7 @@ const copy: Record<ViaLanguage, HomeText> = {
     connected: "Verbonden", switchAccount: "Wissel account", addAccount: "DeSo-account toevoegen", inactive90: "90+ dagen inactief",
   },
   English: {
-    explore: "Explore VIA", personal: "Personal", account: "Account",
+    standard: "VIA", viaExtra: "Extra VIA", account: "Account", home: "Home",
     social: "Social", discover: "Discover", nfts: "NFTs", live: "Live",
     communities: "Communities", games: "Games", world: "World", profile: "My Profile", myVia: "My VIA",
     bookmarks: "Bookmarks", messages: "Messages", more: "More",
@@ -101,7 +105,7 @@ const copy: Record<ViaLanguage, HomeText> = {
     connected: "Connected", switchAccount: "Switch account", addAccount: "Add DeSo account", inactive90: "Inactive 90+ days",
   },
   French: {
-    explore: "Découvrir VIA", personal: "Personnel", account: "Compte",
+    standard: "VIA", viaExtra: "VIA supplémentaire", account: "Compte", home: "Accueil",
     social: "Social", discover: "Découvrir", nfts: "NFT", live: "Live",
     communities: "Communautés", games: "Jeux", world: "Monde", profile: "Mon profil", myVia: "Mon VIA",
     bookmarks: "Favoris", messages: "Messages", more: "Plus",
@@ -110,7 +114,7 @@ const copy: Record<ViaLanguage, HomeText> = {
     connected: "Connecté", switchAccount: "Changer de compte", addAccount: "Ajouter un compte DeSo", inactive90: "Inactif depuis 90+ jours",
   },
   Spanish: {
-    explore: "Explorar VIA", personal: "Personal", account: "Cuenta",
+    standard: "VIA", viaExtra: "VIA extra", account: "Cuenta", home: "Inicio",
     social: "Social", discover: "Descubrir", nfts: "NFT", live: "Live",
     communities: "Comunidades", games: "Juegos", world: "Mundo", profile: "Mi perfil", myVia: "Mi VIA",
     bookmarks: "Guardados", messages: "Mensajes", more: "Más",
@@ -119,7 +123,7 @@ const copy: Record<ViaLanguage, HomeText> = {
     connected: "Conectado", switchAccount: "Cambiar cuenta", addAccount: "Añadir cuenta DeSo", inactive90: "Inactivo 90+ días",
   },
   Chinese: {
-    explore: "探索 VIA", personal: "个人", account: "账户",
+    standard: "VIA", viaExtra: "VIA 扩展", account: "账户", home: "首页",
     social: "社交", discover: "发现", nfts: "NFT", live: "直播",
     communities: "社区", games: "游戏", world: "世界", profile: "我的资料", myVia: "我的 VIA",
     bookmarks: "书签", messages: "消息", more: "更多",
@@ -341,20 +345,22 @@ export default function ViaHomeControls() {
       </Link>
 
       <section style={{ display: "grid", gap: "6px" }}>
-        <span style={sectionLabel}>{t.explore}</span>
-        <nav aria-label="VIA main navigation" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "7px" }}>
-          {mainNav.map(([key, href]) => <Link key={href} href={href} style={buttonStyle}>{t[key]}</Link>)}
+        <span style={sectionLabel}>{t.standard}</span>
+        <nav aria-label="VIA standard navigation" style={{ display: "grid", gap: "7px" }}>
+          {standardNav.map(([key, href]) => href ? (
+            <Link key={key} href={href} style={{ ...buttonStyle, width: "100%", justifyContent: "flex-start", paddingInline: "14px", borderColor: "rgba(143,212,169,.30)", background: "linear-gradient(180deg, rgba(13,31,21,.78), rgba(5,15,9,.78))", color: "#dce8e1" }}>{t[key]}</Link>
+          ) : (
+            <span key={key} aria-disabled="true" title="Wordt op de eigen Berichten-pagina aangesloten" style={{ ...disabledButtonStyle, width: "100%", justifyContent: "flex-start", paddingInline: "14px" }}>{t[key]}</span>
+          ))}
         </nav>
       </section>
 
       <section style={{ display: "grid", gap: "6px" }}>
-        <span style={sectionLabel}>{t.personal}</span>
-        <nav aria-label="VIA personal navigation" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "7px" }}>
-          {personalNav.map(([key, href]) => (
-            <Link key={href} href={href} style={{ ...buttonStyle, borderColor: "rgba(143,212,169,.34)", background: "linear-gradient(180deg, rgba(20,55,35,.52), rgba(8,24,14,.68))", color: "#b5e8c7" }}>{t[key]}</Link>
+        <span style={sectionLabel}>{t.viaExtra}</span>
+        <nav aria-label="VIA extra navigation" style={{ display: "grid", gap: "7px" }}>
+          {viaExtraNav.map(([key, href]) => (
+            <Link key={href} href={href} style={{ ...buttonStyle, width: "100%", justifyContent: "flex-start", paddingInline: "14px" }}>{t[key]}</Link>
           ))}
-          <span aria-disabled="true" title="Wordt op de eigen Berichten-pagina aangesloten" style={disabledButtonStyle}>{t.messages}</span>
-          <span aria-disabled="true" title="Wordt op de eigen Meer-pagina aangesloten" style={disabledButtonStyle}>{t.more}</span>
         </nav>
       </section>
 

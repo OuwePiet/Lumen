@@ -53,7 +53,7 @@ type Copy = {
 const copy: Record<ViaLanguage, Copy> = {
   Dutch: {
     kicker: "VIA · PROFIEL",
-    heading: "Profiel",
+    heading: "Mijn profiel",
     intro: "Je ingelogde openbare DeSo-identiteit, weergegeven zonder extra walletbevoegdheid te vragen.",
     myNfts: "Mijn NFT's",
     back: "Terug naar Mijn VIA",
@@ -74,7 +74,7 @@ const copy: Record<ViaLanguage, Copy> = {
   },
   English: {
     kicker: "VIA · PROFILE",
-    heading: "Profile",
+    heading: "My Profile",
     intro: "Your signed-in public DeSo identity, shown without requesting extra wallet authority.",
     myNfts: "My NFTs",
     back: "Back to My VIA",
@@ -95,7 +95,7 @@ const copy: Record<ViaLanguage, Copy> = {
   },
   French: {
     kicker: "VIA · PROFIL",
-    heading: "Profil",
+    heading: "Mon profil",
     intro: "Votre identité DeSo publique connectée, affichée sans demander d'autorisation wallet supplémentaire.",
     myNfts: "Mes NFT",
     back: "Retour à Mon VIA",
@@ -116,7 +116,7 @@ const copy: Record<ViaLanguage, Copy> = {
   },
   Spanish: {
     kicker: "VIA · PERFIL",
-    heading: "Perfil",
+    heading: "Mi perfil",
     intro: "Tu identidad pública de DeSo conectada, mostrada sin solicitar autoridad adicional sobre la wallet.",
     myNfts: "Mis NFT",
     back: "Volver a Mi VIA",
@@ -137,7 +137,7 @@ const copy: Record<ViaLanguage, Copy> = {
   },
   Chinese: {
     kicker: "VIA · 个人资料",
-    heading: "个人资料",
+    heading: "我的资料",
     intro: "显示你当前登录的公开 DeSo 身份，无需请求额外的钱包权限。",
     myNfts: "我的 NFT",
     back: "返回我的 VIA",
