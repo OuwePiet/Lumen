@@ -29,43 +29,42 @@ const nav = [
   ["feed", "/social"],
   ["discover", "/discover"],
   ["nfts", "/collection"],
-  ["market", "/market"],
-  ["studio", "/studio"],
   ["live", "/live"],
   ["games", "/quest"],
   ["communities", "/communities"],
+  ["world", "/world"],
   ["myVia", "/my-via"],
 ] as const
 
 type HeaderCopy = {
-  home: string; feed: string; discover: string; nfts: string; market: string; studio: string; live: string; games: string; communities: string; myVia: string;
+  home: string; feed: string; discover: string; nfts: string; live: string; games: string; communities: string; world: string; myVia: string;
   search: string; publicEntrance: string; login: string; wallet: string; notifications: string; connected: string;
   profile: string; saved: string; drafts: string; settings: string; switchAccount: string; desoAccount: string; addAccount: string; logout: string;
 }
 
 const headerCopy: Record<ViaLanguage, HeaderCopy> = {
   Dutch: {
-    home: "Home", feed: "Sociaal", discover: "Ontdekken", nfts: "NFT's", market: "Markt", studio: "Studio", live: "Live", games: "Spellen", communities: "Community's", myVia: "Mijn VIA",
+    home: "Home", feed: "Sociaal", discover: "Ontdekken", nfts: "NFT's", live: "Live", games: "Spellen", communities: "Community's", world: "Wereld", myVia: "Mijn VIA",
     search: "Zoek leden", publicEntrance: "Publieke ingang", login: "DeSo Login", wallet: "Wallet", notifications: "Meldingen", connected: "DeSo verbonden",
     profile: "Profiel", saved: "Opgeslagen", drafts: "Concepten", settings: "Instellingen", switchAccount: "Wissel account", desoAccount: "DeSo-account", addAccount: "DeSo-account toevoegen", logout: "Uitloggen uit VIA",
   },
   English: {
-    home: "Home", feed: "Social", discover: "Discover", nfts: "NFTs", market: "Market", studio: "Studio", live: "Live", games: "Games", communities: "Communities", myVia: "My VIA",
+    home: "Home", feed: "Social", discover: "Discover", nfts: "NFTs", live: "Live", games: "Games", communities: "Communities", world: "World", myVia: "My VIA",
     search: "Search members", publicEntrance: "Public Entrance", login: "DeSo Login", wallet: "Wallet", notifications: "Notifications", connected: "DeSo connected",
     profile: "Profile", saved: "Saved", drafts: "Drafts", settings: "Settings", switchAccount: "Switch account", desoAccount: "DeSo account", addAccount: "Add DeSo account", logout: "Logout from VIA",
   },
   French: {
-    home: "Accueil", feed: "Social", discover: "Découvrir", nfts: "NFT", market: "Marché", studio: "Studio", live: "Live", games: "Jeux", communities: "Communautés", myVia: "Mon VIA",
+    home: "Accueil", feed: "Social", discover: "Découvrir", nfts: "NFT", live: "Live", games: "Jeux", communities: "Communautés", world: "Monde", myVia: "Mon VIA",
     search: "Rechercher des membres", publicEntrance: "Entrée publique", login: "Connexion DeSo", wallet: "Wallet", notifications: "Notifications", connected: "DeSo connecté",
     profile: "Profil", saved: "Enregistrés", drafts: "Brouillons", settings: "Paramètres", switchAccount: "Changer de compte", desoAccount: "Compte DeSo", addAccount: "Ajouter un compte DeSo", logout: "Se déconnecter de VIA",
   },
   Spanish: {
-    home: "Inicio", feed: "Social", discover: "Descubrir", nfts: "NFT", market: "Mercado", studio: "Studio", live: "Live", games: "Juegos", communities: "Comunidades", myVia: "Mi VIA",
+    home: "Inicio", feed: "Social", discover: "Descubrir", nfts: "NFT", live: "Live", games: "Juegos", communities: "Comunidades", world: "Mundo", myVia: "Mi VIA",
     search: "Buscar miembros", publicEntrance: "Entrada pública", login: "Acceso DeSo", wallet: "Wallet", notifications: "Notificaciones", connected: "DeSo conectado",
     profile: "Perfil", saved: "Guardados", drafts: "Borradores", settings: "Ajustes", switchAccount: "Cambiar cuenta", desoAccount: "Cuenta DeSo", addAccount: "Añadir cuenta DeSo", logout: "Cerrar sesión en VIA",
   },
   Chinese: {
-    home: "首页", feed: "社交", discover: "发现", nfts: "NFT", market: "市场", studio: "工作室", live: "直播", games: "游戏", communities: "社区", myVia: "我的 VIA",
+    home: "首页", feed: "社交", discover: "发现", nfts: "NFT", live: "直播", games: "游戏", communities: "社区", world: "世界", myVia: "我的 VIA",
     search: "搜索成员", publicEntrance: "公开入口", login: "DeSo 登录", wallet: "钱包", notifications: "通知", connected: "DeSo 已连接",
     profile: "资料", saved: "已保存", drafts: "草稿", settings: "设置", switchAccount: "切换账户", desoAccount: "DeSo 账户", addAccount: "添加 DeSo 账户", logout: "退出 VIA",
   },
