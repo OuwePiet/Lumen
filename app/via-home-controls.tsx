@@ -361,12 +361,21 @@ export default function ViaHomeControls() {
                   minHeight: "54px",
                   padding: "5px",
                   borderRadius: "16px",
-                  borderColor: "rgba(143,212,169,.34)",
-                  background: "linear-gradient(145deg, rgba(29,64,45,.62), rgba(5,17,10,.82))",
-                  boxShadow: "0 0 18px rgba(143,212,169,.08), inset 0 1px 0 rgba(255,255,255,.06)",
+                  position: "relative",
+                  overflow: "visible",
+                  borderColor: profile?.isInactive ? "rgba(137,145,141,.42)" : "rgba(143,212,169,.38)",
+                  background: profile?.isInactive
+                    ? "linear-gradient(145deg, rgba(65,72,68,.42), rgba(5,17,10,.86))"
+                    : "linear-gradient(145deg, rgba(29,64,45,.68), rgba(5,17,10,.86))",
+                  boxShadow: profile?.isInactive
+                    ? "inset 0 1px 0 rgba(255,255,255,.05)"
+                    : "0 0 18px rgba(143,212,169,.10), inset 0 1px 0 rgba(255,255,255,.07)",
                 }}
               >
-                {avatar ? <img src={avatar} alt="" referrerPolicy="no-referrer" style={{ width: "42px", height: "42px", borderRadius: "50%", objectFit: "cover", display: "block", border: "1px solid rgba(143,212,169,.32)" }} /> : <span aria-hidden="true" style={{ width: "42px", height: "42px", borderRadius: "50%", display: "grid", placeItems: "center", background: "#173326", color: "#9adbb2", fontSize: "15px", fontWeight: 850 }}>{profile?.username?.slice(0, 1).toUpperCase() ?? "V"}</span>}
+                {avatar ? <img src={avatar} alt="" referrerPolicy="no-referrer" style={{ width: "42px", height: "42px", borderRadius: "50%", objectFit: "cover", display: "block", border: "1px solid rgba(143,212,169,.32)", boxShadow: "0 0 10px rgba(143,212,169,.10)" }} /> : <span aria-hidden="true" style={{ width: "42px", height: "42px", borderRadius: "50%", display: "grid", placeItems: "center", background: "#173326", color: "#9adbb2", fontSize: "15px", fontWeight: 850, border: "1px solid rgba(143,212,169,.30)" }}>{profile?.username?.slice(0, 1).toUpperCase() ?? "V"}</span>}
+                <span style={{ position: "absolute", right: "-7px", bottom: "-7px", zIndex: 2 }}>
+                  <ViaIdentityStatusMarks verified={Boolean(profile?.isVerified)} inactive={Boolean(profile?.isInactive)} compact showLeaf={false} language={language} />
+                </span>
               </Link>
               <button
                 type="button"
