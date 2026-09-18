@@ -29,11 +29,10 @@ const mainNav = [
   ["social", "/social"],
   ["discover", "/discover"],
   ["nfts", "/collection"],
-  ["market", "/market"],
-  ["studio", "/studio"],
   ["live", "/live"],
   ["communities", "/communities"],
   ["games", "/quest"],
+  ["world", "/world"],
 ] as const
 
 const personalNav = [
@@ -56,11 +55,10 @@ type HomeText = {
   social: string
   discover: string
   nfts: string
-  market: string
-  studio: string
   live: string
   communities: string
   games: string
+  world: string
   profile: string
   myVia: string
   search: string
@@ -80,40 +78,40 @@ type HomeText = {
 const copy: Record<ViaLanguage, HomeText> = {
   Dutch: {
     explore: "Ontdek VIA", personal: "Persoonlijk", account: "Account",
-    social: "Sociaal", discover: "Ontdekken", nfts: "NFT's", market: "Markt", studio: "Studio", live: "Live",
-    communities: "Community's", games: "Spellen", profile: "Mijn profiel", myVia: "Mijn VIA",
+    social: "Sociaal", discover: "Ontdekken", nfts: "NFT's", live: "Live",
+    communities: "Community's", games: "Spellen", world: "Wereld", profile: "Mijn profiel", myVia: "Mijn VIA",
     search: "Zoek leden", publicEntrance: "Publieke ingang", wallet: "Wallet", notifications: "Meldingen",
     login: "DeSo Login", connecting: "Verbinden…", logout: "Uitloggen", blocked: "Safari heeft het DeSo Identity-venster geblokkeerd.",
     connected: "Verbonden", switchAccount: "Wissel account", addAccount: "DeSo-account toevoegen", inactive90: "90+ dagen inactief",
   },
   English: {
     explore: "Explore VIA", personal: "Personal", account: "Account",
-    social: "Social", discover: "Discover", nfts: "NFTs", market: "Market", studio: "Studio", live: "Live",
-    communities: "Communities", games: "Games", profile: "My Profile", myVia: "My VIA",
+    social: "Social", discover: "Discover", nfts: "NFTs", live: "Live",
+    communities: "Communities", games: "Games", world: "World", profile: "My Profile", myVia: "My VIA",
     search: "Search members", publicEntrance: "Public Entrance", wallet: "Wallet", notifications: "Notifications",
     login: "DeSo Login", connecting: "Connecting…", logout: "Logout", blocked: "Safari blocked the DeSo Identity window.",
     connected: "Connected", switchAccount: "Switch account", addAccount: "Add DeSo account", inactive90: "Inactive 90+ days",
   },
   French: {
     explore: "Découvrir VIA", personal: "Personnel", account: "Compte",
-    social: "Social", discover: "Découvrir", nfts: "NFT", market: "Marché", studio: "Studio", live: "Live",
-    communities: "Communautés", games: "Jeux", profile: "Mon profil", myVia: "Mon VIA",
+    social: "Social", discover: "Découvrir", nfts: "NFT", live: "Live",
+    communities: "Communautés", games: "Jeux", world: "Monde", profile: "Mon profil", myVia: "Mon VIA",
     search: "Rechercher des membres", publicEntrance: "Entrée publique", wallet: "Wallet", notifications: "Notifications",
     login: "Connexion DeSo", connecting: "Connexion…", logout: "Déconnexion", blocked: "Safari a bloqué la fenêtre DeSo Identity.",
     connected: "Connecté", switchAccount: "Changer de compte", addAccount: "Ajouter un compte DeSo", inactive90: "Inactif depuis 90+ jours",
   },
   Spanish: {
     explore: "Explorar VIA", personal: "Personal", account: "Cuenta",
-    social: "Social", discover: "Descubrir", nfts: "NFT", market: "Mercado", studio: "Studio", live: "Live",
-    communities: "Comunidades", games: "Juegos", profile: "Mi perfil", myVia: "Mi VIA",
+    social: "Social", discover: "Descubrir", nfts: "NFT", live: "Live",
+    communities: "Comunidades", games: "Juegos", world: "Mundo", profile: "Mi perfil", myVia: "Mi VIA",
     search: "Buscar miembros", publicEntrance: "Entrada pública", wallet: "Wallet", notifications: "Notificaciones",
     login: "Acceso DeSo", connecting: "Conectando…", logout: "Cerrar sesión", blocked: "Safari bloqueó la ventana de DeSo Identity.",
     connected: "Conectado", switchAccount: "Cambiar cuenta", addAccount: "Añadir cuenta DeSo", inactive90: "Inactivo 90+ días",
   },
   Chinese: {
     explore: "探索 VIA", personal: "个人", account: "账户",
-    social: "社交", discover: "发现", nfts: "NFT", market: "市场", studio: "工作室", live: "直播",
-    communities: "社区", games: "游戏", profile: "我的资料", myVia: "我的 VIA",
+    social: "社交", discover: "发现", nfts: "NFT", live: "直播",
+    communities: "社区", games: "游戏", world: "世界", profile: "我的资料", myVia: "我的 VIA",
     search: "搜索成员", publicEntrance: "公开入口", wallet: "钱包", notifications: "通知",
     login: "DeSo 登录", connecting: "连接中…", logout: "退出", blocked: "Safari 阻止了 DeSo Identity 窗口。",
     connected: "已连接", switchAccount: "切换账户", addAccount: "添加 DeSo 账户", inactive90: "90+ 天未活跃",
