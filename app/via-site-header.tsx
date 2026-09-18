@@ -308,7 +308,7 @@ export default function ViaSiteHeader() {
                     {profile?.username?.slice(0, 1).toUpperCase() ?? "V"}
                   </span>
                 )}
-                <span style={{ position: "absolute", right: "-7px", bottom: "-7px", zIndex: 2 }}>
+                <span className="via-profile-shortcut-status" style={{ position: "absolute", right: "-7px", bottom: "-7px", zIndex: 2 }}>
                   <ViaIdentityStatusMarks verified={Boolean(profile?.isVerified)} inactive={Boolean(profile?.isInactive)} compact showLeaf={false} language={language} />
                 </span>
               </Link>
@@ -378,6 +378,7 @@ export default function ViaSiteHeader() {
         }
         @media (min-width: 721px) {
           .via-site-header-account-menu-icon { display: none !important; }
+          .via-profile-shortcut-status { display: none !important; }
         }
       `}</style>
     </header>
