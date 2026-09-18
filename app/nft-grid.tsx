@@ -6,11 +6,6 @@ import MediaFilter, { type MediaFilterType } from "./media-filter"
 import NFTMedia from "./nft-media"
 import ViaWatermark from "./via-watermark"
 
-const NFT_POST_HASHES = [
-  "000929e4490e3f744a7c889738d3aef52397ac72af906e5cd473bde710b49111",
-  "267cd00db324d831b35722da8e5cc8895b9b0da610d5e384b4578e49f8319e84",
-]
-
 type DeSoPost = {
   PostHashHex?: string
   Body?: string
@@ -83,7 +78,7 @@ async function loadAutomaticNFTCount(publicKey: string) {
     const nftPosts = posts.filter((post) => post.IsNFT === true)
     nftCount += nftPosts.length
     for (const post of nftPosts) {
-      if (discoveredNFTPostHashes.length < MAX_AUTOMATIC_NFTS_DISPLAYED && post.PostHashHex && !NFT_POST_HASHES.includes(post.PostHashHex) && !discoveredNFTPostHashes.includes(post.PostHashHex)) {
+      if (discoveredNFTPostHashes.length < MAX_AUTOMATIC_NFTS_DISPLAYED && post.PostHashHex && !discoveredNFTPostHashes.includes(post.PostHashHex)) {
         discoveredNFTPostHashes.push(post.PostHashHex)
       }
     }
@@ -152,12 +147,10 @@ const styles = {
 
 export default async function NFTGrid({ initialAccount }: { initialAccount?: string }) {
   const selectedAccount = initialAccount?.trim().replace(/^@/, "") || "OuwePiet"
-  const [results, collectionOwner] = await Promise.all([Promise.all(NFT_POST_HASHES.map(loadNFT)), loadCollectionOwner(selectedAccount)])
+  const collectionOwner = await loadCollectionOwner(selectedAccount)
   const automaticNFTResult = collectionOwner ? await loadAutomaticNFTCount(collectionOwner.PublicKeyBase58Check!) : null
-  const nfts = results.filter((result) => result !== null)
   const discoveredResults = automaticNFTResult ? await Promise.all(automaticNFTResult.discoveredNFTPostHashes.map(loadNFT)) : []
-  const discoveredNFTs = discoveredResults.filter((result): result is NonNullable<Awaited<ReturnType<typeof loadNFT>>> => result !== null && !nfts.some((nft) => nft.postHash === result.postHash))
-  const collectionNFTs = [...nfts, ...discoveredNFTs]
+  const collectionNFTs = discoveredResults.filter((result): result is NonNullable<Awaited<ReturnType<typeof loadNFT>>> => result !== null)
 
   const renderNFTCard = ({ postHash, post, forSaleCount, lowestBuyNowPrice, lowestMinBidAmount }: NonNullable<Awaited<ReturnType<typeof loadNFT>>>) => {
     const creatorUsername = post.ProfileEntryResponse?.Username
