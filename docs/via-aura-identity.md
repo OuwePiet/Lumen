@@ -62,3 +62,13 @@ VIA presenteert DeSo-profielinformatie op een eigen, originelere, mooiere en con
 - De compacte VIA Aura-identiteit blijft wél zichtbaar vóór livegang: echte DeSo-avatar in een herkenbare glazen VIA-tegel.
 - De blauwe DeSo-verificatie en de grijze 90-dagen-inactiefstatus worden alleen getoond wanneer de openbare DeSo-bron dat betrouwbaar ondersteunt.
 - Het VIA-blaadje blijft verborgen totdat de bovenstaande livegangregel bewust wordt vrijgegeven.
+
+
+## Vertrouwde blauwe-vinkjesynchronisatie
+- VIA kent het blauwe vinkje nooit zelf toe.
+- VIA controleert meerdere vaste DeSo-ecosysteembronnen voor verificatie, zodat een profiel niet afhankelijk is van slechts één node.
+- De huidige vertrouwde bronnen zijn: DeSo/reference node, Diamond, DeSocialWorld en SafetyNet/MyDeSoSpace.
+- Als minstens één vertrouwde bron het profiel als verified teruggeeft, toont VIA het blauwe vinkje.
+- De controle gebeurt opnieuw bij het laden/verversen van het openbare profiel; nieuwe verificaties kunnen daardoor automatisch in VIA doorlopen.
+- Een onbekende willekeurige node telt niet mee. Daarmee voorkomen we dat iemand via een eigen node zichzelf bij VIA blauw maakt.
+- De bronlijst blijft expliciet beheerd en moet bij veranderingen in het DeSo-ecosysteem opnieuw worden gecontroleerd.
