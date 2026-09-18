@@ -338,13 +338,13 @@ export default function ProfilePage() {
                   <div className="grid h-28 w-28 place-items-center rounded-full border border-[#8fd4a9]/30 bg-[#112019] text-3xl font-semibold text-[#9adbb2] sm:h-32 sm:w-32" aria-hidden="true">{profile.username.slice(0, 1).toUpperCase() || "V"}</div>
                 )}
                 <span className="absolute -bottom-2 -right-2 rounded-full bg-[#06100a]/95 p-1.5 shadow-lg">
-                  <ViaIdentityStatusMarks verified={profile.isVerified} inactive={profile.isInactive} compact={false} showLeaf={false} />
+                  <ViaIdentityStatusMarks verified={profile.isVerified} inactive={profile.isInactive} compact={false} showLeaf={false} language={language} />
                 </span>
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-3">
                   <h2 className="text-3xl font-semibold tracking-tight text-zinc-50">@{profile.username}</h2>
-                  <ViaIdentityStatusMarks verified={profile.isVerified} inactive={profile.isInactive} compact={false} />
+                  <ViaIdentityStatusMarks verified={profile.isVerified} inactive={profile.isInactive} compact={false} language={language} />
                 </div>
                 <div className="mt-3 flex flex-wrap items-center gap-2">
                   <span className={profile.isInactive ? "rounded-full border border-zinc-500/35 bg-zinc-500/10 px-3 py-1 text-xs font-semibold text-zinc-400" : "rounded-full border border-[#8fd4a9]/30 bg-[#8fd4a9]/10 px-3 py-1 text-xs font-semibold text-[#a9dfbc]"}>
