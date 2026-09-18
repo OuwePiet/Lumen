@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server"
+import { fetchDeSo } from "../../../deso-api"
 
 export const dynamic = "force-dynamic"
 
@@ -19,8 +20,32 @@ const TIMEOUT_MS = 4500
 
 type ProviderPayload = Record<string, { usd?: unknown; eur?: unknown } | undefined>
 
+type DeSoExchangeRatePayload = {
+  SatoshisPerDeSoExchangeRate?: unknown
+  USDCentsPerBitcoinExchangeRate?: unknown
+}
+
 function positiveNumber(value: unknown) {
   return typeof value === "number" && Number.isFinite(value) && value > 0 ? value : null
+}
+
+
+async function readDeSoNodeUsdReference() {
+  try {
+    const response = await fetchDeSo("get-exchange-rate", {
+      method: "GET",
+      headers: { accept: "application/json" },
+      cache: "no-store",
+    })
+    if (!response.ok) return null
+    const payload = (await response.json()) as DeSoExchangeRatePayload
+    const satoshisPerDeSo = positiveNumber(payload.SatoshisPerDeSoExchangeRate)
+    const usdCentsPerBitcoin = positiveNumber(payload.USDCentsPerBitcoinExchangeRate)
+    if (satoshisPerDeSo === null || usdCentsPerBitcoin === null) return null
+    return (satoshisPerDeSo / 100_000_000) * (usdCentsPerBitcoin / 100)
+  } catch {
+    return null
+  }
 }
 
 export async function GET() {
@@ -29,11 +54,14 @@ export async function GET() {
   const checkedAt = new Date().toISOString()
 
   try {
-    const response = await fetch(RATE_URL, {
+    const [response, nodeReferenceUsd] = await Promise.all([
+      fetch(RATE_URL, {
       headers: { accept: "application/json" },
       cache: "no-store",
       signal: controller.signal,
-    })
+      }),
+      readDeSoNodeUsdReference(),
+    ])
 
     if (!response.ok) {
       return NextResponse.json(
@@ -60,6 +88,7 @@ export async function GET() {
         checkedAt,
         asset: "DESO",
         rates: { USD: usd, EUR: eur },
+        references: { deSoNodeUSD: nodeReferenceUsd },
       },
       { headers: { "cache-control": "no-store, max-age=0" } },
     )
