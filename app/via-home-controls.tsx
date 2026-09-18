@@ -25,6 +25,7 @@ import {
 type PublicProfile = { username?: string; profilePic?: string | null; isVerified?: boolean; isInactive?: boolean }
 type ProfileResponse = { ok?: boolean; profile?: PublicProfile }
 
+// Homepage groups stay compact so account controls remain visible on tablet heights.
 const standardNav = [
   ["home", "/"],
   ["notifications", "/notifications"],
