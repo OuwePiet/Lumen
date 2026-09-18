@@ -24,17 +24,51 @@ type PublicProfile = { username?: string; profilePic?: string | null }
 type ProfileResponse = { ok?: boolean; profile?: PublicProfile }
 
 const nav = [
-  ["Home", "/"],
-  ["Feed", "/social"],
-  ["Discover", "/discover"],
-  ["NFTs", "/collection"],
-  ["Market", "/market"],
-  ["Studio", "/studio"],
-  ["Live", "/live"],
-  ["Games", "/quest"],
-  ["Communities", "/communities"],
-  ["My VIA", "/my-via"],
+  ["home", "/"],
+  ["feed", "/social"],
+  ["discover", "/discover"],
+  ["nfts", "/collection"],
+  ["market", "/market"],
+  ["studio", "/studio"],
+  ["live", "/live"],
+  ["games", "/quest"],
+  ["communities", "/communities"],
+  ["myVia", "/my-via"],
 ] as const
+
+type HeaderCopy = {
+  home: string; feed: string; discover: string; nfts: string; market: string; studio: string; live: string; games: string; communities: string; myVia: string;
+  search: string; publicEntrance: string; login: string; wallet: string; notifications: string; connected: string;
+  profile: string; saved: string; drafts: string; settings: string; switchAccount: string; desoAccount: string; addAccount: string; logout: string;
+}
+
+const headerCopy: Record<ViaLanguage, HeaderCopy> = {
+  Dutch: {
+    home: "Home", feed: "Sociaal", discover: "Ontdekken", nfts: "NFT's", market: "Markt", studio: "Studio", live: "Live", games: "Spellen", communities: "Community's", myVia: "Mijn VIA",
+    search: "Zoek leden", publicEntrance: "Publieke ingang", login: "DeSo Login", wallet: "Wallet", notifications: "Meldingen", connected: "DeSo verbonden",
+    profile: "Profiel", saved: "Opgeslagen", drafts: "Concepten", settings: "Instellingen", switchAccount: "Wissel account", desoAccount: "DeSo-account", addAccount: "DeSo-account toevoegen", logout: "Uitloggen uit VIA",
+  },
+  English: {
+    home: "Home", feed: "Social", discover: "Discover", nfts: "NFTs", market: "Market", studio: "Studio", live: "Live", games: "Games", communities: "Communities", myVia: "My VIA",
+    search: "Search members", publicEntrance: "Public Entrance", login: "DeSo Login", wallet: "Wallet", notifications: "Notifications", connected: "DeSo connected",
+    profile: "Profile", saved: "Saved", drafts: "Drafts", settings: "Settings", switchAccount: "Switch account", desoAccount: "DeSo account", addAccount: "Add DeSo account", logout: "Logout from VIA",
+  },
+  French: {
+    home: "Accueil", feed: "Social", discover: "Découvrir", nfts: "NFT", market: "Marché", studio: "Studio", live: "Live", games: "Jeux", communities: "Communautés", myVia: "Mon VIA",
+    search: "Rechercher des membres", publicEntrance: "Entrée publique", login: "Connexion DeSo", wallet: "Wallet", notifications: "Notifications", connected: "DeSo connecté",
+    profile: "Profil", saved: "Enregistrés", drafts: "Brouillons", settings: "Paramètres", switchAccount: "Changer de compte", desoAccount: "Compte DeSo", addAccount: "Ajouter un compte DeSo", logout: "Se déconnecter de VIA",
+  },
+  Spanish: {
+    home: "Inicio", feed: "Social", discover: "Descubrir", nfts: "NFT", market: "Mercado", studio: "Studio", live: "Live", games: "Juegos", communities: "Comunidades", myVia: "Mi VIA",
+    search: "Buscar miembros", publicEntrance: "Entrada pública", login: "Acceso DeSo", wallet: "Wallet", notifications: "Notificaciones", connected: "DeSo conectado",
+    profile: "Perfil", saved: "Guardados", drafts: "Borradores", settings: "Ajustes", switchAccount: "Cambiar cuenta", desoAccount: "Cuenta DeSo", addAccount: "Añadir cuenta DeSo", logout: "Cerrar sesión en VIA",
+  },
+  Chinese: {
+    home: "首页", feed: "社交", discover: "发现", nfts: "NFT", market: "市场", studio: "工作室", live: "直播", games: "游戏", communities: "社区", myVia: "我的 VIA",
+    search: "搜索成员", publicEntrance: "公开入口", login: "DeSo 登录", wallet: "钱包", notifications: "通知", connected: "DeSo 已连接",
+    profile: "资料", saved: "已保存", drafts: "草稿", settings: "设置", switchAccount: "切换账户", desoAccount: "DeSo 账户", addAccount: "添加 DeSo 账户", logout: "退出 VIA",
+  },
+}
 
 const languageCodes: Record<ViaLanguage, string> = {
   Dutch: "NL",
@@ -208,8 +242,9 @@ export default function ViaSiteHeader() {
     setMenuOpen(false)
   }
 
+  const t = headerCopy[language]
   const avatar = safeProfileImage(profile?.profilePic)
-  const accountLabel = profile?.username ? `@${profile.username}` : "DeSo connected"
+  const accountLabel = profile?.username ? `@${profile.username}` : t.connected
   const otherAccounts = knownAccounts.filter((account) => account.publicKey !== session?.publicKey)
 
   return (
@@ -221,23 +256,23 @@ export default function ViaSiteHeader() {
 
         <div style={styles.topRow} className="via-site-header-top">
           <nav style={styles.nav} className="via-site-header-nav" aria-label="VIA main navigation">
-            {nav.map(([label, href]) => {
+            {nav.map(([key, href]) => {
               const active = href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`)
-              return <Link key={href} href={href} className="via-site-header-link" style={{ ...styles.link, ...(active ? styles.activeLink : {}) }}>{label}{active ? <span style={styles.activeLine} aria-hidden="true" /> : null}</Link>
+              return <Link key={href} href={href} className="via-site-header-link" style={{ ...styles.link, ...(active ? styles.activeLink : {}) }}>{t[key]}{active ? <span style={styles.activeLine} aria-hidden="true" /> : null}</Link>
             })}
           </nav>
         </div>
 
         <div style={styles.toolsRow} className="via-site-header-tools" aria-label="VIA utility controls">
-          <Link href="/discover/voices" style={styles.search} className="via-site-header-search">⌕&nbsp;&nbsp; Search members</Link>
+          <Link href="/discover/voices" style={styles.search} className="via-site-header-search">⌕&nbsp;&nbsp; {t.search}</Link>
           <label className="sr-only" htmlFor="via-header-language">VIA language</label>
           <select id="via-header-language" value={language} onChange={(event) => changeLanguage(event.target.value as ViaLanguage)} style={styles.language} className="via-site-header-language" aria-label="VIA language">
             {VIA_LANGUAGES.map((item) => <option key={item} value={item}>{languageCodes[item]}</option>)}
           </select>
-          {!session ? <button type="button" onClick={enterPublicMode} style={{ ...pill, cursor: "pointer" }}>Public Entrance</button> : null}
-          {!session ? <a href={DESO_LOGIN_URL} target="via-deso-identity" style={styles.login}>DeSo Login</a> : null}
-          <Link href="/wallet" style={pill} className="via-site-header-utility">Wallet</Link>
-          <Link href="/notifications" style={pill} className="via-site-header-utility">Notifications</Link>
+          {!session ? <button type="button" onClick={enterPublicMode} style={{ ...pill, cursor: "pointer" }}>{t.publicEntrance}</button> : null}
+          {!session ? <a href={DESO_LOGIN_URL} target="via-deso-identity" style={styles.login}>{t.login}</a> : null}
+          <Link href="/wallet" style={pill} className="via-site-header-utility">{t.wallet}</Link>
+          <Link href="/notifications" style={pill} className="via-site-header-utility">{t.notifications}</Link>
 
           {session ? (
             <div ref={accountWrapRef} style={styles.accountWrap} className="via-site-header-account-wrap">
@@ -248,15 +283,15 @@ export default function ViaSiteHeader() {
               {menuOpen ? (
                 <div style={styles.menu} className="via-site-header-account-menu" role="menu" aria-label="VIA account menu">
                   <div style={styles.menuLabel}>{profile?.username ? `@${profile.username}` : shortPublicKey(session.publicKey)}</div>
-                  <Link href="/my-via" style={styles.menuLink} role="menuitem">My VIA</Link>
-                  <Link href="/profile" style={styles.menuLink} role="menuitem">Profile</Link>
+                  <Link href="/my-via" style={styles.menuLink} role="menuitem">{t.myVia}</Link>
+                  <Link href="/profile" style={styles.menuLink} role="menuitem">{t.profile}</Link>
                   <Link href="/wallet" style={styles.menuLink} role="menuitem">Wallet</Link>
-                  <Link href="/saved" style={styles.menuLink} role="menuitem">Saved</Link>
-                  <Link href="/studio#drafts" style={styles.menuLink} role="menuitem">Drafts</Link>
-                  <Link href="/settings" style={styles.menuLink} role="menuitem">Settings</Link>
+                  <Link href="/saved" style={styles.menuLink} role="menuitem">{t.saved}</Link>
+                  <Link href="/studio#drafts" style={styles.menuLink} role="menuitem">{t.drafts}</Link>
+                  <Link href="/settings" style={styles.menuLink} role="menuitem">{t.settings}</Link>
                   {otherAccounts.length ? <>
                     <div style={styles.divider} />
-                    <div style={styles.menuLabel}>Switch account</div>
+                    <div style={styles.menuLabel}>{t.switchAccount}</div>
                     {otherAccounts.map((account) => {
                       const accountProfile = profiles[account.publicKey]
                       const accountAvatar = safeProfileImage(accountProfile?.profilePic)
@@ -273,8 +308,8 @@ export default function ViaSiteHeader() {
                     })}
                   </> : null}
                   <div style={styles.divider} />
-                  <a href={DESO_LOGIN_URL} target="via-deso-identity" style={styles.menuLink} role="menuitem">Add DeSo account</a>
-                  <button type="button" style={styles.menuButton} onClick={logout} role="menuitem">Logout from VIA</button>
+                  <a href={DESO_LOGIN_URL} target="via-deso-identity" style={styles.menuLink} role="menuitem">{t.addAccount}</a>
+                  <button type="button" style={styles.menuButton} onClick={logout} role="menuitem">{t.logout}</button>
                 </div>
               ) : null}
             </div>
