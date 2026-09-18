@@ -2,6 +2,7 @@
 
 import { useState, type CSSProperties, type KeyboardEvent, type MouseEvent } from "react"
 import type { ViaLanguage } from "./via-local-settings"
+import { canShowViaRecognition } from "./via-recognition"
 
 type Props = {
   verified?: boolean
@@ -238,7 +239,7 @@ export default function ViaIdentityStatusMarks({
           <CheckMark inactive compact={compact} />
         </MarkShell>
       ) : null}
-      {showLeaf && viaRecognized ? (
+      {showLeaf && canShowViaRecognition(viaRecognized) ? (
         <MarkShell kind="via" compact={compact} language={language}>
           <ViaLeaf compact={compact} />
         </MarkShell>
