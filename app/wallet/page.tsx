@@ -59,7 +59,7 @@ type Copy = {
 
 const copies: Record<ViaLanguage, Copy> = {
   Dutch: {
-    title: "Jouw DeSo-wallet",
+    title: "Mijn Wallet",
     intro: "Alleen-lezen walletinformatie voor het DeSo-account dat momenteel met VIA is verbonden.",
     back: "Terug naar Mijn VIA",
     noAccount: "Geen DeSo-account verbonden",
@@ -85,7 +85,7 @@ const copies: Record<ViaLanguage, Copy> = {
     coins: "coins",
   },
   English: {
-    title: "Your DeSo wallet",
+    title: "My Wallet",
     intro: "Read-only wallet information for the DeSo account currently connected to VIA.",
     back: "Back to My VIA",
     noAccount: "No DeSo account connected",
@@ -111,7 +111,7 @@ const copies: Record<ViaLanguage, Copy> = {
     coins: "coins",
   },
   French: {
-    title: "Votre portefeuille DeSo",
+    title: "Mon Wallet",
     intro: "Informations de portefeuille en lecture seule pour le compte DeSo actuellement connecté à VIA.",
     back: "Retour à Mon VIA",
     noAccount: "Aucun compte DeSo connecté",
@@ -137,7 +137,7 @@ const copies: Record<ViaLanguage, Copy> = {
     coins: "coins",
   },
   Spanish: {
-    title: "Tu wallet de DeSo",
+    title: "Mi Wallet",
     intro: "Información de wallet de solo lectura para la cuenta DeSo conectada actualmente a VIA.",
     back: "Volver a Mi VIA",
     noAccount: "No hay una cuenta DeSo conectada",
@@ -163,7 +163,7 @@ const copies: Record<ViaLanguage, Copy> = {
     coins: "coins",
   },
   Chinese: {
-    title: "你的 DeSo 钱包",
+    title: "我的钱包",
     intro: "当前连接到 VIA 的 DeSo 账户的只读钱包信息。",
     back: "返回我的 VIA",
     noAccount: "未连接 DeSo 账户",
