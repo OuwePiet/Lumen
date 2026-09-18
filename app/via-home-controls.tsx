@@ -349,19 +349,34 @@ export default function ViaHomeControls() {
 
         {session ? (
           <div style={{ display: "grid", gap: "6px" }}>
-            <button
-              type="button"
-              onClick={() => { refreshAccounts(); setAccountsOpen((open) => !open) }}
-              aria-expanded={accountsOpen}
-              style={{ ...buttonStyle, width: "100%", minHeight: "48px", justifyContent: "flex-start", gap: "9px", cursor: "pointer", paddingInline: "9px" }}
-            >
-              {avatar ? <img src={avatar} alt="" referrerPolicy="no-referrer" style={{ width: "31px", height: "31px", borderRadius: "50%", objectFit: "cover" }} /> : <span aria-hidden="true" style={{ width: "31px", height: "31px", borderRadius: "50%", display: "grid", placeItems: "center", background: "#173326", color: "#9adbb2", fontWeight: 850 }}>{profile?.username?.slice(0, 1).toUpperCase() ?? "V"}</span>}
-              <span style={{ minWidth: 0, flex: 1, display: "grid", textAlign: "left", gap: "1px" }}>
-                <strong style={{ color: "#e5eee8", fontSize: "11px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{accountName}</strong>
-                <span style={{ color: "#74877b", fontSize: "8px", letterSpacing: ".08em", textTransform: "uppercase" }}>{t.connected}</span>
-              </span>
-              <span aria-hidden="true" style={{ color: "#7fa88e" }}>{accountsOpen ? "▴" : "▾"}</span>
-            </button>
+            <div style={{ display: "grid", gridTemplateColumns: "52px minmax(0,1fr)", gap: "7px", alignItems: "stretch" }}>
+              <Link
+                href="/profile"
+                aria-label={t.profile}
+                title={t.profile}
+                style={{
+                  ...buttonStyle,
+                  minHeight: "52px",
+                  padding: "4px",
+                  borderColor: "rgba(143,212,169,.34)",
+                  background: "linear-gradient(180deg, rgba(20,55,35,.52), rgba(8,24,14,.68))",
+                }}
+              >
+                {avatar ? <img src={avatar} alt="" referrerPolicy="no-referrer" style={{ width: "42px", height: "42px", borderRadius: "50%", objectFit: "cover", display: "block" }} /> : <span aria-hidden="true" style={{ width: "42px", height: "42px", borderRadius: "50%", display: "grid", placeItems: "center", background: "#173326", color: "#9adbb2", fontSize: "15px", fontWeight: 850 }}>{profile?.username?.slice(0, 1).toUpperCase() ?? "V"}</span>}
+              </Link>
+              <button
+                type="button"
+                onClick={() => { refreshAccounts(); setAccountsOpen((open) => !open) }}
+                aria-expanded={accountsOpen}
+                style={{ ...buttonStyle, width: "100%", minHeight: "52px", justifyContent: "flex-start", gap: "9px", cursor: "pointer", paddingInline: "10px" }}
+              >
+                <span style={{ minWidth: 0, flex: 1, display: "grid", textAlign: "left", gap: "2px" }}>
+                  <strong style={{ color: "#e5eee8", fontSize: "11px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{accountName}</strong>
+                  <span style={{ color: "#74877b", fontSize: "8px", letterSpacing: ".08em", textTransform: "uppercase" }}>{t.connected}</span>
+                </span>
+                <span aria-hidden="true" style={{ color: "#7fa88e" }}>{accountsOpen ? "▴" : "▾"}</span>
+              </button>
+            </div>
 
             {accountsOpen ? (
               <div style={{ display: "grid", gap: "5px", padding: "7px", border: "1px solid rgba(143,212,169,.16)", borderRadius: "13px", background: "rgba(2,8,5,.88)" }}>
