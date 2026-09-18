@@ -12,6 +12,14 @@ const COPY: Record<ViaLanguage, Copy> = {
   English: { exact: {}, patterns: [] },
   Dutch: {
     exact: {
+      "VIA · NFT hub": "VIA · NFT-groep",
+      "Everything NFT in one place": "Alles rond NFT's op één plek",
+      "Browse collections, create and mint, buy or sell, manage bids and follow transfers without separate homepage groups.": "Bekijk collecties, maak en mint, koop of verkoop, beheer biedingen en volg transfers zonder aparte hoofdgroepen op de homepage.",
+      "Collection": "Collectie",
+      "Create & Mint": "Maken & minten",
+      "Buy & Sell": "Kopen & verkopen",
+      "Received Bids": "Ontvangen biedingen",
+      "My Bids": "Mijn biedingen",
       "Find NFT creator": "Zoek NFT-maker",
       "NFT collection": "NFT-collectie",
       "Explore public DeSo NFTs through VIA. Collection data is loaded read-only from the DeSo network.": "Ontdek openbare DeSo-NFTs via VIA. Collectiegegevens worden alleen-lezen geladen vanaf het DeSo-netwerk.",
@@ -83,6 +91,14 @@ const COPY: Record<ViaLanguage, Copy> = {
   },
   French: {
     exact: {
+      "VIA · NFT hub": "VIA · groupe NFT",
+      "Everything NFT in one place": "Tout ce qui concerne les NFT au même endroit",
+      "Browse collections, create and mint, buy or sell, manage bids and follow transfers without separate homepage groups.": "Parcourez les collections, créez et mintez, achetez ou vendez, gérez les offres et suivez les transferts sans groupes séparés sur la page d’accueil.",
+      "Collection": "Collection",
+      "Create & Mint": "Créer & minter",
+      "Buy & Sell": "Acheter & vendre",
+      "Received Bids": "Offres reçues",
+      "My Bids": "Mes offres",
       "Find NFT creator": "Rechercher un créateur NFT",
       "NFT collection": "Collection NFT",
       "Explore public DeSo NFTs through VIA. Collection data is loaded read-only from the DeSo network.": "Explorez les NFT DeSo publics via VIA. Les données de collection sont chargées en lecture seule depuis le réseau DeSo.",
@@ -150,6 +166,14 @@ const COPY: Record<ViaLanguage, Copy> = {
   },
   Spanish: {
     exact: {
+      "VIA · NFT hub": "VIA · grupo NFT",
+      "Everything NFT in one place": "Todo sobre NFT en un solo lugar",
+      "Browse collections, create and mint, buy or sell, manage bids and follow transfers without separate homepage groups.": "Explora colecciones, crea y acuña, compra o vende, gestiona ofertas y sigue transferencias sin grupos separados en la página de inicio.",
+      "Collection": "Colección",
+      "Create & Mint": "Crear y acuñar",
+      "Buy & Sell": "Comprar y vender",
+      "Received Bids": "Ofertas recibidas",
+      "My Bids": "Mis ofertas",
       "Find NFT creator": "Buscar creador NFT",
       "NFT collection": "Colección NFT",
       "Explore public DeSo NFTs through VIA. Collection data is loaded read-only from the DeSo network.": "Explora NFT públicos de DeSo mediante VIA. Los datos de la colección se cargan en modo de solo lectura desde la red DeSo.",
@@ -217,6 +241,14 @@ const COPY: Record<ViaLanguage, Copy> = {
   },
   Chinese: {
     exact: {
+      "VIA · NFT hub": "VIA · NFT 分组",
+      "Everything NFT in one place": "所有 NFT 功能集中在一处",
+      "Browse collections, create and mint, buy or sell, manage bids and follow transfers without separate homepage groups.": "浏览收藏、创建和铸造、买卖、管理出价并跟踪转移，不再把这些功能拆成独立的主页分组。",
+      "Collection": "收藏",
+      "Create & Mint": "创建与铸造",
+      "Buy & Sell": "买入与卖出",
+      "Received Bids": "收到的出价",
+      "My Bids": "我的出价",
       "Find NFT creator": "查找 NFT 创作者",
       "NFT collection": "NFT 收藏",
       "Explore public DeSo NFTs through VIA. Collection data is loaded read-only from the DeSo network.": "通过 VIA 浏览公开的 DeSo NFT。收藏数据以只读方式从 DeSo 网络加载。",
