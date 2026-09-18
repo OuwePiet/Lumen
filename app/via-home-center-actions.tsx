@@ -45,8 +45,10 @@ export default function ViaHomeCenterActions() {
   const t = copy[language]
 
   return (
+    <>
     <section
       aria-label="VIA ideas and storage"
+      className="via-home-center-actions"
       style={{
         position: "absolute",
         zIndex: 5,
@@ -82,5 +84,19 @@ export default function ViaHomeCenterActions() {
         <Link href="/storage" style={{ ...buttonStyle, background: "rgba(3,12,7,.74)", color: "#9adbb2" }}>{t.storage}</Link>
       </div>
     </section>
+      <style>{`
+        @media (max-width: 720px) {
+          .via-home-center-actions {
+            position: relative !important;
+            top: auto !important;
+            left: auto !important;
+            transform: none !important;
+            width: auto !important;
+            min-width: 0 !important;
+            margin: 10px 10px 0 !important;
+          }
+        }
+      `}</style>
+    </>
   )
 }
