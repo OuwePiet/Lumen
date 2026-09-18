@@ -117,6 +117,7 @@ const quietAction = "inline-flex min-h-10 items-center rounded-[10px] border bor
 export default function MyViaPage() {
   const [language, setLanguage] = useState<ViaLanguage>("English");
   const [isOwner, setIsOwner] = useState(false);
+  const [ownerChecked, setOwnerChecked] = useState(false);
 
   useEffect(() => {
     const refreshLanguage = () => setLanguage(readViaLocalSettings().interfaceLanguage);
@@ -132,7 +133,10 @@ export default function MyViaPage() {
     const verifyOwner = async () => {
       const session = restoreIdentitySession();
       if (!session?.publicKey) {
-        if (active) setIsOwner(false);
+        if (active) {
+          setIsOwner(false);
+          setOwnerChecked(true);
+        }
         return;
       }
 
@@ -146,9 +150,15 @@ export default function MyViaPage() {
         });
         const data = response.ok ? (await response.json()) as { publicKey?: unknown } : null;
         const ownerKey = typeof data?.publicKey === "string" ? data.publicKey : "";
-        if (active) setIsOwner(Boolean(ownerKey && ownerKey === session.publicKey));
+        if (active) {
+          setIsOwner(Boolean(ownerKey && ownerKey === session.publicKey));
+          setOwnerChecked(true);
+        }
       } catch (error) {
-        if (active && !(error instanceof DOMException && error.name === "AbortError")) setIsOwner(false);
+        if (active && !(error instanceof DOMException && error.name === "AbortError")) {
+          setIsOwner(false);
+          setOwnerChecked(true);
+        }
       }
     };
 
@@ -163,6 +173,29 @@ export default function MyViaPage() {
   }, []);
 
   const t = copy[language];
+
+  if (!ownerChecked) {
+    return (
+      <main className="min-h-screen bg-[#050807] px-5 py-8 text-zinc-100 sm:px-8 lg:px-12">
+        <div className="mx-auto max-w-3xl rounded-[16px] border border-zinc-800/80 bg-zinc-950/50 p-6">
+          <p className="text-sm text-zinc-400">Mijn VIA controleren…</p>
+        </div>
+      </main>
+    );
+  }
+
+  if (!isOwner) {
+    return (
+      <main className="min-h-screen bg-[#050807] px-5 py-8 text-zinc-100 sm:px-8 lg:px-12">
+        <div className="mx-auto max-w-3xl rounded-[16px] border border-zinc-800/80 bg-zinc-950/50 p-6">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8fd4a9]">VIA · PERSOONLIJK</p>
+          <h1 className="mt-2 text-3xl font-semibold">Mijn VIA</h1>
+          <p className="mt-3 text-sm leading-6 text-zinc-400">Deze persoonlijke VIA-omgeving is tijdens de bouwfase alleen beschikbaar voor de VIA-eigenaar.</p>
+          <Link href="/" className={`${quietAction} mt-5`}>Terug naar VIA</Link>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-[#050807] px-5 py-8 text-zinc-100 sm:px-8 lg:px-12">
