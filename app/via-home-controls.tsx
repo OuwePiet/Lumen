@@ -299,6 +299,7 @@ export default function ViaHomeControls() {
   return (
     <aside
       aria-label="VIA homepage controls"
+      className="via-home-controls"
       style={{
         position: "absolute",
         zIndex: 4,
@@ -314,7 +315,7 @@ export default function ViaHomeControls() {
       }}
     >
       <Link href="/" aria-label="VIA home" style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "2px", textDecoration: "none" }}>
-        <img src="/via-logo-original.jpg?v=2" alt="VIA" style={{ width: "100%", maxHeight: "108px", objectFit: "contain", display: "block", borderRadius: "14px" }} />
+        <img src="/via-logo-original.jpg?v=2" alt="VIA" className="via-home-controls-logo" style={{ width: "100%", maxHeight: "108px", objectFit: "contain", display: "block", borderRadius: "14px" }} />
         <span style={{ color: "#8fd4a9", fontSize: "10px", fontWeight: 650, letterSpacing: ".14em", lineHeight: 1.2 }}>viadeso.online</span>
       </Link>
 
@@ -389,6 +390,29 @@ export default function ViaHomeControls() {
       </section>
 
       {status === "blocked" ? <span style={{ color: "#c6a97b", fontSize: "9px", lineHeight: 1.45 }}>{t.blocked}</span> : null}
+      <style>{`
+        @media (max-width: 720px) {
+          .via-home-controls {
+            position: relative !important;
+            left: auto !important;
+            top: auto !important;
+            bottom: auto !important;
+            width: auto !important;
+            margin: 10px 10px 0 !important;
+            padding: 10px 10px 14px !important;
+            overflow: visible !important;
+            border: 1px solid rgba(143,212,169,.16);
+            border-radius: 18px;
+            background: rgba(2,8,5,.88);
+            backdrop-filter: blur(10px);
+          }
+          .via-home-controls-logo {
+            width: 154px !important;
+            max-height: 70px !important;
+            margin: 0 auto !important;
+          }
+        }
+      `}</style>
     </aside>
   )
 }
