@@ -48,3 +48,17 @@ VIA presenteert DeSo-profielinformatie op een eigen, originelere, mooiere en con
 - Blauw en grijs kunnen gelijktijdig zichtbaar zijn.
 - Uitleg-popovers zijn meertalig en werken via aanraken/klik/toetsenbord.
 - VIA-blaadje is technisch voorbereid maar wordt niet getoond zonder echte VIA Recognition-bron.
+
+
+## Livegangregel voor VIA Recognition
+- VIA Recognition staat technisch achter `VIA_RECOGNITION_ENABLED = false`.
+- Deze schakelaar blijft **OFF** tijdens ontwikkeling, testen en pre-launch.
+- Het groene VIA-blaadje mag pas worden geactiveerd wanneer VIA werkelijk klaar is voor publieke livegang.
+- Voor inschakelen moeten de erkenningscriteria en de bron waarmee VIA die criteria controleert nog één keer expliciet worden beoordeeld.
+- Een DeSo-login, DeSo-verificatie, profielbezoek of handmatige styling mag het VIA-blaadje nooit automatisch activeren.
+- Dit punt is een verplichte launch-check en mag niet uit de voorraad verdwijnen.
+
+## Zichtbaarheid vóór livegang
+- De compacte VIA Aura-identiteit blijft wél zichtbaar vóór livegang: echte DeSo-avatar in een herkenbare glazen VIA-tegel.
+- De blauwe DeSo-verificatie en de grijze 90-dagen-inactiefstatus worden alleen getoond wanneer de openbare DeSo-bron dat betrouwbaar ondersteunt.
+- Het VIA-blaadje blijft verborgen totdat de bovenstaande livegangregel bewust wordt vrijgegeven.
