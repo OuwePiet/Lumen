@@ -354,7 +354,7 @@ export default function ViaHomeControls() {
             <Link key={href} href={href} style={{ ...buttonStyle, borderColor: "rgba(143,212,169,.34)", background: "linear-gradient(180deg, rgba(20,55,35,.52), rgba(8,24,14,.68))", color: "#b5e8c7" }}>{t[key]}</Link>
           ))}
           <span aria-disabled="true" title="Wordt op de eigen Berichten-pagina aangesloten" style={disabledButtonStyle}>{t.messages}</span>
-          <span aria-disabled="true" title="Wordt op de eigen Meer-pagina aangesloten" style={disabledButtonStyle}>{t.more}</span>
+          <Link href="/more" style={{ ...buttonStyle, borderColor: "rgba(143,212,169,.34)", background: "linear-gradient(180deg, rgba(20,55,35,.52), rgba(8,24,14,.68))", color: "#b5e8c7" }}>{t.more}</Link>
         </nav>
       </section>
 
