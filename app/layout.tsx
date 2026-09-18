@@ -19,6 +19,12 @@ export const metadata: Metadata = {
   },
   description,
   applicationName: 'VIA',
+  manifest: '/manifest.webmanifest',
+  appleWebApp: {
+    capable: true,
+    title: 'VIA',
+    statusBarStyle: 'black-translucent',
+  },
   keywords: [
     'VIA',
     'viadeso.online',
@@ -53,6 +59,7 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: '/icon.svg',
+    apple: '/apple-icon',
   },
 }
 
