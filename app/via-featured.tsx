@@ -255,6 +255,7 @@ export default function ViaFeatured() {
     <>
       <section
         aria-labelledby="via-featured-title"
+        className="via-home-featured"
         style={{
           position: "absolute",
           zIndex: 3,
@@ -346,6 +347,19 @@ export default function ViaFeatured() {
           </form>
         </div>
       ) : null}
+      <style>{`
+        @media (max-width: 720px) {
+          .via-home-featured {
+            position: relative !important;
+            top: auto !important;
+            right: auto !important;
+            bottom: auto !important;
+            width: auto !important;
+            margin: 10px !important;
+            overflow: visible !important;
+          }
+        }
+      `}</style>
     </>
   )
 }
