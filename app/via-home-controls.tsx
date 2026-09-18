@@ -13,6 +13,7 @@ import {
   switchIdentitySession,
   type ViaIdentitySession,
 } from "./deso-identity-session"
+import ViaIdentityStatusMarks from "./via-identity-status"
 import {
   readViaLocalSettings,
   saveViaLocalSettings,
@@ -21,7 +22,7 @@ import {
   type ViaLanguage,
 } from "./via-local-settings"
 
-type PublicProfile = { username?: string; profilePic?: string | null }
+type PublicProfile = { username?: string; profilePic?: string | null; isVerified?: boolean; isInactive?: boolean }
 type ProfileResponse = { ok?: boolean; profile?: PublicProfile }
 
 const mainNav = [
@@ -349,19 +350,39 @@ export default function ViaHomeControls() {
 
         {session ? (
           <div style={{ display: "grid", gap: "6px" }}>
-            <button
-              type="button"
-              onClick={() => { refreshAccounts(); setAccountsOpen((open) => !open) }}
-              aria-expanded={accountsOpen}
-              style={{ ...buttonStyle, width: "100%", minHeight: "48px", justifyContent: "flex-start", gap: "9px", cursor: "pointer", paddingInline: "9px" }}
-            >
-              {avatar ? <img src={avatar} alt="" referrerPolicy="no-referrer" style={{ width: "31px", height: "31px", borderRadius: "50%", objectFit: "cover" }} /> : <span aria-hidden="true" style={{ width: "31px", height: "31px", borderRadius: "50%", display: "grid", placeItems: "center", background: "#173326", color: "#9adbb2", fontWeight: 850 }}>{profile?.username?.slice(0, 1).toUpperCase() ?? "V"}</span>}
-              <span style={{ minWidth: 0, flex: 1, display: "grid", textAlign: "left", gap: "1px" }}>
-                <strong style={{ color: "#e5eee8", fontSize: "11px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{accountName}</strong>
-                <span style={{ color: "#74877b", fontSize: "8px", letterSpacing: ".08em", textTransform: "uppercase" }}>{t.connected}</span>
-              </span>
-              <span aria-hidden="true" style={{ color: "#7fa88e" }}>{accountsOpen ? "▴" : "▾"}</span>
-            </button>
+            <div style={{ display: "grid", gridTemplateColumns: "54px minmax(0,1fr)", gap: "7px", alignItems: "stretch" }}>
+              <Link
+                href="/profile"
+                aria-label={t.profile}
+                title={t.profile}
+                style={{
+                  ...buttonStyle,
+                  minHeight: "54px",
+                  padding: "5px",
+                  borderRadius: "16px",
+                  borderColor: "rgba(143,212,169,.34)",
+                  background: "linear-gradient(145deg, rgba(29,64,45,.62), rgba(5,17,10,.82))",
+                  boxShadow: "0 0 18px rgba(143,212,169,.08), inset 0 1px 0 rgba(255,255,255,.06)",
+                }}
+              >
+                {avatar ? <img src={avatar} alt="" referrerPolicy="no-referrer" style={{ width: "42px", height: "42px", borderRadius: "50%", objectFit: "cover", display: "block", border: "1px solid rgba(143,212,169,.32)" }} /> : <span aria-hidden="true" style={{ width: "42px", height: "42px", borderRadius: "50%", display: "grid", placeItems: "center", background: "#173326", color: "#9adbb2", fontSize: "15px", fontWeight: 850 }}>{profile?.username?.slice(0, 1).toUpperCase() ?? "V"}</span>}
+              </Link>
+              <button
+                type="button"
+                onClick={() => { refreshAccounts(); setAccountsOpen((open) => !open) }}
+                aria-expanded={accountsOpen}
+                style={{ ...buttonStyle, width: "100%", minHeight: "54px", justifyContent: "flex-start", gap: "8px", cursor: "pointer", paddingInline: "10px", borderRadius: "16px", background: "linear-gradient(145deg, rgba(18,42,29,.58), rgba(3,12,7,.82))", boxShadow: "inset 0 1px 0 rgba(255,255,255,.04)" }}
+              >
+                <span style={{ minWidth: 0, flex: 1, display: "grid", textAlign: "left", gap: "2px" }}>
+                  <span style={{ display: "flex", alignItems: "center", gap: "6px", minWidth: 0 }}>
+                    <strong style={{ color: "#e5eee8", fontSize: "11px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{accountName}</strong>
+                    <ViaIdentityStatusMarks verified={Boolean(profile?.isVerified)} inactive={Boolean(profile?.isInactive)} compact />
+                  </span>
+                  <span style={{ color: profile?.isInactive ? "#818985" : "#74877b", fontSize: "8px", letterSpacing: ".08em", textTransform: "uppercase" }}>{profile?.isInactive ? "90+ dagen inactief" : t.connected}</span>
+                </span>
+                <span aria-hidden="true" style={{ color: "#7fa88e" }}>{accountsOpen ? "▴" : "▾"}</span>
+              </button>
+            </div>
 
             {accountsOpen ? (
               <div style={{ display: "grid", gap: "5px", padding: "7px", border: "1px solid rgba(143,212,169,.16)", borderRadius: "13px", background: "rgba(2,8,5,.88)" }}>
