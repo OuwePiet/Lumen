@@ -180,6 +180,7 @@ const games = [
 
 export default function QuestPageClient() {
   const [language, setLanguage] = useState<ViaLanguage>("English")
+  const [activeGame, setActiveGame] = useState<string | null>(null)
 
   useEffect(() => {
     const refresh = () => setLanguage(readViaLocalSettings().interfaceLanguage)
@@ -223,7 +224,7 @@ export default function QuestPageClient() {
           <p style={{ color: "#9bac9f", maxWidth: 720 }}>{copy.pickText}</p>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 12, marginTop: 16 }}>
             {games.map((game, index) => (
-              <a key={game.href} href={game.href} style={{ display: "block", minHeight: 104, border: "1px solid #285f40", borderRadius: 16, padding: 16, background: "#0a100d", color: "#f4f7f5", textDecoration: "none" }}>
+              <a key={game.href} href={game.href} onClick={() => setActiveGame(game.href.slice(1))} style={{ display: "block", minHeight: 104, border: "1px solid #285f40", borderRadius: 16, padding: 16, background: "#0a100d", color: "#f4f7f5", textDecoration: "none" }}>
                 <strong>{game.title}</strong>
                 <span style={{ display: "block", marginTop: 7, color: "#8fa299", fontSize: 14, lineHeight: 1.45 }}>{copy.descriptions[index]}</span>
               </a>
@@ -231,7 +232,7 @@ export default function QuestPageClient() {
           </div>
         </section>
 
-        <section id="daily-grid" style={{ scrollMarginTop: 24 }}>
+        <section id="daily-grid" style={{ scrollMarginTop: 24, display: activeGame === null || activeGame === "daily-grid" ? "block" : "none", minHeight: activeGame === "daily-grid" ? "calc(100vh - 48px)" : undefined }}>
           <DailyGrid />
           <div style={shareRow}>
             <ShareButton game="VIA Daily Grid" path="/quest#daily-grid" />
@@ -239,7 +240,7 @@ export default function QuestPageClient() {
           </div>
         </section>
 
-        <section id="alphabet-relay" style={{ scrollMarginTop: 24 }}>
+        <section id="alphabet-relay" style={{ scrollMarginTop: 24, display: activeGame === null || activeGame === "alphabet-relay" ? "block" : "none", minHeight: activeGame === "alphabet-relay" ? "calc(100vh - 48px)" : undefined }}>
           <AlphabetRelay />
           <div style={shareRow}>
             <ShareButton game="VIA Alphabet Relay" path="/quest#alphabet-relay" />
@@ -247,7 +248,7 @@ export default function QuestPageClient() {
           </div>
         </section>
 
-        <section id="neo-pong" style={{ scrollMarginTop: 24 }}>
+        <section id="neo-pong" style={{ scrollMarginTop: 24, display: activeGame === null || activeGame === "neo-pong" ? "block" : "none", minHeight: activeGame === "neo-pong" ? "calc(100vh - 48px)" : undefined }}>
           <ViaPong />
           <div style={shareRow}>
             <ShareButton game="VIA NEO PONG" path="/quest#neo-pong" />
@@ -255,7 +256,7 @@ export default function QuestPageClient() {
           </div>
         </section>
 
-        <section id="mahjong-stack" style={{ scrollMarginTop: 24 }}>
+        <section id="mahjong-stack" style={{ scrollMarginTop: 24, display: activeGame === null || activeGame === "mahjong-stack" ? "block" : "none", minHeight: activeGame === "mahjong-stack" ? "calc(100vh - 48px)" : undefined }}>
           <MahjongStack />
           <div style={shareRow}>
             <ShareButton game="VIA Mahjong Stack" path="/quest#mahjong-stack" />
@@ -263,7 +264,7 @@ export default function QuestPageClient() {
           </div>
         </section>
 
-        <section id="vault-breaker" style={{ scrollMarginTop: 24 }}>
+        <section id="vault-breaker" style={{ scrollMarginTop: 24, display: activeGame === null || activeGame === "vault-breaker" ? "block" : "none", minHeight: activeGame === "vault-breaker" ? "calc(100vh - 48px)" : undefined }}>
           <VaultBreaker />
           <div style={shareRow}>
             <ShareButton game="VIA Vault Breaker" path="/quest#vault-breaker" />
@@ -271,7 +272,7 @@ export default function QuestPageClient() {
           </div>
         </section>
 
-        <section id="coffee-corner" style={{ scrollMarginTop: 24 }}>
+        <section id="coffee-corner" style={{ scrollMarginTop: 24, display: activeGame === null || activeGame === "coffee-corner" ? "block" : "none", minHeight: activeGame === "coffee-corner" ? "calc(100vh - 48px)" : undefined }}>
           <CoffeeGames />
           <div style={shareRow} aria-label={copy.coffeeActions}>
             <ShareButton game="VIA Coffee Rush" path="/quest#coffee-rush-heading" />
@@ -283,7 +284,7 @@ export default function QuestPageClient() {
           </div>
         </section>
 
-        <section id="blockchain-mosaic" style={{ scrollMarginTop: 24 }}>
+        <section id="blockchain-mosaic" style={{ scrollMarginTop: 24, display: activeGame === null || activeGame === "blockchain-mosaic" ? "block" : "none", minHeight: activeGame === "blockchain-mosaic" ? "calc(100vh - 48px)" : undefined }}>
           <BlockchainPuzzle />
           <div style={shareRow}>
             <ShareButton game="VIA Blockchain Mosaic" path="/quest#blockchain-mosaic" />
@@ -291,7 +292,7 @@ export default function QuestPageClient() {
           </div>
         </section>
 
-        <section id="world-quest" style={{ scrollMarginTop: 24 }}>
+        <section id="world-quest" style={{ scrollMarginTop: 24, display: activeGame === null || activeGame === "world-quest" ? "block" : "none", minHeight: activeGame === "world-quest" ? "calc(100vh - 48px)" : undefined }}>
           <QuestGame />
           <div style={shareRow}>
             <ShareButton game="VIA World Quest" path="/quest#world-quest" />
