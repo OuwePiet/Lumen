@@ -202,8 +202,7 @@ const simpleOverrides: Record<Exclude<ViaLanguage, "Dutch" | "English">, Partial
   Chinese: {
     "NFT mint preflight": "NFT 铸造预检", "Set terms. Check live cost. Approve later.": "设置条款。检查实时费用。随后批准。", "No blockchain write": "不写入区块链", "Copies": "份数", "Creator royalty": "创作者版税", "Coin royalty": "Coin 版税", "Offer for sale": "出售", "Buy Now": "立即购买", "Has unlockable": "含可解锁内容", "Minimum bid": "最低出价", "Buy Now price": "立即购买价格", "Checking current DeSo cost…": "正在检查 DeSo 当前费用…", "Check current mint cost": "检查当前铸造费用", "Preflight status": "预检状态", "Fresh · account matched": "最新 · 账户匹配", "Sale": "出售", "Not for sale": "不出售", "Yes": "是", "No": "否", "Network fee": "网络费用", "Spend amount": "支出金额", "VIA service fee": "VIA 服务费", "Quote valid until": "报价有效期至", "Quote created": "报价创建时间", "Server clock": "服务器时间", "Device clock difference": "设备时间差", "Quote source": "报价来源", "Quote contract": "报价合约", "Quote reference": "报价参考", "Unavailable": "不可用", "Request fresh quote": "请求新报价", "Refresh quote": "刷新报价", "Clear quote": "清除报价", "Preparing mint…": "正在准备铸造…", "Review in DeSo…": "在 DeSo 中检查…", "Submitting…": "正在提交…", "Review & mint in DeSo": "在 DeSo 中检查并铸造"
   },
-  // Hindi currently falls back to English here until this surface receives its full Hindi copy.
-  Hindi: { ...en, ...simpleOverrides.French }
+  Hindi: {}
 }
 
 const dictionaries: Record<ViaLanguage, Dictionary> = {
@@ -212,6 +211,7 @@ const dictionaries: Record<ViaLanguage, Dictionary> = {
   French: { ...en, ...simpleOverrides.French },
   Spanish: { ...en, ...simpleOverrides.Spanish },
   Chinese: { ...en, ...simpleOverrides.Chinese },
+  Hindi: en,
 }
 
 const reverse = new Map<string, Phrase>()
