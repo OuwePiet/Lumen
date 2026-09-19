@@ -83,6 +83,7 @@ export async function POST(request: Request) {
     const imageUrls = parseHttpsUrls(body.imageUrls, MAX_IMAGE_URLS)
     const videoUrls = parseHttpsUrls(body.videoUrls, MAX_VIDEO_URLS)
     const pollOptions = parsePollOptions(body.pollOptions)
+    const sensitiveContent = body.sensitiveContent === true
 
     if (!validPublicKey(publicKey)) return noStore({ ok: false, error: "INVALID_PUBLIC_KEY" }, 400)
     if (text.length > MAX_POST_LENGTH || text.includes("\u0000")) return noStore({ ok: false, error: "INVALID_POST_BODY" }, 400)
@@ -101,6 +102,7 @@ export async function POST(request: Request) {
     try {
       const postExtraData: Record<string, string> = { ViaClient: "viadeso.online" }
       if (pollOptions.length >= 2) postExtraData.PollOptions = JSON.stringify(pollOptions)
+      if (!parentStakeID && sensitiveContent) postExtraData.ViaSensitiveContent = "1"
 
       const response = await fetchDeSo("submit-post", {
         method: "POST",

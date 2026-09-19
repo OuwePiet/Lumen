@@ -6,6 +6,8 @@ export type DeSoNFTPost = {
   ImageURLs?: string[]
   VideoURLs?: string[]
   NumNFTCopies?: number
+  PostExtraData?: Record<string, unknown>
+  ExtraData?: Record<string, unknown>
   ProfileEntryResponse?: { Username?: string }
 }
 
@@ -49,6 +51,8 @@ function normalizeCollection(value: unknown): DeSoNFTCollection | null {
   if (isFiniteNonNegativeNumber(post.NumNFTCopies)) {
     normalizedPost.NumNFTCopies = post.NumNFTCopies
   }
+  if (post.PostExtraData && typeof post.PostExtraData === "object" && !Array.isArray(post.PostExtraData)) normalizedPost.PostExtraData = post.PostExtraData
+  if (post.ExtraData && typeof post.ExtraData === "object" && !Array.isArray(post.ExtraData)) normalizedPost.ExtraData = post.ExtraData
   if (typeof post.ProfileEntryResponse?.Username === "string") {
     normalizedPost.ProfileEntryResponse = {
       Username: post.ProfileEntryResponse.Username.slice(0, 64),

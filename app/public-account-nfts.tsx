@@ -8,6 +8,7 @@ import {
   type DeSoNFTPost,
 } from "./deso-nfts"
 import NFTMedia from "./nft-media"
+import { isViaSensitiveContent } from "../lib/via/sensitive-content"
 
 const PAGE_SIZE = 25
 const CACHE_VERSION = 1
@@ -749,6 +750,7 @@ export default function PublicAccountNFTs({
                     alt={title(post.Body)}
                     imageStyle={styles.image}
                     placeholderStyle={styles.placeholder}
+                    sensitive={isViaSensitiveContent(post.PostExtraData ?? post.ExtraData)}
                   />
                 </div>
                 <div style={styles.content}>

@@ -45,6 +45,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
   const [imageInputs, setImageInputs] = useState([""])
   const [videoInput, setVideoInput] = useState("")
   const [pollOpen, setPollOpen] = useState(false)
+  const [sensitiveContent, setSensitiveContent] = useState(false)
   const [pollOptions, setPollOptions] = useState(["", ""])
   const [emojiOpen, setEmojiOpen] = useState(false)
   const [status, setStatus] = useState<"idle" | "preparing" | "awaiting-approval" | "submitting" | "done" | "error">("idle")
@@ -103,6 +104,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
         setImageInputs([""])
         setVideoInput("")
         setPollOpen(false)
+        setSensitiveContent(false)
         setPollOptions(["", ""])
         setEmojiOpen(false)
         setFeeNanos(null)
@@ -179,6 +181,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
     if (isReply) return
     try { window.localStorage.removeItem(SOCIAL_DRAFT_STORAGE_KEY) } catch {}
     setBody("")
+    setSensitiveContent(false)
     setDraftMessage("Draft cleared.")
   }
 
@@ -247,7 +250,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
     try {
       const response = await fetch("/api/via/social/post", {
         method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store",
-        body: JSON.stringify({ action: "prepare", publicKey: session.publicKey, body, parentStakeID, imageUrls, videoUrls, pollOptions: preparedPollOptions }),
+        body: JSON.stringify({ action: "prepare", publicKey: session.publicKey, body, parentStakeID, imageUrls, videoUrls, pollOptions: preparedPollOptions, sensitiveContent: !isReply && sensitiveContent }),
       })
       const data = await response.json() as PrepareResponse
       if (!response.ok || !data.ok || !data.transactionHex) throw new Error(data.error || "PREPARE_FAILED")
@@ -322,6 +325,8 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
         {pollOptions.length < MAX_POLL_OPTIONS ? <button type="button" onClick={() => setPollOptions((current) => [...current, ""])} className="mt-2 text-xs text-[#9adbb2]">+ Add option</button> : null}
         {!pollValid ? <p className="mt-2 text-xs text-amber-300">Use at least two different, non-empty poll options.</p> : null}
       </div> : null}
+
+      {!isReply ? <label className="mt-4 flex items-start gap-3 rounded-xl border border-amber-900/40 bg-amber-950/10 p-3 text-sm text-zinc-300"><input type="checkbox" checked={sensitiveContent} onChange={(event)=>setSensitiveContent(event.target.checked)} className="mt-1 h-4 w-4 accent-[#8fd4a9]" /><span><strong className="text-zinc-200">Expliciete / gevoelige inhoud</strong><span className="mt-1 block text-xs leading-5 text-zinc-500">Vink dit aan voor naakt, seksuele of andere expliciete media. VIA markeert de DeSo-post zodat NFT-weergaven de media standaard afschermen. Dit is geen algemene 18+-poort voor VIA.</span></span></label> : null}
 
       {compact ? <button type="button" onClick={() => setMediaOpen((open) => !open)} className="mt-3 rounded-lg border border-zinc-800 px-3 py-1.5 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2]">{mediaOpen ? "Hide photo/video" : "Add photo/video"}</button> : null}
 
