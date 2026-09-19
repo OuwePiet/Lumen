@@ -130,6 +130,26 @@ const COPY: Record<ViaLanguage, IdeasCopy> = {
     statuses: ["已收到", "已审阅", "探索中", "已计划", "开发中", "已完成"],
     categories: { NFT: "NFT", Social: "社交", Music: "音乐", "VIA LIVE": "VIA LIVE", Games: "游戏", Discovery: "发现", Safety: "安全", Accessibility: "无障碍", Other: "其他" },
   },
+  Hindi: {
+    kicker: "VIA · IDEA BOX",
+    title: "Help VIA move forward.",
+    intro: "VIA is built for and with its visitors. Share what you miss, what could work better, or what you would like to experience, create or discover.",
+    whatHappens: "What happens to your idea?",
+    process: "We review ideas alongside visitor needs and what is technically safe, practical and affordable. An idea can move through:",
+    safety: "Never share passwords, DeSo seed words, private keys or other confidential information. VIA first tries to send your idea to the secure central inbox. If central storage is temporarily unavailable, the idea is saved only on this device instead.",
+    category: "Category",
+    idea: "Your idea",
+    placeholder: "Tell us what could make VIA better, more useful or more enjoyable…",
+    send: "Send my idea",
+    sending: "Sending…",
+    sent: "Received by VIA. Thank you.",
+    local: "Central intake is not available yet. Your idea was saved safely on this device.",
+    rate: "Please wait about a minute before sending another idea.",
+    error: "The idea could not be saved right now. Please try again later.",
+    back: "Back to VIA",
+    statuses: ["Received", "Reviewed", "Exploring", "Planned", "In development", "Built"],
+    categories: { NFT: "NFT", Social: "Social", Music: "Music", "VIA LIVE": "VIA LIVE", Games: "Games", Discovery: "Discovery", Safety: "Safety", Accessibility: "Accessibility", Other: "Other" },
+  },
 }
 
 function saveLocally(category: string, idea: string) {
