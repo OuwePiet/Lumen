@@ -14,13 +14,13 @@ export default function manifest(): MetadataRoute.Manifest {
     categories: ["social", "entertainment", "art"],
     icons: [
       {
-        src: "/via-leaf.svg",
+        src: "/via-watermark.svg",
         sizes: "any",
         type: "image/svg+xml",
         purpose: "any",
       },
       {
-        src: "/via-leaf.svg",
+        src: "/via-watermark.svg",
         sizes: "any",
         type: "image/svg+xml",
         purpose: "maskable",
