@@ -103,6 +103,22 @@ const copy: Record<ViaLanguage, Copy> = {
     storage: "外部存储",
     home: "返回主页",
   },
+  Hindi: {
+    kicker: "VIA · PUBLIC ENTRANCE",
+    title: "Browse without a DeSo login",
+    intro: "This entrance is for visitors. You can browse public VIA and DeSo content without performing blockchain actions.",
+    note: "Posting, following, liking, diamonds, bidding, buying and other actions stay unavailable until you deliberately sign in with DeSo Identity.",
+    limited: "Public mode active · DeSo functions are limited",
+    social: "View public posts",
+    discover: "Discover creators",
+    nfts: "Browse NFTs",
+    market: "Browse market",
+    infoTitle: "Visitor information",
+    payments: "Payment information",
+    transparency: "Costs & transparency",
+    storage: "External storage",
+    home: "Back to homepage",
+  },
 }
 
 const card = "rounded-[16px] border border-zinc-800/80 bg-zinc-950/55 p-5 text-zinc-200 transition hover:border-[#8fd4a9]/45 hover:text-[#b9ffd4]"
