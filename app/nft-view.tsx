@@ -165,7 +165,7 @@ function nftTitle(body?: string) {
 const styles = {
   page: {
     minHeight: "100vh",
-    background: "#050807",
+    background: '#050807 url("/via-nft-background-approved.webp") center / cover fixed no-repeat',
     color: "#f4f7f5",
     fontFamily: "Arial, Helvetica, sans-serif",
     padding: "28px 20px 60px",
