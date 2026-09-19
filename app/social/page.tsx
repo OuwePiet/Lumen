@@ -1,9 +1,15 @@
+import type { Metadata } from "next"
 import Link from "next/link"
 import FeedChoice from "./feed-choice"
 import PublicPosts from "./public-posts"
 import ParticipationGate from "../participation-gate"
 import PostComposer from "./post-composer"
 import SocialLocalizer from "./social-localizer"
+export const metadata: Metadata = {
+  title: "Social",
+  description: "Public DeSo conversations, posts, replies and creator activity on VIA.",
+}
+
 
 export default function SocialPage() {
   return (
