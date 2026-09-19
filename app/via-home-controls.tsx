@@ -14,6 +14,7 @@ import {
   type ViaIdentitySession,
 } from "./deso-identity-session"
 import ViaIdentityStatusMarks from "./via-identity-status"
+import SponsorPlatform from "./sponsor-platform"
 import {
   readViaLocalSettings,
   saveViaLocalSettings,
@@ -355,6 +356,7 @@ export default function ViaHomeControls() {
           ) : (
             <span key={key} aria-disabled="true" title="Wordt op de eigen Berichten-pagina aangesloten" style={{ ...disabledButtonStyle, width: "100%", justifyContent: "center", paddingInline: "9px" }}>{t[key]}</span>
           ))}
+          <SponsorPlatform compact />
         </nav>
       </section>
 
