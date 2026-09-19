@@ -132,7 +132,7 @@ export default function SponsorPlatform({ compact = false }: { compact?: boolean
   return (
     <>
       <button type="button" onClick={() => setOpen(true)} className={triggerClass}>Sponsor platform</button>
-      {open ? (
+      {open && typeof document !== "undefined" ? createPortal(
         <div role="dialog" aria-modal="true" aria-label="Sponsor VIA" onMouseDown={(event) => { if (event.currentTarget === event.target) setOpen(false) }} style={{ position:"fixed", inset:0, zIndex:160, display:"grid", placeItems:"center", padding:20, background:"rgba(0,0,0,.78)", backdropFilter:"blur(8px)" }}>
           <section style={{ width:"min(580px,100%)", maxHeight:"88vh", overflowY:"auto", border:"1px solid rgba(143,212,169,.32)", borderRadius:18, padding:20, background:"#06100b", color:"#edf4ef", boxShadow:"0 24px 80px rgba(0,0,0,.55)" }}>
             <div style={{ display:"flex", justifyContent:"space-between", gap:16 }}>
@@ -171,7 +171,8 @@ export default function SponsorPlatform({ compact = false }: { compact?: boolean
             {message ? <p role="status" style={{ margin:"14px 0 0", color: status==="error" ? "#e2bd7e" : "#9adbb2", fontSize:12, lineHeight:1.5 }}>{message}</p> : null}
             <p style={{ margin:"14px 0 0", color:"#68756e", fontSize:10, lineHeight:1.5 }}>Bijdragen zijn vrijwillig. Een bijdrage geeft geen eigendomsrecht, beleggingsrecht of gegarandeerde tegenprestatie.</p>
           </section>
-        </div>
+        </div>,
+        document.body,
       ) : null}
     </>
   )
