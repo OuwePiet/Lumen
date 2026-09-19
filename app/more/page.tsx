@@ -78,6 +78,18 @@ const COPY: Record<ViaLanguage, Copy> = {
     parked: "尚未连接",
     back: "返回 VIA",
   },
+  Hindi: {
+    kicker: "VIA · MORE",
+    title: "More",
+    intro: "Secondary VIA functions in one fixed place.",
+    settings: "Settings",
+    settingsText: "Manage your local VIA preferences, default post language, feed choice and local draft data.",
+    openSettings: "Open settings",
+    help: "Help",
+    helpText: "Support belongs here. The final VIA help action will only be connected after the real support address is confirmed.",
+    parked: "Not connected yet",
+    back: "Back to VIA",
+  },
 }
 
 const card = "rounded-[14px] border border-zinc-800/80 bg-zinc-950/50 p-5 sm:p-6"
