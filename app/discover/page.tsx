@@ -118,6 +118,27 @@ const COPY: Record<ViaLanguage, Copy> = {
       { title: "展示你的作品", href: "/show-your-stuff" },
     ],
   },
+  Hindi: {
+    title: "Discover",
+    intro: "Find people, posts, media, NFTs and ideas across VIA and DeSo.",
+    more: "More to explore",
+    primary: [
+      { title: "People", text: "Find creators and accounts on DeSo.", href: "/discover/voices", action: "Discover People" },
+      { title: "Content", text: "Browse posts, images, video and NFTs.", href: "/social", action: "Discover Content" },
+      { title: "Categories", text: "Explore art, photography, music, video, collecting, heritage and stories.", href: "/discover/world", action: "Explore Categories" },
+      { title: "Surprise", text: "Open something unexpected from VIA discovery.", href: "/discover/surprise", action: "Surprise Me" },
+    ],
+    secondary: [
+      { title: "Around the World", href: "/discover/world" },
+      { title: "New Voices", href: "/discover/voices" },
+      { title: "NFTs", href: "/collection" },
+      { title: "World Radio", href: "/radio" },
+      { title: "The World News", href: "/news" },
+      { title: "Events", href: "/events" },
+      { title: "Learn", href: "/learn" },
+      { title: "Show Your Stuff", href: "/show-your-stuff" },
+    ],
+  },
 }
 
 export default function DiscoverPage() {
