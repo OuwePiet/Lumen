@@ -165,7 +165,10 @@ function nftTitle(body?: string) {
 const styles = {
   page: {
     minHeight: "100vh",
-    background: '#050807 url("/via-nft-background-approved.webp") center / cover fixed no-repeat',
+    position: "relative",
+    isolation: "isolate",
+    overflowX: "hidden",
+    background: "#050807",
     color: "#f4f7f5",
     fontFamily: "Arial, Helvetica, sans-serif",
     padding: "28px 20px 60px",
@@ -533,6 +536,8 @@ export default async function NFTView({
 
     return (
       <main style={styles.page}>
+        <div aria-hidden="true" style={{ position: "fixed", inset: 0, zIndex: -2, pointerEvents: "none", backgroundImage: 'url("/via-nft-background-approved.webp")', backgroundPosition: "center top", backgroundSize: "cover", backgroundRepeat: "no-repeat" }} />
+        <div aria-hidden="true" style={{ position: "fixed", inset: 0, zIndex: -1, pointerEvents: "none", background: "linear-gradient(180deg,rgba(3,7,5,.42) 0%,rgba(3,7,5,.68) 46%,rgba(3,7,5,.9) 100%)" }} />
         <div style={styles.container}>
           <div style={styles.topActions}>
             <BackToCollection href={backHref} label={backLabel} style={styles.backLink} />
