@@ -18,6 +18,7 @@ const COPY: Record<ViaLanguage, RadioCopy> = {
   French: { radio: "Radio mondiale", choose: "Choisir", on: "Marche", off: "Arrêt", turnOn: "Activer la radio mondiale", turnOff: "Désactiver la radio mondiale", chooseAria: "Choisir une station de radio mondiale" },
   Spanish: { radio: "Radio mundial", choose: "Elegir", on: "Encender", off: "Apagar", turnOn: "Encender la radio mundial", turnOff: "Apagar la radio mundial", chooseAria: "Elegir una emisora de radio mundial" },
   Chinese: { radio: "世界电台", choose: "选择", on: "开启", off: "关闭", turnOn: "开启世界电台", turnOff: "关闭世界电台", chooseAria: "选择世界电台" },
+  Hindi: { radio: "World Radio", choose: "Choose", on: "On", off: "Off", turnOn: "Turn on World Radio", turnOff: "Turn off World Radio", chooseAria: "Choose a World Radio station" },
 }
 
 function readStation(): Station | null {
