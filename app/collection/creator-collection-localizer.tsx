@@ -314,6 +314,8 @@ const COPY: Record<ViaLanguage, Copy> = {
       [/^Show next (\d+)$/u, (count) => `显示接下来的 ${count} 个`],
     ],
   },
+  // Hindi currently falls back to English here until this surface receives its full Hindi copy.
+  Hindi: { exact: {}, patterns: [] },
 }
 
 const textSource = new WeakMap<Text, string>()
