@@ -9,7 +9,7 @@ import ViaSiteHeader from './via-site-header'
 import WalletLocalizer from './wallet/wallet-localizer'
 
 const description =
-  'Discover VIA on DeSo: an international meeting place for creators, collectors, communities, social discovery, digital culture and NFTs.'
+  'VIA is an international DeSo platform for creators, collectors and communities: discover people, social posts, digital art, NFT collections, markets, live culture, games and world discovery.'
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://viadeso.online'),
@@ -47,11 +47,13 @@ export const metadata: Metadata = {
     url: '/',
     siteName: 'VIA',
     type: 'website',
+    images: [{ url: '/via-logo-original.jpg', width: 1200, height: 630, alt: 'VIA on DeSo' }],
   },
   twitter: {
-    card: 'summary',
+    card: 'summary_large_image',
     title: 'VIA — DeSo social, creators & NFTs',
     description,
+    images: ['/via-logo-original.jpg'],
   },
   robots: {
     index: true,
@@ -61,6 +63,28 @@ export const metadata: Metadata = {
     icon: '/icon.svg',
     apple: '/apple-icon',
   },
+}
+
+const viaStructuredData = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: 'VIA',
+  alternateName: 'VIA DeSo',
+  url: 'https://viadeso.online/',
+  description,
+  inLanguage: ['en', 'nl', 'fr', 'es', 'zh'],
+  publisher: {
+    '@type': 'Organization',
+    name: 'VIA',
+    url: 'https://viadeso.online/',
+    logo: 'https://viadeso.online/via-logo-original.jpg',
+  },
+  about: [
+    { '@type': 'Thing', name: 'DeSo' },
+    { '@type': 'Thing', name: 'NFTs' },
+    { '@type': 'Thing', name: 'Digital art' },
+    { '@type': 'Thing', name: 'Creator communities' },
+  ],
 }
 
 export const viewport: Viewport = {
@@ -76,6 +100,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body className="antialiased via-session-pending">
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(viaStructuredData) }} />
         <ViaPublicAccountGuard />
         <ViaSiteHeader />
         {children}
