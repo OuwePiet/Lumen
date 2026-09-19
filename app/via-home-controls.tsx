@@ -88,7 +88,7 @@ type HomeText = {
 
 const copy: Record<ViaLanguage, HomeText> = {
   Dutch: {
-    standard: "VIA", viaExtra: "Extra VIA", account: "Account", home: "Home",
+    standard: "Maak uw keuze", viaExtra: "", account: "Taal", home: "Home",
     social: "Sociaal", discover: "Ontdekken", nfts: "NFT's", live: "Live",
     communities: "Community's", games: "Spellen", world: "Wereld", profile: "Mijn profiel", myVia: "Mijn VIA",
     bookmarks: "Bookmarks", messages: "Berichten", more: "Meer",
@@ -97,7 +97,7 @@ const copy: Record<ViaLanguage, HomeText> = {
     connected: "Verbonden", switchAccount: "Wissel account", addAccount: "DeSo-account toevoegen", inactive90: "90+ dagen inactief",
   },
   English: {
-    standard: "VIA", viaExtra: "Extra VIA", account: "Account", home: "Home",
+    standard: "Make your choice", viaExtra: "", account: "Language", home: "Home",
     social: "Social", discover: "Discover", nfts: "NFTs", live: "Live",
     communities: "Communities", games: "Games", world: "World", profile: "My Profile", myVia: "My VIA",
     bookmarks: "Bookmarks", messages: "Messages", more: "More",
@@ -106,7 +106,7 @@ const copy: Record<ViaLanguage, HomeText> = {
     connected: "Connected", switchAccount: "Switch account", addAccount: "Add DeSo account", inactive90: "Inactive 90+ days",
   },
   French: {
-    standard: "VIA", viaExtra: "VIA supplémentaire", account: "Compte", home: "Accueil",
+    standard: "Faites votre choix", viaExtra: "", account: "Langue", home: "Accueil",
     social: "Social", discover: "Découvrir", nfts: "NFT", live: "Live",
     communities: "Communautés", games: "Jeux", world: "Monde", profile: "Mon profil", myVia: "Mon VIA",
     bookmarks: "Favoris", messages: "Messages", more: "Plus",
@@ -115,7 +115,7 @@ const copy: Record<ViaLanguage, HomeText> = {
     connected: "Connecté", switchAccount: "Changer de compte", addAccount: "Ajouter un compte DeSo", inactive90: "Inactif depuis 90+ jours",
   },
   Spanish: {
-    standard: "VIA", viaExtra: "VIA extra", account: "Cuenta", home: "Inicio",
+    standard: "Haga su elección", viaExtra: "", account: "Idioma", home: "Inicio",
     social: "Social", discover: "Descubrir", nfts: "NFT", live: "Live",
     communities: "Comunidades", games: "Juegos", world: "Mundo", profile: "Mi perfil", myVia: "Mi VIA",
     bookmarks: "Guardados", messages: "Mensajes", more: "Más",
@@ -124,7 +124,7 @@ const copy: Record<ViaLanguage, HomeText> = {
     connected: "Conectado", switchAccount: "Cambiar cuenta", addAccount: "Añadir cuenta DeSo", inactive90: "Inactivo 90+ días",
   },
   Chinese: {
-    standard: "VIA", viaExtra: "VIA 扩展", account: "账户", home: "首页",
+    standard: "请选择", viaExtra: "", account: "语言", home: "首页",
     social: "社交", discover: "发现", nfts: "NFT", live: "直播",
     communities: "社区", games: "游戏", world: "世界", profile: "我的资料", myVia: "我的 VIA",
     bookmarks: "书签", messages: "消息", more: "更多",
@@ -357,7 +357,7 @@ export default function ViaHomeControls() {
       </section>
 
       <section style={{ display: "grid", gap: "6px" }}>
-        <span style={sectionLabel}>{t.viaExtra}</span>
+        {t.viaExtra ? <span style={sectionLabel}>{t.viaExtra}</span> : null}
         <nav aria-label="VIA extra navigation" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "7px" }}>
           {viaExtraNav.map(([key, href]) => (
             <Link key={href} href={href} style={{ ...buttonStyle, width: "100%", justifyContent: "center", paddingInline: "9px" }}>{t[key]}</Link>
