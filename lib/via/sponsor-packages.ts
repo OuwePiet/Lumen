@@ -1,5 +1,8 @@
 export type ViaSponsorPackageId = "starter" | "spotlight" | "collection"
 
+export const VIA_SPONSOR_DIRECTORY_PAGE_SIZE = 12
+export const VIA_SPONSOR_PAGE_ONE_SURCHARGE_CENTS = 50
+
 export type ViaSponsorPackage = {
   id: ViaSponsorPackageId
   durationDays: number
@@ -45,4 +48,6 @@ export const VIA_SPONSOR_PRICING_GUIDE = {
     "All sponsor packages use the same visible Sponsored disclosure.",
   configurable:
     "Package prices are configuration values and may be reviewed before public launch.",
+  pageOne:
+    "A sponsor may request page-one placement for a small fixed surcharge. Page one has limited capacity and its cards rotate order so payment never buys a permanent top position.",
 } as const
