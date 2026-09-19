@@ -108,8 +108,7 @@ export default function ViaHomeCenterActions() {
       <SponsorPlatform compact />
       <span style={{ color: "#9adbb2", fontSize: "10px", fontWeight: 700, textAlign: "center" }}>◆ {t.support}</span>
     </section>
-      <style>{
-        @media (max-width: 720px) {
+      <style>{`\n        @media (max-width: 720px) {
           .via-home-center-actions, [aria-label="Support VIA platform"] {
             position: relative !important;
             top: auto !important;
