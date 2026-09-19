@@ -121,7 +121,7 @@ function cardTitle(body?: string) {
 }
 
 const styles = {
-  section: { minHeight: "100vh", background: "#050807", color: "#f4f7f5", fontFamily: "Arial, Helvetica, sans-serif", padding: "28px 20px 72px" },
+  section: { minHeight: "100vh", background: "transparent", color: "#f4f7f5", fontFamily: "Arial, Helvetica, sans-serif", padding: "28px 20px 72px" },
   container: { width: "100%", maxWidth: "1120px", margin: "0 auto" },
   brandRow: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: "18px", marginBottom: "26px", flexWrap: "wrap" as const },
   brandLockup: { display: "flex", alignItems: "center", gap: "12px", textDecoration: "none" },
