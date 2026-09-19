@@ -20,7 +20,8 @@ const localeByLanguage: Record<ViaLanguage, string> = {
   Chinese: "zh-CN",
 }
 
-const labels: Record<ViaLanguage, { clock: string; date: string; source: string }> = {
+const labels: Record<ViaLanguage, { clock: string; date: string; source: string },
+  Hindi: { clock: string; date: string; source: string }> = {
   Dutch: { clock: "Wereldklok", date: "Datum", source: "Aardvisualisatie van NASA Scientific Visualization Studio" },
   English: { clock: "World Clock", date: "Date", source: "Earth visualization by NASA Scientific Visualization Studio" },
   French: { clock: "Horloge mondiale", date: "Date", source: "Visualisation de la Terre par NASA Scientific Visualization Studio" },
