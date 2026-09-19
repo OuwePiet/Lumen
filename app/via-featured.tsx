@@ -45,7 +45,6 @@ type SponsorCopy = {
   spotlight: string
   commercial: string
   sponsor: string
-  advertising: string
   bestPerformer: string
   recognition: string
   specialBadge: string
@@ -79,7 +78,6 @@ const sponsorCopy: Record<ViaLanguage, SponsorCopy> = {
     spotlight: "Gesponsorde spotlight",
     commercial: "Commerciële plaatsing · betaald na goedkeuring",
     sponsor: "Sponsor VIA",
-    advertising: "Reclamepagina",
     bestPerformer: "Beste performer",
     recognition: "VIA creator-erkenning",
     specialBadge: "Speciale badge",
@@ -111,7 +109,6 @@ const sponsorCopy: Record<ViaLanguage, SponsorCopy> = {
     spotlight: "Sponsored spotlight",
     commercial: "Commercial placement · paid after approval",
     sponsor: "Sponsor VIA",
-    advertising: "Advertising",
     bestPerformer: "Best performer",
     recognition: "VIA creator recognition",
     specialBadge: "Special badge",
@@ -143,7 +140,6 @@ const sponsorCopy: Record<ViaLanguage, SponsorCopy> = {
     spotlight: "Mise en avant sponsorisée",
     commercial: "Placement commercial · paiement après approbation",
     sponsor: "Sponsoriser VIA",
-    advertising: "Publicité",
     bestPerformer: "Meilleure performance",
     recognition: "Reconnaissance créateur VIA",
     specialBadge: "Badge spécial",
@@ -175,7 +171,6 @@ const sponsorCopy: Record<ViaLanguage, SponsorCopy> = {
     spotlight: "Espacio patrocinado",
     commercial: "Colocación comercial · pago tras aprobación",
     sponsor: "Patrocinar VIA",
-    advertising: "Publicidad",
     bestPerformer: "Mejor rendimiento",
     recognition: "Reconocimiento a creadores VIA",
     specialBadge: "Insignia especial",
@@ -207,7 +202,6 @@ const sponsorCopy: Record<ViaLanguage, SponsorCopy> = {
     spotlight: "赞助展示位",
     commercial: "商业展示 · 审核后付款",
     sponsor: "赞助 VIA",
-    advertising: "广告页面",
     bestPerformer: "最佳表现",
     recognition: "VIA 创作者认可",
     specialBadge: "特别徽章",
@@ -239,7 +233,6 @@ const sponsorCopy: Record<ViaLanguage, SponsorCopy> = {
     spotlight: "प्रायोजित स्पॉटलाइट",
     commercial: "व्यावसायिक प्लेसमेंट · मंज़ूरी के बाद भुगतान",
     sponsor: "VIA को प्रायोजित करें",
-    advertising: "विज्ञापन पेज",
     bestPerformer: "सर्वश्रेष्ठ प्रदर्शन",
     recognition: "VIA क्रिएटर सम्मान",
     specialBadge: "विशेष बैज",
@@ -404,25 +397,17 @@ export default function ViaFeatured() {
             <span style={eyebrow}>{t.sponsor}</span>
             <strong style={middleTitle}>{t.spotlight}</strong>
             <span style={middleSub}>{t.commercial}</span>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: "7px", marginTop: "6px" }}>
-              <button
-                type="button"
-                onClick={() => {
-                  setSaved(false)
-                  setMaterialName("")
-                  setSponsorOpen(true)
-                }}
-                style={{ ...sponsorButton, marginTop: 0 }}
-              >
-                {sponsorSlotsFull ? "Sponsorplaatsen vol" : t.sponsor}
-              </button>
-              <a
-                href="/advertising"
-                style={{ ...sponsorButton, marginTop: 0, textDecoration: "none", background: "rgba(3,12,7,.72)" }}
-              >
-                {t.advertising}
-              </a>
-            </div>
+            <button
+              type="button"
+              onClick={() => {
+                setSaved(false)
+                setMaterialName("")
+                setSponsorOpen(true)
+              }}
+              style={sponsorButton}
+            >
+              {sponsorSlotsFull ? "Sponsorplaatsen vol" : t.sponsor}
+            </button>
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", padding: "13px 15px" }}>
