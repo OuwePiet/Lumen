@@ -21,6 +21,7 @@ type CityResponse = {
 }
 
 type ActiveSponsor = {
+  slot: number
   title: string
   sponsorName: string
   imageUrl: string | null
@@ -31,9 +32,11 @@ type ActiveSponsor = {
 }
 
 type SponsorCardResponse = {
-  configured?: boolean
-  active?: boolean
-  sponsor?: ActiveSponsor | null
+  capacity?: number
+  reservedCount?: number
+  availableCount?: number
+  full?: boolean
+  activeSponsors?: ActiveSponsor[]
   nextChangeAt?: string | null
 }
 
@@ -237,7 +240,9 @@ const fallbackCities: CityItem[] = [
 export default function ViaFeatured() {
   const [items, setItems] = useState<CityItem[]>(fallbackCities)
   const [sponsorOpen, setSponsorOpen] = useState(false)
-  const [activeSponsor, setActiveSponsor] = useState<ActiveSponsor | null>(null)
+  const [activeSponsors, setActiveSponsors] = useState<ActiveSponsor[]>([])
+  const [activeSponsorIndex, setActiveSponsorIndex] = useState(0)
+  const [sponsorSlotsFull, setSponsorSlotsFull] = useState(false)
   const [saved, setSaved] = useState(false)
   const [materialName, setMaterialName] = useState("")
   const [language, setLanguage] = useState<ViaLanguage>("English")
@@ -273,7 +278,10 @@ export default function ViaFeatured() {
         const response = await fetch("/api/via/sponsor-card", { cache: "no-store", headers: { Accept: "application/json" } })
         const data = response.ok ? await response.json() as SponsorCardResponse : null
         if (!mounted) return
-        setActiveSponsor(data?.active && data.sponsor ? data.sponsor : null)
+        const nextSponsors = Array.isArray(data?.activeSponsors) ? data.activeSponsors : []
+        setActiveSponsors(nextSponsors)
+        setActiveSponsorIndex((current) => nextSponsors.length ? current % nextSponsors.length : 0)
+        setSponsorSlotsFull(Boolean(data?.full))
 
         const nextAt = data?.nextChangeAt ? Date.parse(data.nextChangeAt) : NaN
         const delay = Number.isFinite(nextAt)
@@ -283,7 +291,8 @@ export default function ViaFeatured() {
         timer = window.setTimeout(() => { void refreshSponsor() }, delay)
       } catch {
         if (!mounted) return
-        setActiveSponsor(null)
+        setActiveSponsors([])
+        setActiveSponsorIndex(0)
         if (timer !== null) window.clearTimeout(timer)
         timer = window.setTimeout(() => { void refreshSponsor() }, 60_000)
       }
@@ -295,6 +304,16 @@ export default function ViaFeatured() {
       if (timer !== null) window.clearTimeout(timer)
     }
   }, [])
+
+  useEffect(() => {
+    if (activeSponsors.length <= 1) return
+    const timer = window.setInterval(() => {
+      setActiveSponsorIndex((current) => (current + 1) % activeSponsors.length)
+    }, 20_000)
+    return () => window.clearInterval(timer)
+  }, [activeSponsors])
+
+  const activeSponsor = activeSponsors[activeSponsorIndex] ?? null
 
   const t = sponsorCopy[language]
 
@@ -346,7 +365,17 @@ export default function ViaFeatured() {
             <span style={eyebrow}>{t.sponsor}</span>
             <strong style={middleTitle}>{t.spotlight}</strong>
             <span style={middleSub}>{t.commercial}</span>
-            <button type="button" onClick={() => { setSaved(false); setMaterialName(""); setSponsorOpen(true) }} style={sponsorButton}>{t.sponsor}</button>
+            <button
+              type="button"
+              onClick={() => {
+                setSaved(false)
+                setMaterialName("")
+                setSponsorOpen(true)
+              }}
+              style={sponsorButton}
+            >
+              {sponsorSlotsFull ? "Sponsorplaatsen vol" : t.sponsor}
+            </button>
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", padding: "13px 15px" }}>
@@ -380,6 +409,15 @@ export default function ViaFeatured() {
               <button type="button" onClick={() => setSponsorOpen(false)} aria-label={t.close} style={{ border: 0, background: "transparent", color: "#9eaaa2", fontSize: "22px", cursor: "pointer" }}>×</button>
             </div>
 
+            {sponsorSlotsFull ? (
+              <div style={{ marginTop: "18px", padding: "14px", border: "1px solid rgba(210,173,97,.35)", borderRadius: "12px", background: "rgba(75,50,8,.14)" }}>
+                <strong style={{ color: "#e6c983", fontSize: "13px" }}>Sponsorplaatsen tijdelijk vol</strong>
+                <p style={{ margin: "6px 0 10px", color: "#a79b7d", fontSize: "12px", lineHeight: 1.55 }}>
+                  Alle vier sponsorplaatsen zijn momenteel gereserveerd. Er kan nu geen nieuwe sponsorkaart worden ingevuld.
+                </p>
+                <a href="/advertising" style={{ ...sponsorButton, marginTop: 0, textDecoration: "none" }}>Bekijk reclame-informatie</a>
+              </div>
+            ) : (
             <div style={{ display: "grid", gap: "10px", marginTop: "18px" }}>
               <input name="name" required placeholder={t.name} style={fieldStyle} />
               <input name="contact" required placeholder={t.contact} style={fieldStyle} />
@@ -403,15 +441,20 @@ export default function ViaFeatured() {
                 </select>
               </label>
             </div>
+            )}
 
+            {!sponsorSlotsFull ? (
             <div style={{ marginTop: "16px", padding: "11px 12px", border: "1px solid rgba(143,212,169,.16)", borderRadius: "12px", color: "#92a097", fontSize: "11px", lineHeight: 1.5 }}>
               {t.payment}
             </div>
+            ) : null}
 
-            <div style={{ display: "flex", flexWrap: "wrap", gap: "9px", marginTop: "16px" }}>
-              <button type="submit" style={{ ...sponsorButton, minHeight: "40px", paddingInline: "18px" }}>{saved ? t.saved : t.save}</button>
-              <a href="/payment-info" style={{ ...sponsorButton, minHeight: "40px", paddingInline: "18px", textDecoration: "none", background: "rgba(3,12,7,.72)" }}>{t.paymentInfo}</a>
-            </div>
+            {!sponsorSlotsFull ? (
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "9px", marginTop: "16px" }}>
+                <button type="submit" style={{ ...sponsorButton, minHeight: "40px", paddingInline: "18px" }}>{saved ? t.saved : t.save}</button>
+                <a href="/payment-info" style={{ ...sponsorButton, minHeight: "40px", paddingInline: "18px", textDecoration: "none", background: "rgba(3,12,7,.72)" }}>{t.paymentInfo}</a>
+              </div>
+            ) : null}
           </form>
         </div>
       ) : null}
