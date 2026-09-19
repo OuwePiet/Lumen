@@ -13,6 +13,7 @@ const copy: Record<ViaLanguage, Copy> = {
   French: { title: "Idées & stockage", ideas: "Boîte à idées", storage: "Stockage externe", support: "Chaque contribution compte — même la plus petite." },
   Spanish: { title: "Ideas y almacenamiento", ideas: "Buzón de ideas", storage: "Almacenamiento externo", support: "Cada contribución cuenta, incluso la más pequeña." },
   Chinese: { title: "想法与存储", ideas: "意见箱", storage: "外部存储", support: "每一份支持都很重要，即使是最小的一份。" },
+  Hindi: { title: "विचार और स्टोरेज", ideas: "विचार बॉक्स", storage: "बाहरी स्टोरेज", support: "हर योगदान मायने रखता है — सबसे छोटा भी।" },
 }
 
 const buttonStyle = {
