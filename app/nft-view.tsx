@@ -20,6 +20,7 @@ import { readViaMintProvenance } from "../lib/via/mint-provenance"
 import { evaluateUtilityCapability } from "../lib/via/nft-capability"
 import { utilityCapabilityLabel } from "../lib/via/nft-capability-labels"
 import { buildEditionIdentity } from "../lib/via/edition-identity"
+import { isViaSensitiveContent } from "../lib/via/sensitive-content"
 
 type DeSoPost = {
   Body?: string
@@ -549,6 +550,7 @@ export default async function NFTView({
                 alt="NFT stored on the DeSo blockchain"
                 imageStyle={styles.image}
                 placeholderStyle={styles.placeholder}
+                sensitive={isViaSensitiveContent(post.PostExtraData ?? post.ExtraData)}
               />
             </div>
 
