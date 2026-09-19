@@ -181,6 +181,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
     if (isReply) return
     try { window.localStorage.removeItem(SOCIAL_DRAFT_STORAGE_KEY) } catch {}
     setBody("")
+    setSensitiveContent(false)
     setDraftMessage("Draft cleared.")
   }
 
