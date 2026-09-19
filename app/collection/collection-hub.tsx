@@ -17,7 +17,7 @@ type HubCopy = {
   navLabel: string
 }
 
-const COPY: Record<ViaLanguage, HubCopy> = {
+const COPY: Partial<Record<ViaLanguage, HubCopy>> = {
   Dutch: {
     kicker: "VIA · NFT hub",
     title: "Alles voor NFT's op één plek",
@@ -104,7 +104,7 @@ export default function CollectionHub() {
     return () => window.removeEventListener(VIA_SETTINGS_EVENT, sync)
   }, [])
 
-  const t = COPY[language]
+  const t = COPY[language] ?? COPY.English!
 
   return (
     <section style={{ maxWidth: 1480, margin: "0 auto", padding: "22px 20px 4px" }} aria-label={t.navLabel}>
