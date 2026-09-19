@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react"
 import { readViaLocalSettings, VIA_SETTINGS_EVENT, type ViaLanguage } from "./via-local-settings"
-import SponsorPlatform from "./sponsor-platform"
 
 type CityItem = {
   city: string
@@ -49,7 +48,6 @@ type SponsorCopy = {
   christmasCity: string
   worldCity: string
   source: string
-  contributionLine: string
 }
 
 const sponsorCopy: Record<ViaLanguage, SponsorCopy> = {
@@ -81,7 +79,6 @@ const sponsorCopy: Record<ViaLanguage, SponsorCopy> = {
     christmasCity: "Kerststad",
     worldCity: "Wereldstad",
     source: "Bekijk afbeeldingsbron voor",
-    contributionLine: "Elke bijdrage telt — ook de kleinste.",
   },
   English: {
     featured: "Featured in VIA",
@@ -111,7 +108,6 @@ const sponsorCopy: Record<ViaLanguage, SponsorCopy> = {
     christmasCity: "Christmas City",
     worldCity: "World City",
     source: "View image source for",
-    contributionLine: "Every contribution counts — even the smallest.",
   },
   French: {
     featured: "À la une sur VIA",
@@ -141,7 +137,6 @@ const sponsorCopy: Record<ViaLanguage, SponsorCopy> = {
     christmasCity: "Ville de Noël",
     worldCity: "Ville du monde",
     source: "Voir la source de l’image pour",
-    contributionLine: "Chaque contribution compte — même la plus petite.",
   },
   Spanish: {
     featured: "Destacado en VIA",
@@ -171,7 +166,6 @@ const sponsorCopy: Record<ViaLanguage, SponsorCopy> = {
     christmasCity: "Ciudad navideña",
     worldCity: "Ciudad del mundo",
     source: "Ver fuente de imagen de",
-    contributionLine: "Cada contribución cuenta, incluso la más pequeña.",
   },
   Chinese: {
     featured: "VIA 精选",
@@ -201,7 +195,6 @@ const sponsorCopy: Record<ViaLanguage, SponsorCopy> = {
     christmasCity: "圣诞城市",
     worldCity: "世界城市",
     source: "查看图片来源：",
-    contributionLine: "每一份支持都很重要，即使是最小的一份。",
   },
 }
 
@@ -287,11 +280,7 @@ export default function ViaFeatured() {
             <span style={eyebrow}>{t.sponsor}</span>
             <strong style={middleTitle}>{t.spotlight}</strong>
             <span style={middleSub}>{t.commercial}</span>
-            <button type="button" onClick={() => { setSaved(false); setMaterialName(""); setSponsorOpen(true) }} style={sponsorButton}>{t.spotlight}</button>
-            <div style={{ marginTop: "7px", display: "grid", gap: "5px" }}>
-              <SponsorPlatform compact />
-              <span style={{ color: "#9adbb2", fontSize: "9px", fontWeight: 700, lineHeight: 1.35 }}>◆ {t.contributionLine}</span>
-            </div>
+            <button type="button" onClick={() => { setSaved(false); setMaterialName(""); setSponsorOpen(true) }} style={sponsorButton}>{t.sponsor}</button>
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", padding: "13px 15px" }}>
