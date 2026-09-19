@@ -175,6 +175,8 @@ export default function NFTMedia({
   }
 
   const current = candidates[candidateIndex]
+  const tryNextCandidate = () =>
+    setCandidateIndex((currentIndex) => currentIndex + 1)
 
   if (sensitive && !revealed) {
     return (
@@ -206,9 +208,6 @@ export default function NFTMedia({
       </div>
     )
   }
-  const tryNextCandidate = () =>
-    setCandidateIndex((currentIndex) => currentIndex + 1)
-
   if (current.kind === "video") {
     return (
       <div style={mediaWrapperStyle}>
