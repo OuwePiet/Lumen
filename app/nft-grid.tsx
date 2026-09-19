@@ -5,6 +5,7 @@ import { fetchDeSo } from "./deso-api"
 import MediaFilter, { type MediaFilterType } from "./media-filter"
 import NFTMedia from "./nft-media"
 import ViaWatermark from "./via-watermark"
+import { isViaSensitiveContent } from "../lib/via/sensitive-content"
 
 type DeSoPost = {
   PostHashHex?: string
@@ -14,6 +15,8 @@ type DeSoPost = {
   NumNFTCopies?: number
   IsNFT?: boolean
   ProfileEntryResponse?: { Username?: string }
+  PostExtraData?: Record<string, unknown>
+  ExtraData?: Record<string, unknown>
 }
 
 type NFTEntry = {
@@ -158,7 +161,7 @@ export default async function NFTGrid({ initialAccount }: { initialAccount?: str
     return (
       <a key={postHash} href={`/nft/${postHash}`} aria-label={`Open NFT: ${cardTitle(post.Body)} by ${creator}`} style={styles.card}>
         <div style={styles.mediaFrame}>
-          <NFTMedia imageUrl={post.ImageURLs?.[0]} videoUrl={post.VideoURLs?.[0]} alt={cardTitle(post.Body)} imageStyle={styles.image} placeholderStyle={styles.placeholder} />
+          <NFTMedia imageUrl={post.ImageURLs?.[0]} videoUrl={post.VideoURLs?.[0]} alt={cardTitle(post.Body)} imageStyle={styles.image} placeholderStyle={styles.placeholder} sensitive={isViaSensitiveContent(post.PostExtraData ?? post.ExtraData)} />
           <ViaWatermark />
         </div>
         <div style={styles.content}>
