@@ -8,6 +8,7 @@ import {
   type DeSoNFTPost,
 } from "./deso-nfts"
 import NFTMedia from "./nft-media"
+import XShareButton from "./x-share-button"
 import { isViaSensitiveContent } from "../lib/via/sensitive-content"
 
 const PAGE_SIZE = 25
@@ -678,6 +679,7 @@ export default function PublicAccountNFTs({
           <button type="button" style={styles.filter} onClick={copyCollectionLink}>
             {linkCopied ? "Link copied" : "Copy collection link"}
           </button>
+          <XShareButton href={sharePath} text={`VIA NFT collection · @${username}`} label="X" style={styles.filter} />
           <button
             type="button"
             style={styles.filter}
