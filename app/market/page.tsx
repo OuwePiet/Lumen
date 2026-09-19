@@ -1,6 +1,12 @@
+import type { Metadata } from "next"
 import Link from "next/link"
 import { fetchDeSo } from "../deso-api"
 import MarketLocalizedText from "./market-localized-text"
+export const metadata: Metadata = {
+  title: "NFT Market",
+  description: "Browse DeSo NFT listings, sale offers, bids and transfers through the VIA marketplace.",
+}
+
 
 export const dynamic = "force-dynamic"
 
