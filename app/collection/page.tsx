@@ -32,8 +32,10 @@ export default function CollectionPage() {
           pointerEvents: "none",
           backgroundImage: 'url("/via-nft-background-approved.jpg")',
           backgroundSize: "cover",
-          backgroundPosition: "center top",
+          backgroundPosition: "center 18%",
           backgroundRepeat: "no-repeat",
+          filter: "brightness(1.1) contrast(1.14) saturate(1.06)",
+          opacity: 0.94,
         }}
       />
       <div
@@ -44,7 +46,7 @@ export default function CollectionPage() {
           zIndex: -1,
           pointerEvents: "none",
           background:
-            "linear-gradient(180deg, rgba(3,7,5,.34) 0%, rgba(3,7,5,.50) 46%, rgba(3,7,5,.68) 100%)",
+            "linear-gradient(180deg, rgba(3,7,5,.18) 0%, rgba(3,7,5,.28) 44%, rgba(3,7,5,.42) 100%)",
         }}
       />
 
