@@ -1,6 +1,6 @@
 "use client"
 
-import { FormEvent, useEffect, useMemo, useRef, useState } from "react"
+import { FormEvent, useMemo, useRef, useState } from "react"
 
 type Station = {
   id: string
@@ -79,45 +79,6 @@ export default function RadioBrowser() {
       }
     }
   }
-
-  useEffect(() => {
-    try {
-      const parsed = JSON.parse(localStorage.getItem(FAVORITES_KEY) ?? "[]")
-      if (Array.isArray(parsed)) setFavorites(parsed.filter((value) => typeof value === "string"))
-      const savedStations = JSON.parse(localStorage.getItem(FAVORITE_STATIONS_KEY) ?? "[]")
-      if (Array.isArray(savedStations)) setFavoriteStations(savedStations.filter(validStation))
-    } catch {
-      // Favorites are optional local convenience data.
-    }
-
-    const params = new URLSearchParams(window.location.search)
-    const initialCountry = (params.get("country") ?? "").slice(0, 60)
-    const initialStationName = (params.get("name") ?? "").slice(0, 60)
-    setCountry(initialCountry)
-    setStationName(initialStationName)
-
-    const controller = new AbortController()
-    if (initialCountry || initialStationName) {
-      const searchParams = new URLSearchParams()
-      if (initialCountry.trim()) searchParams.set("country", initialCountry.trim())
-      if (initialStationName.trim()) searchParams.set("name", initialStationName.trim())
-      setLoading(true)
-      fetch(`/api/via/radio?${searchParams.toString()}`, { cache: "no-store", signal: controller.signal })
-        .then(async (response) => {
-          const data = await response.json()
-          if (!response.ok) throw new Error(data?.error ?? "Radio directory unavailable")
-          setStations(Array.isArray(data.stations) ? data.stations : [])
-        })
-        .catch((error) => {
-          if (!(error instanceof DOMException && error.name === "AbortError")) {
-            setStations([])
-            setError("World Radio could not load stations right now.")
-          }
-        })
-        .finally(() => setLoading(false))
-    }
-    return () => controller.abort()
-  }, [])
 
   const favoriteSet = useMemo(() => new Set(favorites), [favorites])
   const visibleStations = showFavorites ? favoriteStations.filter((station) => favoriteSet.has(station.id)) : stations
