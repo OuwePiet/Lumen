@@ -13,6 +13,7 @@ const COPY: Record<ViaLanguage, PageCopy> = {
   French: { title: "Notifications", intro: "Choisissez l’activité DeSo que vous souhaitez voir.", back: "Retour à Social" },
   Spanish: { title: "Notificaciones", intro: "Elige qué actividad de DeSo quieres ver.", back: "Volver a Social" },
   Chinese: { title: "通知", intro: "选择要查看的 DeSo 活动。", back: "返回社交" },
+  Hindi: { title: "Notifications", intro: "Choose which DeSo activity you want to see.", back: "Back to Social" },
 }
 
 export default function NotificationsPage() {
