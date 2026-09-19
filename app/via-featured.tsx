@@ -327,6 +327,7 @@ export default function ViaFeatured() {
       motion: String(data.get("motion") ?? "static"),
       startAt: String(data.get("startAt") ?? ""),
       endAt: String(data.get("endAt") ?? ""),
+      pageOneRequested: data.get("pageOneRequested") === "on",
       materialName: (data.get("material") as File | null)?.name ?? "",
       savedAt: new Date().toISOString(),
     }
@@ -425,6 +426,10 @@ export default function ViaFeatured() {
               <input name="url" type="url" placeholder={t.url} style={fieldStyle} />
               <label style={labelStyle}>{t.start}<input name="startAt" type="datetime-local" required style={{ ...fieldStyle, width: "100%", marginTop: "7px" }} /></label>
               <label style={labelStyle}>{t.end}<input name="endAt" type="datetime-local" required style={{ ...fieldStyle, width: "100%", marginTop: "7px" }} /></label>
+              <label style={{ ...labelStyle, display: "flex", alignItems: "flex-start", gap: "8px", padding: "10px 11px", border: "1px solid rgba(143,212,169,.16)", borderRadius: "11px", background: "rgba(0,0,0,.18)" }}>
+                <input name="pageOneRequested" type="checkbox" style={{ marginTop: "2px" }} />
+                <span><strong style={{ color: "#dfe8e2" }}>Voorkeur pagina 1</strong><span style={{ display: "block", marginTop: "3px", color: "#87958d", fontSize: "10px", lineHeight: 1.45 }}>Kleine toeslag. Pagina 1 heeft beperkte ruimte; de kaarten wisselen daar van volgorde zodat niemand permanent bovenaan staat.</span></span>
+              </label>
               <label style={labelStyle}>
                 {t.material}
                 <span style={{ marginTop: "7px", minHeight: "42px", display: "flex", alignItems: "center", gap: "10px", border: "1px solid rgba(143,212,169,.18)", borderRadius: "11px", padding: "8px 10px", background: "rgba(0,0,0,.24)" }}>
