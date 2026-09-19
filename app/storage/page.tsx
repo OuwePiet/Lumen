@@ -123,6 +123,25 @@ const copy: Record<ViaLanguage, Copy> = {
     providerAction: "查看当前提供商价格",
     back: "返回 VIA",
   },
+  Hindi: {
+    kicker: "VIA · EXTERNAL STORAGE",
+    title: "Storage without a VIA-owned server",
+    intro: "For large files, media, documents, archives and collections, VIA uses external storage. Your file remains with the selected storage provider; VIA does not present itself as the storage provider.",
+    visitorTitle: "For visitors",
+    visitorText: "Only need reliable external storage? Open the external storage provider directly. A DeSo account is not required.",
+    visitorAction: "Open external storage",
+    communityTitle: "For community members",
+    communityText: "Use the same external storage for creator files, media and archives. For VIA creator work, continue in Studio afterwards; on-chain actions still use DeSo Identity.",
+    communityAction: "Go to VIA Studio",
+    priceTitle: "Current R2 base pricing",
+    free: "10 GB-month included each month",
+    paid: "$0.015 per GB-month above included storage",
+    egress: "Internet egress: free",
+    operations: "Upload, read and list operations may be billed separately by the provider.",
+    note: "The provider always shows the current price and terms. VIA does not keep its own copy of your file here.",
+    providerAction: "View current provider pricing",
+    back: "Back to VIA",
+  },
 }
 
 const primary = "inline-flex min-h-11 items-center justify-center rounded-[12px] border border-[#8fd4a9]/50 bg-[#0c1711]/40 px-4 py-2 text-sm font-semibold text-[#9adbb2] transition hover:border-[#8fd4a9]/75 hover:bg-[#0c1711]/65"
