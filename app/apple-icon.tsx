@@ -20,12 +20,15 @@ export default function AppleIcon() {
           background: "#050807",
         }}
       >
-        <img
-          src="https://viadeso.online/via-leaf.svg"
-          alt=""
-          width="150"
-          height="138"
-          style={{ objectFit: "contain" }}
+        <div
+          style={{
+            width: 150,
+            height: 138,
+            backgroundImage: "url(https://viadeso.online/via-leaf.svg)",
+            backgroundSize: "contain",
+            backgroundPosition: "center",
+            backgroundRepeat: "no-repeat",
+          }}
         />
       </div>
     ),
