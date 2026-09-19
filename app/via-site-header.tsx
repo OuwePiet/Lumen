@@ -68,6 +68,11 @@ const headerCopy: Record<ViaLanguage, HeaderCopy> = {
     search: "搜索成员", publicEntrance: "公开入口", login: "DeSo 登录", wallet: "我的钱包", notifications: "通知", connected: "DeSo 已连接",
     profile: "我的资料", saved: "书签", drafts: "草稿", settings: "设置", switchAccount: "切换账户", desoAccount: "DeSo 账户", addAccount: "添加 DeSo 账户", logout: "退出 VIA",
   },
+  Hindi: {
+    home: "Home", feed: "Social", discover: "Discover", nfts: "NFTs", live: "Live", games: "Games", communities: "Communities", world: "World", myVia: "My VIA",
+    search: "Search members", publicEntrance: "Public Entrance", login: "DeSo Login", wallet: "My Wallet", notifications: "Notifications", connected: "DeSo connected",
+    profile: "My Profile", saved: "Bookmarks", drafts: "Drafts", settings: "Settings", switchAccount: "Switch account", desoAccount: "DeSo account", addAccount: "Add DeSo account", logout: "Logout from VIA",
+  },
 }
 
 const languageCodes: Record<ViaLanguage, string> = {
