@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react"
 import { DESO_IDENTITY_ORIGIN, restoreIdentitySession } from "./deso-identity-session"
 import DiamondButton from "./social/diamond-button"
 
-type Target = { ok?: boolean; publicKey?: string; postHash?: string | null; username?: string }
+type Target = { ok?: boolean; publicKey?: string; postHash?: string | null }
 type PrepareResponse = { ok?: boolean; transactionHex?: string; feeNanos?: number | null; amountNanos?: number; error?: string }
 
 function signedTransactionFromMessage(event: MessageEvent, source: Window | null) {
@@ -65,7 +65,7 @@ export default function SponsorPlatform({ compact = false }: { compact?: boolean
         const data = await response.json() as { ok?: boolean; error?: string }
         if (!response.ok || !data.ok) throw new Error(data.error || "SUBMIT_FAILED")
         setStatus("done")
-        setMessage("Dank je. De DESO-bijdrage is naar het VIA-doel verzonden.")
+        setMessage("Dank je. De DESO-bijdrage is verzonden.")
         setConfirmed(false)
       } catch {
         setStatus("error")
@@ -146,7 +146,7 @@ export default function SponsorPlatform({ compact = false }: { compact?: boolean
             <div style={{ marginTop:18, display:"grid", gap:14 }}>
               <section style={{ border:"1px solid rgba(143,212,169,.18)", borderRadius:14, padding:14, background:"rgba(0,0,0,.22)" }}>
                 <strong>DESO-bijdrage</strong>
-                <p style={{ margin:"5px 0 10px", color:"#87958d", fontSize:12 }}>Wordt als gewone DeSo Basic Transfer naar @OuwePiet/VIA voorbereid.</p>
+                <p style={{ margin:"5px 0 10px", color:"#87958d", fontSize:12 }}>Wordt als gewone DeSo Basic Transfer voor VIA voorbereid.</p>
                 <div style={{ display:"flex", gap:8, flexWrap:"wrap" }}>
                   <input value={amount} onChange={(e)=>{setAmount(e.target.value);setConfirmed(false)}} inputMode="decimal" aria-label="DESO bedrag" style={{ minHeight:40, width:160, border:"1px solid rgba(143,212,169,.22)", borderRadius:10, padding:"8px 10px", background:"#050807", color:"#eef5f0" }} />
                   <span style={{ alignSelf:"center", color:"#a9b6ae", fontSize:12 }}>DESO</span>
@@ -158,7 +158,7 @@ export default function SponsorPlatform({ compact = false }: { compact?: boolean
 
               <section style={{ border:"1px solid rgba(143,212,169,.18)", borderRadius:14, padding:14, background:"rgba(0,0,0,.22)" }}>
                 <strong>Diamond-bijdrage</strong>
-                <p style={{ margin:"5px 0 10px", color:"#87958d", fontSize:12 }}>Een Diamond is ook DESO-waarde en wordt aan een VIA/@OuwePiet-post gekoppeld.</p>
+                <p style={{ margin:"5px 0 10px", color:"#87958d", fontSize:12 }}>Een Diamond is ook DESO-waarde en wordt aan een VIA-bijdrage gekoppeld.</p>
                 {target?.publicKey && target?.postHash ? (
                   <DiamondButton postHash={target.postHash} receiverPublicKey={target.publicKey} initialCount={0} />
                 ) : (
