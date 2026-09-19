@@ -119,6 +119,26 @@ const copy: Record<ViaLanguage, Copy> = {
     unavailable: "收藏不可用",
     detected: "个 NFT 已找到",
   },
+  // Hindi currently falls back to English here until this surface receives its full Hindi copy.
+  Hindi: {
+    myVia: "My VIA",
+    communities: "Communities",
+    discover: "Discover",
+    news: "News",
+    heading: "NFT collection",
+    intro: "Explore public DeSo NFTs through VIA. Collection data is loaded read-only from the DeSo network.",
+    onChain: "On-chain NFT",
+    creator: "DeSo creator",
+    copy: "copy",
+    copies: "copies",
+    forSale: "for sale",
+    notForSale: "not for sale",
+    buyNow: "Buy now",
+    minBid: "Min bid",
+    displayed: "NFTs displayed",
+    unavailable: "Collection unavailable",
+    detected: "NFTs detected",
+  },
 }
 
 function formatDeSo(nanos: number) {
