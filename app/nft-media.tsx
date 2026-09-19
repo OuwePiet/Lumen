@@ -9,6 +9,7 @@ type NFTMediaProps = {
   alt: string
   imageStyle: CSSProperties
   placeholderStyle: CSSProperties
+  sensitive?: boolean
 }
 
 type MediaKind = "image" | "video" | "audio"
@@ -143,13 +144,16 @@ export default function NFTMedia({
   alt,
   imageStyle,
   placeholderStyle,
+  sensitive = false,
 }: NFTMediaProps) {
   const sourceKey = `${videoUrl ?? ""}|${imageUrl ?? ""}`
   const candidates = buildCandidates(imageUrl, videoUrl)
   const [candidateIndex, setCandidateIndex] = useState(0)
+  const [revealed, setRevealed] = useState(false)
 
   useEffect(() => {
     setCandidateIndex(0)
+    setRevealed(false)
   }, [sourceKey])
 
   if (candidates.length === 0) {
@@ -171,6 +175,37 @@ export default function NFTMedia({
   }
 
   const current = candidates[candidateIndex]
+
+  if (sensitive && !revealed) {
+    return (
+      <div style={{ ...placeholderStyle, position: "relative", overflow: "hidden" }}>
+        {current.kind === "image" ? (
+          <Image
+            src={current.url}
+            alt=""
+            width={600}
+            height={600}
+            sizes="(max-width: 600px) 100vw, 600px"
+            loader={passthroughLoader}
+            unoptimized
+            aria-hidden="true"
+            style={{ ...imageStyle, filter: "blur(24px)", transform: "scale(1.08)", opacity: .34 }}
+            onError={tryNextCandidate}
+          />
+        ) : null}
+        <div style={{ position: "absolute", inset: 0, display: "grid", placeItems: "center", padding: 20, background: "rgba(5,8,7,.68)", textAlign: "center" }}>
+          <div>
+            <MediaBadge label="Sensitive content" />
+            <p style={{ margin: "0 0 12px", color: "#e4ece7", fontWeight: 700 }}>Expliciete / gevoelige inhoud</p>
+            <p style={{ margin: "0 0 14px", color: "#aebbb4", fontSize: 12, lineHeight: 1.5 }}>Deze creator heeft de media als expliciet of gevoelig gemarkeerd.</p>
+            <button type="button" onClick={() => setRevealed(true)} style={{ minHeight: 38, border: "1px solid rgba(143,212,169,.42)", borderRadius: 999, padding: "8px 13px", background: "rgba(11,28,18,.92)", color: "#b9e8c9", fontWeight: 750, cursor: "pointer" }}>
+              Toon gevoelige inhoud
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
   const tryNextCandidate = () =>
     setCandidateIndex((currentIndex) => currentIndex + 1)
 
