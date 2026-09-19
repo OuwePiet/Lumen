@@ -43,7 +43,7 @@ function validStation(value: unknown): value is Station {
 
 export default function RadioBrowser() {
   const [country, setCountry] = useState("")
-  const [tag, setTag] = useState("")
+  const [stationName, setStationName] = useState("")
   const [stations, setStations] = useState<Station[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
@@ -52,7 +52,7 @@ export default function RadioBrowser() {
   const [showFavorites, setShowFavorites] = useState(false)
   const searchController = useRef<AbortController | null>(null)
 
-  const loadStations = async (nextCountry: string, nextTag: string) => {
+  const loadStations = async (nextCountry: string, nextStationName: string) => {
     searchController.current?.abort()
     const controller = new AbortController()
     searchController.current = controller
@@ -62,7 +62,7 @@ export default function RadioBrowser() {
     try {
       const params = new URLSearchParams()
       if (nextCountry.trim()) params.set("country", nextCountry.trim())
-      if (nextTag.trim()) params.set("tag", nextTag.trim())
+      if (nextStationName.trim()) params.set("name", nextStationName.trim())
       const response = await fetch(`/api/via/radio?${params.toString()}`, { cache: "no-store", signal: controller.signal })
       const data = await response.json()
       if (!response.ok) throw new Error(data?.error ?? "Radio directory unavailable")
@@ -92,11 +92,11 @@ export default function RadioBrowser() {
 
     const params = new URLSearchParams(window.location.search)
     const initialCountry = (params.get("country") ?? "").slice(0, 60)
-    const initialTag = (params.get("tag") ?? "").slice(0, 60)
-    if (initialCountry || initialTag) {
+    const initialStationName = (params.get("name") ?? "").slice(0, 60)
+    if (initialCountry || initialStationName) {
       setCountry(initialCountry)
-      setTag(initialTag)
-      void loadStations(initialCountry, initialTag)
+      setStationName(initialStationName)
+      void loadStations(initialCountry, initialStationName)
     }
     return () => searchController.current?.abort()
   }, [])
@@ -106,7 +106,7 @@ export default function RadioBrowser() {
 
   const search = async (event?: FormEvent) => {
     event?.preventDefault()
-    await loadStations(country, tag)
+    await loadStations(country, stationName)
   }
 
   const play = (station: Station) => {
@@ -145,7 +145,7 @@ export default function RadioBrowser() {
     <section aria-label="World Radio station discovery">
       <form style={styles.form} onSubmit={search}>
         <input aria-label="Country" placeholder="Country, e.g. Netherlands" value={country} maxLength={60} onChange={(event) => setCountry(event.target.value)} style={styles.input} />
-        <input aria-label="Genre or tag" placeholder="Genre/tag, e.g. jazz" value={tag} maxLength={60} onChange={(event) => setTag(event.target.value)} style={styles.input} />
+        <input aria-label="Station name" placeholder="Station, e.g. Radio 538" value={stationName} maxLength={60} onChange={(event) => setStationName(event.target.value)} style={styles.input} />
         <button type="submit" style={styles.button} disabled={loading}>{loading ? "Searching…" : "Find stations"}</button>
         <button type="button" style={styles.button} aria-pressed={showFavorites} onClick={() => setShowFavorites((value) => !value)}>{showFavorites ? "Show search" : `Favorites (${favorites.length})`}</button>
       </form>
