@@ -71,14 +71,13 @@ const dictionaries: Record<ViaLanguage, Copy> = {
   French: french,
   Spanish: spanish,
   Chinese: chinese,
+  Hindi: {},
 }
 
 const reverse = new Map<string, string>()
 for (const dictionary of Object.values(dictionaries)) {
   for (const [english, localized] of Object.entries(dictionary)) reverse.set(localized, english)
-},
-  // Hindi currently falls back to English here until this surface receives its full Hindi copy.
-  Hindi: {}
+}
 
 function dynamicTranslation(value: string, language: ViaLanguage) {
   if (language === "English") return value
@@ -89,6 +88,7 @@ function dynamicTranslation(value: string, language: ViaLanguage) {
       French: "Dernière mise à jour",
       Spanish: "Última actualización",
       Chinese: "上次更新",
+      Hindi: "Last updated",
     }
     return `${prefix[language]} ${lastUpdated[1]}`
   }
@@ -99,17 +99,18 @@ function dynamicTranslation(value: string, language: ViaLanguage) {
       French: "creator coins",
       Spanish: "creator coins",
       Chinese: "创作者币",
+      Hindi: "creator coins",
     }
     return `${creatorCoins[1]} ${label[language]}`
   }
   const bought = value.match(/^(\d+) bought$/)
   if (bought) {
-    const label: Record<Exclude<ViaLanguage, "English">, string> = { Dutch: "gekocht", French: "achetés", Spanish: "comprados", Chinese: "已购买" }
+    const label: Record<Exclude<ViaLanguage, "English">, string> = { Dutch: "gekocht", French: "achetés", Spanish: "comprados", Chinese: "已购买", Hindi: "bought" }
     return `${bought[1]} ${label[language]}`
   }
   const received = value.match(/^(\d+) received$/)
   if (received) {
-    const label: Record<Exclude<ViaLanguage, "English">, string> = { Dutch: "ontvangen", French: "reçus", Spanish: "recibidos", Chinese: "已收到" }
+    const label: Record<Exclude<ViaLanguage, "English">, string> = { Dutch: "ontvangen", French: "reçus", Spanish: "recibidos", Chinese: "已收到", Hindi: "received" }
     return `${received[1]} ${label[language]}`
   }
   const coins = value.match(/^(.+) coins$/)
