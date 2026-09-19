@@ -16,7 +16,7 @@ export type ViaLocalSettings = {
 
 export const DEFAULT_VIA_SETTINGS: ViaLocalSettings = {
   interfaceLanguage: "English",
-  defaultLanguage: "Dutch",
+  defaultLanguage: "English",
   defaultFeed: "Hot Feed",
 }
 
