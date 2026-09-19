@@ -18,15 +18,16 @@ const localeByLanguage: Record<ViaLanguage, string> = {
   French: "fr-FR",
   Spanish: "es-ES",
   Chinese: "zh-CN",
+  Hindi: "hi-IN",
 }
 
-const labels: Record<ViaLanguage, { clock: string; date: string; source: string },
-  Hindi: { clock: string; date: string; source: string }> = {
+const labels: Record<ViaLanguage, { clock: string; date: string; source: string }> = {
   Dutch: { clock: "Wereldklok", date: "Datum", source: "Aardvisualisatie van NASA Scientific Visualization Studio" },
   English: { clock: "World Clock", date: "Date", source: "Earth visualization by NASA Scientific Visualization Studio" },
   French: { clock: "Horloge mondiale", date: "Date", source: "Visualisation de la Terre par NASA Scientific Visualization Studio" },
   Spanish: { clock: "Reloj mundial", date: "Fecha", source: "Visualización de la Tierra por NASA Scientific Visualization Studio" },
   Chinese: { clock: "世界时钟", date: "日期", source: "地球可视化来源：NASA Scientific Visualization Studio" },
+  Hindi: { clock: "विश्व घड़ी", date: "तारीख", source: "NASA Scientific Visualization Studio द्वारा पृथ्वी दृश्यांकन" },
 }
 
 function formatTime(date: Date, timeZone: string, locale: string) {
