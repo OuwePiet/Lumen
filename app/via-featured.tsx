@@ -65,6 +65,8 @@ type SponsorCopy = {
   christmasCity: string
   worldCity: string
   source: string
+  start: string
+  end: string
 }
 
 const sponsorCopy: Record<ViaLanguage, SponsorCopy> = {
@@ -96,6 +98,8 @@ const sponsorCopy: Record<ViaLanguage, SponsorCopy> = {
     christmasCity: "Kerststad",
     worldCity: "Wereldstad",
     source: "Bekijk afbeeldingsbron voor",
+    start: "Start sponsorplaatsing",
+    end: "Einde sponsorplaatsing",
   },
   English: {
     featured: "Featured in VIA",
@@ -125,6 +129,8 @@ const sponsorCopy: Record<ViaLanguage, SponsorCopy> = {
     christmasCity: "Christmas City",
     worldCity: "World City",
     source: "View image source for",
+    start: "Sponsor placement starts",
+    end: "Sponsor placement ends",
   },
   French: {
     featured: "À la une sur VIA",
@@ -154,6 +160,8 @@ const sponsorCopy: Record<ViaLanguage, SponsorCopy> = {
     christmasCity: "Ville de Noël",
     worldCity: "Ville du monde",
     source: "Voir la source de l’image pour",
+    start: "Début du placement sponsorisé",
+    end: "Fin du placement sponsorisé",
   },
   Spanish: {
     featured: "Destacado en VIA",
@@ -183,6 +191,8 @@ const sponsorCopy: Record<ViaLanguage, SponsorCopy> = {
     christmasCity: "Ciudad navideña",
     worldCity: "Ciudad del mundo",
     source: "Ver fuente de imagen de",
+    start: "Inicio del patrocinio",
+    end: "Fin del patrocinio",
   },
   Chinese: {
     featured: "VIA 精选",
@@ -212,6 +222,8 @@ const sponsorCopy: Record<ViaLanguage, SponsorCopy> = {
     christmasCity: "圣诞城市",
     worldCity: "世界城市",
     source: "查看图片来源：",
+    start: "赞助展示开始",
+    end: "赞助展示结束",
   },
 }
 
@@ -294,6 +306,8 @@ export default function ViaFeatured() {
       title: String(data.get("title") ?? ""),
       url: String(data.get("url") ?? ""),
       motion: String(data.get("motion") ?? "static"),
+      startAt: String(data.get("startAt") ?? ""),
+      endAt: String(data.get("endAt") ?? ""),
       materialName: (data.get("material") as File | null)?.name ?? "",
       savedAt: new Date().toISOString(),
     }
@@ -371,6 +385,8 @@ export default function ViaFeatured() {
               <input name="contact" required placeholder={t.contact} style={fieldStyle} />
               <input name="title" required placeholder={t.title} style={fieldStyle} />
               <input name="url" type="url" placeholder={t.url} style={fieldStyle} />
+              <label style={labelStyle}>{t.start}<input name="startAt" type="datetime-local" required style={{ ...fieldStyle, width: "100%", marginTop: "7px" }} /></label>
+              <label style={labelStyle}>{t.end}<input name="endAt" type="datetime-local" required style={{ ...fieldStyle, width: "100%", marginTop: "7px" }} /></label>
               <label style={labelStyle}>
                 {t.material}
                 <span style={{ marginTop: "7px", minHeight: "42px", display: "flex", alignItems: "center", gap: "10px", border: "1px solid rgba(143,212,169,.18)", borderRadius: "11px", padding: "8px 10px", background: "rgba(0,0,0,.24)" }}>
