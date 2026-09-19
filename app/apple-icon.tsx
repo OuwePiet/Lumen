@@ -24,7 +24,7 @@ export default function AppleIcon() {
           style={{
             width: 150,
             height: 138,
-            backgroundImage: "url(https://viadeso.online/via-leaf.svg)",
+            backgroundImage: "url(https://viadeso.online/via-watermark.svg)",
             backgroundSize: "contain",
             backgroundPosition: "center",
             backgroundRepeat: "no-repeat",
