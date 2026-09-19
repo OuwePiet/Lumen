@@ -36,12 +36,10 @@ export default function CollectionPage() {
           inset: 0,
           zIndex: -2,
           pointerEvents: "none",
-          backgroundImage: 'url("/via-nft-background-approved.jpg")',
+          backgroundImage: 'url("/via-nft-background-approved.webp")',
           backgroundSize: "cover",
           backgroundPosition: "center 18%",
           backgroundRepeat: "no-repeat",
-          filter: "brightness(1.1) contrast(1.14) saturate(1.06)",
-          opacity: 0.94,
         }}
       />
       <div
