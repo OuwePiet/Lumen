@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
+import { createPortal } from "react-dom"
 import { DESO_IDENTITY_ORIGIN, restoreIdentitySession } from "./deso-identity-session"
 import DiamondButton from "./social/diamond-button"
 
