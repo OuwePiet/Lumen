@@ -92,11 +92,11 @@ export default function RadioBrowser() {
 
     const params = new URLSearchParams(window.location.search)
     const initialCountry = (params.get("country") ?? "").slice(0, 60)
-    const initialTag = (params.get("tag") ?? "").slice(0, 60)
-    if (initialCountry || initialTag) {
+    const initialStationName = (params.get("name") ?? "").slice(0, 60)
+    if (initialCountry || initialStationName) {
       setCountry(initialCountry)
-      setTag(initialTag)
-      void loadStations(initialCountry, initialTag)
+      setStationName(initialStationName)
+      void loadStations(initialCountry, initialStationName)
     }
     return () => searchController.current?.abort()
   }, [])
