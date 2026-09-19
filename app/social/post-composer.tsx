@@ -247,7 +247,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
     try {
       const response = await fetch("/api/via/social/post", {
         method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store",
-        body: JSON.stringify({ action: "prepare", publicKey: session.publicKey, body, parentStakeID, imageUrls, videoUrls, pollOptions: preparedPollOptions }),
+        body: JSON.stringify({ action: "prepare", publicKey: session.publicKey, body, parentStakeID, imageUrls, videoUrls, pollOptions: preparedPollOptions, sensitiveContent: !isReply && sensitiveContent }),
       })
       const data = await response.json() as PrepareResponse
       if (!response.ok || !data.ok || !data.transactionHex) throw new Error(data.error || "PREPARE_FAILED")
@@ -323,7 +323,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
         {!pollValid ? <p className="mt-2 text-xs text-amber-300">Use at least two different, non-empty poll options.</p> : null}
       </div> : null}
 
-      {compact ? <button type="button" onClick={() => setMediaOpen((open) => !open)} className="mt-3 rounded-lg border border-zinc-800 px-3 py-1.5 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2]">{mediaOpen ? "Hide photo/video" : "Add photo/video"}</button> : null}
+      {!isReply ? <label className="mt-4 flex items-start gap-3 rounded-xl border border-amber-900/40 bg-amber-950/10 p-3 text-sm text-zinc-300"><input type="checkbox" checked={sensitiveContent} onChange={(event)=>setSensitiveContent(event.target.checked)} className="mt-1 h-4 w-4 accent-[#8fd4a9]" /><span><strong className="text-zinc-200">Expliciete / gevoelige inhoud</strong><span className="mt-1 block text-xs leading-5 text-zinc-500">Vink dit aan voor naakt, seksuele of andere expliciete media. VIA markeert de DeSo-post zodat NFT-weergaven de media standaard afschermen. Dit is geen algemene 18+-poort voor VIA.</span></span></label> : null}\n\n      {compact ? <button type="button" onClick={() => setMediaOpen((open) => !open)} className="mt-3 rounded-lg border border-zinc-800 px-3 py-1.5 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2]">{mediaOpen ? "Hide photo/video" : "Add photo/video"}</button> : null}
 
       {(!compact || mediaOpen) ? <div className="mt-4 rounded-xl border border-zinc-800 bg-zinc-950/70 p-3">
         <p className="text-sm font-medium text-zinc-200">Images</p>
