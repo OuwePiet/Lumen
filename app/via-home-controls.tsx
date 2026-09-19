@@ -446,7 +446,7 @@ export default function ViaHomeControls() {
 
       {status === "blocked" ? <span style={{ color: "#c6a97b", fontSize: "9px", lineHeight: 1.45 }}>{t.blocked}</span> : null}
       <style>{`
-        @media (max-width: 720px) {
+        @media (max-width: 900px) {
           .via-home-controls {
             position: relative !important;
             left: auto !important;
