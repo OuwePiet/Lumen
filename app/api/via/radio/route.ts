@@ -63,7 +63,7 @@ async function radioBrowserFetch(path: string, timeoutMs = 6000) {
 
 export async function GET(request: NextRequest) {
   const country = clean(request.nextUrl.searchParams.get("country"), 60)
-  const tag = clean(request.nextUrl.searchParams.get("tag"), 60)
+  const tag = clean(request.nextUrl.searchParams.get("tag"), 60)\n  const name = clean(request.nextUrl.searchParams.get("name"), 60)
   const params = new URLSearchParams({
     hidebroken: "true",
     is_https: "true",
@@ -72,7 +72,7 @@ export async function GET(request: NextRequest) {
     limit: String(MAX_RESULTS),
   })
   if (country) params.set("country", country)
-  if (tag) params.set("tag", tag)
+  if (tag) params.set("tag", tag)\n  if (name) params.set("name", name)
 
   try {
     const response = await radioBrowserFetch(`/json/stations/search?${params.toString()}`)
