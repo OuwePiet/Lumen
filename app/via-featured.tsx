@@ -20,6 +20,23 @@ type CityResponse = {
   items?: CityItem[]
 }
 
+type ActiveSponsor = {
+  title: string
+  sponsorName: string
+  imageUrl: string | null
+  videoUrl: string | null
+  destinationUrl: string
+  startAt: string
+  endAt: string
+}
+
+type SponsorCardResponse = {
+  configured?: boolean
+  active?: boolean
+  sponsor?: ActiveSponsor | null
+  nextChangeAt?: string | null
+}
+
 type SponsorCopy = {
   featured: string
   spotlight: string
@@ -208,6 +225,7 @@ const fallbackCities: CityItem[] = [
 export default function ViaFeatured() {
   const [items, setItems] = useState<CityItem[]>(fallbackCities)
   const [sponsorOpen, setSponsorOpen] = useState(false)
+  const [activeSponsor, setActiveSponsor] = useState<ActiveSponsor | null>(null)
   const [saved, setSaved] = useState(false)
   const [materialName, setMaterialName] = useState("")
   const [language, setLanguage] = useState<ViaLanguage>("English")
@@ -232,6 +250,38 @@ export default function ViaFeatured() {
       })
       .catch(() => undefined)
     return () => controller.abort()
+  }, [])
+
+  useEffect(() => {
+    let timer: number | null = null
+    let mounted = true
+
+    const refreshSponsor = async () => {
+      try {
+        const response = await fetch("/api/via/sponsor-card", { cache: "no-store", headers: { Accept: "application/json" } })
+        const data = response.ok ? await response.json() as SponsorCardResponse : null
+        if (!mounted) return
+        setActiveSponsor(data?.active && data.sponsor ? data.sponsor : null)
+
+        const nextAt = data?.nextChangeAt ? Date.parse(data.nextChangeAt) : NaN
+        const delay = Number.isFinite(nextAt)
+          ? Math.min(Math.max(nextAt - Date.now() + 1500, 5000), 60 * 60 * 1000)
+          : 60_000
+        if (timer !== null) window.clearTimeout(timer)
+        timer = window.setTimeout(() => { void refreshSponsor() }, delay)
+      } catch {
+        if (!mounted) return
+        setActiveSponsor(null)
+        if (timer !== null) window.clearTimeout(timer)
+        timer = window.setTimeout(() => { void refreshSponsor() }, 60_000)
+      }
+    }
+
+    void refreshSponsor()
+    return () => {
+      mounted = false
+      if (timer !== null) window.clearTimeout(timer)
+    }
   }, [])
 
   const t = sponsorCopy[language]
@@ -273,7 +323,9 @@ export default function ViaFeatured() {
           {t.featured}
         </h2>
 
-        {items.slice(0, 2).map((item) => <CityCard key={`${item.city}-${item.country}`} item={item} copy={t} />)}
+        {activeSponsor ? <SponsorDisplayCard sponsor={activeSponsor} copy={t} /> : items[0] ? <CityCard item={items[0]} copy={t} /> : null}
+
+        {items[1] ? <CityCard item={items[1]} copy={t} /> : null}
 
         <div style={{ minHeight: "150px", display: "grid", gridTemplateRows: "1.2fr 1fr", overflow: "hidden", border: "1px solid rgba(143,212,169,.17)", borderRadius: "15px", background: "rgba(3,10,6,.72)", backdropFilter: "blur(8px)" }}>
           <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", gap: "4px", padding: "13px 15px", borderBottom: "1px solid rgba(143,212,169,.12)" }}>
@@ -377,6 +429,30 @@ const middleSub = { marginTop: "1px", color: "#8f9c94", fontSize: "9px" }
 const sponsorButton = { marginTop: "6px", alignSelf: "flex-start", minHeight: "30px", display: "inline-flex", alignItems: "center", justifyContent: "center", border: "1px solid rgba(143,212,169,.36)", borderRadius: "999px", padding: "6px 11px", background: "rgba(18,53,34,.58)", color: "#aef0c5", fontSize: "9px", fontWeight: 750, cursor: "pointer" } as const
 const fieldStyle = { minHeight: "42px", border: "1px solid rgba(143,212,169,.18)", borderRadius: "11px", padding: "9px 11px", background: "rgba(0,0,0,.24)", color: "#e2ebe5", outline: "none" } as const
 const labelStyle = { position: "relative", color: "#a7b4ac", fontSize: "11px" } as const
+
+function SponsorDisplayCard({ sponsor, copy }: { sponsor: ActiveSponsor; copy: SponsorCopy }) {
+  const content = (
+    <article style={{ position: "relative", minHeight: "124px", overflow: "hidden", border: "1px solid rgba(143,212,169,.28)", borderRadius: "15px", background: "linear-gradient(145deg, rgba(5,14,9,.88), rgba(2,5,4,.96))", boxShadow: "0 0 24px rgba(82,177,118,.08)" }}>
+      {sponsor.videoUrl ? (
+        <video src={sponsor.videoUrl} muted playsInline autoPlay loop preload="metadata" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
+      ) : sponsor.imageUrl ? (
+        <img src={sponsor.imageUrl} alt={sponsor.title} loading="eager" referrerPolicy="no-referrer" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+      ) : null}
+      <div aria-hidden="true" style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,.88), rgba(0,0,0,.12) 62%)" }} />
+      <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", justifyContent: "flex-end", padding: "12px 13px" }}>
+        <span style={eyebrow}>{copy.spotlight}</span>
+        <strong style={{ marginTop: "3px", color: "#f0f4f1", fontSize: "14px" }}>{sponsor.title}</strong>
+        <span style={{ marginTop: "2px", color: "#b7c1bb", fontSize: "9px" }}>{sponsor.sponsorName}</span>
+      </div>
+    </article>
+  )
+
+  return (
+    <a href={sponsor.destinationUrl} target="_blank" rel="sponsored noreferrer" aria-label={copy.spotlight + ": " + sponsor.title} style={{ color: "inherit", textDecoration: "none" }}>
+      {content}
+    </a>
+  )
+}
 
 function CityCard({ item, copy }: { item: CityItem; copy: SponsorCopy }) {
   const content = (
