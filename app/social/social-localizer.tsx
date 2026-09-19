@@ -198,7 +198,9 @@ const COPY: Record<ViaLanguage, Copy> = {
       [/^Diamond · (\d+)$/u, (count) => `Diamond · ${count}`],
       [/^(\d+) characters left$/u, (count) => `还可输入 ${count} 个字符`]
     ]
-  }
+  },
+  // Hindi currently falls back to English here until this surface receives its full Hindi copy.
+  Hindi: { exact: {}, patterns: [] }
 }
 
 const originalText = new WeakMap<Text, string>()
