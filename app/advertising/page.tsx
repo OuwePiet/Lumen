@@ -1,4 +1,5 @@
 import Link from "next/link"
+import AdvertisingDirectory from "./advertising-directory"
 
 const card = {
   border: "1px solid rgba(143,212,169,.22)",
@@ -12,19 +13,19 @@ export default function AdvertisingPage() {
     <main style={{ minHeight: "100vh", background: "#050807", color: "#f4f7f5", padding: "32px 20px 56px" }}>
       <section style={{ width: "min(860px,100%)", margin: "0 auto" }}>
         <p style={{ color: "#8fd4a9", fontSize: 12, fontWeight: 800, letterSpacing: ".14em", margin: 0 }}>VIA · RECLAME & SPONSORPLAATSING</p>
-        <h1 style={{ margin: "10px 0 0", fontSize: "clamp(30px,6vw,48px)" }}>Vier sponsorplaatsen. Duidelijk gemarkeerd.</h1>
+        <h1 style={{ margin: "10px 0 0", fontSize: "clamp(30px,6vw,48px)" }}>Sponsorplaatsen op VIA.</h1>
         <p style={{ margin: "14px 0 0", color: "#aebbb4", lineHeight: 1.65, maxWidth: 760 }}>
-          VIA gebruikt maximaal vier gereserveerde sponsorplaatsen. Actieve sponsors wisselen in het bovenste stadsvak op de homepage. Buiten een actieve sponsorperiode staat daar weer de gewone wereldstad.
+          VIA heeft twee duidelijk gescheiden sponsorplekken: maximaal vier roterende sponsors in het bovenste stadsvak op de homepage, plus deze grotere sponsorpagina met automatische vervolgpagina’s.
         </p>
 
         <div style={{ display: "grid", gap: 14, marginTop: 24 }}>
           <section style={card}>
             <h2 style={{ margin: 0, fontSize: 19 }}>Hoe plaatsing werkt</h2>
-            <p style={{ margin: "8px 0 0", color: "#9eaaa2", lineHeight: 1.6, fontSize: 14 }}>Een aanvraag wordt eerst beoordeeld. Een sponsor wordt pas zichtbaar na goedkeuring, betaling en binnen de afgesproken start- en eindtijd. Na afloop verdwijnt de sponsor automatisch.</p>
+            <p style={{ margin: "8px 0 0", color: "#9eaaa2", lineHeight: 1.6, fontSize: 14 }}>Een aanvraag wordt eerst beoordeeld. De klant kan een voorkeur voor pagina 1 kiezen tegen een kleine toeslag. Pagina 1 heeft maximaal 12 voorkeurplaatsen; de volgorde wisselt regelmatig zodat niemand permanent bovenaan staat.</p>
           </section>
           <section style={card}>
-            <h2 style={{ margin: 0, fontSize: 19 }}>Als alle vier plaatsen vol zijn</h2>
-            <p style={{ margin: "8px 0 0", color: "#9eaaa2", lineHeight: 1.6, fontSize: 14 }}>Nieuwe sponsorformulieren worden tijdelijk gesloten. VIA toont dan op de homepage dat de sponsorplaatsen vol zijn en verwijst hierheen voor uitleg en latere beschikbaarheid.</p>
+            <h2 style={{ margin: 0, fontSize: 19 }}>Automatische vervolgpagina’s</h2>
+            <p style={{ margin: "8px 0 0", color: "#9eaaa2", lineHeight: 1.6, fontSize: 14 }}>Zodra pagina 1 vol raakt, worden overige goedgekeurde sponsorkaarten automatisch op pagina 2 geplaatst, daarna pagina 3 enzovoort. Hiervoor hoeft geen nieuwe pagina handmatig gebouwd te worden.</p>
           </section>
           <section style={card}>
             <h2 style={{ margin: 0, fontSize: 19 }}>Onafhankelijk van Sponsor platform</h2>
