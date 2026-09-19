@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
+import XShareButton from "../x-share-button"
 
 type Props = { game: string; path?: string }
 
@@ -43,6 +44,7 @@ export default function ShareButton({ game, path = "/quest" }: Props) {
       <button type="button" onClick={share} style={{ minHeight: 44, border: "1px solid #3d8058", borderRadius: 999, background: "#10261a", color: "#c9ffdc", padding: "10px 16px", fontWeight: 800, cursor: "pointer" }} aria-label={`Share ${game} from VIA`}>
         Share VIA
       </button>
+      <XShareButton href={path} text={text} label="X" style={{ minHeight: 44, border: "1px solid #3d8058", borderRadius: 999, background: "#10261a", color: "#c9ffdc", padding: "10px 16px", fontWeight: 800, cursor: "pointer" }} />
       <small style={{ color: "#82958a" }}>viadeso.online{status ? ` · ${status}` : ""}</small>
     </span>
   )

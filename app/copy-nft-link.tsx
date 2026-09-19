@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState, type CSSProperties } from "react"
+import XShareButton from "./x-share-button"
 
 export default function CopyNFTLink({
   style,
@@ -75,6 +76,7 @@ export default function CopyNFTLink({
       <button type="button" style={buttonStyle} onClick={copyLink} aria-live="polite">
         {copyStatus === "copied" ? "NFT link copied" : copyStatus === "failed" ? "Copy unavailable" : "Copy link"}
       </button>
+      <XShareButton text="View this NFT on VIA" label="X" style={buttonStyle} />
       <button
         type="button"
         style={buttonStyle}
