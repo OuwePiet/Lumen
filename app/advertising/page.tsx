@@ -33,6 +33,8 @@ export default function AdvertisingPage() {
           </section>
         </div>
 
+        <AdvertisingDirectory />
+
         <nav style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 26 }}>
           <Link href="/" style={{ color: "#9adbb2", textDecoration: "none", border: "1px solid rgba(143,212,169,.35)", borderRadius: 999, padding: "9px 13px" }}>← VIA homepage</Link>
           <Link href="/payment-info" style={{ color: "#9adbb2", textDecoration: "none", border: "1px solid rgba(143,212,169,.35)", borderRadius: 999, padding: "9px 13px" }}>Betaalinformatie</Link>
