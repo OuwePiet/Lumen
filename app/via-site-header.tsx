@@ -81,6 +81,7 @@ const languageCodes: Record<ViaLanguage, string> = {
   French: "FR",
   Spanish: "ES",
   Chinese: "中文",
+  Hindi: "हिन्दी",
 }
 
 const pill = {
