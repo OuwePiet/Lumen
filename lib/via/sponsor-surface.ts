@@ -1,28 +1,23 @@
-export type ViaSponsorSurface = "community-support"
+export type ViaSponsorSurface = "homepage-city-slot" | "community-support"
 
 export type ViaSponsorSurfaceDecision =
-  | { allowed: true; surface: "community-support" }
-  | { allowed: false; reason: "homepage-kept-clean" | "unsupported-sponsor-surface" }
+  | { allowed: true; surface: ViaSponsorSurface }
+  | { allowed: false; reason: "unsupported-sponsor-surface" }
 
 export function sponsorSurfaceDecision(surface: string): ViaSponsorSurfaceDecision {
-  if (surface === "community-support") {
-    return { allowed: true, surface: "community-support" }
+  if (surface === "homepage-city-slot" || surface === "community-support") {
+    return { allowed: true, surface }
   }
-
-  if (surface === "home" || surface === "homepage") {
-    return { allowed: false, reason: "homepage-kept-clean" }
-  }
-
   return { allowed: false, reason: "unsupported-sponsor-surface" }
 }
 
 export const VIA_SPONSOR_SURFACE_RULES = {
-  community:
-    "Paid sponsor placements belong in VIA's separate Community Support environment.",
   homepage:
-    "The VIA homepage remains free of paid sponsor placements.",
+    "The VIA homepage may show paid sponsor material only in the designated top city card slot, visibly labelled Sponsored. Up to four reserved sponsors may rotate in that one slot; outside active windows the city returns.",
+  community:
+    "Community Support remains available as a separate sponsor/support environment.",
   noRankingInfluence:
     "Sponsor payment never buys feed ranking, verification, NFT prominence or other organic VIA placement.",
-  explicitExpansion:
-    "Any future sponsor surface requires a deliberate policy change and review; it is not enabled implicitly.",
+  capacity:
+    "The homepage sponsor system accepts at most four reserved sponsor placements at once. When all four are occupied, new applications are closed until capacity returns.",
 } as const

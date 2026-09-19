@@ -3,15 +3,16 @@
 import Link from "next/link"
 import { useEffect, useState } from "react"
 import { readViaLocalSettings, VIA_SETTINGS_EVENT, type ViaLanguage } from "./via-local-settings"
+import SponsorPlatform from "./sponsor-platform"
 
-type Copy = { title: string; ideas: string; storage: string }
+type Copy = { title: string; ideas: string; storage: string; support: string }
 
 const copy: Record<ViaLanguage, Copy> = {
-  Dutch: { title: "Ideeën & opslag", ideas: "Ideeënbus", storage: "Externe opslag" },
-  English: { title: "Ideas & storage", ideas: "Ideas Box", storage: "External storage" },
-  French: { title: "Idées & stockage", ideas: "Boîte à idées", storage: "Stockage externe" },
-  Spanish: { title: "Ideas y almacenamiento", ideas: "Buzón de ideas", storage: "Almacenamiento externo" },
-  Chinese: { title: "想法与存储", ideas: "意见箱", storage: "外部存储" },
+  Dutch: { title: "Ideeën & opslag", ideas: "Ideeënbus", storage: "Externe opslag", support: "Elke bijdrage telt — ook de kleinste." },
+  English: { title: "Ideas & storage", ideas: "Ideas Box", storage: "External storage", support: "Every contribution counts — even the smallest." },
+  French: { title: "Idées & stockage", ideas: "Boîte à idées", storage: "Stockage externe", support: "Chaque contribution compte — même la plus petite." },
+  Spanish: { title: "Ideas y almacenamiento", ideas: "Buzón de ideas", storage: "Almacenamiento externo", support: "Cada contribución cuenta, incluso la más pequeña." },
+  Chinese: { title: "想法与存储", ideas: "意见箱", storage: "外部存储", support: "每一份支持都很重要，即使是最小的一份。" },
 }
 
 const buttonStyle = {
@@ -84,9 +85,31 @@ export default function ViaHomeCenterActions() {
         <Link href="/storage" style={{ ...buttonStyle, background: "rgba(3,12,7,.74)", color: "#9adbb2" }}>{t.storage}</Link>
       </div>
     </section>
-      <style>{`
-        @media (max-width: 720px) {
-          .via-home-center-actions {
+    <section
+      aria-label="Support VIA platform"
+      style={{
+        position: "absolute",
+        zIndex: 5,
+        left: "50%",
+        top: "108px",
+        transform: "translateX(-50%)",
+        width: "min(430px, calc(100vw - 650px))",
+        minWidth: "320px",
+        display: "grid",
+        justifyItems: "center",
+        gap: "6px",
+        padding: "10px 12px",
+        border: "1px solid rgba(143,212,169,.18)",
+        borderRadius: "16px",
+        background: "rgba(3,12,7,.58)",
+        backdropFilter: "blur(8px)",
+      }}
+    >
+      <SponsorPlatform compact />
+      <span style={{ color: "#9adbb2", fontSize: "10px", fontWeight: 700, textAlign: "center" }}>◆ {t.support}</span>
+    </section>
+      <style>{`\n        @media (max-width: 720px) {
+          .via-home-center-actions, [aria-label="Support VIA platform"] {
             position: relative !important;
             top: auto !important;
             left: auto !important;
