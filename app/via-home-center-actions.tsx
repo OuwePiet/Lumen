@@ -84,7 +84,8 @@ export default function ViaHomeCenterActions() {
         <Link href="/storage" style={{ ...buttonStyle, background: "rgba(3,12,7,.74)", color: "#9adbb2" }}>{t.storage}</Link>
       </div>
     </section>
-      <style>{`\n        @media (max-width: 720px) {
+      <style>{`
+        @media (max-width: 900px) {
           .via-home-center-actions {
             position: relative !important;
             top: auto !important;
