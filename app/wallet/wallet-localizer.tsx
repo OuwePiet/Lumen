@@ -76,7 +76,9 @@ const dictionaries: Record<ViaLanguage, Copy> = {
 const reverse = new Map<string, string>()
 for (const dictionary of Object.values(dictionaries)) {
   for (const [english, localized] of Object.entries(dictionary)) reverse.set(localized, english)
-}
+},
+  // Hindi currently falls back to English here until this surface receives its full Hindi copy.
+  Hindi: {}
 
 function dynamicTranslation(value: string, language: ViaLanguage) {
   if (language === "English") return value
