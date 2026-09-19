@@ -165,6 +165,32 @@ const COPY: Record<ViaLanguage, QuestCopy> = {
     rewardText: "VIA World Quest 游戏用于娱乐、探索以及可选的本地进度记录。分数、连续记录、VIA Points 和已保存的游戏状态均无现金价值，也不会产生获得 DESO、Diamonds、代币、付款或其他金融奖励的权利。游戏行为绝不会自动触发链上付款或奖品。",
     coffeeActions: "分享或保存 VIA Coffee Corner 游戏",
   },
+  // Hindi currently falls back to English here until this surface receives its full Hindi copy.
+  Hindi: {
+    navigation: "World Quest navigation",
+    discovery: "World Discovery",
+    radio: "World Radio",
+    saved: "Saved",
+    free: "Free",
+    heroTitle: "Play the world. Discover DeSo.",
+    heroText: "Complete short discovery routes, collect VIA Points and build a streak. The first playable version is read-only and never needs a seed phrase or wallet signing.",
+    games: "VIA GAMES",
+    pick: "Pick a VIA game",
+    pickText: "Jump straight to a game. Everything below is free to play; sharing and saving are optional. Saved games stay in this browser.",
+    descriptions: [
+      "A short daily brain game.",
+      "Keep the letter chain moving.",
+      "Fast local arcade play.",
+      "Clear a polished three-layer tile stack.",
+      "Crack three cryptic mechanical vaults with UV clues.",
+      "Three light VIA coffee mini games.",
+      "Rebuild a chain image up to 500 pieces.",
+      "Discover VIA and DeSo through routes.",
+    ],
+    rewardTitle: "No financial game rewards",
+    rewardText: "VIA World Quest games are casual experiences for play, discovery and optional local progress. Scores, streaks, VIA Points and saved game state have no cash value and do not create any right to DESO, Diamonds, tokens, payouts or other financial rewards. Game activity never triggers an automatic on-chain payment or prize.",
+    coffeeActions: "Share or save VIA Coffee Corner games",
+  },
 }
 
 const games = [
