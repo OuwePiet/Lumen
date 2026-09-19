@@ -85,13 +85,13 @@ const dictionaries: Record<ViaLanguage, Copy> = {
   French: french,
   Spanish: spanish,
   Chinese: chinese,
+  Hindi: {},
 }
 
 const reverse = new Map<string, string>()
 for (const dictionary of Object.values(dictionaries)) {
   for (const [english, localized] of Object.entries(dictionary)) reverse.set(localized, english)
-},
-  Hindi: {}
+}
 
 function translateText(value: string, language: ViaLanguage) {
   const canonical = reverse.get(value) ?? value
@@ -104,6 +104,7 @@ function translateText(value: string, language: ViaLanguage) {
       French: "Favoris",
       Spanish: "Favoritas",
       Chinese: "收藏",
+      Hindi: "Favorites",
     }
     return `${label[language]} (${favorites[1]})`
   }
