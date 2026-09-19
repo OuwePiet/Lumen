@@ -87,6 +87,20 @@ const COPY: Record<ViaLanguage, Record<MarkKind, { title: string; body: string }
       body: "根据固定的 VIA 标准，通过可验证的积极参与获得。此认可不可购买。",
     },
   },
+  Hindi: {
+    verified: {
+      title: "DeSo Verified",
+      body: "Original DeSo verification. VIA cannot grant, change or remove this status.",
+    },
+    inactive: {
+      title: "Inactive 90+ days",
+      body: "This account has had no verifiable public DeSo activity for at least 90 days. VIA uses public DeSo data only.",
+    },
+    via: {
+      title: "VIA Recognition",
+      body: "Earned through verifiable positive participation in VIA under fixed VIA criteria. This recognition cannot be bought.",
+    },
+  },
 }
 
 const wrap: CSSProperties = {
