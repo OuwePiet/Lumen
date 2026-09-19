@@ -25,33 +25,21 @@ const hubLink = {
 
 export default function CollectionPage() {
   return (
-    <div data-via-collection-page style={{ minHeight: "100vh", overflow: "hidden", position: "relative", background: "#050807" }}>
+    <div
+      data-via-collection-page
+      style={{
+        minHeight: "100vh",
+        overflow: "hidden",
+        position: "relative",
+        backgroundColor: "#050807",
+        backgroundImage:
+          'linear-gradient(180deg, rgba(2,7,4,.42) 0%, rgba(3,9,6,.54) 42%, rgba(5,8,7,.66) 100%), radial-gradient(circle at 52% 18%, rgba(28,92,55,.16), transparent 48%), url("/via-nft-background-approved.jpg")',
+        backgroundSize: "cover, cover, cover",
+        backgroundPosition: "center top, center top, center top",
+        backgroundRepeat: "no-repeat",
+      }}
+    >
       <CreatorCollectionLocalizer />
-
-      <div
-        aria-hidden="true"
-        style={{
-          position: "absolute",
-          inset: "0 0 auto 0",
-          height: "min(920px, 100vh)",
-          backgroundImage: 'url("/via-nft-background-approved.jpg")',
-          backgroundSize: "cover",
-          backgroundPosition: "center top",
-          backgroundRepeat: "no-repeat",
-          opacity: 0.72,
-          pointerEvents: "none",
-        }}
-      />
-      <div
-        aria-hidden="true"
-        style={{
-          position: "absolute",
-          inset: 0,
-          background:
-            "linear-gradient(180deg, rgba(2,7,4,.34) 0%, rgba(3,9,6,.58) 34%, rgba(5,8,7,.92) 78%, #050807 100%), radial-gradient(circle at 50% 18%, rgba(25,78,48,.14), transparent 46%)",
-          pointerEvents: "none",
-        }}
-      />
 
       <div style={{ position: "relative", zIndex: 1 }}>
         <section style={{ maxWidth: 1480, margin: "0 auto", padding: "22px 20px 4px" }} aria-label="NFT hub">
