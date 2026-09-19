@@ -53,6 +53,7 @@ const languageCodes: Record<ViaLanguage, string> = {
   French: "FR",
   Spanish: "ES",
   Chinese: "中文",
+  Hindi: "हिन्दी",
 }
 
 type HomeText = {
@@ -131,6 +132,15 @@ const copy: Record<ViaLanguage, HomeText> = {
     search: "搜索成员", publicEntrance: "公开入口", wallet: "我的钱包", notifications: "通知",
     login: "DeSo 登录", connecting: "连接中…", logout: "退出", blocked: "Safari 阻止了 DeSo Identity 窗口。",
     connected: "已连接", switchAccount: "切换账户", addAccount: "添加 DeSo 账户", inactive90: "90+ 天未活跃",
+  },
+  Hindi: {
+    standard: "अपना विकल्प चुनें", viaExtra: "", account: "भाषा", home: "होम",
+    social: "सोशल", discover: "खोजें", nfts: "NFTs", live: "लाइव",
+    communities: "समुदाय", games: "गेम्स", world: "दुनिया", profile: "मेरी प्रोफ़ाइल", myVia: "मेरा VIA",
+    bookmarks: "बुकमार्क", messages: "संदेश", more: "और",
+    search: "सदस्य खोजें", publicEntrance: "सार्वजनिक प्रवेश", wallet: "मेरा वॉलेट", notifications: "सूचनाएँ",
+    login: "DeSo लॉगिन", connecting: "कनेक्ट हो रहा है…", logout: "लॉग आउट", blocked: "Safari ने DeSo Identity विंडो को ब्लॉक कर दिया।",
+    connected: "कनेक्टेड", switchAccount: "खाता बदलें", addAccount: "DeSo खाता जोड़ें", inactive90: "90+ दिन निष्क्रिय",
   },
 }
 
