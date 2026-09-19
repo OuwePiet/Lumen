@@ -120,6 +120,26 @@ const copy: Record<ViaLanguage, Copy> = {
     safety: "Studio 安全",
     safetyBody: "VIA 将准备与区块链批准分开。DeSo 发布和 NFT 铸造继续使用明确的 DeSo Identity 批准步骤；VIA 从不索要或存储助记词或私有签名密钥。",
   },
+  // Hindi currently falls back to English here until this surface receives its full Hindi copy.
+  Hindi: {
+    badge: "VIA Studio",
+    kicker: "Create · prepare · mint",
+    heading: "Studio",
+    intro: "One calm workspace for creating a post, preparing media, saving drafts and minting a native DeSo NFT.",
+    createPost: "Create Post",
+    createPostText: "Open the released VIA Feed composer and publish through the guarded DeSo flow.",
+    mintNft: "Mint NFT",
+    mintNftText: "Set NFT terms, review the current cost preflight and approve the native DeSo mint.",
+    media: "Media",
+    mediaText: "Prepare media for a post or NFT without creating a second upload route.",
+    drafts: "Drafts",
+    draftsText: "Prepare and keep non-secret work locally on this device before publishing.",
+    mediaHeading: "Prepare media where it will be used",
+    mediaBody: "Image and video attachments for posts stay in the released Feed composer. NFT media and storage choices stay with the NFT mint flow below, so Studio does not duplicate upload controls.",
+    createWithMedia: "Create with media",
+    safety: "Studio safety",
+    safetyBody: "VIA separates preparation from blockchain approval. Released DeSo posting and NFT minting keep their explicit DeSo Identity approval steps; VIA never asks for or stores a seed phrase or private signing key.",
+  },
 }
 
 const choiceClass = "group rounded-[14px] border border-zinc-800/80 bg-zinc-950/55 p-5 transition-[background-color,border-color] duration-200 hover:border-[#8fd4a9]/45 hover:bg-[#0c1711]/35 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8fd4a9]/15"
