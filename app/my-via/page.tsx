@@ -109,6 +109,24 @@ const copy: Record<ViaLanguage, Copy> = {
       { title: "设置", text: "选择本地创作者默认项并管理 Studio 本地草稿数据。", href: "/settings", action: "打开设置" },
     ],
   },
+  Hindi: {
+    kicker: "VIA · PERSONAL",
+    heading: "My VIA",
+    intro: "Your personal VIA hub for account, NFTs, saved work, drafts, settings and creator shortcuts.",
+    back: "Back to VIA",
+    footer: "Read, Listen, Discover, Live, Communities and other VIA destinations remain in the global navigation instead of being duplicated here.",
+    ownerTitle: "VIA Control Room",
+    ownerText: "Open your private owner control room with the Ideas Inbox and the overview of what is happening and still needs attention.",
+    ownerAction: "Open control room",
+    cards: [
+      { title: "Profile", text: "Open your signed-in public DeSo profile inside VIA.", href: "/profile", action: "Open Profile" },
+      { title: "Wallet", text: "See the read-only DESO balance for your connected DeSo account.", href: "/wallet", action: "Open Wallet" },
+      { title: "NFTs", text: "Open VIA Collection to browse DeSo NFTs and creator collections.", href: "/collection", action: "Open NFTs" },
+      { title: "Saved", text: "Return to posts and content you explicitly saved.", href: "/saved", action: "Open Saved" },
+      { title: "Drafts", text: "Continue local creator drafts inside VIA Studio.", href: "/studio#drafts", action: "Open Drafts" },
+      { title: "Settings", text: "Choose local creator defaults and manage local Studio draft data.", href: "/settings", action: "Open Settings" },
+    ],
+  },
 };
 
 const action = "inline-flex min-h-11 items-center justify-center rounded-[12px] border border-[#8fd4a9]/45 bg-transparent px-4 py-2 text-sm font-semibold text-[#9adbb2] transition-[background-color,border-color] hover:border-[#8fd4a9]/70 hover:bg-[#0c1711]/45 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8fd4a9]/20";
