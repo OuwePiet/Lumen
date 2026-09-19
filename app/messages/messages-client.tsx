@@ -128,6 +128,22 @@ const COPY: Record<ViaLanguage, Copy> = {
     newMessage: "新消息",
     selectConversation: "选择一个会话",
   },
+  Hindi: {
+    kicker: "VIA · MESSAGES",
+    title: "Messages",
+    intro: "Private conversations via DeSo. Threads are loaded directly from the DeSo network.",
+    back: "Back to VIA",
+    search: "Search conversations",
+    noAccount: "No DeSo account connected",
+    noAccountText: "Log in with DeSo Identity to load your private conversations.",
+    loading: "Loading conversations…",
+    unavailable: "Messages are temporarily unavailable.",
+    empty: "No conversations found yet.",
+    encrypted: "Encrypted DeSo message",
+    identityNote: "Reading and sending uses DeSo Identity for encryption and decryption. VIA does not store private messages itself.",
+    newMessage: "New message",
+    selectConversation: "Select a conversation",
+  },
 }
 
 function shortKey(value: string) {
