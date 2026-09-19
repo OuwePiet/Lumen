@@ -17,15 +17,36 @@ export default function CollectionPage() {
         minHeight: "100vh",
         overflow: "hidden",
         position: "relative",
+        isolation: "isolate",
         backgroundColor: "#050807",
-        backgroundImage:
-          'linear-gradient(180deg, rgba(2,7,4,.42) 0%, rgba(3,9,6,.54) 42%, rgba(5,8,7,.66) 100%), radial-gradient(circle at 52% 18%, rgba(28,92,55,.16), transparent 48%), url("/via-nft-background-approved.jpg")',
-        backgroundSize: "cover, cover, cover",
-        backgroundPosition: "center top, center top, center top",
-        backgroundRepeat: "no-repeat",
       }}
     >
       <CreatorCollectionLocalizer />
+
+      <div
+        aria-hidden="true"
+        style={{
+          position: "fixed",
+          inset: 0,
+          zIndex: -2,
+          pointerEvents: "none",
+          backgroundImage: 'url("/via-nft-background-approved.jpg")',
+          backgroundSize: "cover",
+          backgroundPosition: "center top",
+          backgroundRepeat: "no-repeat",
+        }}
+      />
+      <div
+        aria-hidden="true"
+        style={{
+          position: "fixed",
+          inset: 0,
+          zIndex: -1,
+          pointerEvents: "none",
+          background:
+            "linear-gradient(180deg, rgba(3,7,5,.34) 0%, rgba(3,7,5,.50) 46%, rgba(3,7,5,.68) 100%)",
+        }}
+      />
 
       <div style={{ position: "relative", zIndex: 1 }}>
         <CollectionHub />
