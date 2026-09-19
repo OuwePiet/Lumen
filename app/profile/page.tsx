@@ -156,6 +156,27 @@ const copy: Record<ViaLanguage, Copy> = {
     noBio: "此 DeSo 个人资料没有公开简介。",
     publicKey: "公钥", active: "活跃", inactive90: "90+ 天未活跃", lastActivity: "最近公开活动",
   },
+  Hindi: {
+    kicker: "VIA · PROFILE",
+    heading: "My Profile",
+    intro: "Your signed-in public DeSo identity, shown without requesting extra wallet authority.",
+    myNfts: "My NFTs",
+    back: "Back to My VIA",
+    noAccount: "No DeSo account connected",
+    noAccountText: "Use the account button in the VIA header to log in with DeSo Identity.",
+    loading: "Loading your DeSo profile…",
+    unavailable: "Your DeSo profile could not be loaded right now.",
+    verified: "✓ DeSo verified",
+    yourDeso: "Your DESO",
+    walletUnavailable: "Your DESO balance is temporarily unavailable",
+    coinPrice: "Coin price",
+    followers: "Followers",
+    following: "Following",
+    coinHolders: "Coin holders",
+    coinsCirculation: "Coins in circulation",
+    noBio: "No public bio on this DeSo profile.",
+    publicKey: "Public key", active: "Active", inactive90: "Inactive 90+ days", lastActivity: "Last public activity",
+  },
 }
 
 const quietAction = "inline-flex min-h-10 items-center rounded-[10px] border border-zinc-700/80 bg-transparent px-3 py-2 text-sm text-zinc-300 transition-colors hover:border-[#8fd4a9]/50 hover:text-[#9adbb2] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8fd4a9]/15"
