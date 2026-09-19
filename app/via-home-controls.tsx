@@ -29,7 +29,7 @@ type ProfileResponse = { ok?: boolean; profile?: PublicProfile }
 const standardNav = [
   ["home", "/"],
   ["notifications", "/notifications"],
-  ["messages", null],
+  ["messages", "/messages"],
   ["discover", "/discover"],
   ["bookmarks", "/saved"],
   ["profile", "/profile"],
