@@ -90,7 +90,8 @@ const dictionaries: Record<ViaLanguage, Copy> = {
 const reverse = new Map<string, string>()
 for (const dictionary of Object.values(dictionaries)) {
   for (const [english, localized] of Object.entries(dictionary)) reverse.set(localized, english)
-}
+},
+  Hindi: {}
 
 function translateText(value: string, language: ViaLanguage) {
   const canonical = reverse.get(value) ?? value
