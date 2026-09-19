@@ -121,6 +121,28 @@ const copy: Record<ViaLanguage, Copy> = {
       ] },
     ],
   },
+  Hindi: {
+    kicker: "VIA · COMMUNITY",
+    heading: "Communities",
+    intro: "Focused spaces for people who want to meet around the same subject without pushing every conversation into one global feed.",
+    back: "Back to My VIA",
+    foundation: "Community foundation",
+    foundationText: "Joining, posting, membership, visibility and moderation controls only appear when backed by a reviewed DeSo-compatible implementation. VIA does not show local browser choices as if they were real community membership.",
+    groups: [
+      { title: "Creative & culture", intro: "Art, images, music and makers together.", cards: [
+        { title: "Art & Photography", text: "Creators, collectors and visitors around visual work and culture." },
+        { title: "Music", text: "Music discovery, discussion and future VIA LIVE sessions." },
+      ] },
+      { title: "DeSo & collecting", intro: "Technology, creators and digital collections.", cards: [
+        { title: "DeSo & Builders", text: "DeSo, creator tools and platform development in one focused place." },
+        { title: "NFT & Collecting", text: "Collections, releases, collecting and NFT discussion." },
+      ] },
+      { title: "Play & meet", intro: "Lighter contact, games and broad conversation.", cards: [
+        { title: "Games & Quest", text: "VIA World Quest, casual games and related community activity." },
+        { title: "Open Community", text: "A broad public space for conversation, ideas and discovery." },
+      ] },
+    ],
+  },
 };
 
 export default function CommunitiesPage() {
