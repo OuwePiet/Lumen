@@ -53,7 +53,7 @@ export async function GET() {
     }
 
     return NextResponse.json(
-      { ok: true, publicKey, postHash, username: "OuwePiet" },
+      { ok: true, publicKey, postHash },
       { headers: { "Cache-Control": "no-store" } },
     )
   } catch {
