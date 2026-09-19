@@ -78,6 +78,19 @@ const COPY: Record<ViaLanguage, HubCopy> = {
     transfers: "转移",
     navLabel: "NFT 分区",
   },
+  // Hindi currently falls back to English here until this surface receives its full Hindi copy.
+  Hindi: {
+    kicker: "VIA · NFT hub",
+    title: "Everything NFT in one place",
+    intro: "Browse collections, create and mint, buy or sell, manage bids and follow transfers without separate homepage groups.",
+    collection: "Collection",
+    createMint: "Create & Mint",
+    market: "Market",
+    receivedBids: "Received Bids",
+    myBids: "My Bids",
+    transfers: "Transfers",
+    navLabel: "NFT sections",
+  },
 }
 
 const hubLink = {
