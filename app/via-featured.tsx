@@ -20,6 +20,26 @@ type CityResponse = {
   items?: CityItem[]
 }
 
+type ActiveSponsor = {
+  slot: number
+  title: string
+  sponsorName: string
+  imageUrl: string | null
+  videoUrl: string | null
+  destinationUrl: string
+  startAt: string
+  endAt: string
+}
+
+type SponsorCardResponse = {
+  capacity?: number
+  reservedCount?: number
+  availableCount?: number
+  full?: boolean
+  activeSponsors?: ActiveSponsor[]
+  nextChangeAt?: string | null
+}
+
 type SponsorCopy = {
   featured: string
   spotlight: string
@@ -48,6 +68,8 @@ type SponsorCopy = {
   christmasCity: string
   worldCity: string
   source: string
+  start: string
+  end: string
 }
 
 const sponsorCopy: Record<ViaLanguage, SponsorCopy> = {
@@ -79,6 +101,8 @@ const sponsorCopy: Record<ViaLanguage, SponsorCopy> = {
     christmasCity: "Kerststad",
     worldCity: "Wereldstad",
     source: "Bekijk afbeeldingsbron voor",
+    start: "Start sponsorplaatsing",
+    end: "Einde sponsorplaatsing",
   },
   English: {
     featured: "Featured in VIA",
@@ -108,6 +132,8 @@ const sponsorCopy: Record<ViaLanguage, SponsorCopy> = {
     christmasCity: "Christmas City",
     worldCity: "World City",
     source: "View image source for",
+    start: "Sponsor placement starts",
+    end: "Sponsor placement ends",
   },
   French: {
     featured: "À la une sur VIA",
@@ -137,6 +163,8 @@ const sponsorCopy: Record<ViaLanguage, SponsorCopy> = {
     christmasCity: "Ville de Noël",
     worldCity: "Ville du monde",
     source: "Voir la source de l’image pour",
+    start: "Début du placement sponsorisé",
+    end: "Fin du placement sponsorisé",
   },
   Spanish: {
     featured: "Destacado en VIA",
@@ -166,6 +194,8 @@ const sponsorCopy: Record<ViaLanguage, SponsorCopy> = {
     christmasCity: "Ciudad navideña",
     worldCity: "Ciudad del mundo",
     source: "Ver fuente de imagen de",
+    start: "Inicio del patrocinio",
+    end: "Fin del patrocinio",
   },
   Chinese: {
     featured: "VIA 精选",
@@ -195,6 +225,8 @@ const sponsorCopy: Record<ViaLanguage, SponsorCopy> = {
     christmasCity: "圣诞城市",
     worldCity: "世界城市",
     source: "查看图片来源：",
+    start: "赞助展示开始",
+    end: "赞助展示结束",
   },
 }
 
@@ -208,6 +240,9 @@ const fallbackCities: CityItem[] = [
 export default function ViaFeatured() {
   const [items, setItems] = useState<CityItem[]>(fallbackCities)
   const [sponsorOpen, setSponsorOpen] = useState(false)
+  const [activeSponsors, setActiveSponsors] = useState<ActiveSponsor[]>([])
+  const [activeSponsorIndex, setActiveSponsorIndex] = useState(0)
+  const [sponsorSlotsFull, setSponsorSlotsFull] = useState(false)
   const [saved, setSaved] = useState(false)
   const [materialName, setMaterialName] = useState("")
   const [language, setLanguage] = useState<ViaLanguage>("English")
@@ -234,6 +269,52 @@ export default function ViaFeatured() {
     return () => controller.abort()
   }, [])
 
+  useEffect(() => {
+    let timer: number | null = null
+    let mounted = true
+
+    const refreshSponsor = async () => {
+      try {
+        const response = await fetch("/api/via/sponsor-card", { cache: "no-store", headers: { Accept: "application/json" } })
+        const data = response.ok ? await response.json() as SponsorCardResponse : null
+        if (!mounted) return
+        const nextSponsors = Array.isArray(data?.activeSponsors) ? data.activeSponsors : []
+        setActiveSponsors(nextSponsors)
+        setActiveSponsorIndex((current) => nextSponsors.length ? current % nextSponsors.length : 0)
+        setSponsorSlotsFull(Boolean(data?.full))
+
+        const nextAt = data?.nextChangeAt ? Date.parse(data.nextChangeAt) : NaN
+        const delay = Number.isFinite(nextAt)
+          ? Math.min(Math.max(nextAt - Date.now() + 1500, 5000), 60 * 60 * 1000)
+          : 60_000
+        if (timer !== null) window.clearTimeout(timer)
+        timer = window.setTimeout(() => { void refreshSponsor() }, delay)
+      } catch {
+        if (!mounted) return
+        setActiveSponsors([])
+        setActiveSponsorIndex(0)
+        if (timer !== null) window.clearTimeout(timer)
+        timer = window.setTimeout(() => { void refreshSponsor() }, 60_000)
+      }
+    }
+
+    void refreshSponsor()
+    return () => {
+      mounted = false
+      if (timer !== null) window.clearTimeout(timer)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (activeSponsors.length <= 1) return
+    const timer = window.setInterval(() => {
+      setActiveSponsorIndex((current) => (current + 1) % activeSponsors.length)
+    }, 20_000)
+    return () => window.clearInterval(timer)
+  }, [activeSponsors])
+
+  const activeSponsor = activeSponsors[activeSponsorIndex] ?? null
+
   const t = sponsorCopy[language]
 
   function saveSponsorDraft(form: HTMLFormElement) {
@@ -244,6 +325,9 @@ export default function ViaFeatured() {
       title: String(data.get("title") ?? ""),
       url: String(data.get("url") ?? ""),
       motion: String(data.get("motion") ?? "static"),
+      startAt: String(data.get("startAt") ?? ""),
+      endAt: String(data.get("endAt") ?? ""),
+      pageOneRequested: data.get("pageOneRequested") === "on",
       materialName: (data.get("material") as File | null)?.name ?? "",
       savedAt: new Date().toISOString(),
     }
@@ -273,14 +357,26 @@ export default function ViaFeatured() {
           {t.featured}
         </h2>
 
-        {items.slice(0, 2).map((item) => <CityCard key={`${item.city}-${item.country}`} item={item} copy={t} />)}
+        {activeSponsor ? <SponsorDisplayCard sponsor={activeSponsor} copy={t} /> : items[0] ? <CityCard item={items[0]} copy={t} /> : null}
+
+        {items[1] ? <CityCard item={items[1]} copy={t} /> : null}
 
         <div style={{ minHeight: "150px", display: "grid", gridTemplateRows: "1.2fr 1fr", overflow: "hidden", border: "1px solid rgba(143,212,169,.17)", borderRadius: "15px", background: "rgba(3,10,6,.72)", backdropFilter: "blur(8px)" }}>
           <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", gap: "4px", padding: "13px 15px", borderBottom: "1px solid rgba(143,212,169,.12)" }}>
             <span style={eyebrow}>{t.sponsor}</span>
             <strong style={middleTitle}>{t.spotlight}</strong>
             <span style={middleSub}>{t.commercial}</span>
-            <button type="button" onClick={() => { setSaved(false); setMaterialName(""); setSponsorOpen(true) }} style={sponsorButton}>{t.sponsor}</button>
+            <button
+              type="button"
+              onClick={() => {
+                setSaved(false)
+                setMaterialName("")
+                setSponsorOpen(true)
+              }}
+              style={sponsorButton}
+            >
+              {sponsorSlotsFull ? "Sponsorplaatsen vol" : t.sponsor}
+            </button>
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", padding: "13px 15px" }}>
@@ -314,11 +410,26 @@ export default function ViaFeatured() {
               <button type="button" onClick={() => setSponsorOpen(false)} aria-label={t.close} style={{ border: 0, background: "transparent", color: "#9eaaa2", fontSize: "22px", cursor: "pointer" }}>×</button>
             </div>
 
+            {sponsorSlotsFull ? (
+              <div style={{ marginTop: "18px", padding: "14px", border: "1px solid rgba(210,173,97,.35)", borderRadius: "12px", background: "rgba(75,50,8,.14)" }}>
+                <strong style={{ color: "#e6c983", fontSize: "13px" }}>Sponsorplaatsen tijdelijk vol</strong>
+                <p style={{ margin: "6px 0 10px", color: "#a79b7d", fontSize: "12px", lineHeight: 1.55 }}>
+                  Alle vier sponsorplaatsen zijn momenteel gereserveerd. Er kan nu geen nieuwe sponsorkaart worden ingevuld.
+                </p>
+                <a href="/advertising" style={{ ...sponsorButton, marginTop: 0, textDecoration: "none" }}>Bekijk reclame-informatie</a>
+              </div>
+            ) : (
             <div style={{ display: "grid", gap: "10px", marginTop: "18px" }}>
               <input name="name" required placeholder={t.name} style={fieldStyle} />
               <input name="contact" required placeholder={t.contact} style={fieldStyle} />
               <input name="title" required placeholder={t.title} style={fieldStyle} />
               <input name="url" type="url" placeholder={t.url} style={fieldStyle} />
+              <label style={labelStyle}>{t.start}<input name="startAt" type="datetime-local" required style={{ ...fieldStyle, width: "100%", marginTop: "7px" }} /></label>
+              <label style={labelStyle}>{t.end}<input name="endAt" type="datetime-local" required style={{ ...fieldStyle, width: "100%", marginTop: "7px" }} /></label>
+              <label style={{ ...labelStyle, display: "flex", alignItems: "flex-start", gap: "8px", padding: "10px 11px", border: "1px solid rgba(143,212,169,.16)", borderRadius: "11px", background: "rgba(0,0,0,.18)" }}>
+                <input name="pageOneRequested" type="checkbox" style={{ marginTop: "2px" }} />
+                <span><strong style={{ color: "#dfe8e2" }}>Voorkeur pagina 1</strong><span style={{ display: "block", marginTop: "3px", color: "#87958d", fontSize: "10px", lineHeight: 1.45 }}>Kleine toeslag. Pagina 1 heeft beperkte ruimte; de kaarten wisselen daar van volgorde zodat niemand permanent bovenaan staat.</span></span>
+              </label>
               <label style={labelStyle}>
                 {t.material}
                 <span style={{ marginTop: "7px", minHeight: "42px", display: "flex", alignItems: "center", gap: "10px", border: "1px solid rgba(143,212,169,.18)", borderRadius: "11px", padding: "8px 10px", background: "rgba(0,0,0,.24)" }}>
@@ -335,15 +446,20 @@ export default function ViaFeatured() {
                 </select>
               </label>
             </div>
+            )}
 
+            {!sponsorSlotsFull ? (
             <div style={{ marginTop: "16px", padding: "11px 12px", border: "1px solid rgba(143,212,169,.16)", borderRadius: "12px", color: "#92a097", fontSize: "11px", lineHeight: 1.5 }}>
               {t.payment}
             </div>
+            ) : null}
 
-            <div style={{ display: "flex", flexWrap: "wrap", gap: "9px", marginTop: "16px" }}>
-              <button type="submit" style={{ ...sponsorButton, minHeight: "40px", paddingInline: "18px" }}>{saved ? t.saved : t.save}</button>
-              <a href="/payment-info" style={{ ...sponsorButton, minHeight: "40px", paddingInline: "18px", textDecoration: "none", background: "rgba(3,12,7,.72)" }}>{t.paymentInfo}</a>
-            </div>
+            {!sponsorSlotsFull ? (
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "9px", marginTop: "16px" }}>
+                <button type="submit" style={{ ...sponsorButton, minHeight: "40px", paddingInline: "18px" }}>{saved ? t.saved : t.save}</button>
+                <a href="/payment-info" style={{ ...sponsorButton, minHeight: "40px", paddingInline: "18px", textDecoration: "none", background: "rgba(3,12,7,.72)" }}>{t.paymentInfo}</a>
+              </div>
+            ) : null}
           </form>
         </div>
       ) : null}
@@ -377,6 +493,30 @@ const middleSub = { marginTop: "1px", color: "#8f9c94", fontSize: "9px" }
 const sponsorButton = { marginTop: "6px", alignSelf: "flex-start", minHeight: "30px", display: "inline-flex", alignItems: "center", justifyContent: "center", border: "1px solid rgba(143,212,169,.36)", borderRadius: "999px", padding: "6px 11px", background: "rgba(18,53,34,.58)", color: "#aef0c5", fontSize: "9px", fontWeight: 750, cursor: "pointer" } as const
 const fieldStyle = { minHeight: "42px", border: "1px solid rgba(143,212,169,.18)", borderRadius: "11px", padding: "9px 11px", background: "rgba(0,0,0,.24)", color: "#e2ebe5", outline: "none" } as const
 const labelStyle = { position: "relative", color: "#a7b4ac", fontSize: "11px" } as const
+
+function SponsorDisplayCard({ sponsor, copy }: { sponsor: ActiveSponsor; copy: SponsorCopy }) {
+  const content = (
+    <article style={{ position: "relative", minHeight: "124px", overflow: "hidden", border: "1px solid rgba(143,212,169,.28)", borderRadius: "15px", background: "linear-gradient(145deg, rgba(5,14,9,.88), rgba(2,5,4,.96))", boxShadow: "0 0 24px rgba(82,177,118,.08)" }}>
+      {sponsor.videoUrl ? (
+        <video src={sponsor.videoUrl} muted playsInline autoPlay loop preload="metadata" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
+      ) : sponsor.imageUrl ? (
+        <img src={sponsor.imageUrl} alt={sponsor.title} loading="eager" referrerPolicy="no-referrer" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+      ) : null}
+      <div aria-hidden="true" style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,.88), rgba(0,0,0,.12) 62%)" }} />
+      <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", justifyContent: "flex-end", padding: "12px 13px" }}>
+        <span style={eyebrow}>{copy.spotlight}</span>
+        <strong style={{ marginTop: "3px", color: "#f0f4f1", fontSize: "14px" }}>{sponsor.title}</strong>
+        <span style={{ marginTop: "2px", color: "#b7c1bb", fontSize: "9px" }}>{sponsor.sponsorName}</span>
+      </div>
+    </article>
+  )
+
+  return (
+    <a href={sponsor.destinationUrl} target="_blank" rel="sponsored noreferrer" aria-label={copy.spotlight + ": " + sponsor.title} style={{ color: "inherit", textDecoration: "none" }}>
+      {content}
+    </a>
+  )
+}
 
 function CityCard({ item, copy }: { item: CityItem; copy: SponsorCopy }) {
   const content = (
