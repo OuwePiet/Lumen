@@ -9,6 +9,7 @@ const SAFE_POST_RETRY_ENDPOINTS = new Set([
   "get-posts-for-public-key",
   "get-posts-stateless",
   "get-notifications",
+  "get-user-dm-threads-ordered-by-timestamp",
   "get-follows-stateless",
   "get-hot-feed",
   "get-users-stateless",
