@@ -25,6 +25,7 @@ import {
 type PublicProfile = { username?: string; profilePic?: string | null; isVerified?: boolean; isInactive?: boolean }
 type ProfileResponse = { ok?: boolean; profile?: PublicProfile }
 
+// Homepage groups stay compact so account controls remain visible on tablet heights.
 const standardNav = [
   ["home", "/"],
   ["notifications", "/notifications"],
@@ -346,20 +347,20 @@ export default function ViaHomeControls() {
 
       <section style={{ display: "grid", gap: "6px" }}>
         <span style={sectionLabel}>{t.standard}</span>
-        <nav aria-label="VIA standard navigation" style={{ display: "grid", gap: "7px" }}>
+        <nav aria-label="VIA standard navigation" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "7px" }}>
           {standardNav.map(([key, href]) => href ? (
-            <Link key={key} href={href} style={{ ...buttonStyle, width: "100%", justifyContent: "flex-start", paddingInline: "14px", borderColor: "rgba(143,212,169,.30)", background: "linear-gradient(180deg, rgba(13,31,21,.78), rgba(5,15,9,.78))", color: "#dce8e1" }}>{t[key]}</Link>
+            <Link key={key} href={href} style={{ ...buttonStyle, width: "100%", justifyContent: "center", paddingInline: "9px", borderColor: "rgba(143,212,169,.30)", background: "linear-gradient(180deg, rgba(13,31,21,.78), rgba(5,15,9,.78))", color: "#dce8e1" }}>{t[key]}</Link>
           ) : (
-            <span key={key} aria-disabled="true" title="Wordt op de eigen Berichten-pagina aangesloten" style={{ ...disabledButtonStyle, width: "100%", justifyContent: "flex-start", paddingInline: "14px" }}>{t[key]}</span>
+            <span key={key} aria-disabled="true" title="Wordt op de eigen Berichten-pagina aangesloten" style={{ ...disabledButtonStyle, width: "100%", justifyContent: "center", paddingInline: "9px" }}>{t[key]}</span>
           ))}
         </nav>
       </section>
 
       <section style={{ display: "grid", gap: "6px" }}>
         <span style={sectionLabel}>{t.viaExtra}</span>
-        <nav aria-label="VIA extra navigation" style={{ display: "grid", gap: "7px" }}>
+        <nav aria-label="VIA extra navigation" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "7px" }}>
           {viaExtraNav.map(([key, href]) => (
-            <Link key={href} href={href} style={{ ...buttonStyle, width: "100%", justifyContent: "flex-start", paddingInline: "14px" }}>{t[key]}</Link>
+            <Link key={href} href={href} style={{ ...buttonStyle, width: "100%", justifyContent: "center", paddingInline: "9px" }}>{t[key]}</Link>
           ))}
         </nav>
       </section>

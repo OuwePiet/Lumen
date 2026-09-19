@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react"
 import { readViaLocalSettings, VIA_SETTINGS_EVENT, type ViaLanguage } from "./via-local-settings"
-import { VIA_RECOGNITION_ENABLED } from "./via-recognition"
 
 type CityItem = {
   city: string
@@ -276,21 +275,19 @@ export default function ViaFeatured() {
 
         {items.slice(0, 2).map((item) => <CityCard key={`${item.city}-${item.country}`} item={item} copy={t} />)}
 
-        <div style={{ minHeight: VIA_RECOGNITION_ENABLED ? "150px" : "96px", display: "grid", gridTemplateRows: VIA_RECOGNITION_ENABLED ? "1.2fr 1fr" : "1fr", overflow: "hidden", border: "1px solid rgba(143,212,169,.17)", borderRadius: "15px", background: "rgba(3,10,6,.72)", backdropFilter: "blur(8px)" }}>
-          <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", gap: "4px", padding: "13px 15px", borderBottom: VIA_RECOGNITION_ENABLED ? "1px solid rgba(143,212,169,.12)" : "none" }}>
+        <div style={{ minHeight: "150px", display: "grid", gridTemplateRows: "1.2fr 1fr", overflow: "hidden", border: "1px solid rgba(143,212,169,.17)", borderRadius: "15px", background: "rgba(3,10,6,.72)", backdropFilter: "blur(8px)" }}>
+          <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", gap: "4px", padding: "13px 15px", borderBottom: "1px solid rgba(143,212,169,.12)" }}>
             <span style={eyebrow}>{t.sponsor}</span>
             <strong style={middleTitle}>{t.spotlight}</strong>
             <span style={middleSub}>{t.commercial}</span>
             <button type="button" onClick={() => { setSaved(false); setMaterialName(""); setSponsorOpen(true) }} style={sponsorButton}>{t.sponsor}</button>
           </div>
 
-          {VIA_RECOGNITION_ENABLED ? (
-            <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", padding: "13px 15px" }}>
-              <span style={eyebrow}>{t.bestPerformer}</span>
-              <strong style={middleTitle}>{t.recognition}</strong>
-              <span style={middleSub}>{t.specialBadge}</span>
-            </div>
-          ) : null}
+          <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", padding: "13px 15px" }}>
+            <span style={eyebrow}>{t.bestPerformer}</span>
+            <strong style={middleTitle}>{t.recognition}</strong>
+            <span style={middleSub}>{t.specialBadge}</span>
+          </div>
         </div>
 
         {items.slice(2).map((item) => <CityCard key={`${item.city}-${item.country}`} item={item} copy={t} />)}
