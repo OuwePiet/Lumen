@@ -155,6 +155,32 @@ const copy: Record<ViaLanguage, Copy> = {
     noTransfers: "未找到此账户的待处理 NFT 转账。",
     pendingOnDeSo: "DeSo 上待处理",
   },
+  // Hindi currently falls back to English here until this surface receives its full Hindi copy.
+  Hindi: {
+    marketplace: "VIA Marketplace",
+    heading: "Market",
+    intro: "Bids, active listings and pending transfers for one DeSo account. Transaction actions stay on the NFT detail page where VIA keeps the full confirmation flow.",
+    collection: "Collection",
+    receivedBids: "Received Bids",
+    myBids: "My Bids",
+    listings: "Listings",
+    transfers: "Transfers",
+    chooseAccount: "Choose a DeSo account",
+    readOnly: "This is a read-only market lookup. VIA does not sign or spend from this form.",
+    placeholder: "DeSo public key (BC1…)",
+    openMarket: "Open market",
+    loadError: "VIA could not load the marketplace state for this DeSo account right now.",
+    listedEdition: "listed edition",
+    listedEditions: "listed editions",
+    noForSale: "No NFT editions currently for sale.",
+    edition: "Edition",
+    buyNow: "Buy now",
+    minBid: "Min bid",
+    pendingEdition: "pending edition",
+    pendingEditions: "pending editions",
+    noTransfers: "No pending NFT transfers found for this account.",
+    pendingOnDeSo: "pending on DeSo",
+  },
 }
 
 type Props = {
