@@ -18,6 +18,18 @@ type NotificationResponse = {
 
 type Category = "all" | "mention" | "reply" | "like" | "diamond" | "follow" | "repost" | "nft" | "other"
 
+const CATEGORY_ICON: Record<Category, string> = {
+  all: "●",
+  mention: "@",
+  reply: "↩",
+  like: "♥",
+  diamond: "◇",
+  follow: "＋",
+  repost: "↻",
+  nft: "◆",
+  other: "•",
+}
+
 type Copy = {
   categories: Record<Category, string>
   login: string
@@ -338,43 +350,52 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
   }
 
   return (
-    <section className="rounded-2xl border border-zinc-800 bg-zinc-950/60 p-5" aria-labelledby="notification-center-heading">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+    <section className="overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-950/60" aria-labelledby="notification-center-heading">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-zinc-800 px-4 py-4 sm:px-5">
         <div>
           <h2 id="notification-center-heading" className="text-xl font-semibold text-white">{copy.heading}</h2>
           <p className="mt-1 text-xs text-zinc-500">{copy.active}: {shortKey(session.publicKey, copy.actor)}</p>
         </div>
-        <button type="button" onClick={() => setRefreshToken((value) => value + 1)} disabled={status === "loading"} className="rounded-full border border-zinc-700 px-3 py-1.5 text-xs text-zinc-300 hover:border-[#8fd4a9]/55 hover:text-[#9adbb2] disabled:cursor-wait disabled:opacity-60">{status === "loading" ? copy.refreshing : copy.refresh}</button>
+        <button type="button" onClick={() => setRefreshToken((value) => value + 1)} disabled={status === "loading"} className="rounded-full border border-zinc-700 px-3 py-1.5 text-xs text-zinc-300 transition hover:border-[#8fd4a9]/55 hover:text-[#9adbb2] disabled:cursor-wait disabled:opacity-60">{status === "loading" ? copy.refreshing : copy.refresh}</button>
       </div>
 
-      <div className="mt-4 flex flex-wrap gap-2" aria-label={copy.filters}>
-        {categories.map((option) => {
-          const active = option.id === category
-          const count = option.id === "all" ? items.length : items.filter((item) => categoryOf(item) === option.id).length
-          return <button key={option.id} type="button" aria-pressed={active} onClick={() => setCategory(option.id)} className={`rounded-full border px-3 py-1.5 text-xs transition ${active ? "border-[#8fd4a9]/70 bg-[#0c1711] text-[#9adbb2]" : "border-zinc-800 text-zinc-400 hover:border-zinc-700 hover:text-zinc-200"}`}>{option.label} · {count}</button>
-        })}
+      <div className="overflow-x-auto border-b border-zinc-800 px-3 py-3 sm:px-4" aria-label={copy.filters}>
+        <div className="flex min-w-max gap-2">
+          {categories.map((option) => {
+            const active = option.id === category
+            const count = option.id === "all" ? items.length : items.filter((item) => categoryOf(item) === option.id).length
+            return <button key={option.id} type="button" aria-pressed={active} onClick={() => setCategory(option.id)} title={option.label} className={`inline-flex min-h-10 items-center gap-2 rounded-full border px-3 text-xs font-semibold transition ${active ? "border-[#8fd4a9]/70 bg-[#0c1711] text-[#b8ebca]" : "border-zinc-800 bg-black/20 text-zinc-400 hover:border-zinc-700 hover:text-zinc-200"}`}>
+              <span aria-hidden="true" className="grid h-5 min-w-5 place-items-center text-sm">{CATEGORY_ICON[option.id]}</span>
+              <span>{option.label}</span>
+              <span className="rounded-full bg-white/5 px-1.5 py-0.5 text-[10px] text-zinc-500">{count}</span>
+            </button>
+          })}
+        </div>
       </div>
 
-      <p className={`mt-4 text-xs ${status === "error" ? "text-amber-300" : "text-zinc-500"}`} role="status" aria-live="polite">{message}</p>
+      <p className={`px-4 pt-3 text-xs sm:px-5 ${status === "error" ? "text-amber-300" : "text-zinc-500"}`} role="status" aria-live="polite">{message}</p>
 
-      <div className="mt-4 space-y-2">
-        {status === "loading" ? <div className="rounded-xl border border-zinc-800 p-4 text-sm text-zinc-500">{copy.loading}</div> : null}
-        {status === "ready" && visible.length === 0 ? <div className="rounded-xl border border-zinc-800 p-4 text-sm text-zinc-500">{copy.nothing}</div> : null}
+      <div className="mt-2 divide-y divide-zinc-800">
+        {status === "loading" ? <div className="px-4 py-5 text-sm text-zinc-500 sm:px-5">{copy.loading}</div> : null}
+        {status === "ready" && visible.length === 0 ? <div className="px-4 py-5 text-sm text-zinc-500 sm:px-5">{copy.nothing}</div> : null}
         {visible.map((item, index) => {
           const itemCategory = categoryOf(item)
           const unread = typeof item.Index === "number" && lastSeenIndex !== null && item.Index > lastSeenIndex
           const destination = notificationDestination(item)
           const metadata = record(item.Metadata) ?? {}
           const actor = shortKey(metadata.TransactorPublicKeyBase58Check, copy.actor)
-          return <article key={`${item.Index ?? "n"}-${index}`} className="rounded-xl border border-zinc-800 bg-black/25 p-4">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <span className="text-xs font-semibold uppercase tracking-[0.12em] text-[#8fd4a9]">{copy.categories[itemCategory]}</span>
-              <div className="flex items-center gap-2">
-                {destination ? <a href={destination} className="rounded-full border border-zinc-700 px-2.5 py-0.5 text-[10px] text-zinc-300 transition hover:border-[#8fd4a9]/55 hover:text-[#9adbb2]">{copy.open}</a> : null}
+          return <article key={`${item.Index ?? "n"}-${index}`} className={`grid grid-cols-[42px_minmax(0,1fr)] gap-3 px-4 py-4 transition sm:grid-cols-[46px_minmax(0,1fr)_auto] sm:px-5 ${unread ? "bg-[#0b1510]/70" : "bg-black/10"}`}>
+            <div aria-hidden="true" className={`grid h-10 w-10 place-items-center rounded-full border text-base font-bold sm:h-11 sm:w-11 ${unread ? "border-[#8fd4a9]/55 bg-[#102019] text-[#9adbb2]" : "border-zinc-800 bg-zinc-950 text-zinc-500"}`}>{CATEGORY_ICON[itemCategory]}</div>
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                <strong className="truncate text-sm font-semibold text-zinc-100">{actor}</strong>
+                <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#7dbb93]">{copy.categories[itemCategory]}</span>
                 {unread ? <span className="rounded-full border border-[#285f40] px-2 py-0.5 text-[10px] text-[#9adbb2]">{copy.fresh}</span> : null}
               </div>
+              <p className="mt-1 text-sm leading-5 text-zinc-400">{copy.descriptions[itemCategory](actor)}</p>
+              {destination ? <a href={destination} className="mt-2 inline-flex rounded-full border border-zinc-700 px-2.5 py-1 text-[11px] text-zinc-300 transition hover:border-[#8fd4a9]/55 hover:text-[#9adbb2] sm:hidden">{copy.open}</a> : null}
             </div>
-            <p className="mt-2 text-sm leading-6 text-zinc-300">{copy.descriptions[itemCategory](actor)}</p>
+            {destination ? <a href={destination} className="hidden self-center rounded-full border border-zinc-700 px-3 py-1.5 text-xs text-zinc-300 transition hover:border-[#8fd4a9]/55 hover:text-[#9adbb2] sm:inline-flex">{copy.open}</a> : null}
           </article>
         })}
       </div>
