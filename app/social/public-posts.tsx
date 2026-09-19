@@ -10,6 +10,7 @@ import RepostButton from "./repost-button"
 import DiamondButton from "./diamond-button"
 import LocalSaveButton from "./local-save-button"
 import PollVoteControl from "./poll-vote-control"
+import XShareButton from "../x-share-button"
 import { restoreIdentitySession, VIA_IDENTITY_EVENT, type ViaIdentitySession } from "../deso-identity-session"
 
 type PublicPost = {
@@ -322,6 +323,7 @@ export default function PublicPosts() {
                     if (navigator.share) void navigator.share({ title: "VIA · DeSo post", url }).catch(() => {})
                     else void navigator.clipboard?.writeText(url)
                   }} className="rounded-full border border-zinc-800 px-3 py-1 text-zinc-400 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2]">Share</button> : null}
+                  <XShareButton href={`/social?post=${encodeURIComponent(post.postHash)}`} text={post.body ? post.body.slice(0, 180) : "VIA · DeSo post"} label="X" className="rounded-full border border-zinc-800 px-3 py-1 text-zinc-400 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2]" />
                   {session ? <button type="button" onClick={() => {
                     const url = `${window.location.origin}/social?post=${encodeURIComponent(post.postHash)}`
                     const text = `VIA · DeSo post\n${url}`
