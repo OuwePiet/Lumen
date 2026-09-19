@@ -44,6 +44,7 @@ function validStation(value: unknown): value is Station {
 export default function RadioBrowser() {
   const [country, setCountry] = useState("")
   const [stationName, setStationName] = useState("")
+  const [genre, setGenre] = useState("")
   const [stations, setStations] = useState<Station[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
@@ -52,7 +53,7 @@ export default function RadioBrowser() {
   const [showFavorites, setShowFavorites] = useState(false)
   const searchController = useRef<AbortController | null>(null)
 
-  const loadStations = async (nextCountry: string, nextStationName: string) => {
+  const loadStations = async (nextCountry: string, nextStationName: string, nextGenre = "") => {
     searchController.current?.abort()
     const controller = new AbortController()
     searchController.current = controller
@@ -63,6 +64,7 @@ export default function RadioBrowser() {
       const params = new URLSearchParams()
       if (nextCountry.trim()) params.set("country", nextCountry.trim())
       if (nextStationName.trim()) params.set("name", nextStationName.trim())
+      if (nextGenre.trim()) params.set("tag", nextGenre.trim())
       const response = await fetch(`/api/via/radio?${params.toString()}`, { cache: "no-store", signal: controller.signal })
       const data = await response.json()
       if (!response.ok) throw new Error(data?.error ?? "Radio directory unavailable")
@@ -106,7 +108,7 @@ export default function RadioBrowser() {
 
   const search = async (event?: FormEvent) => {
     event?.preventDefault()
-    await loadStations(country, stationName)
+    await loadStations(country, stationName, genre)
   }
 
   const play = (station: Station) => {
@@ -146,6 +148,7 @@ export default function RadioBrowser() {
       <form style={styles.form} onSubmit={search}>
         <input aria-label="Country" placeholder="Country, e.g. Netherlands" value={country} maxLength={60} onChange={(event) => setCountry(event.target.value)} style={styles.input} />
         <input aria-label="Station name" placeholder="Station, e.g. Radio 538" value={stationName} maxLength={60} onChange={(event) => setStationName(event.target.value)} style={styles.input} />
+        <input aria-label="Genre" placeholder="Genre, e.g. jazz" value={genre} maxLength={60} onChange={(event) => setGenre(event.target.value)} style={styles.input} />
         <button type="submit" style={styles.button} disabled={loading}>{loading ? "Searching…" : "Find stations"}</button>
         <button type="button" style={styles.button} aria-pressed={showFavorites} onClick={() => setShowFavorites((value) => !value)}>{showFavorites ? "Show search" : `Favorites (${favorites.length})`}</button>
       </form>
