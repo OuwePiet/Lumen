@@ -27,16 +27,22 @@ const CLASSIC_LAYOUT: TilePos[] = [
 ]
 
 const EXPANDED_LAYOUT: TilePos[] = [
-  // Layer 1 · 16 tiles
-  ...[5,25,45,65].flatMap((x, xi) => [5,27,49,71].map((y, yi) => ({ id: xi * 4 + yi, x, y, z: 0 }))),
-  // Layer 2 · 12 tiles
-  ...[14,34,54,74].flatMap((x, xi) => [16,38,60].map((y, yi) => ({ id: 16 + xi * 3 + yi, x, y, z: 1 }))),
-  // Layer 3 · 8 tiles
-  ...[20,40,60,80].flatMap((x, xi) => [27,51].map((y, yi) => ({ id: 28 + xi * 2 + yi, x, y, z: 2 }))),
-  // Layer 4 · 8 tiles
-  ...[28,43,58,73].flatMap((x, xi) => [34,56].map((y, yi) => ({ id: 36 + xi * 2 + yi, x, y, z: 3 }))),
-  // Layer 5 · 4 tiles
-  ...[34,49,64,79].map((x, index) => ({ id: 44 + index, x, y: 45, z: 4 })),
+  // Layer 1 · 36 tiles
+  ...[3,18,33,48,63,78].flatMap((x, xi) => [3,18,33,48,63,78].map((y, yi) => ({ id: xi * 6 + yi, x, y, z: 0 }))),
+  // Layer 2 · 30 tiles
+  ...[7,23,39,55,71].flatMap((x, xi) => [8,22,36,50,64,78].map((y, yi) => ({ id: 36 + xi * 6 + yi, x, y, z: 1 }))),
+  // Layer 3 · 24 tiles
+  ...[12,28,44,60].flatMap((x, xi) => [13,27,41,55,69,83].map((y, yi) => ({ id: 66 + xi * 6 + yi, x, y, z: 2 }))),
+  // Layer 4 · 20 tiles
+  ...[17,33,49,65,81].flatMap((x, xi) => [19,35,51,67].map((y, yi) => ({ id: 90 + xi * 4 + yi, x, y, z: 3 }))),
+  // Layer 5 · 16 tiles
+  ...[22,40,58,76].flatMap((x, xi) => [25,41,57,73].map((y, yi) => ({ id: 110 + xi * 4 + yi, x, y, z: 4 }))),
+  // Layer 6 · 12 tiles
+  ...[28,46,64].flatMap((x, xi) => [31,45,59,73].map((y, yi) => ({ id: 126 + xi * 4 + yi, x, y, z: 5 }))),
+  // Layer 7 · 8 tiles
+  ...[35,51,67,83].flatMap((x, xi) => [39,57].map((y, yi) => ({ id: 138 + xi * 2 + yi, x, y, z: 6 }))),
+  // Layer 8 · 4 tiles
+  ...[43,57,71,85].map((x, index) => ({ id: 146 + index, x, y: 48, z: 7 })),
 ]
 
 const BOARD_CONFIGS: Record<Mode, BoardConfig> = {
@@ -49,12 +55,12 @@ const BOARD_CONFIGS: Record<Mode, BoardConfig> = {
     aspectRatio: "1.34 / 1",
   },
   expanded: {
-    label: "Meer stenen · 5 lagen",
-    layers: 5,
+    label: "Grote stapel · 8 lagen",
+    layers: 8,
     layout: EXPANDED_LAYOUT,
-    tileWidth: 13.5,
-    tileHeight: 17.5,
-    aspectRatio: "1.48 / 1",
+    tileWidth: 11.5,
+    tileHeight: 12.5,
+    aspectRatio: "1.42 / 1",
   },
 }
 
@@ -235,7 +241,7 @@ export default function MahjongStack() {
       </p>
       <h2 id="via-mahjong-heading" style={{fontSize:"clamp(28px,5vw,46px)",margin:"8px 0"}}>VIA Mahjong Stack</h2>
       <p style={{color:"#a9b8af",lineHeight:1.65,maxWidth:760}}>
-        Match twee gelijke vrije stenen. Kies de standaardstapel of speel met meer stenen, kleinere tegels en vijf lagen.
+        Match twee gelijke vrije stenen. Kies de standaardstapel of speel met veel meer stenen, kleinere tegels en acht lagen.
       </p>
 
       <div style={{display:"flex",gap:10,flexWrap:"wrap",alignItems:"center",margin:"16px 0 10px"}}>
@@ -253,7 +259,7 @@ export default function MahjongStack() {
           aria-pressed={mode === "expanded"}
           style={{...control,background:mode==="expanded"?"#604f1a":"#10261a",borderColor:mode==="expanded"?"#cdb65f":"#4c8060",color:mode==="expanded"?"#fff2b9":"#d8ffe7"}}
         >
-          Meer stenen · 5 lagen
+          Grote stapel · 8 lagen
         </button>
       </div>
 
