@@ -464,7 +464,7 @@ export default function ViaFeatured() {
         </div>
       ) : null}
       <style>{`
-        @media (max-width: 720px) {
+        @media (max-width: 900px) {
           .via-home-featured {
             position: relative !important;
             top: auto !important;
