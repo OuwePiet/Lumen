@@ -1,5 +1,11 @@
+import type { Metadata } from "next"
 import "../home-wide.css"
 import "../creator-nft-watermark.css"
+export const metadata: Metadata = {
+  title: "NFT Collection",
+  description: "Explore DeSo NFT collections, creators, editions, bids, transfers and digital art on VIA.",
+}
+
 
 import NFTGrid from "../nft-grid"
 import ViaPriceBoard from "../via-price-board"
