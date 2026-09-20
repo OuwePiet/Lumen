@@ -204,12 +204,36 @@ const simpleOverrides: Record<Exclude<ViaLanguage, "Dutch" | "English">, Partial
   }
 }
 
-const dictionaries: Record<ViaLanguage, Dictionary> = {
+const hi: Dictionary = {
+  ...en,
+  "NFT mint preflight": "NFT mint पूर्व-जाँच",
+  "Set terms. Check live cost. Approve later.": "शर्तें तय करें। वर्तमान लागत जाँचें। बाद में मंज़ूरी दें।",
+  "No blockchain write": "ब्लॉकचेन पर कोई लेखन नहीं",
+  "Active DeSo Identity:": "सक्रिय DeSo Identity:",
+  "NFT post hash": "NFT पोस्ट हैश", "Copies": "प्रतियाँ", "Creator royalty": "क्रिएटर रॉयल्टी", "Coin royalty": "Coin रॉयल्टी",
+  "Offer for sale": "बिक्री के लिए रखें", "Buy Now": "अभी खरीदें", "Has unlockable": "Unlockable है", "Minimum bid": "न्यूनतम बोली", "Buy Now price": "अभी खरीदें मूल्य",
+  "Checking current DeSo cost…": "वर्तमान DeSo लागत जाँची जा रही है…", "Check current mint cost": "वर्तमान mint लागत जाँचें",
+  "Retrying…": "फिर प्रयास हो रहा है…", "Retry current quote": "वर्तमान quote फिर जाँचें",
+  "Preflight status": "पूर्व-जाँच स्थिति", "Fresh · account matched": "ताज़ा · खाता मेल खाता है", "Sale": "बिक्री", "Auction / bids": "नीलामी / बोलियाँ",
+  "Not for sale": "बिक्री के लिए नहीं", "Unlockable": "Unlockable", "Yes": "हाँ", "No": "नहीं", "Not applicable": "लागू नहीं",
+  "Post hash": "पोस्ट हैश", "Network fee": "नेटवर्क शुल्क", "Spend amount": "खर्च राशि", "VIA service fee": "VIA सेवा शुल्क", "Visible cost boundary": "दिखाई गई लागत सीमा",
+  "Quote valid until": "Quote मान्य है", "Quote created": "Quote बनाया गया", "Server TTL": "Server TTL", "Server clock": "सर्वर समय", "Device clock difference": "डिवाइस समय अंतर",
+  "Quote source": "Quote स्रोत", "Quote contract": "Quote contract", "Quote reference": "Quote संदर्भ", "Unavailable": "उपलब्ध नहीं", "supported": "समर्थित", "unsupported": "असमर्थित",
+  "Refreshing…": "रीफ़्रेश हो रहा है…", "Request fresh quote": "नया quote माँगें", "Quote active account": "Quote सक्रिय खाता", "Refresh quote": "Quote रीफ़्रेश करें",
+  "Clear quote": "Quote साफ़ करें", "Preparing mint…": "Mint तैयार हो रहा है…", "Review in DeSo…": "DeSo में समीक्षा करें…", "Submitting…": "जमा हो रहा है…",
+  "Review & mint in DeSo": "DeSo में समीक्षा और mint करें", "Submitting approved mint to DeSo…": "स्वीकृत mint DeSo पर जमा हो रहा है…",
+  "NFT mint submitted to DeSo.": "NFT mint DeSo पर जमा कर दिया गया।", "DeSo approval was closed. Nothing was minted.": "DeSo मंज़ूरी बंद कर दी गई। कुछ भी mint नहीं हुआ।",
+  "Approval window was blocked. Nothing was minted.": "मंज़ूरी विंडो ब्लॉक थी। कुछ भी mint नहीं हुआ।",
+  "The NFT mint could not be prepared. Nothing was minted.": "NFT mint तैयार नहीं हो सका। कुछ भी mint नहीं हुआ।"
+}
+
+const dictionaries: Record<ViaLanguage | "Hindi", Dictionary> = {
   English: en,
   Dutch: nl,
   French: { ...en, ...simpleOverrides.French },
   Spanish: { ...en, ...simpleOverrides.Spanish },
   Chinese: { ...en, ...simpleOverrides.Chinese },
+  Hindi: hi,
 }
 
 const reverse = new Map<string, Phrase>()
@@ -218,12 +242,12 @@ for (const phrase of Object.keys(en) as Phrase[]) {
   for (const dictionary of Object.values(dictionaries)) reverse.set(dictionary[phrase], phrase)
 }
 
-function translated(value: string, language: ViaLanguage) {
+function translated(value: string, language: ViaLanguage | "Hindi") {
   const canonical = reverse.get(value) ?? value as Phrase
   return dictionaries[language][canonical] ?? value
 }
 
-function translateDynamic(value: string, language: ViaLanguage) {
+function translateDynamic(value: string, language: ViaLanguage | "Hindi") {
   const direct = translated(value, language)
   if (direct !== value) return direct
   const prefixes: Array<[string, string]> = language === "Dutch" ? [
@@ -234,7 +258,7 @@ function translateDynamic(value: string, language: ViaLanguage) {
   return value
 }
 
-function applyLanguage(root: HTMLElement, language: ViaLanguage) {
+function applyLanguage(root: HTMLElement, language: ViaLanguage | "Hindi") {
   const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT)
   let node = walker.nextNode()
   while (node) {
