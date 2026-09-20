@@ -6,6 +6,7 @@ import { readViaLocalSettings, VIA_SETTINGS_EVENT, type ViaLanguage } from "./vi
 type VisitorAnalyticsResponse = {
   ok?: boolean
   visitors?: { today?: number; month?: number; year?: number }
+  countries?: Array<{ country?: string; visitors?: number }>
 }
 
 type PanelCopy = {
@@ -99,6 +100,7 @@ export default function ViaRightPanels() {
   const [visitorToday, setVisitorToday] = useState<number | null>(null)
   const [visitorMonth, setVisitorMonth] = useState<number | null>(null)
   const [visitorYear, setVisitorYear] = useState<number | null>(null)
+  const [visitorCountries, setVisitorCountries] = useState<Array<{ country: string; visitors: number }>>([])
 
   useEffect(() => {
     const sync = () => setLanguage(readViaLocalSettings().interfaceLanguage)
@@ -124,6 +126,11 @@ export default function ViaRightPanels() {
         if (typeof data.visitors.today === "number" && Number.isFinite(data.visitors.today)) setVisitorToday(data.visitors.today)
         if (typeof data.visitors.month === "number" && Number.isFinite(data.visitors.month)) setVisitorMonth(data.visitors.month)
         if (typeof data.visitors.year === "number" && Number.isFinite(data.visitors.year)) setVisitorYear(data.visitors.year)
+        if (Array.isArray(data.countries)) {
+          setVisitorCountries(data.countries
+            .filter((entry): entry is { country: string; visitors: number } => Boolean(entry && typeof entry.country === "string" && typeof entry.visitors === "number" && Number.isFinite(entry.visitors)))
+            .slice(0, 12))
+        }
       })
       .catch(() => {})
 
@@ -138,7 +145,21 @@ export default function ViaRightPanels() {
         <PendingMetric label={copy.activeNow} note={copy.sourcePending} />
         <PendingMetric label={copy.desoAccounts} note={copy.sourcePending} />
         <PendingMetric label={copy.guests} note={copy.sourcePending} />
-        <PendingMetric label={copy.countries} note={copy.sourcePending} />
+        {visitorCountries.length ? (
+          <div className="rounded-xl border border-zinc-800 bg-black/25 px-3 py-2">
+            <div className="flex items-center justify-between gap-3">
+              <span className="text-zinc-300">{copy.countries}</span>
+              <span className="text-[10px] text-zinc-600">{visitorCountries.length}</span>
+            </div>
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              {visitorCountries.map((entry) => (
+                <span key={entry.country} className="rounded-full border border-[#285f40]/70 bg-[#07100b] px-2 py-1 text-[10px] text-[#b8ddc5]">
+                  {entry.country} {entry.visitors.toLocaleString()}
+                </span>
+              ))}
+            </div>
+          </div>
+        ) : <PendingMetric label={copy.countries} note={copy.sourcePending} />}
       </Panel>
 
       <Panel title={copy.visitors}>
