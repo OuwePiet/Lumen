@@ -553,8 +553,8 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
         </div>
       </div>
 
-      <div className="sticky top-[73px] z-20 overflow-x-auto border-b border-zinc-800 bg-zinc-950/95 px-3 py-3 backdrop-blur sm:px-4" aria-label={copy.filters}>
-        <div className="flex min-w-max gap-2">
+      <div className="sticky top-[73px] z-20 border-b border-zinc-800 bg-zinc-950/95 px-3 py-3 backdrop-blur sm:px-4" aria-label={copy.filters}>
+        <div className="flex flex-wrap gap-2">
           {categories.map((option) => {
             const active = option.id === "all" ? allCategoriesActive : activeCategories.includes(option.id)
             const count = option.id === "all" ? items.length : items.filter((item) => categoryOf(item) === option.id).length
