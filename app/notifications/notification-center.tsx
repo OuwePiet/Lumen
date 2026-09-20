@@ -28,6 +28,19 @@ type ProfileResponse = {
   profile?: ActorProfile
 }
 
+type PublicPost = {
+  postHash: string
+  publicKey: string
+  username: string
+  body: string
+  imageUrls: string[]
+}
+
+type PostResponse = {
+  ok?: boolean
+  post?: PublicPost
+}
+
 type Category = "all" | "reaction" | "diamond1" | "diamondMany" | "creatorCoin" | "follow" | "mention5" | "mention6" | "reply" | "repost" | "nft" | "other"
 
 function CategoryIcon({ category, className = "h-4 w-4" }: { category: Category; className?: string }) {
@@ -337,6 +350,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
   const [expandedView, setExpandedView] = useState(false)
   const [profiles, setProfiles] = useState<Record<string, ActorProfile>>({})
   const [expandedKey, setExpandedKey] = useState<string | null>(null)
+  const [postCache, setPostCache] = useState<Record<string, PublicPost | null>>({})
 
   useEffect(() => {
     const current = restoreIdentitySession()
@@ -417,6 +431,35 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
     return () => controller.abort()
   }, [items, profiles])
 
+  function postHashFor(item: NotificationItem) {
+    const href = notificationDestination(item)
+    if (!href || !href.startsWith("/social?post=")) return null
+    try {
+      return new URL(href, "https://viadeso.online").searchParams.get("post")
+    } catch {
+      return null
+    }
+  }
+
+  async function toggleExpanded(item: NotificationItem, rowKey: string) {
+    if (expandedKey === rowKey) {
+      setExpandedKey(null)
+      return
+    }
+
+    setExpandedKey(rowKey)
+    const hash = postHashFor(item)
+    if (!hash || Object.prototype.hasOwnProperty.call(postCache, hash)) return
+
+    try {
+      const response = await fetch(`/api/via/post?hash=${encodeURIComponent(hash)}`, { cache: "no-store" })
+      const data = response.ok ? await response.json() as PostResponse : null
+      setPostCache((current) => ({ ...current, [hash]: data?.ok && data.post ? data.post : null }))
+    } catch {
+      setPostCache((current) => ({ ...current, [hash]: null }))
+    }
+  }
+
   const visible = useMemo(() => category === "all" ? items : items.filter((item) => categoryOf(item) === category), [items, category])
   const message = messageKey === "loading" ? copy.loadingNotifications
     : messageKey === "loaded" ? copy.recentLoaded(items.length)
@@ -484,6 +527,8 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
           const actor = username ? `@${username}` : shortKey(actorPublicKey || metadata.TransactorPublicKeyBase58Check, copy.actor)
           const rowKey = `${item.Index ?? "n"}-${index}`
           const expanded = expandedKey === rowKey
+          const postHash = postHashFor(item)
+          const post = postHash ? postCache[postHash] : undefined
           return <article key={rowKey} className={`grid grid-cols-[42px_minmax(0,1fr)] gap-3 px-4 py-4 transition sm:grid-cols-[46px_minmax(0,1fr)_auto] sm:px-5 ${unread ? "bg-[#0b1510]/70" : "bg-black/10"}`}>
             <div className="relative h-10 w-10 sm:h-11 sm:w-11">
               {profile.profilePic ? <img src={profile.profilePic} alt="" referrerPolicy="no-referrer" className="h-full w-full rounded-full border border-zinc-700 object-cover" /> : <div aria-hidden="true" className={`grid h-full w-full place-items-center rounded-full border text-base font-bold ${unread ? "border-[#1687ff] bg-[#1687ff] text-white" : "border-[#8e8e8e] bg-[#8e8e8e] text-white"}`}><CategoryIcon category={itemCategory} className="h-5 w-5" /></div>}
@@ -496,10 +541,16 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
                 {unread ? <span className="rounded-full border border-[#285f40] px-2 py-0.5 text-[10px] text-[#9adbb2]">{copy.fresh}</span> : null}
               </div>
               <p className="mt-1 text-sm leading-5 text-zinc-400">{copy.descriptions[itemCategory](actor)}</p>
-              {destination ? <button type="button" onClick={() => setExpandedKey(expanded ? null : rowKey)} className="mt-2 inline-flex rounded-full border border-zinc-700 px-2.5 py-1 text-[11px] text-zinc-300 transition hover:border-[#1687ff] hover:text-white">{expanded ? "Close" : copy.open}</button> : null}
-              {expanded && destination ? <div className="mt-3 rounded-xl border border-zinc-800 bg-black/25 p-3 text-xs text-zinc-500">{destination}</div> : null}
+              {destination ? <button type="button" onClick={() => void toggleExpanded(item, rowKey)} className="mt-2 inline-flex rounded-full border border-zinc-700 px-2.5 py-1 text-[11px] text-zinc-300 transition hover:border-[#1687ff] hover:text-white">{expanded ? "Close" : copy.open}</button> : null}
+              {expanded && postHash ? <div className="mt-3 rounded-xl border border-zinc-800 bg-black/25 p-3">
+                {post === undefined ? <p className="text-xs text-zinc-500">{copy.loading}</p> : post ? <>
+                  <p className="text-xs font-semibold text-zinc-300">@{post.username?.replace(/^@/, "") || shortKey(post.publicKey, copy.actor)}</p>
+                  {post.body ? <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-zinc-200">{post.body}</p> : null}
+                  {post.imageUrls?.length ? <div className="mt-3 grid gap-2 sm:grid-cols-2">{post.imageUrls.slice(0, 4).map((url) => <img key={url} src={url} alt="" loading="lazy" className="max-h-72 w-full rounded-xl object-contain" />)}</div> : null}
+                </> : <p className="text-xs text-zinc-500">Post unavailable.</p>}
+              </div> : expanded && destination ? <div className="mt-3 rounded-xl border border-zinc-800 bg-black/25 p-3 text-xs text-zinc-500">{destination}</div> : null}
             </div>
-            {destination ? <button type="button" onClick={() => setExpandedKey(expanded ? null : rowKey)} className="hidden self-center rounded-full border border-zinc-700 px-3 py-1.5 text-xs text-zinc-300 transition hover:border-[#1687ff] hover:text-white sm:inline-flex">{expanded ? "Close" : copy.open}</button> : null}
+            {destination ? <button type="button" onClick={() => void toggleExpanded(item, rowKey)} className="hidden self-center rounded-full border border-zinc-700 px-3 py-1.5 text-xs text-zinc-300 transition hover:border-[#1687ff] hover:text-white sm:inline-flex">{expanded ? "Close" : copy.open}</button> : null}
           </article>
         })}
       </div>
