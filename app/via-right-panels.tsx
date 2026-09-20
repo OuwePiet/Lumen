@@ -29,7 +29,7 @@ type PanelCopy = {
   sourcePending: string
 }
 
-const COPY: Record<ViaLanguage, PanelCopy> = {
+const COPY: Record<ViaLanguage | "Hindi", PanelCopy> = {
   Dutch: {
     live: "VIA Live", visitors: "VIA Bezoekers", activity: "VIA Activiteit", community: "VIA Community",
     activeNow: "Nu aanwezig", desoAccounts: "DeSo-accounts", guests: "Zonder DeSo", countries: "Landen",
@@ -59,6 +59,12 @@ const COPY: Record<ViaLanguage, PanelCopy> = {
     activeNow: "当前在线", desoAccounts: "DeSo 账户", guests: "未使用 DeSo", countries: "国家/地区",
     today: "今天", month: "本月", year: "今年", posts: "帖子", creators: "活跃创作者",
     trends: "趋势", nftActivity: "NFT 活动", welcome: "Welcome / First Post", sourcePending: "尚未连接可靠的统计来源。",
+  },
+  Hindi: {
+    live: "VIA लाइव", visitors: "VIA आगंतुक", activity: "VIA गतिविधि", community: "VIA समुदाय",
+    activeNow: "अभी सक्रिय", desoAccounts: "DeSo खाते", guests: "DeSo के बिना", countries: "देश",
+    today: "आज", month: "इस महीने", year: "इस वर्ष", posts: "पोस्ट", creators: "सक्रिय क्रिएटर",
+    trends: "रुझान", nftActivity: "NFT गतिविधि", welcome: "Welcome / First Post", sourcePending: "विश्वसनीय मापन स्रोत अभी जुड़ा नहीं है।",
   },
 }
 

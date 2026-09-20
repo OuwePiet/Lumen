@@ -5,12 +5,13 @@ import { CircleHelp } from "lucide-react"
 import { useEffect, useState } from "react"
 import { readViaLocalSettings, VIA_SETTINGS_EVENT, type ViaLanguage } from "./via-local-settings"
 
-const COPY: Record<ViaLanguage, string> = {
+const COPY: Record<ViaLanguage | "Hindi", string> = {
   Dutch: "Handleiding",
   English: "Guide",
   French: "Guide",
   Spanish: "Guía",
   Chinese: "指南",
+  Hindi: "मार्गदर्शिका",
 }
 
 export default function ViaHelpButton() {

@@ -42,7 +42,7 @@ type HeaderCopy = {
   profile: string; saved: string; drafts: string; settings: string; switchAccount: string; desoAccount: string; addAccount: string; logout: string;
 }
 
-const headerCopy: Record<ViaLanguage, HeaderCopy> = {
+const headerCopy: Record<ViaLanguage | "Hindi", HeaderCopy> = {
   Dutch: {
     home: "Home", feed: "Sociaal", discover: "Ontdekken", nfts: "NFT's", live: "Live", games: "Spellen", communities: "Community's", world: "Wereld", myVia: "Mijn VIA",
     search: "Zoek leden", publicEntrance: "Publieke ingang", login: "DeSo Login", wallet: "Mijn Wallet", notifications: "Meldingen", connected: "DeSo verbonden",
@@ -68,14 +68,20 @@ const headerCopy: Record<ViaLanguage, HeaderCopy> = {
     search: "搜索成员", publicEntrance: "公开入口", login: "DeSo 登录", wallet: "我的钱包", notifications: "通知", connected: "DeSo 已连接",
     profile: "我的资料", saved: "书签", drafts: "草稿", settings: "设置", switchAccount: "切换账户", desoAccount: "DeSo 账户", addAccount: "添加 DeSo 账户", logout: "退出 VIA",
   },
+  Hindi: {
+    home: "होम", feed: "सोशल", discover: "खोजें", nfts: "NFT", live: "लाइव", games: "गेम्स", communities: "समुदाय", world: "दुनिया", myVia: "मेरा VIA",
+    search: "सदस्य खोजें", publicEntrance: "सार्वजनिक प्रवेश", login: "DeSo लॉगिन", wallet: "मेरा वॉलेट", notifications: "सूचनाएँ", connected: "DeSo जुड़ा हुआ",
+    profile: "मेरी प्रोफ़ाइल", saved: "बुकमार्क", drafts: "ड्राफ्ट", settings: "सेटिंग्स", switchAccount: "खाता बदलें", desoAccount: "DeSo खाता", addAccount: "DeSo खाता जोड़ें", logout: "VIA से लॉग आउट",
+  },
 }
 
-const languageCodes: Record<ViaLanguage, string> = {
+const languageCodes: Record<ViaLanguage | "Hindi", string> = {
   Dutch: "NL",
   English: "EN",
   French: "FR",
   Spanish: "ES",
   Chinese: "中文",
+  Hindi: "हिं",
 }
 
 const pill = {
