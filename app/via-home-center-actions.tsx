@@ -6,12 +6,13 @@ import { readViaLocalSettings, VIA_SETTINGS_EVENT, type ViaLanguage } from "./vi
 
 type Copy = { title: string; ideas: string; storage: string }
 
-const copy: Record<ViaLanguage, Copy> = {
+const copy: Record<ViaLanguage | "Hindi", Copy> = {
   Dutch: { title: "Ideeën & opslag", ideas: "Ideeënbus", storage: "Externe opslag" },
   English: { title: "Ideas & storage", ideas: "Ideas Box", storage: "External storage" },
   French: { title: "Idées & stockage", ideas: "Boîte à idées", storage: "Stockage externe" },
   Spanish: { title: "Ideas y almacenamiento", ideas: "Buzón de ideas", storage: "Almacenamiento externo" },
   Chinese: { title: "想法与存储", ideas: "意见箱", storage: "外部存储" },
+  Hindi: { title: "विचार और स्टोरेज", ideas: "विचार बॉक्स", storage: "बाहरी स्टोरेज" },
 }
 
 const buttonStyle = {
