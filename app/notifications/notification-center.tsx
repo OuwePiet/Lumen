@@ -18,6 +18,16 @@ type NotificationResponse = {
   notifications?: NotificationItem[]
 }
 
+type ActorProfile = {
+  username?: string
+  profilePic?: string | null
+}
+
+type ProfileResponse = {
+  ok?: boolean
+  profile?: ActorProfile
+}
+
 type Category = "all" | "reaction" | "diamond1" | "diamondMany" | "creatorCoin" | "follow" | "mention5" | "mention6" | "reply" | "repost" | "nft" | "other"
 
 function CategoryIcon({ category, className = "h-4 w-4" }: { category: Category; className?: string }) {
@@ -325,6 +335,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
   const [lastSeenIndex, setLastSeenIndex] = useState<number | null>(null)
   const [refreshToken, setRefreshToken] = useState(0)
   const [expandedView, setExpandedView] = useState(false)
+  const [profiles, setProfiles] = useState<Record<string, ActorProfile>>({})
 
   useEffect(() => {
     const current = restoreIdentitySession()
@@ -372,6 +383,38 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
     void load()
     return () => controller.abort()
   }, [session, refreshToken])
+
+  useEffect(() => {
+    const publicKeys = Array.from(new Set(items.map((item) => {
+      const metadata = record(item.Metadata) ?? {}
+      const value = metadata.TransactorPublicKeyBase58Check
+      return typeof value === "string" && PUBLIC_KEY_RE.test(value) ? value : ""
+    }).filter(Boolean))).slice(0, 32)
+
+    const missing = publicKeys.filter((publicKey) => !profiles[publicKey])
+    if (!missing.length) return
+
+    const controller = new AbortController()
+    void Promise.all(missing.map(async (publicKey) => {
+      try {
+        const response = await fetch(`/api/via/profile?identity=${encodeURIComponent(publicKey)}`, {
+          cache: "no-store",
+          signal: controller.signal,
+          headers: { Accept: "application/json" },
+        })
+        const data = response.ok ? await response.json() as ProfileResponse : null
+        return [publicKey, data?.ok && data.profile ? data.profile : {}] as const
+      } catch {
+        return [publicKey, {}] as const
+      }
+    })).then((entries) => {
+      if (!controller.signal.aborted) {
+        setProfiles((current) => ({ ...current, ...Object.fromEntries(entries) }))
+      }
+    })
+
+    return () => controller.abort()
+  }, [items, profiles])
 
   const visible = useMemo(() => category === "all" ? items : items.filter((item) => categoryOf(item) === category), [items, category])
   const message = messageKey === "loading" ? copy.loadingNotifications
@@ -432,9 +475,17 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
           const unread = typeof item.Index === "number" && lastSeenIndex !== null && item.Index > lastSeenIndex
           const destination = notificationDestination(item)
           const metadata = record(item.Metadata) ?? {}
-          const actor = shortKey(metadata.TransactorPublicKeyBase58Check, copy.actor)
+          const actorPublicKey = typeof metadata.TransactorPublicKeyBase58Check === "string" && PUBLIC_KEY_RE.test(metadata.TransactorPublicKeyBase58Check)
+            ? metadata.TransactorPublicKeyBase58Check
+            : ""
+          const profile = actorPublicKey ? profiles[actorPublicKey] ?? {} : {}
+          const username = profile.username?.trim().replace(/^@/, "")
+          const actor = username ? `@${username}` : shortKey(actorPublicKey || metadata.TransactorPublicKeyBase58Check, copy.actor)
           return <article key={`${item.Index ?? "n"}-${index}`} className={`grid grid-cols-[42px_minmax(0,1fr)] gap-3 px-4 py-4 transition sm:grid-cols-[46px_minmax(0,1fr)_auto] sm:px-5 ${unread ? "bg-[#0b1510]/70" : "bg-black/10"}`}>
-            <div aria-hidden="true" className={`grid h-10 w-10 place-items-center rounded-full border text-base font-bold sm:h-11 sm:w-11 ${unread ? "border-[#1687ff] bg-[#1687ff] text-white" : "border-[#8e8e8e] bg-[#8e8e8e] text-white"}`}><CategoryIcon category={itemCategory} className="h-5 w-5" /></div>
+            <div className="relative h-10 w-10 sm:h-11 sm:w-11">
+              {profile.profilePic ? <img src={profile.profilePic} alt="" referrerPolicy="no-referrer" className="h-full w-full rounded-full border border-zinc-700 object-cover" /> : <div aria-hidden="true" className={`grid h-full w-full place-items-center rounded-full border text-base font-bold ${unread ? "border-[#1687ff] bg-[#1687ff] text-white" : "border-[#8e8e8e] bg-[#8e8e8e] text-white"}`}><CategoryIcon category={itemCategory} className="h-5 w-5" /></div>}
+              <span aria-hidden="true" className="absolute -bottom-1 -right-1 grid h-5 w-5 place-items-center rounded-full border border-zinc-700 bg-black text-white"><CategoryIcon category={itemCategory} className="h-3 w-3" /></span>
+            </div>
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                 <strong className="truncate text-sm font-semibold text-zinc-100">{actor}</strong>
