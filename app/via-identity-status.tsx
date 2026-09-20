@@ -10,13 +10,13 @@ type Props = {
   viaRecognized?: boolean
   compact?: boolean
   showLeaf?: boolean
-  language?: ViaLanguage
+  language?: ViaLanguage | "Hindi"
   className?: string
 }
 
 type MarkKind = "verified" | "inactive" | "via"
 
-const COPY: Record<ViaLanguage, Record<MarkKind, { title: string; body: string }>> = {
+const COPY: Record<ViaLanguage | "Hindi", Record<MarkKind, { title: string; body: string }>> = {
   Dutch: {
     verified: {
       title: "DeSo Verified",
@@ -73,6 +73,11 @@ const COPY: Record<ViaLanguage, Record<MarkKind, { title: string; body: string }
       body: "Se obtiene mediante una participación positiva y verificable en VIA según criterios fijos de VIA. No se puede comprar.",
     },
   },
+  Hindi: {
+    verified: { title: "DeSo सत्यापित", body: "मूल DeSo सत्यापन। VIA इस स्थिति को प्रदान, बदल या हटा नहीं सकता।" },
+    inactive: { title: "90+ दिनों से निष्क्रिय", body: "इस खाते में कम से कम 90 दिनों से सत्यापित सार्वजनिक DeSo गतिविधि नहीं हुई है। VIA केवल सार्वजनिक DeSo डेटा का उपयोग करता है।" },
+    via: { title: "VIA मान्यता", body: "निश्चित VIA मानदंडों के अनुसार VIA में सत्यापित सकारात्मक भागीदारी से अर्जित। यह मान्यता खरीदी नहीं जा सकती।" },
+  },
   Chinese: {
     verified: {
       title: "DeSo 已验证",
@@ -104,7 +109,7 @@ function MarkShell({
 }: {
   kind: MarkKind
   compact: boolean
-  language: ViaLanguage
+  language: ViaLanguage | "Hindi"
   children: React.ReactNode
 }) {
   const [open, setOpen] = useState(false)
