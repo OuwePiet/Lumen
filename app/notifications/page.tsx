@@ -5,6 +5,7 @@ import { useEffect, useState } from "react"
 import NotificationCenter from "./notification-center"
 import SponsorPlatform from "../sponsor-platform"
 import { readViaLocalSettings, VIA_SETTINGS_EVENT, type ViaLanguage } from "../via-local-settings"
+import ViaRightPanels from "../via-right-panels"
 
 type PageCopy = { title: string; intro: string; back: string }
 
@@ -34,7 +35,8 @@ export default function NotificationsPage() {
 
   return (
     <main className="min-h-screen bg-black px-5 py-8 text-white sm:px-8 lg:px-12">
-      <div className="mx-auto max-w-5xl">
+      <div className="mx-auto grid max-w-7xl gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
+        <div className="min-w-0">
         <header className="mb-6 flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-5">
           <div>
             <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">{copy.title}</h1>
@@ -44,6 +46,10 @@ export default function NotificationsPage() {
         </header>
 
         <NotificationCenter language={language} />
+        </div>
+        <aside className="hidden xl:block xl:sticky xl:top-6 xl:self-start">
+          <ViaRightPanels />
+        </aside>
       </div>
     </main>
   )
