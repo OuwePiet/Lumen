@@ -667,7 +667,9 @@ export default async function NFTView({
     )
   } catch {
     return (
-      <main style={styles.page}>
+      <main style={{ ...styles.page, position: "relative", isolation: "isolate", overflowX: "hidden" }}>
+        <div aria-hidden="true" style={{ position: "fixed", inset: 0, zIndex: -2, pointerEvents: "none", backgroundImage: 'url("/via-nft-background-approved.jpg")', backgroundPosition: "center top", backgroundSize: "cover", backgroundRepeat: "no-repeat" }} />
+        <div aria-hidden="true" style={{ position: "fixed", inset: 0, zIndex: -1, pointerEvents: "none", background: "linear-gradient(180deg,rgba(3,7,5,.42) 0%,rgba(3,7,5,.68) 46%,rgba(3,7,5,.9) 100%)" }} />
         <div style={styles.container}>
           <div style={styles.topActions}>
             <BackToCollection href={backHref} label={backLabel} style={styles.backLink} />
