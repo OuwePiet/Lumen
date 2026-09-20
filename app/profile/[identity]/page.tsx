@@ -5,6 +5,7 @@ import { useParams } from "next/navigation"
 import { useEffect, useState } from "react"
 import FollowButton from "../../social/follow-button"
 import ProfileActionMenu from "../profile-action-menu"
+import ViaIdentityStatusMarks from "../../via-identity-status"
 
 type PublicProfile = {
   publicKey: string
@@ -12,6 +13,9 @@ type PublicProfile = {
   description: string
   profilePic: string | null
   isVerified: boolean
+  isInactive?: boolean
+  viaRecognized?: boolean
+  desoBirthdayAt?: string | null
   creatorBasisPoints: number | null
   coinPriceDeSoNanos: number | null
   numberOfHolders: number | null
@@ -180,15 +184,13 @@ export default function PublicProfilePage() {
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2">
                         <h2 className="truncate text-2xl font-semibold sm:text-3xl">@{profile.username}</h2>
-                        {profile.isVerified ? (
-                          <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-sky-500 text-sm font-black text-white shadow-[0_0_0_2px_rgba(14,165,233,.14)]" title="DeSo verified" aria-label="DeSo verified">✓</span>
-                        ) : null}
+                        <ViaIdentityStatusMarks verified={profile.isVerified} inactive={Boolean(profile.isInactive)} viaRecognized={Boolean(profile.viaRecognized)} compact={false} language="Dutch" />
                       </div>
 
                       <div className="mt-3 flex flex-wrap items-center gap-2">
                         <span className="rounded-full border border-[#8fd4a9]/30 bg-[#0c1711]/65 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-[#9adbb2]">Creator</span>
-                        <span className="rounded-full border border-[#8fd4a9]/40 bg-[#0c1711]/45 px-2.5 py-1 text-[10px] font-black tracking-[0.12em] text-[#b9ffd4]">VIA</span>
-                        <span className="inline-flex items-center gap-1.5 rounded-full border border-zinc-800 bg-black/25 px-2.5 py-1 text-[10px] font-semibold text-zinc-400"><span className="h-1.5 w-1.5 rounded-full bg-[#8fd4a9]" />Active</span>
+                        <span className="rounded-full border border-[#8fd4a9]/40 bg-[#0c1711]/45 px-2.5 py-1 text-[10px] font-black tracking-[0.12em] text-[#b9ffd4]">Collector</span>
+                        {profile.desoBirthdayAt ? <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-zinc-500">DeSo since · {new Date(profile.desoBirthdayAt).toLocaleDateString("nl-NL")}</span> : null}
                         <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-zinc-600">AURA CARD</span>
                       </div>
                     </div>

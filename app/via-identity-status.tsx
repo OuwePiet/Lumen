@@ -206,14 +206,18 @@ function ViaLeaf({ compact }: { compact: boolean }) {
         display: "inline-grid",
         placeItems: "center",
         borderRadius: "50%",
-        border: "1px solid rgba(143,212,169,.38)",
-        background: "radial-gradient(circle at 35% 30%, rgba(143,212,169,.24), rgba(9,24,15,.82) 65%)",
-        boxShadow: "0 0 12px rgba(143,212,169,.12), inset 0 1px 0 rgba(255,255,255,.06)",
+        border: "1px solid rgba(143,212,169,.28)",
+        background: "rgba(8,18,12,.72)",
+        boxShadow: "0 0 12px rgba(143,212,169,.10), inset 0 1px 0 rgba(255,255,255,.05)",
+        overflow: "hidden",
       }}
     >
-      <svg width={compact ? 12 : 15} height={compact ? 12 : 15} viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M19.7 3.7C12.8 4.4 7.6 7 5.1 11.2c-1.8 3-1.3 6.5.7 8.8 1.1-4.2 4-7.7 8.6-10.2-3.2 2.8-5.4 6-6.3 9.7 3.2.4 6.5-1 8.5-3.6 2.5-3.3 2.5-7.6 3.1-12.2Z" fill="#9FE3B8" />
-      </svg>
+      <img
+        src="/via-leaf.svg"
+        alt=""
+        aria-hidden="true"
+        style={{ width: compact ? "15px" : "19px", height: compact ? "14px" : "18px", objectFit: "contain", display: "block" }}
+      />
     </span>
   )
 }
