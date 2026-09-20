@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useMemo, useState } from "react"
-import { AtSign, Badge, Check, CheckCircle2, ChevronsRight, CircleDot, Gem, Link2, MessageSquare, RefreshCw, Repeat2, ShieldOff, Smile, UserRound } from "lucide-react"
+import { ArrowUpRight, AtSign, Badge, Check, CheckCircle2, ChevronsRight, CircleDot, Gem, Link2, MessageSquare, RefreshCw, Repeat2, ShieldOff, Smile, UserRound } from "lucide-react"
 import { restoreIdentitySession, VIA_IDENTITY_EVENT, type ViaIdentitySession } from "../deso-identity-session"
 import type { ViaLanguage } from "../via-local-settings"
 import SponsorPlatform from "../sponsor-platform"
@@ -569,6 +569,16 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
                     <RepostButton postHash={post.postHash} initialCount={0} variant="icon" />
                     <LikeButton postHash={post.postHash} initialCount={post.likeCount} variant="icon" />
                     <DiamondButton postHash={post.postHash} receiverPublicKey={post.publicKey} initialCount={post.diamondCount} variant="icon" />
+                    <button
+                      type="button"
+                      disabled
+                      title="Value/$ action — meaning still to confirm"
+                      aria-label="Value/$ action — meaning still to confirm"
+                      className="inline-flex h-9 min-w-9 items-center justify-center gap-0.5 rounded-full border border-zinc-900 px-2 text-xs text-zinc-700 disabled:cursor-not-allowed"
+                    >
+                      <ArrowUpRight className="h-4 w-4" />
+                      <span>$</span>
+                    </button>
                     <button
                       type="button"
                       onClick={() => {
