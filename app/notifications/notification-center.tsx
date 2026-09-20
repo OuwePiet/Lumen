@@ -20,14 +20,14 @@ type NotificationResponse = {
 type Category = "all" | "mention" | "reply" | "like" | "diamond" | "follow" | "repost" | "nft" | "other"
 
 const CATEGORY_ICON: Record<Category, string> = {
-  all: "●",
+  all: "✓",
   mention: "@",
-  reply: "↩",
-  like: "♥",
+  reply: "▢",
+  like: "☺",
   diamond: "◇",
-  follow: "＋",
+  follow: "♙",
   repost: "↻",
-  nft: "◆",
+  nft: "◈",
   other: "•",
 }
 
