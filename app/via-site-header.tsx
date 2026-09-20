@@ -272,7 +272,7 @@ export default function ViaSiteHeader() {
           {!session ? <button type="button" onClick={enterPublicMode} style={{ ...pill, cursor: "pointer" }}>{t.publicEntrance}</button> : null}
           {!session ? <a href={DESO_LOGIN_URL} target="via-deso-identity" style={styles.login}>{t.login}</a> : null}
           <Link href="/wallet" style={pill} className="via-site-header-utility">{t.wallet}</Link>
-          <Link href="/notifications" style={pill} className="via-site-header-utility">{t.notifications}</Link>
+          {pathname !== "/notifications" ? <Link href="/notifications" style={pill} className="via-site-header-utility">{t.notifications}</Link> : null}
 
           {session ? (
             <>
