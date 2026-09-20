@@ -38,6 +38,7 @@ type PublicPost = {
   username: string
   body: string
   imageUrls: string[]
+  timestampNanos: number
   likeCount: number
   diamondCount: number
 }
@@ -594,6 +595,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
                     >
                       {copiedPost === post.postHash ? <Check className="h-4 w-4" /> : <Link2 className="h-4 w-4" />}
                     </button>
+                    {Number.isFinite(post.timestampNanos) && post.timestampNanos > 0 ? <span className="ml-auto self-center whitespace-nowrap text-[11px] text-zinc-600">{new Date(post.timestampNanos / 1_000_000).toLocaleString()}</span> : null}
                   </div>
                   {replyingTo === post.postHash ? <div className="mt-3"><PostComposer parentStakeID={post.postHash} compact onDone={() => setReplyingTo(null)} /></div> : null}
                 </> : <p className="text-xs text-zinc-500">Post unavailable.</p>}
