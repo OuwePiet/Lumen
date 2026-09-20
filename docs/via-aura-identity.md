@@ -72,3 +72,28 @@ VIA presenteert DeSo-profielinformatie op een eigen, originelere, mooiere en con
 - De controle gebeurt opnieuw bij het laden/verversen van het openbare profiel; nieuwe verificaties kunnen daardoor automatisch in VIA doorlopen.
 - Een onbekende willekeurige node telt niet mee. Daarmee voorkomen we dat iemand via een eigen node zichzelf bij VIA blauw maakt.
 - De bronlijst blijft expliciet beheerd en moet bij veranderingen in het DeSo-ecosysteem opnieuw worden gecontroleerd.
+
+
+## Vaste visuele uitvoering — profiel en compacte identiteit
+Deze uitvoering is definitief vastgelegd en mag niet opnieuw worden ontworpen zonder expliciet overleg.
+
+### Grote VIA Aura Card
+- Wordt gebruikt op de profielpagina.
+- Toont echte DeSo-avatar/foto, naam en @naam.
+- Toont het blauwe DeSo-vinkje wanneer de betrouwbare DeSo-bron dat aangeeft.
+- Toont het grijze inactief-vinkje alleen volgens de vastgelegde 90-dagenregel.
+- Toont het vaste VIA-blaadje uitsluitend als VIA Recognition volgens de afzonderlijke erkenningsregels.
+- Toont rollen zoals Creator / Collector waar van toepassing.
+- Toont `DeSo since · [datum]` alleen wanneer de echte DeSo Birthday/BirthBlock/first-profile-update datum betrouwbaar beschikbaar is.
+- De tijdelijke ontwerptekst `On DeSo since BitClout` is geen dat bron en mag niet als vaste profieltekst worden gebruikt.
+
+### Compacte VIA Aura-balk
+- Wordt gebruikt bij posts, reacties en Notifications waar de grote kaart niet past.
+- Toont avatar/foto, @naam en dezelfde statusmarkeringen als de grote kaart.
+- De compacte uitvoering gebruikt geen afwijkende betekenis of alternatieve iconenset.
+
+### Vast VIA-blaadje
+- De merk-/keurvorm is exact het bestaande bestand `/via-leaf.svg`.
+- Vorm en vaste kleur van dit blaadje mogen niet worden gewijzigd zonder expliciet overleg.
+- Alleen de lokale presentatie eromheen (bijvoorbeeld subtiele Aura-ring/achtergrond) mag voor deze statusweergave passend worden afgestemd.
+- Bestaande toepassingen, waaronder NFT-watermerk en andere merktoepassingen, blijven ongewijzigd.
