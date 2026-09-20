@@ -335,6 +335,7 @@ const COPY: Record<ViaLanguage | "Hindi", Copy> = {
       "Showing cached NFTs · refreshing from DeSo…": "कैश किए NFT दिख रहे हैं · DeSo से रीफ़्रेश हो रहा है…", "Loading public NFTs from DeSo…": "DeSo से सार्वजनिक NFT लोड हो रहे हैं…", "DeSo refresh status unavailable.": "DeSo रीफ़्रेश स्थिति उपलब्ध नहीं है।"
     },
     patterns: [
+      [/^The public NFTs could not be retrieved from DeSo right now\\.$/u, () => "अभी DeSo से सार्वजनिक NFT प्राप्त नहीं किए जा सके।"], [/^Enter a DeSo username\\.$/u, () => "DeSo उपयोगकर्ता नाम दर्ज करें।"], [/^DeSo account not found\\.$/u, () => "DeSo खाता नहीं मिला।"], [/^The DeSo account could not be checked right now\\.$/u, () => "अभी DeSo खाते की जाँच नहीं की जा सकी।"],
       [/^@(.+) owns (\\d+) NFT (copy|copies) across (\\d+) different NFT(s?)\\.$/u, (name,copies,_copy,nfts) => `@${name} के पास ${nfts} अलग-अलग NFT में ${copies} NFT प्रतियाँ हैं।`], [/^@(.+) owns (\\d+) of (\\d+) (copy|copies)$/u, (name,owned,total) => `@${name} के पास ${total} में से ${owned} प्रतियाँ हैं`],
       [/^Updated (.+)$/u, (time) => `अपडेट ${time}`], [/^No public NFTs found for @(.+)\.$/u, (name) => `@${name} के लिए कोई सार्वजनिक NFT नहीं मिला।`],
       [/^(\d+) of (\d+) public NFTs match\.$/u, (a,b) => `${b} में से ${a} सार्वजनिक NFT मेल खाते हैं।`], [/^(\d+) for sale$/u, (count) => `${count} बिक्री के लिए`],
