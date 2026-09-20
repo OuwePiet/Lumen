@@ -18,15 +18,16 @@ type NotificationResponse = {
   notifications?: NotificationItem[]
 }
 
-type Category = "all" | "mention" | "reply" | "like" | "diamond" | "follow" | "repost" | "nft" | "other"
+type Category = "all" | "reaction" | "diamond1" | "diamondMany" | "creatorCoin" | "follow" | "mention5" | "mention6" | "reply" | "repost" | "nft" | "other"
 
 function CategoryIcon({ category, className = "h-4 w-4" }: { category: Category; className?: string }) {
   if (category === "all") return <Check className={className} strokeWidth={2} />
-  if (category === "mention") return <AtSign className={className} strokeWidth={2} />
-  if (category === "reply") return <MessageSquare className={className} strokeWidth={2} />
-  if (category === "like") return <Smile className={className} strokeWidth={2} />
-  if (category === "diamond") return <Gem className={className} strokeWidth={2} />
+  if (category === "reaction") return <Smile className={className} strokeWidth={2} />
+  if (category === "diamond1" || category === "diamondMany") return <Gem className={className} strokeWidth={2} />
+  if (category === "creatorCoin") return <span className="text-[13px] font-bold">$</span>
   if (category === "follow") return <UserRound className={className} strokeWidth={2} />
+  if (category === "mention5" || category === "mention6") return <AtSign className={className} strokeWidth={2} />
+  if (category === "reply") return <MessageSquare className={className} strokeWidth={2} />
   if (category === "repost") return <Repeat2 className={className} strokeWidth={2} />
   if (category === "nft") return <Badge className={className} strokeWidth={2} />
   return <CircleDot className={className} strokeWidth={2} />
@@ -54,7 +55,7 @@ type Copy = {
 
 const COPY: Record<ViaLanguage, Copy> = {
   Dutch: {
-    categories: { all: "Alles", mention: "Vermeldingen", reply: "Reacties", like: "Likes", diamond: "Diamanten", follow: "Volgen", repost: "Reposts", nft: "NFT", other: "Overig" },
+    categories: { all: "Alles", reaction: "Reacties", diamond1: "1 diamant", diamondMany: "Meerdere diamanten", creatorCoin: "Creator Coin", follow: "Volgen", mention5: "Vermeldingen · max 5", mention6: "Vermeldingen · 6+", reply: "Antwoorden", repost: "Reposts", nft: "NFT", other: "Overig" },
     login: "Log in met DeSo om meldingen voor je actieve account te zien.",
     heading: "Wat bereikte jouw account?",
     active: "Actief account",
@@ -71,10 +72,13 @@ const COPY: Record<ViaLanguage, Copy> = {
     fresh: "Nieuw",
     actor: "DeSo-account",
     descriptions: {
-      mention: (actor) => `${actor} heeft je vermeld in een bericht.`,
+      reaction: (actor) => `${actor} reageerde op een van je berichten.`,
+      diamond1: (actor) => `${actor} stuurde 1 diamant.`,
+      diamondMany: (actor) => `${actor} stuurde meerdere diamanten.`,
+      creatorCoin: (actor) => `${actor} veroorzaakte Creator Coin-activiteit.`,
+      mention5: (actor) => `${actor} heeft je vermeld.`,
+      mention6: (actor) => `${actor} heeft je vermeld in een bericht met 6 of meer tags.`,
       reply: (actor) => `${actor} reageerde op een bericht waarbij jij betrokken bent.`,
-      like: (actor) => `${actor} vond een van je berichten leuk.`,
-      diamond: (actor) => `${actor} stuurde een diamant.`,
       follow: (actor) => `${actor} wijzigde de volgrelatie met jouw account.`,
       repost: (actor) => `${actor} heeft een bericht opnieuw gedeeld waarbij jij betrokken bent.`,
       nft: (actor) => `${actor} veroorzaakte NFT-activiteit voor jouw account.`,
@@ -82,7 +86,7 @@ const COPY: Record<ViaLanguage, Copy> = {
     },
   },
   English: {
-    categories: { all: "All", mention: "Mentions", reply: "Replies", like: "Likes", diamond: "Diamonds", follow: "Follows", repost: "Reposts", nft: "NFT", other: "Other" },
+    categories: { all: "All", reaction: "Reactions", diamond1: "Single Diamond", diamondMany: "Multiple Diamonds", creatorCoin: "Creator Coin", follow: "Follows", mention5: "Mentions · max 5", mention6: "Mentions · 6+", reply: "Replies", repost: "Reposts", nft: "NFT", other: "Other" },
     login: "Log in with DeSo to see notifications for your active account.",
     heading: "What reached your account?",
     active: "Active account",
@@ -99,10 +103,13 @@ const COPY: Record<ViaLanguage, Copy> = {
     fresh: "New",
     actor: "DeSo account",
     descriptions: {
-      mention: (actor) => `${actor} mentioned you in a post.`,
+      reaction: (actor) => `${actor} reacted to one of your posts.`,
+      diamond1: (actor) => `${actor} sent 1 Diamond.`,
+      diamondMany: (actor) => `${actor} sent multiple Diamonds.`,
+      creatorCoin: (actor) => `${actor} generated Creator Coin activity.`,
+      mention5: (actor) => `${actor} mentioned you.`,
+      mention6: (actor) => `${actor} mentioned you in a post with 6 or more tags.`,
       reply: (actor) => `${actor} replied to a post involving you.`,
-      like: (actor) => `${actor} liked one of your posts.`,
-      diamond: (actor) => `${actor} sent a diamond.`,
       follow: (actor) => `${actor} changed a follow relationship with your account.`,
       repost: (actor) => `${actor} reposted content involving you.`,
       nft: (actor) => `${actor} generated NFT activity for your account.`,
@@ -110,7 +117,7 @@ const COPY: Record<ViaLanguage, Copy> = {
     },
   },
   French: {
-    categories: { all: "Tout", mention: "Mentions", reply: "Réponses", like: "J’aime", diamond: "Diamants", follow: "Abonnements", repost: "Reposts", nft: "NFT", other: "Autre" },
+    categories: { all: "Tout", reaction: "Réactions", diamond1: "1 diamant", diamondMany: "Plusieurs diamants", creatorCoin: "Creator Coin", follow: "Abonnements", mention5: "Mentions · max 5", mention6: "Mentions · 6+", reply: "Réponses", repost: "Reposts", nft: "NFT", other: "Autre" },
     login: "Connectez-vous avec DeSo pour voir les notifications du compte actif.",
     heading: "Qu’est-ce qui a atteint votre compte ?",
     active: "Compte actif",
@@ -127,10 +134,13 @@ const COPY: Record<ViaLanguage, Copy> = {
     fresh: "Nouveau",
     actor: "Compte DeSo",
     descriptions: {
-      mention: (actor) => `${actor} vous a mentionné dans une publication.`,
+      reaction: (actor) => `${actor} a réagi à l’une de vos publications.`,
+      diamond1: (actor) => `${actor} a envoyé 1 diamant.`,
+      diamondMany: (actor) => `${actor} a envoyé plusieurs diamants.`,
+      creatorCoin: (actor) => `${actor} a généré une activité Creator Coin.`,
+      mention5: (actor) => `${actor} vous a mentionné.`,
+      mention6: (actor) => `${actor} vous a mentionné avec 6 tags ou plus.`,
       reply: (actor) => `${actor} a répondu à une publication qui vous concerne.`,
-      like: (actor) => `${actor} a aimé l’une de vos publications.`,
-      diamond: (actor) => `${actor} a envoyé un diamant.`,
       follow: (actor) => `${actor} a modifié sa relation d’abonnement avec votre compte.`,
       repost: (actor) => `${actor} a repartagé du contenu qui vous concerne.`,
       nft: (actor) => `${actor} a généré une activité NFT pour votre compte.`,
@@ -138,7 +148,7 @@ const COPY: Record<ViaLanguage, Copy> = {
     },
   },
   Spanish: {
-    categories: { all: "Todo", mention: "Menciones", reply: "Respuestas", like: "Me gusta", diamond: "Diamantes", follow: "Seguimientos", repost: "Reposts", nft: "NFT", other: "Otros" },
+    categories: { all: "Todo", reaction: "Reacciones", diamond1: "1 diamante", diamondMany: "Varios diamantes", creatorCoin: "Creator Coin", follow: "Seguimientos", mention5: "Menciones · máx 5", mention6: "Menciones · 6+", reply: "Respuestas", repost: "Reposts", nft: "NFT", other: "Otros" },
     login: "Inicia sesión con DeSo para ver las notificaciones de tu cuenta activa.",
     heading: "¿Qué llegó a tu cuenta?",
     active: "Cuenta activa",
@@ -155,10 +165,13 @@ const COPY: Record<ViaLanguage, Copy> = {
     fresh: "Nuevo",
     actor: "Cuenta DeSo",
     descriptions: {
-      mention: (actor) => `${actor} te mencionó en una publicación.`,
+      reaction: (actor) => `${actor} reaccionó a una de tus publicaciones.`,
+      diamond1: (actor) => `${actor} envió 1 diamante.`,
+      diamondMany: (actor) => `${actor} envió varios diamantes.`,
+      creatorCoin: (actor) => `${actor} generó actividad de Creator Coin.`,
+      mention5: (actor) => `${actor} te mencionó.`,
+      mention6: (actor) => `${actor} te mencionó con 6 etiquetas o más.`,
       reply: (actor) => `${actor} respondió a una publicación en la que participas.`,
-      like: (actor) => `${actor} indicó que le gusta una de tus publicaciones.`,
-      diamond: (actor) => `${actor} envió un diamante.`,
       follow: (actor) => `${actor} cambió la relación de seguimiento con tu cuenta.`,
       repost: (actor) => `${actor} volvió a compartir contenido relacionado contigo.`,
       nft: (actor) => `${actor} generó actividad NFT para tu cuenta.`,
@@ -166,7 +179,7 @@ const COPY: Record<ViaLanguage, Copy> = {
     },
   },
   Chinese: {
-    categories: { all: "全部", mention: "提及", reply: "回复", like: "点赞", diamond: "钻石", follow: "关注", repost: "转发", nft: "NFT", other: "其他" },
+    categories: { all: "全部", reaction: "反应", diamond1: "1 颗钻石", diamondMany: "多颗钻石", creatorCoin: "Creator Coin", follow: "关注", mention5: "提及 · 最多 5", mention6: "提及 · 6+", reply: "回复", repost: "转发", nft: "NFT", other: "其他" },
     login: "使用 DeSo 登录以查看当前账户的通知。",
     heading: "你的账户收到了什么？",
     active: "当前账户",
@@ -183,10 +196,13 @@ const COPY: Record<ViaLanguage, Copy> = {
     fresh: "新",
     actor: "DeSo 账户",
     descriptions: {
-      mention: (actor) => `${actor} 在帖子中提到了你。`,
+      reaction: (actor) => `${actor} 对你的帖子作出了反应。`,
+      diamond1: (actor) => `${actor} 发送了 1 颗钻石。`,
+      diamondMany: (actor) => `${actor} 发送了多颗钻石。`,
+      creatorCoin: (actor) => `${actor} 产生了 Creator Coin 活动。`,
+      mention5: (actor) => `${actor} 提到了你。`,
+      mention6: (actor) => `${actor} 在包含 6 个或更多标签的帖子中提到了你。`,
       reply: (actor) => `${actor} 回复了与你相关的帖子。`,
-      like: (actor) => `${actor} 点赞了你的帖子。`,
-      diamond: (actor) => `${actor} 发送了一颗钻石。`,
       follow: (actor) => `${actor} 更改了与你账户的关注关系。`,
       repost: (actor) => `${actor} 转发了与你相关的内容。`,
       nft: (actor) => `${actor} 为你的账户产生了 NFT 活动。`,
@@ -211,18 +227,33 @@ function firstHash(source: Record<string, unknown> | null, keys: string[]) {
   return null
 }
 
+function mentionCount(source: Record<string, unknown> | null) {
+  if (!source) return 0
+  for (const key of ["MentionedPublicKeys", "MentionedUsernames", "MentionedUsers"]) {
+    const value = source[key]
+    if (Array.isArray(value)) return value.length
+  }
+  for (const key of ["MentionCount", "NumMentions", "MentionedUsersCount"]) {
+    const value = source[key]
+    if (typeof value === "number" && Number.isFinite(value)) return Math.max(0, Math.floor(value))
+  }
+  return 0
+}
+
 function categoryOf(item: NotificationItem): Exclude<Category, "all"> {
   const metadata = record(item.Metadata) ?? {}
   const basic = record(metadata.BasicTransferTxindexMetadata)
   const creatorTransfer = record(metadata.CreatorCoinTransferTxindexMetadata)
-  if ((typeof basic?.DiamondLevel === "number" && basic.DiamondLevel > 0) || (typeof creatorTransfer?.DiamondLevel === "number" && creatorTransfer.DiamondLevel > 0)) return "diamond"
-  if (record(metadata.LikeTxindexMetadata)) return "like"
+  const diamond = basic?.DiamondLevel ?? creatorTransfer?.DiamondLevel
+  if (typeof diamond === "number" && diamond > 0) return diamond > 1 ? "diamondMany" : "diamond1"
+  if (record(metadata.LikeTxindexMetadata)) return "reaction"
   if (record(metadata.FollowTxindexMetadata)) return "follow"
+  if (record(metadata.CreatorCoinTxindexMetadata) || (creatorTransfer && !(typeof creatorTransfer.DiamondLevel === "number" && creatorTransfer.DiamondLevel > 0))) return "creatorCoin"
   const post = record(metadata.SubmitPostTxindexMetadata)
   if (post) {
     if (firstHash(post, ["RepostedPostHashHex", "RepostPostHashHex"])) return "repost"
     if (firstHash(post, ["ParentPostHashHex"])) return "reply"
-    return "mention"
+    return mentionCount(post) >= 6 ? "mention6" : "mention5"
   }
   if (record(metadata.NFTBidTxindexMetadata) || record(metadata.AcceptNFTBidTxindexMetadata) || record(metadata.NFTTransferTxindexMetadata) || record(metadata.CreateNFTTxindexMetadata) || record(metadata.UpdateNFTTxindexMetadata)) return "nft"
   return "other"
@@ -244,7 +275,7 @@ function notificationDestination(item: NotificationItem) {
       : null
   }
 
-  if (category === "mention" || category === "reply" || category === "repost") {
+  if (category === "mention5" || category === "mention6" || category === "reply" || category === "repost") {
     const post = record(metadata.SubmitPostTxindexMetadata)
     const keys = category === "repost"
       ? ["RepostedPostHashHex", "RepostPostHashHex", "PostHashHex"]
@@ -253,13 +284,13 @@ function notificationDestination(item: NotificationItem) {
     return hash ? `/social?post=${encodeURIComponent(hash)}` : null
   }
 
-  if (category === "like") {
+  if (category === "reaction") {
     const like = record(metadata.LikeTxindexMetadata)
     const hash = firstHash(like, ["LikedPostHashHex", "PostHashHex"])
     return hash ? `/social?post=${encodeURIComponent(hash)}` : null
   }
 
-  if (category === "diamond") {
+  if (category === "diamond1" || category === "diamondMany") {
     const basic = record(metadata.BasicTransferTxindexMetadata)
     const creatorTransfer = record(metadata.CreatorCoinTransferTxindexMetadata)
     const hash = firstHash(basic, ["PostHashHex"]) ?? firstHash(creatorTransfer, ["PostHashHex"])
