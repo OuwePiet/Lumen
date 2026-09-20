@@ -365,10 +365,10 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
           {categories.map((option) => {
             const active = option.id === category
             const count = option.id === "all" ? items.length : items.filter((item) => categoryOf(item) === option.id).length
-            return <button key={option.id} type="button" aria-pressed={active} onClick={() => setCategory(option.id)} title={option.label} className={`inline-flex min-h-10 items-center gap-2 rounded-full border px-3 text-xs font-semibold transition ${active ? "border-[#8fd4a9]/70 bg-[#0c1711] text-[#b8ebca]" : "border-zinc-800 bg-black/20 text-zinc-400 hover:border-zinc-700 hover:text-zinc-200"}`}>
-              <span aria-hidden="true" className="grid h-5 min-w-5 place-items-center text-sm">{CATEGORY_ICON[option.id]}</span>
-              <span>{option.label}</span>
-              <span className="rounded-full bg-white/5 px-1.5 py-0.5 text-[10px] text-zinc-500">{count}</span>
+            return <button key={option.id} type="button" aria-pressed={active} aria-label={`${option.label}: ${count}`} onClick={() => setCategory(option.id)} title={option.label} className={`inline-flex h-9 min-w-9 items-center justify-center gap-1.5 rounded-full border px-2 text-xs font-semibold transition ${active ? "border-[#8fd4a9]/70 bg-[#0c1711] text-[#b8ebca]" : "border-zinc-800 bg-black/20 text-zinc-400 hover:border-zinc-700 hover:text-zinc-200"}`}>
+              <span aria-hidden="true" className="grid h-5 min-w-5 place-items-center text-base leading-none">{CATEGORY_ICON[option.id]}</span>
+              <span className="sr-only">{option.label}</span>
+              <span className="min-w-3 text-center text-[9px] font-medium text-zinc-500">{count}</span>
             </button>
           })}
         </div>
