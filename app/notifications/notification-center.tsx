@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useMemo, useState } from "react"
+import { AtSign, Badge, Check, CircleDot, Gem, MessageSquare, Repeat2, Smile, UserRound } from "lucide-react"
 import { restoreIdentitySession, VIA_IDENTITY_EVENT, type ViaIdentitySession } from "../deso-identity-session"
 import type { ViaLanguage } from "../via-local-settings"
 import SponsorPlatform from "../sponsor-platform"
@@ -19,16 +20,16 @@ type NotificationResponse = {
 
 type Category = "all" | "mention" | "reply" | "like" | "diamond" | "follow" | "repost" | "nft" | "other"
 
-const CATEGORY_ICON: Record<Category, string> = {
-  all: "✓",
-  mention: "@",
-  reply: "▢",
-  like: "☺",
-  diamond: "◇",
-  follow: "♙",
-  repost: "↻",
-  nft: "◈",
-  other: "•",
+function CategoryIcon({ category, className = "h-4 w-4" }: { category: Category; className?: string }) {
+  if (category === "all") return <Check className={className} strokeWidth={2} />
+  if (category === "mention") return <AtSign className={className} strokeWidth={2} />
+  if (category === "reply") return <MessageSquare className={className} strokeWidth={2} />
+  if (category === "like") return <Smile className={className} strokeWidth={2} />
+  if (category === "diamond") return <Gem className={className} strokeWidth={2} />
+  if (category === "follow") return <UserRound className={className} strokeWidth={2} />
+  if (category === "repost") return <Repeat2 className={className} strokeWidth={2} />
+  if (category === "nft") return <Badge className={className} strokeWidth={2} />
+  return <CircleDot className={className} strokeWidth={2} />
 }
 
 type Copy = {
@@ -366,7 +367,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
             const active = option.id === category
             const count = option.id === "all" ? items.length : items.filter((item) => categoryOf(item) === option.id).length
             return <button key={option.id} type="button" aria-pressed={active} onClick={() => setCategory(option.id)} title={option.label} className={`inline-flex min-h-10 items-center gap-2 rounded-full border px-3 text-xs font-semibold transition ${active ? "border-[#8fd4a9]/70 bg-[#0c1711] text-[#b8ebca]" : "border-zinc-800 bg-black/20 text-zinc-400 hover:border-zinc-700 hover:text-zinc-200"}`}>
-              <span aria-hidden="true" className="grid h-5 min-w-5 place-items-center text-sm">{CATEGORY_ICON[option.id]}</span>
+              <span aria-hidden="true" className="grid h-5 min-w-5 place-items-center text-sm"><CategoryIcon category={option.id} /></span>
               <span>{option.label}</span>
               <span className="rounded-full bg-white/5 px-1.5 py-0.5 text-[10px] text-zinc-500">{count}</span>
             </button>
@@ -386,7 +387,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
           const metadata = record(item.Metadata) ?? {}
           const actor = shortKey(metadata.TransactorPublicKeyBase58Check, copy.actor)
           return <article key={`${item.Index ?? "n"}-${index}`} className={`grid grid-cols-[42px_minmax(0,1fr)] gap-3 px-4 py-4 transition sm:grid-cols-[46px_minmax(0,1fr)_auto] sm:px-5 ${unread ? "bg-[#0b1510]/70" : "bg-black/10"}`}>
-            <div aria-hidden="true" className={`grid h-10 w-10 place-items-center rounded-full border text-base font-bold sm:h-11 sm:w-11 ${unread ? "border-[#8fd4a9]/55 bg-[#102019] text-[#9adbb2]" : "border-zinc-800 bg-zinc-950 text-zinc-500"}`}>{CATEGORY_ICON[itemCategory]}</div>
+            <div aria-hidden="true" className={`grid h-10 w-10 place-items-center rounded-full border text-base font-bold sm:h-11 sm:w-11 ${unread ? "border-[#8fd4a9]/55 bg-[#102019] text-[#9adbb2]" : "border-zinc-800 bg-zinc-950 text-zinc-500"}`}><CategoryIcon category={itemCategory} className="h-5 w-5" /></div>
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                 <strong className="truncate text-sm font-semibold text-zinc-100">{actor}</strong>
