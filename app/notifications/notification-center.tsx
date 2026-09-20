@@ -7,6 +7,7 @@ import type { ViaLanguage } from "../via-local-settings"
 import SponsorPlatform from "../sponsor-platform"
 import LikeButton from "../social/like-button"
 import PostComposer from "../social/post-composer"
+import RepostButton from "../social/repost-button"
 
 type NotificationItem = {
   Index?: number
@@ -562,6 +563,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
                     >
                       <MessageSquare className="h-4 w-4" />
                     </button>
+                    <RepostButton postHash={post.postHash} initialCount={0} variant="icon" />
                     <LikeButton postHash={post.postHash} initialCount={post.likeCount} variant="icon" />
                   </div>
                   {replyingTo === post.postHash ? <div className="mt-3"><PostComposer parentStakeID={post.postHash} compact onDone={() => setReplyingTo(null)} /></div> : null}
