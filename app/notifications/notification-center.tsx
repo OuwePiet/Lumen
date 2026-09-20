@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react"
 import { restoreIdentitySession, VIA_IDENTITY_EVENT, type ViaIdentitySession } from "../deso-identity-session"
 import type { ViaLanguage } from "../via-local-settings"
+import SponsorPlatform from "../sponsor-platform"
 
 type NotificationItem = {
   Index?: number
@@ -356,7 +357,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
           <h2 id="notification-center-heading" className="text-xl font-semibold text-white">{copy.heading}</h2>
           <p className="mt-1 text-xs text-zinc-500">{copy.active}: {shortKey(session.publicKey, copy.actor)}</p>
         </div>
-        <button type="button" onClick={() => setRefreshToken((value) => value + 1)} disabled={status === "loading"} className="rounded-full border border-zinc-700 px-3 py-1.5 text-xs text-zinc-300 transition hover:border-[#8fd4a9]/55 hover:text-[#9adbb2] disabled:cursor-wait disabled:opacity-60">{status === "loading" ? copy.refreshing : copy.refresh}</button>
+        <div className="flex flex-wrap items-center gap-2"><SponsorPlatform compact /><button type="button" onClick={() => setRefreshToken((value) => value + 1)} disabled={status === "loading"} className="rounded-full border border-zinc-700 px-3 py-1.5 text-xs text-zinc-300 transition hover:border-[#8fd4a9]/55 hover:text-[#9adbb2] disabled:cursor-wait disabled:opacity-60">{status === "loading" ? copy.refreshing : copy.refresh}</button></div>
       </div>
 
       <div className="overflow-x-auto border-b border-zinc-800 px-3 py-3 sm:px-4" aria-label={copy.filters}>
