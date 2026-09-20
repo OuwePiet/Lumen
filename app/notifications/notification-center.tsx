@@ -349,7 +349,8 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
   const categories = useMemo(() => (Object.keys(copy.categories) as Category[]).map((id) => ({ id, label: copy.categories[id] })), [copy])
   const [session, setSession] = useState<ViaIdentitySession | null>(null)
   const [items, setItems] = useState<NotificationItem[]>([])
-  const [category, setCategory] = useState<Category>("all")
+  const filterCategoryIds = useMemo(() => categories.map((option) => option.id).filter((id): id is Exclude<Category, "all"> => id !== "all"), [categories])
+  const [activeCategories, setActiveCategories] = useState<Exclude<Category, "all">[]>(() => ["reaction", "diamond1", "diamondMany", "creatorCoin", "follow", "mention5", "mention6", "reply", "repost", "nft", "other"])
   const [status, setStatus] = useState<"idle" | "loading" | "ready" | "error">("idle")
   const [messageKey, setMessageKey] = useState<"loading" | "loaded" | "empty" | "error" | "">("")
   const [lastSeenIndex, setLastSeenIndex] = useState<number | null>(null)
@@ -469,7 +470,16 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
     }
   }
 
-  const visible = useMemo(() => category === "all" ? items : items.filter((item) => categoryOf(item) === category), [items, category])
+  const allCategoriesActive = filterCategoryIds.every((id) => activeCategories.includes(id))
+  const visible = useMemo(() => items.filter((item) => activeCategories.includes(categoryOf(item))), [items, activeCategories])
+
+  function toggleCategory(id: Category) {
+    if (id === "all") {
+      setActiveCategories(allCategoriesActive ? [] : filterCategoryIds)
+      return
+    }
+    setActiveCategories((current) => current.includes(id) ? current.filter((value) => value !== id) : [...current, id])
+  }
   const message = messageKey === "loading" ? copy.loadingNotifications
     : messageKey === "loaded" ? copy.recentLoaded(items.length)
     : messageKey === "empty" ? copy.noRecent
@@ -492,7 +502,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
           <button type="button" disabled title="Filter out bots" aria-label="Filter out bots" className="grid h-9 w-9 place-items-center rounded-full border border-[#9b9b9b] bg-[#9b9b9b] text-white opacity-70 disabled:cursor-not-allowed">
             <ShieldOff className="h-4 w-4" />
           </button>
-          <button type="button" onClick={() => setCategory("all")} title="Select All" aria-label="Select All" aria-pressed={category === "all"} className={`grid h-9 w-9 place-items-center rounded-full border text-white transition ${category === "all" ? "border-[#1687ff] bg-[#1687ff]" : "border-[#9b9b9b] bg-[#9b9b9b]"}`}>
+          <button type="button" onClick={() => setActiveCategories(allCategoriesActive ? [] : filterCategoryIds)} title="Select All" aria-label="Select All" aria-pressed={allCategoriesActive} className={`grid h-9 w-9 place-items-center rounded-full border text-white transition ${allCategoriesActive ? "border-[#1687ff] bg-[#1687ff]" : "border-[#9b9b9b] bg-[#9b9b9b]"}`}>
             <CheckCircle2 className="h-4 w-4" />
           </button>
           <button type="button" onClick={() => setRefreshToken((value) => value + 1)} disabled={status === "loading"} title={copy.refresh} aria-label={copy.refresh} className="grid h-9 w-9 place-items-center rounded-full border border-[#1687ff] bg-[#1687ff] text-white transition disabled:cursor-wait disabled:opacity-60">
@@ -507,9 +517,9 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
       <div className="sticky top-[73px] z-20 overflow-x-auto border-b border-zinc-800 bg-zinc-950/95 px-3 py-3 backdrop-blur sm:px-4" aria-label={copy.filters}>
         <div className="flex min-w-max gap-2">
           {categories.map((option) => {
-            const active = option.id === category
+            const active = option.id === "all" ? allCategoriesActive : activeCategories.includes(option.id)
             const count = option.id === "all" ? items.length : items.filter((item) => categoryOf(item) === option.id).length
-            return <button key={option.id} type="button" aria-pressed={active} onClick={() => setCategory(option.id)} title={option.label} className={`inline-flex min-h-10 items-center gap-2 rounded-full border px-3 text-xs font-semibold transition ${active ? "border-[#1687ff] bg-[#1687ff] text-white shadow-[0_0_0_1px_rgba(22,135,255,0.2)]" : "border-[#9b9b9b] bg-[#9b9b9b] text-white hover:border-[#7f7f7f] hover:bg-[#7f7f7f]"}`}>
+            return <button key={option.id} type="button" aria-pressed={active} onClick={() => toggleCategory(option.id)} title={option.label} className={`inline-flex min-h-10 items-center gap-2 rounded-full border px-3 text-xs font-semibold transition ${active ? "border-[#1687ff] bg-[#1687ff] text-white shadow-[0_0_0_1px_rgba(22,135,255,0.2)]" : "border-[#9b9b9b] bg-[#9b9b9b] text-white hover:border-[#7f7f7f] hover:bg-[#7f7f7f]"}`}>
               <span aria-hidden="true" className="grid h-5 min-w-5 place-items-center text-sm"><CategoryIcon category={option.id} /></span>
               <span>{option.label}</span>
               <span className="rounded-full bg-white/5 px-1.5 py-0.5 text-[10px] text-zinc-500">{count}</span>
