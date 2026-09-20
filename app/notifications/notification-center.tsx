@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useMemo, useState } from "react"
-import { ArrowUpRight, AtSign, Badge, Check, CheckCircle2, ChevronsRight, CircleDot, Gem, Link2, MessageSquare, RefreshCw, Repeat2, ShieldOff, Smile, UserRound } from "lucide-react"
+import { ArrowUpRight, AtSign, Badge, Check, CheckCircle2, ChevronsRight, CircleDot, Gem, Link2, MessageSquare, RefreshCw, Repeat2, ShieldCheck, ShieldOff, Smile, UserRound } from "lucide-react"
 import { restoreIdentitySession, VIA_IDENTITY_EVENT, type ViaIdentitySession } from "../deso-identity-session"
 import type { ViaLanguage } from "../via-local-settings"
 import LikeButton from "../social/like-button"
@@ -24,6 +24,9 @@ type NotificationResponse = {
 type ActorProfile = {
   username?: string
   profilePic?: string | null
+  isVerified?: boolean
+  followersCount?: number | null
+  numberOfHolders?: number | null
 }
 
 type ProfileResponse = {
@@ -355,6 +358,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
   const [lastSeenIndex, setLastSeenIndex] = useState<number | null>(null)
   const [refreshToken, setRefreshToken] = useState(0)
   const [expandedView, setExpandedView] = useState(false)
+  const [qualityShield, setQualityShield] = useState(false)
   const [profiles, setProfiles] = useState<Record<string, ActorProfile>>({})
   const [expandedKey, setExpandedKey] = useState<string | null>(null)
   const [postCache, setPostCache] = useState<Record<string, PublicPost | null>>({})
@@ -470,7 +474,37 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
   }
 
   const allCategoriesActive = filterCategoryIds.every((id) => activeCategories.includes(id))
-  const visible = useMemo(() => items.filter((item) => activeCategories.includes(categoryOf(item))), [items, activeCategories])
+  const actorActivityCounts = useMemo(() => {
+    const counts: Record<string, number> = {}
+    for (const item of items) {
+      const metadata = record(item.Metadata) ?? {}
+      const publicKey = metadata.TransactorPublicKeyBase58Check
+      if (typeof publicKey === "string" && PUBLIC_KEY_RE.test(publicKey)) counts[publicKey] = (counts[publicKey] ?? 0) + 1
+    }
+    return counts
+  }, [items])
+
+  function qualityShieldHides(item: NotificationItem) {
+    if (!qualityShield) return false
+    const metadata = record(item.Metadata) ?? {}
+    const publicKey = metadata.TransactorPublicKeyBase58Check
+    if (typeof publicKey !== "string" || !PUBLIC_KEY_RE.test(publicKey)) return false
+    const profile = profiles[publicKey]
+    if (!profile) return false
+
+    const repeatedBurst = (actorActivityCounts[publicKey] ?? 0) >= 4
+    const weakProfile = profile.isVerified !== true
+      && !profile.profilePic
+      && profile.followersCount === 0
+      && profile.numberOfHolders === 0
+
+    return repeatedBurst && weakProfile
+  }
+
+  const visible = useMemo(
+    () => items.filter((item) => activeCategories.includes(categoryOf(item)) && !qualityShieldHides(item)),
+    [items, activeCategories, qualityShield, profiles, actorActivityCounts],
+  )
 
   function toggleCategory(id: Category) {
     if (id === "all") {
@@ -497,8 +531,15 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
           <p className="mt-1 text-xs text-zinc-500">{copy.active}: {shortKey(session.publicKey, copy.actor)}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <button type="button" disabled title="Filter out bots" aria-label="Filter out bots" className="grid h-9 w-9 place-items-center rounded-full border border-[#9b9b9b] bg-[#9b9b9b] text-white opacity-70 disabled:cursor-not-allowed">
-            <ShieldOff className="h-4 w-4" />
+          <button
+            type="button"
+            onClick={() => setQualityShield((value) => !value)}
+            title={qualityShield ? "Quality Shield on" : "Quality Shield off"}
+            aria-label={qualityShield ? "Quality Shield on" : "Quality Shield off"}
+            aria-pressed={qualityShield}
+            className={`grid h-9 w-9 place-items-center rounded-full border text-white transition ${qualityShield ? "border-[#8fd4a9] bg-[#285f40]" : "border-[#9b9b9b] bg-[#9b9b9b]"}`}
+          >
+            {qualityShield ? <ShieldCheck className="h-4 w-4" /> : <ShieldOff className="h-4 w-4" />}
           </button>
           <button type="button" onClick={() => setActiveCategories(allCategoriesActive ? [] : filterCategoryIds)} title="Select All" aria-label="Select All" aria-pressed={allCategoriesActive} className={`grid h-9 w-9 place-items-center rounded-full border text-white transition ${allCategoriesActive ? "border-[#8fd4a9] bg-[#285f40]" : "border-[#9b9b9b] bg-[#9b9b9b]"}`}>
             <CheckCircle2 className="h-4 w-4" />
