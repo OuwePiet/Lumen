@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useMemo, useState } from "react"
-import { AtSign, Badge, Check, CircleDot, Gem, MessageSquare, Repeat2, Smile, UserRound } from "lucide-react"
+import { AtSign, Badge, Check, CheckCircle2, ChevronsRight, CircleDot, Gem, MessageSquare, RefreshCw, Repeat2, ShieldOff, Smile, UserRound } from "lucide-react"
 import { restoreIdentitySession, VIA_IDENTITY_EVENT, type ViaIdentitySession } from "../deso-identity-session"
 import type { ViaLanguage } from "../via-local-settings"
 import SponsorPlatform from "../sponsor-platform"
@@ -324,6 +324,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
   const [messageKey, setMessageKey] = useState<"loading" | "loaded" | "empty" | "error" | "">("")
   const [lastSeenIndex, setLastSeenIndex] = useState<number | null>(null)
   const [refreshToken, setRefreshToken] = useState(0)
+  const [expandedView, setExpandedView] = useState(false)
 
   useEffect(() => {
     const current = restoreIdentitySession()
@@ -383,13 +384,27 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
   }
 
   return (
-    <section className="max-h-[76vh] overflow-y-auto rounded-2xl border border-zinc-800 bg-zinc-950/60" aria-labelledby="notification-center-heading">
+    <section className={`${expandedView ? "max-h-[calc(100vh-8rem)]" : "max-h-[76vh]"} overflow-y-auto rounded-2xl border border-zinc-800 bg-zinc-950/60`} aria-labelledby="notification-center-heading">
       <div className="sticky top-0 z-20 flex flex-wrap items-center justify-between gap-3 border-b border-zinc-800 bg-zinc-950/95 px-4 py-4 backdrop-blur sm:px-5">
         <div>
           <h2 id="notification-center-heading" className="text-xl font-semibold text-white">{copy.heading}</h2>
           <p className="mt-1 text-xs text-zinc-500">{copy.active}: {shortKey(session.publicKey, copy.actor)}</p>
         </div>
-        <div className="flex flex-wrap items-center gap-2"><SponsorPlatform compact /><button type="button" onClick={() => setRefreshToken((value) => value + 1)} disabled={status === "loading"} className="rounded-full border border-zinc-700 px-3 py-1.5 text-xs text-zinc-300 transition hover:border-[#8fd4a9]/55 hover:text-[#9adbb2] disabled:cursor-wait disabled:opacity-60">{status === "loading" ? copy.refreshing : copy.refresh}</button></div>
+        <div className="flex flex-wrap items-center gap-2">
+          <SponsorPlatform compact />
+          <button type="button" disabled title="Filter out bots" aria-label="Filter out bots" className="grid h-9 w-9 place-items-center rounded-full border border-[#9b9b9b] bg-[#9b9b9b] text-white opacity-70 disabled:cursor-not-allowed">
+            <ShieldOff className="h-4 w-4" />
+          </button>
+          <button type="button" onClick={() => setCategory("all")} title="Select All" aria-label="Select All" aria-pressed={category === "all"} className={`grid h-9 w-9 place-items-center rounded-full border text-white transition ${category === "all" ? "border-[#1687ff] bg-[#1687ff]" : "border-[#9b9b9b] bg-[#9b9b9b]"}`}>
+            <CheckCircle2 className="h-4 w-4" />
+          </button>
+          <button type="button" onClick={() => setRefreshToken((value) => value + 1)} disabled={status === "loading"} title={copy.refresh} aria-label={copy.refresh} className="grid h-9 w-9 place-items-center rounded-full border border-[#1687ff] bg-[#1687ff] text-white transition disabled:cursor-wait disabled:opacity-60">
+            <RefreshCw className={`h-4 w-4 ${status === "loading" ? "animate-spin" : ""}`} />
+          </button>
+          <button type="button" onClick={() => setExpandedView((value) => !value)} title="Expand View" aria-label="Expand View" aria-pressed={expandedView} className={`grid h-9 w-9 place-items-center rounded-full border text-white transition ${expandedView ? "border-[#1687ff] bg-[#1687ff]" : "border-[#9b9b9b] bg-[#9b9b9b]"}`}>
+            <ChevronsRight className="h-4 w-4" />
+          </button>
+        </div>
       </div>
 
       <div className="sticky top-[73px] z-20 overflow-x-auto border-b border-zinc-800 bg-zinc-950/95 px-3 py-3 backdrop-blur sm:px-4" aria-label={copy.filters}>
