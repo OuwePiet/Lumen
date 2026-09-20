@@ -8,7 +8,7 @@ type Copy = {
   patterns: Array<[RegExp, (...parts: string[]) => string]>
 }
 
-const COPY: Record<ViaLanguage, Copy> = {
+const COPY: Record<ViaLanguage | "Hindi", Copy> = {
   English: { exact: {}, patterns: [] },
   Dutch: {
     exact: {
@@ -198,6 +198,58 @@ const COPY: Record<ViaLanguage, Copy> = {
       [/^Diamond · (\d+)$/u, (count) => `Diamond · ${count}`],
       [/^(\d+) characters left$/u, (count) => `还可输入 ${count} 个字符`]
     ]
+  },
+  Hindi: {
+    exact: {
+      "Public DeSo conversation on VIA.": "VIA पर सार्वजनिक DeSo बातचीत।",
+      "Social shortcuts": "सोशल शॉर्टकट",
+      "Notifications": "सूचनाएँ",
+      "Saved": "सहेजे गए",
+      "Create": "बनाएँ",
+      "Share a post": "पोस्ट साझा करें",
+      "Edit your post": "अपनी पोस्ट संपादित करें",
+      "Feed": "फ़ीड",
+      "Posts": "पोस्ट",
+      "Filter posts": "पोस्ट फ़िल्टर करें",
+      "All": "सभी",
+      "Image": "चित्र",
+      "Video": "वीडियो",
+      "Public Hot feed": "सार्वजनिक Hot फ़ीड",
+      "Newest public DeSo posts": "नवीनतम सार्वजनिक DeSo पोस्ट",
+      "DeSo login required for Following": "Following के लिए DeSo लॉगिन आवश्यक है",
+      "Open Following": "Following खोलें",
+      "Open Hot": "Hot खोलें",
+      "Open New": "नया खोलें",
+      "Loading…": "लोड हो रहा है…",
+      "Choose a feed and load posts.": "फ़ीड चुनें और पोस्ट लोड करें।",
+      "No posts found.": "कोई पोस्ट नहीं मिली।",
+      "Posts are temporarily unavailable.": "पोस्ट अस्थायी रूप से उपलब्ध नहीं हैं।",
+      "No loaded posts match this filter.": "लोड की गई कोई पोस्ट इस फ़िल्टर से मेल नहीं खाती।",
+      "Media post": "मीडिया पोस्ट",
+      "Like": "पसंद",
+      "Reply": "जवाब",
+      "Repost": "रीपोस्ट",
+      "Diamond": "Diamond",
+      "Quote": "उद्धरण",
+      "Participation & safety": "भागीदारी और सुरक्षा",
+      "Save draft": "ड्राफ्ट सहेजें",
+      "Clear draft": "ड्राफ्ट हटाएँ",
+      "Photo": "फ़ोटो",
+      "Choose image": "चित्र चुनें",
+      "Poll": "पोल",
+      "Emoji": "इमोजी",
+      "Publish": "प्रकाशित करें",
+      "Quote Repost": "Quote Repost"
+    },
+    patterns: [
+      [/^(\\d+) posts loaded\\.$/u, (count) => `${count} पोस्ट लोड हुईं।`],
+      [/^Following for (.+)$/u, (account) => `${account} के लिए Following`],
+      [/^Like · (\\d+)$/u, (count) => `पसंद · ${count}`],
+      [/^Reply · (\\d+)$/u, (count) => `जवाब · ${count}`],
+      [/^Repost · (\\d+)$/u, (count) => `रीपोस्ट · ${count}`],
+      [/^Diamond · (\\d+)$/u, (count) => `Diamond · ${count}`],
+      [/^(\\d+) characters left$/u, (count) => `${count} अक्षर शेष`]
+    ]
   }
 }
 
@@ -214,7 +266,7 @@ function translated(source: string, copy: Copy) {
   return source
 }
 
-function translateRoot(root: HTMLElement, language: ViaLanguage) {
+function translateRoot(root: HTMLElement, language: ViaLanguage | "Hindi") {
   const copy = COPY[language]
   const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT)
   let node = walker.nextNode()
