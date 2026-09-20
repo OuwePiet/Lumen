@@ -351,8 +351,8 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
   }
 
   return (
-    <section className="overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-950/60" aria-labelledby="notification-center-heading">
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-zinc-800 px-4 py-4 sm:px-5">
+    <section className="max-h-[76vh] overflow-y-auto rounded-2xl border border-zinc-800 bg-zinc-950/60" aria-labelledby="notification-center-heading">
+      <div className="sticky top-0 z-20 flex flex-wrap items-center justify-between gap-3 border-b border-zinc-800 bg-zinc-950/95 px-4 py-4 backdrop-blur sm:px-5">
         <div>
           <h2 id="notification-center-heading" className="text-xl font-semibold text-white">{copy.heading}</h2>
           <p className="mt-1 text-xs text-zinc-500">{copy.active}: {shortKey(session.publicKey, copy.actor)}</p>
@@ -360,7 +360,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
         <div className="flex flex-wrap items-center gap-2"><SponsorPlatform compact /><button type="button" onClick={() => setRefreshToken((value) => value + 1)} disabled={status === "loading"} className="rounded-full border border-zinc-700 px-3 py-1.5 text-xs text-zinc-300 transition hover:border-[#8fd4a9]/55 hover:text-[#9adbb2] disabled:cursor-wait disabled:opacity-60">{status === "loading" ? copy.refreshing : copy.refresh}</button></div>
       </div>
 
-      <div className="overflow-x-auto border-b border-zinc-800 px-3 py-3 sm:px-4" aria-label={copy.filters}>
+      <div className="sticky top-[73px] z-20 overflow-x-auto border-b border-zinc-800 bg-zinc-950/95 px-3 py-3 backdrop-blur sm:px-4" aria-label={copy.filters}>
         <div className="flex min-w-max gap-2">
           {categories.map((option) => {
             const active = option.id === category
