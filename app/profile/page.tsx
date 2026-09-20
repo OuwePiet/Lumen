@@ -387,6 +387,10 @@ export default function ProfilePage() {
                   </div>
                 </div>
 
+                <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-zinc-700/80 bg-black/25 px-3 py-1.5 text-xs text-zinc-400" title="Voluntary country registration can be added later">
+                  <span aria-hidden="true">📍</span>
+                  <span>Country: voluntary</span>
+                </div>
                 <p className="mt-5 whitespace-pre-wrap text-sm leading-6 text-zinc-300">{profile.description || t.noBio}</p>
                 <div className="mt-5 rounded-[12px] border border-zinc-800/80 bg-black/25 p-4">
                   <p className="text-xs font-semibold uppercase tracking-[0.14em] text-zinc-500">{t.publicKey}</p>
