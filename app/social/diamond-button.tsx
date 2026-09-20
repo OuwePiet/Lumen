@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react"
 import { DESO_IDENTITY_ORIGIN, restoreIdentitySession } from "../deso-identity-session"
 
-type Props = { postHash: string; receiverPublicKey: string; initialCount: number }
+type Props = { postHash: string; receiverPublicKey: string; initialCount: number; variant?: "default" | "icon" }
 type PrepareResponse = { ok?: boolean; transactionHex?: string; feeNanos?: number | null; spendAmountNanos?: number | null; error?: string }
 
 function signedTransactionFromMessage(event: MessageEvent, source: Window | null) {
@@ -17,7 +17,7 @@ function signedTransactionFromMessage(event: MessageEvent, source: Window | null
   return typeof signed === "string" && signed.length > 0 ? signed : null
 }
 
-export default function DiamondButton({ postHash, receiverPublicKey, initialCount }: Props) {
+export default function DiamondButton({ postHash, receiverPublicKey, initialCount, variant = "default" }: Props) {
   const [level, setLevel] = useState(1)
   const [count, setCount] = useState(initialCount)
   const [confirmValue, setConfirmValue] = useState(false)
@@ -76,6 +76,30 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
       }, 500)
       setStatus("approval"); setMessage("Review the exact Diamond value transfer in DeSo Identity. VIA cannot approve it for you.")
     } catch { setStatus("error"); setMessage("Diamond transaction could not be prepared. Nothing was sent.") }
+  }
+
+  if (variant === "icon") {
+    return <div className="inline-flex flex-wrap items-center gap-2">
+      <button
+        type="button"
+        onClick={() => setConfirmValue((value) => !value)}
+        title="Diamond"
+        aria-label={`Diamond · ${count}`}
+        aria-pressed={confirmValue}
+        className={`inline-flex h-9 min-w-9 items-center justify-center gap-1 rounded-full border px-2 text-xs transition ${confirmValue ? "border-[#1687ff] bg-[#1687ff] text-white" : "border-zinc-800 text-zinc-300 hover:border-[#1687ff] hover:text-white"}`}
+      >
+        <span aria-hidden="true">◇</span><span>{count}</span>
+      </button>
+      {confirmValue ? <>
+        <select aria-label="Diamond level" value={level} onChange={(e) => { setLevel(Number(e.target.value)); setConfirmValue(true) }} className="h-9 rounded-full border border-zinc-800 bg-black px-2 text-xs text-zinc-300">
+          {[1,2,3,4,5,6].map((value) => <option key={value} value={value}>Level {value}</option>)}
+        </select>
+        <button type="button" onClick={prepare} disabled={status === "preparing" || status === "approval" || status === "submitting"} className="h-9 rounded-full border border-amber-700/70 px-3 text-xs text-amber-300 disabled:border-zinc-800 disabled:text-zinc-600">
+          {status === "preparing" ? "Preparing…" : status === "approval" ? "Review…" : status === "submitting" ? "Submitting…" : "Send"}
+        </button>
+      </> : null}
+      {message ? <span className="sr-only" role="status" aria-live="polite">{message}</span> : null}
+    </div>
   }
 
   return <div className="flex flex-wrap items-center gap-2">
