@@ -9,12 +9,13 @@ import ViaRightPanels from "../via-right-panels"
 
 type PageCopy = { title: string; intro: string; back: string }
 
-const COPY: Record<ViaLanguage, PageCopy> = {
+const COPY: Record<ViaLanguage | "Hindi", PageCopy> = {
   Dutch: { title: "Meldingen", intro: "Kies welke DeSo-activiteit je wilt zien.", back: "Terug naar Social" },
   English: { title: "Notifications", intro: "Choose which DeSo activity you want to see.", back: "Back to Social" },
   French: { title: "Notifications", intro: "Choisissez l’activité DeSo que vous souhaitez voir.", back: "Retour à Social" },
   Spanish: { title: "Notificaciones", intro: "Elige qué actividad de DeSo quieres ver.", back: "Volver a Social" },
   Chinese: { title: "通知", intro: "选择要查看的 DeSo 活动。", back: "返回社交" },
+  Hindi: { title: "सूचनाएँ", intro: "चुनें कि आप कौन-सी DeSo गतिविधि देखना चाहते हैं।", back: "Social पर वापस जाएँ" },
 }
 
 export default function NotificationsPage() {
