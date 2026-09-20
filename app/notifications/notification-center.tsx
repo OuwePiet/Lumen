@@ -28,26 +28,6 @@ type ProfileResponse = {
   profile?: ActorProfile
 }
 
-type PublicPost = {
-  postHash: string
-  publicKey: string
-  username: string
-  body: string
-  imageUrls: string[]
-  videoUrls: string[]
-  timestampNanos: number
-  likeCount: number
-  diamondCount: number
-  commentCount: number
-  repostCount: number
-  quoteRepostCount: number
-}
-
-type PostResponse = {
-  ok?: boolean
-  post?: PublicPost
-}
-
 type Category = "all" | "reaction" | "diamond1" | "diamondMany" | "creatorCoin" | "follow" | "mention5" | "mention6" | "reply" | "repost" | "nft" | "other"
 
 function CategoryIcon({ category, className = "h-4 w-4" }: { category: Category; className?: string }) {
@@ -294,30 +274,6 @@ function shortKey(value: unknown, fallback: string) {
   return `${value.slice(0, 8)}…${value.slice(-5)}`
 }
 
-function notificationPostHash(item: NotificationItem) {
-  const metadata = record(item.Metadata) ?? {}
-  const category = categoryOf(item)
-
-  if (category === "mention5" || category === "mention6" || category === "reply" || category === "repost") {
-    const post = record(metadata.SubmitPostTxindexMetadata)
-    const keys = category === "repost"
-      ? ["RepostedPostHashHex", "RepostPostHashHex", "PostHashHex"]
-      : ["PostHashHex", "PostHashBeingModifiedHex", "ParentPostHashHex"]
-    return firstHash(post, keys)
-  }
-
-  if (category === "reaction") {
-    return firstHash(record(metadata.LikeTxindexMetadata), ["LikedPostHashHex", "PostHashHex"])
-  }
-
-  if (category === "diamond1" || category === "diamondMany") {
-    return firstHash(record(metadata.BasicTransferTxindexMetadata), ["PostHashHex"]) ??
-      firstHash(record(metadata.CreatorCoinTransferTxindexMetadata), ["PostHashHex"])
-  }
-
-  return null
-}
-
 function notificationDestination(item: NotificationItem) {
   const metadata = record(item.Metadata) ?? {}
   const category = categoryOf(item)
@@ -329,8 +285,27 @@ function notificationDestination(item: NotificationItem) {
       : null
   }
 
-  const socialHash = notificationPostHash(item)
-  if (socialHash) return `/social?post=${encodeURIComponent(socialHash)}`
+  if (category === "mention5" || category === "mention6" || category === "reply" || category === "repost") {
+    const post = record(metadata.SubmitPostTxindexMetadata)
+    const keys = category === "repost"
+      ? ["RepostedPostHashHex", "RepostPostHashHex", "PostHashHex"]
+      : ["PostHashHex", "PostHashBeingModifiedHex", "ParentPostHashHex"]
+    const hash = firstHash(post, keys)
+    return hash ? `/social?post=${encodeURIComponent(hash)}` : null
+  }
+
+  if (category === "reaction") {
+    const like = record(metadata.LikeTxindexMetadata)
+    const hash = firstHash(like, ["LikedPostHashHex", "PostHashHex"])
+    return hash ? `/social?post=${encodeURIComponent(hash)}` : null
+  }
+
+  if (category === "diamond1" || category === "diamondMany") {
+    const basic = record(metadata.BasicTransferTxindexMetadata)
+    const creatorTransfer = record(metadata.CreatorCoinTransferTxindexMetadata)
+    const hash = firstHash(basic, ["PostHashHex"]) ?? firstHash(creatorTransfer, ["PostHashHex"])
+    return hash ? `/social?post=${encodeURIComponent(hash)}` : null
+  }
 
   if (category === "nft") {
     const nftMetadata = [
@@ -361,9 +336,6 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
   const [refreshToken, setRefreshToken] = useState(0)
   const [expandedView, setExpandedView] = useState(false)
   const [profiles, setProfiles] = useState<Record<string, ActorProfile>>({})
-  const [expandedKey, setExpandedKey] = useState<string | null>(null)
-  const [postCache, setPostCache] = useState<Record<string, PublicPost | null>>({})
-  const [postLoading, setPostLoading] = useState<string | null>(null)
 
   useEffect(() => {
     const current = restoreIdentitySession()
@@ -374,31 +346,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
   }, [])
 
   useEffect(() => {
-    async function togglePost(item: NotificationItem, key: string) {
-    const hash = notificationPostHash(item)
-    if (!hash) return
-
-    if (expandedKey === key) {
-      setExpandedKey(null)
-      return
-    }
-
-    setExpandedKey(key)
-    if (Object.prototype.hasOwnProperty.call(postCache, hash)) return
-
-    setPostLoading(hash)
-    try {
-      const response = await fetch(`/api/via/post?hash=${encodeURIComponent(hash)}`, { cache: "no-store" })
-      const data = response.ok ? await response.json() as PostResponse : null
-      setPostCache((current) => ({ ...current, [hash]: data?.ok && data.post ? data.post : null }))
-    } catch {
-      setPostCache((current) => ({ ...current, [hash]: null }))
-    } finally {
-      setPostLoading((current) => current === hash ? null : current)
-    }
-  }
-
-  if (!session) {
+    if (!session) {
       setItems([])
       setStatus("idle")
       setMessageKey("")
@@ -533,42 +481,21 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
           const profile = actorPublicKey ? profiles[actorPublicKey] ?? {} : {}
           const username = profile.username?.trim().replace(/^@/, "")
           const actor = username ? `@${username}` : shortKey(actorPublicKey || metadata.TransactorPublicKeyBase58Check, copy.actor)
-          const rowKey = `${item.Index ?? "n"}-${index}`
-          const postHash = notificationPostHash(item)
-          const expanded = expandedKey === rowKey
-          const post = postHash ? postCache[postHash] : undefined
-
-          return <article key={rowKey} className={`${unread ? "bg-[#0b1510]/70" : "bg-black/10"}`}>
-            <div className="grid grid-cols-[42px_minmax(0,1fr)] gap-3 px-4 py-4 transition sm:grid-cols-[46px_minmax(0,1fr)_auto] sm:px-5">
-              <div className="relative h-10 w-10 sm:h-11 sm:w-11">
-                {profile.profilePic ? <img src={profile.profilePic} alt="" referrerPolicy="no-referrer" className="h-full w-full rounded-full border border-zinc-700 object-cover" /> : <div aria-hidden="true" className={`grid h-full w-full place-items-center rounded-full border text-base font-bold ${unread ? "border-[#1687ff] bg-[#1687ff] text-white" : "border-[#8e8e8e] bg-[#8e8e8e] text-white"}`}><CategoryIcon category={itemCategory} className="h-5 w-5" /></div>}
-                <span aria-hidden="true" className="absolute -bottom-1 -right-1 grid h-5 w-5 place-items-center rounded-full border border-zinc-700 bg-black text-white"><CategoryIcon category={itemCategory} className="h-3 w-3" /></span>
-              </div>
-              <div className="min-w-0">
-                <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                  <strong className="truncate text-sm font-semibold text-zinc-100">{actor}</strong>
-                  <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#7dbb93]">{copy.categories[itemCategory]}</span>
-                  {unread ? <span className="rounded-full border border-[#285f40] px-2 py-0.5 text-[10px] text-[#9adbb2]">{copy.fresh}</span> : null}
-                </div>
-                <p className="mt-1 text-sm leading-5 text-zinc-400">{copy.descriptions[itemCategory](actor)}</p>
-                {postHash ? <button type="button" onClick={() => void togglePost(item, rowKey)} className="mt-2 inline-flex rounded-full border border-zinc-700 px-2.5 py-1 text-[11px] text-zinc-300 transition hover:border-[#1687ff] hover:text-white">
-                  {expanded ? "Close post" : copy.open}
-                </button> : destination ? <a href={destination} className="mt-2 inline-flex rounded-full border border-zinc-700 px-2.5 py-1 text-[11px] text-zinc-300 transition hover:border-[#1687ff] hover:text-white">{copy.open}</a> : null}
-              </div>
-              {destination && !postHash ? <a href={destination} className="hidden self-center rounded-full border border-zinc-700 px-3 py-1.5 text-xs text-zinc-300 transition hover:border-[#1687ff] hover:text-white sm:inline-flex">{copy.open}</a> : null}
+          return <article key={`${item.Index ?? "n"}-${index}`} className={`grid grid-cols-[42px_minmax(0,1fr)] gap-3 px-4 py-4 transition sm:grid-cols-[46px_minmax(0,1fr)_auto] sm:px-5 ${unread ? "bg-[#0b1510]/70" : "bg-black/10"}`}>
+            <div className="relative h-10 w-10 sm:h-11 sm:w-11">
+              {profile.profilePic ? <img src={profile.profilePic} alt="" referrerPolicy="no-referrer" className="h-full w-full rounded-full border border-zinc-700 object-cover" /> : <div aria-hidden="true" className={`grid h-full w-full place-items-center rounded-full border text-base font-bold ${unread ? "border-[#1687ff] bg-[#1687ff] text-white" : "border-[#8e8e8e] bg-[#8e8e8e] text-white"}`}><CategoryIcon category={itemCategory} className="h-5 w-5" /></div>}
+              <span aria-hidden="true" className="absolute -bottom-1 -right-1 grid h-5 w-5 place-items-center rounded-full border border-zinc-700 bg-black text-white"><CategoryIcon category={itemCategory} className="h-3 w-3" /></span>
             </div>
-
-            {expanded && postHash ? <div className="border-t border-zinc-800 bg-black/25 px-4 py-4 sm:px-5">
-              {postLoading === postHash ? <p className="text-sm text-zinc-500">{copy.loading}</p> : null}
-              {post ? <div className="rounded-xl border border-zinc-800 bg-zinc-950/70 p-4">
-                <p className="text-xs font-semibold text-zinc-300">@{post.username?.replace(/^@/, "") || shortKey(post.publicKey, copy.actor)}</p>
-                {post.body ? <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-zinc-200">{post.body}</p> : null}
-                {post.imageUrls?.length ? <div className="mt-3 grid gap-2 sm:grid-cols-2">{post.imageUrls.slice(0, 4).map((url) => <img key={url} src={url} alt="" loading="lazy" className="max-h-80 w-full rounded-xl object-contain" />)}</div> : null}
-              </div> : post === null ? <div className="flex items-center justify-between gap-3">
-                <p className="text-sm text-zinc-500">This post could not be loaded.</p>
-                {destination ? <a href={destination} className="rounded-full border border-zinc-700 px-3 py-1.5 text-xs text-zinc-300">{copy.open}</a> : null}
-              </div> : null}
-            </div> : null}
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                <strong className="truncate text-sm font-semibold text-zinc-100">{actor}</strong>
+                <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#7dbb93]">{copy.categories[itemCategory]}</span>
+                {unread ? <span className="rounded-full border border-[#285f40] px-2 py-0.5 text-[10px] text-[#9adbb2]">{copy.fresh}</span> : null}
+              </div>
+              <p className="mt-1 text-sm leading-5 text-zinc-400">{copy.descriptions[itemCategory](actor)}</p>
+              {destination ? <a href={destination} className="mt-2 inline-flex rounded-full border border-zinc-700 px-2.5 py-1 text-[11px] text-zinc-300 transition hover:border-[#8fd4a9]/55 hover:text-[#9adbb2] sm:hidden">{copy.open}</a> : null}
+            </div>
+            {destination ? <a href={destination} className="hidden self-center rounded-full border border-zinc-700 px-3 py-1.5 text-xs text-zinc-300 transition hover:border-[#8fd4a9]/55 hover:text-[#9adbb2] sm:inline-flex">{copy.open}</a> : null}
           </article>
         })}
       </div>
