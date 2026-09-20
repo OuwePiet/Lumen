@@ -62,6 +62,12 @@ const COPY: Record<ViaLanguage, PanelCopy> = {
   },
 }
 
+function countryFlag(code: string) {
+  const normalized = code.trim().toUpperCase()
+  if (!/^[A-Z]{2}$/.test(normalized)) return ""
+  return String.fromCodePoint(...normalized.split("").map((char) => 127397 + char.charCodeAt(0)))
+}
+
 function Panel({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="rounded-2xl border border-[#285f40]/70 bg-[#050806]/90 p-4 shadow-[0_10px_30px_rgba(0,0,0,0.28)]">
@@ -154,7 +160,7 @@ export default function ViaRightPanels() {
             <div className="mt-2 flex flex-wrap gap-1.5">
               {visitorCountries.map((entry) => (
                 <span key={entry.country} className="rounded-full border border-[#285f40]/70 bg-[#07100b] px-2 py-1 text-[10px] text-[#b8ddc5]">
-                  {entry.country} {entry.visitors.toLocaleString()}
+                  {countryFlag(entry.country)} {entry.country} {entry.visitors.toLocaleString()}
                 </span>
               ))}
             </div>
