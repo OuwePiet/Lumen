@@ -563,10 +563,10 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
           {categories.map((option) => {
             const active = option.id === "all" ? allCategoriesActive : activeCategories.includes(option.id)
             const count = option.id === "all" ? items.length : items.filter((item) => categoryOf(item) === option.id).length
-            return <button key={option.id} type="button" aria-pressed={active} onClick={() => toggleCategory(option.id)} title={option.label} className={`inline-flex min-h-10 items-center gap-2 rounded-full border px-3 text-xs font-semibold transition ${active ? "border-[#8fd4a9] bg-[#285f40] text-white shadow-[0_0_0_1px_rgba(143,212,169,0.18)]" : "border-[#9b9b9b] bg-[#9b9b9b] text-white hover:border-[#7f7f7f] hover:bg-[#7f7f7f]"}`}>
+            return <button key={option.id} type="button" aria-pressed={active} onClick={() => toggleCategory(option.id)} title={option.label} className={`inline-flex min-h-10 items-center gap-1.5 rounded-full border px-2.5 text-xs font-semibold transition sm:gap-2 sm:px-3 ${active ? "border-[#8fd4a9] bg-[#285f40] text-white shadow-[0_0_0_1px_rgba(143,212,169,0.18)]" : "border-[#9b9b9b] bg-[#9b9b9b] text-white hover:border-[#7f7f7f] hover:bg-[#7f7f7f]"}`}>
               <span aria-hidden="true" className="grid h-5 min-w-5 place-items-center text-sm"><CategoryIcon category={option.id} /></span>
-              <span>{option.label}</span>
-              <span className="rounded-full bg-white/5 px-1.5 py-0.5 text-[10px] text-zinc-500">{count}</span>
+              <span className="hidden sm:inline">{option.label}</span>
+              <span className="rounded-full bg-white/5 px-1.5 py-0.5 text-[10px] text-zinc-300">{count}</span>
             </button>
           })}
         </div>
