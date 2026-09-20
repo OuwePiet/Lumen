@@ -6,6 +6,7 @@ import { restoreIdentitySession, VIA_IDENTITY_EVENT, type ViaIdentitySession } f
 import type { ViaLanguage } from "../via-local-settings"
 import SponsorPlatform from "../sponsor-platform"
 import LikeButton from "../social/like-button"
+import PostComposer from "../social/post-composer"
 
 type NotificationItem = {
   Index?: number
@@ -353,6 +354,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
   const [profiles, setProfiles] = useState<Record<string, ActorProfile>>({})
   const [expandedKey, setExpandedKey] = useState<string | null>(null)
   const [postCache, setPostCache] = useState<Record<string, PublicPost | null>>({})
+  const [replyingTo, setReplyingTo] = useState<string | null>(null)
 
   useEffect(() => {
     const current = restoreIdentitySession()
@@ -549,9 +551,20 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
                   <p className="text-xs font-semibold text-zinc-300">@{post.username?.replace(/^@/, "") || shortKey(post.publicKey, copy.actor)}</p>
                   {post.body ? <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-zinc-200">{post.body}</p> : null}
                   {post.imageUrls?.length ? <div className="mt-3 grid gap-2 sm:grid-cols-2">{post.imageUrls.slice(0, 4).map((url) => <img key={url} src={url} alt="" loading="lazy" className="max-h-72 w-full rounded-xl object-contain" />)}</div> : null}
-                  <div className="mt-3 border-t border-zinc-800/70 pt-3">
+                  <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-zinc-800/70 pt-3">
+                    <button
+                      type="button"
+                      onClick={() => setReplyingTo((current) => current === post.postHash ? null : post.postHash)}
+                      title="Reply"
+                      aria-label="Reply"
+                      aria-pressed={replyingTo === post.postHash}
+                      className={`inline-flex h-9 min-w-9 items-center justify-center rounded-full border px-2 text-xs transition ${replyingTo === post.postHash ? "border-[#1687ff] bg-[#1687ff] text-white" : "border-zinc-800 text-zinc-300 hover:border-[#1687ff] hover:text-white"}`}
+                    >
+                      <MessageSquare className="h-4 w-4" />
+                    </button>
                     <LikeButton postHash={post.postHash} initialCount={post.likeCount} variant="icon" />
                   </div>
+                  {replyingTo === post.postHash ? <div className="mt-3"><PostComposer parentStakeID={post.postHash} compact onDone={() => setReplyingTo(null)} /></div> : null}
                 </> : <p className="text-xs text-zinc-500">Post unavailable.</p>}
               </div> : expanded && destination ? <div className="mt-3 rounded-xl border border-zinc-800 bg-black/25 p-3 text-xs text-zinc-500">{destination}</div> : null}
             </div>
