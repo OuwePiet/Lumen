@@ -3,6 +3,11 @@
 import { useEffect, useState } from "react"
 import { readViaLocalSettings, VIA_SETTINGS_EVENT, type ViaLanguage } from "./via-local-settings"
 
+type VisitorAnalyticsResponse = {
+  ok?: boolean
+  visitors?: { today?: number; month?: number; year?: number }
+}
+
 type PanelCopy = {
   live: string
   visitors: string
@@ -65,6 +70,18 @@ function Panel({ title, children }: { title: string; children: React.ReactNode }
   )
 }
 
+function Metric({ label, value, note }: { label: string; value: number | null; note: string }) {
+  return (
+    <div className="rounded-xl border border-zinc-800 bg-black/25 px-3 py-2">
+      <div className="flex items-center justify-between gap-3">
+        <span className="text-zinc-300">{label}</span>
+        <span className={value === null ? "text-zinc-600" : "font-semibold text-[#9adbb2]"}>{value === null ? "—" : value.toLocaleString()}</span>
+      </div>
+      {value === null ? <p className="mt-1 text-[10px] leading-4 text-zinc-600">{note}</p> : null}
+    </div>
+  )
+}
+
 function PendingMetric({ label, note }: { label: string; note: string }) {
   return (
     <div className="rounded-xl border border-zinc-800 bg-black/25 px-3 py-2">
@@ -79,6 +96,9 @@ function PendingMetric({ label, note }: { label: string; note: string }) {
 
 export default function ViaRightPanels() {
   const [language, setLanguage] = useState<ViaLanguage>("English")
+  const [visitorToday, setVisitorToday] = useState<number | null>(null)
+  const [visitorMonth, setVisitorMonth] = useState<number | null>(null)
+  const [visitorYear, setVisitorYear] = useState<number | null>(null)
 
   useEffect(() => {
     const sync = () => setLanguage(readViaLocalSettings().interfaceLanguage)
@@ -89,6 +109,25 @@ export default function ViaRightPanels() {
       window.removeEventListener(VIA_SETTINGS_EVENT, sync)
       window.removeEventListener("storage", sync)
     }
+  }, [])
+
+  useEffect(() => {
+    const controller = new AbortController()
+    void fetch("/api/via/analytics/visitors", {
+      cache: "no-store",
+      signal: controller.signal,
+      headers: { Accept: "application/json" },
+    })
+      .then(async (response) => {
+        const data = await response.json() as VisitorAnalyticsResponse
+        if (!response.ok || !data.ok || !data.visitors) return
+        if (typeof data.visitors.today === "number" && Number.isFinite(data.visitors.today)) setVisitorToday(data.visitors.today)
+        if (typeof data.visitors.month === "number" && Number.isFinite(data.visitors.month)) setVisitorMonth(data.visitors.month)
+        if (typeof data.visitors.year === "number" && Number.isFinite(data.visitors.year)) setVisitorYear(data.visitors.year)
+      })
+      .catch(() => {})
+
+    return () => controller.abort()
   }, [])
 
   const copy = COPY[language]
@@ -103,9 +142,9 @@ export default function ViaRightPanels() {
       </Panel>
 
       <Panel title={copy.visitors}>
-        <PendingMetric label={copy.today} note={copy.sourcePending} />
-        <PendingMetric label={copy.month} note={copy.sourcePending} />
-        <PendingMetric label={copy.year} note={copy.sourcePending} />
+        <Metric label={copy.today} value={visitorToday} note={copy.sourcePending} />
+        <Metric label={copy.month} value={visitorMonth} note={copy.sourcePending} />
+        <Metric label={copy.year} value={visitorYear} note={copy.sourcePending} />
       </Panel>
 
       <Panel title={copy.activity}>
