@@ -6,6 +6,7 @@ import { DESO_IDENTITY_ORIGIN, restoreIdentitySession, VIA_IDENTITY_EVENT, type 
 type Props = {
   postHash: string
   initialCount: number
+  variant?: "default" | "icon"
 }
 
 type PrepareResponse = { ok?: boolean; transactionHex?: string; feeNanos?: number | null; error?: string }
@@ -22,7 +23,7 @@ function signedTransactionFromMessage(event: MessageEvent, source: Window | null
   return typeof signed === "string" && signed.length > 0 ? signed : null
 }
 
-export default function LikeButton({ postHash, initialCount }: Props) {
+export default function LikeButton({ postHash, initialCount, variant = "default" }: Props) {
   const [session, setSession] = useState<ViaIdentitySession | null>(null)
   const [count, setCount] = useState(initialCount)
   const [liked, setLiked] = useState(false)
@@ -124,8 +125,17 @@ export default function LikeButton({ postHash, initialCount }: Props) {
 
   return (
     <span className="inline-flex items-center gap-2">
-      <button type="button" onClick={toggleLike} disabled={busy} className="rounded-full border border-[#285f40]/70 px-3 py-1 text-[#9adbb2] hover:border-[#8fd4a9]/55 disabled:cursor-wait disabled:opacity-60">
-        {busy ? "Waiting…" : liked ? `Unlike · ${count}` : `Like · ${count}`}
+      <button
+        type="button"
+        onClick={toggleLike}
+        disabled={busy}
+        title={liked ? "Unlike" : "Like"}
+        aria-label={liked ? `Unlike · ${count}` : `Like · ${count}`}
+        className={variant === "icon"
+          ? `inline-flex h-9 min-w-9 items-center justify-center gap-1 rounded-full border px-2 text-xs transition disabled:cursor-wait disabled:opacity-60 ${liked ? "border-[#1687ff] bg-[#1687ff] text-white" : "border-zinc-800 text-zinc-300 hover:border-[#1687ff] hover:text-white"}`
+          : "rounded-full border border-[#285f40]/70 px-3 py-1 text-[#9adbb2] hover:border-[#8fd4a9]/55 disabled:cursor-wait disabled:opacity-60"}
+      >
+        {variant === "icon" ? <><span aria-hidden="true">👍</span><span>{count}</span></> : (busy ? "Waiting…" : liked ? `Unlike · ${count}` : `Like · ${count}`)}
       </button>
       {message ? <span className="sr-only" role="status" aria-live="polite">{message}</span> : null}
     </span>
