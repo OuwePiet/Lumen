@@ -336,6 +336,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
   const [refreshToken, setRefreshToken] = useState(0)
   const [expandedView, setExpandedView] = useState(false)
   const [profiles, setProfiles] = useState<Record<string, ActorProfile>>({})
+  const [expandedKey, setExpandedKey] = useState<string | null>(null)
 
   useEffect(() => {
     const current = restoreIdentitySession()
@@ -481,7 +482,9 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
           const profile = actorPublicKey ? profiles[actorPublicKey] ?? {} : {}
           const username = profile.username?.trim().replace(/^@/, "")
           const actor = username ? `@${username}` : shortKey(actorPublicKey || metadata.TransactorPublicKeyBase58Check, copy.actor)
-          return <article key={`${item.Index ?? "n"}-${index}`} className={`grid grid-cols-[42px_minmax(0,1fr)] gap-3 px-4 py-4 transition sm:grid-cols-[46px_minmax(0,1fr)_auto] sm:px-5 ${unread ? "bg-[#0b1510]/70" : "bg-black/10"}`}>
+          const rowKey = `${item.Index ?? "n"}-${index}`
+          const expanded = expandedKey === rowKey
+          return <article key={rowKey} className={`grid grid-cols-[42px_minmax(0,1fr)] gap-3 px-4 py-4 transition sm:grid-cols-[46px_minmax(0,1fr)_auto] sm:px-5 ${unread ? "bg-[#0b1510]/70" : "bg-black/10"}`}>
             <div className="relative h-10 w-10 sm:h-11 sm:w-11">
               {profile.profilePic ? <img src={profile.profilePic} alt="" referrerPolicy="no-referrer" className="h-full w-full rounded-full border border-zinc-700 object-cover" /> : <div aria-hidden="true" className={`grid h-full w-full place-items-center rounded-full border text-base font-bold ${unread ? "border-[#1687ff] bg-[#1687ff] text-white" : "border-[#8e8e8e] bg-[#8e8e8e] text-white"}`}><CategoryIcon category={itemCategory} className="h-5 w-5" /></div>}
               <span aria-hidden="true" className="absolute -bottom-1 -right-1 grid h-5 w-5 place-items-center rounded-full border border-zinc-700 bg-black text-white"><CategoryIcon category={itemCategory} className="h-3 w-3" /></span>
@@ -493,9 +496,10 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
                 {unread ? <span className="rounded-full border border-[#285f40] px-2 py-0.5 text-[10px] text-[#9adbb2]">{copy.fresh}</span> : null}
               </div>
               <p className="mt-1 text-sm leading-5 text-zinc-400">{copy.descriptions[itemCategory](actor)}</p>
-              {destination ? <a href={destination} className="mt-2 inline-flex rounded-full border border-zinc-700 px-2.5 py-1 text-[11px] text-zinc-300 transition hover:border-[#8fd4a9]/55 hover:text-[#9adbb2] sm:hidden">{copy.open}</a> : null}
+              {destination ? <button type="button" onClick={() => setExpandedKey(expanded ? null : rowKey)} className="mt-2 inline-flex rounded-full border border-zinc-700 px-2.5 py-1 text-[11px] text-zinc-300 transition hover:border-[#1687ff] hover:text-white">{expanded ? "Close" : copy.open}</button> : null}
+              {expanded && destination ? <div className="mt-3 rounded-xl border border-zinc-800 bg-black/25 p-3 text-xs text-zinc-500">{destination}</div> : null}
             </div>
-            {destination ? <a href={destination} className="hidden self-center rounded-full border border-zinc-700 px-3 py-1.5 text-xs text-zinc-300 transition hover:border-[#8fd4a9]/55 hover:text-[#9adbb2] sm:inline-flex">{copy.open}</a> : null}
+            {destination ? <button type="button" onClick={() => setExpandedKey(expanded ? null : rowKey)} className="hidden self-center rounded-full border border-zinc-700 px-3 py-1.5 text-xs text-zinc-300 transition hover:border-[#1687ff] hover:text-white sm:inline-flex">{expanded ? "Close" : copy.open}</button> : null}
           </article>
         })}
       </div>
