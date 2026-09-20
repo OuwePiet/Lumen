@@ -2,7 +2,7 @@ export const VIA_SETTINGS_KEY = "via:settings:v1"
 export const VIA_SETTINGS_EVENT = "via:settings"
 export const VIA_STUDIO_DRAFT_KEY = "via:studio:draft:v1"
 
-export const VIA_LANGUAGES = ["Dutch", "English", "French", "Spanish", "Chinese"] as const
+export const VIA_LANGUAGES = ["Dutch", "English", "French", "Spanish", "Chinese", "Hindi"] as const
 export const VIA_FEEDS = ["Hot Feed", "Following", "New"] as const
 
 export type ViaLanguage = (typeof VIA_LANGUAGES)[number]
