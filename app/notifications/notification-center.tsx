@@ -5,6 +5,7 @@ import { AtSign, Badge, Check, CheckCircle2, ChevronsRight, CircleDot, Gem, Mess
 import { restoreIdentitySession, VIA_IDENTITY_EVENT, type ViaIdentitySession } from "../deso-identity-session"
 import type { ViaLanguage } from "../via-local-settings"
 import SponsorPlatform from "../sponsor-platform"
+import LikeButton from "../social/like-button"
 
 type NotificationItem = {
   Index?: number
@@ -34,6 +35,7 @@ type PublicPost = {
   username: string
   body: string
   imageUrls: string[]
+  likeCount: number
 }
 
 type PostResponse = {
@@ -547,6 +549,9 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
                   <p className="text-xs font-semibold text-zinc-300">@{post.username?.replace(/^@/, "") || shortKey(post.publicKey, copy.actor)}</p>
                   {post.body ? <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-zinc-200">{post.body}</p> : null}
                   {post.imageUrls?.length ? <div className="mt-3 grid gap-2 sm:grid-cols-2">{post.imageUrls.slice(0, 4).map((url) => <img key={url} src={url} alt="" loading="lazy" className="max-h-72 w-full rounded-xl object-contain" />)}</div> : null}
+                  <div className="mt-3 border-t border-zinc-800/70 pt-3">
+                    <LikeButton postHash={post.postHash} initialCount={post.likeCount} variant="icon" />
+                  </div>
                 </> : <p className="text-xs text-zinc-500">Post unavailable.</p>}
               </div> : expanded && destination ? <div className="mt-3 rounded-xl border border-zinc-800 bg-black/25 p-3 text-xs text-zinc-500">{destination}</div> : null}
             </div>
