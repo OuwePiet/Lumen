@@ -87,7 +87,7 @@ type Copy = {
   descriptions: Record<Exclude<Category, "all">, (actor: string) => string>
 }
 
-const COPY: Record<ViaLanguage, Copy> = {
+const COPY: Record<ViaLanguage | "Hindi", Copy> = {
   Dutch: {
     categories: { all: "Alles", reaction: "Reacties", diamond1: "1 diamant", diamondMany: "Meerdere diamanten", creatorCoin: "Creator Coin", follow: "Volgen", mention5: "Vermeldingen · max 5", mention6: "Vermeldingen · 6+", reply: "Antwoorden", repost: "Reposts", nft: "NFT", other: "Overig" },
     login: "Log in met DeSo om meldingen voor je actieve account te zien.",
@@ -210,6 +210,27 @@ const COPY: Record<ViaLanguage, Copy> = {
       repost: (actor) => `${actor} volvió a compartir contenido relacionado contigo.`,
       nft: (actor) => `${actor} generó actividad NFT para tu cuenta.`,
       other: (actor) => `${actor} generó actividad de cuenta para ti.`,
+    },
+  },
+  Hindi: {
+    categories: { all: "सभी", reaction: "प्रतिक्रियाएँ", diamond1: "1 Diamond", diamondMany: "कई Diamonds", creatorCoin: "Creator Coin", follow: "फ़ॉलो", mention5: "उल्लेख · अधिकतम 5", mention6: "उल्लेख · 6+", reply: "जवाब", repost: "रीपोस्ट", nft: "NFT", other: "अन्य" },
+    login: "अपने सक्रिय खाते की सूचनाएँ देखने के लिए DeSo से लॉग इन करें।",
+    heading: "आपके खाते तक क्या पहुँचा?", active: "सक्रिय खाता", refresh: "रीफ़्रेश", refreshing: "रीफ़्रेश हो रहा है…",
+    loadingNotifications: "सूचनाएँ लोड हो रही हैं…", recentLoaded: (count) => `${count} हाल की सूचनाएँ लोड हुईं।`,
+    noRecent: "कोई हाल की सूचना नहीं।", unavailable: "सूचनाएँ अस्थायी रूप से उपलब्ध नहीं हैं।", filters: "सूचना फ़िल्टर",
+    loading: "लोड हो रहा है…", nothing: "इस फ़िल्टर में कुछ नहीं है।", open: "खोलें", fresh: "नया", actor: "DeSo खाता",
+    descriptions: {
+      reaction: (actor) => `${actor} ने आपकी एक पोस्ट पर प्रतिक्रिया दी।`,
+      diamond1: (actor) => `${actor} ने 1 Diamond भेजा।`,
+      diamondMany: (actor) => `${actor} ने कई Diamonds भेजे।`,
+      creatorCoin: (actor) => `${actor} ने Creator Coin गतिविधि की।`,
+      mention5: (actor) => `${actor} ने आपका उल्लेख किया।`,
+      mention6: (actor) => `${actor} ने 6 या अधिक टैग वाली पोस्ट में आपका उल्लेख किया।`,
+      reply: (actor) => `${actor} ने आपसे संबंधित पोस्ट का जवाब दिया।`,
+      follow: (actor) => `${actor} ने आपके खाते के साथ फ़ॉलो संबंध बदला।`,
+      repost: (actor) => `${actor} ने आपसे संबंधित सामग्री रीपोस्ट की।`,
+      nft: (actor) => `${actor} ने आपके खाते के लिए NFT गतिविधि की।`,
+      other: (actor) => `${actor} ने आपके खाते से संबंधित गतिविधि की।`,
     },
   },
   Chinese: {
