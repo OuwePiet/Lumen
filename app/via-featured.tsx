@@ -72,7 +72,7 @@ type SponsorCopy = {
   end: string
 }
 
-const sponsorCopy: Record<ViaLanguage, SponsorCopy> = {
+const sponsorCopy: Record<ViaLanguage | "Hindi", SponsorCopy> = {
   Dutch: {
     featured: "Uitgelicht in VIA",
     spotlight: "Gesponsorde spotlight",
@@ -227,6 +227,16 @@ const sponsorCopy: Record<ViaLanguage, SponsorCopy> = {
     source: "查看图片来源：",
     start: "赞助展示开始",
     end: "赞助展示结束",
+  },
+  Hindi: {
+    featured: "VIA में विशेष", spotlight: "प्रायोजित स्पॉटलाइट", commercial: "व्यावसायिक स्थान · मंज़ूरी के बाद भुगतान", sponsor: "VIA प्रायोजित करें",
+    bestPerformer: "सर्वश्रेष्ठ प्रदर्शन", recognition: "VIA क्रिएटर मान्यता", specialBadge: "विशेष बैज", requestTitle: "प्रायोजित स्थान अनुरोध",
+    requestBody: "स्थान का विवरण भरें, स्थिर या बहुत धीरे चलने वाली सामग्री चुनें और फ़ाइल चुनें। VIA द्वारा क्रियान्वयन और मूल्य की पुष्टि के बाद ही भुगतान होगा।",
+    close: "प्रायोजक विंडो बंद करें", name: "नाम / संगठन", contact: "ईमेल या संपर्क", title: "प्रायोजित स्थान का शीर्षक", url: "गंतव्य लिंक (https://…)",
+    material: "सामग्री", chooseFile: "फ़ाइल चुनें", noFile: "कोई फ़ाइल नहीं चुनी गई", display: "प्रदर्शन", static: "स्थिर", slow: "बहुत धीमी गति",
+    payment: "भुगतान: क्रियान्वयन और मूल्य की मंज़ूरी के बाद। VIA के वास्तविक भुगतान प्रदाता से जुड़ने के बाद ही checkout सक्रिय होगा।",
+    save: "ड्राफ्ट सहेजें", saved: "ड्राफ्ट सहेजा गया", paymentInfo: "भुगतान जानकारी", christmasCity: "क्रिसमस सिटी", worldCity: "विश्व शहर",
+    source: "चित्र स्रोत देखें:", start: "प्रायोजित स्थान शुरू", end: "प्रायोजित स्थान समाप्त",
   },
 }
 
