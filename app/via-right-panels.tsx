@@ -5,7 +5,7 @@ import { readViaLocalSettings, VIA_SETTINGS_EVENT, type ViaLanguage } from "./vi
 
 type VisitorAnalyticsResponse = {
   ok?: boolean
-  visitors?: { month?: number; year?: number }
+  visitors?: { today?: number; month?: number; year?: number }
 }
 
 type PanelCopy = {
@@ -96,6 +96,7 @@ function PendingMetric({ label, note }: { label: string; note: string }) {
 
 export default function ViaRightPanels() {
   const [language, setLanguage] = useState<ViaLanguage>("English")
+  const [visitorToday, setVisitorToday] = useState<number | null>(null)
   const [visitorMonth, setVisitorMonth] = useState<number | null>(null)
   const [visitorYear, setVisitorYear] = useState<number | null>(null)
 
@@ -120,6 +121,7 @@ export default function ViaRightPanels() {
       .then(async (response) => {
         const data = await response.json() as VisitorAnalyticsResponse
         if (!response.ok || !data.ok || !data.visitors) return
+        if (typeof data.visitors.today === "number" && Number.isFinite(data.visitors.today)) setVisitorToday(data.visitors.today)
         if (typeof data.visitors.month === "number" && Number.isFinite(data.visitors.month)) setVisitorMonth(data.visitors.month)
         if (typeof data.visitors.year === "number" && Number.isFinite(data.visitors.year)) setVisitorYear(data.visitors.year)
       })
@@ -140,7 +142,7 @@ export default function ViaRightPanels() {
       </Panel>
 
       <Panel title={copy.visitors}>
-        <PendingMetric label={copy.today} note={copy.sourcePending} />
+        <Metric label={copy.today} value={visitorToday} note={copy.sourcePending} />
         <Metric label={copy.month} value={visitorMonth} note={copy.sourcePending} />
         <Metric label={copy.year} value={visitorYear} note={copy.sourcePending} />
       </Panel>
