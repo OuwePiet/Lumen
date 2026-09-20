@@ -206,6 +206,14 @@ const simpleOverrides: Record<Exclude<ViaLanguage, "Dutch" | "English">, Partial
 
 const hi: Dictionary = {
   ...en,
+  "VIA uses DeSo's native create-nft constructor. This visible step only prepares an unsigned transaction to read the current fee/spend context; it cannot sign, broadcast, charge or mint.": "VIA DeSo के native create-nft constructor का उपयोग करता है। यह चरण केवल मौजूदा fee/spend संदर्भ पढ़ने के लिए unsigned transaction तैयार करता है; यह sign, broadcast, charge या mint नहीं कर सकता।",
+  "Log in with DeSo Identity first. VIA will use only the active public key for this preflight.": "पहले DeSo Identity से login करें। VIA इस पूर्व-जाँच के लिए केवल सक्रिय public key का उपयोग करेगा।",
+  "Log in with DeSo Identity to request a mint quote.": "Mint quote माँगने के लिए DeSo Identity से login करें।",
+  "Enter a valid 64-character DeSo NFT post hash.": "मान्य 64-character DeSo NFT post hash दर्ज करें।",
+  "Copies must be a whole number from 1 to 10,000.": "Copies की संख्या 1 से 10,000 तक पूर्णांक होनी चाहिए।",
+  "Prices and royalties must be non-negative whole numbers.": "Prices और royalties शून्य या उससे अधिक पूर्णांक होने चाहिए।",
+  "Creator and coin royalties together cannot exceed 100%.": "Creator और coin royalties मिलाकर 100% से अधिक नहीं हो सकतीं।",
+  "Buy Now requires a sale price above zero and cannot be combined with unlockable content in this flow.": "Buy Now के लिए sale price शून्य से अधिक होना चाहिए और इस flow में इसे unlockable content के साथ नहीं जोड़ा जा सकता।",
   "NFT mint preflight": "NFT mint पूर्व-जाँच",
   "Set terms. Check live cost. Approve later.": "शर्तें तय करें। वर्तमान लागत जाँचें। बाद में मंज़ूरी दें।",
   "No blockchain write": "ब्लॉकचेन पर कोई लेखन नहीं",
