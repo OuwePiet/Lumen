@@ -505,6 +505,10 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
     () => items.filter((item) => activeCategories.includes(categoryOf(item)) && !qualityShieldHides(item)),
     [items, activeCategories, qualityShield, profiles, actorActivityCounts],
   )
+  const shieldHiddenCount = useMemo(
+    () => qualityShield ? items.filter((item) => qualityShieldHides(item)).length : 0,
+    [items, qualityShield, profiles, actorActivityCounts],
+  )
 
   function toggleCategory(id: Category) {
     if (id === "all") {
@@ -534,12 +538,13 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
           <button
             type="button"
             onClick={() => setQualityShield((value) => !value)}
-            title={qualityShield ? "Quality Shield on" : "Quality Shield off"}
-            aria-label={qualityShield ? "Quality Shield on" : "Quality Shield off"}
+            title={qualityShield ? `Quality Shield on · ${shieldHiddenCount} hidden` : "Quality Shield off"}
+            aria-label={qualityShield ? `Quality Shield on · ${shieldHiddenCount} hidden` : "Quality Shield off"}
             aria-pressed={qualityShield}
-            className={`grid h-9 w-9 place-items-center rounded-full border text-white transition ${qualityShield ? "border-[#8fd4a9] bg-[#285f40]" : "border-[#9b9b9b] bg-[#9b9b9b]"}`}
+            className={`relative grid h-9 w-9 place-items-center rounded-full border text-white transition ${qualityShield ? "border-[#8fd4a9] bg-[#285f40]" : "border-[#9b9b9b] bg-[#9b9b9b]"}`}
           >
             {qualityShield ? <ShieldCheck className="h-4 w-4" /> : <ShieldOff className="h-4 w-4" />}
+            {qualityShield && shieldHiddenCount > 0 ? <span aria-hidden="true" className="absolute -right-1 -top-1 grid min-h-4 min-w-4 place-items-center rounded-full border border-black bg-[#8fd4a9] px-1 text-[9px] font-bold leading-none text-black">{shieldHiddenCount}</span> : null}
           </button>
           <button type="button" onClick={() => setActiveCategories(allCategoriesActive ? [] : filterCategoryIds)} title="Select All" aria-label="Select All" aria-pressed={allCategoriesActive} className={`grid h-9 w-9 place-items-center rounded-full border text-white transition ${allCategoriesActive ? "border-[#8fd4a9] bg-[#285f40]" : "border-[#9b9b9b] bg-[#9b9b9b]"}`}>
             <CheckCircle2 className="h-4 w-4" />
