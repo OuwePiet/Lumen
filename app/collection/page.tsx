@@ -34,7 +34,7 @@ export default function CollectionPage() {
         style={{
           position: "fixed",
           inset: 0,
-          zIndex: -2,
+          zIndex: 0,
           pointerEvents: "none",
           backgroundImage: 'url("/via-nft-background-approved.webp")',
           backgroundSize: "cover",
@@ -47,14 +47,14 @@ export default function CollectionPage() {
         style={{
           position: "fixed",
           inset: 0,
-          zIndex: -1,
+          zIndex: 1,
           pointerEvents: "none",
           background:
             "linear-gradient(180deg, rgba(3,7,5,.18) 0%, rgba(3,7,5,.28) 44%, rgba(3,7,5,.42) 100%)",
         }}
       />
 
-      <div style={{ position: "relative", zIndex: 1 }}>
+      <div style={{ position: "relative", zIndex: 2 }}>
         <CollectionHub />
         <NFTGrid />
         <div style={{ maxWidth: 1480, margin: "0 auto", padding: "0 20px 8px" }}>
