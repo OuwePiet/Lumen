@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { useEffect, useState } from "react"
 import NotificationCenter from "./notification-center"
+import SponsorPlatform from "../sponsor-platform"
 import { readViaLocalSettings, VIA_SETTINGS_EVENT, type ViaLanguage } from "../via-local-settings"
 
 type PageCopy = { title: string; intro: string; back: string }
@@ -39,7 +40,7 @@ export default function NotificationsPage() {
             <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">{copy.title}</h1>
             <p className="mt-2 text-sm text-zinc-500">{copy.intro}</p>
           </div>
-          <Link href="/social" className="rounded-full border border-zinc-700 px-4 py-2 text-sm text-zinc-200 hover:border-[#8fd4a9]/70 hover:text-[#9adbb2]">{copy.back}</Link>
+          <div className="flex flex-wrap items-center gap-2"><SponsorPlatform compact /><Link href="/social" className="rounded-full border border-zinc-700 px-4 py-2 text-sm text-zinc-200 hover:border-[#8fd4a9]/70 hover:text-[#9adbb2]">{copy.back}</Link></div>
         </header>
 
         <NotificationCenter language={language} />
