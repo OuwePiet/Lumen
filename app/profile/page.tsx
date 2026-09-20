@@ -48,6 +48,7 @@ type Copy = {
   active: string
   inactive90: string
   lastActivity: string
+  countryVoluntary: string
 }
 
 const copy: Record<ViaLanguage, Copy> = {
@@ -70,7 +71,7 @@ const copy: Record<ViaLanguage, Copy> = {
     coinHolders: "Coin-houders",
     coinsCirculation: "Coins in omloop",
     noBio: "Geen openbare bio op dit DeSo-profiel.",
-    publicKey: "Public key", active: "Actief", inactive90: "90+ dagen inactief", lastActivity: "Laatste openbare activiteit",
+    publicKey: "Public key", active: "Actief", inactive90: "90+ dagen inactief", lastActivity: "Laatste openbare activiteit", countryVoluntary: "Land: vrijwillig",
   },
   English: {
     kicker: "VIA · PROFILE",
@@ -91,7 +92,7 @@ const copy: Record<ViaLanguage, Copy> = {
     coinHolders: "Coin holders",
     coinsCirculation: "Coins in circulation",
     noBio: "No public bio on this DeSo profile.",
-    publicKey: "Public key", active: "Active", inactive90: "Inactive 90+ days", lastActivity: "Last public activity",
+    publicKey: "Public key", active: "Active", inactive90: "Inactive 90+ days", lastActivity: "Last public activity", countryVoluntary: "Country: voluntary",
   },
   French: {
     kicker: "VIA · PROFIL",
@@ -112,7 +113,7 @@ const copy: Record<ViaLanguage, Copy> = {
     coinHolders: "Détenteurs du coin",
     coinsCirculation: "Coins en circulation",
     noBio: "Aucune bio publique sur ce profil DeSo.",
-    publicKey: "Clé publique", active: "Actif", inactive90: "Inactif depuis 90+ jours", lastActivity: "Dernière activité publique",
+    publicKey: "Clé publique", active: "Actif", inactive90: "Inactif depuis 90+ jours", lastActivity: "Dernière activité publique", countryVoluntary: "Pays : facultatif",
   },
   Spanish: {
     kicker: "VIA · PERFIL",
@@ -133,7 +134,7 @@ const copy: Record<ViaLanguage, Copy> = {
     coinHolders: "Titulares del coin",
     coinsCirculation: "Coins en circulación",
     noBio: "Este perfil DeSo no tiene biografía pública.",
-    publicKey: "Clave pública", active: "Activo", inactive90: "Inactivo 90+ días", lastActivity: "Última actividad pública",
+    publicKey: "Clave pública", active: "Activo", inactive90: "Inactivo 90+ días", lastActivity: "Última actividad pública", countryVoluntary: "País: voluntario",
   },
   Chinese: {
     kicker: "VIA · 个人资料",
@@ -154,7 +155,7 @@ const copy: Record<ViaLanguage, Copy> = {
     coinHolders: "Coin 持有者",
     coinsCirculation: "流通中的 Coins",
     noBio: "此 DeSo 个人资料没有公开简介。",
-    publicKey: "公钥", active: "活跃", inactive90: "90+ 天未活跃", lastActivity: "最近公开活动",
+    publicKey: "公钥", active: "活跃", inactive90: "90+ 天未活跃", lastActivity: "最近公开活动", countryVoluntary: "国家/地区：自愿",
   },
 }
 
@@ -389,7 +390,7 @@ export default function ProfilePage() {
 
                 <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-zinc-700/80 bg-black/25 px-3 py-1.5 text-xs text-zinc-400" title="Voluntary country registration can be added later">
                   <span aria-hidden="true">📍</span>
-                  <span>Country: voluntary</span>
+                  <span>{t.countryVoluntary}</span>
                 </div>
                 <p className="mt-5 whitespace-pre-wrap text-sm leading-6 text-zinc-300">{profile.description || t.noBio}</p>
                 <div className="mt-5 rounded-[12px] border border-zinc-800/80 bg-black/25 p-4">
