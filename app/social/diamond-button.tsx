@@ -86,7 +86,7 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
         title="Diamond"
         aria-label={`Diamond · ${count}`}
         aria-pressed={confirmValue}
-        className={`inline-flex h-9 min-w-9 items-center justify-center gap-1 rounded-full border px-2 text-xs transition ${confirmValue ? "border-[#1687ff] bg-[#1687ff] text-white" : "border-zinc-800 text-zinc-300 hover:border-[#1687ff] hover:text-white"}`}
+        className={`inline-flex h-9 min-w-9 items-center justify-center gap-1 rounded-full border px-2 text-xs transition ${confirmValue ? "border-[#8fd4a9] bg-[#285f40] text-white" : "border-zinc-800 text-zinc-300 hover:border-[#8fd4a9] hover:text-white"}`}
       >
         <span aria-hidden="true">◇</span><span>{count}</span>
       </button>
