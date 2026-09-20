@@ -4,7 +4,6 @@ import { useEffect, useMemo, useState } from "react"
 import { ArrowUpRight, AtSign, Badge, Check, CheckCircle2, ChevronsRight, CircleDot, Gem, Link2, MessageSquare, RefreshCw, Repeat2, ShieldOff, Smile, UserRound } from "lucide-react"
 import { restoreIdentitySession, VIA_IDENTITY_EVENT, type ViaIdentitySession } from "../deso-identity-session"
 import type { ViaLanguage } from "../via-local-settings"
-import SponsorPlatform from "../sponsor-platform"
 import LikeButton from "../social/like-button"
 import PostComposer from "../social/post-composer"
 import RepostButton from "../social/repost-button"
@@ -498,7 +497,6 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
           <p className="mt-1 text-xs text-zinc-500">{copy.active}: {shortKey(session.publicKey, copy.actor)}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <SponsorPlatform compact />
           <button type="button" disabled title="Filter out bots" aria-label="Filter out bots" className="grid h-9 w-9 place-items-center rounded-full border border-[#9b9b9b] bg-[#9b9b9b] text-white opacity-70 disabled:cursor-not-allowed">
             <ShieldOff className="h-4 w-4" />
           </button>
