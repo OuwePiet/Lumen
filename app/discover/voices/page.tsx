@@ -1,4 +1,8 @@
+"use client"
+
 import Link from "next/link"
+import { useEffect, useState } from "react"
+import { readViaLocalSettings, VIA_SETTINGS_EVENT, type ViaLanguage } from "../../via-local-settings"
 
 const styles = {
   main: { minHeight: "100vh", background: "#020403", color: "#f4f7f5", padding: "24px 16px 56px" },
@@ -15,27 +19,38 @@ const styles = {
 }
 
 export default function NewVoicesPage() {
+  const [language, setLanguage] = useState<ViaLanguage | "Hindi">("English")
+
+  useEffect(() => {
+    const refresh = () => setLanguage(readViaLocalSettings().interfaceLanguage)
+    refresh()
+    window.addEventListener(VIA_SETTINGS_EVENT, refresh)
+    return () => window.removeEventListener(VIA_SETTINGS_EVENT, refresh)
+  }, [])
+
+  const hindi = language === "Hindi"
+
   return (
     <main style={styles.main}>
       <div style={styles.shell}>
-        <p style={styles.eyebrow}>VIA · NEW VOICES</p>
-        <h1 style={styles.title}>Explore a public DeSo creator.</h1>
+        <p style={styles.eyebrow}>VIA · {hindi ? "नई आवाज़ें" : "NEW VOICES"}</p>
+        <h1 style={styles.title}>{hindi ? "एक सार्वजनिक DeSo क्रिएटर खोजें।" : "Explore a public DeSo creator."}</h1>
         <p style={styles.text}>
-          This first New Voices step is user-directed and read-only. VIA does not label an account as new, important, verified, or organically ranked without suitable public evidence.
+          {hindi ? "New Voices का यह पहला चरण उपयोगकर्ता-निर्देशित और केवल पढ़ने के लिए है। उपयुक्त सार्वजनिक प्रमाण के बिना VIA किसी अकाउंट को नया, महत्वपूर्ण, सत्यापित या ऑर्गेनिक रूप से रैंक किया हुआ नहीं बताता।" : "This first New Voices step is user-directed and read-only. VIA does not label an account as new, important, verified, or organically ranked without suitable public evidence."}
         </p>
 
-        <section style={styles.panel} aria-label="Open a public creator">
-          <h2>Open creator collection</h2>
-          <p style={styles.text}>Enter a public DeSo username. VIA opens the existing public collection browser; no signing, follow, like, payment, or Diamond action is performed.</p>
+        <section style={styles.panel} aria-label={hindi ? "सार्वजनिक क्रिएटर खोलें" : "Open a public creator"}>
+          <h2>{hindi ? "क्रिएटर संग्रह खोलें" : "Open creator collection"}</h2>
+          <p style={styles.text}>{hindi ? "एक सार्वजनिक DeSo यूज़रनेम दर्ज करें। VIA मौजूदा सार्वजनिक संग्रह ब्राउज़र खोलता है; कोई signing, follow, like, payment या Diamond action नहीं किया जाता।" : "Enter a public DeSo username. VIA opens the existing public collection browser; no signing, follow, like, payment, or Diamond action is performed."}</p>
           <form action="/collection" method="get" style={styles.form}>
-            <input name="account" aria-label="DeSo username" placeholder="DeSo username" autoComplete="off" style={styles.input} />
-            <button type="submit" style={styles.button}>Explore creator</button>
+            <input name="account" aria-label={hindi ? "DeSo यूज़रनेम" : "DeSo username"} placeholder={hindi ? "DeSo यूज़रनेम" : "DeSo username"} autoComplete="off" style={styles.input} />
+            <button type="submit" style={styles.button}>{hindi ? "क्रिएटर खोजें" : "Explore creator"}</button>
           </form>
         </section>
 
-        <nav aria-label="New Voices navigation" style={styles.nav}>
-          <Link href="/discover" style={styles.link}>World Discovery</Link>
-          <Link href="/" style={styles.link}>Home</Link>
+        <nav aria-label={hindi ? "नई आवाज़ें नेविगेशन" : "New Voices navigation"} style={styles.nav}>
+          <Link href="/discover" style={styles.link}>{hindi ? "वर्ल्ड डिस्कवरी" : "World Discovery"}</Link>
+          <Link href="/" style={styles.link}>{hindi ? "होम" : "Home"}</Link>
         </nav>
       </div>
     </main>
