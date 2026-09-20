@@ -40,7 +40,7 @@ type StudioDraftCopy = {
   clearStorageFailed: string
 }
 
-const copy: Record<ViaLanguage, StudioDraftCopy> = {
+const copy: Record<ViaLanguage | "Hindi", StudioDraftCopy> = {
   Dutch: {
     creatorDraft: "Creator-concept",
     prepareNextPost: "Bereid je volgende post voor",
@@ -235,6 +235,19 @@ const copy: Record<ViaLanguage, StudioDraftCopy> = {
     saveFailed: "无法在此浏览器中保存草稿。",
     clearedDefaults: "本地 Studio 草稿已清除，默认设置已恢复",
     clearStorageFailed: "草稿已从编辑器清除，但浏览器本地存储不可用。",
+  },
+  Hindi: {
+    creatorDraft: "क्रिएटर ड्राफ्ट", prepareNextPost: "अपनी अगली पोस्ट तैयार करें", readOnly: "Public Entrance केवल पढ़ने के लिए है। स्थानीय VIA ड्राफ्ट बनाने, सहेजने या खोलने के लिए DeSo से लॉग इन करें।",
+    storedDevice: "केवल इस डिवाइस पर सहेजा गया", seedWarning: "यहाँ कभी भी अपना 24-शब्द DeSo seed phrase, private key या signing secret दर्ज न करें।",
+    title: "शीर्षक", titlePlaceholder: "अपने ड्राफ्ट को कार्यशील शीर्षक दें", postTools: "पोस्ट टूल", addSmile: "स्माइली जोड़ें", addHeart: "दिल जोड़ें", addFire: "आग जोड़ें",
+    poll: "पोल", postText: "पोस्ट टेक्स्ट", postPlaceholder: "अपनी पोस्ट, NFT विवरण या क्रिएटर नोट्स लिखें... VIA में सीधे पूर्वावलोकन के लिए YouTube लिंक पेस्ट करें।",
+    pollDraft: "पोल ड्राफ्ट", pollOptions: "पोल विकल्प", pollHelp: "पोल विकल्प यहाँ स्थानीय रूप से तैयार करें। प्रकाशन VIA Feed के जारी पोल प्रवाह से स्पष्ट DeSo Identity मंज़ूरी के साथ होता है।",
+    option: "विकल्प", removeOption: "पोल विकल्प हटाएँ", addOption: "विकल्प जोड़ें", postLanguage: "पोस्ट भाषा", preferredFeed: "पसंदीदा फ़ीड",
+    saveDraft: "ड्राफ्ट सहेजें", clear: "साफ़ करें", continuePost: "DeSo पोस्ट पर जाएँ", charactersLeft: "अक्षर शेष", draftTarget: "ड्राफ्ट लक्ष्य", pollPrepared: "पोल तैयार",
+    localFooter: "ड्राफ्ट सेटिंग्स इसी डिवाइस पर स्थानीय रहती हैं। DeSo पोस्ट और पोल VIA Feed से स्पष्ट DeSo Identity मंज़ूरी के साथ प्रकाशित होते हैं।",
+    loginRequired: "स्थानीय ड्राफ्ट बनाने या खोलने के लिए DeSo लॉगिन आवश्यक है।", usingDefaults: "डिफ़ॉल्ट सेटिंग्स उपयोग में", restoredFrom: "ड्राफ्ट बहाल किया गया",
+    unavailable: "इस ब्राउज़र में स्थानीय Studio ड्राफ्ट उपलब्ध नहीं हैं।", saved: "ड्राफ्ट इस डिवाइस पर स्थानीय रूप से सहेजा गया।", saveFailed: "इस ब्राउज़र में ड्राफ्ट सहेजा नहीं जा सका।",
+    clearedDefaults: "स्थानीय Studio ड्राफ्ट साफ़ किया गया। डिफ़ॉल्ट सेटिंग्स बहाल हुईं", clearStorageFailed: "ड्राफ्ट एडिटर से साफ़ हुआ, लेकिन स्थानीय ब्राउज़र स्टोरेज उपलब्ध नहीं है।",
   },
 }
 
