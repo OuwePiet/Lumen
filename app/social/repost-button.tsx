@@ -14,6 +14,7 @@ const ALLOWED_IMAGE_TYPES = new Set(["image/gif", "image/jpeg", "image/png", "im
 type Props = {
   postHash: string
   initialCount: number
+  variant?: "default" | "icon"
 }
 
 type PrepareResponse = { ok?: boolean; transactionHex?: string; feeNanos?: number | null; error?: string }
@@ -40,7 +41,7 @@ function httpsUrl(value: string) {
   } catch { return null }
 }
 
-export default function RepostButton({ postHash, initialCount }: Props) {
+export default function RepostButton({ postHash, initialCount, variant = "default" }: Props) {
   const [session, setSession] = useState<ViaIdentitySession | null>(null)
   const [count, setCount] = useState(initialCount)
   const [busy, setBusy] = useState(false)
@@ -249,11 +250,29 @@ export default function RepostButton({ postHash, initialCount }: Props) {
 
   return (
     <div className="inline-flex flex-wrap items-center gap-2">
-      <button type="button" onClick={() => void prepareRepost(false)} disabled={busy} className="rounded-full border border-[#285f40]/70 px-3 py-1 text-[#9adbb2] hover:border-[#8fd4a9]/55 disabled:cursor-wait disabled:opacity-60">
-        {busy && !pendingQuote.current ? "Waiting…" : `Repost · ${count}`}
+      <button
+        type="button"
+        onClick={() => void prepareRepost(false)}
+        disabled={busy}
+        title="Repost"
+        aria-label={`Repost · ${count}`}
+        className={variant === "icon"
+          ? "inline-flex h-9 min-w-9 items-center justify-center gap-1 rounded-full border border-zinc-800 px-2 text-xs text-zinc-300 transition hover:border-[#1687ff] hover:text-white disabled:cursor-wait disabled:opacity-60"
+          : "rounded-full border border-[#285f40]/70 px-3 py-1 text-[#9adbb2] hover:border-[#8fd4a9]/55 disabled:cursor-wait disabled:opacity-60"}
+      >
+        {variant === "icon" ? <><span aria-hidden="true">↻</span><span>{count}</span></> : (busy && !pendingQuote.current ? "Waiting…" : `Repost · ${count}`)}
       </button>
-      <button type="button" onClick={() => setQuoteOpen((open) => !open)} disabled={busy} className="rounded-full border border-zinc-800 px-3 py-1 text-zinc-300 hover:border-zinc-700 disabled:opacity-60">
-        Quote
+      <button
+        type="button"
+        onClick={() => setQuoteOpen((open) => !open)}
+        disabled={busy}
+        title="Quote"
+        aria-label="Quote"
+        className={variant === "icon"
+          ? `grid h-9 w-9 place-items-center rounded-full border text-xs transition ${quoteOpen ? "border-[#1687ff] bg-[#1687ff] text-white" : "border-zinc-800 text-zinc-300 hover:border-[#1687ff] hover:text-white"} disabled:opacity-60`
+          : "rounded-full border border-zinc-800 px-3 py-1 text-zinc-300 hover:border-zinc-700 disabled:opacity-60"}
+      >
+        {variant === "icon" ? "↪" : "Quote"}
       </button>
 
       {quoteOpen ? <div className="basis-full rounded-xl border border-zinc-800 bg-black/30 p-3">
