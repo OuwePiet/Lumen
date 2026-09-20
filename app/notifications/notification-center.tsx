@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useMemo, useState } from "react"
-import { AtSign, Badge, Check, CheckCircle2, ChevronsRight, CircleDot, Gem, MessageSquare, RefreshCw, Repeat2, ShieldOff, Smile, UserRound } from "lucide-react"
+import { AtSign, Badge, Check, CheckCircle2, ChevronsRight, CircleDot, Gem, Link2, MessageSquare, RefreshCw, Repeat2, ShieldOff, Smile, UserRound } from "lucide-react"
 import { restoreIdentitySession, VIA_IDENTITY_EVENT, type ViaIdentitySession } from "../deso-identity-session"
 import type { ViaLanguage } from "../via-local-settings"
 import SponsorPlatform from "../sponsor-platform"
@@ -358,6 +358,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
   const [expandedKey, setExpandedKey] = useState<string | null>(null)
   const [postCache, setPostCache] = useState<Record<string, PublicPost | null>>({})
   const [replyingTo, setReplyingTo] = useState<string | null>(null)
+  const [copiedPost, setCopiedPost] = useState<string | null>(null)
 
   useEffect(() => {
     const current = restoreIdentitySession()
@@ -568,6 +569,21 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
                     <RepostButton postHash={post.postHash} initialCount={0} variant="icon" />
                     <LikeButton postHash={post.postHash} initialCount={post.likeCount} variant="icon" />
                     <DiamondButton postHash={post.postHash} receiverPublicKey={post.publicKey} initialCount={post.diamondCount} variant="icon" />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const url = `${window.location.origin}/social?post=${encodeURIComponent(post.postHash)}`
+                        void navigator.clipboard?.writeText(url).then(() => {
+                          setCopiedPost(post.postHash)
+                          window.setTimeout(() => setCopiedPost((current) => current === post.postHash ? null : current), 1400)
+                        }).catch(() => {})
+                      }}
+                      title={copiedPost === post.postHash ? "Link copied" : "Copy link"}
+                      aria-label={copiedPost === post.postHash ? "Link copied" : "Copy link"}
+                      className={`grid h-9 w-9 place-items-center rounded-full border text-xs transition ${copiedPost === post.postHash ? "border-[#1687ff] bg-[#1687ff] text-white" : "border-zinc-800 text-zinc-300 hover:border-[#1687ff] hover:text-white"}`}
+                    >
+                      {copiedPost === post.postHash ? <Check className="h-4 w-4" /> : <Link2 className="h-4 w-4" />}
+                    </button>
                   </div>
                   {replyingTo === post.postHash ? <div className="mt-3"><PostComposer parentStakeID={post.postHash} compact onDone={() => setReplyingTo(null)} /></div> : null}
                 </> : <p className="text-xs text-zinc-500">Post unavailable.</p>}
