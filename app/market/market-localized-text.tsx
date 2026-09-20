@@ -29,7 +29,7 @@ type Copy = {
   pendingOnDeSo: string
 }
 
-const copy: Record<ViaLanguage, Copy> = {
+const copy: Record<ViaLanguage | "Hindi", Copy> = {
   Dutch: {
     marketplace: "VIA Marketplace",
     heading: "Markt",
@@ -129,6 +129,16 @@ const copy: Record<ViaLanguage, Copy> = {
     pendingEditions: "ediciones pendientes",
     noTransfers: "No se encontraron transferencias NFT pendientes para esta cuenta.",
     pendingOnDeSo: "pendiente en DeSo",
+  },
+  Hindi: {
+    marketplace: "VIA Marketplace", heading: "बाज़ार",
+    intro: "एक DeSo खाते की बोलियाँ, सक्रिय लिस्टिंग और लंबित ट्रांसफ़र देखें। लेनदेन की कार्रवाइयाँ NFT विवरण पृष्ठ पर रहती हैं, जहाँ VIA पूरी पुष्टि प्रक्रिया बनाए रखता है।",
+    collection: "संग्रह", receivedBids: "प्राप्त बोलियाँ", myBids: "मेरी बोलियाँ", listings: "लिस्टिंग", transfers: "ट्रांसफ़र",
+    chooseAccount: "DeSo खाता चुनें", readOnly: "यह केवल पढ़ने के लिए बाज़ार खोज है। VIA इस फ़ॉर्म से हस्ताक्षर या खर्च नहीं करता।",
+    placeholder: "DeSo सार्वजनिक कुंजी (BC1…)", openMarket: "बाज़ार खोलें", loadError: "VIA अभी इस DeSo खाते की बाज़ार स्थिति लोड नहीं कर सका।",
+    listedEdition: "सूचीबद्ध संस्करण", listedEditions: "सूचीबद्ध संस्करण", noForSale: "अभी कोई NFT संस्करण बिक्री के लिए नहीं है।",
+    edition: "संस्करण", buyNow: "अभी खरीदें", minBid: "न्यूनतम बोली", pendingEdition: "लंबित संस्करण", pendingEditions: "लंबित संस्करण",
+    noTransfers: "इस खाते के लिए कोई लंबित NFT ट्रांसफ़र नहीं मिला।", pendingOnDeSo: "DeSo पर लंबित",
   },
   Chinese: {
     marketplace: "VIA Marketplace",
