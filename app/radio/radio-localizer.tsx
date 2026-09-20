@@ -79,12 +79,32 @@ const chinese: Copy = {
   "Station site": "电台网站"
 }
 
-const dictionaries: Record<ViaLanguage, Copy> = {
+const hindi: Copy = {
+  "Back to VIA": "VIA पर वापस जाएँ",
+  "World Radio": "विश्व रेडियो",
+  "Listen around the world.": "दुनिया भर के रेडियो सुनें।",
+  "Country": "देश",
+  "Country, e.g. Netherlands": "देश, जैसे भारत",
+  "Genre or tag": "शैली या टैग",
+  "Genre/tag, e.g. jazz": "शैली/टैग, जैसे जैज़",
+  "Searching…": "खोज जारी है…",
+  "Find stations": "स्टेशन खोजें",
+  "Show search": "खोज दिखाएँ",
+  "No saved favorite stations yet.": "अभी कोई पसंदीदा स्टेशन सहेजा नहीं गया है।",
+  "Unknown country": "अज्ञात देश",
+  "Play": "चलाएँ",
+  "★ Favorite": "★ पसंदीदा",
+  "☆ Favorite": "☆ पसंदीदा",
+  "Station site": "स्टेशन वेबसाइट"
+}
+
+const dictionaries: Record<ViaLanguage | "Hindi", Copy> = {
   English: {},
   Dutch: dutch,
   French: french,
   Spanish: spanish,
   Chinese: chinese,
+  Hindi: hindi,
 }
 
 const reverse = new Map<string, string>()
@@ -92,24 +112,25 @@ for (const dictionary of Object.values(dictionaries)) {
   for (const [english, localized] of Object.entries(dictionary)) reverse.set(localized, english)
 }
 
-function translateText(value: string, language: ViaLanguage) {
+function translateText(value: string, language: ViaLanguage | "Hindi") {
   const canonical = reverse.get(value) ?? value
   const direct = dictionaries[language][canonical]
   if (direct) return direct
   const favorites = canonical.match(/^Favorites \((\d+)\)$/)
   if (favorites && language !== "English") {
-    const label: Record<Exclude<ViaLanguage, "English">, string> = {
+    const label: Record<Exclude<ViaLanguage | "Hindi", "English">, string> = {
       Dutch: "Favorieten",
       French: "Favoris",
       Spanish: "Favoritas",
       Chinese: "收藏",
+      Hindi: "पसंदीदा",
     }
     return `${label[language]} (${favorites[1]})`
   }
   return canonical
 }
 
-function apply(root: HTMLElement, language: ViaLanguage) {
+function apply(root: HTMLElement, language: ViaLanguage | "Hindi") {
   const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT)
   let node = walker.nextNode()
   while (node) {
