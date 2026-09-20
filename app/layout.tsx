@@ -4,6 +4,7 @@ import './global.css'
 import './visitor-account-access.css'
 import RadioLocalizer from './radio/radio-localizer'
 import ViaGlobalRadio from './via-global-radio'
+import ViaHelpButton from './via-help-button'
 import ViaPublicAccountGuard from './via-public-account-guard'
 import ViaSiteHeader from './via-site-header'
 import WalletLocalizer from './wallet/wallet-localizer'
@@ -107,6 +108,7 @@ export default function RootLayout({
         <WalletLocalizer />
         <RadioLocalizer />
         <ViaGlobalRadio />
+        <ViaHelpButton />
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
     </html>
