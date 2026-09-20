@@ -8,6 +8,7 @@ import SponsorPlatform from "../sponsor-platform"
 import LikeButton from "../social/like-button"
 import PostComposer from "../social/post-composer"
 import RepostButton from "../social/repost-button"
+import DiamondButton from "../social/diamond-button"
 
 type NotificationItem = {
   Index?: number
@@ -38,6 +39,7 @@ type PublicPost = {
   body: string
   imageUrls: string[]
   likeCount: number
+  diamondCount: number
 }
 
 type PostResponse = {
@@ -565,6 +567,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
                     </button>
                     <RepostButton postHash={post.postHash} initialCount={0} variant="icon" />
                     <LikeButton postHash={post.postHash} initialCount={post.likeCount} variant="icon" />
+                    <DiamondButton postHash={post.postHash} receiverPublicKey={post.publicKey} initialCount={post.diamondCount} variant="icon" />
                   </div>
                   {replyingTo === post.postHash ? <div className="mt-3"><PostComposer parentStakeID={post.postHash} compact onDone={() => setReplyingTo(null)} /></div> : null}
                 </> : <p className="text-xs text-zinc-500">Post unavailable.</p>}
