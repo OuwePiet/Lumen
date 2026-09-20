@@ -500,13 +500,13 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
           <button type="button" disabled title="Filter out bots" aria-label="Filter out bots" className="grid h-9 w-9 place-items-center rounded-full border border-[#9b9b9b] bg-[#9b9b9b] text-white opacity-70 disabled:cursor-not-allowed">
             <ShieldOff className="h-4 w-4" />
           </button>
-          <button type="button" onClick={() => setActiveCategories(allCategoriesActive ? [] : filterCategoryIds)} title="Select All" aria-label="Select All" aria-pressed={allCategoriesActive} className={`grid h-9 w-9 place-items-center rounded-full border text-white transition ${allCategoriesActive ? "border-[#1687ff] bg-[#1687ff]" : "border-[#9b9b9b] bg-[#9b9b9b]"}`}>
+          <button type="button" onClick={() => setActiveCategories(allCategoriesActive ? [] : filterCategoryIds)} title="Select All" aria-label="Select All" aria-pressed={allCategoriesActive} className={`grid h-9 w-9 place-items-center rounded-full border text-white transition ${allCategoriesActive ? "border-[#8fd4a9] bg-[#285f40]" : "border-[#9b9b9b] bg-[#9b9b9b]"}`}>
             <CheckCircle2 className="h-4 w-4" />
           </button>
-          <button type="button" onClick={() => setRefreshToken((value) => value + 1)} disabled={status === "loading"} title={copy.refresh} aria-label={copy.refresh} className="grid h-9 w-9 place-items-center rounded-full border border-[#1687ff] bg-[#1687ff] text-white transition disabled:cursor-wait disabled:opacity-60">
+          <button type="button" onClick={() => setRefreshToken((value) => value + 1)} disabled={status === "loading"} title={copy.refresh} aria-label={copy.refresh} className="grid h-9 w-9 place-items-center rounded-full border border-[#8fd4a9] bg-[#285f40] text-white transition disabled:cursor-wait disabled:opacity-60">
             <RefreshCw className={`h-4 w-4 ${status === "loading" ? "animate-spin" : ""}`} />
           </button>
-          <button type="button" onClick={() => setExpandedView((value) => !value)} title="Expand View" aria-label="Expand View" aria-pressed={expandedView} className={`grid h-9 w-9 place-items-center rounded-full border text-white transition ${expandedView ? "border-[#1687ff] bg-[#1687ff]" : "border-[#9b9b9b] bg-[#9b9b9b]"}`}>
+          <button type="button" onClick={() => setExpandedView((value) => !value)} title="Expand View" aria-label="Expand View" aria-pressed={expandedView} className={`grid h-9 w-9 place-items-center rounded-full border text-white transition ${expandedView ? "border-[#8fd4a9] bg-[#285f40]" : "border-[#9b9b9b] bg-[#9b9b9b]"}`}>
             <ChevronsRight className="h-4 w-4" />
           </button>
         </div>
@@ -517,7 +517,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
           {categories.map((option) => {
             const active = option.id === "all" ? allCategoriesActive : activeCategories.includes(option.id)
             const count = option.id === "all" ? items.length : items.filter((item) => categoryOf(item) === option.id).length
-            return <button key={option.id} type="button" aria-pressed={active} onClick={() => toggleCategory(option.id)} title={option.label} className={`inline-flex min-h-10 items-center gap-2 rounded-full border px-3 text-xs font-semibold transition ${active ? "border-[#1687ff] bg-[#1687ff] text-white shadow-[0_0_0_1px_rgba(22,135,255,0.2)]" : "border-[#9b9b9b] bg-[#9b9b9b] text-white hover:border-[#7f7f7f] hover:bg-[#7f7f7f]"}`}>
+            return <button key={option.id} type="button" aria-pressed={active} onClick={() => toggleCategory(option.id)} title={option.label} className={`inline-flex min-h-10 items-center gap-2 rounded-full border px-3 text-xs font-semibold transition ${active ? "border-[#8fd4a9] bg-[#285f40] text-white shadow-[0_0_0_1px_rgba(143,212,169,0.18)]" : "border-[#9b9b9b] bg-[#9b9b9b] text-white hover:border-[#7f7f7f] hover:bg-[#7f7f7f]"}`}>
               <span aria-hidden="true" className="grid h-5 min-w-5 place-items-center text-sm"><CategoryIcon category={option.id} /></span>
               <span>{option.label}</span>
               <span className="rounded-full bg-white/5 px-1.5 py-0.5 text-[10px] text-zinc-500">{count}</span>
@@ -548,7 +548,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
           const post = postHash ? postCache[postHash] : undefined
           return <article key={rowKey} className={`grid grid-cols-[42px_minmax(0,1fr)] gap-3 px-4 py-4 transition sm:grid-cols-[46px_minmax(0,1fr)_auto] sm:px-5 ${unread ? "bg-[#0b1510]/70" : "bg-black/10"}`}>
             <div className="relative h-10 w-10 sm:h-11 sm:w-11">
-              {profile.profilePic ? <img src={profile.profilePic} alt="" referrerPolicy="no-referrer" className="h-full w-full rounded-full border border-zinc-700 object-cover" /> : <div aria-hidden="true" className={`grid h-full w-full place-items-center rounded-full border text-base font-bold ${unread ? "border-[#1687ff] bg-[#1687ff] text-white" : "border-[#8e8e8e] bg-[#8e8e8e] text-white"}`}><CategoryIcon category={itemCategory} className="h-5 w-5" /></div>}
+              {profile.profilePic ? <img src={profile.profilePic} alt="" referrerPolicy="no-referrer" className="h-full w-full rounded-full border border-zinc-700 object-cover" /> : <div aria-hidden="true" className={`grid h-full w-full place-items-center rounded-full border text-base font-bold ${unread ? "border-[#8fd4a9] bg-[#285f40] text-white" : "border-[#8e8e8e] bg-[#8e8e8e] text-white"}`}><CategoryIcon category={itemCategory} className="h-5 w-5" /></div>}
               <span aria-hidden="true" className="absolute -bottom-1 -right-1 grid h-5 w-5 place-items-center rounded-full border border-zinc-700 bg-black text-white"><CategoryIcon category={itemCategory} className="h-3 w-3" /></span>
             </div>
             <div className="min-w-0">
@@ -558,7 +558,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
                 {unread ? <span className="rounded-full border border-[#285f40] px-2 py-0.5 text-[10px] text-[#9adbb2]">{copy.fresh}</span> : null}
               </div>
               <p className="mt-1 text-sm leading-5 text-zinc-400">{copy.descriptions[itemCategory](actor)}</p>
-              {destination ? <button type="button" onClick={() => void toggleExpanded(item, rowKey)} className="mt-2 inline-flex rounded-full border border-zinc-700 px-2.5 py-1 text-[11px] text-zinc-300 transition hover:border-[#1687ff] hover:text-white">{expanded ? "Close" : copy.open}</button> : null}
+              {destination ? <button type="button" onClick={() => void toggleExpanded(item, rowKey)} className="mt-2 inline-flex rounded-full border border-zinc-700 px-2.5 py-1 text-[11px] text-zinc-300 transition hover:border-[#8fd4a9] hover:text-white">{expanded ? "Close" : copy.open}</button> : null}
               {expanded && postHash ? <div className="mt-3 rounded-xl border border-zinc-800 bg-black/25 p-3">
                 {post === undefined ? <p className="text-xs text-zinc-500">{copy.loading}</p> : post ? <>
                   <p className="text-xs font-semibold text-zinc-300">@{post.username?.replace(/^@/, "") || shortKey(post.publicKey, copy.actor)}</p>
@@ -571,7 +571,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
                       title="Reply"
                       aria-label="Reply"
                       aria-pressed={replyingTo === post.postHash}
-                      className={`inline-flex h-9 min-w-9 items-center justify-center rounded-full border px-2 text-xs transition ${replyingTo === post.postHash ? "border-[#1687ff] bg-[#1687ff] text-white" : "border-zinc-800 text-zinc-300 hover:border-[#1687ff] hover:text-white"}`}
+                      className={`inline-flex h-9 min-w-9 items-center justify-center rounded-full border px-2 text-xs transition ${replyingTo === post.postHash ? "border-[#8fd4a9] bg-[#285f40] text-white" : "border-zinc-800 text-zinc-300 hover:border-[#8fd4a9] hover:text-white"}`}
                     >
                       <MessageSquare className="h-4 w-4" />
                     </button>
@@ -599,7 +599,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
                       }}
                       title={copiedPost === post.postHash ? "Link copied" : "Copy link"}
                       aria-label={copiedPost === post.postHash ? "Link copied" : "Copy link"}
-                      className={`grid h-9 w-9 place-items-center rounded-full border text-xs transition ${copiedPost === post.postHash ? "border-[#1687ff] bg-[#1687ff] text-white" : "border-zinc-800 text-zinc-300 hover:border-[#1687ff] hover:text-white"}`}
+                      className={`grid h-9 w-9 place-items-center rounded-full border text-xs transition ${copiedPost === post.postHash ? "border-[#8fd4a9] bg-[#285f40] text-white" : "border-zinc-800 text-zinc-300 hover:border-[#8fd4a9] hover:text-white"}`}
                     >
                       {copiedPost === post.postHash ? <Check className="h-4 w-4" /> : <Link2 className="h-4 w-4" />}
                     </button>
@@ -609,7 +609,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
                 </> : <p className="text-xs text-zinc-500">Post unavailable.</p>}
               </div> : expanded && destination ? <div className="mt-3 rounded-xl border border-zinc-800 bg-black/25 p-3 text-xs text-zinc-500">{destination}</div> : null}
             </div>
-            {destination ? <button type="button" onClick={() => void toggleExpanded(item, rowKey)} className="hidden self-center rounded-full border border-zinc-700 px-3 py-1.5 text-xs text-zinc-300 transition hover:border-[#1687ff] hover:text-white sm:inline-flex">{expanded ? "Close" : copy.open}</button> : null}
+            {destination ? <button type="button" onClick={() => void toggleExpanded(item, rowKey)} className="hidden self-center rounded-full border border-zinc-700 px-3 py-1.5 text-xs text-zinc-300 transition hover:border-[#8fd4a9] hover:text-white sm:inline-flex">{expanded ? "Close" : copy.open}</button> : null}
           </article>
         })}
       </div>
