@@ -42,15 +42,17 @@ async function readCount(from: Date, to: Date) {
 
 export async function GET() {
   const now = new Date()
+  const dayStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()))
   const monthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1))
   const yearStart = new Date(Date.UTC(now.getUTCFullYear(), 0, 1))
 
-  const [month, year] = await Promise.all([
+  const [today, month, year] = await Promise.all([
+    readCount(dayStart, now),
     readCount(monthStart, now),
     readCount(yearStart, now),
   ])
 
-  if (month === null || year === null) {
+  if (today === null || month === null || year === null) {
     return NextResponse.json({
       ok: false,
       source: "vercel-web-analytics",
@@ -64,6 +66,7 @@ export async function GET() {
     privacy: "aggregated",
     measuredAt: now.toISOString(),
     visitors: {
+      today,
       month,
       year,
     },
