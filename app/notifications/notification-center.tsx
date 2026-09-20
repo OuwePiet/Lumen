@@ -357,10 +357,11 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
         })
         const data = await response.json() as NotificationResponse
         if (!response.ok || !data.ok || !Array.isArray(data.notifications)) throw new Error(data.error || "NOTIFICATIONS_FAILED")
-        setItems(data.notifications)
+        const ordered = [...data.notifications].sort((a, b) => (b.Index ?? -1) - (a.Index ?? -1))
+        setItems(ordered)
         setLastSeenIndex(typeof data.lastSeenIndex === "number" ? data.lastSeenIndex : null)
         setStatus("ready")
-        setMessageKey(data.notifications.length ? "loaded" : "empty")
+        setMessageKey(ordered.length ? "loaded" : "empty")
       } catch (error) {
         if (error instanceof DOMException && error.name === "AbortError") return
         setItems([])
