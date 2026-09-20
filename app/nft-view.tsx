@@ -221,7 +221,8 @@ const styles = {
   },
   mediaFrame: {
     aspectRatio: "1 / 1",
-    background: "#090d0b",
+    background: "rgba(9,13,11,.78)",
+    backdropFilter: "blur(4px)",
     justifySelf: "center",
     maxWidth: "440px",
     width: "100%",
@@ -245,7 +246,8 @@ const styles = {
     background: "#070b09",
   },
   card: {
-    background: "rgba(9,13,11,.72)",
+    background: "rgba(9,13,11,.64)",
+    backdropFilter: "blur(8px)",
     border: "1px solid rgba(63,74,68,.72)",
     borderRadius: "14px",
     padding: "20px",
@@ -296,7 +298,7 @@ const styles = {
     margin: 0,
   },
   fact: {
-    background: "#070b09",
+    background: "rgba(7,11,9,.76)",
     border: "1px solid rgba(63,74,68,.45)",
     borderRadius: "11px",
     padding: "13px",
@@ -335,7 +337,7 @@ const styles = {
   ownershipPanel: {
     marginTop: "18px",
     padding: "16px",
-    background: "#070b09",
+    background: "rgba(7,11,9,.76)",
     border: "1px solid rgba(143,212,169,.22)",
     borderRadius: "12px",
   },
