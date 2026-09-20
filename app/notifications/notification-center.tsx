@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react"
 import { ArrowUpRight, AtSign, Badge, Check, CheckCircle2, ChevronsRight, CircleDot, Gem, Link2, MessageSquare, RefreshCw, Repeat2, ShieldCheck, ShieldOff, Smile, UserRound } from "lucide-react"
+
+const QUALITY_SHIELD_STORAGE_KEY = "via:notifications:quality-shield"
 import { restoreIdentitySession, VIA_IDENTITY_EVENT, type ViaIdentitySession } from "../deso-identity-session"
 import type { ViaLanguage } from "../via-local-settings"
 import LikeButton from "../social/like-button"
@@ -366,6 +368,12 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
   const [copiedPost, setCopiedPost] = useState<string | null>(null)
 
   useEffect(() => {
+    try {
+      setQualityShield(window.localStorage.getItem(QUALITY_SHIELD_STORAGE_KEY) === "on")
+    } catch {}
+  }, [])
+
+  useEffect(() => {
     const current = restoreIdentitySession()
     setSession(current)
     const onSession = (event: Event) => setSession((event as CustomEvent<ViaIdentitySession | null>).detail ?? restoreIdentitySession())
@@ -537,7 +545,13 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
         <div className="flex flex-wrap items-center gap-2">
           <button
             type="button"
-            onClick={() => setQualityShield((value) => !value)}
+            onClick={() => setQualityShield((value) => {
+              const next = !value
+              try {
+                window.localStorage.setItem(QUALITY_SHIELD_STORAGE_KEY, next ? "on" : "off")
+              } catch {}
+              return next
+            })}
             title={qualityShield ? `Quality Shield on · ${shieldHiddenCount} hidden` : "Quality Shield off"}
             aria-label={qualityShield ? `Quality Shield on · ${shieldHiddenCount} hidden` : "Quality Shield off"}
             aria-pressed={qualityShield}
