@@ -586,6 +586,14 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
       setActiveCategories(allCategoriesActive ? [] : filterCategoryIds)
       return
     }
+    if (id === "diamond1" || id === "diamondMany") {
+      setActiveCategories((current) => {
+        const bothActive = current.includes("diamond1") && current.includes("diamondMany")
+        if (bothActive) return current.filter((value) => value !== "diamond1" && value !== "diamondMany")
+        return filterCategoryIds.filter((value) => current.includes(value) || value === "diamond1" || value === "diamondMany")
+      })
+      return
+    }
     setActiveCategories((current) => current.includes(id) ? current.filter((value) => value !== id) : [...current, id])
   }
   const message = messageKey === "loading" ? copy.loadingNotifications
