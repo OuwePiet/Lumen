@@ -718,10 +718,10 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
           {categories.filter((option) => option.id !== "diamondMany").map((option) => {
             const active = option.id === "all" ? allCategoriesActive : option.id === "diamond1" ? activeCategories.includes("diamond1") && activeCategories.includes("diamondMany") : activeCategories.includes(option.id)
             const count = option.id === "all" ? items.length : option.id === "diamond1" ? items.filter((item) => categoryOf(item) === "diamond1" || categoryOf(item) === "diamondMany").length : items.filter((item) => categoryOf(item) === option.id).length
-            return <button key={option.id} type="button" aria-pressed={active} onClick={() => toggleCategory(option.id)} title={option.label} aria-label={`${option.label} · ${count}`} className={`inline-flex min-h-9 shrink-0 items-center gap-2 rounded-lg border px-3 py-1.5 text-xs font-semibold transition ${active ? "border-[#8fd4a9]/65 bg-[#132b1e] text-[#dff7e7] shadow-[0_0_12px_rgba(143,212,169,0.06)]" : "border-zinc-700 bg-zinc-950 text-zinc-400 hover:border-[#8fd4a9]/55 hover:bg-[#0b1710] hover:text-white"}`}>
-              <span aria-hidden="true" className="grid h-5 w-5 shrink-0 place-items-center text-sm"><CategoryIcon category={option.id} /></span>
+            return <button key={option.id} type="button" aria-pressed={active} onClick={() => toggleCategory(option.id)} title={option.label} aria-label={`${option.label} · ${count}`} className={`inline-flex min-h-8 shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-medium transition ${active ? "border-[#8fd4a9]/45 bg-[#0b1710] text-[#c8ead4]" : "border-zinc-800 bg-black/30 text-zinc-500 hover:border-[#8fd4a9]/40 hover:text-zinc-200"}`}>
+              <span aria-hidden="true" className="grid h-4 w-4 shrink-0 place-items-center text-[12px]"><CategoryIcon category={option.id} /></span>
               <span>{option.id === "diamond1" ? (language === "Dutch" ? "Diamanten" : language === "French" ? "Diamants" : language === "Spanish" ? "Diamantes" : language === "Chinese" ? "钻石" : language === "Hindi" ? "Diamonds" : "Diamonds") : option.label}</span>
-              {count > 0 ? <span aria-hidden="true" className="grid min-h-5 min-w-5 place-items-center rounded-full border border-[#8fd4a9]/25 bg-[#8fd4a9]/15 px-1.5 text-[10px] font-bold leading-none text-[#bfe8ce]">{count}</span> : null}
+              {count > 0 ? <span aria-hidden="true" className="grid min-h-4 min-w-4 place-items-center rounded-full bg-white/5 px-1 text-[9px] font-semibold leading-none text-zinc-400">{count}</span> : null}
             </button>
           })}
         </div>
