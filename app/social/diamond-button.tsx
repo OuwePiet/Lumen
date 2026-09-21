@@ -2,9 +2,11 @@
 
 import { useEffect, useRef, useState } from "react"
 import { DESO_IDENTITY_ORIGIN, restoreIdentitySession } from "../deso-identity-session"
+import { fetchViaRates, isViaRateStale } from "../via-live-rates"
 
 type Props = { postHash: string; receiverPublicKey: string; initialCount: number; variant?: "default" | "icon" }
 type PrepareResponse = { ok?: boolean; transactionHex?: string; feeNanos?: number | null; spendAmountNanos?: number | null; error?: string }
+type DiamondLevelsResponse = { ok?: boolean; diamondLevelMap?: Record<string, number> }
 
 function signedTransactionFromMessage(event: MessageEvent, source: Window | null) {
   if (event.origin !== DESO_IDENTITY_ORIGIN || event.source !== source) return null
@@ -25,8 +27,31 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
   const [message, setMessage] = useState("")
   const [feeNanos, setFeeNanos] = useState<number | null>(null)
   const [spendNanos, setSpendNanos] = useState<number | null>(null)
+  const [diamondValues, setDiamondValues] = useState<Array<{ level: number; usd: number }> | null>(null)
   const popupRef = useRef<Window | null>(null)
   const popupWatch = useRef<number | null>(null)
+
+  useEffect(() => {
+    if (!confirmValue || diamondValues) return
+    const controller = new AbortController()
+    Promise.all([
+      fetch("/api/via/social/diamond", { method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store", body: JSON.stringify({ action: "levels" }), signal: controller.signal }).then(async (response) => {
+        const data = await response.json() as DiamondLevelsResponse
+        if (!response.ok || !data.ok || !data.diamondLevelMap) throw new Error("DIAMOND_LEVELS_UNAVAILABLE")
+        return data.diamondLevelMap
+      }),
+      fetchViaRates(controller.signal),
+    ]).then(([levelMap, rates]) => {
+      const usdRate = rates.rates?.USD
+      if (typeof usdRate !== "number" || !Number.isFinite(usdRate) || isViaRateStale(rates.checkedAt)) throw new Error("RATE_UNAVAILABLE")
+      const values = Object.entries(levelMap)
+        .map(([key, nanos]) => ({ level: Number(key), usd: (nanos / 1_000_000_000) * usdRate }))
+        .filter((entry) => Number.isInteger(entry.level) && entry.level >= 1 && entry.level <= 8 && Number.isFinite(entry.usd))
+        .sort((a, b) => a.level - b.level)
+      if (values.length) setDiamondValues(values)
+    }).catch(() => setDiamondValues(null))
+    return () => controller.abort()
+  }, [confirmValue, diamondValues])
 
   useEffect(() => {
     async function onMessage(event: MessageEvent) {
@@ -91,10 +116,15 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
         <span aria-hidden="true">◇</span><span>{count}</span>
       </button>
       {confirmValue ? <>
-        <select aria-label="Diamond level" value={level} onChange={(e) => { setLevel(Number(e.target.value)); setConfirmValue(true) }} className="h-9 rounded-full border border-zinc-800 bg-black px-2 text-xs text-zinc-300">
-          {[1,2,3,4,5,6].map((value) => <option key={value} value={value}>Level {value}</option>)}
-        </select>
-        <button type="button" onClick={prepare} disabled={status === "preparing" || status === "approval" || status === "submitting"} className="h-9 rounded-full border border-amber-700/70 px-3 text-xs text-amber-300 disabled:border-zinc-800 disabled:text-zinc-600">
+        <div className="flex max-w-full flex-wrap items-center gap-1.5" aria-label="Diamond value">
+          {(diamondValues ?? Array.from({ length: 8 }, (_, index) => ({ level: index + 1, usd: NaN }))).map((entry) => (
+            <button key={entry.level} type="button" onClick={() => setLevel(entry.level)} aria-pressed={level === entry.level} className={`min-w-[3.35rem] rounded-xl border px-2 py-1 text-center text-[10px] transition ${level === entry.level ? "border-[#8fd4a9] bg-[#285f40] text-white" : "border-zinc-800 text-zinc-400 hover:border-[#8fd4a9] hover:text-white"}`}>
+              <span className="block text-sm" aria-hidden="true">💎</span>
+              <span className="block">{Number.isFinite(entry.usd) ? `${entry.usd < 0.01 ? entry.usd.toFixed(3) : entry.usd < 1 ? entry.usd.toFixed(2) : entry.usd.toLocaleString(undefined, { maximumFractionDigits: 2 })}` : "…"}</span>
+            </button>
+          ))}
+        </div>
+        <button type="button" onClick={prepare} disabled={status === "preparing" || status === "approval" || status === "submitting" || !diamondValues} className="h-9 rounded-full border border-amber-700/70 px-3 text-xs text-amber-300 disabled:border-zinc-800 disabled:text-zinc-600">
           {status === "preparing" ? "Preparing…" : status === "approval" ? "Review…" : status === "submitting" ? "Submitting…" : "Send"}
         </button>
       </> : null}
