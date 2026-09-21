@@ -29,6 +29,28 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
   const popupWatch = useRef<number | null>(null)
 
   useEffect(() => {
+    if (!confirmValue || diamondValues) return
+    const controller = new AbortController()
+    Promise.all([
+      fetch("/api/via/social/diamond", { method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store", body: JSON.stringify({ action: "levels" }), signal: controller.signal }).then(async (response) => {
+        const data = await response.json() as DiamondLevelsResponse
+        if (!response.ok || !data.ok || !data.diamondLevelMap) throw new Error("DIAMOND_LEVELS_UNAVAILABLE")
+        return data.diamondLevelMap
+      }),
+      fetchViaRates(controller.signal),
+    ]).then(([levelMap, rates]) => {
+      const usdRate = rates.rates?.USD
+      if (typeof usdRate !== "number" || !Number.isFinite(usdRate) || isViaRateStale(rates.checkedAt)) throw new Error("RATE_UNAVAILABLE")
+      const values = Object.entries(levelMap)
+        .map(([key, nanos]) => ({ level: Number(key), usd: (nanos / 1_000_000_000) * usdRate }))
+        .filter((entry) => Number.isInteger(entry.level) && entry.level >= 1 && entry.level <= 8 && Number.isFinite(entry.usd))
+        .sort((a, b) => a.level - b.level)
+      if (values.length) setDiamondValues(values)
+    }).catch(() => setDiamondValues(null))
+    return () => controller.abort()
+  }, [confirmValue, diamondValues])
+
+  useEffect(() => {
     async function onMessage(event: MessageEvent) {
       const signedTransactionHex = signedTransactionFromMessage(event, popupRef.current)
       if (!signedTransactionHex) return
