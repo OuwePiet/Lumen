@@ -85,6 +85,7 @@ type Copy = {
   close: string
   selectAll: string
   expandView: string
+  replyAction: string
   fresh: string
   actor: string
   descriptions: Record<Exclude<Category, "all">, (actor: string) => string>
@@ -109,6 +110,7 @@ const COPY: Record<ViaLanguage | "Hindi", Copy> = {
     close: "Sluiten",
     selectAll: "Alles selecteren",
     expandView: "Uitgebreide weergave",
+    replyAction: "Antwoorden",
     fresh: "Nieuw",
     actor: "DeSo-account",
     descriptions: {
@@ -143,6 +145,7 @@ const COPY: Record<ViaLanguage | "Hindi", Copy> = {
     close: "Close",
     selectAll: "Select All",
     expandView: "Expand View",
+    replyAction: "Reply",
     fresh: "New",
     actor: "DeSo account",
     descriptions: {
@@ -177,6 +180,7 @@ const COPY: Record<ViaLanguage | "Hindi", Copy> = {
     close: "Fermer",
     selectAll: "Tout sélectionner",
     expandView: "Vue étendue",
+    replyAction: "Répondre",
     fresh: "Nouveau",
     actor: "Compte DeSo",
     descriptions: {
@@ -211,6 +215,7 @@ const COPY: Record<ViaLanguage | "Hindi", Copy> = {
     close: "Cerrar",
     selectAll: "Seleccionar todo",
     expandView: "Vista ampliada",
+    replyAction: "Responder",
     fresh: "Nuevo",
     actor: "Cuenta DeSo",
     descriptions: {
@@ -233,7 +238,7 @@ const COPY: Record<ViaLanguage | "Hindi", Copy> = {
     heading: "आपके खाते तक क्या पहुँचा?", active: "सक्रिय खाता", refresh: "रीफ़्रेश", refreshing: "रीफ़्रेश हो रहा है…",
     loadingNotifications: "सूचनाएँ लोड हो रही हैं…", recentLoaded: (count) => `${count} हाल की सूचनाएँ लोड हुईं।`,
     noRecent: "कोई हाल की सूचना नहीं।", unavailable: "सूचनाएँ अस्थायी रूप से उपलब्ध नहीं हैं।", filters: "सूचना फ़िल्टर",
-    loading: "लोड हो रहा है…", nothing: "इस फ़िल्टर में कुछ नहीं है।", open: "खोलें", close: "बंद करें", selectAll: "सभी चुनें", expandView: "विस्तृत दृश्य", fresh: "नया", actor: "DeSo खाता",
+    loading: "लोड हो रहा है…", nothing: "इस फ़िल्टर में कुछ नहीं है।", open: "खोलें", close: "बंद करें", selectAll: "सभी चुनें", expandView: "विस्तृत दृश्य", replyAction: "जवाब दें", fresh: "नया", actor: "DeSo खाता",
     descriptions: {
       reaction: (actor) => `${actor} ने आपकी एक पोस्ट पर प्रतिक्रिया दी।`,
       diamond1: (actor) => `${actor} ने 1 Diamond भेजा।`,
@@ -266,6 +271,7 @@ const COPY: Record<ViaLanguage | "Hindi", Copy> = {
     close: "关闭",
     selectAll: "全选",
     expandView: "展开视图",
+    replyAction: "回复",
     fresh: "新",
     actor: "DeSo 账户",
     descriptions: {
@@ -667,8 +673,8 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
                     <button
                       type="button"
                       onClick={() => setReplyingTo((current) => current === post.postHash ? null : post.postHash)}
-                      title="Reply"
-                      aria-label="Reply"
+                      title={copy.replyAction}
+                      aria-label={copy.replyAction}
                       aria-pressed={replyingTo === post.postHash}
                       className={`inline-flex h-9 min-w-9 items-center justify-center rounded-full border px-2 text-xs transition ${replyingTo === post.postHash ? "border-[#8fd4a9] bg-[#285f40] text-white" : "border-zinc-800 text-zinc-300 hover:border-[#8fd4a9] hover:text-white"}`}
                     >
