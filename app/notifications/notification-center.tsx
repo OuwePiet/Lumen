@@ -82,6 +82,7 @@ type Copy = {
   loading: string
   nothing: string
   open: string
+  close: string
   fresh: string
   actor: string
   descriptions: Record<Exclude<Category, "all">, (actor: string) => string>
@@ -103,6 +104,7 @@ const COPY: Record<ViaLanguage | "Hindi", Copy> = {
     loading: "Laden…",
     nothing: "Niets in dit filter.",
     open: "Openen",
+    close: "Sluiten",
     fresh: "Nieuw",
     actor: "DeSo-account",
     descriptions: {
@@ -134,6 +136,7 @@ const COPY: Record<ViaLanguage | "Hindi", Copy> = {
     loading: "Loading…",
     nothing: "Nothing in this filter.",
     open: "Open",
+    close: "Close",
     fresh: "New",
     actor: "DeSo account",
     descriptions: {
@@ -165,6 +168,7 @@ const COPY: Record<ViaLanguage | "Hindi", Copy> = {
     loading: "Chargement…",
     nothing: "Aucun élément dans ce filtre.",
     open: "Ouvrir",
+    close: "Fermer",
     fresh: "Nouveau",
     actor: "Compte DeSo",
     descriptions: {
@@ -196,6 +200,7 @@ const COPY: Record<ViaLanguage | "Hindi", Copy> = {
     loading: "Cargando…",
     nothing: "No hay nada en este filtro.",
     open: "Abrir",
+    close: "Cerrar",
     fresh: "Nuevo",
     actor: "Cuenta DeSo",
     descriptions: {
@@ -248,6 +253,7 @@ const COPY: Record<ViaLanguage | "Hindi", Copy> = {
     loading: "正在加载…",
     nothing: "此筛选中没有内容。",
     open: "打开",
+    close: "关闭",
     fresh: "新",
     actor: "DeSo 账户",
     descriptions: {
@@ -639,7 +645,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
                 {unread ? <span className="rounded-full border border-[#285f40] px-2 py-0.5 text-[10px] text-[#9adbb2]">{copy.fresh}</span> : null}
               </div>
               <p className="mt-1 text-sm leading-5 text-zinc-400">{copy.descriptions[itemCategory](actor)}</p>
-              {destination ? <button type="button" onClick={() => void toggleExpanded(item, rowKey)} className="mt-2 inline-flex rounded-full border border-zinc-700 px-2.5 py-1 text-[11px] text-zinc-300 transition hover:border-[#8fd4a9] hover:text-white">{expanded ? "Close" : copy.open}</button> : null}
+              {destination ? <button type="button" onClick={() => void toggleExpanded(item, rowKey)} className="mt-2 inline-flex rounded-full border border-zinc-700 px-2.5 py-1 text-[11px] text-zinc-300 transition hover:border-[#8fd4a9] hover:text-white">{expanded ? copy.close : copy.open}</button> : null}
               {expanded && postHash ? <div className="mt-3 rounded-xl border border-zinc-800 bg-black/25 p-3">
                 {post === undefined ? <p className="text-xs text-zinc-500">{copy.loading}</p> : post ? <>
                   <p className="text-xs font-semibold text-zinc-300">@{post.username?.replace(/^@/, "") || shortKey(post.publicKey, copy.actor)}</p>
@@ -690,7 +696,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
                 </> : <p className="text-xs text-zinc-500">Post unavailable.</p>}
               </div> : expanded && destination ? <div className="mt-3 rounded-xl border border-zinc-800 bg-black/25 p-3 text-xs text-zinc-500">{destination}</div> : null}
             </div>
-            {destination ? <button type="button" onClick={() => void toggleExpanded(item, rowKey)} className="hidden self-center rounded-full border border-zinc-700 px-3 py-1.5 text-xs text-zinc-300 transition hover:border-[#8fd4a9] hover:text-white sm:inline-flex">{expanded ? "Close" : copy.open}</button> : null}
+            {destination ? <button type="button" onClick={() => void toggleExpanded(item, rowKey)} className="hidden self-center rounded-full border border-zinc-700 px-3 py-1.5 text-xs text-zinc-300 transition hover:border-[#8fd4a9] hover:text-white sm:inline-flex">{expanded ? copy.close : copy.open}</button> : null}
           </article>
         })}
       </div>
