@@ -1,10 +1,11 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { ArrowUpRight, AtSign, Badge, Check, CheckCircle2, ChevronsRight, CircleDot, Gem, Link2, MessageSquare, RefreshCw, Repeat2, ShieldCheck, ShieldOff, Smile, UserRound } from "lucide-react"
 
 const QUALITY_SHIELD_STORAGE_KEY = "via:notifications:quality-shield"
-import { restoreIdentitySession, VIA_IDENTITY_EVENT, type ViaIdentitySession } from "../deso-identity-session"
+import { DESO_IDENTITY_ORIGIN, restoreIdentitySession, VIA_IDENTITY_EVENT, type ViaIdentitySession } from "../deso-identity-session"
+import { fetchViaRates, isViaRateStale } from "../via-live-rates"
 import type { ViaLanguage } from "../via-local-settings"
 import LikeButton from "../social/like-button"
 import PostComposer from "../social/post-composer"
@@ -89,6 +90,13 @@ type Copy = {
   copyLink: string
   linkCopied: string
   postUnavailable: string
+  rewardAction: string
+  rewardAmount: string
+  rewardSend: string
+  rewardRateUnavailable: string
+  rewardSending: string
+  rewardSent: string
+  rewardFailed: string
   fresh: string
   actor: string
   descriptions: Record<Exclude<Category, "all">, (actor: string) => string>
@@ -117,6 +125,7 @@ const COPY: Record<ViaLanguage | "Hindi", Copy> = {
     copyLink: "Link kopiëren",
     linkCopied: "Link gekopieerd",
     postUnavailable: "Bericht niet beschikbaar.",
+    rewardAction: "Beloning in $", rewardAmount: "Bedrag in USD", rewardSend: "Verstuur beloning", rewardRateUnavailable: "Actuele DESO/USD-koers niet beschikbaar.", rewardSending: "Beloning voorbereiden…", rewardSent: "Beloning verzonden.", rewardFailed: "Beloning niet verzonden.",
     fresh: "Nieuw",
     actor: "DeSo-account",
     descriptions: {
@@ -155,6 +164,7 @@ const COPY: Record<ViaLanguage | "Hindi", Copy> = {
     copyLink: "Copy link",
     linkCopied: "Link copied",
     postUnavailable: "Post unavailable.",
+    rewardAction: "Reward in $", rewardAmount: "Amount in USD", rewardSend: "Send reward", rewardRateUnavailable: "Current DESO/USD rate unavailable.", rewardSending: "Preparing reward…", rewardSent: "Reward sent.", rewardFailed: "Reward not sent.",
     fresh: "New",
     actor: "DeSo account",
     descriptions: {
@@ -193,6 +203,7 @@ const COPY: Record<ViaLanguage | "Hindi", Copy> = {
     copyLink: "Copier le lien",
     linkCopied: "Lien copié",
     postUnavailable: "Publication indisponible.",
+    rewardAction: "Récompense en $", rewardAmount: "Montant en USD", rewardSend: "Envoyer la récompense", rewardRateUnavailable: "Taux DESO/USD actuel indisponible.", rewardSending: "Préparation de la récompense…", rewardSent: "Récompense envoyée.", rewardFailed: "Récompense non envoyée.",
     fresh: "Nouveau",
     actor: "Compte DeSo",
     descriptions: {
@@ -231,6 +242,7 @@ const COPY: Record<ViaLanguage | "Hindi", Copy> = {
     copyLink: "Copiar enlace",
     linkCopied: "Enlace copiado",
     postUnavailable: "Publicación no disponible.",
+    rewardAction: "Recompensa en $", rewardAmount: "Importe en USD", rewardSend: "Enviar recompensa", rewardRateUnavailable: "Tipo DESO/USD actual no disponible.", rewardSending: "Preparando recompensa…", rewardSent: "Recompensa enviada.", rewardFailed: "Recompensa no enviada.",
     fresh: "Nuevo",
     actor: "Cuenta DeSo",
     descriptions: {
@@ -253,7 +265,8 @@ const COPY: Record<ViaLanguage | "Hindi", Copy> = {
     heading: "आपके खाते तक क्या पहुँचा?", active: "सक्रिय खाता", refresh: "रीफ़्रेश", refreshing: "रीफ़्रेश हो रहा है…",
     loadingNotifications: "सूचनाएँ लोड हो रही हैं…", recentLoaded: (count) => `${count} हाल की सूचनाएँ लोड हुईं।`,
     noRecent: "कोई हाल की सूचना नहीं।", unavailable: "सूचनाएँ अस्थायी रूप से उपलब्ध नहीं हैं।", filters: "सूचना फ़िल्टर",
-    loading: "लोड हो रहा है…", nothing: "इस फ़िल्टर में कुछ नहीं है।", open: "खोलें", close: "बंद करें", selectAll: "सभी चुनें", expandView: "विस्तृत दृश्य", replyAction: "जवाब दें", copyLink: "लिंक कॉपी करें", linkCopied: "लिंक कॉपी हो गया", postUnavailable: "पोस्ट उपलब्ध नहीं है।", fresh: "नया", actor: "DeSo खाता",
+    loading: "लोड हो रहा है…", nothing: "इस फ़िल्टर में कुछ नहीं है।", open: "खोलें", close: "बंद करें", selectAll: "सभी चुनें", expandView: "विस्तृत दृश्य", replyAction: "जवाब दें", copyLink: "लिंक कॉपी करें", linkCopied: "लिंक कॉपी हो गया", postUnavailable: "पोस्ट उपलब्ध नहीं है।",
+    rewardAction: "$ में इनाम", rewardAmount: "USD राशि", rewardSend: "इनाम भेजें", rewardRateUnavailable: "वर्तमान DESO/USD दर उपलब्ध नहीं है।", rewardSending: "इनाम तैयार हो रहा है…", rewardSent: "इनाम भेज दिया गया।", rewardFailed: "इनाम नहीं भेजा गया।", fresh: "नया", actor: "DeSo खाता",
     descriptions: {
       reaction: (actor) => `${actor} ने आपकी एक पोस्ट पर प्रतिक्रिया दी।`,
       diamond1: (actor) => `${actor} ने 1 Diamond भेजा।`,
@@ -290,6 +303,7 @@ const COPY: Record<ViaLanguage | "Hindi", Copy> = {
     copyLink: "复制链接",
     linkCopied: "链接已复制",
     postUnavailable: "帖子不可用。",
+    rewardAction: "美元奖励", rewardAmount: "USD 金额", rewardSend: "发送奖励", rewardRateUnavailable: "当前 DESO/USD 汇率不可用。", rewardSending: "正在准备奖励…", rewardSent: "奖励已发送。", rewardFailed: "奖励未发送。",
     fresh: "新",
     actor: "DeSo 账户",
     descriptions: {
@@ -429,6 +443,62 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
   const [postCache, setPostCache] = useState<Record<string, PublicPost | null>>({})
   const [replyingTo, setReplyingTo] = useState<string | null>(null)
   const [copiedPost, setCopiedPost] = useState<string | null>(null)
+  const [rewardPost, setRewardPost] = useState<string | null>(null)
+  const [rewardUsd, setRewardUsd] = useState("1.00")
+  const [rewardMessage, setRewardMessage] = useState("")
+  const [rewardBusy, setRewardBusy] = useState(false)
+  const rewardPopup = useRef<Window | null>(null)
+  const rewardPending = useRef<{ postHash: string } | null>(null)
+
+  useEffect(() => {
+    const onMessage = async (event: MessageEvent) => {
+      if (event.origin !== DESO_IDENTITY_ORIGIN || event.source !== rewardPopup.current || !rewardPending.current) return
+      const data = event.data as Record<string, unknown> | null
+      const payload = data?.payload as Record<string, unknown> | undefined
+      const signedTransactionHex = data?.service === "identity" && typeof payload?.signedTransactionHex === "string" ? payload.signedTransactionHex : null
+      if (!signedTransactionHex) return
+      rewardPopup.current?.close()
+      rewardPopup.current = null
+      try {
+        const response = await fetch("/api/via/social/reward", { method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store", body: JSON.stringify({ action: "submit", signedTransactionHex }) })
+        const result = await response.json() as { ok?: boolean }
+        if (!response.ok || !result.ok) throw new Error("SUBMIT_FAILED")
+        setRewardMessage(copy.rewardSent)
+        setRewardPost(null)
+      } catch {
+        setRewardMessage(copy.rewardFailed)
+      } finally {
+        setRewardBusy(false)
+        rewardPending.current = null
+      }
+    }
+    window.addEventListener("message", onMessage)
+    return () => window.removeEventListener("message", onMessage)
+  }, [copy])
+
+  async function sendReward(post: PublicPost) {
+    if (!session || rewardBusy) return
+    const usd = Number(rewardUsd)
+    if (!Number.isFinite(usd) || usd <= 0) { setRewardMessage(copy.rewardFailed); return }
+    setRewardBusy(true)
+    setRewardMessage(copy.rewardSending)
+    try {
+      const rates = await fetchViaRates()
+      if (isViaRateStale(rates.checkedAt) || !rates.rates?.USD || rates.rates.USD <= 0) throw new Error("RATE")
+      const amountNanos = Math.round((usd / rates.rates.USD) * 1_000_000_000)
+      if (!Number.isSafeInteger(amountNanos) || amountNanos < 1) throw new Error("AMOUNT")
+      const response = await fetch("/api/via/social/reward", { method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store", body: JSON.stringify({ action: "prepare", senderPublicKey: session.publicKey, recipientPublicKey: post.publicKey, amountNanos, confirmed: true }) })
+      const result = await response.json() as { ok?: boolean; transactionHex?: string }
+      if (!response.ok || !result.ok || !result.transactionHex) throw new Error("PREPARE")
+      const popup = window.open(`${DESO_IDENTITY_ORIGIN}/approve?tx=${encodeURIComponent(result.transactionHex)}`, "via-post-reward-approve", `popup=yes,width=${Math.min(800, window.screen.availWidth)},height=${Math.min(900, window.screen.availHeight)}`)
+      if (!popup) throw new Error("POPUP")
+      rewardPopup.current = popup
+      rewardPending.current = { postHash: post.postHash }
+    } catch (error) {
+      setRewardBusy(false)
+      setRewardMessage(error instanceof Error && error.message === "RATE" ? copy.rewardRateUnavailable : copy.rewardFailed)
+    }
+  }
 
   useEffect(() => {
     try {
@@ -710,10 +780,11 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
                     <DiamondButton postHash={post.postHash} receiverPublicKey={post.publicKey} initialCount={post.diamondCount} variant="icon" />
                     <button
                       type="button"
-                      disabled
-                      title="Value/$ action — meaning still to confirm"
-                      aria-label="Value/$ action — meaning still to confirm"
-                      className="inline-flex h-9 min-w-9 items-center justify-center gap-0.5 rounded-full border border-zinc-900 px-2 text-xs text-zinc-700 disabled:cursor-not-allowed"
+                      onClick={() => { setRewardPost((current) => current === post.postHash ? null : post.postHash); setRewardMessage("") }}
+                      title={copy.rewardAction}
+                      aria-label={copy.rewardAction}
+                      aria-pressed={rewardPost === post.postHash}
+                      className={`inline-flex h-9 min-w-9 items-center justify-center gap-0.5 rounded-full border px-2 text-xs transition ${rewardPost === post.postHash ? "border-[#8fd4a9] bg-[#285f40] text-white" : "border-zinc-800 text-zinc-300 hover:border-[#8fd4a9] hover:text-white"}`}
                     >
                       <ArrowUpRight className="h-4 w-4" />
                       <span>$</span>
@@ -735,6 +806,20 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
                     </button>
                     {Number.isFinite(post.timestampNanos) && post.timestampNanos > 0 ? <span className="ml-auto self-center whitespace-nowrap text-[11px] text-zinc-600">{new Date(post.timestampNanos / 1_000_000).toLocaleString()}</span> : null}
                   </div>
+                  {rewardPost === post.postHash ? <div className="mt-3 rounded-xl border border-[#285f40]/70 bg-[#07110b] p-3">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <label className="text-xs text-zinc-400" htmlFor={`reward-${post.postHash}`}>{copy.rewardAmount}</label>
+                      <div className="flex items-center rounded-lg border border-zinc-700 bg-black/30 px-2">
+                        <span className="text-sm text-zinc-400">$</span>
+                        <input id={`reward-${post.postHash}`} value={rewardUsd} onChange={(event) => setRewardUsd(event.target.value)} inputMode="decimal" className="w-20 bg-transparent px-1.5 py-1.5 text-sm text-white outline-none" aria-label={copy.rewardAmount} />
+                      </div>
+                      <span className="min-w-0 truncate text-[11px] text-zinc-500">@{post.username?.replace(/^@/, "") || shortKey(post.publicKey, copy.actor)}</span>
+                      <button type="button" disabled={rewardBusy} onClick={() => void sendReward(post)} title={copy.rewardSend} aria-label={copy.rewardSend} className="inline-flex h-8 items-center gap-1 rounded-full border border-[#8fd4a9] bg-[#285f40] px-3 text-xs font-semibold text-white disabled:opacity-50">
+                        <ArrowUpRight className="h-3.5 w-3.5" /><span>{rewardUsd ? `${rewardUsd}` : "$"}</span>
+                      </button>
+                    </div>
+                    {rewardMessage ? <p className="mt-2 text-[11px] text-zinc-400" role="status">{rewardMessage}</p> : null}
+                  </div> : null}
                   {replyingTo === post.postHash ? <div className="mt-3"><PostComposer parentStakeID={post.postHash} compact onDone={() => setReplyingTo(null)} /></div> : null}
                 </> : <p className="text-xs text-zinc-500">{copy.postUnavailable}</p>}
               </div> : expanded && destination ? <div className="mt-3 rounded-xl border border-zinc-800 bg-black/25 p-3 text-xs text-zinc-500">{destination}</div> : null}
