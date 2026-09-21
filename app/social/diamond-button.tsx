@@ -1,10 +1,12 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import { DESO_IDENTITY_ORIGIN, restoreIdentitySession } from "../deso-identity-session"\nimport { fetchViaRates, isViaRateStale } from "../via-live-rates"
+import { DESO_IDENTITY_ORIGIN, restoreIdentitySession } from "../deso-identity-session"
+import { fetchViaRates, isViaRateStale } from "../via-live-rates"
 
 type Props = { postHash: string; receiverPublicKey: string; initialCount: number; variant?: "default" | "icon" }
-type PrepareResponse = { ok?: boolean; transactionHex?: string; feeNanos?: number | null; spendAmountNanos?: number | null; error?: string }\ntype DiamondLevelsResponse = { ok?: boolean; diamondLevelMap?: Record<string, number> }
+type PrepareResponse = { ok?: boolean; transactionHex?: string; feeNanos?: number | null; spendAmountNanos?: number | null; error?: string }
+type DiamondLevelsResponse = { ok?: boolean; diamondLevelMap?: Record<string, number> }
 
 function signedTransactionFromMessage(event: MessageEvent, source: Window | null) {
   if (event.origin !== DESO_IDENTITY_ORIGIN || event.source !== source) return null
@@ -24,7 +26,8 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
   const [status, setStatus] = useState<"idle" | "preparing" | "approval" | "submitting" | "done" | "error">("idle")
   const [message, setMessage] = useState("")
   const [feeNanos, setFeeNanos] = useState<number | null>(null)
-  const [spendNanos, setSpendNanos] = useState<number | null>(null)\n  const [diamondValues, setDiamondValues] = useState<Array<{ level: number; usd: number }> | null>(null)
+  const [spendNanos, setSpendNanos] = useState<number | null>(null)
+  const [diamondValues, setDiamondValues] = useState<Array<{ level: number; usd: number }> | null>(null)
   const popupRef = useRef<Window | null>(null)
   const popupWatch = useRef<number | null>(null)
 
