@@ -50,12 +50,11 @@ const viaExtraNav = [
 ] as const
 
 const languageCodes: Record<ViaLanguage | "Hindi", string> = {
-  Dutch: "🇳🇱 NL",
-  English: "🇬🇧 EN",
-  French: "🇫🇷 FR",
-  Spanish: "🇪🇸 ES",
-  Chinese: "🇨🇳 中文",
-  Hindi: "🇮🇳 हिं",
+  Dutch: "NL", English: "EN", French: "FR", Spanish: "ES", Chinese: "中文", Hindi: "हिं",
+}
+
+const languageFlags: Record<ViaLanguage | "Hindi", string> = {
+  Dutch: "🇳🇱", English: "🇬🇧", French: "🇫🇷", Spanish: "🇪🇸", Chinese: "🇨🇳", Hindi: "🇮🇳",
 }
 
 type HomeText = {
@@ -381,9 +380,12 @@ export default function ViaHomeControls() {
       <section style={{ display: "grid", gap: "6px" }}>
         <span style={sectionLabel}>{t.account}</span>
         <div aria-label="VIA utility controls" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "7px" }}>
-          <select value={language} onChange={(event) => changeLanguage(event.target.value as ViaLanguage)} aria-label="VIA language" style={{ ...buttonStyle, width: "100%", appearance: "none", cursor: "pointer", textAlign: "center" }}>
-            {VIA_LANGUAGES.map((item) => <option key={item} value={item}>{languageCodes[item]}</option>)}
-          </select>
+          <label style={{ ...buttonStyle, minHeight: "34px", padding: "5px 8px", gap: "5px", cursor: "pointer" }}>
+            <span aria-hidden="true" style={{ fontSize: "14px", lineHeight: 1 }}>{languageFlags[language]}</span>
+            <select value={language} onChange={(event) => changeLanguage(event.target.value as ViaLanguage)} aria-label="VIA language" style={{ border: 0, padding: 0, width: "auto", minWidth: "38px", background: "transparent", color: "inherit", font: "inherit", fontWeight: 700, appearance: "none", cursor: "pointer", textAlign: "center" }}>
+              {VIA_LANGUAGES.map((item) => <option key={item} value={item}>{languageCodes[item]}</option>)}
+            </select>
+          </label>
           {!session ? <button type="button" onClick={enterPublicMode} style={{ ...buttonStyle, cursor: "pointer" }}>{t.publicEntrance}</button> : null}
         </div>
 
