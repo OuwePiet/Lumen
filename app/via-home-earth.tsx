@@ -29,15 +29,23 @@ export default function ViaHomeEarth() {
       if (video.paused) void video.play().catch(() => undefined)
     }
 
+    function showPosterWhenPlaybackStops() {
+      const video = videoRef.current
+      if (!video || document.hidden || video.ended) return
+      if (video.paused) setVideoFailed(true)
+    }
+
     keepPlaying()
     document.addEventListener("visibilitychange", keepPlaying)
     window.addEventListener("pageshow", keepPlaying)
     window.addEventListener("focus", keepPlaying)
+    const fallbackTimer = window.setInterval(showPosterWhenPlaybackStops, 2500)
 
     return () => {
       document.removeEventListener("visibilitychange", keepPlaying)
       window.removeEventListener("pageshow", keepPlaying)
       window.removeEventListener("focus", keepPlaying)
+      window.clearInterval(fallbackTimer)
     }
   }, [videoFailed, earth.id])
 
