@@ -413,7 +413,7 @@ function notificationDestination(item: NotificationItem) {
 
 export default function NotificationCenter({ language }: { language: ViaLanguage }) {
   const copy = COPY[language]
-  const categories = useMemo(() => (Object.keys(copy.categories) as Category[]).filter((id) => id !== "diamondMany").map((id) => ({ id, label: copy.categories[id] })), [copy])
+  const categories = useMemo(() => (Object.keys(copy.categories) as Category[]).map((id) => ({ id, label: copy.categories[id] })), [copy])
   const [session, setSession] = useState<ViaIdentitySession | null>(null)
   const [items, setItems] = useState<NotificationItem[]>([])
   const filterCategoryIds = useMemo(() => categories.map((option) => option.id).filter((id): id is Exclude<Category, "all"> => id !== "all"), [categories])
@@ -638,9 +638,9 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
       <div className="sticky top-[73px] z-20 border-b border-zinc-800 bg-zinc-950/95 px-3 py-3 backdrop-blur sm:px-4" aria-label={copy.filters}>
         <div className="flex flex-wrap gap-2">
           {categories.map((option) => {
-            const active = option.id === "all" ? allCategoriesActive : option.id === "diamond1" ? activeCategories.includes("diamond1") && activeCategories.includes("diamondMany") : activeCategories.includes(option.id)
-            const count = option.id === "all" ? items.length : option.id === "diamond1" ? items.filter((item) => categoryOf(item) === "diamond1" || categoryOf(item) === "diamondMany").length : items.filter((item) => categoryOf(item) === option.id).length
-            return <button key={option.id} type="button" aria-pressed={active} onClick={() => option.id === "diamond1" ? setActiveCategories((current) => current.includes("diamond1") && current.includes("diamondMany") ? current.filter((id) => id !== "diamond1" && id !== "diamondMany") : filterCategoryIds.filter((id) => current.includes(id) || id === "diamond1" || id === "diamondMany")) : toggleCategory(option.id)} title={option.label} aria-label={`${option.label} · ${count}`} className={`relative grid h-9 w-9 shrink-0 place-items-center rounded-full border text-xs font-semibold transition ${active ? "border-[#8fd4a9] bg-[#285f40] text-white shadow-[0_0_0_1px_rgba(143,212,169,0.18)]" : "border-[#9b9b9b] bg-[#9b9b9b] text-white hover:border-[#7f7f7f] hover:bg-[#7f7f7f]"}`}>
+            const active = option.id === "all" ? allCategoriesActive : activeCategories.includes(option.id)
+            const count = option.id === "all" ? items.length : items.filter((item) => categoryOf(item) === option.id).length
+            return <button key={option.id} type="button" aria-pressed={active} onClick={() => toggleCategory(option.id)} title={option.label} aria-label={`${option.label} · ${count}`} className={`relative grid h-9 w-9 shrink-0 place-items-center rounded-full border text-xs font-semibold transition ${active ? "border-[#8fd4a9] bg-[#285f40] text-white shadow-[0_0_0_1px_rgba(143,212,169,0.18)]" : "border-[#9b9b9b] bg-[#9b9b9b] text-white hover:border-[#7f7f7f] hover:bg-[#7f7f7f]"}`}>
               <span aria-hidden="true" className="grid h-5 w-5 place-items-center text-sm"><CategoryIcon category={option.id} /></span>
               {count > 0 ? <span aria-hidden="true" className="absolute -right-1 -top-1 grid min-h-4 min-w-4 place-items-center rounded-full border border-black bg-[#8fd4a9] px-1 text-[9px] font-bold leading-none text-black">{count}</span> : null}
             </button>
