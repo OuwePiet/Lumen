@@ -29,7 +29,7 @@ type IdeasCopy = {
   categories: Record<Category, string>
 }
 
-const COPY: Record<ViaLanguage, IdeasCopy> = {
+const COPY: Record<ViaLanguage | "Hindi", IdeasCopy> = {
   Dutch: {
     kicker: "VIA · IDEEËNBUS",
     title: "Help VIA vooruit.",
@@ -110,6 +110,26 @@ const COPY: Record<ViaLanguage, IdeasCopy> = {
     statuses: ["Recibida", "Revisada", "Explorando", "Planificada", "En desarrollo", "Construida"],
     categories: { NFT: "NFT", Social: "Social", Music: "Música", "VIA LIVE": "VIA LIVE", Games: "Juegos", Discovery: "Descubrimiento", Safety: "Seguridad", Accessibility: "Accesibilidad", Other: "Otro" },
   },
+  Hindi: {
+    kicker: "VIA · आइडिया बॉक्स",
+    title: "VIA को आगे बढ़ाने में मदद करें।",
+    intro: "VIA अपने विज़िटर्स के लिए और उनके साथ मिलकर बनाया जाता है। बताएं कि आपको क्या कमी लगती है, क्या बेहतर काम कर सकता है, या आप क्या अनुभव, बनाना या खोजना चाहते हैं।",
+    whatHappens: "आपके आइडिया का क्या होता है?",
+    process: "हम आइडिया को विज़िटर की ज़रूरतों और तकनीकी सुरक्षा, व्यावहारिकता तथा लागत के साथ देखते हैं। एक आइडिया इन चरणों से गुजर सकता है:",
+    safety: "कभी भी पासवर्ड, DeSo seed words, private keys या अन्य गोपनीय जानकारी साझा न करें। VIA पहले आपके आइडिया को सुरक्षित केंद्रीय inbox में भेजने की कोशिश करता है। यदि केंद्रीय storage अस्थायी रूप से उपलब्ध न हो, तो आइडिया केवल इस डिवाइस पर सहेजा जाता है।",
+    category: "श्रेणी",
+    idea: "आपका आइडिया",
+    placeholder: "बताएं कि VIA को बेहतर, अधिक उपयोगी या अधिक आनंददायक क्या बना सकता है…",
+    send: "मेरा आइडिया भेजें",
+    sending: "भेजा जा रहा है…",
+    sent: "VIA को मिल गया। धन्यवाद।",
+    local: "केंद्रीय प्राप्ति अभी उपलब्ध नहीं है। आपका आइडिया इस डिवाइस पर सुरक्षित रूप से सहेजा गया है।",
+    rate: "दूसरा आइडिया भेजने से पहले लगभग एक मिनट प्रतीक्षा करें।",
+    error: "आइडिया अभी सहेजा नहीं जा सका। कृपया बाद में फिर प्रयास करें।",
+    back: "VIA पर वापस जाएँ",
+    statuses: ["प्राप्त", "समीक्षा की गई", "खोज जारी", "योजनाबद्ध", "विकास में", "तैयार"],
+    categories: { NFT: "NFT", Social: "सोशल", Music: "संगीत", "VIA LIVE": "VIA LIVE", Games: "गेम्स", Discovery: "डिस्कवरी", Safety: "सुरक्षा", Accessibility: "सुलभता", Other: "अन्य" },
+  },
   Chinese: {
     kicker: "VIA · 意见箱",
     title: "帮助 VIA 继续前进。",
@@ -141,7 +161,7 @@ function saveLocally(category: string, idea: string) {
 
 export default function IdeasPage() {
   const [state, setState] = useState<SubmitState>("idle")
-  const [language, setLanguage] = useState<ViaLanguage>("English")
+  const [language, setLanguage] = useState<ViaLanguage | "Hindi">("English")
 
   useEffect(() => {
     const sync = () => setLanguage(readViaLocalSettings().interfaceLanguage)

@@ -1,24 +1,14 @@
+"use client"
+
 import Link from "next/link"
+import { useEffect, useState } from "react"
 import ParticipationGate from "../participation-gate"
+import { readViaLocalSettings, VIA_SETTINGS_EVENT, type ViaLanguage } from "../via-local-settings"
 
 const doors = [
-  {
-    title: "Just look around",
-    text: "Come in without an account or wallet. Discover public work, creators, music, culture, communities and DeSo activity at your own pace.",
-    href: "/discover",
-    action: "Explore VIA",
-    status: "OPEN",
-  },
-  {
-    title: "Show your stuff",
-    text: "Want to present work or take part? Participation opens through DeSo. VIA does not create a second anonymous or email-based creator account beside DeSo.",
-    status: "DESO LOGIN",
-  },
-  {
-    title: "Already on DeSo",
-    text: "Use DeSo Identity to select your account. VIA keeps public discovery open while write functions are connected safely and separately.",
-    status: "DESO",
-  },
+  { title: "Just look around", hindiTitle: "बस देखें", text: "Come in without an account or wallet. Discover public work, creators, music, culture, communities and DeSo activity at your own pace.", hindiText: "बिना account या wallet के आएँ। अपनी गति से public work, creators, music, culture, communities और DeSo activity खोजें।", href: "/discover", action: "Explore VIA", hindiAction: "VIA खोजें", status: "OPEN" },
+  { title: "Show your stuff", hindiTitle: "अपना काम दिखाएँ", text: "Want to present work or take part? Participation opens through DeSo. VIA does not create a second anonymous or email-based creator account beside DeSo.", hindiText: "अपना काम दिखाना या भाग लेना चाहते हैं? भागीदारी DeSo के माध्यम से खुलती है। VIA, DeSo के साथ कोई दूसरा anonymous या email-based creator account नहीं बनाता।", status: "DESO LOGIN" },
+  { title: "Already on DeSo", hindiTitle: "पहले से DeSo पर हैं", text: "Use DeSo Identity to select your account. VIA keeps public discovery open while write functions are connected safely and separately.", hindiText: "अपना account चुनने के लिए DeSo Identity का उपयोग करें। VIA public discovery खुला रखता है, जबकि write functions सुरक्षित और अलग तरीके से जुड़े रहते हैं।", status: "DESO" },
 ]
 
 const styles = {
@@ -40,36 +30,42 @@ const styles = {
 }
 
 export default function ShowYourStuffPage() {
+  const [language, setLanguage] = useState<ViaLanguage | "Hindi">("English")
+  useEffect(() => {
+    const refresh = () => setLanguage(readViaLocalSettings().interfaceLanguage)
+    refresh()
+    window.addEventListener(VIA_SETTINGS_EVENT, refresh)
+    return () => window.removeEventListener(VIA_SETTINGS_EVENT, refresh)
+  }, [])
+  const hindi = language === "Hindi"
+
   return (
     <main style={styles.main}>
       <div style={styles.shell}>
-        <p style={styles.eyebrow}>VIA · COME IN</p>
-        <h1 style={styles.title}>Show your stuff. Meet the world.</h1>
-        <p style={styles.lead}>VIA is the café: anyone can walk in and discover what people make and do. Guests stay view-only. When you want to participate, VIA opens the DeSo door.</p>
-        <div style={styles.welcome}><strong>The world is welcome. The coffee is ready. ☕</strong><p style={{ ...styles.cardText, marginTop: "7px" }}>Art, photography, music, film, writing, NFTs, heritage, hobbies, communities and things we have not thought of yet all belong at the table.</p></div>
+        <p style={styles.eyebrow}>VIA · {hindi ? "अंदर आएँ" : "COME IN"}</p>
+        <h1 style={styles.title}>{hindi ? "अपना काम दिखाएँ। दुनिया से मिलें।" : "Show your stuff. Meet the world."}</h1>
+        <p style={styles.lead}>{hindi ? "VIA एक café है: कोई भी आ सकता है और देख सकता है कि लोग क्या बनाते और करते हैं। Guests केवल देख सकते हैं। जब आप भाग लेना चाहें, VIA DeSo का दरवाज़ा खोलता है।" : "VIA is the café: anyone can walk in and discover what people make and do. Guests stay view-only. When you want to participate, VIA opens the DeSo door."}</p>
+        <div style={styles.welcome}><strong>{hindi ? "दुनिया का स्वागत है। कॉफी तैयार है। ☕" : "The world is welcome. The coffee is ready. ☕"}</strong><p style={{ ...styles.cardText, marginTop: "7px" }}>{hindi ? "Art, photography, music, film, writing, NFTs, heritage, hobbies, communities और वे चीज़ें जिनके बारे में हमने अभी सोचा भी नहीं है—सबके लिए यहाँ जगह है।" : "Art, photography, music, film, writing, NFTs, heritage, hobbies, communities and things we have not thought of yet all belong at the table."}</p></div>
 
-        <section style={styles.grid} aria-label="Ways into VIA">
+        <section style={styles.grid} aria-label={hindi ? "VIA में प्रवेश के तरीके" : "Ways into VIA"}>
           {doors.map((door) => (
             <article key={door.title} style={styles.card}>
-              <div style={styles.cardTop}><h2 style={styles.cardTitle}>{door.title}</h2><span style={styles.badge}>{door.status}</span></div>
-              <p style={styles.cardText}>{door.text}</p>
-              {door.href ? <Link href={door.href} style={styles.link}>{door.action}</Link> : null}
+              <div style={styles.cardTop}><h2 style={styles.cardTitle}>{hindi ? door.hindiTitle : door.title}</h2><span style={styles.badge}>{door.status}</span></div>
+              <p style={styles.cardText}>{hindi ? door.hindiText : door.text}</p>
+              {door.href ? <Link href={door.href} style={styles.link}>{hindi ? door.hindiAction : door.action}</Link> : null}
             </article>
           ))}
         </section>
 
-        <ParticipationGate
-          title="Ready to take part?"
-          text="Continue through the official DeSo Identity flow. VIA requests the approval-required transaction level at login; ordinary browsing stays open without it."
-        />
+        <ParticipationGate title={hindi ? "भाग लेने के लिए तैयार हैं?" : "Ready to take part?"} text={hindi ? "आधिकारिक DeSo Identity flow के माध्यम से आगे बढ़ें। VIA login पर approval-required transaction level मांगता है; सामान्य browsing इसके बिना भी खुली रहती है।" : "Continue through the official DeSo Identity flow. VIA requests the approval-required transaction level at login; ordinary browsing stays open without it."} />
 
-        <div style={styles.boundary}><strong>Clear boundary:</strong> guests may navigate, search, read, watch and listen, but cannot post, reply, upload, follow, like, send Diamonds, claim a maker space or perform another participation action. Sensitive NFT and financial actions additionally require explicit preflight, consent, signing and verification.</div>
-        <div style={styles.boundary}><strong>Community protection:</strong> a DeSo login is the participation gate, not a trust badge. VIA can still apply spam and bot limits, link/media validation, impersonation protection and proportional restrictions for repeated abuse. Any DeSo balance or purchase requirement remains DeSo's own current rule; VIA does not invent a fixed entry payment.</div>
+        <div style={styles.boundary}><strong>{hindi ? "स्पष्ट सीमा:" : "Clear boundary:"}</strong> {hindi ? "guests navigate, search, read, watch और listen कर सकते हैं, लेकिन post, reply, upload, follow, like, Diamonds भेजना, maker space claim करना या अन्य participation action नहीं कर सकते। Sensitive NFT और financial actions के लिए अतिरिक्त explicit preflight, consent, signing और verification आवश्यक हैं।" : "guests may navigate, search, read, watch and listen, but cannot post, reply, upload, follow, like, send Diamonds, claim a maker space or perform another participation action. Sensitive NFT and financial actions additionally require explicit preflight, consent, signing and verification."}</div>
+        <div style={styles.boundary}><strong>{hindi ? "कम्युनिटी सुरक्षा:" : "Community protection:"}</strong> {hindi ? "DeSo login भागीदारी का gate है, trust badge नहीं। VIA spam और bot limits, link/media validation, impersonation protection और repeated abuse के लिए proportional restrictions लागू कर सकता है। DeSo balance या purchase requirement DeSo का अपना मौजूदा नियम रहता है; VIA कोई fixed entry payment नहीं बनाता।" : "a DeSo login is the participation gate, not a trust badge. VIA can still apply spam and bot limits, link/media validation, impersonation protection and proportional restrictions for repeated abuse. Any DeSo balance or purchase requirement remains DeSo's own current rule; VIA does not invent a fixed entry payment."}</div>
 
-        <nav aria-label="Show Your Stuff navigation" style={styles.nav}>
-          <Link href="/" style={styles.link}>Home</Link>
-          <Link href="/discover" style={styles.link}>Discover</Link>
-          <Link href="/discover/voices" style={styles.link}>New Voices</Link>
+        <nav aria-label={hindi ? "Show Your Stuff नेविगेशन" : "Show Your Stuff navigation"} style={styles.nav}>
+          <Link href="/" style={styles.link}>{hindi ? "होम" : "Home"}</Link>
+          <Link href="/discover" style={styles.link}>{hindi ? "खोजें" : "Discover"}</Link>
+          <Link href="/discover/voices" style={styles.link}>{hindi ? "नई आवाज़ें" : "New Voices"}</Link>
         </nav>
       </div>
     </main>

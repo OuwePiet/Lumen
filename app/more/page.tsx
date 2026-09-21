@@ -17,7 +17,7 @@ type Copy = {
   back: string
 }
 
-const COPY: Record<ViaLanguage, Copy> = {
+const COPY: Record<ViaLanguage | "Hindi", Copy> = {
   Dutch: {
     kicker: "VIA · MEER",
     title: "Meer",
@@ -77,6 +77,12 @@ const COPY: Record<ViaLanguage, Copy> = {
     helpText: "支持功能属于这里。只有在确认真实支持地址后，VIA 帮助操作才会正式连接。",
     parked: "尚未连接",
     back: "返回 VIA",
+  },
+  Hindi: {
+    kicker: "VIA · अधिक", title: "अधिक", intro: "VIA की अतिरिक्त सुविधाएँ एक निश्चित स्थान पर।",
+    settings: "सेटिंग्स", settingsText: "अपनी स्थानीय VIA preferences, default post language, feed choice और local draft data प्रबंधित करें।",
+    openSettings: "सेटिंग्स खोलें", help: "सहायता", helpText: "सहायता यहाँ रहती है। अंतिम VIA help action वास्तविक support address की पुष्टि होने के बाद ही जोड़ा जाएगा।",
+    parked: "अभी कनेक्ट नहीं है", back: "VIA पर वापस जाएँ",
   },
 }
 

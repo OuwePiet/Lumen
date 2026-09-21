@@ -103,6 +103,22 @@ const copy: Record<ViaLanguage, Copy> = {
     storage: "外部存储",
     home: "返回主页",
   },
+  Hindi: {
+    kicker: "VIA · सार्वजनिक प्रवेश",
+    title: "DeSo लॉगिन के बिना देखें",
+    intro: "यह प्रवेश आगंतुकों के लिए है। आप बिना ब्लॉकचेन कार्रवाई किए VIA और DeSo की सार्वजनिक सामग्री देख सकते हैं।",
+    note: "पोस्ट करना, फॉलो करना, लाइक करना, diamonds भेजना, बोली लगाना, खरीदना और अन्य कार्रवाइयाँ तब तक उपलब्ध नहीं होंगी जब तक आप जानबूझकर DeSo Identity से लॉग इन नहीं करते।",
+    limited: "सार्वजनिक मोड सक्रिय · DeSo सुविधाएँ सीमित हैं",
+    social: "सार्वजनिक पोस्ट देखें",
+    discover: "क्रिएटर्स खोजें",
+    nfts: "NFT देखें",
+    market: "मार्केट देखें",
+    infoTitle: "आगंतुक जानकारी",
+    payments: "भुगतान जानकारी",
+    transparency: "लागत और पारदर्शिता",
+    storage: "बाहरी स्टोरेज",
+    home: "होमपेज पर वापस जाएँ",
+  },
 }
 
 const card = "rounded-[16px] border border-zinc-800/80 bg-zinc-950/55 p-5 text-zinc-200 transition hover:border-[#8fd4a9]/45 hover:text-[#b9ffd4]"

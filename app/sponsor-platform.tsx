@@ -40,7 +40,7 @@ type SponsorCopy = {
   prepareFailed: string
 }
 
-const COPY: Record<ViaLanguage, SponsorCopy> = {
+const COPY: Record<ViaLanguage | "Hindi", SponsorCopy> = {
   Dutch: {
     trigger: "Sponsor platform", dialogLabel: "Sponsor VIA", kicker: "VIA · Sponsor platform",
     title: "Elke bijdrage telt — ook de kleinste.",
@@ -125,6 +125,18 @@ const COPY: Record<ViaLanguage, SponsorCopy> = {
     prepareExact: "正在准备准确的 DeSo 交易…", approvalClosed: "DeSo 批准窗口已关闭。未发送任何内容。",
     checkApproval: "请在 DeSo Identity 中核对金额和收款方，仅在全部正确时批准。",
     popupBlocked: "批准弹窗被拦截。", prepareFailed: "无法准备 DESO 支持。",
+  },
+  Hindi: {
+    trigger: "VIA को प्रायोजित करें", dialogLabel: "VIA को प्रायोजित करें", kicker: "VIA · प्रायोजक प्लेटफ़ॉर्म",
+    title: "हर योगदान मायने रखता है — सबसे छोटा भी।", intro: "DESO या Diamond से VIA को सीधे समर्थन दें। VIA भुगतान विवरण सहेजता नहीं है और हर मूल्य कार्रवाई के लिए DeSo Identity मंज़ूरी आवश्यक है।",
+    close: "बंद करें", desoTitle: "DESO योगदान", desoIntro: "VIA के लिए सामान्य DeSo Basic Transfer के रूप में तैयार किया जाता है।", amountAria: "DESO राशि",
+    confirm: "मैं समझता हूँ कि इससे वास्तविक DESO मूल्य भेजा जाता है और मैं DeSo Identity में लेनदेन जाँचूँगा।",
+    preparing: "तैयार हो रहा है…", approval: "DeSo में जाँचें…", submitting: "भेजा जा रहा है…", sendDeso: "DESO भेजें", fee: "तैयार नेटवर्क शुल्क",
+    diamondTitle: "Diamond योगदान", diamondIntro: "Diamond भी DESO मूल्य दर्शाता है और VIA योगदान से जुड़ता है।", diamondLoading: "Diamond लक्ष्य लोड हो रहा है… DESO योगदान उपलब्ध है।",
+    disclaimer: "योगदान स्वैच्छिक हैं। योगदान से स्वामित्व, निवेश अधिकार या गारंटीकृत प्रतिफल नहीं मिलता।", sent: "धन्यवाद। DESO योगदान भेज दिया गया।", failed: "योगदान नहीं भेजा गया।",
+    loginFirst: "पहले DeSo Identity से लॉग इन करें।", invalidAmount: "मान्य DESO राशि दर्ज करें, न्यूनतम 0.000000001 DESO।", prepareExact: "सटीक DeSo लेनदेन तैयार हो रहा है…",
+    approvalClosed: "DeSo मंज़ूरी बंद कर दी गई। कुछ भी नहीं भेजा गया।", checkApproval: "DeSo Identity में राशि और प्राप्तकर्ता जाँचें और सब सही होने पर ही मंज़ूर करें।",
+    popupBlocked: "मंज़ूरी popup ब्लॉक हो गया।", prepareFailed: "DESO योगदान तैयार नहीं किया जा सका।",
   },
 }
 

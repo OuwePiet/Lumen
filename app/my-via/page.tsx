@@ -18,7 +18,7 @@ type Copy = {
   cards: Array<{ title: string; text: string; href: string; action: string }>;
 };
 
-const copy: Record<ViaLanguage, Copy> = {
+const copy: Record<ViaLanguage | "Hindi", Copy> = {
   Dutch: {
     kicker: "VIA · PERSOONLIJK",
     heading: "Mijn VIA",
@@ -107,6 +107,19 @@ const copy: Record<ViaLanguage, Copy> = {
       { title: "已保存", text: "返回你明确保存的帖子和内容。", href: "/saved", action: "打开已保存" },
       { title: "草稿", text: "在 VIA Studio 中继续本地创作者草稿。", href: "/studio#drafts", action: "打开草稿" },
       { title: "设置", text: "选择本地创作者默认项并管理 Studio 本地草稿数据。", href: "/settings", action: "打开设置" },
+    ],
+  },
+  Hindi: {
+    kicker: "VIA · व्यक्तिगत", heading: "मेरा VIA", intro: "खाता, NFT, सहेजा गया काम, ड्राफ्ट, सेटिंग्स और creator shortcuts के लिए आपका व्यक्तिगत VIA केंद्र।",
+    back: "VIA पर वापस जाएँ", footer: "पढ़ें, सुनें, खोजें, लाइव, समुदाय और अन्य VIA स्थान सामान्य navigation में रहते हैं और यहाँ दोहराए नहीं जाते।",
+    ownerTitle: "VIA नियंत्रण कक्ष", ownerText: "Ideas Inbox और चल रही तथा ध्यान माँगने वाली चीज़ों के अवलोकन के साथ अपना निजी owner control room खोलें।", ownerAction: "नियंत्रण कक्ष खोलें",
+    cards: [
+      { title: "प्रोफ़ाइल", text: "VIA में अपना लॉग-इन किया हुआ सार्वजनिक DeSo प्रोफ़ाइल खोलें।", href: "/profile", action: "प्रोफ़ाइल खोलें" },
+      { title: "वॉलेट", text: "अपने जुड़े DeSo खाते का केवल-पढ़ने योग्य DESO बैलेंस देखें।", href: "/wallet", action: "वॉलेट खोलें" },
+      { title: "NFT", text: "DeSo NFT और creator collections देखने के लिए VIA Collection खोलें।", href: "/collection", action: "NFT खोलें" },
+      { title: "सहेजा गया", text: "उन posts और सामग्री पर लौटें जिन्हें आपने जानबूझकर सहेजा है।", href: "/saved", action: "सहेजा गया खोलें" },
+      { title: "ड्राफ्ट", text: "VIA Studio में स्थानीय creator drafts जारी रखें।", href: "/studio#drafts", action: "ड्राफ्ट खोलें" },
+      { title: "सेटिंग्स", text: "स्थानीय creator defaults चुनें और Studio के स्थानीय draft data को प्रबंधित करें।", href: "/settings", action: "सेटिंग्स खोलें" },
     ],
   },
 };

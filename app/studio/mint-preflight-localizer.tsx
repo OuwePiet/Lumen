@@ -192,7 +192,7 @@ const nl: Dictionary = {
   "Mint quote cleared. Enter or confirm terms, then request a fresh DeSo quote.": "Mintofferte gewist. Voer de voorwaarden in of bevestig ze en vraag daarna een nieuwe DeSo-offerte aan."
 }
 
-const simpleOverrides: Record<Exclude<ViaLanguage, "Dutch" | "English">, Partial<Dictionary>> = {
+const simpleOverrides: Record<Exclude<ViaLanguage, "Dutch" | "English" | "Hindi">, Partial<Dictionary>> = {
   French: {
     "NFT mint preflight": "Contrôle avant mint NFT", "Set terms. Check live cost. Approve later.": "Définissez les conditions. Vérifiez le coût en direct. Approuvez ensuite.", "No blockchain write": "Aucune écriture blockchain", "Copies": "Exemplaires", "Creator royalty": "Royalty créateur", "Coin royalty": "Royalty coin", "Offer for sale": "Mettre en vente", "Buy Now": "Acheter maintenant", "Has unlockable": "Contenu déverrouillable", "Minimum bid": "Enchère minimale", "Buy Now price": "Prix d'achat immédiat", "Checking current DeSo cost…": "Vérification du coût DeSo…", "Check current mint cost": "Vérifier le coût du mint", "Preflight status": "État du contrôle", "Fresh · account matched": "Récent · compte correspondant", "Sale": "Vente", "Not for sale": "Pas à vendre", "Yes": "Oui", "No": "Non", "Network fee": "Frais réseau", "Spend amount": "Montant dépensé", "VIA service fee": "Frais de service VIA", "Quote valid until": "Devis valable jusqu'à", "Quote created": "Devis créé", "Server clock": "Horloge serveur", "Device clock difference": "Écart de l'horloge de l'appareil", "Quote source": "Source du devis", "Quote contract": "Contrat du devis", "Quote reference": "Référence du devis", "Unavailable": "Indisponible", "Request fresh quote": "Demander un nouveau devis", "Refresh quote": "Actualiser le devis", "Clear quote": "Effacer le devis", "Preparing mint…": "Préparation du mint…", "Review in DeSo…": "Vérifier dans DeSo…", "Submitting…": "Envoi…", "Review & mint in DeSo": "Vérifier et minter dans DeSo"
   },
@@ -204,12 +204,69 @@ const simpleOverrides: Record<Exclude<ViaLanguage, "Dutch" | "English">, Partial
   }
 }
 
-const dictionaries: Record<ViaLanguage, Dictionary> = {
+const hi: Dictionary = {
+  ...en,
+  "VIA uses DeSo's native create-nft constructor. This visible step only prepares an unsigned transaction to read the current fee/spend context; it cannot sign, broadcast, charge or mint.": "VIA DeSo के native create-nft constructor का उपयोग करता है। यह चरण केवल मौजूदा fee/spend संदर्भ पढ़ने के लिए unsigned transaction तैयार करता है; यह sign, broadcast, charge या mint नहीं कर सकता।",
+  "Log in with DeSo Identity first. VIA will use only the active public key for this preflight.": "पहले DeSo Identity से login करें। VIA इस पूर्व-जाँच के लिए केवल सक्रिय public key का उपयोग करेगा।",
+  "Log in with DeSo Identity to request a mint quote.": "Mint quote माँगने के लिए DeSo Identity से login करें।",
+  "Enter a valid 64-character DeSo NFT post hash.": "मान्य 64-character DeSo NFT post hash दर्ज करें।",
+  "Copies must be a whole number from 1 to 10,000.": "Copies की संख्या 1 से 10,000 तक पूर्णांक होनी चाहिए।",
+  "Prices and royalties must be non-negative whole numbers.": "Prices और royalties शून्य या उससे अधिक पूर्णांक होने चाहिए।",
+  "Creator and coin royalties together cannot exceed 100%.": "Creator और coin royalties मिलाकर 100% से अधिक नहीं हो सकतीं।",
+  "Buy Now requires a sale price above zero and cannot be combined with unlockable content in this flow.": "Buy Now के लिए sale price शून्य से अधिक होना चाहिए और इस flow में इसे unlockable content के साथ नहीं जोड़ा जा सकता।",
+  "Enter mint terms to request a fresh DeSo constructor quote.": "नया DeSo constructor quote माँगने के लिए mint की शर्तें दर्ज करें।",
+  "Terms changed. Refresh the DeSo quote before approval.": "शर्तें बदल गई हैं। मंज़ूरी से पहले DeSo quote रीफ़्रेश करें।",
+  "Requesting current DeSo mint fee and spend context…": "वर्तमान DeSo mint fee और spend संदर्भ माँगा जा रहा है…",
+  "Fresh unsigned DeSo mint quote loaded. Nothing has been signed or submitted.": "नया unsigned DeSo mint quote लोड हो गया। कुछ भी sign या submit नहीं किया गया है।",
+  "Preflight stopped: quote account did not match the active DeSo Identity.": "पूर्व-जाँच रोकी गई: quote account सक्रिय DeSo Identity से मेल नहीं खाता।",
+  "Preflight stopped: current DeSo quote could not be loaded.": "पूर्व-जाँच रोकी गई: वर्तमान DeSo quote लोड नहीं हो सका।",
+  "Quote safety checks passed: supported contract, trusted DeSo constructor source, active Identity matched, quote owner matched, device clock acceptable and quote still fresh. This is preflight readiness only; no mint has been signed or submitted.": "Quote की सुरक्षा जाँच सफल रही: contract समर्थित है, DeSo constructor source विश्वसनीय है, सक्रिय Identity और quote owner मेल खाते हैं, device clock स्वीकार्य है और quote अभी ताज़ा है। यह केवल पूर्व-जाँच की तैयारी है; कोई mint sign या submit नहीं हुआ है।",
+  "Mint terms confirmed by DeSo preflight": "Mint की शर्तें DeSo पूर्व-जाँच द्वारा पुष्टि की गईं",
+  "Network fee + constructor spend + VIA service fee. Storage/provider costs are not included unless separately resolved.": "Network fee + constructor spend + VIA service fee। Storage/provider लागत तब तक शामिल नहीं है जब तक उसे अलग से निर्धारित न किया गया हो।",
+  "This mint quote uses an unsupported VIA quote contract and cannot become approval-ready.": "यह mint quote असमर्थित VIA quote contract का उपयोग करता है और approval-ready नहीं हो सकता।",
+  "Your device clock differs from VIA server time by more than one minute. Correct the device clock, then request a fresh quote.": "आपके device का समय VIA server समय से एक मिनट से अधिक अलग है। Device clock ठीक करें और फिर नया quote माँगें।",
+  "The active DeSo Identity changed after this quote was created. This quote is no longer valid for approval.": "यह quote बनने के बाद सक्रिय DeSo Identity बदल गई है। यह quote अब approval के लिए मान्य नहीं है।",
+  "This mint quote has expired. Refresh the current DeSo cost before approval.": "यह mint quote समाप्त हो गया है। Approval से पहले वर्तमान DeSo cost रीफ़्रेश करें।",
+  "Any changed mint term invalidates the displayed quote. Before approval, VIA refreshes the exact mint transaction and requires DeSo Identity confirmation. Payment/provider checkout remain separate from this native mint flow; NFT transfer is handled by the released owner controls on NFT detail.": "Mint की किसी भी बदली हुई शर्त से दिखाया गया quote अमान्य हो जाता है। Approval से पहले VIA सटीक mint transaction रीफ़्रेश करता है और DeSo Identity confirmation आवश्यक करता है। Payment/provider checkout इस native mint flow से अलग रहते हैं; NFT transfer NFT detail पर जारी किए गए owner controls से संभाला जाता है।",
+  "DeSo Identity changed. The previous mint approval was closed; request a fresh quote and approval.": "DeSo Identity बदल गई है। पिछला mint approval बंद कर दिया गया; नया quote और approval माँगें।",
+  "The approved NFT mint could not be submitted. VIA changed nothing.": "स्वीकृत NFT mint submit नहीं किया जा सका। VIA ने कुछ नहीं बदला।",
+  "Mint terms changed. The previous DeSo approval was closed; request a fresh quote and approval.": "Mint की शर्तें बदल गई हैं। पिछला DeSo approval बंद कर दिया गया; नया quote और approval माँगें।",
+  "Refreshing exact DeSo mint transaction for approval…": "Approval के लिए सटीक DeSo mint transaction रीफ़्रेश किया जा रहा है…",
+  "Review the freshly prepared NFT mint in DeSo Identity. VIA submits only after your approval.": "नया तैयार किया गया NFT mint DeSo Identity में जाँचें। VIA केवल आपकी approval के बाद submit करता है।",
+  "Mint quote cleared. Enter or confirm terms, then request a fresh DeSo quote.": "Mint quote साफ़ कर दिया गया। शर्तें दर्ज या पुष्टि करें और फिर नया DeSo quote माँगें।",
+  "64-character DeSo post hash": "64-character DeSo post hash",
+  "100 basis points = 1%. Creator + coin royalty may not exceed 100%.": "100 basis points = 1%। Creator + coin royalty 100% से अधिक नहीं हो सकती।",
+  "Optional creator-coin royalty, entered in basis points.": "वैकल्पिक creator-coin royalty, basis points में दर्ज करें।",
+  "DeSo nanos; 1 DESO = 1,000,000,000 nanos. No fiat conversion is assumed here.": "DeSo nanos; 1 DESO = 1,000,000,000 nanos। यहाँ कोई fiat conversion मानकर नहीं चलाया जाता।",
+  "DeSo nanos; VIA does not treat this as an EUR/USD checkout price.": "DeSo nanos; VIA इसे EUR/USD checkout price नहीं मानता।",
+  "NFT mint preflight": "NFT mint पूर्व-जाँच",
+  "Set terms. Check live cost. Approve later.": "शर्तें तय करें। वर्तमान लागत जाँचें। बाद में मंज़ूरी दें।",
+  "No blockchain write": "ब्लॉकचेन पर कोई लेखन नहीं",
+  "Active DeSo Identity:": "सक्रिय DeSo Identity:",
+  "NFT post hash": "NFT पोस्ट हैश", "Copies": "प्रतियाँ", "Creator royalty": "क्रिएटर रॉयल्टी", "Coin royalty": "Coin रॉयल्टी",
+  "Offer for sale": "बिक्री के लिए रखें", "Buy Now": "अभी खरीदें", "Has unlockable": "Unlockable है", "Minimum bid": "न्यूनतम बोली", "Buy Now price": "अभी खरीदें मूल्य",
+  "Checking current DeSo cost…": "वर्तमान DeSo लागत जाँची जा रही है…", "Check current mint cost": "वर्तमान mint लागत जाँचें",
+  "Retrying…": "फिर प्रयास हो रहा है…", "Retry current quote": "वर्तमान quote फिर जाँचें",
+  "Preflight status": "पूर्व-जाँच स्थिति", "Fresh · account matched": "ताज़ा · खाता मेल खाता है", "Sale": "बिक्री", "Auction / bids": "नीलामी / बोलियाँ",
+  "Not for sale": "बिक्री के लिए नहीं", "Unlockable": "Unlockable", "Yes": "हाँ", "No": "नहीं", "Not applicable": "लागू नहीं",
+  "Post hash": "पोस्ट हैश", "Network fee": "नेटवर्क शुल्क", "Spend amount": "खर्च राशि", "VIA service fee": "VIA सेवा शुल्क", "Visible cost boundary": "दिखाई गई लागत सीमा",
+  "Quote valid until": "Quote मान्य है", "Quote created": "Quote बनाया गया", "Server TTL": "Server TTL", "Server clock": "सर्वर समय", "Device clock difference": "डिवाइस समय अंतर",
+  "Quote source": "Quote स्रोत", "Quote contract": "Quote contract", "Quote reference": "Quote संदर्भ", "Unavailable": "उपलब्ध नहीं", "supported": "समर्थित", "unsupported": "असमर्थित",
+  "Refreshing…": "रीफ़्रेश हो रहा है…", "Request fresh quote": "नया quote माँगें", "Quote active account": "Quote सक्रिय खाता", "Refresh quote": "Quote रीफ़्रेश करें",
+  "Clear quote": "Quote साफ़ करें", "Preparing mint…": "Mint तैयार हो रहा है…", "Review in DeSo…": "DeSo में समीक्षा करें…", "Submitting…": "जमा हो रहा है…",
+  "Review & mint in DeSo": "DeSo में समीक्षा और mint करें", "Submitting approved mint to DeSo…": "स्वीकृत mint DeSo पर जमा हो रहा है…",
+  "NFT mint submitted to DeSo.": "NFT mint DeSo पर जमा कर दिया गया।", "DeSo approval was closed. Nothing was minted.": "DeSo मंज़ूरी बंद कर दी गई। कुछ भी mint नहीं हुआ।",
+  "Approval window was blocked. Nothing was minted.": "मंज़ूरी विंडो ब्लॉक थी। कुछ भी mint नहीं हुआ।",
+  "The NFT mint could not be prepared. Nothing was minted.": "NFT mint तैयार नहीं हो सका। कुछ भी mint नहीं हुआ।"
+}
+
+const dictionaries: Record<ViaLanguage | "Hindi", Dictionary> = {
   English: en,
   Dutch: nl,
   French: { ...en, ...simpleOverrides.French },
   Spanish: { ...en, ...simpleOverrides.Spanish },
   Chinese: { ...en, ...simpleOverrides.Chinese },
+  Hindi: hi,
 }
 
 const reverse = new Map<string, Phrase>()
@@ -218,12 +275,12 @@ for (const phrase of Object.keys(en) as Phrase[]) {
   for (const dictionary of Object.values(dictionaries)) reverse.set(dictionary[phrase], phrase)
 }
 
-function translated(value: string, language: ViaLanguage) {
+function translated(value: string, language: ViaLanguage | "Hindi") {
   const canonical = reverse.get(value) ?? value as Phrase
   return dictionaries[language][canonical] ?? value
 }
 
-function translateDynamic(value: string, language: ViaLanguage) {
+function translateDynamic(value: string, language: ViaLanguage | "Hindi") {
   const direct = translated(value, language)
   if (direct !== value) return direct
   const prefixes: Array<[string, string]> = language === "Dutch" ? [
@@ -234,7 +291,7 @@ function translateDynamic(value: string, language: ViaLanguage) {
   return value
 }
 
-function applyLanguage(root: HTMLElement, language: ViaLanguage) {
+function applyLanguage(root: HTMLElement, language: ViaLanguage | "Hindi") {
   const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT)
   let node = walker.nextNode()
   while (node) {

@@ -85,12 +85,39 @@ const chinese: Copy = {
   "not yet": "尚未"
 }
 
-const dictionaries: Record<ViaLanguage, Copy> = {
+const hindi: Copy = {
+  "How it works": "यह कैसे काम करता है",
+  "Live conversation, kept simple.": "लाइव बातचीत, सरल तरीके से।",
+  "VIA LIVE is built around three clear destinations: join a live community room, return to published Replays, or read how participation works.": "VIA LIVE के तीन स्पष्ट हिस्से हैं: लाइव कम्युनिटी रूम में शामिल हों, प्रकाशित Replays सुनें, या भागीदारी का तरीका पढ़ें।",
+  "Live speaker, microphone, recording and publishing controls remain hidden until they are backed by a real authorised service. VIA does not present planned controls as active.": "स्पीकर, माइक्रोफ़ोन, रिकॉर्डिंग और प्रकाशन नियंत्रण तब तक छिपे रहते हैं जब तक उन्हें वास्तविक अधिकृत सेवा का समर्थन न मिले। VIA नियोजित नियंत्रणों को सक्रिय बताकर नहीं दिखाता।",
+  "Community Room": "कम्युनिटी रूम",
+  "Audio comes first; camera is optional. Listening, speaking, recording and publishing remain separate actions so none of them happen silently.": "ऑडियो प्राथमिक है; कैमरा वैकल्पिक है। सुनना, बोलना, रिकॉर्ड करना और प्रकाशित करना अलग-अलग कार्रवाइयाँ रहती हैं ताकि कुछ भी बिना जानकारी के न हो।",
+  "Room controls are intentionally not exposed until microphone, speaker moderation and recording are backed by a real authorised service.": "रूम नियंत्रण जानबूझकर तब तक उपलब्ध नहीं हैं जब तक माइक्रोफ़ोन, स्पीकर मॉडरेशन और रिकॉर्डिंग को वास्तविक अधिकृत सेवा का समर्थन न मिले।",
+  "Listen later": "बाद में सुनें",
+  "No Replay is published yet. A recording will only appear here after an authorised host deliberately publishes it.": "अभी कोई Replay प्रकाशित नहीं है। रिकॉर्डिंग यहाँ तभी दिखाई देगी जब अधिकृत होस्ट उसे जानबूझकर प्रकाशित करे।",
+  "Status & diagnostics": "स्थिति और निदान",
+  "MEDIA HEALTH": "मीडिया स्थिति",
+  "Connection status": "कनेक्शन स्थिति",
+  "Checking…": "जाँच हो रही है…",
+  "Check now": "अभी जाँचें",
+  "VIA application": "VIA एप्लिकेशन",
+  "DeSo node/API": "DeSo नोड/API",
+  "Media upload": "मीडिया अपलोड",
+  "Media retrieval": "मीडिया प्राप्ति",
+  "UNKNOWN": "अज्ञात",
+  "FAILED": "विफल",
+  "Checked": "जाँचा गया",
+  "not yet": "अभी नहीं",
+  "UNKNOWN means VIA does not yet have enough verified evidence to identify that service as the cause.": "अज्ञात का अर्थ है कि VIA के पास अभी उस सेवा को कारण मानने के लिए पर्याप्त सत्यापित प्रमाण नहीं हैं।"
+}
+
+const dictionaries: Record<ViaLanguage | "Hindi", Copy> = {
   English: {},
   Dutch: dutch,
   French: french,
   Spanish: spanish,
   Chinese: chinese,
+  Hindi: hindi,
 }
 
 const reverse = new Map<string, string>()
@@ -98,12 +125,12 @@ for (const dictionary of Object.values(dictionaries)) {
   for (const [english, localized] of Object.entries(dictionary)) reverse.set(localized, english)
 }
 
-function translateText(value: string, language: ViaLanguage) {
+function translateText(value: string, language: ViaLanguage | "Hindi") {
   const canonical = reverse.get(value) ?? value
   return dictionaries[language][canonical] ?? canonical
 }
 
-function apply(root: HTMLElement, language: ViaLanguage) {
+function apply(root: HTMLElement, language: ViaLanguage | "Hindi") {
   const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT)
   let node = walker.nextNode()
   while (node) {

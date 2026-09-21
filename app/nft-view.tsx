@@ -165,7 +165,7 @@ function nftTitle(body?: string) {
 const styles = {
   page: {
     minHeight: "100vh",
-    background: '#050807 url("/via-nft-background-approved.webp") center / cover fixed no-repeat',
+    background: "#050807",
     color: "#f4f7f5",
     fontFamily: "Arial, Helvetica, sans-serif",
     padding: "28px 20px 60px",
@@ -221,7 +221,8 @@ const styles = {
   },
   mediaFrame: {
     aspectRatio: "1 / 1",
-    background: "#090d0b",
+    background: "rgba(9,13,11,.78)",
+    backdropFilter: "blur(4px)",
     justifySelf: "center",
     maxWidth: "440px",
     width: "100%",
@@ -245,7 +246,8 @@ const styles = {
     background: "#070b09",
   },
   card: {
-    background: "rgba(9,13,11,.72)",
+    background: "rgba(9,13,11,.64)",
+    backdropFilter: "blur(8px)",
     border: "1px solid rgba(63,74,68,.72)",
     borderRadius: "14px",
     padding: "20px",
@@ -296,7 +298,7 @@ const styles = {
     margin: 0,
   },
   fact: {
-    background: "#070b09",
+    background: "rgba(7,11,9,.76)",
     border: "1px solid rgba(63,74,68,.45)",
     borderRadius: "11px",
     padding: "13px",
@@ -335,7 +337,7 @@ const styles = {
   ownershipPanel: {
     marginTop: "18px",
     padding: "16px",
-    background: "#070b09",
+    background: "rgba(7,11,9,.76)",
     border: "1px solid rgba(143,212,169,.22)",
     borderRadius: "12px",
   },
@@ -667,7 +669,9 @@ export default async function NFTView({
     )
   } catch {
     return (
-      <main style={styles.page}>
+      <main style={{ ...styles.page, position: "relative", isolation: "isolate", overflowX: "hidden" }}>
+        <div aria-hidden="true" style={{ position: "fixed", inset: 0, zIndex: -2, pointerEvents: "none", backgroundImage: 'url("/via-nft-background-approved.jpg")', backgroundPosition: "center top", backgroundSize: "cover", backgroundRepeat: "no-repeat" }} />
+        <div aria-hidden="true" style={{ position: "fixed", inset: 0, zIndex: -1, pointerEvents: "none", background: "linear-gradient(180deg,rgba(3,7,5,.42) 0%,rgba(3,7,5,.68) 46%,rgba(3,7,5,.9) 100%)" }} />
         <div style={styles.container}>
           <div style={styles.topActions}>
             <BackToCollection href={backHref} label={backLabel} style={styles.backLink} />

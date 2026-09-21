@@ -24,7 +24,7 @@ type Copy = {
   safetyBody: string
 }
 
-const copy: Record<ViaLanguage, Copy> = {
+const copy: Record<ViaLanguage | "Hindi", Copy> = {
   Dutch: {
     badge: "VIA Studio",
     kicker: "Maken · voorbereiden · minten",
@@ -119,6 +119,18 @@ const copy: Record<ViaLanguage, Copy> = {
     createWithMedia: "使用媒体创建",
     safety: "Studio 安全",
     safetyBody: "VIA 将准备与区块链批准分开。DeSo 发布和 NFT 铸造继续使用明确的 DeSo Identity 批准步骤；VIA 从不索要或存储助记词或私有签名密钥。",
+  },
+  Hindi: {
+    badge: "VIA Studio", kicker: "बनाएँ · तैयार करें · mint करें", heading: "Studio",
+    intro: "पोस्ट बनाने, मीडिया तैयार करने, ड्राफ्ट सहेजने और native DeSo NFT mint करने के लिए एक शांत कार्यक्षेत्र।",
+    createPost: "पोस्ट बनाएँ", createPostText: "जारी VIA Feed composer खोलें और सुरक्षित DeSo प्रवाह से प्रकाशित करें।",
+    mintNft: "NFT mint करें", mintNftText: "NFT शर्तें तय करें, वर्तमान लागत की पूर्व-जाँच करें और native DeSo mint को मंज़ूरी दें।",
+    media: "मीडिया", mediaText: "दूसरा upload मार्ग बनाए बिना पोस्ट या NFT के लिए मीडिया तैयार करें।",
+    drafts: "ड्राफ्ट", draftsText: "प्रकाशित करने से पहले गैर-गोपनीय काम इस डिवाइस पर स्थानीय रूप से तैयार और सहेजें।",
+    mediaHeading: "मीडिया वहीं तैयार करें जहाँ उसका उपयोग होगा",
+    mediaBody: "पोस्ट की छवियाँ और वीडियो जारी Feed composer में रहते हैं। NFT मीडिया और storage विकल्प नीचे NFT mint प्रवाह में रहते हैं, ताकि Studio upload नियंत्रणों की नकल न करे।",
+    createWithMedia: "मीडिया के साथ बनाएँ", safety: "Studio सुरक्षा",
+    safetyBody: "VIA तैयारी को blockchain मंज़ूरी से अलग रखता है। DeSo पोस्ट और NFT mint में स्पष्ट DeSo Identity मंज़ूरी बनी रहती है; VIA कभी seed phrase या private signing key नहीं माँगता और न ही सहेजता है।",
   },
 }
 

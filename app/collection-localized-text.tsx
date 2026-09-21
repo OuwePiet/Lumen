@@ -23,7 +23,7 @@ type Copy = {
   detected: string
 }
 
-const copy: Record<ViaLanguage, Copy> = {
+const copy: Record<ViaLanguage | "Hindi", Copy> = {
   Dutch: {
     myVia: "Mijn VIA",
     communities: "Communities",
@@ -99,6 +99,13 @@ const copy: Record<ViaLanguage, Copy> = {
     displayed: "NFT mostrados",
     unavailable: "Colección no disponible",
     detected: "NFT detectados",
+  },
+  Hindi: {
+    myVia: "मेरा VIA", communities: "समुदाय", discover: "खोजें", news: "समाचार", heading: "NFT संग्रह",
+    intro: "VIA के माध्यम से सार्वजनिक DeSo NFT देखें। संग्रह डेटा DeSo नेटवर्क से केवल पढ़ने के लिए लोड होता है।",
+    onChain: "ऑन-चेन NFT", creator: "DeSo क्रिएटर", copy: "प्रति", copies: "प्रतियाँ", forSale: "बिक्री के लिए",
+    notForSale: "बिक्री के लिए नहीं", buyNow: "अभी खरीदें", minBid: "न्यूनतम बोली", displayed: "NFT दिखाए गए",
+    unavailable: "संग्रह उपलब्ध नहीं", detected: "NFT मिले",
   },
   Chinese: {
     myVia: "我的 VIA",

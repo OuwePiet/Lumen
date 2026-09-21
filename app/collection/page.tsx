@@ -36,9 +36,9 @@ export default function CollectionPage() {
           inset: 0,
           zIndex: 0,
           pointerEvents: "none",
-          backgroundImage: 'url("/via-nft-background-approved.webp")',
+          backgroundImage: 'url("/via-nft-background-approved.jpg")',
           backgroundSize: "cover",
-          backgroundPosition: "center 18%",
+          backgroundPosition: "center top",
           backgroundRepeat: "no-repeat",
         }}
       />

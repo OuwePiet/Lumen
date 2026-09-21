@@ -51,7 +51,7 @@ type Copy = {
   countryVoluntary: string
 }
 
-const copy: Record<ViaLanguage, Copy> = {
+const copy: Record<ViaLanguage | "Hindi", Copy> = {
   Dutch: {
     kicker: "VIA · PROFIEL",
     heading: "Mijn profiel",
@@ -135,6 +135,14 @@ const copy: Record<ViaLanguage, Copy> = {
     coinsCirculation: "Coins en circulación",
     noBio: "Este perfil DeSo no tiene biografía pública.",
     publicKey: "Clave pública", active: "Activo", inactive90: "Inactivo 90+ días", lastActivity: "Última actividad pública", countryVoluntary: "País: voluntario",
+  },
+  Hindi: {
+    kicker: "VIA · प्रोफ़ाइल", heading: "मेरी प्रोफ़ाइल", intro: "आपकी लॉग-इन सार्वजनिक DeSo पहचान, बिना अतिरिक्त वॉलेट अनुमति माँगे दिखाई जाती है।",
+    myNfts: "मेरे NFT", back: "मेरे VIA पर वापस जाएँ", noAccount: "कोई DeSo खाता जुड़ा नहीं है", noAccountText: "DeSo Identity से लॉग इन करने के लिए VIA हेडर में खाता बटन का उपयोग करें।",
+    loading: "आपकी DeSo प्रोफ़ाइल लोड हो रही है…", unavailable: "आपकी DeSo प्रोफ़ाइल अभी लोड नहीं हो सकी।", verified: "✓ DeSo सत्यापित", yourDeso: "आपका DESO",
+    walletUnavailable: "आपका DESO बैलेंस अस्थायी रूप से उपलब्ध नहीं है", coinPrice: "Coin मूल्य", followers: "फ़ॉलोअर्स", following: "फ़ॉलोइंग", coinHolders: "Coin धारक",
+    coinsCirculation: "प्रचलन में Coins", noBio: "इस DeSo प्रोफ़ाइल पर कोई सार्वजनिक परिचय नहीं है।", publicKey: "सार्वजनिक कुंजी", active: "सक्रिय",
+    inactive90: "90+ दिनों से निष्क्रिय", lastActivity: "अंतिम सार्वजनिक गतिविधि", countryVoluntary: "देश: स्वैच्छिक",
   },
   Chinese: {
     kicker: "VIA · 个人资料",

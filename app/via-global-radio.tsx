@@ -12,12 +12,13 @@ const PAUSE_EVENT = "via:world-radio:pause"
 type Station = { name: string; streamUrl: string }
 type RadioCopy = { radio: string; choose: string; on: string; off: string; turnOn: string; turnOff: string; chooseAria: string }
 
-const COPY: Record<ViaLanguage, RadioCopy> = {
+const COPY: Record<ViaLanguage | "Hindi", RadioCopy> = {
   Dutch: { radio: "Wereldradio", choose: "Kiezen", on: "Aan", off: "Uit", turnOn: "Wereldradio aanzetten", turnOff: "Wereldradio uitzetten", chooseAria: "Kies een Wereldradio-zender" },
   English: { radio: "World Radio", choose: "Choose", on: "On", off: "Off", turnOn: "Turn on World Radio", turnOff: "Turn off World Radio", chooseAria: "Choose a World Radio station" },
   French: { radio: "Radio mondiale", choose: "Choisir", on: "Marche", off: "Arrêt", turnOn: "Activer la radio mondiale", turnOff: "Désactiver la radio mondiale", chooseAria: "Choisir une station de radio mondiale" },
   Spanish: { radio: "Radio mundial", choose: "Elegir", on: "Encender", off: "Apagar", turnOn: "Encender la radio mundial", turnOff: "Apagar la radio mundial", chooseAria: "Elegir una emisora de radio mundial" },
   Chinese: { radio: "世界电台", choose: "选择", on: "开启", off: "关闭", turnOn: "开启世界电台", turnOff: "关闭世界电台", chooseAria: "选择世界电台" },
+  Hindi: { radio: "विश्व रेडियो", choose: "चुनें", on: "चालू", off: "बंद", turnOn: "विश्व रेडियो चालू करें", turnOff: "विश्व रेडियो बंद करें", chooseAria: "विश्व रेडियो स्टेशन चुनें" },
 }
 
 function readStation(): Station | null {

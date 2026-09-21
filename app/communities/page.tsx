@@ -10,7 +10,7 @@ type CommunityCard = { title: string; text: string };
 type CommunityGroup = { title: string; intro: string; cards: CommunityCard[] };
 type Copy = { kicker: string; heading: string; intro: string; back: string; foundation: string; foundationText: string; groups: CommunityGroup[] };
 
-const copy: Record<ViaLanguage, Copy> = {
+const copy: Record<ViaLanguage | "Hindi", Copy> = {
   Dutch: {
     kicker: "VIA · COMMUNITY",
     heading: "Communities",
@@ -118,6 +118,24 @@ const copy: Record<ViaLanguage, Copy> = {
       { title: "游戏与交流", intro: "轻松互动、游戏和开放交流。", cards: [
         { title: "游戏与 Quest", text: "VIA World Quest、休闲游戏及相关社区活动。" },
         { title: "开放社区", text: "用于交流、想法和发现的广泛公共空间。" },
+      ] },
+    ],
+  },
+  Hindi: {
+    kicker: "VIA · समुदाय", heading: "समुदाय", intro: "एक ही विषय में रुचि रखने वाले लोगों के लिए केंद्रित स्थान, ताकि हर बातचीत एक ही सामान्य feed में न जाए।",
+    back: "मेरा VIA पर वापस जाएँ", foundation: "समुदाय की नींव", foundationText: "शामिल होना, पोस्ट करना, सदस्यता, दृश्यता और moderation तभी दिखाई देंगे जब वे जाँची गई DeSo-compatible implementation से समर्थित हों। VIA स्थानीय browser choice को वास्तविक community membership की तरह नहीं दिखाता।",
+    groups: [
+      { title: "रचनात्मकता और संस्कृति", intro: "कला, चित्र, संगीत और creators एक साथ।", cards: [
+        { title: "कला और फोटोग्राफी", text: "दृश्य कार्य और संस्कृति के आसपास creators, collectors और visitors।" },
+        { title: "संगीत", text: "संगीत खोजें, चर्चा करें और भविष्य में VIA LIVE sessions से जोड़ें।" },
+      ] },
+      { title: "DeSo और संग्रह", intro: "तकनीक, creators और digital collections।", cards: [
+        { title: "DeSo और builders", text: "DeSo, creator tools और platform development एक केंद्रित स्थान पर।" },
+        { title: "NFT और संग्रह", text: "Collections, releases, collecting और NFT पर चर्चा।" },
+      ] },
+      { title: "खेलें और मिलें", intro: "हल्का संपर्क, games और व्यापक बातचीत।", cards: [
+        { title: "Games और Quest", text: "VIA World Quest, casual games और संबंधित community activity।" },
+        { title: "खुला समुदाय", text: "बातचीत, विचारों और खोज के लिए व्यापक सार्वजनिक स्थान।" },
       ] },
     ],
   },

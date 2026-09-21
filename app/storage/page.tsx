@@ -27,7 +27,7 @@ type Copy = {
   back: string
 }
 
-const copy: Record<ViaLanguage, Copy> = {
+const copy: Record<ViaLanguage | "Hindi", Copy> = {
   Dutch: {
     kicker: "VIA · EXTERNE OPSLAG",
     title: "Opslag zonder eigen VIA-server",
@@ -104,6 +104,25 @@ const copy: Record<ViaLanguage, Copy> = {
     providerAction: "Ver precios actuales del proveedor",
     back: "Volver a VIA",
   },
+  Hindi: {
+    kicker: "VIA · बाहरी स्टोरेज",
+    title: "VIA के अपने सर्वर के बिना स्टोरेज",
+    intro: "बड़ी फाइलों, मीडिया, दस्तावेज़ों, अभिलेखों और संग्रहों के लिए VIA बाहरी स्टोरेज का उपयोग करता है। आपकी फाइल चुने गए स्टोरेज प्रदाता के पास रहती है; VIA स्वयं को स्टोरेज प्रदाता के रूप में प्रस्तुत नहीं करता।",
+    visitorTitle: "विज़िटर्स के लिए",
+    visitorText: "केवल भरोसेमंद बाहरी स्टोरेज चाहिए? बाहरी स्टोरेज प्रदाता को सीधे खोलें। इसके लिए DeSo अकाउंट आवश्यक नहीं है।",
+    visitorAction: "बाहरी स्टोरेज खोलें",
+    communityTitle: "कम्युनिटी सदस्यों के लिए",
+    communityText: "क्रिएटर फाइलों, मीडिया और अभिलेखों के लिए उसी बाहरी स्टोरेज का उपयोग करें। VIA क्रिएटर कार्य के लिए इसके बाद Studio में जाएँ; on-chain कार्य DeSo Identity के माध्यम से ही होते हैं।",
+    communityAction: "VIA Studio पर जाएँ",
+    priceTitle: "मौजूदा R2 आधार मूल्य",
+    free: "हर महीने 10 GB-month शामिल",
+    paid: "शामिल स्टोरेज से ऊपर $0.015 प्रति GB-month",
+    egress: "Internet egress: निःशुल्क",
+    operations: "Upload, read और list operations के लिए प्रदाता अलग शुल्क ले सकता है।",
+    note: "प्रदाता हमेशा मौजूदा कीमत और शर्तें दिखाता है। VIA यहाँ आपकी फाइल की अपनी कॉपी नहीं रखता।",
+    providerAction: "मौजूदा प्रदाता मूल्य देखें",
+    back: "VIA पर वापस जाएँ",
+  },
   Chinese: {
     kicker: "VIA · 外部存储",
     title: "无需 VIA 自建服务器的存储",
@@ -129,7 +148,7 @@ const primary = "inline-flex min-h-11 items-center justify-center rounded-[12px]
 const secondary = "inline-flex min-h-11 items-center justify-center rounded-[12px] border border-zinc-700/80 px-4 py-2 text-sm font-semibold text-zinc-300 transition hover:border-[#8fd4a9]/45 hover:text-[#9adbb2]"
 
 export default function StoragePage() {
-  const [language, setLanguage] = useState<ViaLanguage>("English")
+  const [language, setLanguage] = useState<ViaLanguage | "Hindi">("English")
 
   useEffect(() => {
     const refresh = () => setLanguage(readViaLocalSettings().interfaceLanguage)

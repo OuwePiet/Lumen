@@ -47,7 +47,7 @@ type Copy = {
   selectConversation: string
 }
 
-const COPY: Record<ViaLanguage, Copy> = {
+const COPY: Record<ViaLanguage | "Hindi", Copy> = {
   Dutch: {
     kicker: "VIA · BERICHTEN",
     title: "Berichten",
@@ -127,6 +127,14 @@ const COPY: Record<ViaLanguage, Copy> = {
     identityNote: "读取和发送通过 DeSo Identity 完成加密和解密。VIA 不自行存储私人消息。",
     newMessage: "新消息",
     selectConversation: "选择一个会话",
+  },
+  Hindi: {
+    kicker: "VIA · संदेश", title: "संदेश", intro: "DeSo के माध्यम से निजी बातचीत। वार्तालाप सीधे DeSo नेटवर्क से लोड होते हैं।",
+    back: "VIA पर वापस जाएँ", search: "बातचीत खोजें", noAccount: "कोई DeSo खाता कनेक्ट नहीं है",
+    noAccountText: "अपनी निजी बातचीत लोड करने के लिए DeSo Identity से लॉग इन करें।", loading: "बातचीत लोड हो रही है…",
+    unavailable: "संदेश अस्थायी रूप से उपलब्ध नहीं हैं।", empty: "अभी कोई बातचीत नहीं मिली।", encrypted: "एन्क्रिप्टेड DeSo संदेश",
+    identityNote: "पढ़ने और भेजने में encryption और decryption के लिए DeSo Identity का उपयोग होता है। VIA निजी संदेश स्वयं संग्रहीत नहीं करता।",
+    newMessage: "नया संदेश", selectConversation: "बातचीत चुनें",
   },
 }
 

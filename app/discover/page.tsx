@@ -12,7 +12,7 @@ type Copy = {
   secondary: Array<{ title: string; href: string }>
 }
 
-const COPY: Record<ViaLanguage, Copy> = {
+const COPY: Record<ViaLanguage | "Hindi", Copy> = {
   Dutch: {
     title: "Ontdekken",
     intro: "Vind mensen, posts, media, NFT’s en ideeën binnen VIA en DeSo.",
@@ -116,6 +116,21 @@ const COPY: Record<ViaLanguage, Copy> = {
       { title: "活动", href: "/events" },
       { title: "学习", href: "/learn" },
       { title: "展示你的作品", href: "/show-your-stuff" },
+    ],
+  },
+  Hindi: {
+    title: "खोजें", intro: "VIA और DeSo में लोगों, posts, media, NFT और विचारों को खोजें।", more: "और खोजें",
+    primary: [
+      { title: "लोग", text: "DeSo पर creators और accounts खोजें।", href: "/discover/voices", action: "लोग खोजें" },
+      { title: "सामग्री", text: "Posts, images, video और NFT देखें।", href: "/social", action: "सामग्री खोजें" },
+      { title: "श्रेणियाँ", text: "कला, फोटोग्राफी, संगीत, video, collecting, heritage और कहानियाँ खोजें।", href: "/discover/world", action: "श्रेणियाँ खोजें" },
+      { title: "सरप्राइज़", text: "VIA Discover से कुछ अप्रत्याशित खोलें।", href: "/discover/surprise", action: "मुझे चौंकाएँ" },
+    ],
+    secondary: [
+      { title: "दुनिया भर में", href: "/discover/world" }, { title: "नई आवाज़ें", href: "/discover/voices" },
+      { title: "NFT", href: "/collection" }, { title: "विश्व रेडियो", href: "/radio" },
+      { title: "विश्व समाचार", href: "/news" }, { title: "कार्यक्रम", href: "/events" },
+      { title: "सीखें", href: "/learn" }, { title: "अपना काम दिखाएँ", href: "/show-your-stuff" },
     ],
   },
 }

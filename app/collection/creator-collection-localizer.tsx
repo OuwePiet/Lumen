@@ -8,7 +8,7 @@ type Copy = {
   patterns: Array<[RegExp, (...parts: string[]) => string]>
 }
 
-const COPY: Record<ViaLanguage, Copy> = {
+const COPY: Record<ViaLanguage | "Hindi", Copy> = {
   English: { exact: {}, patterns: [] },
   Dutch: {
     exact: {
@@ -314,6 +314,34 @@ const COPY: Record<ViaLanguage, Copy> = {
       [/^Show next (\d+)$/u, (count) => `显示接下来的 ${count} 个`],
     ],
   },
+  Hindi: {
+    exact: {
+      "VIA · NFT hub": "VIA · NFT हब", "Everything NFT in one place": "सभी NFT सुविधाएँ एक ही जगह",
+      "Browse collections, create and mint, buy or sell, manage bids and follow transfers without separate homepage groups.": "कलेक्शन देखें, बनाएँ और mint करें, खरीदें या बेचें, बोलियाँ संभालें और ट्रांसफ़र का अनुसरण करें।",
+      "Collection": "कलेक्शन", "Create & Mint": "बनाएँ और Mint करें", "Market": "बाज़ार", "Received Bids": "प्राप्त बोलियाँ", "My Bids": "मेरी बोलियाँ",
+      "Find NFT creator": "NFT क्रिएटर खोजें", "NFT collection": "NFT कलेक्शन",
+      "Explore public DeSo NFTs through VIA. Collection data is loaded read-only from the DeSo network.": "VIA के माध्यम से सार्वजनिक DeSo NFT देखें। कलेक्शन डेटा DeSo नेटवर्क से केवल पढ़ने के लिए लोड होता है।",
+      "Collection controls": "कलेक्शन नियंत्रण", "Filter collection… title, creator or your own word": "कलेक्शन फ़िल्टर करें… शीर्षक, क्रिएटर या अपना शब्द",
+      "Sort": "क्रम", "View": "दृश्य", "Comfortable": "आरामदायक", "Compact": "कॉम्पैक्ट", "Price low–high": "मूल्य कम–अधिक", "Price high–low": "मूल्य अधिक–कम",
+      "Reset controls": "नियंत्रण रीसेट करें", "Active": "सक्रिय", "Voice settings": "वॉइस सेटिंग्स", "Speech processing": "वॉइस प्रोसेसिंग", "Voice": "वॉइस", "Voice off": "वॉइस बंद", "Voice on": "वॉइस चालू",
+      "Reset voice settings": "वॉइस सेटिंग्स रीसेट करें", "Not supported on this device": "इस डिवाइस पर समर्थित नहीं",
+      "Search a public DeSo account and open its NFT collection.": "सार्वजनिक DeSo खाता खोजें और उसका NFT कलेक्शन खोलें।", "DeSo username": "DeSo उपयोगकर्ता नाम",
+      "Checking…": "जाँच हो रही है…", "Find creator": "क्रिएटर खोजें", "Checking DeSo…": "DeSo की जाँच हो रही है…", "Matching DeSo accounts": "मेल खाते DeSo खाते",
+      "View public NFTs": "सार्वजनिक NFT देखें", "Try loading public NFTs again": "सार्वजनिक NFT फिर लोड करें", "Loading public NFTs…": "सार्वजनिक NFT लोड हो रहे हैं…",
+      "Search by NFT title or creator": "NFT शीर्षक या क्रिएटर से खोजें", "Collection order": "कलेक्शन क्रम", "Title A–Z": "शीर्षक A–Z", "Most copies owned": "सबसे अधिक प्रतियाँ", "Fewest copies owned": "सबसे कम प्रतियाँ",
+      "Lowest price": "सबसे कम मूल्य", "Highest price": "सबसे अधिक मूल्य", "Sale": "बिक्री", "All": "सभी", "For sale": "बिक्री के लिए", "Not for sale": "बिक्री के लिए नहीं",
+      "Media": "मीडिया", "Image": "चित्र", "Video": "वीडियो", "Audio": "ऑडियो", "Unavailable": "उपलब्ध नहीं", "Reset filters": "फ़िल्टर रीसेट करें",
+      "Link copied": "लिंक कॉपी हुआ", "Copy collection link": "कलेक्शन लिंक कॉपी करें", "Refreshing from DeSo…": "DeSo से रीफ़्रेश हो रहा है…", "Refresh from DeSo": "DeSo से रीफ़्रेश करें",
+      "Showing cached NFTs · refreshing from DeSo…": "कैश किए NFT दिख रहे हैं · DeSo से रीफ़्रेश हो रहा है…", "Loading public NFTs from DeSo…": "DeSo से सार्वजनिक NFT लोड हो रहे हैं…", "DeSo refresh status unavailable.": "DeSo रीफ़्रेश स्थिति उपलब्ध नहीं है।"
+    },
+    patterns: [
+      [/^The public NFTs could not be retrieved from DeSo right now\\.$/u, () => "अभी DeSo से सार्वजनिक NFT प्राप्त नहीं किए जा सके।"], [/^Enter a DeSo username\\.$/u, () => "DeSo उपयोगकर्ता नाम दर्ज करें।"], [/^DeSo account not found\\.$/u, () => "DeSo खाता नहीं मिला।"], [/^The DeSo account could not be checked right now\\.$/u, () => "अभी DeSo खाते की जाँच नहीं की जा सकी।"],
+      [/^@(.+) owns (\\d+) NFT (copy|copies) across (\\d+) different NFT(s?)\\.$/u, (name,copies,_copy,nfts) => `@${name} के पास ${nfts} अलग-अलग NFT में ${copies} NFT प्रतियाँ हैं।`], [/^@(.+) owns (\\d+) of (\\d+) (copy|copies)$/u, (name,owned,total) => `@${name} के पास ${total} में से ${owned} प्रतियाँ हैं`],
+      [/^Updated (.+)$/u, (time) => `अपडेट ${time}`], [/^No public NFTs found for @(.+)\.$/u, (name) => `@${name} के लिए कोई सार्वजनिक NFT नहीं मिला।`],
+      [/^(\d+) of (\d+) public NFTs match\.$/u, (a,b) => `${b} में से ${a} सार्वजनिक NFT मेल खाते हैं।`], [/^(\d+) for sale$/u, (count) => `${count} बिक्री के लिए`],
+      [/^(\d+) for sale · From (.+) DESO$/u, (count,price) => `${count} बिक्री के लिए · ${price} DESO से`], [/^Show next (\d+)$/u, (count) => `अगले ${count} दिखाएँ`]
+    ],
+  },
 }
 
 const textSource = new WeakMap<Text, string>()
@@ -329,7 +357,7 @@ function translate(source: string, copy: Copy) {
   return source
 }
 
-function translateRoot(root: HTMLElement, language: ViaLanguage) {
+function translateRoot(root: HTMLElement, language: ViaLanguage | "Hindi") {
   const copy = COPY[language]
   const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT)
   let node = walker.nextNode()

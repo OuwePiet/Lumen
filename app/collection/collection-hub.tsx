@@ -17,7 +17,7 @@ type HubCopy = {
   navLabel: string
 }
 
-const COPY: Partial<Record<ViaLanguage, HubCopy>> = {
+const COPY: Partial<Record<ViaLanguage | "Hindi", HubCopy>> = {
   Dutch: {
     kicker: "VIA · NFT hub",
     title: "Alles voor NFT's op één plek",
@@ -77,6 +77,18 @@ const COPY: Partial<Record<ViaLanguage, HubCopy>> = {
     myBids: "我的出价",
     transfers: "转移",
     navLabel: "NFT 分区",
+  },
+  Hindi: {
+    kicker: "VIA · NFT हब",
+    title: "NFT से जुड़ी हर चीज़ एक जगह",
+    intro: "कलेक्शन देखें, बनाएँ और mint करें, खरीदें या बेचें, बोलियाँ संभालें और transfers का अनुसरण करें—homepage पर अलग-अलग मुख्य समूहों के बिना।",
+    collection: "कलेक्शन",
+    createMint: "बनाएँ और mint करें",
+    market: "मार्केट",
+    receivedBids: "प्राप्त बोलियाँ",
+    myBids: "मेरी बोलियाँ",
+    transfers: "ट्रांसफर",
+    navLabel: "NFT सेक्शन",
   },
 }
 

@@ -8,7 +8,7 @@ type Copy = {
   patterns: Array<[RegExp, (...parts: string[]) => string]>
 }
 
-const COPY: Record<ViaLanguage, Copy> = {
+const COPY: Record<ViaLanguage | "Hindi", Copy> = {
   English: { exact: {}, patterns: [] },
   Dutch: {
     exact: {
@@ -198,6 +198,61 @@ const COPY: Record<ViaLanguage, Copy> = {
       [/^Diamond · (\d+)$/u, (count) => `Diamond · ${count}`],
       [/^(\d+) characters left$/u, (count) => `还可输入 ${count} 个字符`]
     ]
+  },
+  Hindi: {
+    exact: {
+      "Public DeSo conversation on VIA.": "VIA पर सार्वजनिक DeSo बातचीत।",
+      "Social shortcuts": "सोशल शॉर्टकट",
+      "Notifications": "सूचनाएँ",
+      "Saved": "सहेजे गए",
+      "Create": "बनाएँ",
+      "Share a post": "पोस्ट साझा करें",
+      "Edit your post": "अपनी पोस्ट संपादित करें",
+      "Feed": "फ़ीड",
+      "Posts": "पोस्ट",
+      "Filter posts": "पोस्ट फ़िल्टर करें",
+      "All": "सभी",
+      "Image": "चित्र",
+      "Video": "वीडियो",
+      "Public Hot feed": "सार्वजनिक Hot फ़ीड",
+      "Newest public DeSo posts": "नवीनतम सार्वजनिक DeSo पोस्ट",
+      "DeSo login required for Following": "Following के लिए DeSo लॉगिन आवश्यक है",
+      "Open Following": "Following खोलें",
+      "Open Hot": "Hot खोलें",
+      "Open New": "नया खोलें",
+      "Loading…": "लोड हो रहा है…",
+      "Choose a feed and load posts.": "फ़ीड चुनें और पोस्ट लोड करें।",
+      "No posts found.": "कोई पोस्ट नहीं मिली।",
+      "Posts are temporarily unavailable.": "पोस्ट अस्थायी रूप से उपलब्ध नहीं हैं।",
+      "No loaded posts match this filter.": "लोड की गई कोई पोस्ट इस फ़िल्टर से मेल नहीं खाती।",
+      "Media post": "मीडिया पोस्ट",
+      "Like": "पसंद",
+      "Reply": "जवाब",
+      "Repost": "रीपोस्ट",
+      "Diamond": "Diamond",
+      "Quote": "उद्धरण",
+      "Participation & safety": "भागीदारी और सुरक्षा",
+      "Public view · DeSo participation": "सार्वजनिक दृश्य · DeSo भागीदारी",
+      "Public feeds stay open. Posting and other DeSo actions become available only after a valid DeSo Identity login. Blockchain actions keep their own review and approval step.": "सार्वजनिक फ़ीड खुले रहते हैं। पोस्ट करना और अन्य DeSo actions केवल वैध DeSo Identity login के बाद उपलब्ध होते हैं। Blockchain actions के लिए अपनी अलग review और approval प्रक्रिया बनी रहती है।",
+      "VIA never treats a login as a trust badge and never asks for or stores a visitor's seed phrase. Spam, bot, scam and moderation safeguards remain separate from DeSo account access.": "VIA login को कभी trust badge नहीं मानता और किसी visitor की seed phrase न मांगता है, न संग्रहीत करता है। Spam, bot, scam और moderation safeguards DeSo account access से अलग रहते हैं।",
+      "Save draft": "ड्राफ्ट सहेजें",
+      "Clear draft": "ड्राफ्ट हटाएँ",
+      "Photo": "फ़ोटो",
+      "Choose image": "चित्र चुनें",
+      "Poll": "पोल",
+      "Emoji": "इमोजी",
+      "Publish": "प्रकाशित करें",
+      "Quote Repost": "Quote Repost"
+    },
+    patterns: [
+      [/^(\\d+) posts loaded\\.$/u, (count) => `${count} पोस्ट लोड हुईं।`],
+      [/^Following for (.+)$/u, (account) => `${account} के लिए Following`],
+      [/^Like · (\\d+)$/u, (count) => `पसंद · ${count}`],
+      [/^Reply · (\\d+)$/u, (count) => `जवाब · ${count}`],
+      [/^Repost · (\\d+)$/u, (count) => `रीपोस्ट · ${count}`],
+      [/^Diamond · (\\d+)$/u, (count) => `Diamond · ${count}`],
+      [/^(\\d+) characters left$/u, (count) => `${count} अक्षर शेष`]
+    ]
   }
 }
 
@@ -214,7 +269,7 @@ function translated(source: string, copy: Copy) {
   return source
 }
 
-function translateRoot(root: HTMLElement, language: ViaLanguage) {
+function translateRoot(root: HTMLElement, language: ViaLanguage | "Hindi") {
   const copy = COPY[language]
   const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT)
   let node = walker.nextNode()
