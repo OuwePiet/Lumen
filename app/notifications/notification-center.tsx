@@ -84,6 +84,7 @@ type Copy = {
   open: string
   close: string
   selectAll: string
+  expandView: string
   fresh: string
   actor: string
   descriptions: Record<Exclude<Category, "all">, (actor: string) => string>
@@ -107,6 +108,7 @@ const COPY: Record<ViaLanguage | "Hindi", Copy> = {
     open: "Openen",
     close: "Sluiten",
     selectAll: "Alles selecteren",
+    expandView: "Uitgebreide weergave",
     fresh: "Nieuw",
     actor: "DeSo-account",
     descriptions: {
@@ -140,6 +142,7 @@ const COPY: Record<ViaLanguage | "Hindi", Copy> = {
     open: "Open",
     close: "Close",
     selectAll: "Select All",
+    expandView: "Expand View",
     fresh: "New",
     actor: "DeSo account",
     descriptions: {
@@ -173,6 +176,7 @@ const COPY: Record<ViaLanguage | "Hindi", Copy> = {
     open: "Ouvrir",
     close: "Fermer",
     selectAll: "Tout sélectionner",
+    expandView: "Vue étendue",
     fresh: "Nouveau",
     actor: "Compte DeSo",
     descriptions: {
@@ -206,6 +210,7 @@ const COPY: Record<ViaLanguage | "Hindi", Copy> = {
     open: "Abrir",
     close: "Cerrar",
     selectAll: "Seleccionar todo",
+    expandView: "Vista ampliada",
     fresh: "Nuevo",
     actor: "Cuenta DeSo",
     descriptions: {
@@ -228,7 +233,7 @@ const COPY: Record<ViaLanguage | "Hindi", Copy> = {
     heading: "आपके खाते तक क्या पहुँचा?", active: "सक्रिय खाता", refresh: "रीफ़्रेश", refreshing: "रीफ़्रेश हो रहा है…",
     loadingNotifications: "सूचनाएँ लोड हो रही हैं…", recentLoaded: (count) => `${count} हाल की सूचनाएँ लोड हुईं।`,
     noRecent: "कोई हाल की सूचना नहीं।", unavailable: "सूचनाएँ अस्थायी रूप से उपलब्ध नहीं हैं।", filters: "सूचना फ़िल्टर",
-    loading: "लोड हो रहा है…", nothing: "इस फ़िल्टर में कुछ नहीं है।", open: "खोलें", close: "बंद करें", selectAll: "सभी चुनें", fresh: "नया", actor: "DeSo खाता",
+    loading: "लोड हो रहा है…", nothing: "इस फ़िल्टर में कुछ नहीं है।", open: "खोलें", close: "बंद करें", selectAll: "सभी चुनें", expandView: "विस्तृत दृश्य", fresh: "नया", actor: "DeSo खाता",
     descriptions: {
       reaction: (actor) => `${actor} ने आपकी एक पोस्ट पर प्रतिक्रिया दी।`,
       diamond1: (actor) => `${actor} ने 1 Diamond भेजा।`,
@@ -260,6 +265,7 @@ const COPY: Record<ViaLanguage | "Hindi", Copy> = {
     open: "打开",
     close: "关闭",
     selectAll: "全选",
+    expandView: "展开视图",
     fresh: "新",
     actor: "DeSo 账户",
     descriptions: {
@@ -599,7 +605,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
           <button type="button" onClick={() => setRefreshToken((value) => value + 1)} disabled={status === "loading"} title={copy.refresh} aria-label={copy.refresh} className="grid h-9 w-9 place-items-center rounded-full border border-[#8fd4a9] bg-[#285f40] text-white transition disabled:cursor-wait disabled:opacity-60">
             <RefreshCw className={`h-4 w-4 ${status === "loading" ? "animate-spin" : ""}`} />
           </button>
-          <button type="button" onClick={() => setExpandedView((value) => !value)} title="Expand View" aria-label="Expand View" aria-pressed={expandedView} className={`grid h-9 w-9 place-items-center rounded-full border text-white transition ${expandedView ? "border-[#8fd4a9] bg-[#285f40]" : "border-[#9b9b9b] bg-[#9b9b9b]"}`}>
+          <button type="button" onClick={() => setExpandedView((value) => !value)} title={copy.expandView} aria-label={copy.expandView} aria-pressed={expandedView} className={`grid h-9 w-9 place-items-center rounded-full border text-white transition ${expandedView ? "border-[#8fd4a9] bg-[#285f40]" : "border-[#9b9b9b] bg-[#9b9b9b]"}`}>
             <ChevronsRight className="h-4 w-4" />
           </button>
         </div>
