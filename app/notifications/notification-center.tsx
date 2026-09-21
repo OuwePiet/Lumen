@@ -88,6 +88,7 @@ type Copy = {
   replyAction: string
   copyLink: string
   linkCopied: string
+  postUnavailable: string
   fresh: string
   actor: string
   descriptions: Record<Exclude<Category, "all">, (actor: string) => string>
@@ -115,6 +116,7 @@ const COPY: Record<ViaLanguage | "Hindi", Copy> = {
     replyAction: "Antwoorden",
     copyLink: "Link kopiëren",
     linkCopied: "Link gekopieerd",
+    postUnavailable: "Bericht niet beschikbaar.",
     fresh: "Nieuw",
     actor: "DeSo-account",
     descriptions: {
@@ -152,6 +154,7 @@ const COPY: Record<ViaLanguage | "Hindi", Copy> = {
     replyAction: "Reply",
     copyLink: "Copy link",
     linkCopied: "Link copied",
+    postUnavailable: "Post unavailable.",
     fresh: "New",
     actor: "DeSo account",
     descriptions: {
@@ -189,6 +192,7 @@ const COPY: Record<ViaLanguage | "Hindi", Copy> = {
     replyAction: "Répondre",
     copyLink: "Copier le lien",
     linkCopied: "Lien copié",
+    postUnavailable: "Publication indisponible.",
     fresh: "Nouveau",
     actor: "Compte DeSo",
     descriptions: {
@@ -226,6 +230,7 @@ const COPY: Record<ViaLanguage | "Hindi", Copy> = {
     replyAction: "Responder",
     copyLink: "Copiar enlace",
     linkCopied: "Enlace copiado",
+    postUnavailable: "Publicación no disponible.",
     fresh: "Nuevo",
     actor: "Cuenta DeSo",
     descriptions: {
@@ -248,7 +253,7 @@ const COPY: Record<ViaLanguage | "Hindi", Copy> = {
     heading: "आपके खाते तक क्या पहुँचा?", active: "सक्रिय खाता", refresh: "रीफ़्रेश", refreshing: "रीफ़्रेश हो रहा है…",
     loadingNotifications: "सूचनाएँ लोड हो रही हैं…", recentLoaded: (count) => `${count} हाल की सूचनाएँ लोड हुईं।`,
     noRecent: "कोई हाल की सूचना नहीं।", unavailable: "सूचनाएँ अस्थायी रूप से उपलब्ध नहीं हैं।", filters: "सूचना फ़िल्टर",
-    loading: "लोड हो रहा है…", nothing: "इस फ़िल्टर में कुछ नहीं है।", open: "खोलें", close: "बंद करें", selectAll: "सभी चुनें", expandView: "विस्तृत दृश्य", replyAction: "जवाब दें", copyLink: "लिंक कॉपी करें", linkCopied: "लिंक कॉपी हो गया", fresh: "नया", actor: "DeSo खाता",
+    loading: "लोड हो रहा है…", nothing: "इस फ़िल्टर में कुछ नहीं है।", open: "खोलें", close: "बंद करें", selectAll: "सभी चुनें", expandView: "विस्तृत दृश्य", replyAction: "जवाब दें", copyLink: "लिंक कॉपी करें", linkCopied: "लिंक कॉपी हो गया", postUnavailable: "पोस्ट उपलब्ध नहीं है।", fresh: "नया", actor: "DeSo खाता",
     descriptions: {
       reaction: (actor) => `${actor} ने आपकी एक पोस्ट पर प्रतिक्रिया दी।`,
       diamond1: (actor) => `${actor} ने 1 Diamond भेजा।`,
@@ -284,6 +289,7 @@ const COPY: Record<ViaLanguage | "Hindi", Copy> = {
     replyAction: "回复",
     copyLink: "复制链接",
     linkCopied: "链接已复制",
+    postUnavailable: "帖子不可用。",
     fresh: "新",
     actor: "DeSo 账户",
     descriptions: {
@@ -723,7 +729,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
                     {Number.isFinite(post.timestampNanos) && post.timestampNanos > 0 ? <span className="ml-auto self-center whitespace-nowrap text-[11px] text-zinc-600">{new Date(post.timestampNanos / 1_000_000).toLocaleString()}</span> : null}
                   </div>
                   {replyingTo === post.postHash ? <div className="mt-3"><PostComposer parentStakeID={post.postHash} compact onDone={() => setReplyingTo(null)} /></div> : null}
-                </> : <p className="text-xs text-zinc-500">Post unavailable.</p>}
+                </> : <p className="text-xs text-zinc-500">{copy.postUnavailable}</p>}
               </div> : expanded && destination ? <div className="mt-3 rounded-xl border border-zinc-800 bg-black/25 p-3 text-xs text-zinc-500">{destination}</div> : null}
             </div>
             {destination ? <button type="button" onClick={() => void toggleExpanded(item, rowKey)} className="hidden self-center rounded-full border border-zinc-700 px-3 py-1.5 text-xs text-zinc-300 transition hover:border-[#8fd4a9] hover:text-white sm:inline-flex">{expanded ? copy.close : copy.open}</button> : null}
