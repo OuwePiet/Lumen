@@ -76,12 +76,10 @@ const headerCopy: Record<ViaLanguage | "Hindi", HeaderCopy> = {
 }
 
 const languageCodes: Record<ViaLanguage | "Hindi", string> = {
-  Dutch: "NL",
-  English: "EN",
-  French: "FR",
-  Spanish: "ES",
-  Chinese: "中文",
-  Hindi: "हिं",
+  Dutch: "NL", English: "EN", French: "FR", Spanish: "ES", Chinese: "中文", Hindi: "हिं",
+}
+const languageFlags: Record<ViaLanguage | "Hindi", string> = {
+  Dutch: "🇳🇱", English: "🇬🇧", French: "🇫🇷", Spanish: "🇪🇸", Chinese: "🇨🇳", Hindi: "🇮🇳",
 }
 
 const pill = {
@@ -152,6 +150,7 @@ export default function ViaSiteHeader() {
   const [profiles, setProfiles] = useState<Record<string, PublicProfile>>({})
   const [menuOpen, setMenuOpen] = useState(false)
   const [language, setLanguage] = useState<ViaLanguage>("Dutch")
+  const [languageOpen, setLanguageOpen] = useState(false)
 
   function refreshKnownAccounts() {
     setKnownAccounts(listIdentitySessions())
@@ -271,10 +270,16 @@ export default function ViaSiteHeader() {
 
         <div style={styles.toolsRow} className="via-site-header-tools" aria-label="VIA utility controls">
           <Link href="/discover/voices" style={styles.search} className="via-site-header-search">⌕&nbsp;&nbsp; {t.search}</Link>
-          <label className="sr-only" htmlFor="via-header-language">VIA language</label>
-          <select id="via-header-language" value={language} onChange={(event) => changeLanguage(event.target.value as ViaLanguage)} style={styles.language} className="via-site-header-language" aria-label="VIA language">
-            {VIA_LANGUAGES.map((item) => <option key={item} value={item}>{languageCodes[item]}</option>)}
-          </select>
+          <div className="via-site-header-language-wrap">
+            <button type="button" onClick={() => setLanguageOpen((open) => !open)} style={styles.language} className="via-site-header-language" aria-label="VIA language" aria-expanded={languageOpen}>
+              <span aria-hidden="true">{languageFlags[language]}</span><span>{languageCodes[language]}</span>
+            </button>
+            {languageOpen ? <div className="via-site-header-language-menu" role="menu" aria-label="VIA language">
+              {VIA_LANGUAGES.map((item) => <button key={item} type="button" role="menuitemradio" aria-checked={item === language} onClick={() => { changeLanguage(item); setLanguageOpen(false) }} className={item === language ? "is-active" : ""}>
+                <span aria-hidden="true">{languageFlags[item]}</span><span>{languageCodes[item]}</span>
+              </button>)}
+            </div> : null}
+          </div>
           {!session ? <button type="button" onClick={enterPublicMode} style={{ ...pill, cursor: "pointer" }}>{t.publicEntrance}</button> : null}
           {!session ? <a href={DESO_LOGIN_URL} target="via-deso-identity" style={styles.login}>{t.login}</a> : null}
           <Link href="/wallet" style={pill} className="via-site-header-utility">{t.wallet}</Link>
@@ -362,6 +367,11 @@ export default function ViaSiteHeader() {
         </div>
       </div>
       <style>{`
+        .via-site-header-language-wrap { position: relative; flex: 0 0 auto; }
+        .via-site-header-language { gap: 6px !important; min-width: 68px; }
+        .via-site-header-language-menu { position: absolute; top: 44px; left: 0; z-index: 220; width: 96px; padding: 5px; border: 1px solid rgba(143,212,169,.22); border-radius: 12px; background: rgba(5,10,7,.99); box-shadow: 0 14px 34px rgba(0,0,0,.42); }
+        .via-site-header-language-menu button { width: 100%; display: flex; align-items: center; gap: 8px; padding: 7px 9px; border: 0; border-radius: 8px; background: transparent; color: #cfd9d3; font-size: 12px; cursor: pointer; text-align: left; }
+        .via-site-header-language-menu button:hover, .via-site-header-language-menu button:focus-visible, .via-site-header-language-menu button.is-active { background: rgba(40,95,64,.58); color: white; outline: none; }
         @media (max-width: 720px) {
           .via-site-header-shell { width: 100% !important; padding: 0 10px !important; box-sizing: border-box !important; grid-template-columns: 72px minmax(0, 1fr) !important; grid-template-rows: 58px 50px !important; column-gap: 6px !important; }
           .via-site-header-brand { grid-column: 1 !important; grid-row: 1 !important; justify-content: flex-start !important; overflow: visible !important; }
