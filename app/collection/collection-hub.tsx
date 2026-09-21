@@ -124,7 +124,7 @@ export default function CollectionHub() {
         <p style={{ margin: 0, color: "#8fd4a9", fontSize: 11, fontWeight: 800, letterSpacing: ".16em", textTransform: "uppercase" }}>{t.kicker}</p>
         <h1 style={{ margin: "7px 0 5px", color: "#f1f6f3", fontSize: "clamp(24px,4vw,34px)", lineHeight: 1.08 }}>{t.title}</h1>
         <p style={{ margin: "0 0 14px", color: "#b3beb8", fontSize: 14, lineHeight: 1.55 }}>{t.intro}</p>
-        <nav style={{ display: "flex", flexWrap: "wrap", gap: 8 }} aria-label={t.navLabel}>
+        <nav className="via-collection-hub-nav" style={{ display: "flex", flexWrap: "wrap", gap: 8 }} aria-label={t.navLabel}>
           <a href="#collection-controls" style={hubLink}>{t.collection}</a>
           <Link href="/studio#mint-nft" style={hubLink}>{t.createMint}</Link>
           <Link href="/market" style={hubLink}>{t.market}</Link>
@@ -132,7 +132,7 @@ export default function CollectionHub() {
           <Link href="/market/my-bids" style={hubLink}>{t.myBids}</Link>
           <Link href="/market#transfers" style={hubLink}>{t.transfers}</Link>
         </nav>
-      </div>
+        <style>{`\n          @media (max-width: 720px) {\n            .via-collection-hub-nav { flex-wrap: nowrap !important; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; -webkit-overflow-scrolling: touch; }\n            .via-collection-hub-nav::-webkit-scrollbar { display: none; }\n            .via-collection-hub-nav > a { flex: 0 0 auto; }\n          }\n        `}</style>\n      </div>
     </section>
   )
 }
