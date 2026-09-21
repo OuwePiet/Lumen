@@ -50,12 +50,12 @@ const viaExtraNav = [
 ] as const
 
 const languageCodes: Record<ViaLanguage | "Hindi", string> = {
-  Dutch: "NL",
-  English: "EN",
-  French: "FR",
-  Spanish: "ES",
-  Chinese: "中文",
-  Hindi: "हिं",
+  Dutch: "🇳🇱 NL",
+  English: "🇬🇧 EN",
+  French: "🇫🇷 FR",
+  Spanish: "🇪🇸 ES",
+  Chinese: "🇨🇳 中文",
+  Hindi: "🇮🇳 हिं",
 }
 
 type HomeText = {
