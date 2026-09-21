@@ -1,13 +1,25 @@
-import Link from "next/link"
-import { currentViaCostPolicy } from "../../lib/via/cost-transparency-policy"
-import { readViaLocalSettings } from "../via-local-settings"
+"use client"
 
-export const dynamic = "force-dynamic"
+import Link from "next/link"
+import { useEffect, useState } from "react"
+import { currentViaCostPolicy } from "../../lib/via/cost-transparency-policy"
+import { readViaLocalSettings, VIA_SETTINGS_EVENT, VIA_SETTINGS_KEY } from "../via-local-settings"
 
 export default function TransparencyPage() {
   const policy = currentViaCostPolicy()
   const serviceFee = (policy.serviceFeeBps / 100).toFixed(2)
-  const hindi = readViaLocalSettings().interfaceLanguage === ("Hindi" as never)
+  const [hindi, setHindi] = useState(false)
+
+  useEffect(() => {
+    const syncLanguage = () => setHindi(readViaLocalSettings().interfaceLanguage === "Hindi")
+    syncLanguage()
+    window.addEventListener(VIA_SETTINGS_EVENT, syncLanguage)
+    window.addEventListener("storage", syncLanguage)
+    return () => {
+      window.removeEventListener(VIA_SETTINGS_EVENT, syncLanguage)
+      window.removeEventListener("storage", syncLanguage)
+    }
+  }, [])
 
   return (
     <main style={{ minHeight: "100vh", background: "#050807", color: "#f4f7f5", padding: "32px 20px" }}>
