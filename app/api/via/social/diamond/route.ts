@@ -28,6 +28,29 @@ export async function POST(request: Request) {
 
   const body = input as Record<string, unknown>
 
+  if (body.action === "levels") {
+    try {
+      const response = await fetchDeSo("get-app-state", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+      })
+      if (!response.ok) return noStore({ ok: false, error: "DIAMOND_LEVELS_UNAVAILABLE" }, 502)
+      const data = await response.json() as Record<string, unknown>
+      const rawMap = data.DiamondLevelMap
+      if (!rawMap || typeof rawMap !== "object" || Array.isArray(rawMap)) return noStore({ ok: false, error: "INVALID_DIAMOND_LEVELS" }, 502)
+      const diamondLevelMap = Object.fromEntries(
+        Object.entries(rawMap as Record<string, unknown>)
+          .filter(([key, value]) => /^\\d+$/.test(key) && typeof value === "number" && Number.isFinite(value) && value > 0)
+          .map(([key, value]) => [key, Math.trunc(value as number)])
+      )
+      if (Object.keys(diamondLevelMap).length === 0) return noStore({ ok: false, error: "INVALID_DIAMOND_LEVELS" }, 502)
+      return noStore({ ok: true, diamondLevelMap })
+    } catch {
+      return noStore({ ok: false, error: "DIAMOND_LEVELS_UNAVAILABLE" }, 503)
+    }
+  }
+
   if (body.action === "prepare") {
     const senderPublicKey = body.senderPublicKey
     const receiverPublicKey = body.receiverPublicKey
@@ -39,7 +62,7 @@ export async function POST(request: Request) {
     if (!validPublicKey(receiverPublicKey)) return noStore({ ok: false, error: "INVALID_RECEIVER_PUBLIC_KEY" }, 400)
     if (senderPublicKey === receiverPublicKey) return noStore({ ok: false, error: "SELF_DIAMOND_NOT_ALLOWED" }, 400)
     if (!validPostHash(diamondPostHashHex)) return noStore({ ok: false, error: "INVALID_POST_HASH" }, 400)
-    if (!Number.isInteger(diamondLevel) || (diamondLevel as number) < 1 || (diamondLevel as number) > 6) return noStore({ ok: false, error: "INVALID_DIAMOND_LEVEL" }, 400)
+    if (!Number.isInteger(diamondLevel) || (diamondLevel as number) < 1 || (diamondLevel as number) > 8) return noStore({ ok: false, error: "INVALID_DIAMOND_LEVEL" }, 400)
     if (!confirmed) return noStore({ ok: false, error: "EXPLICIT_VALUE_CONFIRMATION_REQUIRED" }, 400)
 
     const configuredRate = Number(process.env.DESO_MIN_FEE_RATE_NANOS_PER_KB)
