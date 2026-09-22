@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import { usePathname } from "next/navigation"
 import { useEffect, useRef, useState } from "react"
 import { readViaLocalSettings, VIA_SETTINGS_EVENT, type ViaLanguage } from "./via-local-settings"
 
@@ -32,6 +33,7 @@ function readStation(): Station | null {
 }
 
 export default function ViaGlobalRadio() {
+  const pathname = usePathname()
   const audio = useRef<HTMLAudioElement | null>(null)
   const [station, setStation] = useState<Station | null>(null)
   const [playing, setPlaying] = useState(false)
@@ -104,7 +106,7 @@ export default function ViaGlobalRadio() {
 
   const copy = COPY[language]
 
-  return <aside aria-label={copy.radio} className="via-global-radio fixed bottom-3 right-3 z-[80] flex max-w-[calc(100vw-1.5rem)] items-center gap-2 rounded-full border border-[#285f40] bg-[#07100b]/95 px-3 py-2 text-xs shadow-xl backdrop-blur">
+  return <aside aria-label={copy.radio} className={`via-global-radio ${pathname === "/notifications" ? "via-global-radio-notifications" : ""} fixed bottom-3 right-3 z-[80] flex max-w-[calc(100vw-1.5rem)] items-center gap-2 rounded-full border border-[#285f40] bg-[#07100b]/95 px-3 py-2 text-xs shadow-xl backdrop-blur`}>
     <audio ref={audio} onPause={()=>setPlaying(false)} onPlay={()=>setPlaying(true)} />
     <Link href="/radio" className="via-global-radio-label max-w-40 truncate text-[#b8ddc5]">{station ? station.name : copy.radio}</Link>
     <button type="button" disabled={!station} aria-pressed={playing} aria-label={station ? `${playing ? copy.turnOff : copy.turnOn}: ${station.name}` : copy.chooseAria} onClick={toggle} className="via-global-radio-button min-h-9 rounded-full border border-[#8fd4a9]/45 px-3 font-semibold text-[#b8ddc5] disabled:opacity-45">{station ? (playing ? copy.off : copy.on) : copy.choose}</button>
@@ -117,6 +119,12 @@ export default function ViaGlobalRadio() {
           gap: 4px !important;
           padding: 5px !important;
           border-radius: 999px !important;
+        }
+        .via-global-radio-notifications {
+          top: 66px !important;
+          right: 10px !important;
+          bottom: auto !important;
+          z-index: 190 !important;
         }
         .via-global-radio-label {
           width: 34px !important;
