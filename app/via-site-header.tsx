@@ -374,7 +374,7 @@ export default function ViaSiteHeader() {
         .via-site-header-language-menu button { width: 100%; display: flex; align-items: center; gap: 8px; padding: 7px 9px; border: 0; border-radius: 8px; background: transparent; color: #cfd9d3; font-size: 12px; cursor: pointer; text-align: left; }
         .via-site-header-language-menu button:hover, .via-site-header-language-menu button:focus-visible, .via-site-header-language-menu button.is-active { background: rgba(40,95,64,.58); color: white; outline: none; }
         @media (max-width: 720px) {
-          .via-site-header-shell { width: 100% !important; padding: 0 10px !important; box-sizing: border-box !important; grid-template-columns: 72px minmax(0, 1fr) !important; grid-template-rows: 58px 50px !important; column-gap: 6px !important; }
+          .via-site-header-shell { width: 100% !important; padding: 0 10px !important; box-sizing: border-box !important; grid-template-columns: 72px minmax(0, 1fr) !important; grid-template-rows: 58px 50px !important; column-gap: 6px !important; }\n          .via-site-header-shell:has(.via-site-header-tools-notifications) { grid-template-rows: 58px !important; }
           .via-site-header-brand { grid-column: 1 !important; grid-row: 1 !important; justify-content: flex-start !important; overflow: visible !important; }
           .via-site-header-logo { width: 68px !important; height: 52px !important; }
           .via-site-header-top { grid-column: 2 !important; grid-row: 1 !important; padding-right: 46px !important; }
