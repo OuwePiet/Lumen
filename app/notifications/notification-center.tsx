@@ -724,7 +724,6 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
             { id: "reposts", symbol: "↻", label: copy.categories.repost, ids: ["repost"] },
             { id: "follows", symbol: "+", label: copy.categories.follow, ids: ["follow"] },
             { id: "tips", symbol: "$", label: language === "Dutch" ? "Tips" : language === "French" ? "Pourboires" : language === "Spanish" ? "Propinas" : language === "Chinese" ? "打赏" : language === "Hindi" ? "टिप्स" : "Tips", ids: ["creatorCoin"] },
-            { id: "other", symbol: "•••", label: copy.categories.other, ids: ["nft", "other"] },
           ] as { id: string; label: string; symbol: string; ids: Exclude<Category, "all">[] }[]).map((option) => {
             const active = option.ids.every((id) => activeCategories.includes(id))
             const count = option.id === "all" ? items.length : items.filter((item) => option.ids.includes(categoryOf(item))).length
