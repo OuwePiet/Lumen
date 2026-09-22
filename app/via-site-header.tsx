@@ -260,7 +260,7 @@ export default function ViaSiteHeader() {
         </Link>
 
         <div style={styles.topRow} className="via-site-header-top">
-          <nav style={styles.nav} className="via-site-header-nav" aria-label="VIA main navigation">
+          <nav style={styles.nav} className={`via-site-header-nav ${pathname === "/notifications" ? "via-site-header-nav-notifications" : ""}`} aria-label="VIA main navigation">
             {nav.map(([key, href]) => {
               const active = href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`)
               return <Link key={href} href={href} className="via-site-header-link" style={{ ...styles.link, ...(active ? styles.activeLink : {}) }}>{t[key]}{active ? <span style={styles.activeLine} aria-hidden="true" /> : null}</Link>
@@ -381,7 +381,7 @@ export default function ViaSiteHeader() {
           .via-site-header-nav::-webkit-scrollbar, .via-site-header-tools::-webkit-scrollbar { display: none; }
           .via-site-header-link { padding: 18px 8px 15px !important; font-size: 11px !important; }
           .via-site-header-tools { grid-column: 1 / span 2 !important; grid-row: 2 !important; justify-content: flex-start !important; overflow-x: auto !important; overflow-y: hidden !important; gap: 6px !important; padding: 6px 8px !important; }
-          .via-site-header-search { min-width: 168px !important; }\n          .via-site-header-search-notifications { min-width: 34px !important; width: 34px !important; height: 34px !important; padding: 0 !important; justify-content: center !important; border-radius: 50% !important; }\n          .via-site-header-search-notifications .via-site-header-search-label { display: none !important; }\n          .via-site-header-wallet-notifications { display: none !important; }
+          .via-site-header-search { min-width: 168px !important; }\n          .via-site-header-search-notifications { min-width: 34px !important; width: 34px !important; height: 34px !important; padding: 0 !important; justify-content: center !important; border-radius: 50% !important; }\n          .via-site-header-search-notifications .via-site-header-search-label { display: none !important; }\n          .via-site-header-wallet-notifications { display: none !important; }\n          .via-site-header-nav-notifications { display: none !important; }
           .via-profile-shortcut { position: absolute !important; right: 54px !important; top: 8px !important; z-index: 181 !important; width: 46px !important; min-width: 46px !important; height: 42px !important; padding: 3px !important; border-radius: 13px !important; overflow: visible !important; }
           .via-site-header-account-wrap { position: absolute !important; right: 10px !important; top: 10px !important; z-index: 180 !important; }
           .via-site-header-account-button { min-width: 38px !important; width: 38px !important; height: 38px !important; padding: 4px !important; gap: 0 !important; border-radius: 50% !important; }
