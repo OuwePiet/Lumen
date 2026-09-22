@@ -35,7 +35,7 @@ export default function NotificationsPage() {
   const copy = COPY[language]
 
   return (
-    <main className="min-h-screen bg-black px-5 pb-8 pt-3 text-white sm:px-8 sm:py-8 lg:px-12">
+    <main className="min-h-screen bg-black px-3 pb-8 pt-2 text-white sm:px-8 sm:py-8 lg:px-12">
       <div className="mx-auto grid max-w-7xl gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
         <div className="min-w-0">
         <header className="mb-1 flex flex-wrap items-center justify-between gap-1.5 border-b border-white/10 pb-1 sm:mb-6 sm:gap-4 sm:pb-5">
