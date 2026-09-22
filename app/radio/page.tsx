@@ -79,9 +79,9 @@ export default function WorldRadioPage() {
     <main style={styles.main} className="via-radio-page">
       <RadioLocalizer />
       <div style={styles.container} className="via-radio-page-container">
-        <div style={styles.top}>
-          <p style={styles.brand}>VIA</p>
-          <a href="/" style={styles.home}>Back to VIA</a>
+        <div style={styles.top} className="via-radio-page-top">
+          <p style={styles.brand} className="via-radio-page-brand">VIA</p>
+          <a href="/" style={styles.home} className="via-radio-page-home">Back to VIA</a>
         </div>
 
         <p style={styles.eyebrow}>World Radio</p>
@@ -95,7 +95,10 @@ export default function WorldRadioPage() {
         <div style={styles.notice}>
           World Radio is separate from VIA LIVE. Radio is for station listening; VIA LIVE is for community conversations and later replays. Availability and rights remain the responsibility of each station or stream provider.
         </div>
-        <style>{`\n          @media (max-width: 720px) {\n            .via-radio-page { padding: 20px 20px 132px !important; }\n            .via-radio-page-heading { font-size: clamp(34px, 11vw, 48px) !important; line-height: 1.05 !important; overflow-wrap: anywhere; }\n            .via-radio-page-intro { font-size: 15px !important; line-height: 1.55 !important; margin-bottom: 22px !important; }\n          }\n        `}</style>
+        <style>{`\n          @media (max-width: 720px) {\n            .via-radio-page { padding: 14px 16px 96px !important; }
+            .via-radio-page-top { margin-bottom: 14px !important; gap: 8px !important; }
+            .via-radio-page-brand { font-size: 12px !important; }
+            .via-radio-page-home { min-height: 36px !important; padding: 6px 10px !important; font-size: 11px !important; }\n            .via-radio-page-heading { font-size: clamp(34px, 11vw, 48px) !important; line-height: 1.05 !important; overflow-wrap: anywhere; }\n            .via-radio-page-intro { font-size: 15px !important; line-height: 1.55 !important; margin-bottom: 22px !important; }\n          }\n        `}</style>
       </div>
     </main>
   )
