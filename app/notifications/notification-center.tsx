@@ -770,10 +770,10 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                 <strong className="truncate text-[13px] font-semibold text-zinc-100 sm:text-sm">{actor}</strong>
-                <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#7dbb93]">{copy.categories[itemCategory]}</span>
+                <span className="text-[10px] font-semibold uppercase tracking-[0.06em] text-[#7dbb93] sm:text-[11px] sm:tracking-[0.08em]">{copy.categories[itemCategory]}</span>
                 {unread ? <span className="rounded-full border border-[#285f40] px-2 py-0.5 text-[10px] text-[#9adbb2]">{copy.fresh}</span> : null}
               </div>
-              <p className="mt-0.5 text-[13px] leading-[18px] text-zinc-400 sm:mt-1 sm:text-sm sm:leading-5">{copy.descriptions[itemCategory](actor)}</p>
+              <p className="mt-0 text-[12px] leading-4 text-zinc-400 sm:mt-1 sm:text-sm sm:leading-5">{copy.descriptions[itemCategory](actor)}</p>
               {destination ? <button type="button" onClick={() => void toggleExpanded(item, rowKey)} className="mt-1.5 inline-flex rounded-full border border-zinc-700 px-2 py-0.5 text-[10px] text-zinc-300 transition hover:border-[#8fd4a9] hover:text-white sm:mt-2 sm:px-2.5 sm:py-1 sm:text-[11px]">{expanded ? copy.close : copy.open}</button> : null}
               {expanded && postHash ? <div className="mt-3 rounded-xl border border-zinc-800 bg-black/25 p-3">
                 {post === undefined ? <p className="text-xs text-zinc-500">{copy.loading}</p> : post ? <>
