@@ -1,6 +1,7 @@
 "use client"
 
-import Link from "next/link"\nimport { useEffect, useMemo, useRef, useState } from "react"
+import Link from "next/link"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { ArrowUpRight, AtSign, Badge, Check, CheckCircle2, ChevronsRight, CircleDot, Gem, Heart, Link2, MessageSquare, RefreshCw, Repeat2, ShieldCheck, ShieldOff, Smile, UserPlus, UserRound } from "lucide-react"
 
 const QUALITY_SHIELD_STORAGE_KEY = "via:notifications:quality-shield"
@@ -10,7 +11,8 @@ import type { ViaLanguage } from "../via-local-settings"
 import LikeButton from "../social/like-button"
 import PostComposer from "../social/post-composer"
 import RepostButton from "../social/repost-button"
-import DiamondButton from "../social/diamond-button"\nimport SponsorPlatform from "../sponsor-platform"
+import DiamondButton from "../social/diamond-button"
+import SponsorPlatform from "../sponsor-platform"
 
 type NotificationItem = {
   Index?: number
