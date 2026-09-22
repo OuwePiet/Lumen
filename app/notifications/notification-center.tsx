@@ -712,13 +712,19 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
           <button type="button" onClick={() => setExpandedView((value) => !value)} title={copy.expandView} aria-label={copy.expandView} aria-pressed={expandedView} className={`grid h-7 w-7 place-items-center rounded-full border sm:h-9 sm:w-9 text-white transition ${expandedView ? "border-[#8fd4a9] bg-[#285f40]" : "border-[#9b9b9b] bg-[#9b9b9b]"}`}>
             <ChevronsRight className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
           </button>
-          <div className="relative ml-auto sm:hidden [&>button]:!grid [&>button]:!h-10 [&>button]:!w-10 [&>button]:!min-h-0 [&>button]:!place-items-center [&>button]:!rounded-full [&>button]:!p-0 [&>button]:!text-[0]">
-            <SponsorPlatform compact />
-            <span className="pointer-events-none absolute inset-0 grid place-items-center text-lg leading-none text-[#9adbb2]" aria-hidden="true">💵</span>
+          <div className="ml-auto hidden flex-col items-center gap-0.5 max-sm:flex">
+            <div className="relative [&>button]:!grid [&>button]:!h-10 [&>button]:!w-10 [&>button]:!min-h-0 [&>button]:!place-items-center [&>button]:!rounded-full [&>button]:!p-0 [&>button]:!text-[0]">
+              <SponsorPlatform compact />
+              <span className="pointer-events-none absolute inset-0 grid place-items-center text-lg leading-none text-[#9adbb2]" aria-hidden="true">💵</span>
+            </div>
+            <span className="text-[8px] leading-[10px] text-zinc-500">Sponsor VIA</span>
           </div>
-          <Link href="/social" aria-label="Social" title="Social" className="grid h-10 w-10 place-items-center rounded-full border border-[#8fd4a9]/35 bg-[#050b08]/80 text-[#9adbb2] sm:hidden">
-            <span className="text-2xl font-light leading-none" aria-hidden="true">←</span>
-          </Link>
+          <div className="hidden flex-col items-center gap-0.5 max-sm:flex">
+            <Link href="/social" aria-label="Social" title="Social" className="grid h-10 w-10 place-items-center rounded-full border border-[#8fd4a9]/35 bg-[#050b08]/80 text-[#9adbb2]">
+              <span className="text-2xl font-light leading-none" aria-hidden="true">←</span>
+            </Link>
+            <span className="text-[8px] leading-[10px] text-zinc-500">Social</span>
+          </div>
         </div>
       </div>
 
