@@ -35,13 +35,13 @@ export default function NotificationsPage() {
   const copy = COPY[language]
 
   return (
-    <main className="min-h-screen bg-black px-5 py-8 text-white sm:px-8 lg:px-12">
+    <main className="min-h-screen bg-black px-5 pb-8 pt-3 text-white sm:px-8 sm:py-8 lg:px-12">
       <div className="mx-auto grid max-w-7xl gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
         <div className="min-w-0">
-        <header className="mb-6 flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-5">
+        <header className="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-white/10 pb-4 sm:mb-6 sm:gap-4 sm:pb-5">
           <div>
-            <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">{copy.title}</h1>
-            <p className="mt-2 text-sm text-zinc-500">{copy.intro}</p>
+            <h1 className="text-xl font-semibold tracking-tight sm:text-4xl">{copy.title}</h1>
+            <p className="mt-1 text-xs text-zinc-500 sm:mt-2 sm:text-sm">{copy.intro}</p>
           </div>
           <div className="flex flex-wrap items-center gap-2"><div className="[&>button]:!min-h-[38px] [&>button]:!px-4 [&>button]:!py-2 [&>button]:!text-sm"><SponsorPlatform compact /></div><Link href="/social" className="inline-flex min-h-[38px] items-center rounded-full border border-[#8fd4a9]/35 bg-[#050b08]/80 px-4 py-2 text-sm font-semibold text-[#9adbb2] hover:border-[#8fd4a9]/60 hover:bg-[#0c1711]/55">{copy.back}</Link></div>
         </header>
