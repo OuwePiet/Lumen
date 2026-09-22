@@ -270,7 +270,6 @@ export default function ViaSiteHeader() {
 
         <div style={styles.toolsRow} className={`via-site-header-tools ${pathname === "/notifications" ? "via-site-header-tools-notifications" : ""}`} aria-label="VIA utility controls">
           <Link href="/discover/voices" style={styles.search} className={`via-site-header-search ${pathname === "/notifications" ? "via-site-header-search-notifications" : ""}`} aria-label={t.search} title={t.search}><span aria-hidden="true">⌕</span><span className="via-site-header-search-label">&nbsp;&nbsp; {t.search}</span></Link>
-          {pathname === "/notifications" ? <Link href="/radio" className="via-notifications-radio-top" aria-label="World Radio" title="World Radio">◉</Link> : null}
           <div className="via-site-header-language-wrap">
             <button type="button" onClick={() => setLanguageOpen((open) => !open)} style={styles.language} className={`via-site-header-language ${pathname === "/notifications" ? "via-site-header-language-notifications" : ""}`} aria-label="VIA language" aria-expanded={languageOpen}>
               <span className="via-site-header-language-flag" aria-hidden="true">{languageFlags[language]}</span><span>{languageCodes[language]}</span>
@@ -281,6 +280,7 @@ export default function ViaSiteHeader() {
               </button>)}
             </div> : null}
           </div>
+          {pathname === "/notifications" ? <Link href="/radio" className="via-notifications-radio-top" aria-label="World Radio" title="World Radio">◉</Link> : null}
           {!session ? <button type="button" onClick={enterPublicMode} style={{ ...pill, cursor: "pointer" }}>{t.publicEntrance}</button> : null}
           {!session ? <a href={DESO_LOGIN_URL} target="via-deso-identity" style={styles.login}>{t.login}</a> : null}
           <Link href="/wallet" style={pill} className={`via-site-header-utility ${pathname === "/notifications" ? "via-site-header-wallet-notifications" : ""}`}>{t.wallet}</Link>
