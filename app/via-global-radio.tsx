@@ -120,7 +120,10 @@ export default function ViaGlobalRadio() {
           padding: 5px !important;
           border-radius: 999px !important;
         }
-        .via-global-radio-notifications, .via-global-radio-radio-page {
+        .via-global-radio-notifications {
+          display: none !important;
+        }
+        .via-global-radio-radio-page {
           top: 66px !important;
           right: 10px !important;
           bottom: auto !important;
