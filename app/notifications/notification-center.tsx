@@ -719,7 +719,6 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
             { id: "all", label: copy.categories.all, symbol: "●", ids: filterCategoryIds },
             { id: "likes", symbol: "♥", label: language === "Dutch" ? "Likes" : language === "French" ? "J’aime" : language === "Spanish" ? "Me gusta" : language === "Chinese" ? "点赞" : language === "Hindi" ? "लाइक्स" : "Likes", ids: ["reaction"] },
             { id: "diamonds", symbol: "◆", label: language === "Dutch" ? "Diamanten" : language === "French" ? "Diamants" : language === "Spanish" ? "Diamantes" : language === "Chinese" ? "钻石" : language === "Hindi" ? "डायमंड्स" : "Diamonds", ids: ["diamond1", "diamondMany"] },
-            { id: "tips", symbol: "$", label: language === "Dutch" ? "Tips" : language === "French" ? "Pourboires" : language === "Spanish" ? "Propinas" : language === "Chinese" ? "打赏" : language === "Hindi" ? "टिप्स" : "Tips", ids: ["creatorCoin"] },
             { id: "follows", symbol: "+", label: copy.categories.follow, ids: ["follow"] },
             { id: "mentions", symbol: "@", label: language === "Dutch" ? "Vermeldingen" : language === "French" ? "Mentions" : language === "Spanish" ? "Menciones" : language === "Chinese" ? "提及" : language === "Hindi" ? "उल्लेख" : "Mentions", ids: ["mention5", "mention6"] },
             { id: "replies", symbol: "↩", label: copy.categories.reply, ids: ["reply"] },
