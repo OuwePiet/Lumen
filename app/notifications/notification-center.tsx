@@ -774,7 +774,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
                 {unread ? <span className="rounded-full border border-[#285f40] px-2 py-0.5 text-[10px] text-[#9adbb2]">{copy.fresh}</span> : null}
               </div>
               <p className="mt-0.5 text-[13px] leading-[18px] text-zinc-400 sm:mt-1 sm:text-sm sm:leading-5">{copy.descriptions[itemCategory](actor)}</p>
-              {destination ? <button type="button" onClick={() => void toggleExpanded(item, rowKey)} className="mt-2 inline-flex rounded-full border border-zinc-700 px-2.5 py-1 text-[11px] text-zinc-300 transition hover:border-[#8fd4a9] hover:text-white">{expanded ? copy.close : copy.open}</button> : null}
+              {destination ? <button type="button" onClick={() => void toggleExpanded(item, rowKey)} className="mt-1.5 inline-flex rounded-full border border-zinc-700 px-2 py-0.5 text-[10px] text-zinc-300 transition hover:border-[#8fd4a9] hover:text-white sm:mt-2 sm:px-2.5 sm:py-1 sm:text-[11px]">{expanded ? copy.close : copy.open}</button> : null}
               {expanded && postHash ? <div className="mt-3 rounded-xl border border-zinc-800 bg-black/25 p-3">
                 {post === undefined ? <p className="text-xs text-zinc-500">{copy.loading}</p> : post ? <>
                   <p className="text-xs font-semibold text-zinc-300">@{post.username?.replace(/^@/, "") || shortKey(post.publicKey, copy.actor)}</p>
