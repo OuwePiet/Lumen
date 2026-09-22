@@ -37,7 +37,7 @@ export default function ViaHelpButton() {
       href="/help"
       aria-label={label}
       title={label}
-      className={`via-help-button ${pathname === "/radio" ? "via-help-button-radio" : ""} fixed bottom-3 left-3 z-[80] inline-flex min-h-10 items-center gap-2 rounded-full border border-[#285f40] bg-[#07100b]/95 px-3 py-2 text-xs font-semibold text-[#b8ddc5] shadow-xl backdrop-blur transition hover:border-[#8fd4a9]/70 hover:text-white`}
+      className={`via-help-button ${pathname === "/radio" || pathname === "/notifications" ? "via-help-button-compact-hidden" : ""} fixed bottom-3 left-3 z-[80] inline-flex min-h-10 items-center gap-2 rounded-full border border-[#285f40] bg-[#07100b]/95 px-3 py-2 text-xs font-semibold text-[#b8ddc5] shadow-xl backdrop-blur transition hover:border-[#8fd4a9]/70 hover:text-white`}
     >
       <CircleHelp className="h-4 w-4" aria-hidden="true" />
       <span className="via-help-label">{label}</span>
@@ -53,7 +53,7 @@ export default function ViaHelpButton() {
             justify-content: center !important;
           }
           .via-help-label { display: none !important; }
-          .via-help-button-radio { display: none !important; }
+          .via-help-button-compact-hidden { display: none !important; }
         }
       `}</style>
     </Link>
