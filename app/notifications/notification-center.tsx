@@ -769,11 +769,11 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
             </div>
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                <strong className="truncate text-sm font-semibold text-zinc-100">{actor}</strong>
+                <strong className="truncate text-[13px] font-semibold text-zinc-100 sm:text-sm">{actor}</strong>
                 <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#7dbb93]">{copy.categories[itemCategory]}</span>
                 {unread ? <span className="rounded-full border border-[#285f40] px-2 py-0.5 text-[10px] text-[#9adbb2]">{copy.fresh}</span> : null}
               </div>
-              <p className="mt-1 text-sm leading-5 text-zinc-400">{copy.descriptions[itemCategory](actor)}</p>
+              <p className="mt-0.5 text-[13px] leading-[18px] text-zinc-400 sm:mt-1 sm:text-sm sm:leading-5">{copy.descriptions[itemCategory](actor)}</p>
               {destination ? <button type="button" onClick={() => void toggleExpanded(item, rowKey)} className="mt-2 inline-flex rounded-full border border-zinc-700 px-2.5 py-1 text-[11px] text-zinc-300 transition hover:border-[#8fd4a9] hover:text-white">{expanded ? copy.close : copy.open}</button> : null}
               {expanded && postHash ? <div className="mt-3 rounded-xl border border-zinc-800 bg-black/25 p-3">
                 {post === undefined ? <p className="text-xs text-zinc-500">{copy.loading}</p> : post ? <>
