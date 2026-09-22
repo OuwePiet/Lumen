@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { useEffect, useRef, useState } from "react"
+import { RadioTower } from "lucide-react"
 import {
   DESO_LOGIN_URL,
   clearIdentitySession,
@@ -280,7 +281,7 @@ export default function ViaSiteHeader() {
               </button>)}
             </div> : null}
           </div>
-          {pathname === "/notifications" ? <Link href="/radio" className="via-notifications-radio-top" aria-label="World Radio" title="World Radio">◉</Link> : null}
+          {pathname === "/notifications" ? <Link href="/radio" className="via-notifications-radio-top" aria-label="World Radio" title="World Radio"><RadioTower className="h-4 w-4" aria-hidden="true" /></Link> : null}
           {!session ? <button type="button" onClick={enterPublicMode} style={{ ...pill, cursor: "pointer" }}>{t.publicEntrance}</button> : null}
           {!session ? <a href={DESO_LOGIN_URL} target="via-deso-identity" style={styles.login}>{t.login}</a> : null}
           <Link href="/wallet" style={pill} className={`via-site-header-utility ${pathname === "/notifications" ? "via-site-header-wallet-notifications" : ""}`}>{t.wallet}</Link>
