@@ -260,7 +260,7 @@ export default function ViaSiteHeader() {
         </Link>
 
         <div style={styles.topRow} className="via-site-header-top">
-          <nav style={styles.nav} className="via-site-header-nav" aria-label="VIA main navigation">
+          <nav style={styles.nav} className={`via-site-header-nav ${pathname === "/notifications" ? "via-site-header-nav-notifications" : ""}`} aria-label="VIA main navigation">
             {nav.map(([key, href]) => {
               const active = href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`)
               return <Link key={href} href={href} className="via-site-header-link" style={{ ...styles.link, ...(active ? styles.activeLink : {}) }}>{t[key]}{active ? <span style={styles.activeLine} aria-hidden="true" /> : null}</Link>
@@ -377,7 +377,7 @@ export default function ViaSiteHeader() {
           .via-site-header-brand { grid-column: 1 !important; grid-row: 1 !important; justify-content: flex-start !important; overflow: visible !important; }
           .via-site-header-logo { width: 68px !important; height: 52px !important; }
           .via-site-header-top { grid-column: 2 !important; grid-row: 1 !important; padding-right: 46px !important; }
-          .via-site-header-nav { justify-content: flex-start !important; overflow-x: auto !important; scrollbar-width: none !important; }
+          .via-site-header-nav { justify-content: flex-start !important; overflow-x: auto !important; scrollbar-width: none !important; }\n          .via-site-header-nav-notifications { display: none !important; }
           .via-site-header-nav::-webkit-scrollbar, .via-site-header-tools::-webkit-scrollbar { display: none; }
           .via-site-header-link { padding: 18px 8px 15px !important; font-size: 11px !important; }
           .via-site-header-tools { grid-column: 1 / span 2 !important; grid-row: 2 !important; justify-content: flex-start !important; overflow-x: auto !important; overflow-y: hidden !important; gap: 6px !important; padding: 6px 8px !important; }
