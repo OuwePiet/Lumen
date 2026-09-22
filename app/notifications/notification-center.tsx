@@ -713,8 +713,8 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
         </div>
       </div>
 
-      <div className="sticky top-[73px] z-20 border-b border-zinc-800 bg-zinc-950/95 px-3 py-3 backdrop-blur sm:px-4" aria-label={copy.filters}>
-        <div className="flex gap-1.5 overflow-x-auto pb-1 sm:flex-wrap sm:gap-2 sm:overflow-visible sm:pb-0">
+      <div className="sticky top-[73px] z-20 border-b border-zinc-800 bg-zinc-950/95 px-2 py-2 backdrop-blur sm:px-4 sm:py-3" aria-label={copy.filters}>
+        <div className="flex gap-1 overflow-x-auto px-0.5 pb-1 pt-1 sm:flex-wrap sm:gap-2 sm:overflow-visible sm:px-0 sm:pt-0 sm:pb-0">
           {([
             { id: "all", label: copy.categories.all, ids: filterCategoryIds },
             { id: "likes", label: language === "Dutch" ? "Likes" : language === "French" ? "J’aime" : language === "Spanish" ? "Me gusta" : language === "Chinese" ? "点赞" : language === "Hindi" ? "लाइक्स" : "Likes", ids: ["reaction"] },
@@ -734,9 +734,9 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
                 const allActive = option.ids.every((id) => current.includes(id))
                 return allActive ? current.filter((id) => !option.ids.includes(id)) : Array.from(new Set([...current, ...option.ids]))
               })
-            }} title={option.label} aria-label={`${option.label} · ${count}`} className={`relative inline-flex min-h-8 shrink-0 items-center gap-1 rounded-lg border px-2 py-1 text-[11px] font-semibold transition sm:min-h-9 sm:gap-2 sm:rounded-xl sm:px-3 sm:py-1.5 sm:text-xs ${active ? "border-[#8fd4a9]/70 bg-[#10251a] text-white" : "border-zinc-800 bg-[#111214] text-zinc-300 hover:border-[#8fd4a9]/45"}`}>
+            }} title={option.label} aria-label={`${option.label} · ${count}`} className={`relative inline-flex min-h-7 shrink-0 items-center gap-1 rounded-md border px-1.5 py-0.5 text-[10px] font-semibold transition sm:min-h-9 sm:gap-2 sm:rounded-xl sm:px-3 sm:py-1.5 sm:text-xs ${active ? "border-[#8fd4a9]/70 bg-[#10251a] text-white" : "border-zinc-800 bg-[#111214] text-zinc-300 hover:border-[#8fd4a9]/45"}`}>
               <span>{option.label}</span>
-              {count > 0 ? <span aria-hidden="true" className="absolute -right-1 -top-1 grid min-h-4 min-w-4 place-items-center rounded-full bg-[#39d98a] px-1 text-[8px] font-bold leading-none text-[#041009] sm:-right-1.5 sm:-top-1.5 sm:min-h-5 sm:min-w-5 sm:text-[9px]">{count}</span> : null}
+              {count > 0 ? <span aria-hidden="true" className="absolute -right-1 -top-1 grid min-h-3.5 min-w-3.5 place-items-center rounded-full bg-[#39d98a] px-0.5 text-[7px] font-bold leading-none text-[#041009] sm:-right-1.5 sm:-top-1.5 sm:min-h-5 sm:min-w-5 sm:text-[9px]">{count}</span> : null}
             </button>
           })}
         </div>
