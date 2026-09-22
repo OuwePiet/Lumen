@@ -291,7 +291,7 @@ export default function ViaSiteHeader() {
                 href="/profile"
                 aria-label={t.profile}
                 title={t.profile}
-                className="via-profile-shortcut"
+                className={`via-profile-shortcut ${pathname === "/notifications" ? "via-profile-shortcut-notifications" : ""}`}
                 style={{
                   ...pill,
                   width: "48px",
@@ -393,7 +393,7 @@ export default function ViaSiteHeader() {
         }
         @media (min-width: 721px) {
           .via-site-header-account-menu-icon { display: none !important; }
-          .via-profile-shortcut-status { display: none !important; }
+          .via-profile-shortcut-status { display: none !important; }\n          .via-profile-shortcut-notifications { top: 3px !important; width: 52px !important; min-width: 52px !important; height: 52px !important; padding: 5px !important; border-radius: 14px !important; }\n          .via-profile-shortcut-notifications > img, .via-profile-shortcut-notifications > span[aria-hidden="true"] { width: 40px !important; height: 40px !important; }
         }
       `}</style>
     </header>
