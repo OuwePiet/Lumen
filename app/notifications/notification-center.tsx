@@ -678,12 +678,12 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
 
   return (
     <section className={`${expandedView ? "max-h-[calc(100vh-8rem)]" : "max-h-[76vh]"} overflow-y-auto rounded-2xl border border-zinc-800 bg-zinc-950/60`} aria-labelledby="notification-center-heading">
-      <div className="sticky top-0 z-20 flex flex-nowrap items-center justify-between gap-1 border-b border-zinc-800 bg-zinc-950/95 px-2 py-1 backdrop-blur sm:flex-wrap sm:gap-3 sm:px-5 sm:py-4">
+      <div className="sticky top-0 z-20 flex flex-nowrap items-center justify-between gap-1 border-b border-zinc-800 bg-zinc-950/95 px-2 py-1 backdrop-blur max-sm:flex-col-reverse max-sm:items-stretch sm:flex-wrap sm:gap-3 sm:px-5 sm:py-4">
         <div>
           <h2 id="notification-center-heading" className="whitespace-nowrap text-xs font-medium text-zinc-400 sm:text-xl sm:font-semibold sm:text-white">{copy.heading}<span className="ml-1 text-[#8fd4a9] sm:hidden">Notifications</span></h2>
           <p className="mt-1 hidden text-xs text-zinc-500 sm:block">{copy.active}: {shortKey(session.publicKey, copy.actor)}</p>
         </div>
-        <div className="flex shrink-0 flex-nowrap items-center gap-1 sm:flex-wrap sm:gap-2">
+        <div className="flex shrink-0 flex-nowrap items-center gap-1 max-sm:justify-start sm:flex-wrap sm:gap-2">
           <button
             type="button"
             onClick={() => setQualityShield((value) => {
