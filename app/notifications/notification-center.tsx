@@ -698,17 +698,17 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
             aria-pressed={qualityShield}
             className={`relative grid h-7 w-7 place-items-center rounded-full border sm:h-9 sm:w-9 text-white transition ${qualityShield ? "border-[#8fd4a9] bg-[#285f40]" : "border-[#9b9b9b] bg-[#9b9b9b]"}`}
           >
-            {qualityShield ? <ShieldCheck className="h-4 w-4" /> : <ShieldOff className="h-4 w-4" />}
+            {qualityShield ? <ShieldCheck className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> : <ShieldOff className="h-3.5 w-3.5 sm:h-4 sm:w-4" />}
             {qualityShield && shieldHiddenCount > 0 ? <span aria-hidden="true" className="absolute -right-1 -top-1 grid min-h-4 min-w-4 place-items-center rounded-full border border-black bg-[#8fd4a9] px-1 text-[9px] font-bold leading-none text-black">{shieldHiddenCount}</span> : null}
           </button>
           <button type="button" onClick={() => setActiveCategories(allCategoriesActive ? [] : filterCategoryIds)} title={copy.selectAll} aria-label={copy.selectAll} aria-pressed={allCategoriesActive} className={`grid h-7 w-7 place-items-center rounded-full border sm:h-9 sm:w-9 text-white transition ${allCategoriesActive ? "border-[#8fd4a9] bg-[#285f40]" : "border-[#9b9b9b] bg-[#9b9b9b]"}`}>
-            <CheckCircle2 className="h-4 w-4" />
+            <CheckCircle2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
           </button>
           <button type="button" onClick={() => setRefreshToken((value) => value + 1)} disabled={status === "loading"} title={copy.refresh} aria-label={copy.refresh} className="grid h-7 w-7 place-items-center rounded-full border sm:h-9 sm:w-9 border-[#8fd4a9] bg-[#285f40] text-white transition disabled:cursor-wait disabled:opacity-60">
             <RefreshCw className={`h-4 w-4 ${status === "loading" ? "animate-spin" : ""}`} />
           </button>
           <button type="button" onClick={() => setExpandedView((value) => !value)} title={copy.expandView} aria-label={copy.expandView} aria-pressed={expandedView} className={`grid h-7 w-7 place-items-center rounded-full border sm:h-9 sm:w-9 text-white transition ${expandedView ? "border-[#8fd4a9] bg-[#285f40]" : "border-[#9b9b9b] bg-[#9b9b9b]"}`}>
-            <ChevronsRight className="h-4 w-4" />
+            <ChevronsRight className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
           </button>
         </div>
       </div>
