@@ -713,7 +713,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
         </div>
       </div>
 
-      <div className="sticky top-[73px] z-20 border-b border-zinc-800 bg-zinc-950/95 px-2 py-2 backdrop-blur sm:px-4 sm:py-3" aria-label={copy.filters}>
+      <div className="sticky top-[56px] z-20 border-b border-zinc-800 bg-zinc-950/95 px-2 py-1.5 backdrop-blur sm:top-[73px] sm:px-4 sm:py-3" aria-label={copy.filters}>
         <div className="flex gap-1 overflow-x-auto px-0.5 pb-1 pt-1 sm:flex-wrap sm:gap-2 sm:overflow-visible sm:px-0 sm:pt-0 sm:pb-0">
           {([
             { id: "all", label: copy.categories.all, ids: filterCategoryIds },
