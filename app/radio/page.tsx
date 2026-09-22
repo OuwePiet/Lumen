@@ -76,17 +76,17 @@ const styles = {
 
 export default function WorldRadioPage() {
   return (
-    <main style={styles.main}>
+    <main style={styles.main} className="via-radio-page">
       <RadioLocalizer />
-      <div style={styles.container}>
+      <div style={styles.container} className="via-radio-page-container">
         <div style={styles.top}>
           <p style={styles.brand}>VIA</p>
           <a href="/" style={styles.home}>Back to VIA</a>
         </div>
 
         <p style={styles.eyebrow}>World Radio</p>
-        <h1 style={styles.heading}>Listen around the world.</h1>
-        <p style={styles.intro}>
+        <h1 style={styles.heading} className="via-radio-page-heading">Listen around the world.</h1>
+        <p style={styles.intro} className="via-radio-page-intro">
           Discover public internet radio by country or genre. Station metadata comes from the Radio Browser directory; when you press Play, audio is requested directly from the station and is not hosted or proxied by VIA.
         </p>
 
@@ -95,6 +95,7 @@ export default function WorldRadioPage() {
         <div style={styles.notice}>
           World Radio is separate from VIA LIVE. Radio is for station listening; VIA LIVE is for community conversations and later replays. Availability and rights remain the responsibility of each station or stream provider.
         </div>
+        <style>{`\n          @media (max-width: 720px) {\n            .via-radio-page { padding: 20px 20px 132px !important; }\n            .via-radio-page-heading { font-size: clamp(34px, 11vw, 48px) !important; line-height: 1.05 !important; overflow-wrap: anywhere; }\n            .via-radio-page-intro { font-size: 15px !important; line-height: 1.55 !important; margin-bottom: 22px !important; }\n          }\n        `}</style>
       </div>
     </main>
   )
