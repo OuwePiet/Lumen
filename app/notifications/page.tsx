@@ -43,7 +43,7 @@ export default function NotificationsPage() {
             <h1 className="text-xl font-semibold tracking-tight sm:text-4xl">{copy.title}</h1>
             <p className="mt-1 text-xs text-zinc-500 sm:mt-2 sm:text-sm">{copy.intro}</p>
           </div>
-          <div className="flex flex-wrap items-center gap-2"><div className="[&>button]:!min-h-[38px] [&>button]:!px-4 [&>button]:!py-2 [&>button]:!text-sm"><SponsorPlatform compact /></div><Link href="/social" className="inline-flex min-h-[38px] items-center rounded-full border border-[#8fd4a9]/35 bg-[#050b08]/80 px-4 py-2 text-sm font-semibold text-[#9adbb2] hover:border-[#8fd4a9]/60 hover:bg-[#0c1711]/55">{copy.back}</Link></div>
+          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2"><div className="[&>button]:!min-h-8 [&>button]:!rounded-full [&>button]:!px-3 [&>button]:!py-1.5 [&>button]:!text-xs sm:[&>button]:!min-h-[38px] sm:[&>button]:!px-4 sm:[&>button]:!py-2 sm:[&>button]:!text-sm"><SponsorPlatform compact /></div><Link href="/social" className="inline-flex min-h-8 items-center rounded-full border border-[#8fd4a9]/35 bg-[#050b08]/80 px-3 py-1.5 text-xs font-semibold text-[#9adbb2] hover:border-[#8fd4a9]/60 hover:bg-[#0c1711]/55 sm:min-h-[38px] sm:px-4 sm:py-2 sm:text-sm">{copy.back}</Link></div>
         </header>
 
         <NotificationCenter language={language} />
