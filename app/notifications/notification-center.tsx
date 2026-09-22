@@ -744,7 +744,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
 
       <p className={`px-3 pt-1.5 text-[10px] sm:px-5 sm:pt-3 sm:text-xs ${status === "error" ? "text-amber-300" : "text-zinc-500"}`} role="status" aria-live="polite">{message}</p>
 
-      <div className="mt-2 divide-y divide-zinc-800">
+      <div className="mt-1 divide-y divide-zinc-800 sm:mt-2">
         {status === "loading" ? <div className="px-4 py-5 text-sm text-zinc-500 sm:px-5">{copy.loading}</div> : null}
         {status === "ready" && visible.length === 0 ? <div className="px-4 py-5 text-sm text-zinc-500 sm:px-5">{copy.nothing}</div> : null}
         {visible.map((item, index) => {
