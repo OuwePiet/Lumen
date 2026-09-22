@@ -678,7 +678,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
 
   return (
     <section className={`${expandedView ? "max-h-[calc(100vh-8rem)]" : "max-h-[76vh]"} overflow-y-auto rounded-2xl border border-zinc-800 bg-zinc-950/60`} aria-labelledby="notification-center-heading">
-      <div className="sticky top-0 z-20 flex flex-wrap items-center justify-between gap-2 border-b border-zinc-800 bg-zinc-950/95 px-3 py-3 backdrop-blur sm:gap-3 sm:px-5 sm:py-4">
+      <div className="sticky top-0 z-20 flex flex-wrap items-center justify-between gap-1.5 border-b border-zinc-800 bg-zinc-950/95 px-2 py-2 backdrop-blur sm:gap-3 sm:px-5 sm:py-4">
         <div>
           <h2 id="notification-center-heading" className="text-base font-semibold text-white sm:text-xl">{copy.heading}</h2>
           <p className="mt-1 hidden text-xs text-zinc-500 sm:block">{copy.active}: {shortKey(session.publicKey, copy.actor)}</p>
