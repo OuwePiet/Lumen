@@ -282,7 +282,7 @@ export default function ViaSiteHeader() {
           </div>
           {!session ? <button type="button" onClick={enterPublicMode} style={{ ...pill, cursor: "pointer" }}>{t.publicEntrance}</button> : null}
           {!session ? <a href={DESO_LOGIN_URL} target="via-deso-identity" style={styles.login}>{t.login}</a> : null}
-          <Link href="/wallet" style={pill} className="via-site-header-utility">{t.wallet}</Link>
+          <Link href="/wallet" style={pill} className={`via-site-header-utility ${pathname === "/notifications" ? "via-site-header-wallet-notifications" : ""}`}>{t.wallet}</Link>
           {pathname !== "/notifications" ? <Link href="/notifications" style={pill} className="via-site-header-utility">{t.notifications}</Link> : null}
 
           {session ? (
@@ -381,7 +381,7 @@ export default function ViaSiteHeader() {
           .via-site-header-nav::-webkit-scrollbar, .via-site-header-tools::-webkit-scrollbar { display: none; }
           .via-site-header-link { padding: 18px 8px 15px !important; font-size: 11px !important; }
           .via-site-header-tools { grid-column: 1 / span 2 !important; grid-row: 2 !important; justify-content: flex-start !important; overflow-x: auto !important; overflow-y: hidden !important; gap: 6px !important; padding: 6px 8px !important; }
-          .via-site-header-search { min-width: 168px !important; }\n          .via-site-header-search-notifications { min-width: 34px !important; width: 34px !important; height: 34px !important; padding: 0 !important; justify-content: center !important; border-radius: 50% !important; }\n          .via-site-header-search-notifications .via-site-header-search-label { display: none !important; }
+          .via-site-header-search { min-width: 168px !important; }\n          .via-site-header-search-notifications { min-width: 34px !important; width: 34px !important; height: 34px !important; padding: 0 !important; justify-content: center !important; border-radius: 50% !important; }\n          .via-site-header-search-notifications .via-site-header-search-label { display: none !important; }\n          .via-site-header-wallet-notifications { display: none !important; }
           .via-profile-shortcut { position: absolute !important; right: 54px !important; top: 8px !important; z-index: 181 !important; width: 46px !important; min-width: 46px !important; height: 42px !important; padding: 3px !important; border-radius: 13px !important; overflow: visible !important; }
           .via-site-header-account-wrap { position: absolute !important; right: 10px !important; top: 10px !important; z-index: 180 !important; }
           .via-site-header-account-button { min-width: 38px !important; width: 38px !important; height: 38px !important; padding: 4px !important; gap: 0 !important; border-radius: 50% !important; }
