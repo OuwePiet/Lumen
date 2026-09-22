@@ -716,16 +716,16 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
       <div className="sticky top-[52px] z-20 border-b border-zinc-800 bg-zinc-950/95 px-2 py-1.5 backdrop-blur sm:top-[73px] sm:px-4 sm:py-3" aria-label={copy.filters}>
         <div className="flex gap-1 overflow-x-auto px-0.5 pb-0.5 pt-0.5 sm:flex-wrap sm:gap-2 sm:overflow-visible sm:px-0 sm:pt-0 sm:pb-0">
           {([
-            { id: "all", label: copy.categories.all, ids: filterCategoryIds },
-            { id: "likes", label: language === "Dutch" ? "Likes" : language === "French" ? "J’aime" : language === "Spanish" ? "Me gusta" : language === "Chinese" ? "点赞" : language === "Hindi" ? "लाइक्स" : "Likes", ids: ["reaction"] },
-            { id: "diamonds", label: language === "Dutch" ? "Diamanten" : language === "French" ? "Diamants" : language === "Spanish" ? "Diamantes" : language === "Chinese" ? "钻石" : language === "Hindi" ? "डायमंड्स" : "Diamonds", ids: ["diamond1", "diamondMany"] },
-            { id: "mentions", label: language === "Dutch" ? "Vermeldingen" : language === "French" ? "Mentions" : language === "Spanish" ? "Menciones" : language === "Chinese" ? "提及" : language === "Hindi" ? "उल्लेख" : "Mentions", ids: ["mention5", "mention6"] },
-            { id: "replies", label: copy.categories.reply, ids: ["reply"] },
-            { id: "reposts", label: copy.categories.repost, ids: ["repost"] },
-            { id: "follows", label: copy.categories.follow, ids: ["follow"] },
-            { id: "tips", label: language === "Dutch" ? "Tips" : language === "French" ? "Pourboires" : language === "Spanish" ? "Propinas" : language === "Chinese" ? "打赏" : language === "Hindi" ? "टिप्स" : "Tips", ids: ["creatorCoin"] },
-            { id: "other", label: copy.categories.other, ids: ["nft", "other"] },
-          ] as { id: string; label: string; ids: Exclude<Category, "all">[] }[]).map((option) => {
+            { id: "all", label: copy.categories.all, symbol: "●", ids: filterCategoryIds },
+            { id: "likes", symbol: "♥", label: language === "Dutch" ? "Likes" : language === "French" ? "J’aime" : language === "Spanish" ? "Me gusta" : language === "Chinese" ? "点赞" : language === "Hindi" ? "लाइक्स" : "Likes", ids: ["reaction"] },
+            { id: "diamonds", symbol: "◆", label: language === "Dutch" ? "Diamanten" : language === "French" ? "Diamants" : language === "Spanish" ? "Diamantes" : language === "Chinese" ? "钻石" : language === "Hindi" ? "डायमंड्स" : "Diamonds", ids: ["diamond1", "diamondMany"] },
+            { id: "mentions", symbol: "@", label: language === "Dutch" ? "Vermeldingen" : language === "French" ? "Mentions" : language === "Spanish" ? "Menciones" : language === "Chinese" ? "提及" : language === "Hindi" ? "उल्लेख" : "Mentions", ids: ["mention5", "mention6"] },
+            { id: "replies", symbol: "↩", label: copy.categories.reply, ids: ["reply"] },
+            { id: "reposts", symbol: "↻", label: copy.categories.repost, ids: ["repost"] },
+            { id: "follows", symbol: "+", label: copy.categories.follow, ids: ["follow"] },
+            { id: "tips", symbol: "$", label: language === "Dutch" ? "Tips" : language === "French" ? "Pourboires" : language === "Spanish" ? "Propinas" : language === "Chinese" ? "打赏" : language === "Hindi" ? "टिप्स" : "Tips", ids: ["creatorCoin"] },
+            { id: "other", symbol: "•••", label: copy.categories.other, ids: ["nft", "other"] },
+          ] as { id: string; label: string; symbol: string; ids: Exclude<Category, "all">[] }[]).map((option) => {
             const active = option.ids.every((id) => activeCategories.includes(id))
             const count = option.id === "all" ? items.length : items.filter((item) => option.ids.includes(categoryOf(item))).length
             return <button key={option.id} type="button" aria-pressed={active} onClick={() => {
@@ -734,8 +734,8 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
                 const allActive = option.ids.every((id) => current.includes(id))
                 return allActive ? current.filter((id) => !option.ids.includes(id)) : Array.from(new Set([...current, ...option.ids]))
               })
-            }} title={option.label} aria-label={`${option.label} · ${count}`} className={`relative inline-flex min-h-6 shrink-0 items-center gap-0.5 rounded-full border px-1 py-0.5 text-[9px] font-semibold transition sm:min-h-9 sm:gap-2 sm:rounded-xl sm:px-3 sm:py-1.5 sm:text-xs ${active ? "border-[#8fd4a9]/70 bg-[#10251a] text-white" : "border-zinc-800 bg-[#111214] text-zinc-300 hover:border-[#8fd4a9]/45"}`}>
-              <span>{option.label}</span>
+            }} title={option.label} aria-label={`${option.label} · ${count}`} className={`relative inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full border p-0 text-[11px] font-semibold transition sm:h-auto sm:w-auto sm:min-h-9 sm:gap-2 sm:rounded-xl sm:px-3 sm:py-1.5 sm:text-xs ${active ? "border-[#8fd4a9]/70 bg-[#10251a] text-white" : "border-zinc-800 bg-[#111214] text-zinc-300 hover:border-[#8fd4a9]/45"}`}>
+              <span className="sm:hidden" aria-hidden="true">{option.symbol}</span><span className="hidden sm:inline">{option.label}</span>
               {count > 0 ? <span aria-hidden="true" className="absolute -right-1 -top-1 grid min-h-3.5 min-w-3.5 place-items-center rounded-full bg-[#39d98a] px-0.5 text-[7px] font-bold leading-none text-[#041009] sm:-right-1.5 sm:-top-1.5 sm:min-h-5 sm:min-w-5 sm:text-[9px]">{count}</span> : null}
             </button>
           })}
