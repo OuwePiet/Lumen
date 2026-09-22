@@ -38,7 +38,7 @@ export default function NotificationsPage() {
     <main className="min-h-screen bg-black px-5 pb-8 pt-3 text-white sm:px-8 sm:py-8 lg:px-12">
       <div className="mx-auto grid max-w-7xl gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
         <div className="min-w-0">
-        <header className="mb-2 flex flex-wrap items-center justify-between gap-2 border-b border-white/10 pb-2 sm:mb-6 sm:gap-4 sm:pb-5">
+        <header className="mb-1 flex flex-wrap items-center justify-between gap-1.5 border-b border-white/10 pb-1 sm:mb-6 sm:gap-4 sm:pb-5">
           <div className="hidden sm:block">
             <h1 className="text-xl font-semibold tracking-tight sm:text-4xl">{copy.title}</h1>
             <p className="mt-1 text-xs text-zinc-500 sm:mt-2 sm:text-sm">{copy.intro}</p>
