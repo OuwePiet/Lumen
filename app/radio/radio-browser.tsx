@@ -147,12 +147,12 @@ export default function RadioBrowser() {
 
   return (
     <section aria-label="World Radio station discovery">
-      <form style={styles.form} onSubmit={search}>
-        <input aria-label="Country" placeholder="Country, e.g. Netherlands" value={country} maxLength={60} onChange={(event) => setCountry(event.target.value)} style={styles.input} />
-        <input aria-label="Station name" placeholder="Station, e.g. Radio 538" value={stationName} maxLength={60} onChange={(event) => setStationName(event.target.value)} style={styles.input} />
-        <input aria-label="Genre" placeholder="Genre, e.g. jazz" value={genre} maxLength={60} onChange={(event) => setGenre(event.target.value)} style={styles.input} />
-        <button type="submit" style={styles.button} disabled={loading}>{loading ? "Searching…" : "Find stations"}</button>
-        <button type="button" style={styles.button} aria-pressed={showFavorites} onClick={() => setShowFavorites((value) => !value)}>{showFavorites ? "Show search" : `Favorites (${favorites.length})`}</button>
+      <form style={styles.form} className="via-radio-search-form" onSubmit={search}>
+        <input aria-label="Country" placeholder="Country, e.g. Netherlands" value={country} maxLength={60} onChange={(event) => setCountry(event.target.value)} style={styles.input} className="via-radio-search-input" />
+        <input aria-label="Station name" placeholder="Station, e.g. Radio 538" value={stationName} maxLength={60} onChange={(event) => setStationName(event.target.value)} style={styles.input} className="via-radio-search-input" />
+        <input aria-label="Genre" placeholder="Genre, e.g. jazz" value={genre} maxLength={60} onChange={(event) => setGenre(event.target.value)} style={styles.input} className="via-radio-search-input" />
+        <button type="submit" style={styles.button} className="via-radio-search-button" disabled={loading}>{loading ? "Searching…" : "Find stations"}</button>
+        <button type="button" style={styles.button} className="via-radio-favorites-button" aria-pressed={showFavorites} onClick={() => setShowFavorites((value) => !value)}>{showFavorites ? "Show search" : `Favorites (${favorites.length})`}</button>
       </form>
 
       {error ? <p role="alert" style={styles.status}>{error}</p> : null}
@@ -172,6 +172,7 @@ export default function RadioBrowser() {
           </article>
         ))}
       </div>
+      <style>{`\n        @media (max-width: 720px) {\n          .via-radio-search-form { gap: 8px !important; margin-bottom: 14px !important; }\n          .via-radio-search-input { flex: 1 1 100% !important; min-height: 42px !important; font-size: 15px !important; }\n          .via-radio-search-button, .via-radio-favorites-button { min-height: 40px !important; padding: 8px 12px !important; font-size: 14px !important; }\n        }\n      `}</style>
     </section>
   )
 }
