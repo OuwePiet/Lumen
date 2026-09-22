@@ -39,7 +39,7 @@ export default function NotificationsPage() {
       <div className="mx-auto grid max-w-7xl gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
         <div className="min-w-0">
         <header className="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-white/10 pb-4 sm:mb-6 sm:gap-4 sm:pb-5">
-          <div>
+          <div className="hidden sm:block">
             <h1 className="text-xl font-semibold tracking-tight sm:text-4xl">{copy.title}</h1>
             <p className="mt-1 text-xs text-zinc-500 sm:mt-2 sm:text-sm">{copy.intro}</p>
           </div>
