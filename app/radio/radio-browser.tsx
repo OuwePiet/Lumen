@@ -159,12 +159,12 @@ export default function RadioBrowser() {
       {!error ? <p style={styles.status}>Streams come directly from the station. VIA does not host or proxy the audio. Choose Play here, then use the global World Radio control to turn the station on or off while navigating VIA.</p> : null}
       {showFavorites && visibleStations.length === 0 ? <p style={styles.status}>No saved favorite stations yet.</p> : null}
 
-      <div style={styles.grid}>
+      <div style={styles.grid} className="via-radio-results-grid">
         {visibleStations.map((station) => (
-          <article key={station.id} style={styles.card}>
+          <article key={station.id} style={styles.card} className="via-radio-station-card">
             <h2 style={styles.title}>{station.name}</h2>
             <p style={styles.meta}>{station.country || "Unknown country"}{station.tags ? ` · ${station.tags}` : ""}</p>
-            <div style={styles.actions}>
+            <div style={styles.actions} className="via-radio-station-actions">
               <button type="button" style={styles.button} onClick={() => play(station)}>Play</button>
               <button type="button" style={styles.button} aria-pressed={favoriteSet.has(station.id)} onClick={() => toggleFavorite(station)}>{favoriteSet.has(station.id) ? "★ Favorite" : "☆ Favorite"}</button>
               {station.homepage ? <a href={station.homepage} target="_blank" rel="noreferrer" style={{ ...styles.button, textDecoration: "none", display: "inline-flex", alignItems: "center" }}>Station site</a> : null}
@@ -172,7 +172,11 @@ export default function RadioBrowser() {
           </article>
         ))}
       </div>
-      <style>{`\n        @media (max-width: 720px) {\n          .via-radio-search-form { gap: 8px !important; margin-bottom: 14px !important; }\n          .via-radio-search-input { flex: 1 1 100% !important; min-height: 42px !important; font-size: 15px !important; }\n          .via-radio-search-button, .via-radio-favorites-button { min-height: 40px !important; padding: 8px 12px !important; font-size: 14px !important; }\n        }\n      `}</style>
+      <style>{`\n        @media (max-width: 720px) {\n          .via-radio-search-form { gap: 8px !important; margin-bottom: 14px !important; }\n          .via-radio-search-input { flex: 1 1 100% !important; min-height: 42px !important; font-size: 15px !important; }\n          .via-radio-search-button, .via-radio-favorites-button { min-height: 40px !important; padding: 8px 12px !important; font-size: 14px !important; }
+          .via-radio-results-grid { grid-template-columns: minmax(0, 1fr) !important; gap: 9px !important; }
+          .via-radio-station-card { padding: 11px !important; border-radius: 12px !important; }
+          .via-radio-station-actions { gap: 6px !important; }
+          .via-radio-station-actions > * { min-height: 38px !important; padding: 7px 10px !important; font-size: 12px !important; }\n        }\n      `}</style>
     </section>
   )
 }
