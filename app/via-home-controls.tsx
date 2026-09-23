@@ -469,8 +469,8 @@ export default function ViaHomeControls() {
             overflow: visible !important;
             border: 1px solid rgba(143,212,169,.16);
             border-radius: 18px;
-            background: rgba(2,8,5,.88);
-            backdrop-filter: blur(10px);
+            background: rgba(2,8,5,.34);
+            backdrop-filter: blur(3px);
           }
           .via-home-controls-logo {
             width: 154px !important;
