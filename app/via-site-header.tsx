@@ -270,7 +270,7 @@ export default function ViaSiteHeader() {
           </nav>
         </div>
 
-        <div style={styles.toolsRow} className={`via-site-header-tools ${pathname === "/notifications" ? "via-site-header-tools-notifications" : ""}`} aria-label="VIA utility controls">
+        <div style={styles.toolsRow} className={`via-site-header-tools ${pathname === "/notifications" ? "via-site-header-tools-notifications" : ""} ${pathname === "/radio" ? "via-site-header-tools-radio" : ""}`} aria-label="VIA utility controls">
           <div className="via-notifications-top-control"><Link href="/discover/voices" style={styles.search} className={`via-site-header-search ${pathname === "/notifications" ? "via-site-header-search-notifications" : ""}`} aria-label={t.search} title={t.search}><span className="via-notifications-members-icon" aria-hidden="true"><UsersRound className="h-4 w-4" /></span><span className="via-site-header-search-label">&nbsp;&nbsp; {t.search}</span></Link>{pathname === "/notifications" ? <span className="via-notifications-top-label">Members</span> : null}</div>
           <div className="via-site-header-language-wrap">
             <button type="button" onClick={() => setLanguageOpen((open) => !open)} style={styles.language} className={`via-site-header-language ${pathname === "/notifications" ? "via-site-header-language-notifications" : ""}`} aria-label="VIA language" aria-expanded={languageOpen}>
@@ -414,6 +414,21 @@ export default function ViaSiteHeader() {
           .via-site-header-tools { grid-column: 1 / span 2 !important; grid-row: 2 !important; justify-content: flex-start !important; overflow-x: auto !important; overflow-y: hidden !important; gap: 6px !important; padding: 6px 8px !important; }
           .via-site-header-shell:has(.via-site-header-nav-compact-mobile) .via-site-header-tools { overflow: visible !important; }
           .via-site-header-shell:has(.via-site-header-nav-compact-mobile) .via-site-header-language-wrap { z-index: 230 !important; }
+          .via-site-header-tools-radio {
+            overflow: visible !important;
+            align-items: center !important;
+            gap: 8px !important;
+          }
+          .via-site-header-tools-radio > .via-notifications-top-control,
+          .via-site-header-tools-radio > .via-site-header-utility,
+          .via-site-header-tools-radio > a[href*="identity"] {
+            display: none !important;
+          }
+          .via-site-header-tools-radio .via-site-header-language-menu {
+            top: 42px !important;
+            left: 0 !important;
+            z-index: 260 !important;
+          }
           .via-site-header-tools-notifications { position: absolute !important; top: 4px !important; height: 44px !important; grid-column: auto !important; grid-row: auto !important; display: grid !important; align-items: start !important; justify-items: center !important; padding: 0 !important; overflow: visible !important; }
           .via-site-header-tools-notifications .via-notifications-top-control, .via-site-header-tools-notifications .via-site-header-language-wrap { display: flex !important; min-width: 0 !important; flex-direction: column !important; align-items: center !important; gap: 1px !important; }
           .via-site-header-tools-notifications .via-notifications-top-label { display: block !important; color: #8b9890 !important; font-size: 8px !important; line-height: 10px !important; white-space: nowrap !important; }
