@@ -511,7 +511,26 @@ export default function ViaSiteHeader() {
             box-sizing: border-box !important;
           }
           .via-site-header-tools-notifications > .via-profile-shortcut-notifications {
-            transform: translateX(-4px) !important;
+            transform: translateX(-12px) !important;
+          }
+          .via-site-header-tools-notifications .via-notifications-future-mark {
+            left: 27px !important;
+            width: 70px !important;
+            padding: 0 7px 0 5px !important;
+            white-space: nowrap !important;
+            font-size: 7px !important;
+          }
+          .via-site-header-tools-notifications .via-site-header-account-button {
+            overflow: hidden !important;
+          }
+          .via-site-header-tools-notifications .via-site-header-account-label,
+          .via-site-header-tools-notifications .via-site-header-account-caret {
+            display: none !important;
+          }
+          .via-site-header-tools-notifications .via-site-header-account-menu-icon {
+            display: block !important;
+            font-size: 18px !important;
+            line-height: 1 !important;
           }
           .via-site-header-tools-notifications > .via-site-header-account-wrap {
             position: relative !important;
