@@ -429,6 +429,7 @@ export default function ViaSiteHeader() {
           .via-site-header-tools-notifications > .via-profile-shortcut-notifications {
             grid-column: 4 !important;
             justify-self: center !important;
+            transform: translateX(4px) !important;
           }
           .via-site-header-tools-notifications > .via-site-header-account-wrap {
             grid-column: 5 !important;
@@ -465,16 +466,16 @@ export default function ViaSiteHeader() {
           }
           .via-site-header-tools-notifications .via-notifications-future-mark {
             position: absolute !important;
-            left: 38px !important;
+            left: 32px !important;
             top: 0 !important;
             display: grid !important;
             place-items: center !important;
-            width: 48px !important;
+            width: 58px !important;
             height: 34px !important;
             box-sizing: border-box !important;
             border: 1px solid rgba(143,212,169,.52) !important;
             border-left: 0 !important;
-            border-right: 0 !important;
+            border-radius: 0 17px 17px 0 !important;
             color: #b8ddc5 !important;
             font-size: 7px !important;
             font-weight: 700 !important;
