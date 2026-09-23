@@ -412,8 +412,8 @@ export default function ViaSiteHeader() {
           .via-site-header-nav::-webkit-scrollbar, .via-site-header-tools::-webkit-scrollbar { display: none; }
           .via-site-header-link { padding: 18px 8px 15px !important; font-size: 11px !important; }
           .via-site-header-tools { grid-column: 1 / span 2 !important; grid-row: 2 !important; justify-content: flex-start !important; overflow-x: auto !important; overflow-y: hidden !important; gap: 6px !important; padding: 6px 8px !important; }
-          .via-site-header-shell:has(.via-site-header-nav-compact-mobile) .via-site-header-tools { overflow: visible !important; }
-          .via-site-header-shell:has(.via-site-header-nav-compact-mobile) .via-site-header-language-wrap { z-index: 230 !important; }
+          .via-site-header-tools-radio { overflow: visible !important; }
+          .via-site-header-tools-radio .via-site-header-language-wrap { z-index: 230 !important; }
           .via-site-header-tools-radio {
             overflow: visible !important;
             align-items: center !important;
