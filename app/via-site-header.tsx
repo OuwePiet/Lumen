@@ -412,18 +412,17 @@ export default function ViaSiteHeader() {
           .via-site-header-nav::-webkit-scrollbar, .via-site-header-tools::-webkit-scrollbar { display: none; }
           .via-site-header-link { padding: 18px 8px 15px !important; font-size: 11px !important; }
           .via-site-header-tools { grid-column: 1 / span 2 !important; grid-row: 2 !important; justify-content: flex-start !important; overflow-x: auto !important; overflow-y: hidden !important; gap: 6px !important; padding: 6px 8px !important; }
-          .via-site-header-tools-notifications { position: absolute !important; left: 80px !important; right: 14px !important; top: 4px !important; height: 44px !important; grid-column: auto !important; grid-row: auto !important; display: grid !important; grid-template-columns: 40px 40px 40px minmax(92px, 1fr) 34px !important; align-items: start !important; justify-items: center !important; column-gap: 6px !important; padding: 0 !important; overflow: visible !important; }\n          .via-site-header-tools-notifications .via-notifications-top-control, .via-site-header-tools-notifications .via-site-header-language-wrap { display: flex !important; width: 100% !important; min-width: 0 !important; flex-direction: column !important; align-items: center !important; gap: 1px !important; }\n          .via-site-header-tools-notifications .via-notifications-top-label { display: block !important; color: #8b9890 !important; font-size: 8px !important; line-height: 10px !important; white-space: nowrap !important; }
-          .via-site-header-search { min-width: 168px !important; }\n          .via-site-header-language-notifications { min-width: 34px !important; width: 34px !important; height: 34px !important; min-height: 34px !important; max-height: 34px !important; padding: 0 !important; justify-content: center !important; border-radius: 50% !important; aspect-ratio: 1 / 1 !important; box-sizing: border-box !important; }
-          .via-site-header-language-notifications { flex-direction: column !important; gap: 0 !important; }
+          .via-site-header-tools-notifications { position: absolute !important; top: 4px !important; height: 44px !important; grid-column: auto !important; grid-row: auto !important; display: grid !important; align-items: start !important; justify-items: center !important; padding: 0 !important; overflow: visible !important; }
+          .via-site-header-tools-notifications .via-notifications-top-control, .via-site-header-tools-notifications .via-site-header-language-wrap { display: flex !important; min-width: 0 !important; flex-direction: column !important; align-items: center !important; gap: 1px !important; }
+          .via-site-header-tools-notifications .via-notifications-top-label { display: block !important; color: #8b9890 !important; font-size: 8px !important; line-height: 10px !important; white-space: nowrap !important; }
+          .via-site-header-language-notifications { padding: 0 !important; justify-content: center !important; flex-direction: column !important; gap: 0 !important; }
           .via-site-header-language-notifications .via-site-header-language-flag { display: block !important; margin: 0 !important; font-size: 13px !important; line-height: 14px !important; text-align: center !important; }
-          .via-site-header-language-notifications .via-site-header-language-code { display: block !important; margin: 0 !important; font-size: 8px !important; line-height: 9px !important; text-align: center !important; }\n          .via-site-header-search-notifications { min-width: 34px !important; width: 34px !important; height: 34px !important; min-height: 34px !important; max-height: 34px !important; padding: 0 !important; justify-content: center !important; border-radius: 50% !important; aspect-ratio: 1 / 1 !important; box-sizing: border-box !important; }\n          .via-site-header-search-notifications .via-site-header-search-label { display: none !important; }\n          .via-notifications-radio-top { display: inline-grid !important; place-items: center !important; flex: 0 0 auto !important; width: 34px !important; height: 34px !important; min-width: 34px !important; min-height: 34px !important; max-width: 34px !important; max-height: 34px !important; aspect-ratio: 1 / 1 !important; box-sizing: border-box !important; border: 1px solid rgba(143,212,169,.22) !important; border-radius: 50% !important; background: rgba(5,11,8,.76) !important; color: #b8ddc5 !important; text-decoration: none !important; font-size: 16px !important; line-height: 1 !important; }\n          .via-site-header-wallet-notifications { display: none !important; }\n          .via-site-header-nav-compact-mobile { display: none !important; }
-          .via-profile-shortcut { position: absolute !important; right: 54px !important; top: 8px !important; z-index: 181 !important; width: 46px !important; min-width: 46px !important; height: 42px !important; padding: 3px !important; border-radius: 13px !important; overflow: visible !important; }\n          .via-profile-shortcut-notifications { top: 4px !important; right: 54px !important; width: 34px !important; min-width: 34px !important; height: 34px !important; padding: 2px !important; border-radius: 50% !important; }\n          .via-profile-shortcut-notifications > img, .via-profile-shortcut-notifications > span[aria-hidden="true"] { width: 28px !important; height: 28px !important; }\n          .via-profile-shortcut-notifications .via-profile-shortcut-status { right: -13px !important; bottom: -8px !important; }
-          .via-site-header-account-wrap { position: absolute !important; right: 10px !important; top: 8px !important; z-index: 180 !important; }
-          .via-site-header-account-button { min-width: 38px !important; width: 38px !important; height: 38px !important; padding: 4px !important; gap: 0 !important; border-radius: 50% !important; }
-          .via-site-header-avatar, .via-site-header-avatar-fallback { width: 28px !important; height: 28px !important; }
-          .via-site-header-account-label, .via-site-header-account-caret { display: none !important; }
-          .via-site-header-account-menu-icon { display: inline !important; font-size: 19px !important; line-height: 1 !important; color: #b8c5bd !important; }
-
+          .via-site-header-language-notifications .via-site-header-language-code { display: block !important; margin: 0 !important; font-size: 8px !important; line-height: 9px !important; text-align: center !important; }
+          .via-site-header-search-notifications { padding: 0 !important; justify-content: center !important; }
+          .via-site-header-search-notifications .via-site-header-search-label { display: none !important; }
+          .via-notifications-radio-top { display: inline-grid !important; place-items: center !important; border: 1px solid rgba(143,212,169,.22) !important; background: rgba(5,11,8,.76) !important; color: #b8ddc5 !important; text-decoration: none !important; font-size: 16px !important; line-height: 1 !important; }
+          .via-site-header-wallet-notifications { display: none !important; }
+          .via-site-header-nav-compact-mobile { display: none !important; }
           .via-site-header-account-menu { top: 44px !important; right: 0 !important; width: min(280px, calc(100vw - 20px)) !important; }
           /* Notifications iPhone: one layout process only. Keep every top-row control in DOM order. */
           .via-site-header-tools-notifications > .via-profile-shortcut-notifications {
@@ -515,9 +514,16 @@ export default function ViaSiteHeader() {
             transform: translateX(-4px) !important;
           }
           .via-site-header-tools-notifications > .via-site-header-account-wrap {
+            position: relative !important;
+            right: auto !important;
+            top: 0 !important;
+            flex: 0 0 38px !important;
             width: 38px !important;
             min-width: 38px !important;
+            max-width: 38px !important;
             height: 38px !important;
+            min-height: 38px !important;
+            max-height: 38px !important;
             justify-self: end !important;
           }
           .via-site-header-tools-notifications .via-site-header-account-button {
