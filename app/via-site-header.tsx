@@ -513,6 +513,13 @@ export default function ViaSiteHeader() {
           .via-site-header-tools-notifications > .via-profile-shortcut-notifications {
             transform: translateX(-12px) !important;
           }
+          .via-site-header-tools-notifications .via-profile-shortcut-notifications > img,
+          .via-site-header-tools-notifications .via-profile-shortcut-notifications > span[aria-hidden="true"] {
+            width: 30px !important;
+            height: 30px !important;
+            border-radius: 50% !important;
+            object-fit: cover !important;
+          }
           .via-site-header-tools-notifications .via-notifications-future-mark {
             left: 27px !important;
             width: 70px !important;
