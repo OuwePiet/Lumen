@@ -324,7 +324,10 @@ export default function ViaSiteHeader() {
                   <ViaIdentityStatusMarks verified={Boolean(profile?.isVerified)} inactive={Boolean(profile?.isInactive)} viaRecognized={Boolean(profile?.viaRecognized)} compact language={language} />
                 </span>
                 {pathname === "/notifications" ? (
-                  <span className="via-notifications-status-caret" aria-hidden="true">▾</span>
+                  <>
+                    <span className="via-notifications-future-mark">VIA Future</span>
+                    <span className="via-notifications-status-caret" aria-hidden="true">▾</span>
+                  </>
                 ) : null}
               </Link>
               <div ref={accountWrapRef} style={styles.accountWrap} className="via-site-header-account-wrap">
@@ -425,6 +428,19 @@ export default function ViaSiteHeader() {
           .via-site-header-tools-notifications .via-profile-shortcut-status {
             right: -10px !important;
             bottom: -7px !important;
+          }
+          .via-site-header-tools-notifications .via-notifications-future-mark {
+            position: absolute !important;
+            left: 39px !important;
+            top: 7px !important;
+            display: inline-block !important;
+            width: 24px !important;
+            color: #8b9890 !important;
+            font-size: 7px !important;
+            line-height: 8px !important;
+            text-align: center !important;
+            white-space: normal !important;
+            pointer-events: none !important;
           }
           .via-site-header-tools-notifications .via-notifications-status-caret {
             position: absolute !important;
