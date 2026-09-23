@@ -484,7 +484,8 @@ export default function ViaSiteHeader() {
             left: 78px !important;
             right: 10px !important;
             grid-template-columns: repeat(6, 34px) !important;
-            column-gap: 2px !important;
+            justify-content: space-between !important;
+            column-gap: 0 !important;
           }
           .via-site-header-tools-notifications > .via-notifications-top-control,
           .via-site-header-tools-notifications > .via-site-header-language-wrap {
