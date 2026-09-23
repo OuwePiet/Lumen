@@ -156,7 +156,6 @@ export default function RadioBrowser() {
       </form>
 
       {error ? <p role="alert" style={styles.status}>{error}</p> : null}
-      {!error ? <p style={styles.status}>Streams come directly from the station. VIA does not host or proxy the audio. Choose Play here, then use the global World Radio control to turn the station on or off while navigating VIA.</p> : null}
       {showFavorites && visibleStations.length === 0 ? <p style={styles.status}>No saved favorite stations yet.</p> : null}
 
       <div style={styles.grid} className="via-radio-results-grid">
