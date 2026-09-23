@@ -74,6 +74,7 @@ type Copy = {
   categories: Record<Category, string>
   login: string
   heading: string
+  notificationLabel: string
   active: string
   refresh: string
   refreshing: string
@@ -109,6 +110,7 @@ const COPY: Record<ViaLanguage | "Hindi", Copy> = {
     categories: { all: "Alles", reaction: "Reacties", diamond1: "1 diamant", diamondMany: "Meerdere diamanten", creatorCoin: "Creator Coin", follow: "Volgen", mention5: "Vermeldingen · max 5", mention6: "Vermeldingen · 6+", reply: "Antwoorden", repost: "Reposts", nft: "NFT", other: "Overig" },
     login: "Log in met DeSo om meldingen voor je actieve account te zien.",
     heading: "Wat bereikte jouw account?",
+    notificationLabel: "Meldingen",
     active: "Actief account",
     refresh: "Vernieuwen",
     refreshing: "Vernieuwen…",
@@ -148,6 +150,7 @@ const COPY: Record<ViaLanguage | "Hindi", Copy> = {
     categories: { all: "All", reaction: "Reactions", diamond1: "Single Diamond", diamondMany: "Multiple Diamonds", creatorCoin: "Creator Coin", follow: "Follows", mention5: "Mentions · max 5", mention6: "Mentions · 6+", reply: "Replies", repost: "Reposts", nft: "NFT", other: "Other" },
     login: "Log in with DeSo to see notifications for your active account.",
     heading: "What reached your account?",
+    notificationLabel: "Notifications",
     active: "Active account",
     refresh: "Refresh",
     refreshing: "Refreshing…",
@@ -187,6 +190,7 @@ const COPY: Record<ViaLanguage | "Hindi", Copy> = {
     categories: { all: "Tout", reaction: "Réactions", diamond1: "1 diamant", diamondMany: "Plusieurs diamants", creatorCoin: "Creator Coin", follow: "Abonnements", mention5: "Mentions · max 5", mention6: "Mentions · 6+", reply: "Réponses", repost: "Reposts", nft: "NFT", other: "Autre" },
     login: "Connectez-vous avec DeSo pour voir les notifications du compte actif.",
     heading: "Qu’est-ce qui a atteint votre compte ?",
+    notificationLabel: "Notifications",
     active: "Compte actif",
     refresh: "Actualiser",
     refreshing: "Actualisation…",
@@ -226,6 +230,7 @@ const COPY: Record<ViaLanguage | "Hindi", Copy> = {
     categories: { all: "Todo", reaction: "Reacciones", diamond1: "1 diamante", diamondMany: "Varios diamantes", creatorCoin: "Creator Coin", follow: "Seguimientos", mention5: "Menciones · máx 5", mention6: "Menciones · 6+", reply: "Respuestas", repost: "Reposts", nft: "NFT", other: "Otros" },
     login: "Inicia sesión con DeSo para ver las notificaciones de tu cuenta activa.",
     heading: "¿Qué llegó a tu cuenta?",
+    notificationLabel: "Notificaciones",
     active: "Cuenta activa",
     refresh: "Actualizar",
     refreshing: "Actualizando…",
@@ -265,6 +270,7 @@ const COPY: Record<ViaLanguage | "Hindi", Copy> = {
     categories: { all: "सभी", reaction: "प्रतिक्रियाएँ", diamond1: "1 Diamond", diamondMany: "कई Diamonds", creatorCoin: "Creator Coin", follow: "फ़ॉलो", mention5: "उल्लेख · अधिकतम 5", mention6: "उल्लेख · 6+", reply: "जवाब", repost: "रीपोस्ट", nft: "NFT", other: "अन्य" },
     login: "अपने सक्रिय खाते की सूचनाएँ देखने के लिए DeSo से लॉग इन करें।",
     heading: "आपके खाते तक क्या पहुँचा?", active: "सक्रिय खाता", refresh: "रीफ़्रेश", refreshing: "रीफ़्रेश हो रहा है…",
+    notificationLabel: "सूचनाएँ",
     loadingNotifications: "सूचनाएँ लोड हो रही हैं…", recentLoaded: (count) => `${count} हाल की सूचनाएँ लोड हुईं।`,
     noRecent: "कोई हाल की सूचना नहीं।", unavailable: "सूचनाएँ अस्थायी रूप से उपलब्ध नहीं हैं।", filters: "सूचना फ़िल्टर",
     loading: "लोड हो रहा है…", nothing: "इस फ़िल्टर में कुछ नहीं है।", open: "खोलें", close: "बंद करें", selectAll: "सभी चुनें", expandView: "विस्तृत दृश्य", replyAction: "जवाब दें", copyLink: "लिंक कॉपी करें", linkCopied: "लिंक कॉपी हो गया", postUnavailable: "पोस्ट उपलब्ध नहीं है।",
@@ -287,6 +293,7 @@ const COPY: Record<ViaLanguage | "Hindi", Copy> = {
     categories: { all: "全部", reaction: "反应", diamond1: "1 颗钻石", diamondMany: "多颗钻石", creatorCoin: "Creator Coin", follow: "关注", mention5: "提及 · 最多 5", mention6: "提及 · 6+", reply: "回复", repost: "转发", nft: "NFT", other: "其他" },
     login: "使用 DeSo 登录以查看当前账户的通知。",
     heading: "你的账户收到了什么？",
+    notificationLabel: "通知",
     active: "当前账户",
     refresh: "刷新",
     refreshing: "正在刷新…",
@@ -754,7 +761,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
         </div>
       </div>
 
-      <div className="flex items-baseline gap-2 px-3 pt-1 sm:px-5 sm:pt-3"><span className="text-[9px] font-medium leading-4 text-[#8fd4a9] sm:hidden">Notifications</span><p className={`text-[9px] leading-4 sm:text-xs sm:leading-normal ${status === "error" ? "text-amber-300" : "text-zinc-500"}`} role="status" aria-live="polite">{message}</p></div>
+      <div className="flex items-baseline gap-2 px-3 pt-1 sm:px-5 sm:pt-3"><span className="text-[9px] font-medium leading-4 text-[#8fd4a9] sm:hidden">{copy.notificationLabel}</span><p className={`text-[9px] leading-4 sm:text-xs sm:leading-normal ${status === "error" ? "text-amber-300" : "text-zinc-500"}`} role="status" aria-live="polite">{message}</p></div>
 
       <div className="mt-1 sm:mt-2 sm:divide-y sm:divide-zinc-800">
         {status === "loading" ? <div className="px-4 py-5 text-sm text-zinc-500 sm:px-5">{copy.loading}</div> : null}
