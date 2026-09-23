@@ -487,7 +487,7 @@ export default function ViaSiteHeader() {
           .via-site-header-tools-notifications {
             left: 78px !important;
             right: 10px !important;
-            grid-template-columns: repeat(3, 46px) minmax(104px, 1fr) 38px !important;
+            grid-template-columns: repeat(3, 46px) minmax(80px, 1fr) 38px !important;
             column-gap: 2px !important;
           }
           .via-site-header-tools-notifications > .via-notifications-top-control,
@@ -511,19 +511,32 @@ export default function ViaSiteHeader() {
             box-sizing: border-box !important;
           }
           .via-site-header-tools-notifications > .via-profile-shortcut-notifications {
-            transform: translateX(-12px) !important;
+            transform: translateX(0) !important;
+            justify-self: end !important;
+            margin-right: 4px !important;
           }
           .via-site-header-tools-notifications .via-notifications-future-mark {
-            left: 27px !important;
+            position: absolute !important;
+            left: -38px !important;
             top: 0 !important;
-            width: 70px !important;
+            display: grid !important;
+            place-items: center !important;
+            width: 34px !important;
+            min-width: 34px !important;
+            max-width: 34px !important;
             height: 34px !important;
             min-height: 34px !important;
             max-height: 34px !important;
-            padding: 0 7px 0 5px !important;
-            border-radius: 0 17px 17px 0 !important;
-            white-space: nowrap !important;
-            font-size: 7px !important;
+            padding: 0 !important;
+            border: 1px solid rgba(143,212,169,.52) !important;
+            border-radius: 50% !important;
+            background: rgba(5,11,8,.76) !important;
+            white-space: normal !important;
+            color: #b8ddc5 !important;
+            font-size: 6px !important;
+            font-weight: 700 !important;
+            line-height: 7px !important;
+            text-align: center !important;
           }
           .via-site-header-tools-notifications .via-site-header-account-button {
             overflow: hidden !important;
