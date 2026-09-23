@@ -685,7 +685,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
           <h2 id="notification-center-heading" className="whitespace-nowrap text-xs font-medium text-zinc-400 sm:text-xl sm:font-semibold sm:text-white">{copy.heading}<span className="ml-1 text-[#8fd4a9] sm:hidden">Notifications</span></h2>
           <p className="mt-1 hidden text-xs text-zinc-500 sm:block">{copy.active}: {shortKey(session.publicKey, copy.actor)}</p>
         </div>
-        <div className="flex shrink-0 flex-nowrap items-center gap-1 max-sm:w-full max-sm:justify-start sm:flex-wrap sm:gap-2">
+        <div className="flex w-full shrink-0 flex-nowrap items-center gap-1 justify-start sm:w-auto sm:flex-wrap sm:gap-2">
           <button
             type="button"
             onClick={() => setQualityShield((value) => {
