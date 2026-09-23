@@ -514,6 +514,18 @@ export default function ViaSiteHeader() {
             transform: translateX(0) !important;
             justify-self: end !important;
             margin-right: 4px !important;
+            padding: 0 !important;
+            border: 0 !important;
+            background: transparent !important;
+            box-shadow: none !important;
+          }
+          .via-site-header-tools-notifications .via-profile-shortcut-notifications > img {
+            width: 34px !important;
+            height: 34px !important;
+            border-radius: 50% !important;
+            object-fit: cover !important;
+            border: 1px solid rgba(143,212,169,.52) !important;
+            box-shadow: none !important;
           }
           .via-site-header-tools-notifications .via-notifications-future-mark {
             position: absolute !important;
