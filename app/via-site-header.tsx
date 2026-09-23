@@ -484,6 +484,54 @@ export default function ViaSiteHeader() {
             white-space: normal !important;
             pointer-events: none !important;
           }
+          /* Final Notifications iPhone geometry: override older mobile rules with one fixed circle system. */
+          .via-site-header-tools-notifications {
+            left: 78px !important;
+            right: 10px !important;
+            grid-template-columns: repeat(3, 46px) minmax(104px, 1fr) 38px !important;
+            column-gap: 2px !important;
+          }
+          .via-site-header-tools-notifications > .via-notifications-top-control,
+          .via-site-header-tools-notifications > .via-site-header-language-wrap {
+            width: 46px !important;
+            min-width: 46px !important;
+            justify-self: center !important;
+          }
+          .via-site-header-tools-notifications .via-site-header-search-notifications,
+          .via-site-header-tools-notifications .via-site-header-language-notifications,
+          .via-site-header-tools-notifications .via-notifications-radio-top {
+            flex: 0 0 34px !important;
+            width: 34px !important;
+            min-width: 34px !important;
+            max-width: 34px !important;
+            height: 34px !important;
+            min-height: 34px !important;
+            max-height: 34px !important;
+            aspect-ratio: 1 / 1 !important;
+            border-radius: 50% !important;
+            box-sizing: border-box !important;
+          }
+          .via-site-header-tools-notifications > .via-profile-shortcut-notifications {
+            transform: translateX(-4px) !important;
+          }
+          .via-site-header-tools-notifications > .via-site-header-account-wrap {
+            width: 38px !important;
+            min-width: 38px !important;
+            height: 38px !important;
+            justify-self: end !important;
+          }
+          .via-site-header-tools-notifications .via-site-header-account-button {
+            flex: 0 0 38px !important;
+            width: 38px !important;
+            min-width: 38px !important;
+            max-width: 38px !important;
+            height: 38px !important;
+            min-height: 38px !important;
+            max-height: 38px !important;
+            aspect-ratio: 1 / 1 !important;
+            border-radius: 50% !important;
+            box-sizing: border-box !important;
+          }
           .via-site-header-tools-notifications .via-notifications-status-caret {
             position: absolute !important;
             right: -20px !important;
