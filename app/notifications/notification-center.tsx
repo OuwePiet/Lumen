@@ -729,7 +729,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
       </div>
 
       <div className="sticky top-[36px] z-20 border-b border-zinc-800 bg-zinc-950/95 px-1 py-1 backdrop-blur sm:top-[73px] sm:px-4 sm:py-3" aria-label={copy.filters}>
-        <div className="flex justify-between gap-0.5 overflow-visible px-0 pb-0.5 pt-0.5 sm:flex-wrap sm:justify-start sm:gap-2 sm:px-0 sm:pt-0 sm:pb-0">
+        <div className="flex justify-between gap-0.5 overflow-visible px-0 pb-3 pt-0.5 sm:flex-wrap sm:justify-start sm:gap-2 sm:px-0 sm:pt-0 sm:pb-0">
           {([
             { id: "all", label: copy.categories.all, symbol: "●", ids: filterCategoryIds },
             { id: "likes", symbol: "♥", label: language === "Dutch" ? "Likes" : language === "French" ? "J’aime" : language === "Spanish" ? "Me gusta" : language === "Chinese" ? "点赞" : language === "Hindi" ? "लाइक्स" : "Likes", ids: ["reaction"] },
@@ -748,7 +748,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
                 return allActive ? current.filter((id) => !option.ids.includes(id)) : Array.from(new Set([...current, ...option.ids]))
               })
             }} title={option.label} aria-label={`${option.label} · ${count}`} className={`relative inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full border p-0 text-[11px] font-semibold transition sm:h-auto sm:w-auto sm:min-h-9 sm:gap-2 sm:rounded-xl sm:px-3 sm:py-1.5 sm:text-xs ${active ? "border-[#8fd4a9]/70 bg-[#10251a] text-white" : "border-zinc-800 bg-[#111214] text-zinc-300 hover:border-[#8fd4a9]/45"}`}>
-              <span className="sm:hidden" aria-hidden="true">{option.id === "likes" ? <Heart className="h-3 w-3" /> : option.id === "diamonds" ? <Gem className="h-3 w-3" /> : option.id === "mentions" ? <AtSign className="h-3 w-3" /> : option.id === "replies" ? <MessageSquare className="h-3 w-3" /> : option.id === "reposts" ? <Repeat2 className="h-3 w-3" /> : option.id === "follows" ? <UserPlus className="h-3 w-3" /> : option.id === "all" ? <CircleDot className="h-3 w-3" /> : option.symbol}</span><span className="hidden sm:inline">{option.label}</span>
+              <span className="sm:hidden" aria-hidden="true">{option.id === "likes" ? <Heart className="h-3 w-3" /> : option.id === "diamonds" ? <Gem className="h-3 w-3" /> : option.id === "mentions" ? <AtSign className="h-3 w-3" /> : option.id === "replies" ? <MessageSquare className="h-3 w-3" /> : option.id === "reposts" ? <Repeat2 className="h-3 w-3" /> : option.id === "follows" ? <UserPlus className="h-3 w-3" /> : option.id === "all" ? <CircleDot className="h-3 w-3" /> : option.symbol}</span><span className="pointer-events-none absolute left-1/2 top-full mt-0.5 -translate-x-1/2 whitespace-nowrap text-[7px] font-normal leading-[9px] text-zinc-500 sm:hidden">{option.label}</span><span className="hidden sm:inline">{option.label}</span>
               {count > 0 ? <span aria-hidden="true" className="absolute -right-1 -top-1 grid min-h-3.5 min-w-3.5 place-items-center rounded-full bg-[#39d98a] px-0.5 text-[7px] font-bold leading-none text-[#041009] sm:-right-1.5 sm:-top-1.5 sm:min-h-5 sm:min-w-5 sm:text-[9px]">{count}</span> : null}
             </button>
           })}
