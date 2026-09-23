@@ -734,10 +734,10 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
             { id: "all", label: copy.categories.all, symbol: "●", ids: filterCategoryIds },
             { id: "likes", symbol: "♥", label: language === "Dutch" ? "Likes" : language === "French" ? "J’aime" : language === "Spanish" ? "Me gusta" : language === "Chinese" ? "点赞" : language === "Hindi" ? "लाइक्स" : "Likes", ids: ["reaction"] },
             { id: "diamonds", symbol: "◆", label: language === "Dutch" ? "Diamanten" : language === "French" ? "Diamants" : language === "Spanish" ? "Diamantes" : language === "Chinese" ? "钻石" : language === "Hindi" ? "डायमंड्स" : "Diamonds", ids: ["diamond1", "diamondMany"] },
-            { id: "follows", symbol: "+", label: copy.categories.follow, ids: ["follow"] },
             { id: "mentions", symbol: "@", label: language === "Dutch" ? "Vermeldingen" : language === "French" ? "Mentions" : language === "Spanish" ? "Menciones" : language === "Chinese" ? "提及" : language === "Hindi" ? "उल्लेख" : "Mentions", ids: ["mention5", "mention6"] },
             { id: "replies", symbol: "↩", label: copy.categories.reply, ids: ["reply"] },
             { id: "reposts", symbol: "↻", label: copy.categories.repost, ids: ["repost"] },
+            { id: "follows", symbol: "+", label: copy.categories.follow, ids: ["follow"] },
           ] as { id: string; label: string; symbol: string; ids: Exclude<Category, "all">[] }[]).map((option) => {
             const active = option.ids.every((id) => activeCategories.includes(id))
             const count = option.id === "all" ? items.length : items.filter((item) => option.ids.includes(categoryOf(item))).length
