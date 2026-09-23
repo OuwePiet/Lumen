@@ -152,6 +152,7 @@ export default function ViaSiteHeader() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [language, setLanguage] = useState<ViaLanguage>("Dutch")
   const [languageOpen, setLanguageOpen] = useState(false)
+  const [notificationStatusOpen, setNotificationStatusOpen] = useState(false)
 
   function refreshKnownAccounts() {
     setKnownAccounts(listIdentitySessions())
@@ -190,7 +191,7 @@ export default function ViaSiteHeader() {
     }
   }, [])
 
-  useEffect(() => setMenuOpen(false), [pathname])
+  useEffect(() => { setMenuOpen(false); setNotificationStatusOpen(false) }, [pathname])
 
   useEffect(() => {
     if (!session?.publicKey) { setProfile(null); return }
@@ -326,7 +327,29 @@ export default function ViaSiteHeader() {
                 {pathname === "/notifications" ? (
                   <>
                     <span className="via-notifications-future-mark">VIA Future</span>
-                    <span className="via-notifications-status-caret" aria-hidden="true">▾</span>
+                    <span
+                      className="via-notifications-status-caret"
+                      role="button"
+                      tabIndex={0}
+                      aria-expanded={notificationStatusOpen}
+                      aria-label="Open DeSo and VIA status information"
+                      onClick={(event) => { event.preventDefault(); event.stopPropagation(); setNotificationStatusOpen((open) => !open) }}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter" || event.key === " ") {
+                          event.preventDefault()
+                          event.stopPropagation()
+                          setNotificationStatusOpen((open) => !open)
+                        }
+                      }}
+                    >▾</span>
+                    {notificationStatusOpen ? (
+                      <span className="via-notifications-status-info" role="status" onClick={(event) => { event.preventDefault(); event.stopPropagation() }}>
+                        <strong>{language === "Dutch" ? "DeSo Verified" : language === "French" ? "Vérifié par DeSo" : language === "Spanish" ? "Verificado por DeSo" : language === "Chinese" ? "DeSo 已验证" : "DeSo Verified"}</strong>
+                        <span>{language === "Dutch" ? "Originele DeSo-verificatie. VIA kan deze status niet toekennen, wijzigen of verwijderen." : language === "French" ? "Vérification DeSo d'origine. VIA ne peut ni attribuer, ni modifier, ni supprimer ce statut." : language === "Spanish" ? "Verificación original de DeSo. VIA no puede conceder, cambiar ni eliminar este estado." : language === "Chinese" ? "这是 DeSo 原始验证状态。VIA 不能授予、更改或移除此状态。" : "Original DeSo verification. VIA cannot grant, change or remove this status."}</span>
+                        <strong>{language === "Dutch" ? "VIA-erkenning" : language === "French" ? "Reconnaissance VIA" : language === "Spanish" ? "Reconocimiento VIA" : language === "Chinese" ? "VIA 认可" : "VIA Recognition"}</strong>
+                        <span>{language === "Dutch" ? "Het VIA-blaadje wordt verdiend door aantoonbare positieve betrokkenheid bij VIA volgens vaste VIA-criteria. De erkenning is niet te koop en wordt pas bij de echte livegang geactiveerd." : language === "French" ? "La feuille VIA s'obtient par une participation positive et vérifiable à VIA selon des critères VIA fixes. Cette reconnaissance ne peut pas être achetée et ne sera activée qu'au lancement public réel." : language === "Spanish" ? "La hoja VIA se obtiene mediante una participación positiva y verificable en VIA según criterios fijos de VIA. Este reconocimiento no se puede comprar y solo se activará en el lanzamiento público real." : language === "Chinese" ? "VIA 叶标需按照固定的 VIA 标准，通过可验证的积极参与获得。该认可不可购买，并且只会在正式公开上线时启用。" : "The VIA leaf is earned through verifiable positive participation in VIA under fixed VIA criteria. This recognition cannot be bought and will only be enabled at the real public launch."}</span>
+                      </span>
+                    ) : null}
                   </>
                 ) : null}
               </Link>
