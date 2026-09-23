@@ -726,7 +726,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
             <span className="text-[8px] leading-[10px] text-zinc-500">Sponsor VIA</span>
           </div>
           <div className="hidden flex-col items-center gap-0.5 max-sm:flex">
-            <Link href="/social" aria-label="Social" title="Social" className="grid h-7 w-7 place-items-center rounded-full border border-[#8fd4a9]/35 bg-[#050b08]/80 text-[#9adbb2]">
+            <Link href="/social" prefetch={false} aria-label="Social" title="Social" className="relative z-10 grid h-7 w-7 touch-manipulation place-items-center rounded-full border border-[#8fd4a9]/35 bg-[#050b08]/80 text-[#9adbb2]">
               <span className="text-lg font-light leading-none" aria-hidden="true">←</span>
             </Link>
             <span className="text-[8px] leading-[10px] text-zinc-500">Social</span>
