@@ -515,8 +515,13 @@ export default function ViaSiteHeader() {
           }
           .via-site-header-tools-notifications .via-notifications-future-mark {
             left: 27px !important;
+            top: 0 !important;
             width: 70px !important;
+            height: 34px !important;
+            min-height: 34px !important;
+            max-height: 34px !important;
             padding: 0 7px 0 5px !important;
+            border-radius: 0 17px 17px 0 !important;
             white-space: nowrap !important;
             font-size: 7px !important;
           }
