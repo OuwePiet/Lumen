@@ -364,7 +364,7 @@ export default function ViaHomeControls() {
           ) : (
             <span key={key} aria-disabled="true" title="Wordt op de eigen Berichten-pagina aangesloten" style={{ ...disabledButtonStyle, width: "100%", justifyContent: "center", paddingInline: "9px" }}>{t[key]}</span>
           ))}
-          <SponsorPlatform compact />
+          <SponsorPlatform compact showIcon={false} />
         </nav>
       </section>
 
