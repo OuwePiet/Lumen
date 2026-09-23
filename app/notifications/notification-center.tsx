@@ -698,30 +698,30 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
             title={qualityShield ? `Quality Shield on · ${shieldHiddenCount} hidden` : "Quality Shield off"}
             aria-label={qualityShield ? `Quality Shield on · ${shieldHiddenCount} hidden` : "Quality Shield off"}
             aria-pressed={qualityShield}
-            className={`relative grid h-10 w-10 place-items-center rounded-full border sm:h-9 sm:w-9 text-white transition ${qualityShield ? "border-[#8fd4a9] bg-[#285f40]" : "border-[#9b9b9b] bg-[#9b9b9b]"}`}
+            className={`relative grid h-7 w-7 place-items-center rounded-full border sm:h-9 sm:w-9 text-white transition ${qualityShield ? "border-[#8fd4a9] bg-[#285f40]" : "border-[#9b9b9b] bg-[#9b9b9b]"}`}
           >
             {qualityShield ? <ShieldCheck className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> : <ShieldOff className="h-3.5 w-3.5 sm:h-4 sm:w-4" />}
             {qualityShield && shieldHiddenCount > 0 ? <span aria-hidden="true" className="absolute -right-1 -top-1 grid min-h-4 min-w-4 place-items-center rounded-full border border-black bg-[#8fd4a9] px-1 text-[9px] font-bold leading-none text-black">{shieldHiddenCount}</span> : null}
           </button>
-          <button type="button" onClick={() => setActiveCategories(allCategoriesActive ? [] : filterCategoryIds)} title={copy.selectAll} aria-label={copy.selectAll} aria-pressed={allCategoriesActive} className={`grid h-10 w-10 place-items-center rounded-full border sm:h-9 sm:w-9 text-white transition ${allCategoriesActive ? "border-[#8fd4a9] bg-[#285f40]" : "border-[#9b9b9b] bg-[#9b9b9b]"}`}>
+          <button type="button" onClick={() => setActiveCategories(allCategoriesActive ? [] : filterCategoryIds)} title={copy.selectAll} aria-label={copy.selectAll} aria-pressed={allCategoriesActive} className={`grid h-7 w-7 place-items-center rounded-full border sm:h-9 sm:w-9 text-white transition ${allCategoriesActive ? "border-[#8fd4a9] bg-[#285f40]" : "border-[#9b9b9b] bg-[#9b9b9b]"}`}>
             <CheckCircle2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
           </button>
-          <button type="button" onClick={() => setRefreshToken((value) => value + 1)} disabled={status === "loading"} title={copy.refresh} aria-label={copy.refresh} className="grid h-10 w-10 place-items-center rounded-full border sm:h-9 sm:w-9 border-[#8fd4a9] bg-[#285f40] text-white transition disabled:cursor-wait disabled:opacity-60">
+          <button type="button" onClick={() => setRefreshToken((value) => value + 1)} disabled={status === "loading"} title={copy.refresh} aria-label={copy.refresh} className="grid h-7 w-7 place-items-center rounded-full border sm:h-9 sm:w-9 border-[#8fd4a9] bg-[#285f40] text-white transition disabled:cursor-wait disabled:opacity-60">
             <RefreshCw className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${status === "loading" ? "animate-spin" : ""}`} />
           </button>
-          <button type="button" onClick={() => setExpandedView((value) => !value)} title={copy.expandView} aria-label={copy.expandView} aria-pressed={expandedView} className={`grid h-10 w-10 place-items-center rounded-full border sm:h-9 sm:w-9 text-white transition ${expandedView ? "border-[#8fd4a9] bg-[#285f40]" : "border-[#9b9b9b] bg-[#9b9b9b]"}`}>
+          <button type="button" onClick={() => setExpandedView((value) => !value)} title={copy.expandView} aria-label={copy.expandView} aria-pressed={expandedView} className={`grid h-7 w-7 place-items-center rounded-full border sm:h-9 sm:w-9 text-white transition ${expandedView ? "border-[#8fd4a9] bg-[#285f40]" : "border-[#9b9b9b] bg-[#9b9b9b]"}`}>
             <ChevronsRight className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
           </button>
           <div className="ml-auto hidden flex-col items-center gap-0.5 max-sm:flex">
-            <div className="relative h-10 w-10 overflow-hidden rounded-full [&>button]:!absolute [&>button]:!inset-0 [&>button]:!h-10 [&>button]:!w-10 [&>button]:!min-h-0 [&>button]:!rounded-full [&>button]:!p-0 [&>button]:!text-[0]">
+            <div className="relative h-7 w-7 overflow-hidden rounded-full [&>button]:!absolute [&>button]:!inset-0 [&>button]:!h-7 [&>button]:!w-7 [&>button]:!min-h-0 [&>button]:!rounded-full [&>button]:!p-0 [&>button]:!text-[0]">
               <SponsorPlatform compact />
               <span className="pointer-events-none absolute inset-0 grid place-items-center text-lg leading-none text-[#9adbb2]" aria-hidden="true">💵</span>
             </div>
             <span className="text-[8px] leading-[10px] text-zinc-500">Sponsor VIA</span>
           </div>
           <div className="hidden flex-col items-center gap-0.5 max-sm:flex">
-            <Link href="/social" aria-label="Social" title="Social" className="grid h-10 w-10 place-items-center rounded-full border border-[#8fd4a9]/35 bg-[#050b08]/80 text-[#9adbb2]">
-              <span className="text-2xl font-light leading-none" aria-hidden="true">←</span>
+            <Link href="/social" aria-label="Social" title="Social" className="grid h-7 w-7 place-items-center rounded-full border border-[#8fd4a9]/35 bg-[#050b08]/80 text-[#9adbb2]">
+              <span className="text-lg font-light leading-none" aria-hidden="true">←</span>
             </Link>
             <span className="text-[8px] leading-[10px] text-zinc-500">Social</span>
           </div>
