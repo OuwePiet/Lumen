@@ -713,15 +713,15 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
             <ChevronsRight className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
           </button>
           <div className="ml-auto hidden flex-col items-center gap-0.5 max-sm:flex">
-            <div className="relative h-10 w-10 overflow-hidden rounded-full [&>button]:!absolute [&>button]:!inset-0 [&>button]:!h-10 [&>button]:!w-10 [&>button]:!min-h-0 [&>button]:!rounded-full [&>button]:!p-0 [&>button]:!text-[0]">
+            <div className="relative h-7 w-7 overflow-hidden rounded-full [&>button]:!absolute [&>button]:!inset-0 [&>button]:!h-7 [&>button]:!w-7 [&>button]:!min-h-0 [&>button]:!rounded-full [&>button]:!p-0 [&>button]:!text-[0]">
               <SponsorPlatform compact />
               <span className="pointer-events-none absolute inset-0 grid place-items-center text-lg leading-none text-[#9adbb2]" aria-hidden="true">💵</span>
             </div>
             <span className="text-[8px] leading-[10px] text-zinc-500">Sponsor VIA</span>
           </div>
           <div className="hidden flex-col items-center gap-0.5 max-sm:flex">
-            <Link href="/social" aria-label="Social" title="Social" className="grid h-10 w-10 place-items-center rounded-full border border-[#8fd4a9]/35 bg-[#050b08]/80 text-[#9adbb2]">
-              <span className="text-2xl font-light leading-none" aria-hidden="true">←</span>
+            <Link href="/social" aria-label="Social" title="Social" className="grid h-7 w-7 place-items-center rounded-full border border-[#8fd4a9]/35 bg-[#050b08]/80 text-[#9adbb2]">
+              <span className="text-lg font-light leading-none" aria-hidden="true">←</span>
             </Link>
             <span className="text-[8px] leading-[10px] text-zinc-500">Social</span>
           </div>
