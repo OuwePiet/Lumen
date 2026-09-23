@@ -89,7 +89,7 @@ export default function ViaHomeEarth() {
           height: 100%;
           object-fit: contain;
           object-position: center center;
-          transform: translateY(-28vh);
+          transform: translateY(-60vh);
           display: block;
           background: #000;
         }
