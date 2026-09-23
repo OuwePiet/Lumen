@@ -429,7 +429,7 @@ export default function ViaSiteHeader() {
           .via-site-header-tools-notifications > .via-profile-shortcut-notifications {
             grid-column: 4 !important;
             justify-self: center !important;
-            transform: translateX(4px) !important;
+            transform: translateX(-2px) !important;
           }
           .via-site-header-tools-notifications > .via-site-header-account-wrap {
             grid-column: 5 !important;
