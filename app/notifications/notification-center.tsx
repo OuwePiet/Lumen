@@ -775,7 +775,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
           const expanded = expandedKey === rowKey
           const postHash = postHashFor(item)
           const post = postHash ? postCache[postHash] : undefined
-          return <article key={rowKey} className={`grid grid-cols-[34px_minmax(0,1fr)] gap-2 px-3 py-2 transition sm:grid-cols-[46px_minmax(0,1fr)_auto] sm:gap-3 sm:px-5 sm:py-4 ${unread ? "bg-[#0b1510]/70" : "bg-black/10"}`}>
+          return <article key={rowKey} className={`mx-1 mb-1 grid grid-cols-[34px_minmax(0,1fr)] gap-2 rounded-xl border px-2 py-1.5 transition sm:mx-0 sm:mb-0 sm:rounded-none sm:border-x-0 sm:border-b-0 sm:grid-cols-[46px_minmax(0,1fr)_auto] sm:gap-3 sm:px-5 sm:py-4 ${unread ? "border-[#285f40]/70 bg-[#0b1510]/70" : "border-zinc-800 bg-black/10"}`}>
             <div className="relative h-8 w-8 sm:h-11 sm:w-11">
               {profile.profilePic ? <img src={profile.profilePic} alt="" referrerPolicy="no-referrer" className="h-full w-full rounded-full border border-zinc-700 object-cover" /> : <div aria-hidden="true" className={`grid h-full w-full place-items-center rounded-full border text-base font-bold ${unread ? "border-[#8fd4a9] bg-[#285f40] text-white" : "border-[#8e8e8e] bg-[#8e8e8e] text-white"}`}><CategoryIcon category={itemCategory} className="h-5 w-5" /></div>}
               <span aria-hidden="true" className="absolute -bottom-1 -right-1 grid h-4 w-4 sm:h-5 sm:w-5 place-items-center rounded-full border border-zinc-700 bg-black text-white"><CategoryIcon category={itemCategory} className="h-3 w-3" /></span>
