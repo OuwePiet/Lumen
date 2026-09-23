@@ -466,11 +466,11 @@ export default function ViaSiteHeader() {
           }
           .via-site-header-tools-notifications .via-notifications-future-mark {
             position: absolute !important;
-            left: 32px !important;
+            left: 29px !important;
             top: 0 !important;
             display: grid !important;
             place-items: center !important;
-            width: 58px !important;
+            width: 57px !important;
             height: 34px !important;
             box-sizing: border-box !important;
             border: 1px solid rgba(143,212,169,.52) !important;
