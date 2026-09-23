@@ -685,7 +685,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
           <h2 id="notification-center-heading" className="whitespace-nowrap text-xs font-medium text-zinc-400 sm:text-xl sm:font-semibold sm:text-white">{copy.heading}<span className="ml-1 text-[#8fd4a9] sm:hidden">Notifications</span></h2>
           <p className="mt-1 hidden text-xs text-zinc-500 sm:block">{copy.active}: {shortKey(session.publicKey, copy.actor)}</p>
         </div>
-        <div className="flex w-full shrink-0 flex-nowrap items-start gap-1 justify-start sm:w-auto sm:flex-wrap sm:items-center sm:gap-2">
+        <div className="flex w-full shrink-0 flex-nowrap items-start justify-between sm:w-auto sm:flex-wrap sm:items-center sm:justify-start sm:gap-2">
           <button
             type="button"
             onClick={() => setQualityShield((value) => {
@@ -712,7 +712,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
           <button type="button" onClick={() => setExpandedView((value) => !value)} title={copy.expandView} aria-label={copy.expandView} aria-pressed={expandedView} className={`grid h-7 w-7 place-items-center rounded-full border sm:h-9 sm:w-9 text-white transition ${expandedView ? "border-[#8fd4a9] bg-[#285f40]" : "border-[#9b9b9b] bg-[#9b9b9b]"}`}>
             <ChevronsRight className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
           </button>
-          <div className="ml-auto hidden flex-col items-center gap-0.5 max-sm:flex">
+          <div className="hidden flex-col items-center gap-0.5 max-sm:flex">
             <div className="relative h-7 w-7 overflow-hidden rounded-full [&>button]:!absolute [&>button]:!inset-0 [&>button]:!z-0 [&>button]:!h-7 [&>button]:!w-7 [&>button]:!min-h-0 [&>button]:!overflow-hidden [&>button]:!rounded-full [&>button]:!p-0 [&>button]:!text-[0] [&>button]:!leading-none">
               <SponsorPlatform compact />
             </div>
