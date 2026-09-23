@@ -290,6 +290,7 @@ export default function ViaSiteHeader() {
 
           {session ? (
             <>
+              {pathname === "/notifications" || pathname === "/radio" ? <span className="via-notifications-future-mark">VIA Future</span> : null}
               <Link
                 href="/profile"
                 aria-label={t.profile}
@@ -322,7 +323,6 @@ export default function ViaSiteHeader() {
                 </span>
                 {pathname === "/notifications" || pathname === "/radio" ? (
                   <>
-                    <span className="via-notifications-future-mark">VIA Future</span>
                     <span
                       className="via-notifications-status-caret"
                       role="button"
@@ -483,13 +483,13 @@ export default function ViaSiteHeader() {
           .via-site-header-tools-notifications {
             left: 78px !important;
             right: 10px !important;
-            grid-template-columns: repeat(3, 46px) minmax(80px, 1fr) 34px !important;
+            grid-template-columns: repeat(6, 34px) !important;
             column-gap: 2px !important;
           }
           .via-site-header-tools-notifications > .via-notifications-top-control,
           .via-site-header-tools-notifications > .via-site-header-language-wrap {
-            width: 46px !important;
-            min-width: 46px !important;
+            width: 34px !important;
+            min-width: 34px !important;
             justify-self: center !important;
           }
           .via-site-header-tools-notifications .via-site-header-search-notifications,
@@ -506,7 +506,9 @@ export default function ViaSiteHeader() {
             border-radius: 50% !important;
             box-sizing: border-box !important;
           }
+          .via-site-header-tools-notifications > .via-notifications-future-mark { grid-column: 4 !important; justify-self: center !important; }
           .via-site-header-tools-notifications > .via-profile-shortcut-notifications {
+            grid-column: 5 !important;
             transform: translateX(0) !important;
             justify-self: end !important;
             margin-right: 0 !important;
@@ -524,8 +526,8 @@ export default function ViaSiteHeader() {
             box-shadow: none !important;
           }
           .via-site-header-tools-notifications .via-notifications-future-mark {
-            position: absolute !important;
-            left: -38px !important;
+            position: relative !important;
+            left: auto !important;
             top: 0 !important;
             display: grid !important;
             place-items: center !important;
@@ -559,6 +561,7 @@ export default function ViaSiteHeader() {
             line-height: 1 !important;
           }
           .via-site-header-tools-notifications > .via-site-header-account-wrap {
+            grid-column: 6 !important;
             position: relative !important;
             right: auto !important;
             top: 0 !important;
