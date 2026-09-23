@@ -26,6 +26,7 @@ export default function ViaHomeEarth() {
     function keepPlaying() {
       const video = videoRef.current
       if (!video || videoFailed) return
+      video.playbackRate = 0.72
       if (video.paused) void video.play().catch(() => undefined)
     }
 
@@ -56,7 +57,10 @@ export default function ViaHomeEarth() {
           playsInline
           preload="auto"
           poster="/via-earth-approved.jpg"
-          onCanPlay={(event) => void event.currentTarget.play().catch(() => undefined)}
+          onCanPlay={(event) => {
+            event.currentTarget.playbackRate = 0.72
+            void event.currentTarget.play().catch(() => undefined)
+          }}
           onPause={(event) => {
             if (!document.hidden) void event.currentTarget.play().catch(() => undefined)
           }}
@@ -84,7 +88,7 @@ export default function ViaHomeEarth() {
           width: 100%;
           height: 100%;
           object-fit: contain;
-          object-position: center center;
+          object-position: center 42%;
           display: block;
           background: #000;
         }
