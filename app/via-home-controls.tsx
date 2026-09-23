@@ -472,6 +472,12 @@ export default function ViaHomeControls() {
             background: rgba(2,8,5,.34);
             backdrop-filter: none;
           }
+          .via-home-controls nav a,
+          .via-home-controls nav button,
+          .via-home-controls nav label {
+            background: linear-gradient(180deg, rgba(8,20,13,.60), rgba(3,10,6,.50)) !important;
+            backdrop-filter: none !important;
+          }
           .via-home-controls-logo {
             width: 154px !important;
             max-height: 70px !important;
