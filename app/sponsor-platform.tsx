@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react"
 import { createPortal } from "react-dom"
+import { HandCoins } from "lucide-react"
 import { DESO_IDENTITY_ORIGIN, restoreIdentitySession } from "./deso-identity-session"
 import DiamondButton from "./social/diamond-button"
 import { readViaLocalSettings, VIA_SETTINGS_EVENT, type ViaLanguage } from "./via-local-settings"
@@ -277,7 +278,7 @@ export default function SponsorPlatform({ compact = false }: { compact?: boolean
 
   return (
     <>
-      <button type="button" onClick={() => setOpen(true)} className={triggerClass}>{copy.trigger}</button>
+      <button type="button" onClick={() => setOpen(true)} className={triggerClass}><HandCoins className="h-4 w-4 shrink-0" aria-hidden="true" /><span>{copy.trigger}</span></button>
       {open && typeof document !== "undefined" ? createPortal(
         <div role="dialog" aria-modal="true" aria-label={copy.dialogLabel} onMouseDown={(event) => { if (event.currentTarget === event.target) setOpen(false) }} style={{ position:"fixed", inset:0, zIndex:160, display:"grid", placeItems:"center", padding:20, background:"rgba(0,0,0,.78)", backdropFilter:"blur(8px)" }}>
           <section style={{ width:"min(580px,100%)", maxHeight:"88vh", overflowY:"auto", border:"1px solid rgba(143,212,169,.32)", borderRadius:18, padding:20, background:"#06100b", color:"#edf4ef", boxShadow:"0 24px 80px rgba(0,0,0,.55)" }}>
