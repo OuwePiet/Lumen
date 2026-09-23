@@ -305,17 +305,13 @@ export default function ViaSiteHeader() {
                   flex: "0 0 auto",
                   position: "relative",
                   overflow: "visible",
-                  borderColor: profile?.isInactive ? "rgba(137,145,141,.42)" : "rgba(143,212,169,.38)",
-                  background: profile?.isInactive
-                    ? "linear-gradient(145deg, rgba(66,72,68,.42), rgba(5,12,8,.90))"
-                    : "linear-gradient(145deg, rgba(34,74,52,.66), rgba(4,15,9,.92))",
-                  boxShadow: profile?.isInactive
-                    ? "inset 0 1px 0 rgba(255,255,255,.05)"
-                    : "0 0 18px rgba(143,212,169,.10), inset 0 1px 0 rgba(255,255,255,.07)",
+                  borderColor: "transparent",
+                  background: "transparent",
+                  boxShadow: "none",
                 }}
               >
                 {avatar ? (
-                  <img src={avatar} alt="" referrerPolicy="no-referrer" style={{ width: "36px", height: "36px", borderRadius: "50%", objectFit: "cover", border: "1px solid rgba(143,212,169,.30)", boxShadow: "0 0 10px rgba(143,212,169,.10)" }} />
+                  <img src={avatar} alt="" referrerPolicy="no-referrer" style={{ width: "36px", height: "36px", borderRadius: "50%", objectFit: "cover", border: 0, boxShadow: "none" }} />
                 ) : (
                   <span aria-hidden="true" style={{ width: "36px", height: "36px", display: "grid", placeItems: "center", borderRadius: "50%", background: "#183326", color: "#9adbb2", fontSize: "15px", fontWeight: 900, border: "1px solid rgba(143,212,169,.30)" }}>
                     {profile?.username?.slice(0, 1).toUpperCase() ?? "V"}
