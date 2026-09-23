@@ -86,15 +86,8 @@ export default function WorldRadioPage() {
 
         <p style={styles.eyebrow}>World Radio</p>
         <h1 style={styles.heading} className="via-radio-page-heading">Listen around the world.</h1>
-        <p style={styles.intro} className="via-radio-page-intro">
-          Find public radio by country, station or genre.
-        </p>
-
         <RadioBrowser />
 
-        <div style={styles.notice} className="via-radio-page-notice">
-          Streams play directly from each station. Availability and rights remain with the station or stream provider.
-        </div>
         <style>{`\n          @media (max-width: 720px) {\n            .via-radio-page { padding: 14px 16px 96px !important; }
              .via-radio-page-top { margin-bottom: 8px !important; gap: 8px !important; }
             .via-radio-page-brand { font-size: 12px !important; }
