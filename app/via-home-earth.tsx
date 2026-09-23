@@ -100,10 +100,12 @@ export default function ViaHomeEarth() {
         @media (max-width: 900px) {
           .via-nasa-earth-poster,
           .via-nasa-earth-video {
-            width: 118%;
-            height: 118%;
-            left: -9%;
-            top: -9%;
+            width: 120%;
+            height: 120%;
+            left: -10%;
+            top: -10%;
+            image-rendering: auto;
+            filter: contrast(1.06) saturate(1.04);
           }
         }
       `}</style>
