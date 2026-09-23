@@ -277,7 +277,7 @@ export default function ViaSiteHeader() {
               <span className="via-site-header-language-flag" aria-hidden="true">{languageFlags[language]}</span><span className="via-site-header-language-code">{languageCodes[language]}</span>
             </button>
             {languageOpen ? <div className="via-site-header-language-menu" role="menu" aria-label="VIA language">
-              {VIA_LANGUAGES.map((item) => <button key={item} type="button" role="menuitemradio" aria-checked={item === language} onClick={() => { changeLanguage(item); setLanguageOpen(false) }} className={item === language ? "is-active" : ""}>
+              {VIA_LANGUAGES.map((item) => <button key={item} type="button" role="menuitemradio" aria-checked={item === language} onClick={() => { changeLanguage(item); setLanguageOpen(false) }} className={item === language ? "is-active" : ""} data-via-language={item}>
                 <span aria-hidden="true">{languageFlags[item]}</span><span>{languageCodes[item]}</span>
               </button>)}
             </div> : null}
@@ -400,7 +400,7 @@ export default function ViaSiteHeader() {
       <style>{`
         .via-site-header-language-wrap { position: relative; flex: 0 0 auto; }\n        .via-notifications-top-control { display: contents; }\n        .via-notifications-top-label { display: none; }
         .via-site-header-language { gap: 6px !important; min-width: 68px; }
-        .via-site-header-language-menu { position: absolute; top: 44px; left: 0; z-index: 220; width: 96px; padding: 5px; border: 1px solid rgba(143,212,169,.22); border-radius: 12px; background: rgba(5,10,7,.99); box-shadow: 0 14px 34px rgba(0,0,0,.42); }
+        .via-site-header-language-menu { position: absolute; top: 44px; left: 0; z-index: 220; width: 118px; max-height: min(330px, calc(100vh - 90px)); overflow-y: auto; padding: 5px; border: 1px solid rgba(143,212,169,.22); border-radius: 12px; background: rgba(5,10,7,.99); box-shadow: 0 14px 34px rgba(0,0,0,.42); }
         .via-site-header-language-menu button { width: 100%; display: flex; align-items: center; gap: 8px; padding: 7px 9px; border: 0; border-radius: 8px; background: transparent; color: #cfd9d3; font-size: 12px; cursor: pointer; text-align: left; }
         .via-site-header-language-menu button:hover, .via-site-header-language-menu button:focus-visible, .via-site-header-language-menu button.is-active { background: rgba(40,95,64,.58); color: white; outline: none; }
         @media (max-width: 720px) {
