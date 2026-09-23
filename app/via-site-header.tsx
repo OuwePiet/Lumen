@@ -277,7 +277,7 @@ export default function ViaSiteHeader() {
             </button>
             {languageOpen ? <div className="via-site-header-language-menu" role="menu" aria-label="VIA language">
               {VIA_LANGUAGES.map((item) => <button key={item} type="button" role="menuitemradio" aria-checked={item === language} onClick={() => { changeLanguage(item); setLanguageOpen(false) }} className={item === language ? "is-active" : ""}>
-                <span aria-hidden="true">{languageFlags[item]}</span><span>{languageCodes[item]}</span>
+                <span>{languageCodes[item]}</span>
               </button>)}
             </div> : null}
           </div>
