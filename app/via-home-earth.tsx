@@ -105,7 +105,7 @@ export default function ViaHomeEarth() {
             left: -7%;
             top: -22%;
             image-rendering: auto;
-            filter: contrast(1.12) saturate(1.06);
+            filter: brightness(1.18) contrast(1.12) saturate(1.06);
           }
         }
       `}</style>
