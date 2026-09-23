@@ -393,6 +393,36 @@ export default function ViaSiteHeader() {
           .via-site-header-account-menu-icon { display: inline !important; font-size: 19px !important; line-height: 1 !important; color: #b8c5bd !important; }
 
           .via-site-header-account-menu { top: 44px !important; right: 0 !important; width: min(280px, calc(100vw - 20px)) !important; }
+          /* Notifications iPhone: one layout process only. Keep every top-row control in DOM order. */
+          .via-site-header-tools-notifications .via-profile-shortcut-notifications {
+            position: relative !important;
+            right: auto !important;
+            top: 0 !important;
+            flex: 0 0 34px !important;
+            width: 34px !important;
+            min-width: 34px !important;
+            height: 34px !important;
+            padding: 2px !important;
+            border-radius: 50% !important;
+          }
+          .via-site-header-tools-notifications .via-site-header-account-wrap {
+            position: relative !important;
+            right: auto !important;
+            top: 0 !important;
+            flex: 0 0 34px !important;
+            width: 34px !important;
+            height: 34px !important;
+          }
+          .via-site-header-tools-notifications .via-site-header-account-button {
+            min-width: 34px !important;
+            width: 34px !important;
+            height: 34px !important;
+            padding: 3px !important;
+          }
+          .via-site-header-tools-notifications .via-profile-shortcut-status {
+            right: -10px !important;
+            bottom: -7px !important;
+          }
         }
         @media (min-width: 721px) {
           .via-site-header-account-menu-icon { display: none !important; }
