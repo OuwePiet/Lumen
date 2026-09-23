@@ -679,7 +679,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
   }
 
   return (
-    <section className={`${expandedView ? "max-h-[calc(100vh-8rem)]" : "max-h-[76vh]"} overflow-y-auto rounded-2xl border border-zinc-800 bg-zinc-950/60`} aria-labelledby="notification-center-heading">
+    <section className={`${expandedView ? "max-h-[calc(100vh-6rem)]" : "max-h-[88vh]"} overflow-y-auto rounded-2xl border border-zinc-800 bg-zinc-950/60`} aria-labelledby="notification-center-heading">
       <div className="sticky top-0 z-20 flex flex-nowrap items-center justify-between gap-1 border-b border-zinc-800 bg-zinc-950/95 px-2 py-1 backdrop-blur max-sm:flex-col-reverse max-sm:items-stretch sm:flex-wrap sm:gap-3 sm:px-5 sm:py-4">
         <div>
           <h2 id="notification-center-heading" className="whitespace-nowrap text-xs font-medium text-zinc-400 sm:text-xl sm:font-semibold sm:text-white">{copy.heading}<span className="ml-1 text-[#8fd4a9] sm:hidden">Notifications</span></h2>
@@ -713,7 +713,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
             <ChevronsRight className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
           </button>
           <div className="hidden flex-col items-center gap-0.5 max-sm:flex">
-            <div className="relative h-7 w-7 overflow-hidden rounded-full [&>button]:!absolute [&>button]:!inset-0 [&>button]:!z-0 [&>button]:!h-7 [&>button]:!w-7 [&>button]:!min-h-0 [&>button]:!overflow-hidden [&>button]:!rounded-full [&>button]:!p-0 [&>button]:!text-[0] [&>button]:!leading-none">
+            <div className="relative h-7 w-7 overflow-hidden rounded-full [&>button]:!absolute [&>button]:!inset-0 [&>button]:!z-0 [&>button]:!grid [&>button]:!h-7 [&>button]:!w-7 [&>button]:!min-h-0 [&>button]:!place-items-center [&>button]:!overflow-hidden [&>button]:!rounded-full [&>button]:!p-0 [&>button]:!text-[0] [&>button]:!leading-none [&>button>span]:!hidden [&>button>svg]:!m-0 [&>button>svg]:!h-4 [&>button>svg]:!w-4">
               <SponsorPlatform compact />
             </div>
             <span className="text-[8px] leading-[10px] text-zinc-500">Sponsor VIA</span>
@@ -754,7 +754,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
         </div>
       </div>
 
-      <p className={`px-3 pt-1 text-[9px] leading-4 sm:px-5 sm:pt-3 sm:text-xs sm:leading-normal ${status === "error" ? "text-amber-300" : "text-zinc-500"}`} role="status" aria-live="polite">{message}</p>
+      <div className="flex items-baseline gap-2 px-3 pt-1 sm:px-5 sm:pt-3"><span className="text-[9px] font-medium leading-4 text-[#8fd4a9] sm:hidden">Notifications</span><p className={`text-[9px] leading-4 sm:text-xs sm:leading-normal ${status === "error" ? "text-amber-300" : "text-zinc-500"}`} role="status" aria-live="polite">{message}</p></div>
 
       <div className="mt-1 sm:mt-2 sm:divide-y sm:divide-zinc-800">
         {status === "loading" ? <div className="px-4 py-5 text-sm text-zinc-500 sm:px-5">{copy.loading}</div> : null}
