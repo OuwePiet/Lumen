@@ -201,6 +201,34 @@ async function readLatestPublicActivity(publicKey: string) {
  * ExtraData.IsVerified; the legacy top-level IsVerified boolean remains a
  * fallback for older node responses. VIA does not issue this verification.
  */
+
+export async function readPublicProfileIdentity(usernameOrPublicKey: string) {
+  const identity = usernameOrPublicKey.trim().replace(/^@/, "")
+  if (!identity || identity.length > 128) return null
+
+  const response = await fetchDeSo("get-single-profile", {
+    method: "POST",
+    headers: { "content-type": "application/json", accept: "application/json" },
+    body: JSON.stringify({
+      PublicKeyBase58Check: identity.startsWith("BC1") ? identity : "",
+      Username: identity.startsWith("BC1") ? "" : identity,
+    }),
+  })
+  if (!response.ok) return null
+  const data = (await response.json()) as DeSoProfileResponse
+  const profile = data.Profile
+  if (!profile) return null
+  const publicKey = text(profile.PublicKeyBase58Check)
+  const username = text(profile.Username)
+  if (!publicKey && !username) return null
+  return {
+    publicKey,
+    username,
+    profilePic: profilePictureUrl(publicKey, text(profile.ProfilePic)),
+    isVerified: verificationFromProfile(profile),
+  }
+}
+
 export async function readPublicProfile(
   usernameOrPublicKey: string,
 ): Promise<ViaPublicProfile | null> {
