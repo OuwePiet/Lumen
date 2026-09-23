@@ -102,10 +102,10 @@ export default function ViaHomeEarth() {
           .via-nasa-earth-video {
             width: 144%;
             height: 144%;
-            left: -17%;
+            left: -7%;
             top: -22%;
             image-rendering: auto;
-            filter: contrast(1.12) saturate(1.06);
+            filter: brightness(1.18) contrast(1.12) saturate(1.06);
           }
         }
       `}</style>
