@@ -483,7 +483,7 @@ export default function ViaSiteHeader() {
           .via-site-header-tools-notifications {
             left: 78px !important;
             right: 10px !important;
-            grid-template-columns: repeat(3, 46px) minmax(80px, 1fr) 38px !important;
+            grid-template-columns: repeat(3, 46px) minmax(80px, 1fr) 34px !important;
             column-gap: 2px !important;
           }
           .via-site-header-tools-notifications > .via-notifications-top-control,
@@ -509,7 +509,7 @@ export default function ViaSiteHeader() {
           .via-site-header-tools-notifications > .via-profile-shortcut-notifications {
             transform: translateX(0) !important;
             justify-self: end !important;
-            margin-right: 4px !important;
+            margin-right: 0 !important;
             padding: 0 !important;
             border: 0 !important;
             background: transparent !important;
@@ -562,23 +562,23 @@ export default function ViaSiteHeader() {
             position: relative !important;
             right: auto !important;
             top: 0 !important;
-            flex: 0 0 38px !important;
-            width: 38px !important;
-            min-width: 38px !important;
-            max-width: 38px !important;
-            height: 38px !important;
-            min-height: 38px !important;
-            max-height: 38px !important;
+            flex: 0 0 34px !important;
+            width: 34px !important;
+            min-width: 34px !important;
+            max-width: 34px !important;
+            height: 34px !important;
+            min-height: 34px !important;
+            max-height: 34px !important;
             justify-self: end !important;
           }
           .via-site-header-tools-notifications .via-site-header-account-button {
-            flex: 0 0 38px !important;
-            width: 38px !important;
-            min-width: 38px !important;
-            max-width: 38px !important;
-            height: 38px !important;
-            min-height: 38px !important;
-            max-height: 38px !important;
+            flex: 0 0 34px !important;
+            width: 34px !important;
+            min-width: 34px !important;
+            max-width: 34px !important;
+            height: 34px !important;
+            min-height: 34px !important;
+            max-height: 34px !important;
             aspect-ratio: 1 / 1 !important;
             border-radius: 50% !important;
             box-sizing: border-box !important;
