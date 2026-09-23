@@ -412,6 +412,8 @@ export default function ViaSiteHeader() {
           .via-site-header-nav::-webkit-scrollbar, .via-site-header-tools::-webkit-scrollbar { display: none; }
           .via-site-header-link { padding: 18px 8px 15px !important; font-size: 11px !important; }
           .via-site-header-tools { grid-column: 1 / span 2 !important; grid-row: 2 !important; justify-content: flex-start !important; overflow-x: auto !important; overflow-y: hidden !important; gap: 6px !important; padding: 6px 8px !important; }
+          .via-site-header-shell:has(.via-site-header-nav-compact-mobile) .via-site-header-tools { overflow: visible !important; }
+          .via-site-header-shell:has(.via-site-header-nav-compact-mobile) .via-site-header-language-wrap { z-index: 230 !important; }
           .via-site-header-tools-notifications { position: absolute !important; top: 4px !important; height: 44px !important; grid-column: auto !important; grid-row: auto !important; display: grid !important; align-items: start !important; justify-items: center !important; padding: 0 !important; overflow: visible !important; }
           .via-site-header-tools-notifications .via-notifications-top-control, .via-site-header-tools-notifications .via-site-header-language-wrap { display: flex !important; min-width: 0 !important; flex-direction: column !important; align-items: center !important; gap: 1px !important; }
           .via-site-header-tools-notifications .via-notifications-top-label { display: block !important; color: #8b9890 !important; font-size: 8px !important; line-height: 10px !important; white-space: nowrap !important; }
