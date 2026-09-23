@@ -323,6 +323,9 @@ export default function ViaSiteHeader() {
                 <span className="via-profile-shortcut-status" style={{ position: "absolute", right: "-7px", bottom: "-7px", zIndex: 2 }}>
                   <ViaIdentityStatusMarks verified={Boolean(profile?.isVerified)} inactive={Boolean(profile?.isInactive)} viaRecognized={Boolean(profile?.viaRecognized)} compact language={language} />
                 </span>
+                {pathname === "/notifications" ? (
+                  <span className="via-notifications-status-caret" aria-hidden="true">▾</span>
+                ) : null}
               </Link>
               <div ref={accountWrapRef} style={styles.accountWrap} className="via-site-header-account-wrap">
               <button type="button" style={styles.accountButton} className="via-site-header-account-button" onClick={() => { refreshKnownAccounts(); setMenuOpen((open) => !open) }} aria-label="Open VIA account menu" aria-expanded={menuOpen} aria-haspopup="menu">
@@ -422,6 +425,16 @@ export default function ViaSiteHeader() {
           .via-site-header-tools-notifications .via-profile-shortcut-status {
             right: -10px !important;
             bottom: -7px !important;
+          }
+          .via-site-header-tools-notifications .via-notifications-status-caret {
+            position: absolute !important;
+            right: -20px !important;
+            top: 11px !important;
+            display: inline-block !important;
+            color: #39d79a !important;
+            font-size: 12px !important;
+            line-height: 1 !important;
+            pointer-events: none !important;
           }
         }
         @media (min-width: 721px) {
