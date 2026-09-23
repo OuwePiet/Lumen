@@ -716,7 +716,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
           <button type="button" onClick={() => setRefreshToken((value) => value + 1)} disabled={status === "loading"} title={copy.refresh} aria-label={copy.refresh} className="grid h-7 w-7 place-items-center rounded-full border sm:h-9 sm:w-9 border-[#8fd4a9] bg-[#285f40] text-white transition disabled:cursor-wait disabled:opacity-60">
             <RefreshCw className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${status === "loading" ? "animate-spin" : ""}`} />
           </button>
-          <button type="button" onClick={() => setExpandedView((value) => !value)} title={copy.expandView} aria-label={copy.expandView} aria-pressed={expandedView} className={`grid h-7 w-7 place-items-center rounded-full border sm:h-9 sm:w-9 text-white transition ${expandedView ? "border-[#8fd4a9] bg-[#285f40]" : "border-[#9b9b9b] bg-[#9b9b9b]"}`}>
+          <button type="button" onClick={() => setExpandedView((value) => !value)} title={copy.expandView} aria-label={copy.expandView} aria-pressed={expandedView} className={`grid h-7 w-7 place-items-center rounded-full border sm:h-9 sm:w-9 text-white transition ${expandedView ? "border-[#8fd4a9] bg-[#285f40]" : "border-[#8fd4a9]/35 bg-[#050b08]/80"}`}>
             <ChevronsRight className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
           </button>
           <div className="hidden flex-col items-center gap-0.5 max-sm:flex">
