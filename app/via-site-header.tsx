@@ -551,6 +551,10 @@ export default function ViaSiteHeader() {
           }
           .via-site-header-tools-notifications .via-site-header-account-button {
             overflow: hidden !important;
+            border-color: rgba(143,212,169,.52) !important;
+            background: rgba(5,11,8,.76) !important;
+            color: #d7e8dd !important;
+            box-shadow: none !important;
           }
           .via-site-header-tools-notifications .via-site-header-account-label,
           .via-site-header-tools-notifications .via-site-header-account-caret {
@@ -588,14 +592,7 @@ export default function ViaSiteHeader() {
             box-sizing: border-box !important;
           }
           .via-site-header-tools-notifications .via-notifications-status-caret {
-            position: absolute !important;
-            right: -20px !important;
-            top: 11px !important;
-            display: inline-block !important;
-            color: #39d79a !important;
-            font-size: 12px !important;
-            line-height: 1 !important;
-            pointer-events: none !important;
+            display: none !important;
           }
         }
         @media (min-width: 721px) {
