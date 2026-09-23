@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server"
-import { readPublicProfile } from "../../../../lib/via/deso-profile-read"
+import { readPublicProfile, readPublicProfileIdentity } from "../../../../lib/via/deso-profile-read"
 
 export const dynamic = "force-dynamic"
 
 export async function GET(request: Request) {
   const url = new URL(request.url)
   const identity = (url.searchParams.get("identity") ?? "").trim()
+  const compact = url.searchParams.get("compact") === "1"
 
   if (!identity || identity.length > 128) {
     return NextResponse.json(
@@ -15,7 +16,7 @@ export async function GET(request: Request) {
   }
 
   try {
-    const profile = await readPublicProfile(identity)
+    const profile = compact ? await readPublicProfileIdentity(identity) : await readPublicProfile(identity)
 
     if (!profile) {
       return NextResponse.json(

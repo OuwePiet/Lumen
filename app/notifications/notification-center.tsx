@@ -575,7 +575,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
     const controller = new AbortController()
     void Promise.all(missing.map(async (publicKey) => {
       try {
-        const response = await fetch(`/api/via/profile?identity=${encodeURIComponent(publicKey)}`, {
+        const response = await fetch(`/api/via/profile?identity=${encodeURIComponent(publicKey)}&compact=1`, {
           cache: "no-store",
           signal: controller.signal,
           headers: { Accept: "application/json" },
