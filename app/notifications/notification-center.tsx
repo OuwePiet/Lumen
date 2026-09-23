@@ -713,7 +713,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
             <ChevronsRight className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
           </button>
           <div className="ml-auto hidden flex-col items-center gap-0.5 max-sm:flex">
-            <div className="relative [&>button]:!grid [&>button]:!h-10 [&>button]:!w-10 [&>button]:!min-h-0 [&>button]:!place-items-center [&>button]:!rounded-full [&>button]:!p-0 [&>button]:!text-[0]">
+            <div className="relative h-10 w-10 overflow-hidden rounded-full [&>button]:!absolute [&>button]:!inset-0 [&>button]:!h-10 [&>button]:!w-10 [&>button]:!min-h-0 [&>button]:!rounded-full [&>button]:!p-0 [&>button]:!text-[0]">
               <SponsorPlatform compact />
               <span className="pointer-events-none absolute inset-0 grid place-items-center text-lg leading-none text-[#9adbb2]" aria-hidden="true">💵</span>
             </div>
