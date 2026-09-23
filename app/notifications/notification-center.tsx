@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { useEffect, useMemo, useRef, useState } from "react"
-import { ArrowUpRight, AtSign, Badge, Check, CheckCircle2, ChevronsRight, CircleDot, Gem, Heart, Link2, MessageSquare, RefreshCw, Repeat2, ShieldCheck, ShieldOff, Smile, HandCoins, UserPlus, UserRound } from "lucide-react"
+import { ArrowUpRight, AtSign, Badge, Check, CheckCircle2, ChevronsRight, CircleDot, Gem, Heart, Link2, MessageSquare, RefreshCw, Repeat2, ShieldCheck, ShieldOff, Smile, UserPlus, UserRound } from "lucide-react"
 
 const QUALITY_SHIELD_STORAGE_KEY = "via:notifications:quality-shield"
 import { DESO_IDENTITY_ORIGIN, restoreIdentitySession, VIA_IDENTITY_EVENT, type ViaIdentitySession } from "../deso-identity-session"
@@ -715,7 +715,6 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
           <div className="ml-auto hidden flex-col items-center gap-0.5 max-sm:flex">
             <div className="relative h-7 w-7 overflow-hidden rounded-full [&>button]:!absolute [&>button]:!inset-0 [&>button]:!z-0 [&>button]:!h-7 [&>button]:!w-7 [&>button]:!min-h-0 [&>button]:!overflow-hidden [&>button]:!rounded-full [&>button]:!p-0 [&>button]:!text-[0] [&>button]:!leading-none">
               <SponsorPlatform compact />
-              <span className="pointer-events-none absolute inset-0 z-10 grid place-items-center text-[#9adbb2]" aria-hidden="true"><HandCoins className="h-4 w-4" /></span>
             </div>
             <span className="text-[8px] leading-[10px] text-zinc-500">Sponsor VIA</span>
           </div>
