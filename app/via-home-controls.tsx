@@ -365,6 +365,12 @@ export default function ViaHomeControls() {
             <span key={key} aria-disabled="true" title="Wordt op de eigen Berichten-pagina aangesloten" style={{ ...disabledButtonStyle, width: "100%", justifyContent: "center", paddingInline: "9px" }}>{t[key]}</span>
           ))}
           <SponsorPlatform compact showIcon={false} />
+          <label style={{ ...buttonStyle, minHeight: "34px", padding: "5px 8px", gap: "5px", cursor: "pointer", width: "100%", justifyContent: "center" }}>
+            <span aria-hidden="true" style={{ fontSize: "14px", lineHeight: 1 }}>{languageFlags[language]}</span>
+            <select value={language} onChange={(event) => changeLanguage(event.target.value as ViaLanguage)} aria-label="VIA language" style={{ border: 0, padding: 0, width: "auto", minWidth: "38px", background: "transparent", color: "inherit", font: "inherit", fontWeight: 700, appearance: "none", cursor: "pointer", textAlign: "center" }}>
+              {VIA_LANGUAGES.map((item) => <option key={item} value={item}>{languageCodes[item]}</option>)}
+            </select>
+          </label>
         </nav>
       </section>
 
@@ -379,15 +385,7 @@ export default function ViaHomeControls() {
 
       <section style={{ display: "grid", gap: "6px" }}>
         <span style={sectionLabel}>{t.account}</span>
-        <div aria-label="VIA utility controls" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "7px" }}>
-          <label style={{ ...buttonStyle, minHeight: "34px", padding: "5px 8px", gap: "5px", cursor: "pointer" }}>
-            <span aria-hidden="true" style={{ fontSize: "14px", lineHeight: 1 }}>{languageFlags[language]}</span>
-            <select value={language} onChange={(event) => changeLanguage(event.target.value as ViaLanguage)} aria-label="VIA language" style={{ border: 0, padding: 0, width: "auto", minWidth: "38px", background: "transparent", color: "inherit", font: "inherit", fontWeight: 700, appearance: "none", cursor: "pointer", textAlign: "center" }}>
-              {VIA_LANGUAGES.map((item) => <option key={item} value={item}>{languageCodes[item]}</option>)}
-            </select>
-          </label>
-          {!session ? <button type="button" onClick={enterPublicMode} style={{ ...buttonStyle, cursor: "pointer" }}>{t.publicEntrance}</button> : null}
-        </div>
+        {!session ? <div aria-label="VIA utility controls"><button type="button" onClick={enterPublicMode} style={{ ...buttonStyle, width: "100%", cursor: "pointer" }}>{t.publicEntrance}</button></div> : null}
 
         {session ? (
           <div style={{ display: "grid", gap: "6px" }}>
