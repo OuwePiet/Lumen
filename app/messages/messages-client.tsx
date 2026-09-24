@@ -7,8 +7,24 @@ import { restoreIdentitySession, VIA_IDENTITY_EVENT } from "../deso-identity-ses
 import { fetchDeSo } from "../deso-api"
 import { readViaLocalSettings, VIA_SETTINGS_EVENT, type ViaLanguage } from "../via-local-settings"
 
+type AccessGroupInfo = {
+  OwnerPublicKeyBase58Check?: string
+  AccessGroupPublicKeyBase58Check?: string
+  AccessGroupKeyName?: string
+}
+
+type MessageInfo = {
+  EncryptedText?: string
+  TimestampNanos?: number
+  TimestampNanosString?: string
+  ExtraData?: Record<string, string>
+}
+
 type ThreadEntry = {
   ChatType?: string
+  SenderInfo?: AccessGroupInfo
+  RecipientInfo?: AccessGroupInfo
+  MessageInfo?: MessageInfo
   SenderAccessGroupOwnerPublicKeyBase58Check?: string
   RecipientAccessGroupOwnerPublicKeyBase58Check?: string
   SenderPublicKeyBase58Check?: string
@@ -162,6 +178,8 @@ function threadList(data: ThreadsResponse) {
 
 function counterpartKey(thread: ThreadEntry, self: string) {
   const keys = [
+    thread.SenderInfo?.OwnerPublicKeyBase58Check,
+    thread.RecipientInfo?.OwnerPublicKeyBase58Check,
     thread.SenderAccessGroupOwnerPublicKeyBase58Check,
     thread.RecipientAccessGroupOwnerPublicKeyBase58Check,
     thread.SenderPublicKeyBase58Check,
@@ -292,7 +310,7 @@ export default function MessagesClient() {
                           <strong className="block truncate text-sm text-zinc-100">{name}</strong>
                           <span className="block truncate text-xs text-zinc-500">{t.encrypted}</span>
                         </span>
-                        <span className="text-[10px] text-zinc-600">{formatThreadTime(thread.TimestampNanos)}</span>
+                        <span className="text-[10px] text-zinc-600">{formatThreadTime(thread.MessageInfo?.TimestampNanos ?? thread.TimestampNanos)}</span>
                       </button>
                     )
                   })}
