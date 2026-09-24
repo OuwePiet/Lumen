@@ -67,6 +67,7 @@ type Copy = {
   identityNote: string
   newMessage: string
   selectConversation: string
+  loadMore: string
 }
 
 const COPY: Record<ViaLanguage | "Hindi", Copy> = {
@@ -85,6 +86,7 @@ const COPY: Record<ViaLanguage | "Hindi", Copy> = {
     identityNote: "Lezen en verzenden gebruikt DeSo Identity voor encryptie en decryptie. VIA slaat privéberichten niet zelf op.",
     newMessage: "Nieuw bericht",
     selectConversation: "Selecteer een gesprek",
+    loadMore: "Laad meer",
   },
   English: {
     kicker: "VIA · MESSAGES",
@@ -101,6 +103,7 @@ const COPY: Record<ViaLanguage | "Hindi", Copy> = {
     identityNote: "Reading and sending uses DeSo Identity for encryption and decryption. VIA does not store private messages itself.",
     newMessage: "New message",
     selectConversation: "Select a conversation",
+    loadMore: "Load more",
   },
   French: {
     kicker: "VIA · MESSAGES",
@@ -117,6 +120,7 @@ const COPY: Record<ViaLanguage | "Hindi", Copy> = {
     identityNote: "La lecture et l’envoi utilisent DeSo Identity pour le chiffrement et le déchiffrement. VIA ne stocke pas lui-même les messages privés.",
     newMessage: "Nouveau message",
     selectConversation: "Sélectionnez une conversation",
+    loadMore: "Charger plus",
   },
   Spanish: {
     kicker: "VIA · MENSAJES",
@@ -133,6 +137,7 @@ const COPY: Record<ViaLanguage | "Hindi", Copy> = {
     identityNote: "La lectura y el envío usan DeSo Identity para cifrar y descifrar. VIA no almacena los mensajes privados.",
     newMessage: "Nuevo mensaje",
     selectConversation: "Selecciona una conversación",
+    loadMore: "Cargar más",
   },
   Chinese: {
     kicker: "VIA · 消息",
@@ -149,6 +154,7 @@ const COPY: Record<ViaLanguage | "Hindi", Copy> = {
     identityNote: "读取和发送通过 DeSo Identity 完成加密和解密。VIA 不自行存储私人消息。",
     newMessage: "新消息",
     selectConversation: "选择一个会话",
+    loadMore: "加载更多",
   },
   Hindi: {
     kicker: "VIA · संदेश", title: "संदेश", intro: "DeSo के माध्यम से निजी बातचीत। वार्तालाप सीधे DeSo नेटवर्क से लोड होते हैं।",
@@ -156,7 +162,7 @@ const COPY: Record<ViaLanguage | "Hindi", Copy> = {
     noAccountText: "अपनी निजी बातचीत लोड करने के लिए DeSo Identity से लॉग इन करें।", loading: "बातचीत लोड हो रही है…",
     unavailable: "संदेश अस्थायी रूप से उपलब्ध नहीं हैं।", empty: "अभी कोई बातचीत नहीं मिली।", encrypted: "एन्क्रिप्टेड DeSo संदेश",
     identityNote: "पढ़ने और भेजने में encryption और decryption के लिए DeSo Identity का उपयोग होता है। VIA निजी संदेश स्वयं संग्रहीत नहीं करता।",
-    newMessage: "नया संदेश", selectConversation: "बातचीत चुनें",
+    newMessage: "नया संदेश", selectConversation: "बातचीत चुनें", loadMore: "और लोड करें",
   },
 }
 
@@ -218,6 +224,7 @@ export default function MessagesClient() {
   const [threadMessages, setThreadMessages] = useState<ThreadEntry[]>([])
   const [threadLoading, setThreadLoading] = useState(false)
   const [threadError, setThreadError] = useState("")
+  const [threadHasMore, setThreadHasMore] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
 
@@ -313,7 +320,7 @@ export default function MessagesClient() {
         PartyGroupOwnerPublicKeyBase58Check: selected.key,
         PartyGroupKeyName: partyGroup.AccessGroupKeyName,
         StartTimeStampString: String(Number.MAX_SAFE_INTEGER),
-        MaxMessagesToFetch: 50,
+        MaxMessagesToFetch: 25,
       }),
       cache: "no-store",
       signal: controller.signal,
@@ -322,7 +329,11 @@ export default function MessagesClient() {
         if (!response.ok) throw new Error("MESSAGES_UNAVAILABLE")
         return await response.json() as DMThreadResponse
       })
-      .then((data) => setThreadMessages(Array.isArray(data.ThreadMessages) ? data.ThreadMessages : []))
+      .then((data) => {
+        const messages = Array.isArray(data.ThreadMessages) ? data.ThreadMessages : []
+        setThreadMessages(messages)
+        setThreadHasMore(messages.length === 25)
+      })
       .catch((reason) => {
         if (!(reason instanceof DOMException && reason.name === "AbortError")) setThreadError("MESSAGES_UNAVAILABLE")
       })
@@ -330,6 +341,44 @@ export default function MessagesClient() {
 
     return () => controller.abort()
   }, [publicKey, selected?.key, selected?.thread])
+
+  const loadMoreMessages = async () => {
+    if (!publicKey || !selected || threadLoading || !threadHasMore || threadMessages.length === 0) return
+    const userGroup = accessGroupFor(selected.thread, publicKey)
+    const partyGroup = accessGroupFor(selected.thread, selected.key)
+    const oldest = threadMessages.reduce((value, message) => {
+      const timestamp = message.MessageInfo?.TimestampNanos ?? message.TimestampNanos ?? Number.MAX_SAFE_INTEGER
+      return Math.min(value, timestamp)
+    }, Number.MAX_SAFE_INTEGER)
+    if (!userGroup?.AccessGroupKeyName || !partyGroup?.AccessGroupKeyName || !Number.isFinite(oldest)) return
+
+    setThreadLoading(true)
+    setThreadError("")
+    try {
+      const response = await fetchDeSo("get-paginated-messages-for-dm-thread", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          UserGroupOwnerPublicKeyBase58Check: publicKey,
+          UserGroupKeyName: userGroup.AccessGroupKeyName,
+          PartyGroupOwnerPublicKeyBase58Check: selected.key,
+          PartyGroupKeyName: partyGroup.AccessGroupKeyName,
+          StartTimeStampString: String(Math.max(0, oldest - 1)),
+          MaxMessagesToFetch: 25,
+        }),
+        cache: "no-store",
+      })
+      if (!response.ok) throw new Error("MESSAGES_UNAVAILABLE")
+      const data = await response.json() as DMThreadResponse
+      const next = Array.isArray(data.ThreadMessages) ? data.ThreadMessages : []
+      setThreadMessages((current) => [...current, ...next])
+      setThreadHasMore(next.length === 25)
+    } catch {
+      setThreadError("MESSAGES_UNAVAILABLE")
+    } finally {
+      setThreadLoading(false)
+    }
+  }
 
   return (
     <main className="min-h-screen bg-[#050807] px-4 py-6 text-zinc-100 sm:px-6 lg:px-10">
@@ -388,7 +437,8 @@ export default function MessagesClient() {
                     </div>
                     <div className="flex flex-1 items-center justify-center p-6">
                       <div className="max-w-xl rounded-[16px] border border-[#8fd4a9]/15 bg-black/20 p-5 text-center">
-                        <p className="text-sm leading-6 text-zinc-400">{threadLoading ? t.loading : threadError ? t.unavailable : threadMessages.length ? `${threadMessages.length} · ${t.encrypted}` : t.identityNote}</p>
+                        <p className="text-sm leading-6 text-zinc-400">{threadLoading && threadMessages.length === 0 ? t.loading : threadError ? t.unavailable : threadMessages.length ? `${threadMessages.length} · ${t.encrypted}` : t.identityNote}</p>
+                        {threadHasMore && threadMessages.length > 0 ? <button type="button" onClick={() => void loadMoreMessages()} disabled={threadLoading} className="mt-4 rounded-[10px] border border-[#8fd4a9]/30 px-4 py-2 text-sm text-[#9adbb2] disabled:opacity-50">{threadLoading ? t.loading : t.loadMore}</button> : null}
                       </div>
                     </div>
                     <div className="border-t border-zinc-800 p-4">
