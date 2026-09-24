@@ -100,9 +100,9 @@ export default function ViaHomeEarth() {
         @media (max-width: 900px) {
           .via-nasa-earth-poster,
           .via-nasa-earth-video {
-            width: 144%;
-            height: 144%;
-            left: 14%;
+            width: 216%;
+            height: 216%;
+            left: 7%;
             top: -22%;
             image-rendering: auto;
             filter: brightness(1.32) contrast(1.12) saturate(1.06);
