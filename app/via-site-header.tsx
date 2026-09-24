@@ -153,6 +153,7 @@ export default function ViaSiteHeader() {
   const [language, setLanguage] = useState<ViaLanguage>("Dutch")
   const [languageOpen, setLanguageOpen] = useState(false)
   const [notificationStatusOpen, setNotificationStatusOpen] = useState(false)
+  const isHomepage = pathname === "/"
 
   function refreshKnownAccounts() {
     setKnownAccounts(listIdentitySessions())
@@ -194,6 +195,7 @@ export default function ViaSiteHeader() {
   useEffect(() => { setMenuOpen(false); setNotificationStatusOpen(false) }, [pathname])
 
   useEffect(() => {
+    if (isHomepage) { setProfile(null); return }
     if (!session?.publicKey) { setProfile(null); return }
     const controller = new AbortController()
     void fetch(`/api/via/profile?identity=${encodeURIComponent(session.publicKey)}`, { cache: "no-store", signal: controller.signal, headers: { Accept: "application/json" } })
@@ -201,9 +203,10 @@ export default function ViaSiteHeader() {
       .then((data) => setProfile(data?.ok && data.profile ? data.profile : null))
       .catch((error) => { if (!(error instanceof DOMException && error.name === "AbortError")) setProfile(null) })
     return () => controller.abort()
-  }, [session?.publicKey])
+  }, [isHomepage, session?.publicKey])
 
   useEffect(() => {
+    if (isHomepage) { setProfiles({}); return }
     if (!knownAccounts.length) { setProfiles({}); return }
     const controller = new AbortController()
     void Promise.all(knownAccounts.map(async (account) => {
@@ -218,7 +221,7 @@ export default function ViaSiteHeader() {
       if (!controller.signal.aborted) setProfiles(Object.fromEntries(entries))
     })
     return () => controller.abort()
-  }, [knownAccounts])
+  }, [isHomepage, knownAccounts])
 
   function changeLanguage(next: ViaLanguage) {
     saveViaLocalSettings({ interfaceLanguage: next })
