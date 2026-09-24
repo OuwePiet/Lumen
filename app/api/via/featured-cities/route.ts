@@ -67,7 +67,8 @@ async function findCommonsImage(city: string, country: string, christmas: boolea
     generator: "search",
     gsrsearch: search,
     gsrnamespace: "6",
-    gsrlimit: "8",
+    gsrwhat: "text",
+    gsrlimit: "20",
     prop: "imageinfo",
     iiprop: "url|size|extmetadata",
     iiurlwidth: "1200",
@@ -89,7 +90,7 @@ async function findCommonsImage(city: string, country: string, christmas: boolea
         if (!info) return false
         const title = page.title?.toLowerCase() ?? ""
         const mimeOk = /\.(jpe?g|png|webp)$/i.test(title)
-        const sizeOk = (info.width ?? 0) >= 900 && (info.height ?? 0) >= 500
+        const sizeOk = (info.width ?? 0) >= 700 && (info.height ?? 0) >= 400
         const license = info.extmetadata?.LicenseShortName?.value ?? ""
         const markedBad = /do not use|copyright violation|no permission/i.test(
           `${info.extmetadata?.Restrictions?.value ?? ""} ${info.extmetadata?.UsageTerms?.value ?? ""}`,
