@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { useEffect, useMemo, useState } from "react"
+import { ArrowLeft, Search, SquarePen } from "lucide-react"
 import { restoreIdentitySession, VIA_IDENTITY_EVENT } from "../deso-identity-session"
 import { fetchDeSo } from "../deso-api"
 import { readViaLocalSettings, VIA_SETTINGS_EVENT, type ViaLanguage } from "../via-local-settings"
@@ -253,13 +254,13 @@ export default function MessagesClient() {
   return (
     <main className="min-h-screen bg-[#050807] px-4 py-6 text-zinc-100 sm:px-6 lg:px-10">
       <div className="mx-auto max-w-7xl">
-        <header className="mb-5 flex flex-wrap items-start justify-between gap-4">
+        <header className="via-messages-page-header mb-5 flex flex-wrap items-start justify-between gap-4">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8fd4a9]">{t.kicker}</p>
             <h1 className="mt-2 text-3xl font-semibold tracking-tight">{t.title}</h1>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-400">{t.intro}</p>
           </div>
-          <Link href="/" className="inline-flex min-h-10 items-center rounded-[10px] border border-zinc-700 px-3 py-2 text-sm text-zinc-300 hover:border-[#8fd4a9]/50">{t.back}</Link>
+          <Link href="/" aria-label={t.back} title={t.back} className="via-messages-back inline-flex min-h-10 items-center gap-2 rounded-[10px] border border-zinc-700 px-3 py-2 text-sm text-zinc-300 hover:border-[#8fd4a9]/50"><ArrowLeft className="h-4 w-4" aria-hidden="true" /><span>{t.back}</span></Link>
         </header>
 
         {!publicKey ? (
@@ -270,10 +271,11 @@ export default function MessagesClient() {
         ) : (
           <>
             <div className="grid min-h-[620px] overflow-hidden rounded-[18px] border border-[#8fd4a9]/20 bg-[#07100b]/80 lg:grid-cols-[360px_minmax(0,1fr)]">
-              <aside className="border-b border-zinc-800 lg:border-b-0 lg:border-r">
-                <div className="flex items-center gap-2 border-b border-zinc-800 p-3">
+              <aside className="via-messages-inbox border-b border-zinc-800 lg:border-b-0 lg:border-r">
+                <div className="via-messages-search flex items-center gap-2 border-b border-zinc-800 p-3">
+                  <Search className="h-4 w-4 shrink-0 text-zinc-500" aria-hidden="true" />
                   <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t.search} className="min-w-0 flex-1 rounded-[10px] border border-zinc-800 bg-black/30 px-3 py-2 text-sm outline-none focus:border-[#8fd4a9]/50" />
-                  <button type="button" disabled title={t.identityNote} className="grid h-10 w-10 place-items-center rounded-[10px] border border-zinc-800 text-xl text-zinc-600">＋</button>
+                  <button type="button" disabled title={t.identityNote} aria-label={t.newMessage} className="grid h-10 w-10 place-items-center rounded-[10px] border border-zinc-800 text-zinc-600"><SquarePen className="h-4 w-4" aria-hidden="true" /></button>
                 </div>
                 <div className="max-h-[560px] overflow-y-auto">
                   {loading ? <p className="p-4 text-sm text-zinc-500">{t.loading}</p> : null}
@@ -296,7 +298,7 @@ export default function MessagesClient() {
                 </div>
               </aside>
 
-              <section className="flex min-h-[420px] flex-col">
+              <section className="via-messages-conversation flex min-h-[420px] flex-col">
                 {selected ? (
                   <>
                     <div className="border-b border-zinc-800 px-5 py-4">
@@ -325,6 +327,18 @@ export default function MessagesClient() {
           </>
         )}
       </div>
+      <style>{`
+        @media (max-width: 720px) {
+          .via-messages-page-header { margin-bottom: 12px; align-items: center; }
+          .via-messages-page-header h1 { font-size: 24px; margin-top: 4px; }
+          .via-messages-page-header p:not(.text-xs) { display: none; }
+          .via-messages-back { width: 40px; min-height: 40px; padding: 0; justify-content: center; border-radius: 12px; }
+          .via-messages-back span { display: none; }
+          .via-messages-inbox { border-bottom: 0; }
+          .via-messages-search { position: sticky; top: 0; z-index: 2; background: rgba(5,8,7,.96); }
+          .via-messages-conversation { min-height: 360px; }
+        }
+      `}</style>
     </main>
   )
 }
