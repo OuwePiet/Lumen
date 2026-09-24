@@ -74,7 +74,10 @@ export default function ViaHomeEarth() {
       <style jsx>{`
         .via-nasa-earth {
           position: absolute;
-          inset: 0;
+          top: 0;
+          left: 0;
+          right: 0;
+          height: 100vh;
           overflow: hidden;
           pointer-events: none;
           z-index: 0;
