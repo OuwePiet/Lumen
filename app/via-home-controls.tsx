@@ -53,6 +53,10 @@ const languageCodes: Record<ViaLanguage | "Hindi", string> = {
   Dutch: "NL", English: "EN", French: "FR", Spanish: "ES", Chinese: "中文", Hindi: "हिं",
 }
 
+const languageFlags: Record<ViaLanguage | "Hindi", string> = {
+  Dutch: "🇳🇱", English: "🇬🇧", French: "🇫🇷", Spanish: "🇪🇸", Chinese: "🇨🇳", Hindi: "🇮🇳",
+}
+
 type HomeText = {
   standard: string
   viaExtra: string
