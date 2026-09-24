@@ -319,7 +319,7 @@ export default function MessagesClient() {
         UserGroupKeyName: userGroup.AccessGroupKeyName,
         PartyGroupOwnerPublicKeyBase58Check: selected.key,
         PartyGroupKeyName: partyGroup.AccessGroupKeyName,
-        StartTimeStampString: String(Number.MAX_SAFE_INTEGER),
+        StartTimeStampString: (Date.now() * 1_000_000).toString(),
         MaxMessagesToFetch: 25,
       }),
       cache: "no-store",
@@ -346,11 +346,8 @@ export default function MessagesClient() {
     if (!publicKey || !selected || threadLoading || !threadHasMore || threadMessages.length === 0) return
     const userGroup = accessGroupFor(selected.thread, publicKey)
     const partyGroup = accessGroupFor(selected.thread, selected.key)
-    const oldest = threadMessages.reduce((value, message) => {
-      const timestamp = message.MessageInfo?.TimestampNanos ?? message.TimestampNanos ?? Number.MAX_SAFE_INTEGER
-      return Math.min(value, timestamp)
-    }, Number.MAX_SAFE_INTEGER)
-    if (!userGroup?.AccessGroupKeyName || !partyGroup?.AccessGroupKeyName || !Number.isFinite(oldest)) return
+    const oldestTimestampString = threadMessages.at(-1)?.MessageInfo?.TimestampNanosString
+    if (!userGroup?.AccessGroupKeyName || !partyGroup?.AccessGroupKeyName || !oldestTimestampString) return
 
     setThreadLoading(true)
     setThreadError("")
@@ -363,7 +360,7 @@ export default function MessagesClient() {
           UserGroupKeyName: userGroup.AccessGroupKeyName,
           PartyGroupOwnerPublicKeyBase58Check: selected.key,
           PartyGroupKeyName: partyGroup.AccessGroupKeyName,
-          StartTimeStampString: String(Math.max(0, oldest - 1)),
+          StartTimeStampString: oldestTimestampString,
           MaxMessagesToFetch: 25,
         }),
         cache: "no-store",
