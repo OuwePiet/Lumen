@@ -105,7 +105,7 @@ export default function ViaHomeEarth() {
           .via-nasa-earth-video {
             width: 216%;
             height: 216%;
-            left: 50%;
+            left: 47%;
             top: -22%;
             transform: translate(-50%, -60vh);
             image-rendering: auto;
