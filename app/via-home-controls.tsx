@@ -23,7 +23,7 @@ import {
   type ViaLanguage,
 } from "./via-local-settings"
 
-type PublicProfile = { username?: string; profilePic?: string | null; isVerified?: boolean; isInactive?: boolean }
+type PublicProfile = { username?: string; profilePic?: string | null; isVerified?: boolean; isInactive?: boolean; viaRecognized?: boolean }
 type ProfileResponse = { ok?: boolean; profile?: PublicProfile }
 
 // Homepage groups stay compact so account controls remain visible on tablet heights.
@@ -394,6 +394,7 @@ export default function ViaHomeControls() {
                 href="/profile"
                 aria-label={t.profile}
                 title={t.profile}
+                className="via-home-account-avatar"
                 style={{
                   ...buttonStyle,
                   minHeight: "54px",
@@ -411,6 +412,7 @@ export default function ViaHomeControls() {
                 }}
               >
                 {avatar ? <img src={avatar} alt="" referrerPolicy="no-referrer" style={{ width: "42px", height: "42px", borderRadius: "50%", objectFit: "cover", display: "block", border: "1px solid rgba(143,212,169,.32)", boxShadow: "0 0 10px rgba(143,212,169,.10)" }} /> : <span aria-hidden="true" style={{ width: "42px", height: "42px", borderRadius: "50%", display: "grid", placeItems: "center", background: "#173326", color: "#9adbb2", fontSize: "15px", fontWeight: 850, border: "1px solid rgba(143,212,169,.30)" }}>{profile?.username?.slice(0, 1).toUpperCase() ?? "V"}</span>}
+                <span className="via-home-account-avatar-status"><ViaIdentityStatusMarks verified={Boolean(profile?.isVerified)} inactive={Boolean(profile?.isInactive)} viaRecognized={Boolean(profile?.viaRecognized)} compact language={language} /></span>
               </Link>
               <button
                 type="button"
@@ -421,7 +423,7 @@ export default function ViaHomeControls() {
                 <span style={{ minWidth: 0, flex: 1, display: "grid", textAlign: "left", gap: "2px" }}>
                   <span style={{ display: "flex", alignItems: "center", gap: "6px", minWidth: 0 }}>
                     <strong style={{ color: "#e5eee8", fontSize: "11px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{accountName}</strong>
-                    <ViaIdentityStatusMarks verified={Boolean(profile?.isVerified)} inactive={Boolean(profile?.isInactive)} compact language={language} />
+                    <ViaIdentityStatusMarks verified={Boolean(profile?.isVerified)} inactive={Boolean(profile?.isInactive)} viaRecognized={Boolean(profile?.viaRecognized)} compact language={language} className="via-home-account-inline-status" />
                   </span>
                   <span style={{ color: profile?.isInactive ? "#818985" : "#74877b", fontSize: "8px", letterSpacing: ".08em", textTransform: "uppercase" }}>{profile?.isInactive ? t.inactive90 : t.connected}</span>
                 </span>
@@ -483,6 +485,17 @@ export default function ViaHomeControls() {
             max-height: 70px !important;
             margin: 0 auto !important;
           }
+        }
+        .via-home-account-avatar-status { display: none; }
+        @media (max-width: 600px) {
+          .via-home-account-avatar-status {
+            display: inline-flex;
+            position: absolute;
+            right: -7px;
+            bottom: -7px;
+            z-index: 2;
+          }
+          .via-home-account-inline-status { display: none !important; }
         }
       `}</style>
     </aside>
