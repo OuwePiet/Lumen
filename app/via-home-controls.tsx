@@ -475,7 +475,7 @@ export default function ViaHomeControls() {
           .via-home-controls nav a,
           .via-home-controls nav button,
           .via-home-controls nav label {
-            background: linear-gradient(180deg, rgba(8,20,13,.60), rgba(3,10,6,.50)) !important;
+            background: linear-gradient(180deg, rgba(8,20,13,.38), rgba(3,10,6,.30)) !important;
             backdrop-filter: none !important;
           }
           .via-home-controls-logo {
