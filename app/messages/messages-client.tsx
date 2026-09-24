@@ -39,6 +39,11 @@ type Profile = {
   ProfilePic?: string
 }
 
+type DMThreadResponse = {
+  ThreadMessages?: ThreadEntry[]
+  PublicKeyToProfileEntryResponse?: Record<string, Profile>
+}
+
 type ThreadsResponse = {
   OrderedContactsWithMessages?: ThreadEntry[]
   MessageThreads?: ThreadEntry[]
@@ -188,6 +193,12 @@ function counterpartKey(thread: ThreadEntry, self: string) {
   return keys.find((key) => key !== self) ?? keys[0] ?? ""
 }
 
+function accessGroupFor(thread: ThreadEntry, owner: string) {
+  if (thread.SenderInfo?.OwnerPublicKeyBase58Check === owner) return thread.SenderInfo
+  if (thread.RecipientInfo?.OwnerPublicKeyBase58Check === owner) return thread.RecipientInfo
+  return undefined
+}
+
 function formatThreadTime(nanos?: number) {
   if (!nanos || !Number.isFinite(nanos)) return ""
   const ms = nanos / 1_000_000
@@ -204,6 +215,9 @@ export default function MessagesClient() {
   const [selectedKey, setSelectedKey] = useState("")
   const [search, setSearch] = useState("")
   const [mobileConversationOpen, setMobileConversationOpen] = useState(false)
+  const [threadMessages, setThreadMessages] = useState<ThreadEntry[]>([])
+  const [threadLoading, setThreadLoading] = useState(false)
+  const [threadError, setThreadError] = useState("")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
 
@@ -270,6 +284,53 @@ export default function MessagesClient() {
 
   const selected = rows.find((row) => row.key === selectedKey) ?? rows[0]
 
+  useEffect(() => {
+    if (!publicKey || !selected) {
+      setThreadMessages([])
+      setThreadError("")
+      setThreadLoading(false)
+      return
+    }
+
+    const userGroup = accessGroupFor(selected.thread, publicKey)
+    const partyGroup = accessGroupFor(selected.thread, selected.key)
+    if (!userGroup?.AccessGroupKeyName || !partyGroup?.AccessGroupKeyName) {
+      setThreadMessages([])
+      setThreadError("")
+      setThreadLoading(false)
+      return
+    }
+
+    const controller = new AbortController()
+    setThreadLoading(true)
+    setThreadError("")
+    void fetchDeSo("get-paginated-messages-for-dm-thread", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        UserGroupOwnerPublicKeyBase58Check: publicKey,
+        UserGroupKeyName: userGroup.AccessGroupKeyName,
+        PartyGroupOwnerPublicKeyBase58Check: selected.key,
+        PartyGroupKeyName: partyGroup.AccessGroupKeyName,
+        StartTimeStampString: String(Number.MAX_SAFE_INTEGER),
+        MaxMessagesToFetch: 50,
+      }),
+      cache: "no-store",
+      signal: controller.signal,
+    })
+      .then(async (response) => {
+        if (!response.ok) throw new Error("MESSAGES_UNAVAILABLE")
+        return await response.json() as DMThreadResponse
+      })
+      .then((data) => setThreadMessages(Array.isArray(data.ThreadMessages) ? data.ThreadMessages : []))
+      .catch((reason) => {
+        if (!(reason instanceof DOMException && reason.name === "AbortError")) setThreadError("MESSAGES_UNAVAILABLE")
+      })
+      .finally(() => setThreadLoading(false))
+
+    return () => controller.abort()
+  }, [publicKey, selected?.key, selected?.thread])
+
   return (
     <main className="min-h-screen bg-[#050807] px-4 py-6 text-zinc-100 sm:px-6 lg:px-10">
       <div className="mx-auto max-w-7xl">
@@ -327,7 +388,7 @@ export default function MessagesClient() {
                     </div>
                     <div className="flex flex-1 items-center justify-center p-6">
                       <div className="max-w-xl rounded-[16px] border border-[#8fd4a9]/15 bg-black/20 p-5 text-center">
-                        <p className="text-sm leading-6 text-zinc-400">{t.identityNote}</p>
+                        <p className="text-sm leading-6 text-zinc-400">{threadLoading ? t.loading : threadError ? t.unavailable : threadMessages.length ? `${threadMessages.length} · ${t.encrypted}` : t.identityNote}</p>
                       </div>
                     </div>
                     <div className="border-t border-zinc-800 p-4">
