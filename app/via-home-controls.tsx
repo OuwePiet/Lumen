@@ -432,8 +432,6 @@ export default function ViaHomeControls() {
               </button>
             </div>
 
-            <div className="via-home-account-mobile-marks"><span className="via-home-account-deso-label">DeSo</span><ViaIdentityStatusMarks verified={Boolean(profile?.isVerified)} inactive={Boolean(profile?.isInactive)} viaRecognized={Boolean(profile?.viaRecognized)} compact language={language} /></div>
-
             {accountsOpen ? (
               <div style={{ display: "grid", gap: "5px", padding: "7px", border: "1px solid rgba(143,212,169,.16)", borderRadius: "13px", background: "rgba(2,8,5,.88)" }}>
                 {otherAccounts.length ? <span style={{ ...sectionLabel, padding: "2px 4px" }}>{t.switchAccount}</span> : null}
@@ -491,42 +489,42 @@ export default function ViaHomeControls() {
         }
         .via-home-account-avatar-status, .via-home-account-mobile-marks { display: none; }
         @media (max-width: 600px) {
-          .via-home-account-avatar-status { display: none !important; }
-          .via-home-account-inline-status { display: none !important; }
           .via-home-account-row {
             grid-template-columns: 52px minmax(0,1fr) !important;
             align-items: center !important;
           }
           .via-home-account-avatar {
-            width: 52px !important;
-            min-width: 52px !important;
-            height: 52px !important;
-            min-height: 52px !important;
+            width: 48px !important;
+            min-width: 48px !important;
+            height: 44px !important;
+            min-height: 44px !important;
             padding: 4px !important;
+            border-radius: 14px !important;
             border-color: transparent !important;
             background: transparent !important;
             box-shadow: none !important;
+            overflow: visible !important;
+          }
+          .via-home-account-avatar > img {
+            width: 36px !important;
+            height: 36px !important;
+            border: 0 !important;
+            box-shadow: none !important;
+          }
+          .via-home-account-avatar-status {
+            display: inline-flex !important;
+            position: absolute !important;
+            right: -7px !important;
+            bottom: -7px !important;
+            z-index: 2 !important;
           }
           .via-home-account-name {
-            min-height: 52px !important;
+            min-height: 44px !important;
             border-color: transparent !important;
             background: transparent !important;
             box-shadow: none !important;
           }
-          .via-home-account-mobile-marks {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            padding-left: 59px;
-            min-height: 20px;
-          }
-          .via-home-account-deso-label {
-            color: #7f8c84;
-            font-size: 8px;
-            font-weight: 700;
-            letter-spacing: .08em;
-            text-transform: uppercase;
-          }
+          .via-home-account-inline-status { display: none !important; }
         }
       `}</style>
     </aside>
