@@ -185,6 +185,7 @@ export default function MessagesClient() {
   const [profiles, setProfiles] = useState<Record<string, Profile>>({})
   const [selectedKey, setSelectedKey] = useState("")
   const [search, setSearch] = useState("")
+  const [mobileConversationOpen, setMobileConversationOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
 
@@ -285,7 +286,7 @@ export default function MessagesClient() {
                     const image = safeImage(profile?.ProfilePic)
                     const active = (selected?.key ?? selectedKey) === key
                     return (
-                      <button key={key || index} type="button" onClick={() => setSelectedKey(key)} className={`flex w-full items-center gap-3 border-b border-zinc-900 px-4 py-3 text-left transition-colors ${active ? "bg-[#10251a]" : "hover:bg-white/[.03]"}`}>
+                      <button key={key || index} type="button" onClick={() => { setSelectedKey(key); setMobileConversationOpen(true) }} className={`flex w-full items-center gap-3 border-b border-zinc-900 px-4 py-3 text-left transition-colors ${active ? "bg-[#10251a]" : "hover:bg-white/[.03]"}`}>
                         {image ? <img src={image} alt="" className="h-10 w-10 rounded-full object-cover" referrerPolicy="no-referrer" /> : <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#173326] text-sm font-bold text-[#9adbb2]">{name.replace(/^@/, "").slice(0,1).toUpperCase()}</span>}
                         <span className="min-w-0 flex-1">
                           <strong className="block truncate text-sm text-zinc-100">{name}</strong>
@@ -298,12 +299,13 @@ export default function MessagesClient() {
                 </div>
               </aside>
 
-              <section className="via-messages-conversation flex min-h-[420px] flex-col">
+              <section className={`via-messages-conversation flex min-h-[420px] flex-col ${mobileConversationOpen ? "via-messages-conversation-open" : ""}`}>
                 {selected ? (
                   <>
-                    <div className="border-b border-zinc-800 px-5 py-4">
-                      <strong className="text-base">{selected.name}</strong>
-                      <p className="mt-1 text-xs text-zinc-500">{shortKey(selected.key)}</p>
+                    <div className="flex items-center gap-3 border-b border-zinc-800 px-5 py-4">
+                      <button type="button" onClick={() => setMobileConversationOpen(false)} aria-label={t.back} className="via-messages-thread-back hidden h-9 w-9 shrink-0 place-items-center rounded-[10px] border border-zinc-800 text-zinc-300"><ArrowLeft className="h-4 w-4" aria-hidden="true" /></button>
+                      <div className="min-w-0"><strong className="block truncate text-base">{selected.name}</strong>
+                      <p className="mt-1 truncate text-xs text-zinc-500">{shortKey(selected.key)}</p></div>
                     </div>
                     <div className="flex flex-1 items-center justify-center p-6">
                       <div className="max-w-xl rounded-[16px] border border-[#8fd4a9]/15 bg-black/20 p-5 text-center">
@@ -336,7 +338,11 @@ export default function MessagesClient() {
           .via-messages-back span { display: none; }
           .via-messages-inbox { border-bottom: 0; }
           .via-messages-search { position: sticky; top: 0; z-index: 2; background: rgba(5,8,7,.96); }
-          .via-messages-conversation { min-height: 360px; }
+          .via-messages-conversation { display: none; min-height: 360px; }
+          .via-messages-conversation.via-messages-conversation-open { display: flex; }
+          .via-messages-conversation-open + * { display: none; }
+          .via-messages-inbox:has(+ .via-messages-conversation-open) { display: none; }
+          .via-messages-thread-back { display: grid; }
         }
       `}</style>
     </main>
