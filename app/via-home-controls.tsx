@@ -368,7 +368,7 @@ export default function ViaHomeControls() {
           <label style={{ ...buttonStyle, minHeight: "34px", padding: "5px 8px", gap: "5px", cursor: "pointer", width: "100%", justifyContent: "center" }}>
             <span aria-hidden="true" style={{ fontSize: "14px", lineHeight: 1 }}>{languageFlags[language]}</span>
             <select value={language} onChange={(event) => changeLanguage(event.target.value as ViaLanguage)} aria-label="VIA language" style={{ border: 0, padding: 0, width: "auto", minWidth: "38px", background: "transparent", color: "inherit", font: "inherit", fontWeight: 700, appearance: "none", cursor: "pointer", textAlign: "center" }}>
-              {VIA_LANGUAGES.map((item) => <option key={item} value={item}>{languageCodes[item]}</option>)}
+              {VIA_LANGUAGES.map((item) => <option key={item} value={item}>{languageFlags[item]} {languageCodes[item]}</option>)}
             </select>
           </label>
         </nav>
