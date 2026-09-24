@@ -382,7 +382,7 @@ export default function ViaHomeControls() {
         <span style={sectionLabel}>{t.account}</span>
         <div aria-label="VIA utility controls" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "7px" }}>
           <select value={language} onChange={(event) => changeLanguage(event.target.value as ViaLanguage)} aria-label="VIA language" style={{ ...buttonStyle, width: "100%", appearance: "none", cursor: "pointer", textAlign: "center" }}>
-            {VIA_LANGUAGES.map((item) => <option key={item} value={item}>{languageCodes[item]}</option>)}
+            {VIA_LANGUAGES.map((item) => <option key={item} value={item}>{languageFlags[item]} {languageCodes[item]}</option>)}
           </select>
           {!session ? <button type="button" onClick={enterPublicMode} style={{ ...buttonStyle, cursor: "pointer" }}>{t.publicEntrance}</button> : null}
         </div>
