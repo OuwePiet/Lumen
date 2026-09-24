@@ -388,68 +388,20 @@ export default function ViaHomeControls() {
         {!session ? <div aria-label="VIA utility controls"><button type="button" onClick={enterPublicMode} style={{ ...buttonStyle, width: "100%", cursor: "pointer" }}>{t.publicEntrance}</button></div> : null}
 
         {session ? (
-          <div style={{ display: "grid", gap: "6px" }}>
-            <div className="via-home-account-row" style={{ display: "grid", gridTemplateColumns: "54px minmax(0,1fr)", gap: "7px", alignItems: "stretch" }}>
-              <Link
-                href="/profile"
-                aria-label={t.profile}
-                title={t.profile}
-                className="via-home-account-avatar"
-                style={{
-                  ...buttonStyle,
-                  minHeight: "54px",
-                  padding: "5px",
-                  borderRadius: "16px",
-                  position: "relative",
-                  overflow: "visible",
-                  borderColor: profile?.isInactive ? "rgba(137,145,141,.42)" : "rgba(143,212,169,.38)",
-                  background: profile?.isInactive
-                    ? "linear-gradient(145deg, rgba(65,72,68,.42), rgba(5,17,10,.86))"
-                    : "linear-gradient(145deg, rgba(29,64,45,.68), rgba(5,17,10,.86))",
-                  boxShadow: profile?.isInactive
-                    ? "inset 0 1px 0 rgba(255,255,255,.05)"
-                    : "0 0 18px rgba(143,212,169,.10), inset 0 1px 0 rgba(255,255,255,.07)",
-                }}
-              >
-                {avatar ? <img src={avatar} alt="" referrerPolicy="no-referrer" style={{ width: "42px", height: "42px", borderRadius: "50%", objectFit: "cover", display: "block", border: "1px solid rgba(143,212,169,.32)", boxShadow: "0 0 10px rgba(143,212,169,.10)" }} /> : <span aria-hidden="true" style={{ width: "42px", height: "42px", borderRadius: "50%", display: "grid", placeItems: "center", background: "#173326", color: "#9adbb2", fontSize: "15px", fontWeight: 850, border: "1px solid rgba(143,212,169,.30)" }}>{profile?.username?.slice(0, 1).toUpperCase() ?? "V"}</span>}
-                <span className="via-home-account-avatar-status"><ViaIdentityStatusMarks verified={Boolean(profile?.isVerified)} inactive={Boolean(profile?.isInactive)} viaRecognized={Boolean(profile?.viaRecognized)} compact language={language} /></span>
-              </Link>
-              <button
-                type="button"
-                className="via-home-account-name"
-                onClick={() => { refreshAccounts(); setAccountsOpen((open) => !open) }}
-                aria-expanded={accountsOpen}
-                style={{ ...buttonStyle, width: "100%", minHeight: "54px", justifyContent: "flex-start", gap: "8px", cursor: "pointer", paddingInline: "10px", borderRadius: "16px", background: "linear-gradient(145deg, rgba(18,42,29,.58), rgba(3,12,7,.82))", boxShadow: "inset 0 1px 0 rgba(255,255,255,.04)" }}
-              >
-                <span style={{ minWidth: 0, flex: 1, display: "grid", textAlign: "left", gap: "2px" }}>
-                  <span style={{ display: "flex", alignItems: "center", gap: "6px", minWidth: 0 }}>
-                    <strong style={{ color: "#e5eee8", fontSize: "11px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{accountName}</strong>
-                    <ViaIdentityStatusMarks verified={Boolean(profile?.isVerified)} inactive={Boolean(profile?.isInactive)} viaRecognized={Boolean(profile?.viaRecognized)} compact language={language} className="via-home-account-inline-status" />
-                  </span>
-                  <span style={{ color: profile?.isInactive ? "#818985" : "#74877b", fontSize: "8px", letterSpacing: ".08em", textTransform: "uppercase" }}>{profile?.isInactive ? t.inactive90 : t.connected}</span>
-                </span>
-                <span aria-hidden="true" style={{ color: "#7fa88e" }}>{accountsOpen ? "▴" : "▾"}</span>
-              </button>
+          <div className="via-home-iphone-identity">
+            <Link href="/profile" className="via-home-iphone-deso" aria-label={t.profile} title={t.profile}>
+              {avatar ? <img src={avatar} alt="" referrerPolicy="no-referrer" /> : <span aria-hidden="true" className="via-home-iphone-avatar-fallback">{profile?.username?.slice(0, 1).toUpperCase() ?? "V"}</span>}
+              <span className="via-home-iphone-deso-status"><ViaIdentityStatusMarks verified={Boolean(profile?.isVerified)} inactive={Boolean(profile?.isInactive)} compact language={language} /></span>
+            </Link>
+            <Link href="/profile" className="via-home-iphone-account-link" aria-label={t.profile}>
+              <strong>{accountName}</strong>
+              <span>{profile?.isInactive ? t.inactive90 : t.connected}</span>
+            </Link>
+            <div className="via-home-iphone-via-future" aria-label="VIA Future recognition">
+              <span>VIA</span>
+              <span>Future</span>
+              <span className="via-home-iphone-future-leaf" aria-hidden="true"><img src="/via-leaf.svg" alt="" /></span>
             </div>
-
-            {accountsOpen ? (
-              <div style={{ display: "grid", gap: "5px", padding: "7px", border: "1px solid rgba(143,212,169,.16)", borderRadius: "13px", background: "rgba(2,8,5,.88)" }}>
-                {otherAccounts.length ? <span style={{ ...sectionLabel, padding: "2px 4px" }}>{t.switchAccount}</span> : null}
-                {otherAccounts.map((account) => {
-                  const itemProfile = profiles[account.publicKey]
-                  const itemAvatar = safeProfileImage(itemProfile?.profilePic)
-                  const itemName = itemProfile?.username ? `@${itemProfile.username}` : shortPublicKey(account.publicKey)
-                  return (
-                    <button key={account.publicKey} type="button" onClick={() => chooseAccount(account.publicKey)} style={{ ...buttonStyle, width: "100%", minHeight: "42px", justifyContent: "flex-start", gap: "8px", cursor: "pointer", paddingInline: "8px" }}>
-                      {itemAvatar ? <img src={itemAvatar} alt="" referrerPolicy="no-referrer" style={{ width: "27px", height: "27px", borderRadius: "50%", objectFit: "cover" }} /> : <span aria-hidden="true" style={{ width: "27px", height: "27px", borderRadius: "50%", display: "grid", placeItems: "center", background: "#142b20", color: "#91caa6", fontSize: "9px", fontWeight: 800 }}>{itemProfile?.username?.slice(0, 1).toUpperCase() ?? "D"}</span>}
-                      <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{itemName}</span>
-                    </button>
-                  )
-                })}
-                <button type="button" onClick={openDeSoIdentity} style={{ ...buttonStyle, width: "100%", cursor: "pointer", color: "#aee2bf" }}>{status === "waiting" ? t.connecting : `＋ ${t.addAccount}`}</button>
-                <button type="button" onClick={logout} style={{ ...buttonStyle, width: "100%", cursor: "pointer", color: "#a7b2ab", background: "rgba(8,10,9,.7)" }}>{t.logout}</button>
-              </div>
-            ) : null}
           </div>
         ) : (
           <button type="button" onClick={openDeSoIdentity} style={{ ...buttonStyle, width: "100%", minHeight: "42px", cursor: "pointer", borderColor: "rgba(143,212,169,.34)", color: "#b5e8c7" }}>
@@ -487,44 +439,85 @@ export default function ViaHomeControls() {
             margin: 0 auto !important;
           }
         }
-        .via-home-account-avatar-status, .via-home-account-mobile-marks { display: none; }
+        .via-home-iphone-identity { display: none; }
         @media (max-width: 600px) {
-          .via-home-account-row {
-            grid-template-columns: 52px minmax(0,1fr) !important;
-            align-items: center !important;
+          .via-home-iphone-identity {
+            display: grid;
+            grid-template-columns: 48px minmax(0,1fr) 48px;
+            align-items: center;
+            gap: 8px;
+            min-height: 52px;
           }
-          .via-home-account-avatar {
-            width: 48px !important;
-            min-width: 48px !important;
-            height: 44px !important;
-            min-height: 44px !important;
-            padding: 4px !important;
-            border-radius: 14px !important;
-            border-color: transparent !important;
-            background: transparent !important;
-            box-shadow: none !important;
-            overflow: visible !important;
+          .via-home-iphone-deso {
+            position: relative;
+            width: 48px;
+            height: 44px;
+            display: grid;
+            place-items: center;
+            text-decoration: none;
+            overflow: visible;
           }
-          .via-home-account-avatar > img {
-            width: 36px !important;
-            height: 36px !important;
-            border: 0 !important;
-            box-shadow: none !important;
+          .via-home-iphone-deso > img,
+          .via-home-iphone-avatar-fallback {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            object-fit: cover;
+            display: grid;
+            place-items: center;
           }
-          .via-home-account-avatar-status {
-            display: inline-flex !important;
-            position: absolute !important;
-            right: -7px !important;
-            bottom: -7px !important;
-            z-index: 2 !important;
+          .via-home-iphone-avatar-fallback {
+            background: #183326;
+            color: #9adbb2;
+            font-size: 15px;
+            font-weight: 900;
+            border: 1px solid rgba(143,212,169,.30);
           }
-          .via-home-account-name {
-            min-height: 44px !important;
-            border-color: transparent !important;
-            background: transparent !important;
-            box-shadow: none !important;
+          .via-home-iphone-deso-status {
+            position: absolute;
+            right: -7px;
+            bottom: -7px;
+            z-index: 2;
           }
-          .via-home-account-inline-status { display: none !important; }
+          .via-home-iphone-account-link {
+            min-width: 0;
+            display: grid;
+            gap: 2px;
+            text-decoration: none;
+            text-align: left;
+          }
+          .via-home-iphone-account-link strong {
+            color: #e5eee8;
+            font-size: 11px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+          }
+          .via-home-iphone-account-link span {
+            color: #74877b;
+            font-size: 8px;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+          }
+          .via-home-iphone-via-future {
+            width: 48px;
+            height: 44px;
+            display: grid;
+            place-content: center;
+            justify-items: center;
+            border: 1px solid rgba(143,212,169,.22);
+            border-radius: 50%;
+            background: rgba(5,11,8,.76);
+            color: #b8ddc5;
+            font-size: 7px;
+            font-weight: 800;
+            line-height: 8px;
+            letter-spacing: .02em;
+            position: relative;
+          }
+          .via-home-iphone-future-leaf {
+            display: none;
+          }
         }
       `}</style>
     </aside>
