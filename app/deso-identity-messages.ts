@@ -3,6 +3,7 @@
 import { DESO_IDENTITY_ORIGIN, getIdentityCredentials } from "./deso-identity-session"
 
 type IdentityMessage = { id?: unknown; service?: unknown; method?: unknown; payload?: unknown }
+type IdentityInfo = { browserSupported?: unknown; hasStorageAccess?: unknown }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value)
@@ -13,7 +14,7 @@ function requestId() {
   return `via-message-${Date.now()}-${Math.random().toString(16).slice(2)}`
 }
 
-function identityRequest(publicKey: string, method: "encrypt" | "decrypt", payload: Record<string, unknown>): Promise<Record<string, unknown>> {
+function identityRequest(publicKey: string, method: "encrypt" | "decrypt" | "sign", payload: Record<string, unknown>): Promise<Record<string, unknown>> {
   if (typeof window === "undefined" || typeof document === "undefined") return Promise.reject(new Error("DeSo Identity is only available in the browser."))
   const credentials = getIdentityCredentials(publicKey)
   if (!credentials) return Promise.reject(new Error("No usable DeSo Identity credentials are available."))
@@ -29,14 +30,41 @@ function identityRequest(publicKey: string, method: "encrypt" | "decrypt", paylo
     iframe.style.border = "0"
     iframe.style.zIndex = "2147483647"
     iframe.style.display = "none"
+    iframe.style.background = "#000"
 
+    const infoId = requestId()
     const id = requestId()
     let initialized = false
+    let infoRequested = false
+    let requestSent = false
     let settled = false
     const cleanup = () => { window.removeEventListener("message", onMessage); iframe.remove(); window.clearTimeout(timeout) }
     const fail = (message: string) => { if (settled) return; settled = true; cleanup(); reject(new Error(message)) }
     const post = (message: Record<string, unknown>) => iframe.contentWindow?.postMessage(message, DESO_IDENTITY_ORIGIN)
-    const request = () => post({ id, service: "identity", method, payload: { ...payload, encryptedSeedHex: credentials.encryptedSeedHex, accessLevel: credentials.accessLevel, accessLevelHmac: credentials.accessLevelHmac } })
+    const requestInfo = () => {
+      if (infoRequested) return
+      infoRequested = true
+      post({ id: infoId, service: "identity", method: "info" })
+    }
+    const request = () => {
+      if (requestSent) return
+      requestSent = true
+      iframe.style.display = "none"
+      post({
+        id,
+        service: "identity",
+        method,
+        payload: {
+          ...payload,
+          encryptedSeedHex: credentials.encryptedSeedHex,
+          accessLevel: credentials.accessLevel,
+          accessLevelHmac: credentials.accessLevelHmac,
+          ...(credentials.encryptedMessagingKeyRandomness ? { encryptedMessagingKeyRandomness: credentials.encryptedMessagingKeyRandomness } : {}),
+          ...(credentials.derivedPublicKeyBase58Check ? { derivedPublicKeyBase58Check: credentials.derivedPublicKeyBase58Check } : {}),
+          ...(credentials.ownerPublicKeyBase58Check ? { ownerPublicKeyBase58Check: credentials.ownerPublicKeyBase58Check } : {}),
+        },
+      })
+    }
 
     function onMessage(event: MessageEvent) {
       if (event.origin !== DESO_IDENTITY_ORIGIN || event.source !== iframe.contentWindow || !isRecord(event.data)) return
@@ -44,12 +72,24 @@ function identityRequest(publicKey: string, method: "encrypt" | "decrypt", paylo
       if (message.service !== "identity") return
       if (message.method === "initialize" && typeof message.id === "string") {
         post({ id: message.id, service: "identity", payload: {} })
-        if (!initialized) { initialized = true; window.setTimeout(request, 0) }
+        if (!initialized) { initialized = true; window.setTimeout(requestInfo, 0) }
+        return
+      }
+      if (message.method === "storageGranted") {
+        request()
+        return
+      }
+      if (message.id === infoId && isRecord(message.payload)) {
+        const info = message.payload as IdentityInfo
+        if (info.browserSupported === false) { fail("This browser cannot use DeSo Identity securely."); return }
+        if (info.hasStorageAccess === true) request()
+        else iframe.style.display = "block"
         return
       }
       if (message.id === id && isRecord(message.payload)) {
         const response = message.payload
-        if (response.approvalRequired === true) { fail("DeSo Identity approval is required for message security."); return }
+        if (response.approvalRequired === true) { fail("DeSo Identity approval is required for this message action."); return }
+        if (response.requiresEncryptedMessagingKeyRandomness === true) { fail("This DeSo Identity session needs messaging-key authorization before messages can be encrypted."); return }
         if (typeof response.error === "string" && response.error) { fail(response.error); return }
         settled = true; cleanup(); resolve(response)
       }
@@ -72,4 +112,11 @@ export async function decryptViaMessages(publicKey: string, encryptedMessages: u
   const response = await identityRequest(publicKey, "decrypt", { encryptedMessages, messagingGroups })
   const decryptedHexes = response.decryptedHexes
   return isRecord(decryptedHexes) ? decryptedHexes : {}
+}
+
+export async function signViaMessageTransaction(publicKey: string, transactionHex: string) {
+  const response = await identityRequest(publicKey, "sign", { transactionHex })
+  const signedTransactionHex = response.signedTransactionHex
+  if (typeof signedTransactionHex !== "string" || !signedTransactionHex) throw new Error("DeSo Identity did not return a signed transaction.")
+  return signedTransactionHex
 }
