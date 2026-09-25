@@ -10,6 +10,7 @@ const RADIO_BROWSER_SERVERS = [
 ]
 const USER_AGENT = "VIA/1.0 (+https://viadeso.online)"
 const MAX_RESULTS = 24
+const UPSTREAM_RESULTS = 120
 
 type RadioBrowserStation = {
   stationuuid?: string
@@ -71,7 +72,7 @@ export async function GET(request: NextRequest) {
     hidebroken: "true",
     order: "votes",
     reverse: "true",
-    limit: String(MAX_RESULTS),
+    limit: String(UPSTREAM_RESULTS),
   })
   if (country) params.set("country", country)
   if (tag) params.set("tag", tag)
@@ -84,15 +85,7 @@ export async function GET(request: NextRequest) {
       .map((station) => ({
         id: clean(station.stationuuid ?? "", 80),
         name: clean(station.name ?? "Unknown station", 120),
-        streamUrl: (() => {
-          const raw = station.url_resolved ?? ""
-          try {
-            const url = new URL(raw)
-            return url.protocol === "https:" || url.protocol === "http:" ? url.toString() : ""
-          } catch {
-            return ""
-          }
-        })(),
+        streamUrl: safeHttps(station.url_resolved),
         homepage: safeHttps(station.homepage),
         favicon: safeHttps(station.favicon),
         tags: clean(station.tags ?? "", 180),
@@ -102,6 +95,7 @@ export async function GET(request: NextRequest) {
         bitrate: typeof station.bitrate === "number" ? station.bitrate : 0,
       }))
       .filter((station) => station.id && station.streamUrl)
+      .slice(0, MAX_RESULTS)
 
     return NextResponse.json({ stations }, { headers: { "Cache-Control": "no-store" } })
   } catch {
