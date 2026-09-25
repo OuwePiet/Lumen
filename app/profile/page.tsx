@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { useEffect, useState } from "react"
-import { Copy, MoreVertical, Pencil, WalletCards } from "lucide-react"
+import { Copy, MoreVertical, UserRoundPen, WalletCards } from "lucide-react"
 import { restoreIdentitySession, VIA_IDENTITY_EVENT, type ViaIdentitySession } from "../deso-identity-session"
 import { readViaLocalSettings, VIA_SETTINGS_EVENT, type ViaLanguage } from "../via-local-settings"
 import ViaIdentityStatusMarks from "../via-identity-status"
@@ -369,7 +369,7 @@ export default function ProfilePage() {
                 </div>
                 <div className="mt-3 flex flex-wrap items-center gap-2">
                   <div className="via-profile-own-actions" aria-label="Profile actions">
-                    <Link href="/profile/edit" className="via-profile-action-button" aria-label="Edit profile" title="Edit profile"><Pencil className="h-4 w-4" aria-hidden="true" /></Link>
+                    <Link href="/profile/edit" className="via-profile-action-button" aria-label="Edit profile" title="Edit profile"><UserRoundPen className="h-4 w-4" aria-hidden="true" /></Link>
                     <Link href="/wallet" className="via-profile-action-button" aria-label="Buy creator coins" title="Buy creator coins"><WalletCards className="h-4 w-4" aria-hidden="true" /></Link>
                     <div className="via-profile-action-menu-wrap"><button type="button" className="via-profile-action-button" aria-label="More profile actions" title="More" aria-expanded={profileMenuOpen} onClick={() => setProfileMenuOpen((open) => !open)}><MoreVertical className="h-4 w-4" aria-hidden="true" /></button>{profileMenuOpen ? <div className="via-profile-action-menu"><button type="button" onClick={copyPublicKey}><Copy className="h-4 w-4" aria-hidden="true" />{copiedKey ? "Public key copied" : "Copy public key"}</button></div> : null}</div>
                   </div>
