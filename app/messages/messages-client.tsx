@@ -544,7 +544,7 @@ export default function MessagesClient() {
   }
   }
   return (
-    <main className="min-h-screen bg-[#050807] px-4 py-6 text-zinc-100 sm:px-6 lg:px-10">
+    <main className="via-messages-page min-h-screen px-4 py-6 text-zinc-100 sm:px-6 lg:px-10">
       <div className="mx-auto max-w-7xl">
         <header className="via-messages-page-header mb-5 flex flex-wrap items-start justify-between gap-4">
           <div>
@@ -633,7 +633,21 @@ export default function MessagesClient() {
         )}
       </div>
       <style>{`
-        @media (max-width: 720px) {
+        .via-messages-page { position: relative; isolation: isolate; overflow-x: hidden; background: #020b18; }
+        .via-messages-page::before { content: ""; position: fixed; inset: 0; z-index: -2; pointer-events: none; background: url("/via-msg-web.jpg") center top / cover no-repeat; }
+        .via-messages-page::after { content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none; background: linear-gradient(180deg, rgba(1,9,22,.32) 0%, rgba(1,9,22,.52) 48%, rgba(1,9,22,.76) 100%); }
+        .via-messages-page > div { position: relative; }
+        @media (min-width: 1025px) {
+          .via-messages-page { padding-left: 40px; padding-right: 40px; }
+          .via-messages-inbox > div:last-child { max-height: 70vh; }
+          .via-messages-conversation { min-height: 70vh; }
+        }
+        @media (min-width: 768px) and (max-width: 1024px) {
+          .via-messages-page { padding-left: 20px; padding-right: 20px; }
+          .via-messages-inbox > div:last-child { max-height: 68vh; }
+          .via-messages-conversation { min-height: 68vh; }
+        }
+        @media (max-width: 767px) {
           .via-messages-page-header { margin-bottom: 12px; align-items: center; }\n          .via-messages-login { padding: 12px !important; }\n          .via-messages-login > * { margin: 0 !important; }
           .via-messages-page-header h1 { font-size: 24px; margin-top: 4px; }
           .via-messages-page-header p:not(.text-xs) { display: none; }
