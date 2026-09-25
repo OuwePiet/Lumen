@@ -5,7 +5,8 @@ import { useEffect, useMemo, useState } from "react"
 import { ArrowLeft, Search, SquarePen } from "lucide-react"
 import { restoreIdentitySession, VIA_IDENTITY_EVENT } from "../deso-identity-session"
 import { fetchDeSo } from "../deso-api"
-import { decryptViaMessages } from "../deso-identity-messages"
+import { decryptViaMessages, encryptViaMessage, signViaMessageTransaction } from "../deso-identity-messages"
+import { constructViaDMTransaction, submitViaSignedTransaction } from "./deso-dm-transaction"
 import { readViaLocalSettings, VIA_SETTINGS_EVENT, type ViaLanguage } from "../via-local-settings"
 
 type AccessGroupInfo = {
@@ -232,6 +233,8 @@ export default function MessagesClient() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const [draft, setDraft] = useState("")
+  const [sending, setSending] = useState(false)
+  const [sendError, setSendError] = useState("")
 
   useEffect(() => {
     const syncLanguage = () => setLanguage(readViaLocalSettings().interfaceLanguage)
@@ -240,7 +243,9 @@ export default function MessagesClient() {
     syncIdentity()
     window.addEventListener(VIA_SETTINGS_EVENT, syncLanguage)
     window.addEventListener(VIA_IDENTITY_EVENT, syncIdentity)
-    return () => {
+
+
+  return () => {
       window.removeEventListener(VIA_SETTINGS_EVENT, syncLanguage)
       window.removeEventListener(VIA_IDENTITY_EVENT, syncIdentity)
     }
@@ -430,6 +435,49 @@ export default function MessagesClient() {
     }
   }
 
+  const sendCurrentMessage = async () => {
+  const message = draft.trim()
+  if (!publicKey || !selected || !message || sending) return
+  const senderGroup = accessGroupFor(selected.thread, publicKey)
+  const recipientGroup = accessGroupFor(selected.thread, selected.key)
+  if (!senderGroup?.AccessGroupPublicKeyBase58Check || !senderGroup.AccessGroupKeyName || !recipientGroup?.AccessGroupPublicKeyBase58Check || !recipientGroup.AccessGroupKeyName) {
+    setSendError("MESSAGES_UNAVAILABLE")
+    return
+  }
+
+  setSending(true)
+  setSendError("")
+  try {
+    const encryptedMessage = await encryptViaMessage(publicKey, recipientGroup.AccessGroupPublicKeyBase58Check, message, senderGroup.AccessGroupKeyName)
+    const transactionHex = await constructViaDMTransaction(senderGroup, recipientGroup, encryptedMessage)
+    const signedTransactionHex = await signViaMessageTransaction(publicKey, transactionHex)
+    await submitViaSignedTransaction(signedTransactionHex)
+    setDraft("")
+    const response = await fetchDeSo("get-paginated-messages-for-dm-thread", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        UserGroupOwnerPublicKeyBase58Check: publicKey,
+        UserGroupKeyName: senderGroup.AccessGroupKeyName,
+        PartyGroupOwnerPublicKeyBase58Check: selected.key,
+        PartyGroupKeyName: recipientGroup.AccessGroupKeyName,
+        StartTimeStampString: (Date.now() * 1_000_000).toString(),
+        MaxMessagesToFetch: 25,
+      }),
+      cache: "no-store",
+    })
+    if (response.ok) {
+      const data = await response.json() as DMThreadResponse
+      const messages = Array.isArray(data.ThreadMessages) ? data.ThreadMessages : []
+      setThreadMessages(messages)
+      setThreadHasMore(messages.length === 25)
+    }
+  } catch {
+    setSendError("MESSAGES_UNAVAILABLE")
+  } finally {
+    setSending(false)
+  }
+  }
   return (
     <main className="min-h-screen bg-[#050807] px-4 py-6 text-zinc-100 sm:px-6 lg:px-10">
       <div className="mx-auto max-w-7xl">
@@ -500,9 +548,10 @@ export default function MessagesClient() {
                     <div className="border-t border-zinc-800 p-4">
                       <div className="flex gap-2">
                         <textarea value={draft} onChange={(event) => setDraft(event.target.value)} rows={2} maxLength={5000} placeholder={t.typeMessage} className="min-w-0 flex-1 resize-none rounded-[12px] border border-zinc-800 bg-black/25 px-3 py-2 text-sm text-zinc-200 outline-none focus:border-[#8fd4a9]/50" />
-                        <button type="button" disabled={!draft.trim()} title={t.identityNote} className="rounded-[12px] border border-[#8fd4a9]/25 px-4 text-sm font-semibold text-[#9adbb2] disabled:border-zinc-800 disabled:text-zinc-600">{t.send}</button>
+                        <button type="button" onClick={() => void sendCurrentMessage()} disabled={!draft.trim() || sending} title={t.identityNote} className="rounded-[12px] border border-[#8fd4a9]/25 px-4 text-sm font-semibold text-[#9adbb2] disabled:border-zinc-800 disabled:text-zinc-600">{sending ? "…" : t.send}</button>
                       </div>
                     </div>
+                    {sendError ? <p className="px-4 pb-3 text-xs text-amber-300">{t.unavailable}</p> : null}
                   </>
                 ) : (
                   <div className="grid flex-1 place-items-center p-6 text-sm text-zinc-500">{t.selectConversation}</div>
