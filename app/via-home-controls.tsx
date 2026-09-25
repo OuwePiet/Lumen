@@ -209,6 +209,7 @@ export default function ViaHomeControls() {
   const [accountsOpen, setAccountsOpen] = useState(false)
   const [status, setStatus] = useState<"idle" | "waiting" | "blocked">("idle")
   const [language, setLanguage] = useState<ViaLanguage>("English")
+  const [languageOpen, setLanguageOpen] = useState(false)
 
   function refreshAccounts() {
     setKnownAccounts(listIdentitySessions())
