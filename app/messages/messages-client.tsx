@@ -633,9 +633,7 @@ export default function MessagesClient() {
         )}
       </div>
       <style>{`
-        .via-messages-page { position: relative; isolation: isolate; overflow-x: hidden; background: #020b18; }
-        .via-messages-page::before { content: ""; position: fixed; inset: 0; z-index: -2; pointer-events: none; background: url("/via-msg-web.jpg") center top / cover no-repeat; }
-        .via-messages-page::after { content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none; background: linear-gradient(180deg, rgba(1,9,22,.32) 0%, rgba(1,9,22,.52) 48%, rgba(1,9,22,.76) 100%); }
+        .via-messages-page { position: relative; isolation: isolate; overflow-x: hidden; background: #050705; }
         .via-messages-page > div { position: relative; }
         .via-messages-panel { background: transparent; backdrop-filter: none; }
         .via-messages-page button, .via-messages-page input, .via-messages-page textarea { background-color: transparent; }
