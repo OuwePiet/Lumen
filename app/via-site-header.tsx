@@ -285,7 +285,7 @@ export default function ViaSiteHeader() {
               </button>)}
             </div> : null}
           </div>
-          {pathname === "/notifications" ? <Link href="/" className="via-notifications-home-top" aria-label="Home" title="Home">⌂</Link> : null}
+          {pathname === "/notifications" ? <Link href="/" className="via-notifications-home-top" aria-label="Home" title="Home"><span className="via-notifications-home-label">Home</span></Link> : null}
           {!session ? <button type="button" onClick={enterPublicMode} style={{ ...pill, cursor: "pointer" }}>{t.publicEntrance}</button> : null}
           {!session && pathname !== "/messages" ? <a href={DESO_LOGIN_URL} target="via-deso-identity" style={styles.login}>{t.login}</a> : null}
           <Link href="/wallet" style={pill} className={`via-site-header-utility ${pathname === "/notifications" ? "via-site-header-wallet-notifications" : ""}`}>{t.wallet}</Link>
@@ -522,9 +522,12 @@ export default function ViaSiteHeader() {
             background: rgba(5,11,8,.76) !important;
             color: #b8ddc5 !important;
             text-decoration: none !important;
-            font-size: 18px !important;
-            line-height: 1 !important;
+            font-size: 8px !important;
+            font-weight: 700 !important;
+            line-height: 9px !important;
+            text-align: center !important;
           }
+          .via-notifications-home-label { display: block; }
           .via-site-header-tools-notifications > .via-notifications-future-mark { grid-column: 4 !important; justify-self: center !important; }
           .via-site-header-tools-notifications > .via-profile-shortcut-notifications {
             grid-column: 5 !important;
