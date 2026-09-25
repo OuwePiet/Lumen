@@ -33,6 +33,17 @@ export default function AdvertisingPage() {
           </section>
         </div>
 
+        <section style={{ ...card, marginTop: 14 }}>
+          <h2 style={{ margin: 0, fontSize: 19 }}>Sponsor VIA</h2>
+          <p style={{ margin: "8px 0 0", color: "#9eaaa2", lineHeight: 1.6, fontSize: 14 }}>Elke gift is welkom, ook als hij klein is. Vrijwillige bijdragen via DESO of Diamonds worden pas als betaalbaar getoond wanneer de betreffende route volledig operationeel en getest is.</p>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 12 }}>
+            <span style={{ border: "1px solid rgba(143,212,169,.28)", borderRadius: 999, padding: "7px 11px", color: "#9adbb2", fontSize: 12 }}>DESO</span>
+            <span style={{ border: "1px solid rgba(143,212,169,.18)", borderRadius: 999, padding: "7px 11px", color: "#89968e", fontSize: 12 }}>USD · niet live</span>
+            <span style={{ border: "1px solid rgba(143,212,169,.18)", borderRadius: 999, padding: "7px 11px", color: "#89968e", fontSize: 12 }}>Diamonds · na verificatie</span>
+          </div>
+          <p style={{ margin: "10px 0 0", color: "#78867e", lineHeight: 1.5, fontSize: 12 }}>Dit is statusinformatie, geen checkout. VIA toont geen schijnbare DESO/$-wissel zolang die betaalroute niet veilig is aangesloten.</p>
+        </section>
+
         <AdvertisingDirectory />
 
         <nav style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 26 }}>
