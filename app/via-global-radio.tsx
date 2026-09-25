@@ -106,6 +106,10 @@ export default function ViaGlobalRadio() {
 
   const copy = COPY[language]
 
+  if (pathname === "/radio") {
+    return <audio ref={audio} onPause={()=>setPlaying(false)} onPlay={()=>setPlaying(true)} />
+  }
+
   return <aside aria-label={copy.radio} className={`via-global-radio ${pathname === "/" ? "via-global-radio-home" : pathname === "/notifications" ? "via-global-radio-notifications" : pathname === "/radio" ? "via-global-radio-radio-page" : pathname === "/messages" ? "via-global-radio-messages" : pathname === "/profile" ? "via-global-radio-profile" : ""} fixed bottom-3 right-3 z-[80] flex max-w-[calc(100vw-1.5rem)] items-center gap-2 rounded-full border border-[#285f40] bg-[#07100b]/95 px-3 py-2 text-xs shadow-xl backdrop-blur`}>
     <audio ref={audio} onPause={()=>setPlaying(false)} onPlay={()=>setPlaying(true)} />
     <Link href="/radio" className="via-global-radio-label max-w-40 truncate text-[#b8ddc5]">{station ? station.name : copy.radio}</Link>
