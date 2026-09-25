@@ -12,6 +12,7 @@ const MAX_IMAGE_BYTES = 10 * 1024 * 1024
 const MAX_POLL_OPTIONS = 5
 const MAX_POLL_OPTION_LENGTH = 120
 const SOCIAL_DRAFT_STORAGE_KEY = "via:social:draft:v1"
+const SOCIAL_REPLY_DRAFT_PREFIX = "via:social:reply-draft:v1:"
 const COMPOSER_EMOJI = ["😀", "😄", "😂", "😍", "😎", "🤔", "👏", "👍", "❤️", "🔥", "🎉", "🚀", "🌍", "🎨", "🎵", "✨"] as const
 const ALLOWED_IMAGE_TYPES = new Set(["image/gif", "image/jpeg", "image/png", "image/webp"])
 
@@ -70,17 +71,17 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
   }, [])
 
   useEffect(() => {
-    if (isReply) return
     try {
-      const stored = window.localStorage.getItem(SOCIAL_DRAFT_STORAGE_KEY)
+      const key = isReply ? `${SOCIAL_REPLY_DRAFT_PREFIX}${parentStakeID}` : SOCIAL_DRAFT_STORAGE_KEY
+      const stored = window.localStorage.getItem(key)
       if (stored) {
         setBody(stored.slice(0, MAX_POST_LENGTH))
-        setDraftMessage("Local draft restored from this device.")
+        setDraftMessage(isReply ? "Unsent reply restored on this device." : "Local draft restored from this device.")
       }
     } catch {
       setDraftMessage("Local drafts are unavailable in this browser.")
     }
-  }, [isReply])
+  }, [isReply, parentStakeID])
 
   useEffect(() => {
     const onMessage = async (event: MessageEvent) => {
@@ -113,10 +114,10 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
         setImageUploadMessage("")
         setVideoUploading(false)
         setMediaOpen(!compact)
-        if (!isReply) {
-          try { window.localStorage.removeItem(SOCIAL_DRAFT_STORAGE_KEY) } catch {}
-          setDraftMessage("Local draft cleared after publishing.")
-        }
+        try {
+          window.localStorage.removeItem(isReply ? `${SOCIAL_REPLY_DRAFT_PREFIX}${parentStakeID}` : SOCIAL_DRAFT_STORAGE_KEY)
+        } catch {}
+        setDraftMessage(isReply ? "Reply sent; local safety copy cleared." : "Local draft cleared after publishing.")
         onDone?.()
       } catch {
         setStatus("error")
@@ -164,13 +165,13 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
   }
 
   function saveDraft() {
-    if (isReply) return
     try {
+      const key = isReply ? `${SOCIAL_REPLY_DRAFT_PREFIX}${parentStakeID}` : SOCIAL_DRAFT_STORAGE_KEY
       if (body.trim()) {
-        window.localStorage.setItem(SOCIAL_DRAFT_STORAGE_KEY, body.slice(0, MAX_POST_LENGTH))
-        setDraftMessage("Draft saved on this device.")
+        window.localStorage.setItem(key, body.slice(0, MAX_POST_LENGTH))
+        setDraftMessage(isReply ? "Reply kept safely on this device until DeSo confirms it." : "Draft saved on this device.")
       } else {
-        window.localStorage.removeItem(SOCIAL_DRAFT_STORAGE_KEY)
+        window.localStorage.removeItem(key)
         setDraftMessage("Empty draft cleared.")
       }
     } catch {
@@ -245,6 +246,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
 
   async function preparePost() {
     if (!session || !canPrepare) return
+    if (isReply) saveDraft()
     setStatus("preparing")
     setMessage(isReply ? "Preparing the exact DeSo reply transaction…" : "Preparing the exact DeSo post transaction with its media and poll data…")
     setFeeNanos(null)
