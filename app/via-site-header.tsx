@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { useEffect, useRef, useState } from "react"
-import { UsersRound } from "lucide-react"
+import { RadioTower, UsersRound } from "lucide-react"
 import {
   DESO_LOGIN_URL,
   clearIdentitySession,
@@ -286,7 +286,7 @@ export default function ViaSiteHeader() {
             </div> : null}
           </div>
           {pathname === "/notifications" ? <Link href="/" className="via-notifications-home-top" aria-label="Home" title="Home"><span className="via-notifications-home-label">Home</span></Link> : null}
-          {pathname === "/messages" ? <Link href="/radio" className="via-notifications-radio-top" aria-label="World Radio" title="World Radio">◉</Link> : null}
+          {pathname === "/messages" ? <Link href="/radio" className="via-notifications-radio-top" aria-label="World Radio" title="World Radio"><RadioTower className="h-4 w-4" aria-hidden="true" /></Link> : null}
           {!session && pathname !== "/messages" ? <button type="button" onClick={enterPublicMode} style={{ ...pill, cursor: "pointer" }}>{t.publicEntrance}</button> : null}
           {!session && pathname !== "/messages" ? <a href={DESO_LOGIN_URL} target="via-deso-identity" style={styles.login}>{t.login}</a> : null}
           {pathname !== "/messages" ? <Link href="/wallet" style={pill} className={`via-site-header-utility ${pathname === "/notifications" ? "via-site-header-wallet-notifications" : ""}`}>{t.wallet}</Link> : null}
