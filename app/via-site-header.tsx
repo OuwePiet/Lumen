@@ -287,7 +287,7 @@ export default function ViaSiteHeader() {
           </div>
           {pathname === "/notifications" || pathname === "/radio" || pathname === "/messages" || pathname === "/profile" ? <div className="via-notifications-top-control"><Link href="/radio" className="via-notifications-radio-top" aria-label="World Radio" title="World Radio"><RadioTower className="h-4 w-4" aria-hidden="true" /></Link><span className="via-notifications-top-label">Radio</span></div> : null}
           {!session ? <button type="button" onClick={enterPublicMode} style={{ ...pill, cursor: "pointer" }}>{t.publicEntrance}</button> : null}
-          {!session ? <a href={DESO_LOGIN_URL} target="via-deso-identity" style={styles.login}>{t.login}</a> : null}
+          {!session && pathname !== "/messages" ? <a href={DESO_LOGIN_URL} target="via-deso-identity" style={styles.login}>{t.login}</a> : null}
           <Link href="/wallet" style={pill} className={`via-site-header-utility ${pathname === "/notifications" ? "via-site-header-wallet-notifications" : ""}`}>{t.wallet}</Link>
           {pathname !== "/notifications" ? <Link href="/notifications" style={pill} className="via-site-header-utility">{t.notifications}</Link> : null}
 
@@ -596,6 +596,32 @@ export default function ViaSiteHeader() {
           }
           .via-site-header-tools-notifications .via-notifications-status-caret {
             display: none !important;
+          }
+          /* Messages/Profile/Radio logged-out mobile: keep utility controls in one scrollable row instead of the fixed six-slot Notifications geometry. */
+          .via-site-header-tools-notifications:has(> button) {
+            position: relative !important;
+            left: auto !important;
+            right: auto !important;
+            top: auto !important;
+            height: 50px !important;
+            display: flex !important;
+            grid-column: 1 / span 2 !important;
+            grid-row: 2 !important;
+            justify-content: flex-start !important;
+            align-items: center !important;
+            gap: 6px !important;
+            padding: 6px 8px !important;
+            overflow-x: auto !important;
+            overflow-y: hidden !important;
+          }
+          .via-site-header-tools-notifications:has(> button) > * {
+            flex: 0 0 auto !important;
+            position: relative !important;
+            left: auto !important;
+            right: auto !important;
+            top: auto !important;
+            grid-column: auto !important;
+            justify-self: auto !important;
           }
         }
         @media (min-width: 721px) {
