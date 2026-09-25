@@ -52,6 +52,7 @@ export default function RadioBrowser() {
   const [favoriteStations, setFavoriteStations] = useState<Station[]>([])
   const [showFavorites, setShowFavorites] = useState(false)
   const searchController = useRef<AbortController | null>(null)
+  const resultsRef = useRef<HTMLDivElement | null>(null)
 
   const loadStations = async (nextCountry: string, nextStationName: string, nextGenre = "") => {
     searchController.current?.abort()
@@ -68,7 +69,9 @@ export default function RadioBrowser() {
       const response = await fetch(`/api/via/radio?${params.toString()}`, { cache: "no-store", signal: controller.signal })
       const data = await response.json()
       if (!response.ok) throw new Error(data?.error ?? "Radio directory unavailable")
-      setStations(Array.isArray(data.stations) ? data.stations : [])
+      const nextStations = Array.isArray(data.stations) ? data.stations : []
+      setStations(nextStations)
+      requestAnimationFrame(() => resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }))
     } catch (error) {
       if (!(error instanceof DOMException && error.name === "AbortError")) {
         setStations([])
@@ -158,7 +161,7 @@ export default function RadioBrowser() {
       {error ? <p role="alert" style={styles.status}>{error}</p> : null}
       {showFavorites && visibleStations.length === 0 ? <p style={styles.status}>No saved favorite stations yet.</p> : null}
 
-      <div style={styles.grid} className="via-radio-results-grid">
+      <div ref={resultsRef} style={{ ...styles.grid, scrollMarginTop: "16px" }} className="via-radio-results-grid">
         {visibleStations.map((station) => (
           <article key={station.id} style={styles.card} className="via-radio-station-card">
             <h2 style={styles.title}>{station.name}</h2>
