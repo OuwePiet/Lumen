@@ -16,10 +16,12 @@ const NASA_EARTHS = [
 export default function ViaHomeEarth() {
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const [videoFailed, setVideoFailed] = useState(false)
+  const [videoReady, setVideoReady] = useState(false)
   const earth = useMemo(() => NASA_EARTHS[new Date().getMonth() % NASA_EARTHS.length], [])
 
   useEffect(() => {
     setVideoFailed(false)
+    setVideoReady(false)
   }, [earth.id])
 
   useEffect(() => {
@@ -61,10 +63,14 @@ export default function ViaHomeEarth() {
             event.currentTarget.playbackRate = 0.72
             void event.currentTarget.play().catch(() => undefined)
           }}
+          onPlaying={() => setVideoReady(true)}
           onPause={(event) => {
             if (!document.hidden) void event.currentTarget.play().catch(() => undefined)
           }}
-          onError={() => setVideoFailed(true)}
+          onError={() => {
+            setVideoReady(false)
+            setVideoFailed(true)
+          }}
         >
           <source src={earth.src} type="video/mp4" />
           {earth.id === "night-lights-2012" ? <source src="/api/nasa-earth" type="video/mp4" /> : null}
@@ -98,7 +104,7 @@ export default function ViaHomeEarth() {
         }
 
         .via-nasa-earth-poster { z-index: 0; }
-        .via-nasa-earth-video { z-index: 1; }
+        .via-nasa-earth-video { z-index: 1; opacity: ${videoReady ? 1 : 0}; }
 
         @media (max-width: 900px) {
           .via-nasa-earth-poster,
