@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react"
 import { ArrowLeft, Search, SquarePen } from "lucide-react"
 import { restoreIdentitySession, VIA_IDENTITY_EVENT } from "../deso-identity-session"
 import { fetchDeSo } from "../deso-api"
+import { decryptViaMessages } from "../deso-identity-messages"
 import { readViaLocalSettings, VIA_SETTINGS_EVENT, type ViaLanguage } from "../via-local-settings"
 
 type AccessGroupInfo = {
@@ -225,6 +226,7 @@ export default function MessagesClient() {
   const [threadLoading, setThreadLoading] = useState(false)
   const [threadError, setThreadError] = useState("")
   const [threadHasMore, setThreadHasMore] = useState(false)
+  const [decryptedMessages, setDecryptedMessages] = useState<Record<string, string>>({})
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
 
@@ -342,6 +344,54 @@ export default function MessagesClient() {
     return () => controller.abort()
   }, [publicKey, selected?.key, selected?.thread])
 
+  useEffect(() => {
+    if (!publicKey || threadMessages.length === 0) {
+      setDecryptedMessages({})
+      return
+    }
+
+    const encryptedMessages = threadMessages.flatMap((message) => {
+      const encryptedHex = message.MessageInfo?.EncryptedText ?? message.EncryptedText
+      if (!encryptedHex) return []
+      const senderOwner = message.SenderInfo?.OwnerPublicKeyBase58Check ?? message.SenderPublicKeyBase58Check ?? ""
+      const recipientOwner = message.RecipientInfo?.OwnerPublicKeyBase58Check ?? message.RecipientPublicKeyBase58Check ?? ""
+      const isSender = senderOwner === publicKey
+      const publicKeyForDecrypt = isSender
+        ? message.RecipientInfo?.AccessGroupPublicKeyBase58Check ?? recipientOwner
+        : message.SenderInfo?.AccessGroupPublicKeyBase58Check ?? senderOwner
+      if (!publicKeyForDecrypt) return []
+      return [{
+        EncryptedHex: encryptedHex,
+        PublicKey: publicKeyForDecrypt,
+        IsSender: isSender,
+        Legacy: false,
+        Version: 3,
+        SenderMessagingPublicKey: message.SenderInfo?.AccessGroupPublicKeyBase58Check,
+        SenderMessagingGroupKeyName: message.SenderInfo?.AccessGroupKeyName,
+        RecipientMessagingPublicKey: message.RecipientInfo?.AccessGroupPublicKeyBase58Check,
+        RecipientMessagingGroupKeyName: message.RecipientInfo?.AccessGroupKeyName,
+      }]
+    })
+
+    if (encryptedMessages.length === 0) {
+      setDecryptedMessages({})
+      return
+    }
+
+    let cancelled = false
+    void decryptViaMessages(publicKey, encryptedMessages)
+      .then((result) => {
+        if (cancelled) return
+        const readable = Object.fromEntries(Object.entries(result).filter((entry): entry is [string, string] => typeof entry[1] === "string"))
+        setDecryptedMessages(readable)
+      })
+      .catch(() => {
+        if (!cancelled) setDecryptedMessages({})
+      })
+
+    return () => { cancelled = true }
+  }, [publicKey, threadMessages])
+
   const loadMoreMessages = async () => {
     if (!publicKey || !selected || threadLoading || !threadHasMore || threadMessages.length === 0) return
     const userGroup = accessGroupFor(selected.thread, publicKey)
@@ -432,11 +482,17 @@ export default function MessagesClient() {
                       <div className="min-w-0"><strong className="block truncate text-base">{selected.name}</strong>
                       <p className="mt-1 truncate text-xs text-zinc-500">{shortKey(selected.key)}</p></div>
                     </div>
-                    <div className="flex flex-1 items-center justify-center p-6">
-                      <div className="max-w-xl rounded-[16px] border border-[#8fd4a9]/15 bg-black/20 p-5 text-center">
-                        <p className="text-sm leading-6 text-zinc-400">{threadLoading && threadMessages.length === 0 ? t.loading : threadError ? t.unavailable : threadMessages.length ? `${threadMessages.length} · ${t.encrypted}` : t.identityNote}</p>
-                        {threadHasMore && threadMessages.length > 0 ? <button type="button" onClick={() => void loadMoreMessages()} disabled={threadLoading} className="mt-4 rounded-[10px] border border-[#8fd4a9]/30 px-4 py-2 text-sm text-[#9adbb2] disabled:opacity-50">{threadLoading ? t.loading : t.loadMore}</button> : null}
-                      </div>
+                    <div className="flex flex-1 flex-col gap-3 overflow-y-auto p-5">
+                      {threadHasMore && threadMessages.length > 0 ? <button type="button" onClick={() => void loadMoreMessages()} disabled={threadLoading} className="mx-auto rounded-[10px] border border-[#8fd4a9]/30 px-4 py-2 text-sm text-[#9adbb2] disabled:opacity-50">{threadLoading ? t.loading : t.loadMore}</button> : null}
+                      {threadLoading && threadMessages.length === 0 ? <p className="m-auto text-sm text-zinc-500">{t.loading}</p> : null}
+                      {threadError ? <p className="m-auto text-sm text-amber-300">{t.unavailable}</p> : null}
+                      {!threadLoading && !threadError && threadMessages.length === 0 ? <p className="m-auto text-sm text-zinc-500">{t.identityNote}</p> : null}
+                      {[...threadMessages].reverse().map((message, index) => {
+                        const encryptedHex = message.MessageInfo?.EncryptedText ?? message.EncryptedText ?? ""
+                        const body = decryptedMessages[encryptedHex] || t.encrypted
+                        const mine = (message.SenderInfo?.OwnerPublicKeyBase58Check ?? message.SenderPublicKeyBase58Check) === publicKey
+                        return <div key={`${encryptedHex.slice(0,16)}-${index}`} className={`max-w-[78%] rounded-[16px] px-4 py-3 text-sm leading-6 ${mine ? "ml-auto bg-[#173326] text-zinc-100" : "mr-auto border border-zinc-800 bg-black/30 text-zinc-200"}`}><p className="whitespace-pre-wrap break-words">{body}</p></div>
+                      })}
                     </div>
                     <div className="border-t border-zinc-800 p-4">
                       <div className="flex gap-2">
