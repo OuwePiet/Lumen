@@ -5,6 +5,8 @@ export const dynamic = "force-dynamic"
 const RADIO_BROWSER_SERVERS = [
   "https://de1.api.radio-browser.info",
   "https://nl1.api.radio-browser.info",
+  "https://at1.api.radio-browser.info",
+  "https://fi1.api.radio-browser.info",
 ]
 const USER_AGENT = "VIA/1.0 (+https://viadeso.online)"
 const MAX_RESULTS = 24
@@ -67,7 +69,6 @@ export async function GET(request: NextRequest) {
   const name = clean(request.nextUrl.searchParams.get("name"), 60)
   const params = new URLSearchParams({
     hidebroken: "true",
-    is_https: "true",
     order: "votes",
     reverse: "true",
     limit: String(MAX_RESULTS),
@@ -83,7 +84,15 @@ export async function GET(request: NextRequest) {
       .map((station) => ({
         id: clean(station.stationuuid ?? "", 80),
         name: clean(station.name ?? "Unknown station", 120),
-        streamUrl: safeHttps(station.url_resolved),
+        streamUrl: (() => {
+          const raw = station.url_resolved ?? ""
+          try {
+            const url = new URL(raw)
+            return url.protocol === "https:" || url.protocol === "http:" ? url.toString() : ""
+          } catch {
+            return ""
+          }
+        })(),
         homepage: safeHttps(station.homepage),
         favicon: safeHttps(station.favicon),
         tags: clean(station.tags ?? "", 180),
