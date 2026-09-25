@@ -370,7 +370,7 @@ export default function ProfilePage() {
                 <div className="mt-3 flex flex-wrap items-center gap-2">
                   <div className="via-profile-own-actions" aria-label="Profile actions">
                     <Link href="/profile/edit" className="via-profile-action-button" aria-label="Edit profile" title="Edit profile"><UserRoundPen className="h-4 w-4" aria-hidden="true" /></Link>
-                    <Link href="/wallet" className="via-profile-action-button" aria-label="Buy creator coins" title="Buy creator coins"><WalletCards className="h-4 w-4" aria-hidden="true" /></Link>
+                    <Link href="/profile/coin" className="via-profile-action-button" aria-label="Buy creator coins" title="Buy creator coins"><WalletCards className="h-4 w-4" aria-hidden="true" /></Link>
                     <div className="via-profile-action-menu-wrap"><button type="button" className="via-profile-action-button" aria-label="More profile actions" title="More" aria-expanded={profileMenuOpen} onClick={() => setProfileMenuOpen((open) => !open)}><MoreVertical className="h-4 w-4" aria-hidden="true" /></button>{profileMenuOpen ? <div className="via-profile-action-menu"><button type="button" onClick={copyPublicKey}><Copy className="h-4 w-4" aria-hidden="true" />{copiedKey ? "Public key copied" : "Copy public key"}</button></div> : null}</div>
                   </div>
                   <span className={profile.isInactive ? "rounded-full border border-zinc-500/35 bg-zinc-500/10 px-3 py-1 text-xs font-semibold text-zinc-400" : "rounded-full border border-[#8fd4a9]/30 bg-[#8fd4a9]/10 px-3 py-1 text-xs font-semibold text-[#a9dfbc]"}>
