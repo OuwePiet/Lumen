@@ -399,23 +399,7 @@ export default function ViaHomeControls() {
         <span style={sectionLabel}>{t.account}</span>
         {!session ? <div aria-label="VIA utility controls"><button type="button" onClick={enterPublicMode} style={{ ...buttonStyle, width: "100%", cursor: "pointer" }}>{t.publicEntrance}</button></div> : null}
 
-        {session ? (
-          <div className="via-home-iphone-identity">
-            <Link href="/profile" className="via-home-iphone-deso" aria-label={t.profile} title={t.profile}>
-              {avatar ? <img src={avatar} alt="" referrerPolicy="no-referrer" /> : <span aria-hidden="true" className="via-home-iphone-avatar-fallback">{profile?.username?.slice(0, 1).toUpperCase() ?? "V"}</span>}
-              <span className="via-home-iphone-deso-status"><ViaIdentityStatusMarks verified={Boolean(profile?.isVerified)} inactive={Boolean(profile?.isInactive)} compact language={language} /></span>
-            </Link>
-            <Link href="/profile" className="via-home-iphone-account-link" aria-label={t.profile}>
-              <strong>{accountName}</strong>
-              <span>{profile?.isInactive ? t.inactive90 : t.connected}</span>
-            </Link>
-            <div className="via-home-iphone-via-future" aria-label="VIA Future recognition">
-              <span>VIA</span>
-              <span>Future</span>
-              <span className="via-home-iphone-future-leaf" aria-hidden="true"><img src="/via-leaf.svg" alt="" /></span>
-            </div>
-          </div>
-        ) : (
+        {session ? null : (
           <button type="button" onClick={openDeSoIdentity} style={{ ...buttonStyle, width: "100%", minHeight: "42px", cursor: "pointer", borderColor: "rgba(143,212,169,.34)", color: "#b5e8c7" }}>
             {status === "waiting" ? t.connecting : t.login}
           </button>
