@@ -544,7 +544,7 @@ export default function MessagesClient() {
   }
   }
   return (
-    <main className="min-h-screen bg-[#050807] px-4 py-6 text-zinc-100 sm:px-6 lg:px-10">
+    <main className="via-messages-page min-h-screen px-4 py-6 text-zinc-100 sm:px-6 lg:px-10">
       <div className="mx-auto max-w-7xl">
         <header className="via-messages-page-header mb-5 flex flex-wrap items-start justify-between gap-4">
           <div>
