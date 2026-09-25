@@ -106,7 +106,7 @@ export default function ViaGlobalRadio() {
 
   const copy = COPY[language]
 
-  return <aside aria-label={copy.radio} className={`via-global-radio ${pathname === "/notifications" ? "via-global-radio-notifications" : pathname === "/radio" ? "via-global-radio-radio-page" : pathname === "/messages" ? "via-global-radio-messages" : ""} fixed bottom-3 right-3 z-[80] flex max-w-[calc(100vw-1.5rem)] items-center gap-2 rounded-full border border-[#285f40] bg-[#07100b]/95 px-3 py-2 text-xs shadow-xl backdrop-blur`}>
+  return <aside aria-label={copy.radio} className={`via-global-radio ${pathname === "/" ? "via-global-radio-home" : pathname === "/notifications" ? "via-global-radio-notifications" : pathname === "/radio" ? "via-global-radio-radio-page" : pathname === "/messages" ? "via-global-radio-messages" : ""} fixed bottom-3 right-3 z-[80] flex max-w-[calc(100vw-1.5rem)] items-center gap-2 rounded-full border border-[#285f40] bg-[#07100b]/95 px-3 py-2 text-xs shadow-xl backdrop-blur`}>
     <audio ref={audio} onPause={()=>setPlaying(false)} onPlay={()=>setPlaying(true)} />
     <Link href="/radio" className="via-global-radio-label max-w-40 truncate text-[#b8ddc5]">{station ? station.name : copy.radio}</Link>
     <button type="button" disabled={!station} aria-pressed={playing} aria-label={station ? `${playing ? copy.turnOff : copy.turnOn}: ${station.name}` : copy.chooseAria} onClick={toggle} className="via-global-radio-button min-h-9 rounded-full border border-[#8fd4a9]/45 px-3 font-semibold text-[#b8ddc5] disabled:opacity-45">{station ? (playing ? copy.off : copy.on) : copy.choose}</button>
@@ -120,9 +120,7 @@ export default function ViaGlobalRadio() {
           padding: 5px !important;
           border-radius: 999px !important;
         }
-        .via-global-radio-notifications {
-          display: none !important;
-        }
+        .via-global-radio-home,\n        .via-global-radio-notifications {\n          display: none !important;\n        }
         .via-global-radio-radio-page,
         .via-global-radio-messages {
           top: 66px !important;
