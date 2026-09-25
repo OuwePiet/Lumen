@@ -597,6 +597,32 @@ export default function ViaSiteHeader() {
           .via-site-header-tools-notifications .via-notifications-status-caret {
             display: none !important;
           }
+          /* Messages/Profile/Radio logged-out mobile: keep utility controls in one scrollable row instead of the fixed six-slot Notifications geometry. */
+          .via-site-header-tools-notifications:has(> a[target="via-deso-identity"]) {
+            position: relative !important;
+            left: auto !important;
+            right: auto !important;
+            top: auto !important;
+            height: 50px !important;
+            display: flex !important;
+            grid-column: 1 / span 2 !important;
+            grid-row: 2 !important;
+            justify-content: flex-start !important;
+            align-items: center !important;
+            gap: 6px !important;
+            padding: 6px 8px !important;
+            overflow-x: auto !important;
+            overflow-y: hidden !important;
+          }
+          .via-site-header-tools-notifications:has(> a[target="via-deso-identity"]) > * {
+            flex: 0 0 auto !important;
+            position: relative !important;
+            left: auto !important;
+            right: auto !important;
+            top: auto !important;
+            grid-column: auto !important;
+            justify-self: auto !important;
+          }
         }
         @media (min-width: 721px) {
           .via-site-header-account-menu-icon { display: none !important; }
