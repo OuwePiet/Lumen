@@ -48,6 +48,8 @@ const viaExtraNav = [
   ["world", "/world"],
   ["myVia", "/my-via"],
   ["advertising", "/advertising"],
+  ["ideas", "/ideas"],
+  ["storage", "/storage"],
 ] as const
 
 const languageCodes: Record<ViaLanguage | "Hindi", string> = {
@@ -88,6 +90,8 @@ type HomeText = {
   addAccount: string
   inactive90: string
   advertising: string
+  ideas: string
+  storage: string
 }
 
 const copy: Record<ViaLanguage | "Hindi", HomeText> = {
@@ -98,7 +102,7 @@ const copy: Record<ViaLanguage | "Hindi", HomeText> = {
     bookmarks: "Bookmarks", messages: "Berichten", more: "Meer",
     search: "Zoek leden", publicEntrance: "Publieke ingang", wallet: "Mijn Wallet", notifications: "Meldingen",
     login: "DeSo Login", connecting: "Verbinden…", logout: "Uitloggen", blocked: "Safari heeft het DeSo Identity-venster geblokkeerd.",
-    connected: "Verbonden", switchAccount: "Wissel account", addAccount: "DeSo-account toevoegen", inactive90: "90+ dagen inactief", advertising: "Reclame",
+    connected: "Verbonden", switchAccount: "Wissel account", addAccount: "DeSo-account toevoegen", inactive90: "90+ dagen inactief", advertising: "Reclame", ideas: "Ideeënbus", storage: "Externe opslag",
   },
   English: {
     standard: "Make your choice", viaExtra: "", account: "Language", home: "Home",
@@ -107,7 +111,7 @@ const copy: Record<ViaLanguage | "Hindi", HomeText> = {
     bookmarks: "Bookmarks", messages: "Messages", more: "More",
     search: "Search members", publicEntrance: "Public Entrance", wallet: "My Wallet", notifications: "Notifications",
     login: "DeSo Login", connecting: "Connecting…", logout: "Logout", blocked: "Safari blocked the DeSo Identity window.",
-    connected: "Connected", switchAccount: "Switch account", addAccount: "Add DeSo account", inactive90: "Inactive 90+ days", advertising: "Advertising",
+    connected: "Connected", switchAccount: "Switch account", addAccount: "Add DeSo account", inactive90: "Inactive 90+ days", advertising: "Advertising", ideas: "Ideas Box", storage: "External storage",
   },
   French: {
     standard: "Faites votre choix", viaExtra: "", account: "Langue", home: "Accueil",
@@ -116,7 +120,7 @@ const copy: Record<ViaLanguage | "Hindi", HomeText> = {
     bookmarks: "Favoris", messages: "Messages", more: "Plus",
     search: "Rechercher des membres", publicEntrance: "Entrée publique", wallet: "Mon Wallet", notifications: "Notifications",
     login: "Connexion DeSo", connecting: "Connexion…", logout: "Déconnexion", blocked: "Safari a bloqué la fenêtre DeSo Identity.",
-    connected: "Connecté", switchAccount: "Changer de compte", addAccount: "Ajouter un compte DeSo", inactive90: "Inactif depuis 90+ jours", advertising: "Publicité",
+    connected: "Connecté", switchAccount: "Changer de compte", addAccount: "Ajouter un compte DeSo", inactive90: "Inactif depuis 90+ jours", advertising: "Publicité", ideas: "Boîte à idées", storage: "Stockage externe",
   },
   Spanish: {
     standard: "Haga su elección", viaExtra: "", account: "Idioma", home: "Inicio",
@@ -125,7 +129,7 @@ const copy: Record<ViaLanguage | "Hindi", HomeText> = {
     bookmarks: "Guardados", messages: "Mensajes", more: "Más",
     search: "Buscar miembros", publicEntrance: "Entrada pública", wallet: "Mi Wallet", notifications: "Notificaciones",
     login: "Acceso DeSo", connecting: "Conectando…", logout: "Cerrar sesión", blocked: "Safari bloqueó la ventana de DeSo Identity.",
-    connected: "Conectado", switchAccount: "Cambiar cuenta", addAccount: "Añadir cuenta DeSo", inactive90: "Inactivo 90+ días", advertising: "Publicidad",
+    connected: "Conectado", switchAccount: "Cambiar cuenta", addAccount: "Añadir cuenta DeSo", inactive90: "Inactivo 90+ días", advertising: "Publicidad", ideas: "Buzón de ideas", storage: "Almacenamiento externo",
   },
   Chinese: {
     standard: "请选择", viaExtra: "", account: "语言", home: "首页",
@@ -134,7 +138,7 @@ const copy: Record<ViaLanguage | "Hindi", HomeText> = {
     bookmarks: "书签", messages: "消息", more: "更多",
     search: "搜索成员", publicEntrance: "公开入口", wallet: "我的钱包", notifications: "通知",
     login: "DeSo 登录", connecting: "连接中…", logout: "退出", blocked: "Safari 阻止了 DeSo Identity 窗口。",
-    connected: "已连接", switchAccount: "切换账户", addAccount: "添加 DeSo 账户", inactive90: "90+ 天未活跃", advertising: "广告",
+    connected: "已连接", switchAccount: "切换账户", addAccount: "添加 DeSo 账户", inactive90: "90+ 天未活跃", advertising: "广告", ideas: "意见箱", storage: "外部存储",
   },
   Hindi: {
     standard: "अपना विकल्प चुनें", viaExtra: "", account: "भाषा", home: "होम",
@@ -142,7 +146,7 @@ const copy: Record<ViaLanguage | "Hindi", HomeText> = {
     profile: "मेरी प्रोफ़ाइल", myVia: "मेरा VIA", bookmarks: "बुकमार्क", messages: "संदेश", more: "और",
     search: "सदस्य खोजें", publicEntrance: "सार्वजनिक प्रवेश", wallet: "मेरा वॉलेट", notifications: "सूचनाएँ",
     login: "DeSo लॉगिन", connecting: "कनेक्ट हो रहा है…", logout: "लॉग आउट", blocked: "Safari ने DeSo Identity विंडो को ब्लॉक कर दिया।",
-    connected: "कनेक्टेड", switchAccount: "खाता बदलें", addAccount: "DeSo खाता जोड़ें", inactive90: "90+ दिनों से निष्क्रिय", advertising: "विज्ञापन",
+    connected: "कनेक्टेड", switchAccount: "खाता बदलें", addAccount: "DeSo खाता जोड़ें", inactive90: "90+ दिनों से निष्क्रिय", advertising: "विज्ञापन", ideas: "विचार बॉक्स", storage: "बाहरी स्टोरेज",
   },
 }
 
@@ -395,8 +399,8 @@ export default function ViaHomeControls() {
         </nav>
       </section>
 
-      <section style={{ display: "grid", gap: "6px" }}>
-        <span style={sectionLabel}>{t.account}</span>
+      <section className="via-home-language-section" style={{ display: "grid", gap: "6px" }}>
+        <span className="via-home-language-label" style={sectionLabel}>{t.account}</span>
         {!session ? <div aria-label="VIA utility controls"><button type="button" onClick={enterPublicMode} style={{ ...buttonStyle, width: "100%", cursor: "pointer" }}>{t.publicEntrance}</button></div> : null}
 
         {session ? null : (
@@ -438,6 +442,7 @@ export default function ViaHomeControls() {
         .via-home-iphone-utility-row { display: none; }
         .via-home-iphone-identity { display: none; }
         @media (max-width: 600px) {
+          .via-home-language-section { display: none !important; }
           .via-home-iphone-utility-row {
             display: grid;
             grid-template-columns: repeat(4, 44px);
