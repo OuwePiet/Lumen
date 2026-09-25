@@ -650,6 +650,8 @@ export default function MessagesClient() {
           .via-messages-conversation { min-height: 68vh; }
         }
         @media (max-width: 767px) {
+          .via-messages-page { padding-left: 10px !important; padding-right: 10px !important; }
+          .via-messages-panel { min-height: 0 !important; width: 100%; }
           .via-messages-page-header { margin-bottom: 12px; align-items: center; }\n          .via-messages-login { padding: 12px !important; }\n          .via-messages-login > * { margin: 0 !important; }
           .via-messages-page-header h1 { font-size: 24px; margin-top: 4px; }
           .via-messages-page-header p:not(.text-xs) { display: none; }
@@ -662,6 +664,14 @@ export default function MessagesClient() {
           .via-messages-conversation-open + * { display: none; }
           .via-messages-inbox:has(+ .via-messages-conversation-open) { display: none; }
           .via-messages-thread-back { display: grid; }
+          .via-messages-conversation { width: 100%; min-width: 0; }
+          .via-messages-conversation textarea { min-width: 0; }
+        }
+        @media (max-width: 390px) {
+          .via-messages-page { padding-left: 8px !important; padding-right: 8px !important; }
+          .via-messages-search { padding: 8px !important; gap: 6px !important; }
+          .via-messages-conversation > div:first-child { padding-left: 10px !important; padding-right: 10px !important; }
+          .via-messages-conversation > div:nth-last-child(2) { padding: 10px !important; }
         }
       `}</style>
     </main>
