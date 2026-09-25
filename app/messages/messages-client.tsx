@@ -4,6 +4,7 @@ import Link from "next/link"
 import { useEffect, useMemo, useState } from "react"
 import { ArrowLeft, Search, SquarePen } from "lucide-react"
 import { restoreIdentitySession, VIA_IDENTITY_EVENT } from "../deso-identity-session"
+import ParticipationGate from "../participation-gate"
 import { fetchDeSo } from "../deso-api"
 import { decryptViaMessages, encryptViaMessage, signViaMessageTransaction } from "../deso-identity-messages"
 import { constructViaDMTransaction, submitViaSignedTransaction } from "./deso-dm-transaction"
@@ -494,6 +495,7 @@ export default function MessagesClient() {
           <section className="rounded-[16px] border border-zinc-800 bg-zinc-950/50 p-6">
             <h2 className="text-xl font-medium">{t.noAccount}</h2>
             <p className="mt-2 text-sm text-zinc-400">{t.noAccountText}</p>
+            <ParticipationGate title={t.noAccount} text={t.noAccountText} compact />
           </section>
         ) : (
           <>
