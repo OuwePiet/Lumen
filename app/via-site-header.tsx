@@ -616,8 +616,14 @@ export default function ViaSiteHeader() {
           .via-site-header-tools-notifications .via-notifications-status-caret {
             display: none !important;
           }
-          /* Messages final: same six-slot first row as Notifications. */
-          .via-site-header-tools-messages { grid-template-columns: repeat(6, 34px) !important; }
+          /* Messages iPhone: one definitive six-slot toolbar. */
+          .via-site-header-tools-messages {
+            left: 78px !important;
+            right: 10px !important;
+            grid-template-columns: repeat(6, 34px) !important;
+            justify-content: space-between !important;
+            column-gap: 0 !important;
+          }
           .via-site-header-tools-messages > .via-notifications-top-control { grid-column: 1 !important; }
           .via-site-header-tools-messages > .via-site-header-language-wrap { grid-column: 2 !important; }
           .via-site-header-tools-messages > .via-notifications-radio-top { grid-column: 3 !important; display: grid !important; place-items: center !important; }
@@ -625,48 +631,8 @@ export default function ViaSiteHeader() {
           .via-site-header-tools-messages > .via-profile-shortcut-notifications { grid-column: 5 !important; }
           .via-site-header-tools-messages > .via-site-header-account-wrap { grid-column: 6 !important; }
           .via-site-header-tools-messages > a[href="/wallet"], .via-site-header-tools-messages > a[href="/notifications"] { display: none !important; }
-          /* Messages iPhone: one aligned row of circular controls; no legacy Radio shortcut. */
-          .via-site-header-tools-messages {
-            left: 78px !important;
-            right: 10px !important;
-            grid-template-columns: repeat(7, 34px) !important;
-            justify-content: space-between !important;
-            column-gap: 0 !important;
-          }
-          .via-site-header-tools-messages > .via-notifications-top-control { grid-column: 1 !important; }
-          .via-site-header-tools-messages > .via-site-header-language-wrap { grid-column: 2 !important; }
-          .via-site-header-tools-messages > a[href="/wallet"] { grid-column: 3 !important; }
-          .via-site-header-tools-messages > a[href="/notifications"] { grid-column: 4 !important; }
-          .via-site-header-tools-messages > .via-notifications-future-mark { grid-column: 5 !important; }
-          .via-site-header-tools-messages > .via-profile-shortcut-notifications { grid-column: 6 !important; }
-          .via-site-header-tools-messages > .via-site-header-account-wrap { grid-column: 7 !important; }
-          .via-site-header-tools-messages > a[href="/wallet"],
-          .via-site-header-tools-messages > a[href="/notifications"] {
-            display: grid !important;
-            place-items: center !important;
-            width: 34px !important;
-            min-width: 34px !important;
-            max-width: 34px !important;
-            height: 34px !important;
-            min-height: 34px !important;
-            max-height: 34px !important;
-            padding: 0 !important;
-            border: 1px solid rgba(143,212,169,.52) !important;
-            border-radius: 50% !important;
-            background: rgba(5,11,8,.76) !important;
-            color: #b8ddc5 !important;
-            font-size: 7px !important;
-            line-height: 8px !important;
-            text-align: center !important;
-            overflow: hidden !important;
-          }
-          .via-site-header-tools-messages .via-notifications-future-mark,
-          .via-site-header-tools-messages .via-profile-shortcut-notifications,
-          .via-site-header-tools-messages .via-site-header-account-wrap {
-            justify-self: center !important;
-          }
                     /* Messages/Profile/Radio logged-out mobile: keep utility controls in one scrollable row instead of the fixed six-slot Notifications geometry. */
-          .via-site-header-tools-notifications:has(> button) {
+          .via-site-header-tools-notifications:not(.via-site-header-tools-messages):has(> button) {
             position: relative !important;
             left: auto !important;
             right: auto !important;
@@ -682,7 +648,7 @@ export default function ViaSiteHeader() {
             overflow-x: auto !important;
             overflow-y: hidden !important;
           }
-          .via-site-header-tools-notifications:has(> button) > * {
+          .via-site-header-tools-notifications:not(.via-site-header-tools-messages):has(> button) > * {
             flex: 0 0 auto !important;
             position: relative !important;
             left: auto !important;
