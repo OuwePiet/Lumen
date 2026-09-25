@@ -12,6 +12,9 @@ type DeSoIdentityCredentials = {
   accessLevel?: unknown
   accessLevelHmac?: unknown
   network?: unknown
+  encryptedMessagingKeyRandomness?: unknown
+  derivedPublicKeyBase58Check?: unknown
+  ownerPublicKeyBase58Check?: unknown
 }
 
 type LoginPayload = {
@@ -37,10 +40,17 @@ export type ViaIdentityCredentials = {
   encryptedSeedHex: string
   accessLevel: number
   accessLevelHmac: string
+  encryptedMessagingKeyRandomness?: string
+  derivedPublicKeyBase58Check?: string
+  ownerPublicKeyBase58Check?: string
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value)
+}
+
+function optionalString(value: unknown) {
+  return typeof value === "string" && value.length > 0 ? value : undefined
 }
 
 function isUsableCredentials(value: unknown): value is DeSoIdentityCredentials & ViaIdentityCredentials {
@@ -141,6 +151,9 @@ export function getIdentityCredentials(publicKey: string): ViaIdentityCredential
       encryptedSeedHex: credentials.encryptedSeedHex,
       accessLevel: credentials.accessLevel,
       accessLevelHmac: credentials.accessLevelHmac,
+      encryptedMessagingKeyRandomness: optionalString(credentials.encryptedMessagingKeyRandomness),
+      derivedPublicKeyBase58Check: optionalString(credentials.derivedPublicKeyBase58Check),
+      ownerPublicKeyBase58Check: optionalString(credentials.ownerPublicKeyBase58Check),
     }
   } catch {
     return null
