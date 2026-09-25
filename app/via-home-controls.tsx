@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useEffect, useRef, useState } from "react"
+import { CircleHelp, RadioTower, UsersRound } from "lucide-react"
 import {
   DESO_LOGIN_URL,
   VIA_IDENTITY_EVENT,
@@ -356,6 +357,17 @@ export default function ViaHomeControls() {
         <span style={{ color: "#8fd4a9", fontSize: "10px", fontWeight: 650, letterSpacing: ".14em", lineHeight: 1.2 }}>viadeso.online</span>
       </Link>
 
+      <nav className="via-home-iphone-utility-row" aria-label="VIA iPhone quick controls">
+        <Link href="/help" aria-label="Handleiding" title="Handleiding"><CircleHelp aria-hidden="true" /></Link>
+        <Link href="/radio" aria-label="World Radio" title="World Radio"><RadioTower aria-hidden="true" /></Link>
+        <Link href="/profile" aria-label={t.switchAccount} title={t.switchAccount} className="via-home-iphone-utility-account">
+          {avatar ? <img src={avatar} alt="" referrerPolicy="no-referrer" /> : <UsersRound aria-hidden="true" />}
+        </Link>
+        <Link href="/my-via" aria-label="VIA Future" title="VIA Future" className="via-home-iphone-utility-future">
+          <span>VIA</span><span>Future</span>
+        </Link>
+      </nav>
+
       <section style={{ display: "grid", gap: "6px" }}>
         <span style={sectionLabel}>{t.standard}</span>
         <nav aria-label="VIA standard navigation" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "7px" }}>
@@ -439,8 +451,49 @@ export default function ViaHomeControls() {
             margin: 0 auto !important;
           }
         }
+        .via-home-iphone-utility-row { display: none; }
         .via-home-iphone-identity { display: none; }
         @media (max-width: 600px) {
+          .via-home-iphone-utility-row {
+            display: grid;
+            grid-template-columns: repeat(4, 44px);
+            justify-content: center;
+            gap: 10px;
+            margin: 0 auto 2px;
+          }
+          .via-home-iphone-utility-row > a {
+            width: 44px !important;
+            height: 44px !important;
+            min-height: 44px !important;
+            padding: 0 !important;
+            display: grid !important;
+            place-items: center !important;
+            border: 1px solid rgba(143,212,169,.24) !important;
+            border-radius: 50% !important;
+            background: rgba(5,11,8,.62) !important;
+            color: #b8ddc5 !important;
+            text-decoration: none !important;
+          }
+          .via-home-iphone-utility-row svg {
+            width: 18px;
+            height: 18px;
+          }
+          .via-home-iphone-utility-account img {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            object-fit: cover;
+          }
+          .via-home-iphone-utility-future {
+            font-size: 7px !important;
+            font-weight: 800 !important;
+            line-height: 8px !important;
+            align-content: center !important;
+          }
+          .via-home-iphone-utility-future span {
+            display: block;
+            text-align: center;
+          }
           .via-home-iphone-identity {
             display: grid;
             grid-template-columns: 48px minmax(0,1fr) 48px;
