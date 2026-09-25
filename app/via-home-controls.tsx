@@ -209,6 +209,7 @@ export default function ViaHomeControls() {
   const [accountsOpen, setAccountsOpen] = useState(false)
   const [status, setStatus] = useState<"idle" | "waiting" | "blocked">("idle")
   const [language, setLanguage] = useState<ViaLanguage>("English")
+  const [languageOpen, setLanguageOpen] = useState(false)
 
   function refreshAccounts() {
     setKnownAccounts(listIdentitySessions())
@@ -381,12 +382,17 @@ export default function ViaHomeControls() {
             <span key={key} aria-disabled="true" title="Wordt op de eigen Berichten-pagina aangesloten" style={{ ...disabledButtonStyle, width: "100%", justifyContent: "center", paddingInline: "9px" }}>{t[key]}</span>
           ))}
           <SponsorPlatform compact showIcon={false} />
-          <label style={{ ...buttonStyle, minHeight: "34px", padding: "5px 8px", gap: "5px", cursor: "pointer", width: "100%", justifyContent: "center" }}>
-            <span aria-hidden="true" style={{ fontSize: "14px", lineHeight: 1 }}>{languageFlags[language]}</span>
-            <select value={language} onChange={(event) => changeLanguage(event.target.value as ViaLanguage)} aria-label="VIA language" style={{ border: 0, padding: 0, width: "auto", minWidth: "38px", background: "transparent", color: "inherit", font: "inherit", fontWeight: 700, appearance: "none", cursor: "pointer", textAlign: "center" }}>
-              {VIA_LANGUAGES.map((item) => <option key={item} value={item}>{languageCodes[item]}</option>)}
-            </select>
-          </label>
+          <div className="via-home-language-control">
+            <button type="button" onClick={() => setLanguageOpen((open) => !open)} aria-label="VIA language" aria-expanded={languageOpen} style={{ ...buttonStyle, minHeight: "34px", padding: "5px 8px", gap: "5px", cursor: "pointer", width: "100%", justifyContent: "center" }}>
+              <span aria-hidden="true" style={{ fontSize: "14px", lineHeight: 1 }}>{languageFlags[language]}</span>
+              <span>{languageCodes[language]}</span>
+            </button>
+            {languageOpen ? <div className="via-home-language-menu" role="menu" aria-label="VIA language">
+              {VIA_LANGUAGES.map((item) => <button key={item} type="button" role="menuitemradio" aria-checked={item === language} onClick={() => { changeLanguage(item); setLanguageOpen(false) }} className={item === language ? "is-active" : ""}>
+                <span aria-hidden="true">{languageFlags[item]}</span><span>{languageCodes[item]}</span>
+              </button>)}
+            </div> : null}
+          </div>
         </nav>
       </section>
 
@@ -412,6 +418,11 @@ export default function ViaHomeControls() {
 
       {status === "blocked" ? <span style={{ color: "#c6a97b", fontSize: "9px", lineHeight: 1.45 }}>{t.blocked}</span> : null}
       <style>{`
+        .via-home-language-control { position: relative; width: 100%; }
+        .via-home-language-menu { position: absolute; right: 0; top: calc(100% + 6px); z-index: 90; min-width: 112px; padding: 6px; border: 1px solid rgba(143,212,169,.22); border-radius: 12px; background: rgba(5,10,7,.98); box-shadow: 0 16px 36px rgba(0,0,0,.42); }
+        .via-home-language-menu button { width: 100%; min-height: 34px; display: flex; align-items: center; justify-content: flex-start; gap: 8px; border: 0; border-radius: 8px; padding: 7px 9px; background: transparent; color: #d3ddd7; font: inherit; font-size: 12px; cursor: pointer; }
+        .via-home-language-menu button.is-active { background: rgba(143,212,169,.12); color: #eef5f0; }
+
         @media (max-width: 900px) {
           .via-home-controls {
             position: relative !important;
