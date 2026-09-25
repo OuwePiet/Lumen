@@ -97,6 +97,9 @@ export default function ViaHomeCenterActions() {
             margin: 10px 10px 0 !important;
           }
         }
+        @media (max-width: 600px) {
+          .via-home-center-actions { display: none !important; }
+        }
       `}</style>
     </>
   )
