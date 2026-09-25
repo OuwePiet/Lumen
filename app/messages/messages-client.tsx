@@ -556,9 +556,7 @@ export default function MessagesClient() {
         </header>
 
         {!publicKey ? (
-          <section className="rounded-[16px] border border-zinc-800 bg-zinc-950/50 p-6">
-            <h2 className="text-xl font-medium">{t.noAccount}</h2>
-            <p className="mt-2 text-sm text-zinc-400">{t.noAccountText}</p>
+          <section className="via-messages-login rounded-[16px] border border-zinc-800 bg-zinc-950/50 p-4 sm:p-6">
             <ParticipationGate title={t.noAccount} text={t.noAccountText} compact />
           </section>
         ) : (
@@ -636,7 +634,7 @@ export default function MessagesClient() {
       </div>
       <style>{`
         @media (max-width: 720px) {
-          .via-messages-page-header { margin-bottom: 12px; align-items: center; }
+          .via-messages-page-header { margin-bottom: 12px; align-items: center; }\n          .via-messages-login { padding: 12px !important; }\n          .via-messages-login > * { margin: 0 !important; }
           .via-messages-page-header h1 { font-size: 24px; margin-top: 4px; }
           .via-messages-page-header p:not(.text-xs) { display: none; }
           .via-messages-back { width: 40px; min-height: 40px; padding: 0; justify-content: center; border-radius: 12px; }
