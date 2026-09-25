@@ -552,7 +552,7 @@ export default function MessagesClient() {
             <h1 className="mt-2 text-3xl font-semibold tracking-tight">{t.title}</h1>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-400">{t.intro}</p>
           </div>
-          <Link href="/" aria-label={t.back} title={t.back} className="via-messages-back inline-flex min-h-10 items-center gap-2 rounded-[10px] border border-zinc-700 px-3 py-2 text-sm text-zinc-300 hover:border-[#8fd4a9]/50"><ArrowLeft className="h-4 w-4" aria-hidden="true" /><span>{t.back}</span></Link>
+
         </header>
 
         {!publicKey ? (
