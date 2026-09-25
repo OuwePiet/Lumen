@@ -286,7 +286,7 @@ export default function ViaSiteHeader() {
             </div> : null}
           </div>
           {pathname === "/notifications" ? <Link href="/" className="via-notifications-home-top" aria-label="Home" title="Home"><span className="via-notifications-home-label">Home</span></Link> : null}
-          {pathname === "/messages" ? <Link href="/radio" className="via-notifications-radio-top" aria-label="World Radio" title="World Radio">◉</Link> : null}
+          {pathname === "/messages" ? <Link href="/radio" className="via-notifications-radio-top" aria-label="World Radio" title="World Radio"><span aria-hidden="true">◉</span><span className="via-radio-top-label">Radio</span></Link> : null}
           {!session && pathname !== "/messages" ? <button type="button" onClick={enterPublicMode} style={{ ...pill, cursor: "pointer" }}>{t.publicEntrance}</button> : null}
           {!session && pathname !== "/messages" ? <a href={DESO_LOGIN_URL} target="via-deso-identity" style={styles.login}>{t.login}</a> : null}
           {pathname !== "/messages" ? <Link href="/wallet" style={pill} className={`via-site-header-utility ${pathname === "/notifications" ? "via-site-header-wallet-notifications" : ""}`}>{t.wallet}</Link> : null}
@@ -630,7 +630,7 @@ export default function ViaSiteHeader() {
           .via-site-header-tools-messages > .via-notifications-future-mark { grid-column: 4 !important; }
           .via-site-header-tools-messages > .via-profile-shortcut-notifications { grid-column: 5 !important; }
           .via-site-header-tools-messages > .via-site-header-account-wrap { grid-column: 6 !important; }
-          .via-site-header-tools-messages > a[href="/wallet"], .via-site-header-tools-messages > a[href="/notifications"] { display: none !important; }
+          .via-site-header-tools-messages > a[href="/wallet"], .via-site-header-tools-messages > a[href="/notifications"] { display: none !important; }\n          .via-site-header-tools-messages .via-radio-top-label { display: none !important; }
                     /* Messages/Profile/Radio logged-out mobile: keep utility controls in one scrollable row instead of the fixed six-slot Notifications geometry. */
           .via-site-header-tools-notifications:not(.via-site-header-tools-messages):has(> button) {
             position: relative !important;
