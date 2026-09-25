@@ -106,7 +106,7 @@ export default function ViaGlobalRadio() {
 
   const copy = COPY[language]
 
-  if (pathname === "/radio") {
+  if (pathname === "/radio" || pathname === "/messages") {
     return <audio ref={audio} onPause={()=>setPlaying(false)} onPlay={()=>setPlaying(true)} />
   }
 
