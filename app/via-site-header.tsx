@@ -626,6 +626,7 @@ export default function ViaSiteHeader() {
           }
           .via-site-header-tools-radio > .via-notifications-top-control { grid-column: 1 !important; }
           .via-site-header-tools-radio > .via-site-header-language-wrap { grid-column: 2 !important; }
+          .via-site-header-tools-radio > .via-notifications-home-top { grid-column: 3 !important; display: grid !important; place-items: center !important; }
           .via-site-header-tools-radio > .via-notifications-future-mark { grid-column: 4 !important; }
           .via-site-header-tools-radio > .via-profile-shortcut-notifications { grid-column: 5 !important; }
           .via-site-header-tools-radio > .via-site-header-account-wrap { grid-column: 6 !important; }
