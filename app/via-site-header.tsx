@@ -286,9 +286,9 @@ export default function ViaSiteHeader() {
             </div> : null}
           </div>
           {pathname === "/notifications" || pathname === "/messages" ? <Link href="/" className="via-notifications-home-top" aria-label="Home" title="Home"><span className="via-notifications-home-label">Home</span></Link> : null}
-          {!session ? <button type="button" onClick={enterPublicMode} style={{ ...pill, cursor: "pointer" }}>{t.publicEntrance}</button> : null}
+          {!session && pathname !== "/messages" ? <button type="button" onClick={enterPublicMode} style={{ ...pill, cursor: "pointer" }}>{t.publicEntrance}</button> : null}
           {!session && pathname !== "/messages" ? <a href={DESO_LOGIN_URL} target="via-deso-identity" style={styles.login}>{t.login}</a> : null}
-          <Link href="/wallet" style={pill} className={`via-site-header-utility ${pathname === "/notifications" ? "via-site-header-wallet-notifications" : ""}`}>{t.wallet}</Link>
+          {pathname !== "/messages" ? <Link href="/wallet" style={pill} className={`via-site-header-utility ${pathname === "/notifications" ? "via-site-header-wallet-notifications" : ""}`}>{t.wallet}</Link> : null}
           {pathname !== "/notifications" && pathname !== "/messages" ? <Link href="/notifications" style={pill} className="via-site-header-utility">{t.notifications}</Link> : null}
 
           {session ? (
