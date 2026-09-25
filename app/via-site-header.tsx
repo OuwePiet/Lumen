@@ -273,7 +273,7 @@ export default function ViaSiteHeader() {
           </nav>
         </div>
 
-        <div style={styles.toolsRow} className={`via-site-header-tools ${pathname === "/notifications" || pathname === "/radio" || pathname === "/messages" || pathname === "/profile" ? "via-site-header-tools-notifications" : ""} ${pathname === "/messages" ? "via-site-header-tools-messages" : ""}`} aria-label="VIA utility controls">
+        <div style={styles.toolsRow} className={`via-site-header-tools ${pathname === "/notifications" || pathname === "/radio" || pathname === "/messages" || pathname === "/profile" ? "via-site-header-tools-notifications" : ""} ${pathname === "/messages" ? "via-site-header-tools-messages" : ""} ${pathname === "/radio" ? "via-site-header-tools-radio" : ""}`} aria-label="VIA utility controls">
           <div className="via-notifications-top-control"><Link href="/discover/voices" style={styles.search} className={`via-site-header-search ${pathname === "/notifications" || pathname === "/radio" || pathname === "/messages" || pathname === "/profile" ? "via-site-header-search-notifications" : ""}`} aria-label={t.search} title={t.search}><span className="via-notifications-members-icon" aria-hidden="true"><UsersRound className="h-4 w-4" /></span><span className="via-site-header-search-label">&nbsp;&nbsp; {t.search}</span></Link>{pathname === "/notifications" || pathname === "/radio" || pathname === "/messages" || pathname === "/profile" ? <span className="via-notifications-top-label">Members</span> : null}</div>
           <div className="via-site-header-language-wrap">
             <button type="button" onClick={() => setLanguageOpen((open) => !open)} style={styles.language} className={`via-site-header-language ${pathname === "/notifications" || pathname === "/radio" || pathname === "/messages" || pathname === "/profile" ? "via-site-header-language-notifications" : ""}`} aria-label="VIA language" aria-expanded={languageOpen}>
@@ -286,7 +286,7 @@ export default function ViaSiteHeader() {
             </div> : null}
           </div>
           {pathname === "/notifications" ? <Link href="/" className="via-notifications-home-top" aria-label="Home" title="Home"><span className="via-notifications-home-label">Home</span></Link> : null}
-          {pathname === "/messages" ? <Link href="/radio" className="via-notifications-radio-top" aria-label="World Radio" title="World Radio">◉</Link> : null}
+          {pathname === "/messages" ? <Link href="/radio" className="via-notifications-radio-top" aria-label="World Radio" title="World Radio"><span aria-hidden="true">◉</span><span className="via-radio-top-label">Radio</span></Link> : null}
           {!session && pathname !== "/messages" ? <button type="button" onClick={enterPublicMode} style={{ ...pill, cursor: "pointer" }}>{t.publicEntrance}</button> : null}
           {!session && pathname !== "/messages" ? <a href={DESO_LOGIN_URL} target="via-deso-identity" style={styles.login}>{t.login}</a> : null}
           {pathname !== "/messages" ? <Link href="/wallet" style={pill} className={`via-site-header-utility ${pathname === "/notifications" ? "via-site-header-wallet-notifications" : ""}`}>{t.wallet}</Link> : null}
@@ -616,6 +616,20 @@ export default function ViaSiteHeader() {
           .via-site-header-tools-notifications .via-notifications-status-caret {
             display: none !important;
           }
+          /* World Radio iPhone: use the same six-slot geometry, without legacy Wallet/Notifications controls. */
+          .via-site-header-tools-radio {
+            left: 78px !important;
+            right: 10px !important;
+            grid-template-columns: repeat(6, 34px) !important;
+            justify-content: space-between !important;
+            column-gap: 0 !important;
+          }
+          .via-site-header-tools-radio > .via-notifications-top-control { grid-column: 1 !important; }
+          .via-site-header-tools-radio > .via-site-header-language-wrap { grid-column: 2 !important; }
+          .via-site-header-tools-radio > .via-notifications-future-mark { grid-column: 4 !important; }
+          .via-site-header-tools-radio > .via-profile-shortcut-notifications { grid-column: 5 !important; }
+          .via-site-header-tools-radio > .via-site-header-account-wrap { grid-column: 6 !important; }
+          .via-site-header-tools-radio > a[href="/wallet"], .via-site-header-tools-radio > a[href="/notifications"] { display: none !important; }
           /* Messages iPhone: one definitive six-slot toolbar. */
           .via-site-header-tools-messages {
             left: 78px !important;
@@ -630,7 +644,7 @@ export default function ViaSiteHeader() {
           .via-site-header-tools-messages > .via-notifications-future-mark { grid-column: 4 !important; }
           .via-site-header-tools-messages > .via-profile-shortcut-notifications { grid-column: 5 !important; }
           .via-site-header-tools-messages > .via-site-header-account-wrap { grid-column: 6 !important; }
-          .via-site-header-tools-messages > a[href="/wallet"], .via-site-header-tools-messages > a[href="/notifications"] { display: none !important; }
+          .via-site-header-tools-messages > a[href="/wallet"], .via-site-header-tools-messages > a[href="/notifications"] { display: none !important; }\n          .via-site-header-tools-messages .via-radio-top-label { display: none !important; }
                     /* Messages/Profile/Radio logged-out mobile: keep utility controls in one scrollable row instead of the fixed six-slot Notifications geometry. */
           .via-site-header-tools-notifications:not(.via-site-header-tools-messages):has(> button) {
             position: relative !important;
