@@ -285,6 +285,7 @@ export default function ViaSiteHeader() {
               </button>)}
             </div> : null}
           </div>
+          {pathname === "/notifications" ? <Link href="/" className="via-notifications-home-top" aria-label="Home" title="Home">⌂</Link> : null}
           {!session ? <button type="button" onClick={enterPublicMode} style={{ ...pill, cursor: "pointer" }}>{t.publicEntrance}</button> : null}
           {!session && pathname !== "/messages" ? <a href={DESO_LOGIN_URL} target="via-deso-identity" style={styles.login}>{t.login}</a> : null}
           <Link href="/wallet" style={pill} className={`via-site-header-utility ${pathname === "/notifications" ? "via-site-header-wallet-notifications" : ""}`}>{t.wallet}</Link>
@@ -429,7 +430,7 @@ export default function ViaSiteHeader() {
             transform: translateX(-2px) !important;
           }
           .via-site-header-tools-notifications > .via-site-header-account-wrap {
-            grid-column: 5 !important;
+            grid-column: 7 !important;
             justify-self: end !important;
           }
           .via-site-header-tools-notifications .via-profile-shortcut-notifications {
@@ -485,7 +486,7 @@ export default function ViaSiteHeader() {
           .via-site-header-tools-notifications {
             left: 78px !important;
             right: 10px !important;
-            grid-template-columns: repeat(6, 34px) !important;
+            grid-template-columns: repeat(7, 34px) !important;
             justify-content: space-between !important;
             column-gap: 0 !important;
           }
@@ -509,7 +510,22 @@ export default function ViaSiteHeader() {
             border-radius: 50% !important;
             box-sizing: border-box !important;
           }
-          .via-site-header-tools-notifications > .via-notifications-future-mark { grid-column: 4 !important; justify-self: center !important; }
+          .via-site-header-tools-notifications > .via-notifications-home-top {
+            grid-column: 3 !important;
+            display: grid !important;
+            place-items: center !important;
+            width: 34px !important;
+            min-width: 34px !important;
+            height: 34px !important;
+            border: 1px solid rgba(143,212,169,.52) !important;
+            border-radius: 50% !important;
+            background: rgba(5,11,8,.76) !important;
+            color: #b8ddc5 !important;
+            text-decoration: none !important;
+            font-size: 18px !important;
+            line-height: 1 !important;
+          }
+          .via-site-header-tools-notifications > .via-notifications-future-mark { grid-column: 5 !important; justify-self: center !important; }
           .via-site-header-tools-notifications > .via-profile-shortcut-notifications {
             grid-column: 5 !important;
             transform: translateX(0) !important;
