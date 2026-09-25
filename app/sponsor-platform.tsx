@@ -43,7 +43,7 @@ type SponsorCopy = {
 
 const COPY: Record<ViaLanguage | "Hindi", SponsorCopy> = {
   Dutch: {
-    trigger: "Sponsor platform", dialogLabel: "Sponsor VIA", kicker: "VIA · Sponsor platform",
+    trigger: "Sponsoring Platform", dialogLabel: "Sponsor VIA", kicker: "VIA · Sponsoring Platform",
     title: "Elke bijdrage telt — ook de kleinste.",
     intro: "Steun VIA rechtstreeks met DESO of met een Diamond. VIA bewaart geen betaalgegevens en elke waardeactie vraagt DeSo Identity-goedkeuring.",
     close: "Sluiten", desoTitle: "DESO-bijdrage", desoIntro: "Wordt als gewone DeSo Basic Transfer voor VIA voorbereid.",
