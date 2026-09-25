@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { useEffect, useState } from "react"
+import { Copy, MoreVertical, UserRoundPen, WalletCards } from "lucide-react"
 import { restoreIdentitySession, VIA_IDENTITY_EVENT, type ViaIdentitySession } from "../deso-identity-session"
 import { readViaLocalSettings, VIA_SETTINGS_EVENT, type ViaLanguage } from "../via-local-settings"
 import ViaIdentityStatusMarks from "../via-identity-status"
@@ -214,6 +215,8 @@ export default function ProfilePage() {
   const [balanceDeSo, setBalanceDeSo] = useState<number | null>(null)
   const [walletUnavailable, setWalletUnavailable] = useState(false)
   const [language, setLanguage] = useState<ViaLanguage>("English")
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false)
+  const [copiedKey, setCopiedKey] = useState(false)
   const t = copy[language]
 
   useEffect(() => {
@@ -299,6 +302,15 @@ export default function ProfilePage() {
 
   const image = safeImage(profile?.profilePic ?? null)
 
+  async function copyPublicKey() {
+    if (!profile?.publicKey) return
+    try {
+      await navigator.clipboard.writeText(profile.publicKey)
+      setCopiedKey(true)
+      window.setTimeout(() => setCopiedKey(false), 1600)
+    } catch { setCopiedKey(false) }
+  }
+
   return (
     <main className="min-h-screen bg-[#050807] px-5 py-8 text-zinc-100 sm:px-8 lg:px-12">
       <div className="mx-auto max-w-4xl">
@@ -356,6 +368,11 @@ export default function ProfilePage() {
                   <ViaIdentityStatusMarks verified={profile.isVerified} inactive={profile.isInactive} compact={false} language={language} />
                 </div>
                 <div className="mt-3 flex flex-wrap items-center gap-2">
+                  <div className="via-profile-own-actions" aria-label="Profile actions">
+                    <Link href="/profile/edit" className="via-profile-action-button" aria-label="Edit profile" title="Edit profile"><UserRoundPen className="h-4 w-4" aria-hidden="true" /></Link>
+                    <Link href="/wallet" className="via-profile-action-button" aria-label="Buy creator coins" title="Buy creator coins"><WalletCards className="h-4 w-4" aria-hidden="true" /></Link>
+                    <div className="via-profile-action-menu-wrap"><button type="button" className="via-profile-action-button" aria-label="More profile actions" title="More" aria-expanded={profileMenuOpen} onClick={() => setProfileMenuOpen((open) => !open)}><MoreVertical className="h-4 w-4" aria-hidden="true" /></button>{profileMenuOpen ? <div className="via-profile-action-menu"><button type="button" onClick={copyPublicKey}><Copy className="h-4 w-4" aria-hidden="true" />{copiedKey ? "Public key copied" : "Copy public key"}</button></div> : null}</div>
+                  </div>
                   <span className={profile.isInactive ? "rounded-full border border-zinc-500/35 bg-zinc-500/10 px-3 py-1 text-xs font-semibold text-zinc-400" : "rounded-full border border-[#8fd4a9]/30 bg-[#8fd4a9]/10 px-3 py-1 text-xs font-semibold text-[#a9dfbc]"}>
                     {profile.isInactive ? t.inactive90 : t.active}
                   </span>
@@ -410,6 +427,6 @@ export default function ProfilePage() {
           </section>
         ) : null}
       </div>
-    </main>
+      <style>{`\n        .via-profile-own-actions { display:flex; align-items:center; gap:7px; margin-left:auto; }\n        .via-profile-action-button { width:36px; height:36px; display:inline-grid; place-items:center; border:1px solid rgba(143,212,169,.28); border-radius:50%; background:rgba(5,11,8,.58); color:#9adbb2; text-decoration:none; }\n        .via-profile-action-menu-wrap { position:relative; }\n        .via-profile-action-menu { position:absolute; right:0; top:42px; z-index:30; min-width:170px; padding:6px; border:1px solid rgba(143,212,169,.22); border-radius:12px; background:rgba(5,10,7,.98); box-shadow:0 16px 36px rgba(0,0,0,.42); }\n        .via-profile-action-menu button { width:100%; display:flex; align-items:center; gap:8px; border:0; border-radius:8px; padding:9px 10px; background:transparent; color:#d3ddd7; font-size:12px; text-align:left; }\n        @media (max-width:720px) { .via-profile-own-actions { width:100%; justify-content:flex-end; margin:-2px 0 4px; } .via-profile-action-button { width:34px; height:34px; } }\n      `}</style>\n    </main>
   )
 }
