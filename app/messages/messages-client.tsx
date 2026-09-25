@@ -243,49 +243,7 @@ export default function MessagesClient() {
     syncIdentity()
     window.addEventListener(VIA_SETTINGS_EVENT, syncLanguage)
     window.addEventListener(VIA_IDENTITY_EVENT, syncIdentity)
-    const sendCurrentMessage = async () => {
-    const message = draft.trim()
-    if (!publicKey || !selected || !message || sending) return
-    const senderGroup = accessGroupFor(selected.thread, publicKey)
-    const recipientGroup = accessGroupFor(selected.thread, selected.key)
-    if (!senderGroup?.AccessGroupPublicKeyBase58Check || !senderGroup.AccessGroupKeyName || !recipientGroup?.AccessGroupPublicKeyBase58Check || !recipientGroup.AccessGroupKeyName) {
-      setSendError("MESSAGES_UNAVAILABLE")
-      return
-    }
 
-    setSending(true)
-    setSendError("")
-    try {
-      const encryptedMessage = await encryptViaMessage(publicKey, recipientGroup.AccessGroupPublicKeyBase58Check, message, senderGroup.AccessGroupKeyName)
-      const transactionHex = await constructViaDMTransaction(senderGroup, recipientGroup, encryptedMessage)
-      const signedTransactionHex = await signViaMessageTransaction(publicKey, transactionHex)
-      await submitViaSignedTransaction(signedTransactionHex)
-      setDraft("")
-      const response = await fetchDeSo("get-paginated-messages-for-dm-thread", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          UserGroupOwnerPublicKeyBase58Check: publicKey,
-          UserGroupKeyName: senderGroup.AccessGroupKeyName,
-          PartyGroupOwnerPublicKeyBase58Check: selected.key,
-          PartyGroupKeyName: recipientGroup.AccessGroupKeyName,
-          StartTimeStampString: (Date.now() * 1_000_000).toString(),
-          MaxMessagesToFetch: 25,
-        }),
-        cache: "no-store",
-      })
-      if (response.ok) {
-        const data = await response.json() as DMThreadResponse
-        const messages = Array.isArray(data.ThreadMessages) ? data.ThreadMessages : []
-        setThreadMessages(messages)
-        setThreadHasMore(messages.length === 25)
-      }
-    } catch {
-      setSendError("MESSAGES_UNAVAILABLE")
-    } finally {
-      setSending(false)
-    }
-  }
 
   return () => {
       window.removeEventListener(VIA_SETTINGS_EVENT, syncLanguage)
@@ -477,6 +435,49 @@ export default function MessagesClient() {
     }
   }
 
+  const sendCurrentMessage = async () => {
+  const message = draft.trim()
+  if (!publicKey || !selected || !message || sending) return
+  const senderGroup = accessGroupFor(selected.thread, publicKey)
+  const recipientGroup = accessGroupFor(selected.thread, selected.key)
+  if (!senderGroup?.AccessGroupPublicKeyBase58Check || !senderGroup.AccessGroupKeyName || !recipientGroup?.AccessGroupPublicKeyBase58Check || !recipientGroup.AccessGroupKeyName) {
+    setSendError("MESSAGES_UNAVAILABLE")
+    return
+  }
+
+  setSending(true)
+  setSendError("")
+  try {
+    const encryptedMessage = await encryptViaMessage(publicKey, recipientGroup.AccessGroupPublicKeyBase58Check, message, senderGroup.AccessGroupKeyName)
+    const transactionHex = await constructViaDMTransaction(senderGroup, recipientGroup, encryptedMessage)
+    const signedTransactionHex = await signViaMessageTransaction(publicKey, transactionHex)
+    await submitViaSignedTransaction(signedTransactionHex)
+    setDraft("")
+    const response = await fetchDeSo("get-paginated-messages-for-dm-thread", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        UserGroupOwnerPublicKeyBase58Check: publicKey,
+        UserGroupKeyName: senderGroup.AccessGroupKeyName,
+        PartyGroupOwnerPublicKeyBase58Check: selected.key,
+        PartyGroupKeyName: recipientGroup.AccessGroupKeyName,
+        StartTimeStampString: (Date.now() * 1_000_000).toString(),
+        MaxMessagesToFetch: 25,
+      }),
+      cache: "no-store",
+    })
+    if (response.ok) {
+      const data = await response.json() as DMThreadResponse
+      const messages = Array.isArray(data.ThreadMessages) ? data.ThreadMessages : []
+      setThreadMessages(messages)
+      setThreadHasMore(messages.length === 25)
+    }
+  } catch {
+    setSendError("MESSAGES_UNAVAILABLE")
+  } finally {
+    setSending(false)
+  }
+  }
   return (
     <main className="min-h-screen bg-[#050807] px-4 py-6 text-zinc-100 sm:px-6 lg:px-10">
       <div className="mx-auto max-w-7xl">
