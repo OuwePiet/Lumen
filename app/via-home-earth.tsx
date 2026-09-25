@@ -107,7 +107,7 @@ export default function ViaHomeEarth() {
             height: 216%;
             left: 47%;
             top: -22%;
-            transform: translate(-50%, calc(-60vh + 251px)) scale(1.87);
+            transform: translate(-50%, calc(-60vh + 207px)) scale(1.87);
             image-rendering: auto;
             filter: brightness(1.42) contrast(1.12) saturate(1.16);
           }
