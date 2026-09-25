@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { fetchDeSo } from "../../../deso-api"
+import { fetchDeSo } from "../../../../deso-api"
 export const dynamic="force-dynamic"
 const json=(data:unknown,status=200)=>NextResponse.json(data,{status,headers:{"Cache-Control":"no-store"}})
 const validHex=(v:unknown):v is string=>typeof v==="string"&&v.length>=2&&v.length<=500000&&v.length%2===0&&/^[0-9a-fA-F]+$/.test(v)
