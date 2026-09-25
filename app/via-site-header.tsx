@@ -285,11 +285,11 @@ export default function ViaSiteHeader() {
               </button>)}
             </div> : null}
           </div>
-          {pathname === "/notifications" ? <Link href="/" className="via-notifications-home-top" aria-label="Home" title="Home"><span className="via-notifications-home-label">Home</span></Link> : null}
+          {pathname === "/notifications" || pathname === "/messages" ? <Link href="/" className="via-notifications-home-top" aria-label="Home" title="Home"><span className="via-notifications-home-label">Home</span></Link> : null}
           {!session ? <button type="button" onClick={enterPublicMode} style={{ ...pill, cursor: "pointer" }}>{t.publicEntrance}</button> : null}
           {!session && pathname !== "/messages" ? <a href={DESO_LOGIN_URL} target="via-deso-identity" style={styles.login}>{t.login}</a> : null}
           <Link href="/wallet" style={pill} className={`via-site-header-utility ${pathname === "/notifications" ? "via-site-header-wallet-notifications" : ""}`}>{t.wallet}</Link>
-          {pathname !== "/notifications" ? <Link href="/notifications" style={pill} className="via-site-header-utility">{t.notifications}</Link> : null}
+          {pathname !== "/notifications" && pathname !== "/messages" ? <Link href="/notifications" style={pill} className="via-site-header-utility">{t.notifications}</Link> : null}
 
           {session ? (
             <>
@@ -615,6 +615,15 @@ export default function ViaSiteHeader() {
           .via-site-header-tools-notifications .via-notifications-status-caret {
             display: none !important;
           }
+          /* Messages final: same six-slot first row as Notifications. */
+          .via-site-header-tools-messages { grid-template-columns: repeat(6, 34px) !important; }
+          .via-site-header-tools-messages > .via-notifications-top-control { grid-column: 1 !important; }
+          .via-site-header-tools-messages > .via-site-header-language-wrap { grid-column: 2 !important; }
+          .via-site-header-tools-messages > .via-notifications-home-top { grid-column: 3 !important; }
+          .via-site-header-tools-messages > .via-notifications-future-mark { grid-column: 4 !important; }
+          .via-site-header-tools-messages > .via-profile-shortcut-notifications { grid-column: 5 !important; }
+          .via-site-header-tools-messages > .via-site-header-account-wrap { grid-column: 6 !important; }
+          .via-site-header-tools-messages > a[href="/wallet"], .via-site-header-tools-messages > a[href="/notifications"], .via-site-header-tools-messages .via-notifications-radio-top { display: none !important; }
           /* Messages iPhone: one aligned row of circular controls; no legacy Radio shortcut. */
           .via-site-header-tools-messages {
             left: 78px !important;
