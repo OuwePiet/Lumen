@@ -544,32 +544,32 @@ export default function MessagesClient() {
   }
   }
   return (
-    <main className="min-h-screen bg-[#050807] px-4 py-6 text-zinc-100 sm:px-6 lg:px-10">
+    <main className="via-messages-page min-h-screen px-4 py-6 text-zinc-100 sm:px-6 lg:px-10">
       <div className="mx-auto max-w-7xl">
         <header className="via-messages-page-header mb-5 flex flex-wrap items-start justify-between gap-4">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8fd4a9]">{t.kicker}</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#61b7ff]">{t.kicker}</p>
             <h1 className="mt-2 text-3xl font-semibold tracking-tight">{t.title}</h1>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-400">{t.intro}</p>
           </div>
-          <Link href="/" aria-label={t.back} title={t.back} className="via-messages-back inline-flex min-h-10 items-center gap-2 rounded-[10px] border border-zinc-700 px-3 py-2 text-sm text-zinc-300 hover:border-[#8fd4a9]/50"><ArrowLeft className="h-4 w-4" aria-hidden="true" /><span>{t.back}</span></Link>
+          <Link href="/" aria-label={t.back} title={t.back} className="via-messages-back inline-flex min-h-10 items-center gap-2 rounded-[10px] border border-zinc-700 px-3 py-2 text-sm text-zinc-300 hover:border-[#61b7ff]/50"><ArrowLeft className="h-4 w-4" aria-hidden="true" /><span>{t.back}</span></Link>
         </header>
 
         {!publicKey ? (
-          <section className="via-messages-login rounded-[16px] border border-zinc-800 bg-zinc-950/50 p-4 sm:p-6">
+          <section className="via-messages-login rounded-[16px] border border-[#4aa8ff]/30 bg-[#041226]/75 p-4 shadow-[0_18px_55px_rgba(0,35,90,.35)] backdrop-blur-sm sm:p-6">
             <ParticipationGate title={t.noAccount} text={t.noAccountText} compact />
           </section>
         ) : (
           <>
-            <div className="grid min-h-[620px] overflow-hidden rounded-[18px] border border-[#8fd4a9]/20 bg-[#07100b]/80 lg:grid-cols-[360px_minmax(0,1fr)]">
-              <aside className="via-messages-inbox border-b border-zinc-800 lg:border-b-0 lg:border-r">
-                <div className="via-messages-search flex items-center gap-2 border-b border-zinc-800 p-3">
+            <div className="via-messages-shell grid min-h-[620px] overflow-hidden rounded-[18px] border border-[#4aa8ff]/30 bg-[#031225]/80 shadow-[0_22px_70px_rgba(0,30,85,.35)] backdrop-blur-sm md:grid-cols-[300px_minmax(0,1fr)] lg:grid-cols-[360px_minmax(0,1fr)]">
+              <aside className="via-messages-inbox border-b border-[#4aa8ff]/20 md:border-b-0 md:border-r md:border-[#4aa8ff]/20">
+                <div className="via-messages-search flex items-center gap-2 border-b border-[#4aa8ff]/20 bg-[#031225]/75 p-3">
                   <Search className="h-4 w-4 shrink-0 text-zinc-500" aria-hidden="true" />
-                  <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t.search} className="min-w-0 flex-1 rounded-[10px] border border-zinc-800 bg-black/30 px-3 py-2 text-sm outline-none focus:border-[#8fd4a9]/50" />
-                  <button type="button" onClick={() => { setNewMessageOpen((open) => !open); setRecipientResults([]); setSendError("") }} title={t.newMessage} aria-label={t.newMessage} className="grid h-10 w-10 place-items-center rounded-[10px] border border-[#8fd4a9]/30 text-[#9adbb2]"><SquarePen className="h-4 w-4" aria-hidden="true" /></button>
+                  <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t.search} className="min-w-0 flex-1 rounded-[10px] border border-zinc-800 bg-black/30 px-3 py-2 text-sm outline-none focus:border-[#61b7ff]/50" />
+                  <button type="button" onClick={() => { setNewMessageOpen((open) => !open); setRecipientResults([]); setSendError("") }} title={t.newMessage} aria-label={t.newMessage} className="grid h-10 w-10 place-items-center rounded-[10px] border border-[#61b7ff]/30 text-[#8fd0ff]"><SquarePen className="h-4 w-4" aria-hidden="true" /></button>
                 </div>
                 {newMessageOpen ? <div className="border-b border-zinc-800 p-3">
-                  <div className="flex gap-2"><input value={recipientInput} onChange={(event) => setRecipientInput(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") void searchRecipients() }} placeholder={t.recipient} className="min-w-0 flex-1 rounded-[10px] border border-zinc-800 bg-black/30 px-3 py-2 text-sm outline-none focus:border-[#8fd4a9]/50" /><button type="button" onClick={() => void searchRecipients()} disabled={!recipientInput.trim() || recipientLoading} className="rounded-[10px] border border-[#8fd4a9]/30 px-3 text-sm text-[#9adbb2] disabled:opacity-40"><Search className="h-4 w-4" /></button></div>
+                  <div className="flex gap-2"><input value={recipientInput} onChange={(event) => setRecipientInput(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") void searchRecipients() }} placeholder={t.recipient} className="min-w-0 flex-1 rounded-[10px] border border-zinc-800 bg-black/30 px-3 py-2 text-sm outline-none focus:border-[#61b7ff]/50" /><button type="button" onClick={() => void searchRecipients()} disabled={!recipientInput.trim() || recipientLoading} className="rounded-[10px] border border-[#61b7ff]/30 px-3 text-sm text-[#8fd0ff] disabled:opacity-40"><Search className="h-4 w-4" /></button></div>
                   {recipientResults.length ? <div className="mt-2 max-h-48 overflow-y-auto rounded-[10px] border border-zinc-800">{recipientResults.map((profile, index) => { const key = profile.PublicKeyBase58Check ?? ""; const name = profile.Username ? `@${profile.Username}` : shortKey(key); return <button key={key || index} type="button" onClick={() => void startConversation(profile)} className="flex w-full items-center gap-2 border-b border-zinc-900 px-3 py-2 text-left text-sm last:border-b-0 hover:bg-white/[.03]"><span className="min-w-0 flex-1 truncate">{name}</span><span className="text-[10px] text-zinc-600">{shortKey(key)}</span></button> })}</div> : null}
                   <button type="button" onClick={() => { setNewMessageOpen(false); setRecipientResults([]) }} className="mt-2 text-xs text-zinc-500">{t.cancel}</button>
                 </div> : null}
@@ -581,8 +581,8 @@ export default function MessagesClient() {
                     const image = safeImage(profile?.ProfilePic)
                     const active = (selected?.key ?? selectedKey) === key
                     return (
-                      <button key={key || index} type="button" onClick={() => { setSelectedKey(key); setMobileConversationOpen(true) }} className={`flex w-full items-center gap-3 border-b border-zinc-900 px-4 py-3 text-left transition-colors ${active ? "bg-[#10251a]" : "hover:bg-white/[.03]"}`}>
-                        {image ? <img src={image} alt="" className="h-10 w-10 rounded-full object-cover" referrerPolicy="no-referrer" /> : <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#173326] text-sm font-bold text-[#9adbb2]">{name.replace(/^@/, "").slice(0,1).toUpperCase()}</span>}
+                      <button key={key || index} type="button" onClick={() => { setSelectedKey(key); setMobileConversationOpen(true) }} className={`flex w-full items-center gap-3 border-b border-zinc-900 px-4 py-3 text-left transition-colors ${active ? "bg-[#0b3159]" : "hover:bg-white/[.03]"}`}>
+                        {image ? <img src={image} alt="" className="h-10 w-10 rounded-full object-cover" referrerPolicy="no-referrer" /> : <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#0d3b68] text-sm font-bold text-[#8fd0ff]">{name.replace(/^@/, "").slice(0,1).toUpperCase()}</span>}
                         <span className="min-w-0 flex-1">
                           <strong className="block truncate text-sm text-zinc-100">{name}</strong>
                           <span className="block truncate text-xs text-zinc-500">{t.encrypted}</span>
@@ -597,13 +597,13 @@ export default function MessagesClient() {
               <section className={`via-messages-conversation flex min-h-[420px] flex-col ${mobileConversationOpen ? "via-messages-conversation-open" : ""}`}>
                 {selected ? (
                   <>
-                    <div className="flex items-center gap-3 border-b border-zinc-800 px-5 py-4">
+                    <div className="via-messages-thread-header flex items-center gap-3 border-b border-[#4aa8ff]/20 bg-[#04172d]/70 px-5 py-4">
                       <button type="button" onClick={() => setMobileConversationOpen(false)} aria-label={t.back} className="via-messages-thread-back hidden h-9 w-9 shrink-0 place-items-center rounded-[10px] border border-zinc-800 text-zinc-300"><ArrowLeft className="h-4 w-4" aria-hidden="true" /></button>
                       <div className="min-w-0"><strong className="block truncate text-base">{selected.name}</strong>
                       <p className="mt-1 truncate text-xs text-zinc-500">{shortKey(selected.key)}</p></div>
                     </div>
                     <div className="flex flex-1 flex-col gap-3 overflow-y-auto p-5">
-                      {threadHasMore && threadMessages.length > 0 ? <button type="button" onClick={() => void loadMoreMessages()} disabled={threadLoading} className="mx-auto rounded-[10px] border border-[#8fd4a9]/30 px-4 py-2 text-sm text-[#9adbb2] disabled:opacity-50">{threadLoading ? t.loading : t.loadMore}</button> : null}
+                      {threadHasMore && threadMessages.length > 0 ? <button type="button" onClick={() => void loadMoreMessages()} disabled={threadLoading} className="mx-auto rounded-[10px] border border-[#61b7ff]/30 px-4 py-2 text-sm text-[#8fd0ff] disabled:opacity-50">{threadLoading ? t.loading : t.loadMore}</button> : null}
                       {threadLoading && threadMessages.length === 0 ? <p className="m-auto text-sm text-zinc-500">{t.loading}</p> : null}
                       {threadError ? <p className="m-auto text-sm text-amber-300">{t.unavailable}</p> : null}
                       {!threadLoading && !threadError && threadMessages.length === 0 ? <p className="m-auto text-sm text-zinc-500">{t.identityNote}</p> : null}
@@ -611,13 +611,13 @@ export default function MessagesClient() {
                         const encryptedHex = message.MessageInfo?.EncryptedText ?? message.EncryptedText ?? ""
                         const body = decryptedMessages[encryptedHex] || t.encrypted
                         const mine = (message.SenderInfo?.OwnerPublicKeyBase58Check ?? message.SenderPublicKeyBase58Check) === publicKey
-                        return <div key={`${encryptedHex.slice(0,16)}-${index}`} className={`max-w-[78%] rounded-[16px] px-4 py-3 text-sm leading-6 ${mine ? "ml-auto bg-[#173326] text-zinc-100" : "mr-auto border border-zinc-800 bg-black/30 text-zinc-200"}`}><p className="whitespace-pre-wrap break-words">{body}</p></div>
+                        return <div key={`${encryptedHex.slice(0,16)}-${index}`} className={`max-w-[78%] rounded-[16px] px-4 py-3 text-sm leading-6 ${mine ? "ml-auto bg-[#0d3b68] text-zinc-100" : "mr-auto border border-zinc-800 bg-black/30 text-zinc-200"}`}><p className="whitespace-pre-wrap break-words">{body}</p></div>
                       })}
                     </div>
-                    <div className="border-t border-zinc-800 p-4">
+                    <div className="via-messages-composer border-t border-[#4aa8ff]/20 bg-[#031225]/70 p-4">
                       <div className="flex gap-2">
-                        <textarea value={draft} onChange={(event) => setDraft(event.target.value)} rows={2} maxLength={5000} placeholder={t.typeMessage} className="min-w-0 flex-1 resize-none rounded-[12px] border border-zinc-800 bg-black/25 px-3 py-2 text-sm text-zinc-200 outline-none focus:border-[#8fd4a9]/50" />
-                        <button type="button" onClick={() => void sendCurrentMessage()} disabled={!draft.trim() || sending} title={t.identityNote} className="rounded-[12px] border border-[#8fd4a9]/25 px-4 text-sm font-semibold text-[#9adbb2] disabled:border-zinc-800 disabled:text-zinc-600">{sending ? "…" : t.send}</button>
+                        <textarea value={draft} onChange={(event) => setDraft(event.target.value)} rows={2} maxLength={5000} placeholder={t.typeMessage} className="min-w-0 flex-1 resize-none rounded-[12px] border border-zinc-800 bg-black/25 px-3 py-2 text-sm text-zinc-200 outline-none focus:border-[#61b7ff]/50" />
+                        <button type="button" onClick={() => void sendCurrentMessage()} disabled={!draft.trim() || sending} title={t.identityNote} className="rounded-[12px] border border-[#61b7ff]/25 px-4 text-sm font-semibold text-[#8fd0ff] disabled:border-zinc-800 disabled:text-zinc-600">{sending ? "…" : t.send}</button>
                       </div>
                     </div>
                     {sendError ? <p className="px-4 pb-3 text-xs text-amber-300">{t.unavailable}</p> : null}
@@ -632,16 +632,16 @@ export default function MessagesClient() {
           </>
         )}
       </div>
-      <style>{`
-        @media (max-width: 720px) {
-          .via-messages-page-header { margin-bottom: 12px; align-items: center; }\n          .via-messages-login { padding: 12px !important; }\n          .via-messages-login > * { margin: 0 !important; }
+      <style>{`\n        .via-messages-page {\n          position: relative;\n          isolation: isolate;\n          background-color: #020b18;\n          background-image: linear-gradient(rgba(1,9,22,.22), rgba(1,9,22,.42)), url("/via-msg-web.jpg");\n          background-size: cover;\n          background-position: center;\n          background-attachment: fixed;\n        }\n        .via-messages-page > div { position: relative; z-index: 1; }
+        @media (min-width: 721px) and (max-width: 1024px) {\n          .via-messages-page { padding-left: 20px; padding-right: 20px; }\n          .via-messages-shell { min-height: 68vh; }\n          .via-messages-inbox > div:last-child { max-height: 68vh; }\n          .via-messages-conversation { min-height: 68vh; }\n        }\n        @media (min-width: 1025px) {\n          .via-messages-shell { min-height: 70vh; }\n          .via-messages-inbox > div:last-child { max-height: 70vh; }\n        }\n        @media (max-width: 720px) {
+          .via-messages-page { padding: 16px 12px 24px; background-attachment: scroll; background-position: 58% center; }\n          .via-messages-page-header { margin-bottom: 12px; align-items: center; gap: 10px; }\n          .via-messages-login { padding: 12px !important; }\n          .via-messages-login > * { margin: 0 !important; }
           .via-messages-page-header h1 { font-size: 24px; margin-top: 4px; }
           .via-messages-page-header p:not(.text-xs) { display: none; }
           .via-messages-back { width: 40px; min-height: 40px; padding: 0; justify-content: center; border-radius: 12px; }
           .via-messages-back span { display: none; }
-          .via-messages-inbox { border-bottom: 0; }
-          .via-messages-search { position: sticky; top: 0; z-index: 2; background: rgba(5,8,7,.96); }
-          .via-messages-conversation { display: none; min-height: 360px; }
+          .via-messages-shell { min-height: calc(100dvh - 190px); border-radius: 14px; }\n          .via-messages-inbox { border-bottom: 0; min-width: 0; }
+          .via-messages-search { position: sticky; top: 0; z-index: 2; background: rgba(3,18,37,.96); }
+          .via-messages-conversation { display: none; min-height: calc(100dvh - 190px); }\n          .via-messages-thread-header { padding: 12px; }\n          .via-messages-conversation > div:nth-child(2) { padding: 14px; }\n          .via-messages-composer { padding: 10px; }\n          .via-messages-composer textarea { max-height: 120px; }
           .via-messages-conversation.via-messages-conversation-open { display: flex; }
           .via-messages-conversation-open + * { display: none; }
           .via-messages-inbox:has(+ .via-messages-conversation-open) { display: none; }
