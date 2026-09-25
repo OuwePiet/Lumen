@@ -69,6 +69,8 @@ type Copy = {
   newMessage: string
   selectConversation: string
   loadMore: string
+  typeMessage: string
+  send: string
 }
 
 const COPY: Record<ViaLanguage | "Hindi", Copy> = {
@@ -87,7 +89,7 @@ const COPY: Record<ViaLanguage | "Hindi", Copy> = {
     identityNote: "Lezen en verzenden gebruikt DeSo Identity voor encryptie en decryptie. VIA slaat privéberichten niet zelf op.",
     newMessage: "Nieuw bericht",
     selectConversation: "Selecteer een gesprek",
-    loadMore: "Laad meer",
+    loadMore: "Laad meer", typeMessage: "Typ een bericht…", send: "Verstuur",
   },
   English: {
     kicker: "VIA · MESSAGES",
@@ -104,7 +106,7 @@ const COPY: Record<ViaLanguage | "Hindi", Copy> = {
     identityNote: "Reading and sending uses DeSo Identity for encryption and decryption. VIA does not store private messages itself.",
     newMessage: "New message",
     selectConversation: "Select a conversation",
-    loadMore: "Load more",
+    loadMore: "Load more", typeMessage: "Type a message…", send: "Send",
   },
   French: {
     kicker: "VIA · MESSAGES",
@@ -121,7 +123,7 @@ const COPY: Record<ViaLanguage | "Hindi", Copy> = {
     identityNote: "La lecture et l’envoi utilisent DeSo Identity pour le chiffrement et le déchiffrement. VIA ne stocke pas lui-même les messages privés.",
     newMessage: "Nouveau message",
     selectConversation: "Sélectionnez une conversation",
-    loadMore: "Charger plus",
+    loadMore: "Charger plus", typeMessage: "Écrivez un message…", send: "Envoyer",
   },
   Spanish: {
     kicker: "VIA · MENSAJES",
@@ -138,7 +140,7 @@ const COPY: Record<ViaLanguage | "Hindi", Copy> = {
     identityNote: "La lectura y el envío usan DeSo Identity para cifrar y descifrar. VIA no almacena los mensajes privados.",
     newMessage: "Nuevo mensaje",
     selectConversation: "Selecciona una conversación",
-    loadMore: "Cargar más",
+    loadMore: "Cargar más", typeMessage: "Escribe un mensaje…", send: "Enviar",
   },
   Chinese: {
     kicker: "VIA · 消息",
@@ -155,7 +157,7 @@ const COPY: Record<ViaLanguage | "Hindi", Copy> = {
     identityNote: "读取和发送通过 DeSo Identity 完成加密和解密。VIA 不自行存储私人消息。",
     newMessage: "新消息",
     selectConversation: "选择一个会话",
-    loadMore: "加载更多",
+    loadMore: "加载更多", typeMessage: "输入消息…", send: "发送",
   },
   Hindi: {
     kicker: "VIA · संदेश", title: "संदेश", intro: "DeSo के माध्यम से निजी बातचीत। वार्तालाप सीधे DeSo नेटवर्क से लोड होते हैं।",
@@ -163,7 +165,7 @@ const COPY: Record<ViaLanguage | "Hindi", Copy> = {
     noAccountText: "अपनी निजी बातचीत लोड करने के लिए DeSo Identity से लॉग इन करें।", loading: "बातचीत लोड हो रही है…",
     unavailable: "संदेश अस्थायी रूप से उपलब्ध नहीं हैं।", empty: "अभी कोई बातचीत नहीं मिली।", encrypted: "एन्क्रिप्टेड DeSo संदेश",
     identityNote: "पढ़ने और भेजने में encryption और decryption के लिए DeSo Identity का उपयोग होता है। VIA निजी संदेश स्वयं संग्रहीत नहीं करता।",
-    newMessage: "नया संदेश", selectConversation: "बातचीत चुनें", loadMore: "और लोड करें",
+    newMessage: "नया संदेश", selectConversation: "बातचीत चुनें", loadMore: "और लोड करें", typeMessage: "संदेश लिखें…", send: "भेजें",
   },
 }
 
@@ -229,6 +231,7 @@ export default function MessagesClient() {
   const [decryptedMessages, setDecryptedMessages] = useState<Record<string, string>>({})
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
+  const [draft, setDraft] = useState("")
 
   useEffect(() => {
     const syncLanguage = () => setLanguage(readViaLocalSettings().interfaceLanguage)
@@ -496,8 +499,8 @@ export default function MessagesClient() {
                     </div>
                     <div className="border-t border-zinc-800 p-4">
                       <div className="flex gap-2">
-                        <textarea disabled rows={2} placeholder={t.encrypted} className="min-w-0 flex-1 resize-none rounded-[12px] border border-zinc-800 bg-black/25 px-3 py-2 text-sm text-zinc-500" />
-                        <button type="button" disabled className="rounded-[12px] border border-zinc-800 px-4 text-sm font-semibold text-zinc-600">{t.newMessage}</button>
+                        <textarea value={draft} onChange={(event) => setDraft(event.target.value)} rows={2} maxLength={5000} placeholder={t.typeMessage} className="min-w-0 flex-1 resize-none rounded-[12px] border border-zinc-800 bg-black/25 px-3 py-2 text-sm text-zinc-200 outline-none focus:border-[#8fd4a9]/50" />
+                        <button type="button" disabled={!draft.trim()} title={t.identityNote} className="rounded-[12px] border border-[#8fd4a9]/25 px-4 text-sm font-semibold text-[#9adbb2] disabled:border-zinc-800 disabled:text-zinc-600">{t.send}</button>
                       </div>
                     </div>
                   </>
