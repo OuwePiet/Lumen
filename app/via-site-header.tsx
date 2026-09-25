@@ -289,8 +289,8 @@ export default function ViaSiteHeader() {
           {pathname === "/messages" ? <Link href="/radio" className="via-notifications-radio-top" aria-label="World Radio" title="World Radio"><span aria-hidden="true">◉</span><span className="via-radio-top-label">Radio</span></Link> : null}
           {!session && pathname !== "/messages" ? <button type="button" onClick={enterPublicMode} style={{ ...pill, cursor: "pointer" }}>{t.publicEntrance}</button> : null}
           {!session && pathname !== "/messages" ? <a href={DESO_LOGIN_URL} target="via-deso-identity" style={styles.login}>{t.login}</a> : null}
-          {pathname !== "/messages" ? <Link href="/wallet" style={pill} className={`via-site-header-utility ${pathname === "/notifications" ? "via-site-header-wallet-notifications" : ""}`}>{t.wallet}</Link> : null}
-          {pathname !== "/notifications" && pathname !== "/messages" ? <Link href="/notifications" style={pill} className="via-site-header-utility">{t.notifications}</Link> : null}
+          {pathname !== "/messages" && pathname !== "/radio" ? <Link href="/wallet" style={pill} className={`via-site-header-utility ${pathname === "/notifications" ? "via-site-header-wallet-notifications" : ""}`}>{t.wallet}</Link> : null}
+          {pathname !== "/notifications" && pathname !== "/messages" && pathname !== "/radio" ? <Link href="/notifications" style={pill} className="via-site-header-utility">{t.notifications}</Link> : null}
 
           {session ? (
             <>
