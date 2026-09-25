@@ -285,7 +285,7 @@ export default function ViaSiteHeader() {
               </button>)}
             </div> : null}
           </div>
-          {pathname === "/notifications" || pathname === "/radio" ? <Link href="/" className="via-notifications-home-top" aria-label="Home" title="Home"><span className="via-notifications-home-label">Home</span></Link> : null}
+          {pathname === "/notifications" || pathname === "/radio" || pathname === "/messages" ? <Link href="/" className="via-notifications-home-top" aria-label="Home" title="Home"><span className="via-notifications-home-label">Home</span></Link> : null}
           {pathname === "/messages" ? <Link href="/radio" className="via-notifications-radio-top" aria-label="World Radio" title="World Radio"><Radio className="h-4 w-4" aria-hidden="true" /><span className="via-radio-top-label">Radio</span></Link> : null}
           {!session && pathname !== "/messages" ? <button type="button" onClick={enterPublicMode} style={{ ...pill, cursor: "pointer" }}>{t.publicEntrance}</button> : null}
           {!session && pathname !== "/messages" ? <a href={DESO_LOGIN_URL} target="via-deso-identity" style={styles.login}>{t.login}</a> : null}
@@ -642,7 +642,8 @@ export default function ViaSiteHeader() {
           }
           .via-site-header-tools-messages > .via-notifications-top-control { grid-column: 1 !important; }
           .via-site-header-tools-messages > .via-site-header-language-wrap { grid-column: 2 !important; }
-          .via-site-header-tools-messages > .via-notifications-radio-top { grid-column: 3 !important; display: grid !important; place-items: center !important; }
+          .via-site-header-tools-messages > .via-notifications-home-top { grid-column: 3 !important; display: grid !important; place-items: center !important; }
+          .via-site-header-tools-messages > .via-notifications-radio-top { display: none !important; }
           .via-site-header-tools-messages > .via-notifications-future-mark { grid-column: 4 !important; }
           .via-site-header-tools-messages > .via-profile-shortcut-notifications { grid-column: 5 !important; }
           .via-site-header-tools-messages > .via-site-header-account-wrap { grid-column: 6 !important; }
