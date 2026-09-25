@@ -7,7 +7,7 @@ import { restoreIdentitySession, VIA_IDENTITY_EVENT } from "../deso-identity-ses
 import ParticipationGate from "../participation-gate"
 import { fetchDeSo } from "../deso-api"
 import { decryptViaMessages, encryptViaMessage, signViaMessageTransaction } from "../deso-identity-messages"
-import { constructViaDMTransaction, submitViaSignedTransaction } from "./deso-dm-transaction"
+import { constructViaDMTransaction, getViaDefaultDMGroups, submitViaSignedTransaction } from "./deso-dm-transaction"
 import { readViaLocalSettings, VIA_SETTINGS_EVENT, type ViaLanguage } from "../via-local-settings"
 
 type AccessGroupInfo = {
@@ -73,6 +73,8 @@ type Copy = {
   loadMore: string
   typeMessage: string
   send: string
+  recipient: string
+  cancel: string
 }
 
 const COPY: Record<ViaLanguage | "Hindi", Copy> = {
@@ -91,7 +93,7 @@ const COPY: Record<ViaLanguage | "Hindi", Copy> = {
     identityNote: "Lezen en verzenden gebruikt DeSo Identity voor encryptie en decryptie. VIA slaat privéberichten niet zelf op.",
     newMessage: "Nieuw bericht",
     selectConversation: "Selecteer een gesprek",
-    loadMore: "Laad meer", typeMessage: "Typ een bericht…", send: "Verstuur",
+    loadMore: "Laad meer", typeMessage: "Typ een bericht…", send: "Verstuur", recipient: "DeSo gebruikersnaam of public key", cancel: "Annuleer",
   },
   English: {
     kicker: "VIA · MESSAGES",
@@ -108,7 +110,7 @@ const COPY: Record<ViaLanguage | "Hindi", Copy> = {
     identityNote: "Reading and sending uses DeSo Identity for encryption and decryption. VIA does not store private messages itself.",
     newMessage: "New message",
     selectConversation: "Select a conversation",
-    loadMore: "Load more", typeMessage: "Type a message…", send: "Send",
+    loadMore: "Load more", typeMessage: "Type a message…", send: "Send", recipient: "DeSo username or public key", cancel: "Cancel",
   },
   French: {
     kicker: "VIA · MESSAGES",
@@ -125,7 +127,7 @@ const COPY: Record<ViaLanguage | "Hindi", Copy> = {
     identityNote: "La lecture et l’envoi utilisent DeSo Identity pour le chiffrement et le déchiffrement. VIA ne stocke pas lui-même les messages privés.",
     newMessage: "Nouveau message",
     selectConversation: "Sélectionnez une conversation",
-    loadMore: "Charger plus", typeMessage: "Écrivez un message…", send: "Envoyer",
+    loadMore: "Charger plus", typeMessage: "Écrivez un message…", send: "Envoyer", recipient: "Nom DeSo ou clé publique", cancel: "Annuler",
   },
   Spanish: {
     kicker: "VIA · MENSAJES",
@@ -142,7 +144,7 @@ const COPY: Record<ViaLanguage | "Hindi", Copy> = {
     identityNote: "La lectura y el envío usan DeSo Identity para cifrar y descifrar. VIA no almacena los mensajes privados.",
     newMessage: "Nuevo mensaje",
     selectConversation: "Selecciona una conversación",
-    loadMore: "Cargar más", typeMessage: "Escribe un mensaje…", send: "Enviar",
+    loadMore: "Cargar más", typeMessage: "Escribe un mensaje…", send: "Enviar", recipient: "Usuario DeSo o clave pública", cancel: "Cancelar",
   },
   Chinese: {
     kicker: "VIA · 消息",
@@ -159,7 +161,7 @@ const COPY: Record<ViaLanguage | "Hindi", Copy> = {
     identityNote: "读取和发送通过 DeSo Identity 完成加密和解密。VIA 不自行存储私人消息。",
     newMessage: "新消息",
     selectConversation: "选择一个会话",
-    loadMore: "加载更多", typeMessage: "输入消息…", send: "发送",
+    loadMore: "加载更多", typeMessage: "输入消息…", send: "发送", recipient: "DeSo 用户名或公钥", cancel: "取消",
   },
   Hindi: {
     kicker: "VIA · संदेश", title: "संदेश", intro: "DeSo के माध्यम से निजी बातचीत। वार्तालाप सीधे DeSo नेटवर्क से लोड होते हैं।",
@@ -167,7 +169,7 @@ const COPY: Record<ViaLanguage | "Hindi", Copy> = {
     noAccountText: "अपनी निजी बातचीत लोड करने के लिए DeSo Identity से लॉग इन करें।", loading: "बातचीत लोड हो रही है…",
     unavailable: "संदेश अस्थायी रूप से उपलब्ध नहीं हैं।", empty: "अभी कोई बातचीत नहीं मिली।", encrypted: "एन्क्रिप्टेड DeSo संदेश",
     identityNote: "पढ़ने और भेजने में encryption और decryption के लिए DeSo Identity का उपयोग होता है। VIA निजी संदेश स्वयं संग्रहीत नहीं करता।",
-    newMessage: "नया संदेश", selectConversation: "बातचीत चुनें", loadMore: "और लोड करें", typeMessage: "संदेश लिखें…", send: "भेजें",
+    newMessage: "नया संदेश", selectConversation: "बातचीत चुनें", loadMore: "और लोड करें", typeMessage: "संदेश लिखें…", send: "भेजें", recipient: "DeSo उपयोगकर्ता नाम या public key", cancel: "रद्द करें",
   },
 }
 
@@ -236,6 +238,10 @@ export default function MessagesClient() {
   const [draft, setDraft] = useState("")
   const [sending, setSending] = useState(false)
   const [sendError, setSendError] = useState("")
+  const [newMessageOpen, setNewMessageOpen] = useState(false)
+  const [recipientInput, setRecipientInput] = useState("")
+  const [recipientResults, setRecipientResults] = useState<Profile[]>([])
+  const [recipientLoading, setRecipientLoading] = useState(false)
 
   useEffect(() => {
     const syncLanguage = () => setLanguage(readViaLocalSettings().interfaceLanguage)
@@ -436,6 +442,64 @@ export default function MessagesClient() {
     }
   }
 
+
+  const searchRecipients = async () => {
+    const query = recipientInput.trim()
+    if (!publicKey || !query || recipientLoading) return
+    setRecipientLoading(true)
+    setSendError("")
+    try {
+      if (/^[1-9A-HJ-NP-Za-km-z]{20,100}$/.test(query)) {
+        setRecipientResults([{ PublicKeyBase58Check: query }])
+        return
+      }
+      const response = await fetchDeSo("get-profiles", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          PublicKeyBase58Check: "",
+          Username: "",
+          UsernamePrefix: query.replace(/^@/, ""),
+          Description: "",
+          OrderBy: "",
+          NumToFetch: 10,
+          ReaderPublicKeyBase58Check: publicKey,
+          ModerationType: "",
+          FetchUsersThatHODL: false,
+          AddGlobalFeedBool: false,
+        }),
+        cache: "no-store",
+      })
+      if (!response.ok) throw new Error("PROFILE_SEARCH_UNAVAILABLE")
+      const data = await response.json() as { ProfilesFound?: Profile[] | null }
+      setRecipientResults((data.ProfilesFound ?? []).filter((profile) => profile.PublicKeyBase58Check && profile.PublicKeyBase58Check !== publicKey))
+    } catch {
+      setSendError("MESSAGES_UNAVAILABLE")
+      setRecipientResults([])
+    } finally {
+      setRecipientLoading(false)
+    }
+  }
+
+  const startConversation = async (profile: Profile) => {
+    const recipientKey = profile.PublicKeyBase58Check
+    if (!publicKey || !recipientKey || recipientKey === publicKey) return
+    setSendError("")
+    try {
+      const groups = await getViaDefaultDMGroups(publicKey, recipientKey)
+      const syntheticThread: ThreadEntry = { SenderInfo: groups.sender, RecipientInfo: groups.recipient }
+      setProfiles((current) => ({ ...current, [recipientKey]: profile }))
+      setThreads((current) => [syntheticThread, ...current.filter((thread) => counterpartKey(thread, publicKey) !== recipientKey)])
+      setSelectedKey(recipientKey)
+      setNewMessageOpen(false)
+      setRecipientInput("")
+      setRecipientResults([])
+      setMobileConversationOpen(true)
+    } catch {
+      setSendError("MESSAGES_UNAVAILABLE")
+    }
+  }
+
   const sendCurrentMessage = async () => {
   const message = draft.trim()
   if (!publicKey || !selected || !message || sending) return
@@ -504,8 +568,13 @@ export default function MessagesClient() {
                 <div className="via-messages-search flex items-center gap-2 border-b border-zinc-800 p-3">
                   <Search className="h-4 w-4 shrink-0 text-zinc-500" aria-hidden="true" />
                   <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t.search} className="min-w-0 flex-1 rounded-[10px] border border-zinc-800 bg-black/30 px-3 py-2 text-sm outline-none focus:border-[#8fd4a9]/50" />
-                  <button type="button" disabled title={t.identityNote} aria-label={t.newMessage} className="grid h-10 w-10 place-items-center rounded-[10px] border border-zinc-800 text-zinc-600"><SquarePen className="h-4 w-4" aria-hidden="true" /></button>
+                  <button type="button" onClick={() => { setNewMessageOpen((open) => !open); setRecipientResults([]); setSendError("") }} title={t.newMessage} aria-label={t.newMessage} className="grid h-10 w-10 place-items-center rounded-[10px] border border-[#8fd4a9]/30 text-[#9adbb2]"><SquarePen className="h-4 w-4" aria-hidden="true" /></button>
                 </div>
+                {newMessageOpen ? <div className="border-b border-zinc-800 p-3">
+                  <div className="flex gap-2"><input value={recipientInput} onChange={(event) => setRecipientInput(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") void searchRecipients() }} placeholder={t.recipient} className="min-w-0 flex-1 rounded-[10px] border border-zinc-800 bg-black/30 px-3 py-2 text-sm outline-none focus:border-[#8fd4a9]/50" /><button type="button" onClick={() => void searchRecipients()} disabled={!recipientInput.trim() || recipientLoading} className="rounded-[10px] border border-[#8fd4a9]/30 px-3 text-sm text-[#9adbb2] disabled:opacity-40"><Search className="h-4 w-4" /></button></div>
+                  {recipientResults.length ? <div className="mt-2 max-h-48 overflow-y-auto rounded-[10px] border border-zinc-800">{recipientResults.map((profile, index) => { const key = profile.PublicKeyBase58Check ?? ""; const name = profile.Username ? `@${profile.Username}` : shortKey(key); return <button key={key || index} type="button" onClick={() => void startConversation(profile)} className="flex w-full items-center gap-2 border-b border-zinc-900 px-3 py-2 text-left text-sm last:border-b-0 hover:bg-white/[.03]"><span className="min-w-0 flex-1 truncate">{name}</span><span className="text-[10px] text-zinc-600">{shortKey(key)}</span></button> })}</div> : null}
+                  <button type="button" onClick={() => { setNewMessageOpen(false); setRecipientResults([]) }} className="mt-2 text-xs text-zinc-500">{t.cancel}</button>
+                </div> : null}
                 <div className="max-h-[560px] overflow-y-auto">
                   {loading ? <p className="p-4 text-sm text-zinc-500">{t.loading}</p> : null}
                   {error ? <p className="p-4 text-sm text-amber-300">{t.unavailable}</p> : null}
