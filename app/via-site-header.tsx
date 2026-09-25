@@ -634,9 +634,10 @@ export default function ViaSiteHeader() {
           .via-site-header-tools-messages {
             left: 78px !important;
             right: 10px !important;
-            grid-template-columns: repeat(6, 34px) !important;
-            justify-content: space-between !important;
-            column-gap: 0 !important;
+            grid-template-columns: 34px 34px 34px minmax(48px, 1fr) 52px 38px !important;
+            justify-content: stretch !important;
+            align-items: start !important;
+            column-gap: 4px !important;
           }
           .via-site-header-tools-messages > .via-notifications-top-control { grid-column: 1 !important; }
           .via-site-header-tools-messages > .via-site-header-language-wrap { grid-column: 2 !important; }
