@@ -25,7 +25,7 @@ export async function constructViaDMTransaction(sender: AccessGroup, recipient: 
       RecipientAccessGroupKeyName: recipient.AccessGroupKeyName,
       EncryptedMessageText: encryptedMessage,
       TimestampNanosString: "",
-      MinFeeRateNanosPerKB: 1000,
+      MinFeeRateNanosPerKB: 1500,
       TransactionFees: [],
       ExtraData: {},
     }),
