@@ -265,7 +265,7 @@ export default function ViaSiteHeader() {
         </Link>
 
         <div style={styles.topRow} className="via-site-header-top">
-          <nav style={styles.nav} className={`via-site-header-nav ${pathname === "/notifications" || pathname === "/radio" || pathname === "/messages" ? "via-site-header-nav-compact-mobile" : ""}`} aria-label="VIA main navigation">
+          <nav style={styles.nav} className={`via-site-header-nav ${pathname === "/notifications" || pathname === "/radio" || pathname === "/messages" || pathname === "/profile" ? "via-site-header-nav-compact-mobile" : ""}`} aria-label="VIA main navigation">
             {nav.map(([key, href]) => {
               const active = href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`)
               return <Link key={href} href={href} className="via-site-header-link" style={{ ...styles.link, ...(active ? styles.activeLink : {}) }}>{t[key]}{active ? <span style={styles.activeLine} aria-hidden="true" /> : null}</Link>
@@ -273,10 +273,10 @@ export default function ViaSiteHeader() {
           </nav>
         </div>
 
-        <div style={styles.toolsRow} className={`via-site-header-tools ${pathname === "/notifications" || pathname === "/radio" || pathname === "/messages" ? "via-site-header-tools-notifications" : ""}`} aria-label="VIA utility controls">
-          <div className="via-notifications-top-control"><Link href="/discover/voices" style={styles.search} className={`via-site-header-search ${pathname === "/notifications" || pathname === "/radio" || pathname === "/messages" ? "via-site-header-search-notifications" : ""}`} aria-label={t.search} title={t.search}><span className="via-notifications-members-icon" aria-hidden="true"><UsersRound className="h-4 w-4" /></span><span className="via-site-header-search-label">&nbsp;&nbsp; {t.search}</span></Link>{pathname === "/notifications" || pathname === "/radio" || pathname === "/messages" ? <span className="via-notifications-top-label">Members</span> : null}</div>
+        <div style={styles.toolsRow} className={`via-site-header-tools ${pathname === "/notifications" || pathname === "/radio" || pathname === "/messages" || pathname === "/profile" ? "via-site-header-tools-notifications" : ""}`} aria-label="VIA utility controls">
+          <div className="via-notifications-top-control"><Link href="/discover/voices" style={styles.search} className={`via-site-header-search ${pathname === "/notifications" || pathname === "/radio" || pathname === "/messages" || pathname === "/profile" ? "via-site-header-search-notifications" : ""}`} aria-label={t.search} title={t.search}><span className="via-notifications-members-icon" aria-hidden="true"><UsersRound className="h-4 w-4" /></span><span className="via-site-header-search-label">&nbsp;&nbsp; {t.search}</span></Link>{pathname === "/notifications" || pathname === "/radio" || pathname === "/messages" || pathname === "/profile" ? <span className="via-notifications-top-label">Members</span> : null}</div>
           <div className="via-site-header-language-wrap">
-            <button type="button" onClick={() => setLanguageOpen((open) => !open)} style={styles.language} className={`via-site-header-language ${pathname === "/notifications" || pathname === "/radio" || pathname === "/messages" ? "via-site-header-language-notifications" : ""}`} aria-label="VIA language" aria-expanded={languageOpen}>
+            <button type="button" onClick={() => setLanguageOpen((open) => !open)} style={styles.language} className={`via-site-header-language ${pathname === "/notifications" || pathname === "/radio" || pathname === "/messages" || pathname === "/profile" ? "via-site-header-language-notifications" : ""}`} aria-label="VIA language" aria-expanded={languageOpen}>
               <span className="via-site-header-language-flag" aria-hidden="true">{languageFlags[language]}</span><span className="via-site-header-language-code">{languageCodes[language]}</span>
             </button>
             {languageOpen ? <div className="via-site-header-language-menu" role="menu" aria-label="VIA language">
@@ -285,7 +285,7 @@ export default function ViaSiteHeader() {
               </button>)}
             </div> : null}
           </div>
-          {pathname === "/notifications" || pathname === "/radio" || pathname === "/messages" ? <div className="via-notifications-top-control"><Link href="/radio" className="via-notifications-radio-top" aria-label="World Radio" title="World Radio"><RadioTower className="h-4 w-4" aria-hidden="true" /></Link><span className="via-notifications-top-label">Radio</span></div> : null}
+          {pathname === "/notifications" || pathname === "/radio" || pathname === "/messages" || pathname === "/profile" ? <div className="via-notifications-top-control"><Link href="/radio" className="via-notifications-radio-top" aria-label="World Radio" title="World Radio"><RadioTower className="h-4 w-4" aria-hidden="true" /></Link><span className="via-notifications-top-label">Radio</span></div> : null}
           {!session ? <button type="button" onClick={enterPublicMode} style={{ ...pill, cursor: "pointer" }}>{t.publicEntrance}</button> : null}
           {!session ? <a href={DESO_LOGIN_URL} target="via-deso-identity" style={styles.login}>{t.login}</a> : null}
           <Link href="/wallet" style={pill} className={`via-site-header-utility ${pathname === "/notifications" ? "via-site-header-wallet-notifications" : ""}`}>{t.wallet}</Link>
@@ -293,12 +293,12 @@ export default function ViaSiteHeader() {
 
           {session ? (
             <>
-              {pathname === "/notifications" || pathname === "/radio" || pathname === "/messages" ? <span className="via-notifications-future-mark">VIA Future</span> : null}
+              {pathname === "/notifications" || pathname === "/radio" || pathname === "/messages" || pathname === "/profile" ? <span className="via-notifications-future-mark">VIA Future</span> : null}
               <Link
                 href="/profile"
                 aria-label={t.profile}
                 title={t.profile}
-                className={`via-profile-shortcut ${pathname === "/notifications" || pathname === "/radio" || pathname === "/messages" ? "via-profile-shortcut-notifications" : ""}`}
+                className={`via-profile-shortcut ${pathname === "/notifications" || pathname === "/radio" || pathname === "/messages" || pathname === "/profile" ? "via-profile-shortcut-notifications" : ""}`}
                 style={{
                   ...pill,
                   width: "48px",
@@ -324,7 +324,7 @@ export default function ViaSiteHeader() {
                 <span className="via-profile-shortcut-status" style={{ position: "absolute", right: "-7px", bottom: "-7px", zIndex: 2 }}>
                   <ViaIdentityStatusMarks verified={Boolean(profile?.isVerified)} inactive={Boolean(profile?.isInactive)} viaRecognized={Boolean(profile?.viaRecognized)} compact language={language} />
                 </span>
-                {pathname === "/notifications" || pathname === "/radio" || pathname === "/messages" ? (
+                {pathname === "/notifications" || pathname === "/radio" || pathname === "/messages" || pathname === "/profile" ? (
                   <>
                     <span
                       className="via-notifications-status-caret"
