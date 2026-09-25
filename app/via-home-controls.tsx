@@ -435,14 +435,18 @@ export default function ViaHomeControls() {
             overflow: visible !important;
             border: 1px solid rgba(143,212,169,.16);
             border-radius: 18px;
-            background: rgba(2,8,5,.34);
+            background: transparent;
             backdrop-filter: none;
           }
           .via-home-controls nav a,
           .via-home-controls nav button,
           .via-home-controls nav label {
-            background: linear-gradient(180deg, rgba(8,20,13,.38), rgba(3,10,6,.30)) !important;
+            background: rgba(8,20,13,.18) !important;
             backdrop-filter: none !important;
+          }
+          .via-home-controls nav > button {
+            border-color: rgba(143,212,169,.30) !important;
+            color: #dce8e1 !important;
           }
           .via-home-controls-logo {
             width: 154px !important;
