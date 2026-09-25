@@ -94,7 +94,8 @@ export async function GET(request: NextRequest) {
         codec: clean(station.codec ?? "", 20),
         bitrate: typeof station.bitrate === "number" ? station.bitrate : 0,
       }))
-      .filter((station) => station.id && station.streamUrl)\n      .slice(0, MAX_RESULTS)
+      .filter((station) => station.id && station.streamUrl)
+      .slice(0, MAX_RESULTS)
 
     return NextResponse.json({ stations }, { headers: { "Cache-Control": "no-store" } })
   } catch {
