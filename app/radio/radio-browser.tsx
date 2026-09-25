@@ -174,11 +174,21 @@ export default function RadioBrowser() {
           </article>
         ))}
       </div>
-      <style>{`\n        @media (max-width: 720px) {\n          .via-radio-search-form { gap: 8px !important; margin-bottom: 14px !important; }\n          .via-radio-search-input { flex: 1 1 100% !important; min-height: 42px !important; font-size: 15px !important; }\n          .via-radio-search-button, .via-radio-favorites-button { min-height: 40px !important; padding: 8px 12px !important; font-size: 14px !important; }
+      <style>{`\n        .via-radio-search-form, .via-radio-results-grid { width: 100%; min-width: 0; }
+        .via-radio-search-input { min-width: 0; }
+        @media (min-width: 721px) and (max-width: 1100px) {
+          .via-radio-search-input { flex: 1 1 calc(50% - 10px) !important; }
+          .via-radio-results-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+        }
+        @media (max-width: 720px) {\n          .via-radio-search-form { gap: 8px !important; margin-bottom: 14px !important; }\n          .via-radio-search-input { flex: 1 1 100% !important; min-height: 42px !important; font-size: 15px !important; }\n          .via-radio-search-button, .via-radio-favorites-button { min-height: 40px !important; padding: 8px 12px !important; font-size: 14px !important; }
           .via-radio-results-grid { grid-template-columns: minmax(0, 1fr) !important; gap: 9px !important; }
           .via-radio-station-card { padding: 11px !important; border-radius: 12px !important; }
           .via-radio-station-actions { gap: 6px !important; }
-          .via-radio-station-actions > * { min-height: 38px !important; padding: 7px 10px !important; font-size: 12px !important; }\n        }\n      `}</style>
+          .via-radio-station-actions > * { min-height: 40px !important; padding: 8px 11px !important; font-size: 13px !important; }
+        }
+        @media (max-width: 390px) {
+          .via-radio-station-actions > * { flex: 1 1 100% !important; justify-content: center !important; }
+          .via-radio-search-button, .via-radio-favorites-button { flex: 1 1 100% !important; }\n        }\n      `}</style>
     </section>
   )
 }
