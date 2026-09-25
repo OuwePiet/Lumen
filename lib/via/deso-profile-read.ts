@@ -8,6 +8,8 @@ export type ViaPublicProfile = {
   isVerified: boolean
   verificationSources: string[]
   creatorBasisPoints: number | null
+  stakeMultipleBasisPoints: number | null
+  isHidden: boolean
   coinPriceDeSoNanos: number | null
   numberOfHolders: number | null
   coinsInCirculationNanos: number | null
@@ -25,6 +27,8 @@ type DeSoProfileResponse = {
     Description?: unknown
     ProfilePic?: unknown
     IsVerified?: unknown
+    IsHidden?: unknown
+    StakeMultipleBasisPoints?: unknown
     ExtraData?: unknown
     extraData?: unknown
     CoinPriceDeSoNanos?: unknown
@@ -279,6 +283,8 @@ export async function readPublicProfile(
     isVerified: verificationSources.length > 0,
     verificationSources,
     creatorBasisPoints: numberOrNull(coinEntry?.CreatorBasisPoints),
+    stakeMultipleBasisPoints: numberOrNull(profile.StakeMultipleBasisPoints),
+    isHidden: profile.IsHidden === true,
     coinPriceDeSoNanos: numberOrNull(profile.CoinPriceDeSoNanos),
     numberOfHolders: numberOrNull(coinEntry?.NumberOfHolders),
     coinsInCirculationNanos: numberOrNull(coinEntry?.CoinsInCirculationNanos),
