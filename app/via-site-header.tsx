@@ -486,7 +486,7 @@ export default function ViaSiteHeader() {
           .via-site-header-tools-notifications {
             left: 78px !important;
             right: 10px !important;
-            grid-template-columns: repeat(7, 34px) !important;
+            grid-template-columns: repeat(6, 34px) !important;
             justify-content: space-between !important;
             column-gap: 0 !important;
           }
@@ -525,7 +525,7 @@ export default function ViaSiteHeader() {
             font-size: 18px !important;
             line-height: 1 !important;
           }
-          .via-site-header-tools-notifications > .via-notifications-future-mark { grid-column: 5 !important; justify-self: center !important; }
+          .via-site-header-tools-notifications > .via-notifications-future-mark { grid-column: 4 !important; justify-self: center !important; }
           .via-site-header-tools-notifications > .via-profile-shortcut-notifications {
             grid-column: 5 !important;
             transform: translateX(0) !important;
