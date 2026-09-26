@@ -240,6 +240,8 @@ const sponsorCopy: Record<ViaLanguage | "Hindi", SponsorCopy> = {
   },
 }
 
+const FEATURED_CACHE_KEY = "via:featured-cities:v1"
+
 const fallbackCities: CityItem[] = [
   { city: "Tokyo", country: "Japan", imageUrl: null, descriptionUrl: null, title: null, artist: null, license: null, seasonal: false },
   { city: "Lagos", country: "Nigeria", imageUrl: null, descriptionUrl: null, title: null, artist: null, license: null, seasonal: false },
@@ -265,15 +267,25 @@ export default function ViaFeatured() {
   }, [])
 
   useEffect(() => {
+    try {
+      const cached = JSON.parse(window.sessionStorage.getItem(FEATURED_CACHE_KEY) || "null") as CityResponse | null
+      if (Array.isArray(cached?.items) && cached.items.length === 4) setItems(cached.items)
+    } catch {
+      // Keep the fixed card layer visible while fresh city data is fetched.
+    }
+
     const controller = new AbortController()
     void fetch("/api/via/featured-cities", {
-      cache: "no-store",
+      cache: "force-cache",
       signal: controller.signal,
       headers: { Accept: "application/json" },
     })
       .then(async (response) => response.ok ? (await response.json()) as CityResponse : null)
       .then((data) => {
-        if (Array.isArray(data?.items) && data.items.length === 4) setItems(data.items)
+        if (Array.isArray(data?.items) && data.items.length === 4) {
+          setItems(data.items)
+          try { window.sessionStorage.setItem(FEATURED_CACHE_KEY, JSON.stringify(data)) } catch {}
+        }
       })
       .catch(() => undefined)
     return () => controller.abort()
