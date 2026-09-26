@@ -26,7 +26,7 @@ export default async function Home() {
       >
         <ViaHomeEarth />
         <ViaSeasonal />
-        <ViaHomeControls />
+        <ViaHomeControls iphoneClock={<ViaWorldClock iphoneInline />} />
         <ViaHomeCenterActions />
         <ViaFeatured initialItems={featured.items} />
         <ViaWorldClock />
