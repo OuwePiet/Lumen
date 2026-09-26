@@ -11,16 +11,13 @@ export default function ViaHomeEarth() {
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const [videoFailed, setVideoFailed] = useState(false)
   const [videoReady, setVideoReady] = useState(false)
-  const [videoEnabled, setVideoEnabled] = useState(false)
+  const [videoEnabled, setVideoEnabled] = useState(true)
   const earth = VIA_EARTH
 
   useEffect(() => {
     setVideoFailed(false)
     setVideoReady(false)
-    setVideoEnabled(false)
-
-    const timer = window.setTimeout(() => setVideoEnabled(true), 2500)
-    return () => window.clearTimeout(timer)
+    setVideoEnabled(true)
   }, [earth.id])
 
   useEffect(() => {
@@ -56,7 +53,7 @@ export default function ViaHomeEarth() {
           muted
           loop
           playsInline
-          preload="none"
+          preload="auto"
           onCanPlay={(event) => {
             event.currentTarget.playbackRate = 0.70
             void event.currentTarget.play().catch(() => undefined)
@@ -70,8 +67,7 @@ export default function ViaHomeEarth() {
             setVideoFailed(true)
           }}
         >
-          <source src={earth.src} type="video/mp4" />
-          {earth.id === "night-lights-2012" ? <source src="/api/nasa-earth" type="video/mp4" /> : null}
+          <source src="/api/nasa-earth" type="video/mp4" />
         </video>
       )}
 
