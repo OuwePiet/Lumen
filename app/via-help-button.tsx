@@ -45,6 +45,24 @@ export default function ViaHelpButton() {
           border-color: rgba(143,212,169,.7);
           color: #fff;
         }
+        body:has(> .via-home-free-earth) .via-global-guides {
+          left: 12px;
+          bottom: 12px;
+        }
+        body:has(> .via-home-free-earth) .via-global-guide-link {
+          background: rgba(7,16,11,.72);
+          border-color: rgba(143,212,169,.34);
+        }
+        @media (max-width: 1366px) and (min-width: 721px) {
+          body:has(> .via-home-free-earth) .via-global-guides {
+            left: 10px;
+            bottom: 10px;
+          }
+          body:has(> .via-home-free-earth) .via-global-guide-link {
+            min-height: 38px;
+            padding: 7px 11px;
+          }
+        }
         @media (max-width: 720px) {
           .via-global-guides {
             left: 10px;
