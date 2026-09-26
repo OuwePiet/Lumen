@@ -199,7 +199,7 @@ function shortPublicKey(publicKey: string) {
   return `${publicKey.slice(0, 8)}…${publicKey.slice(-5)}`
 }
 
-export default function ViaHomeControls() {
+export default function ViaHomeControls({ iphoneClock }: { iphoneClock?: ReactNode }) {
   const router = useRouter()
   const identityWindowRef = useRef<Window | null>(null)
   const [session, setSession] = useState<ViaIdentitySession | null>(null)
@@ -374,7 +374,7 @@ export default function ViaHomeControls() {
         </Link>
       </nav>
 
-      <div className="via-home-iphone-clock-inline" />
+      <div className="via-home-iphone-clock-inline">{iphoneClock}</div>
 
       <section style={{ display: "grid", gap: "6px" }}>
         <span className="via-home-standard-label" style={sectionLabel}>{t.standard}</span>
@@ -462,6 +462,7 @@ export default function ViaHomeControls() {
         .via-home-iphone-identity { display: none; }
         @media (max-width: 600px) {
           .via-home-language-section { display: none !important; }
+          .via-home-iphone-clock-inline { display: block !important; overflow: hidden; }
           .via-home-standard-label { display: none !important; }
           .via-home-iphone-utility-row {
             display: grid;
