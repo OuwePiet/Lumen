@@ -374,7 +374,7 @@ export default function ViaHomeControls() {
       </nav>
 
       <section style={{ display: "grid", gap: "6px" }}>
-        <span style={sectionLabel}>{t.standard}</span>
+        <span className="via-home-standard-label" style={sectionLabel}>{t.standard}</span>
         <nav aria-label="VIA standard navigation" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "7px" }}>
           {standardNav.map(([key, href]) => href ? (
             <Link prefetch={href === "/notifications"} key={key} href={href} style={{ ...buttonStyle, width: "100%", justifyContent: "center", paddingInline: "9px", borderColor: "rgba(143,212,169,.30)", background: "linear-gradient(180deg, rgba(13,31,21,.78), rgba(5,15,9,.78))", color: "#dce8e1" }}>{t[key]}</Link>
@@ -458,6 +458,7 @@ export default function ViaHomeControls() {
         .via-home-iphone-identity { display: none; }
         @media (max-width: 600px) {
           .via-home-language-section { display: none !important; }
+          .via-home-standard-label { display: none !important; }
           .via-home-iphone-utility-row {
             display: grid;
             grid-template-columns: repeat(5, 44px);
