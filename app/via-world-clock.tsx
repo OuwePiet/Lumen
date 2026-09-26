@@ -220,8 +220,8 @@ export default function ViaWorldClock({ iphoneInline = false }: { iphoneInline?:
             animation: viaClockDrift 28s linear infinite;
           }
           @keyframes viaClockDrift {
-            from { transform: translateX(0); }
-            to { transform: translateX(-42%); }
+            from { transform: translateX(-42%); }
+            to { transform: translateX(0); }
           }
           .via-home-nasa-source { margin-bottom: 84px !important; }
         }
