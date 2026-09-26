@@ -12,7 +12,6 @@ export default function ViaHomeEarth() {
   const [videoFailed, setVideoFailed] = useState(false)
   const [videoReady, setVideoReady] = useState(false)
   const [videoEnabled, setVideoEnabled] = useState(false)
-  const [posterReady, setPosterReady] = useState(false)
   const earth = VIA_EARTH
 
   useEffect(() => {
@@ -46,17 +45,7 @@ export default function ViaHomeEarth() {
 
   return (
     <div aria-hidden="true" className="via-nasa-earth" data-nasa-visual={earth.id}>
-      <div className="via-nasa-earth-poster-shell">
-        <img
-          src="/via-earth-approved.jpg"
-          alt=""
-          className="via-nasa-earth-poster"
-          fetchPriority="high"
-          decoding="async"
-          onLoad={() => setPosterReady(true)}
-          onError={() => setPosterReady(false)}
-        />
-      </div>
+      <div className="via-nasa-earth-poster-shell" />
 
       {videoEnabled && !videoFailed && (
         <video
@@ -68,7 +57,6 @@ export default function ViaHomeEarth() {
           loop
           playsInline
           preload="none"
-          poster="/via-earth-approved.jpg"
           onCanPlay={(event) => {
             event.currentTarget.playbackRate = 0.72
             void event.currentTarget.play().catch(() => undefined)
@@ -121,14 +109,7 @@ export default function ViaHomeEarth() {
           z-index: 2;
           opacity: ${videoReady ? 0 : 1};
           overflow: hidden;
-          background: #000;
-        }
-        .via-nasa-earth-poster {
-          width: 100%;
-          height: 100%;
-          object-fit: contain;
-          display: block;
-          opacity: ${posterReady ? 1 : 0};
+          background: #000 url("https://svs.gsfc.nasa.gov/vis/a030000/a030000/a030082/frames/1920x1080_16x9_30p/RotatingEarth_00001.png") center / contain no-repeat;
         }
         .via-nasa-earth-video { z-index: 1; opacity: ${videoReady ? 1 : 0}; }
 
