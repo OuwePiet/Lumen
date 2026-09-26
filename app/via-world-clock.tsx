@@ -194,21 +194,26 @@ export default function ViaWorldClock() {
       <style>{`
         @media (max-width: 600px) {
           .via-home-world-clock {
-            display: grid !important;
-            grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-            gap: 5px 8px !important;
-            margin: 8px 10px !important;
-            padding: 8px 10px !important;
-            min-height: 0 !important;
-            overflow: visible !important;
+            display: flex !important;
+            flex-wrap: nowrap !important;
+            gap: 18px !important;
+            margin: 8px 18px !important;
+            padding: 7px 10px !important;
+            min-height: 30px !important;
+            overflow: hidden !important;
             font-size: 8.5px !important;
+            white-space: nowrap !important;
           }
           .via-world-clock-title,
           .via-world-clock-date { display: none !important; }
           .via-world-clock-city,
-          .via-world-clock-deso {
-            min-width: 0 !important;
-            text-align: center !important;
+          .via-world-clock-deso { flex: 0 0 auto !important; }
+          .via-home-world-clock {
+            animation: viaClockDrift 28s linear infinite;
+          }
+          @keyframes viaClockDrift {
+            from { transform: translateX(0); }
+            to { transform: translateX(-42%); }
           }
           .via-home-nasa-source { margin-bottom: 84px !important; }
         }
