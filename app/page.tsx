@@ -4,8 +4,10 @@ import ViaHomeControls from "./via-home-controls"
 import ViaHomeEarth from "./via-home-earth"
 import ViaSeasonal from "./via-seasonal"
 import ViaWorldClock from "./via-world-clock"
+import { getFeaturedCities } from "./api/via/featured-cities/route"
 
-export default function Home() {
+export default async function Home() {
+  const featured = await getFeaturedCities()
   return (
     <>
       <style>{`
@@ -26,7 +28,7 @@ export default function Home() {
         <ViaSeasonal />
         <ViaHomeControls />
         <ViaHomeCenterActions />
-        <ViaFeatured />
+        <ViaFeatured initialItems={featured.items} />
         <ViaWorldClock />
       </main>
     </>
