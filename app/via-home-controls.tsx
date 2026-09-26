@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useEffect, useRef, useState } from "react"
-import { BookOpen, Music2, RadioTower, UsersRound } from "lucide-react"
+import { CircleHelp, Music2, RadioTower, UsersRound } from "lucide-react"
 import {
   DESO_LOGIN_URL,
   VIA_IDENTITY_EVENT,
@@ -363,7 +363,8 @@ export default function ViaHomeControls() {
       </Link>
 
       <nav className="via-home-iphone-utility-row" aria-label="VIA iPhone quick controls">
-        <Link prefetch={false} href="/help" aria-label="Handboek VIA" title="Handboek VIA"><BookOpen aria-hidden="true" /></Link>\n        <Link prefetch={false} href="/music" aria-label="VIA Muziek" title="VIA Muziek"><Music2 aria-hidden="true" /></Link>
+        <Link prefetch={false} href="/help" aria-label="Handboek VIA" title="Handboek VIA"><CircleHelp aria-hidden="true" /></Link>
+        <Link prefetch={false} href="/music" aria-label="VIA Muziek" title="VIA Muziek"><Music2 aria-hidden="true" /></Link>
         <Link prefetch={false} href="/radio" aria-label="World Radio" title="World Radio"><RadioTower aria-hidden="true" /></Link>
         <Link prefetch={false} href="/profile" aria-label={t.switchAccount} title={t.switchAccount} className="via-home-iphone-utility-account">
           {avatar ? <img src={avatar} alt="" referrerPolicy="no-referrer" /> : <UsersRound aria-hidden="true" />}
@@ -372,6 +373,8 @@ export default function ViaHomeControls() {
           <span>VIA</span><span>Future</span>
         </Link>
       </nav>
+
+      <div className="via-home-iphone-clock-inline" />
 
       <section style={{ display: "grid", gap: "6px" }}>
         <span className="via-home-standard-label" style={sectionLabel}>{t.standard}</span>
@@ -455,6 +458,7 @@ export default function ViaHomeControls() {
           }
         }
         .via-home-iphone-utility-row { display: none; }
+        .via-home-iphone-clock-inline { display: none; }
         .via-home-iphone-identity { display: none; }
         @media (max-width: 600px) {
           .via-home-language-section { display: none !important; }
