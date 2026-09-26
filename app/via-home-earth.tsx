@@ -111,6 +111,19 @@ export default function ViaHomeEarth() {
         .via-nasa-earth-poster { z-index: 2; opacity: ${videoReady ? 0 : 1}; }
         .via-nasa-earth-video { z-index: 1; opacity: ${videoReady ? 1 : 0}; }
 
+        @media (min-width: 901px) and (max-width: 1366px) and (hover: none) and (pointer: coarse) {
+          .via-nasa-earth-poster,
+          .via-nasa-earth-video {
+            width: 216%;
+            height: 216%;
+            left: 50%;
+            top: -22%;
+            transform: translate(-50%, calc(-60vh + 207px)) scale(1.87);
+            image-rendering: auto;
+            filter: brightness(1.42) contrast(1.12) saturate(1.16);
+          }
+        }
+
         @media (max-width: 900px) {
           .via-nasa-earth-poster,
           .via-nasa-earth-video {
