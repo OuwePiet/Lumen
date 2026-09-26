@@ -27,7 +27,7 @@ export default function ViaHomeEarth() {
     function keepPlaying() {
       const video = videoRef.current
       if (!video || videoFailed || !videoEnabled) return
-      video.playbackRate = 0.72
+      video.playbackRate = 0.70
       if (video.paused) void video.play().catch(() => undefined)
     }
 
@@ -58,7 +58,7 @@ export default function ViaHomeEarth() {
           playsInline
           preload="none"
           onCanPlay={(event) => {
-            event.currentTarget.playbackRate = 0.72
+            event.currentTarget.playbackRate = 0.70
             void event.currentTarget.play().catch(() => undefined)
           }}
           onPlaying={() => setVideoReady(true)}
