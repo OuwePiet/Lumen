@@ -532,7 +532,7 @@ function CityCard({ item, copy }: { item: CityItem; copy: SponsorCopy }) {
   const content = (
     <article style={{ position: "relative", minHeight: "124px", overflow: "hidden", border: "1px solid rgba(143,212,169,.14)", borderRadius: "15px", background: "linear-gradient(145deg, rgba(5,14,9,.78), rgba(2,5,4,.9))" }}>
       {item.imageUrl ? (
-        <img src={item.imageUrl} alt={`${item.city}, ${item.country}`} loading="lazy" referrerPolicy="no-referrer" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+        <img src={item.imageUrl} alt={`${item.city}, ${item.country}`} loading="eager" decoding="async" referrerPolicy="no-referrer" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
       ) : null}
       <div aria-hidden="true" style={{ position: "absolute", inset: 0, background: item.imageUrl ? "linear-gradient(to top, rgba(0,0,0,.82), rgba(0,0,0,.03) 64%)" : "radial-gradient(circle at 70% 25%, rgba(143,212,169,.12), transparent 44%)" }} />
       <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", justifyContent: "flex-end", padding: "12px 13px" }}>
