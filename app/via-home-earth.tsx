@@ -25,13 +25,7 @@ export default function ViaHomeEarth() {
     setVideoReady(false)
     setVideoEnabled(false)
 
-    const enableVideo = () => setVideoEnabled(true)
-    if ("requestIdleCallback" in window) {
-      const idleId = window.requestIdleCallback(enableVideo, { timeout: 4000 })
-      return () => window.cancelIdleCallback(idleId)
-    }
-
-    const timer = window.setTimeout(enableVideo, 2500)
+    const timer = window.setTimeout(() => setVideoEnabled(true), 2500)
     return () => window.clearTimeout(timer)
   }, [earth.id])
 
