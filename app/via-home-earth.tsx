@@ -57,7 +57,7 @@ export default function ViaHomeEarth() {
           muted
           loop
           playsInline
-          preload="auto"
+          preload="none"
           poster="/via-earth-approved.jpg"
           onCanPlay={(event) => {
             event.currentTarget.playbackRate = 0.72
