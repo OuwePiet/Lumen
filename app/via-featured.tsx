@@ -495,6 +495,9 @@ export default function ViaFeatured() {
             width: auto !important;
             margin: 10px !important;
             overflow: visible !important;
+            z-index: 10 !important;
+            isolation: isolate;
+            transform: translateZ(0);
           }
         }
       `}</style>
