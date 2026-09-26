@@ -196,6 +196,12 @@ export default function ViaWorldClock({ iphoneInline = false }: { iphoneInline?:
         @media (max-width: 600px) {
           .via-home-world-clock:not([data-iphone-inline="true"]) { display: none !important; }
           .via-home-world-clock[data-iphone-inline="true"] {
+            position: relative !important;
+            left: auto !important;
+            right: auto !important;
+            bottom: auto !important;
+            width: max-content !important;
+            max-width: none !important;
             display: flex !important;
             flex-wrap: nowrap !important;
             gap: 18px !important;
