@@ -86,7 +86,7 @@ export default function ViaHomeCenterActions() {
       </div>
     </section>
       <style>{`
-        @media (max-width: 900px) {
+        @media (max-width: 1366px) {
           .via-home-center-actions {
             position: relative !important;
             top: auto !important;
