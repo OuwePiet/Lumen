@@ -51,7 +51,7 @@ export default function ViaHomeEarth() {
 
   return (
     <div aria-hidden="true" className="via-nasa-earth" data-nasa-visual={earth.id}>
-      <img src="/via-earth-approved.jpg" alt="" className="via-nasa-earth-poster" />
+      <img src="/via-earth-approved.jpg" alt="" className="via-nasa-earth-poster" fetchPriority="high" decoding="sync" />
 
       {videoEnabled && !videoFailed && (
         <video
@@ -108,7 +108,7 @@ export default function ViaHomeEarth() {
           background: #000;
         }
 
-        .via-nasa-earth-poster { z-index: 0; }
+        .via-nasa-earth-poster { z-index: 2; opacity: ${videoReady ? 0 : 1}; }
         .via-nasa-earth-video { z-index: 1; opacity: ${videoReady ? 1 : 0}; }
 
         @media (max-width: 900px) {
