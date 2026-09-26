@@ -357,18 +357,18 @@ export default function ViaHomeControls() {
         paddingRight: "4px",
       }}
     >
-      <Link href="/" aria-label="VIA home" style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "2px", textDecoration: "none" }}>
+      <Link prefetch={false} href="/" aria-label="VIA home" style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "2px", textDecoration: "none" }}>
         <img src="/via-logo-original.jpg?v=2" alt="VIA" className="via-home-controls-logo" style={{ width: "100%", maxHeight: "108px", objectFit: "contain", display: "block", borderRadius: "14px" }} />
         <span style={{ color: "#8fd4a9", fontSize: "10px", fontWeight: 650, letterSpacing: ".14em", lineHeight: 1.2 }}>viadeso.online</span>
       </Link>
 
       <nav className="via-home-iphone-utility-row" aria-label="VIA iPhone quick controls">
-        <Link href="/help" aria-label="Handleiding" title="Handleiding"><CircleHelp aria-hidden="true" /></Link>
-        <Link href="/radio" aria-label="World Radio" title="World Radio"><RadioTower aria-hidden="true" /></Link>
-        <Link href="/profile" aria-label={t.switchAccount} title={t.switchAccount} className="via-home-iphone-utility-account">
+        <Link prefetch={false} href="/help" aria-label="Handleiding" title="Handleiding"><CircleHelp aria-hidden="true" /></Link>
+        <Link prefetch={false} href="/radio" aria-label="World Radio" title="World Radio"><RadioTower aria-hidden="true" /></Link>
+        <Link prefetch={false} href="/profile" aria-label={t.switchAccount} title={t.switchAccount} className="via-home-iphone-utility-account">
           {avatar ? <img src={avatar} alt="" referrerPolicy="no-referrer" /> : <UsersRound aria-hidden="true" />}
         </Link>
-        <Link href="/my-via" aria-label="VIA Future" title="VIA Future" className="via-home-iphone-utility-future">
+        <Link prefetch={false} href="/my-via" aria-label="VIA Future" title="VIA Future" className="via-home-iphone-utility-future">
           <span>VIA</span><span>Future</span>
         </Link>
       </nav>
@@ -377,7 +377,7 @@ export default function ViaHomeControls() {
         <span style={sectionLabel}>{t.standard}</span>
         <nav aria-label="VIA standard navigation" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "7px" }}>
           {standardNav.map(([key, href]) => href ? (
-            <Link key={key} href={href} style={{ ...buttonStyle, width: "100%", justifyContent: "center", paddingInline: "9px", borderColor: "rgba(143,212,169,.30)", background: "linear-gradient(180deg, rgba(13,31,21,.78), rgba(5,15,9,.78))", color: "#dce8e1" }}>{t[key]}</Link>
+            <Link prefetch={false} key={key} href={href} style={{ ...buttonStyle, width: "100%", justifyContent: "center", paddingInline: "9px", borderColor: "rgba(143,212,169,.30)", background: "linear-gradient(180deg, rgba(13,31,21,.78), rgba(5,15,9,.78))", color: "#dce8e1" }}>{t[key]}</Link>
           ) : (
             <span key={key} aria-disabled="true" title="Wordt op de eigen Berichten-pagina aangesloten" style={{ ...disabledButtonStyle, width: "100%", justifyContent: "center", paddingInline: "9px" }}>{t[key]}</span>
           ))}
@@ -400,7 +400,7 @@ export default function ViaHomeControls() {
         {t.viaExtra ? <span style={sectionLabel}>{t.viaExtra}</span> : null}
         <nav aria-label="VIA extra navigation" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "7px" }}>
           {viaExtraNav.map(([key, href]) => (
-            <Link key={href} href={href} style={{ ...buttonStyle, width: "100%", justifyContent: "center", paddingInline: "9px" }}>{t[key]}</Link>
+            <Link prefetch={false} key={href} href={href} style={{ ...buttonStyle, width: "100%", justifyContent: "center", paddingInline: "9px" }}>{t[key]}</Link>
           ))}
         </nav>
       </section>
@@ -423,7 +423,7 @@ export default function ViaHomeControls() {
         .via-home-language-menu button { width: 100%; min-height: 34px; display: flex; align-items: center; justify-content: flex-start; gap: 8px; border: 0; border-radius: 8px; padding: 7px 9px; background: transparent; color: #d3ddd7; font: inherit; font-size: 12px; cursor: pointer; }
         .via-home-language-menu button.is-active { background: rgba(143,212,169,.12); color: #eef5f0; }
 
-        @media (max-width: 900px) {
+        @media (max-width: 1366px) {
           .via-home-controls {
             position: relative !important;
             left: auto !important;
