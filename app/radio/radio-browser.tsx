@@ -20,6 +20,7 @@ const FAVORITE_STATIONS_KEY = "via:world-radio:favorite-stations:v1"
 const GLOBAL_STATION_KEY = "via:world-radio:station"
 const GLOBAL_STATION_EVENT = "via:world-radio:station"
 const GLOBAL_PLAY_EVENT = "via:world-radio:play"
+const GLOBAL_PAUSE_EVENT = "via:world-radio:pause"
 
 const styles = {
   form: { display: "flex", flexWrap: "wrap" as const, gap: "10px", margin: "0 0 18px" },
@@ -132,6 +133,10 @@ export default function RadioBrowser() {
   }
 
 
+  const stop = () => {
+    window.dispatchEvent(new Event(GLOBAL_PAUSE_EVENT))
+  }
+
   const toggleFavorite = (station: Station) => {
     const removing = favoriteSet.has(station.id)
     const next = removing ? favorites.filter((value) => value !== station.id) : [...favorites, station.id]
@@ -168,6 +173,7 @@ export default function RadioBrowser() {
             <p style={styles.meta}>{station.country || "Unknown country"}{station.tags ? ` · ${station.tags}` : ""}</p>
             <div style={styles.actions} className="via-radio-station-actions">
               <button type="button" style={styles.button} onClick={() => play(station)}>Play</button>
+              <button type="button" style={styles.button} onClick={stop}>Stop</button>
               <button type="button" style={styles.button} aria-pressed={favoriteSet.has(station.id)} onClick={() => toggleFavorite(station)}>{favoriteSet.has(station.id) ? "★ Favorite" : "☆ Favorite"}</button>
               {station.homepage ? <a href={station.homepage} target="_blank" rel="noreferrer" style={{ ...styles.button, textDecoration: "none", display: "inline-flex", alignItems: "center" }}>Station site</a> : null}
             </div>
