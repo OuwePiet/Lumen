@@ -98,42 +98,28 @@ export default function ViaHomeEarth() {
         .via-nasa-earth-poster,
         .via-nasa-earth-video {
           position: absolute;
-          inset: 0;
-          width: 100%;
-          height: 100%;
+          width: min(1180px, 92vw);
+          height: auto;
+          aspect-ratio: 16 / 9;
+          left: 50%;
+          top: 50%;
           object-fit: contain;
           object-position: center center;
-          transform: translateY(-60vh);
+          transform: translate(-50%, -50%);
           display: block;
-          background: #000;
+          background: transparent;
+          image-rendering: auto;
+          filter: brightness(1.32) contrast(1.12) saturate(1.12);
         }
 
         .via-nasa-earth-poster { z-index: 2; opacity: ${videoReady ? 0 : 1}; }
         .via-nasa-earth-video { z-index: 1; opacity: ${videoReady ? 1 : 0}; }
 
-        @media (min-width: 901px) and (max-width: 1366px) and (hover: none) and (pointer: coarse) {
-          .via-nasa-earth-poster,
-          .via-nasa-earth-video {
-            width: 216%;
-            height: 216%;
-            left: 50%;
-            top: -22%;
-            transform: translate(-50%, calc(-60vh + 207px)) scale(1.87);
-            image-rendering: auto;
-            filter: brightness(1.42) contrast(1.12) saturate(1.16);
-          }
-        }
-
         @media (max-width: 900px) {
           .via-nasa-earth-poster,
           .via-nasa-earth-video {
-            width: 216%;
-            height: 216%;
-            left: 50%;
-            top: -22%;
-            transform: translate(-50%, calc(-60vh + 207px)) scale(1.87);
-            image-rendering: auto;
-            filter: brightness(1.42) contrast(1.12) saturate(1.16);
+            width: 190vw;
+            max-width: none;
           }
         }
       `}</style>
