@@ -463,7 +463,13 @@ export default function ViaHomeControls() {
         .via-home-iphone-identity { display: none; }
         @media (max-width: 600px) {
           .via-home-language-section { display: none !important; }
-          .via-home-iphone-clock-inline { display: block !important; overflow: hidden; }
+          .via-home-iphone-clock-inline {
+            display: block !important;
+            overflow: hidden;
+            height: 30px;
+            margin-top: -8px;
+            margin-bottom: -8px;
+          }
           .via-home-standard-label { display: none !important; }
           .via-home-iphone-utility-row {
             display: grid;
