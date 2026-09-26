@@ -18,6 +18,7 @@ export default function ViaHomeEarth() {
   const [videoFailed, setVideoFailed] = useState(false)
   const [videoReady, setVideoReady] = useState(false)
   const [videoEnabled, setVideoEnabled] = useState(false)
+  const [posterReady, setPosterReady] = useState(false)
   const earth = useMemo(() => NASA_EARTHS[new Date().getMonth() % NASA_EARTHS.length], [])
 
   useEffect(() => {
@@ -51,7 +52,17 @@ export default function ViaHomeEarth() {
 
   return (
     <div aria-hidden="true" className="via-nasa-earth" data-nasa-visual={earth.id}>
-      <img src="/via-earth-approved.jpg" alt="" className="via-nasa-earth-poster" fetchPriority="high" decoding="sync" />
+      <div className="via-nasa-earth-poster-shell">
+        <img
+          src="/via-earth-approved.jpg"
+          alt=""
+          className="via-nasa-earth-poster"
+          fetchPriority="high"
+          decoding="async"
+          onLoad={() => setPosterReady(true)}
+          onError={() => setPosterReady(false)}
+        />
+      </div>
 
       {videoEnabled && !videoFailed && (
         <video
@@ -95,7 +106,7 @@ export default function ViaHomeEarth() {
           background: #000;
         }
 
-        .via-nasa-earth-poster,
+        .via-nasa-earth-poster-shell,
         .via-nasa-earth-video {
           position: absolute;
           width: min(1180px, 92vw);
@@ -112,11 +123,23 @@ export default function ViaHomeEarth() {
           filter: brightness(1.32) contrast(1.12) saturate(1.12);
         }
 
-        .via-nasa-earth-poster { z-index: 2; opacity: ${videoReady ? 0 : 1}; }
+        .via-nasa-earth-poster-shell {
+          z-index: 2;
+          opacity: ${videoReady ? 0 : 1};
+          overflow: hidden;
+          background: #000;
+        }
+        .via-nasa-earth-poster {
+          width: 100%;
+          height: 100%;
+          object-fit: contain;
+          display: block;
+          opacity: ${posterReady ? 1 : 0};
+        }
         .via-nasa-earth-video { z-index: 1; opacity: ${videoReady ? 1 : 0}; }
 
         @media (max-width: 900px) {
-          .via-nasa-earth-poster,
+          .via-nasa-earth-poster-shell,
           .via-nasa-earth-video {
             width: 190vw;
             max-width: none;
