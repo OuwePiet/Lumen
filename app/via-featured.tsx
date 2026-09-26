@@ -249,8 +249,8 @@ const fallbackCities: CityItem[] = [
   { city: "Sydney", country: "Australia", imageUrl: null, descriptionUrl: null, title: null, artist: null, license: null, seasonal: false },
 ]
 
-export default function ViaFeatured() {
-  const [items, setItems] = useState<CityItem[]>(fallbackCities)
+export default function ViaFeatured({ initialItems = fallbackCities }: { initialItems?: CityItem[] }) {
+  const [items, setItems] = useState<CityItem[]>(initialItems)
   const [sponsorOpen, setSponsorOpen] = useState(false)
   const [activeSponsors, setActiveSponsors] = useState<ActiveSponsor[]>([])
   const [activeSponsorIndex, setActiveSponsorIndex] = useState(0)
