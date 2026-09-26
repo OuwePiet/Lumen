@@ -269,7 +269,15 @@ export default function ViaFeatured() {
   useEffect(() => {
     try {
       const cached = JSON.parse(window.sessionStorage.getItem(FEATURED_CACHE_KEY) || "null") as CityResponse | null
-      if (Array.isArray(cached?.items) && cached.items.length === 4) setItems(cached.items)
+      if (Array.isArray(cached?.items) && cached.items.length === 4) {
+        setItems(cached.items)
+        cached.items.forEach((item) => {
+          if (!item.imageUrl) return
+          const image = new Image()
+          image.decoding = "async"
+          image.src = item.imageUrl
+        })
+      }
     } catch {
       // Keep the fixed card layer visible while fresh city data is fetched.
     }
@@ -283,6 +291,12 @@ export default function ViaFeatured() {
       .then(async (response) => response.ok ? (await response.json()) as CityResponse : null)
       .then((data) => {
         if (Array.isArray(data?.items) && data.items.length === 4) {
+          data.items.forEach((item) => {
+            if (!item.imageUrl) return
+            const image = new Image()
+            image.decoding = "async"
+            image.src = item.imageUrl
+          })
           setItems(data.items)
           try { window.sessionStorage.setItem(FEATURED_CACHE_KEY, JSON.stringify(data)) } catch {}
         }
