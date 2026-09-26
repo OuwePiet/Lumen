@@ -16,6 +16,7 @@ import {
 } from "./deso-identity-session"
 import ViaIdentityStatusMarks from "./via-identity-status"
 import SponsorPlatform from "./sponsor-platform"
+import ViaWorldClock from "./via-world-clock"
 import {
   readViaLocalSettings,
   saveViaLocalSettings,
