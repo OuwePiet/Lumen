@@ -423,7 +423,7 @@ export default function ViaHomeControls() {
         .via-home-language-menu button { width: 100%; min-height: 34px; display: flex; align-items: center; justify-content: flex-start; gap: 8px; border: 0; border-radius: 8px; padding: 7px 9px; background: transparent; color: #d3ddd7; font: inherit; font-size: 12px; cursor: pointer; }
         .via-home-language-menu button.is-active { background: rgba(143,212,169,.12); color: #eef5f0; }
 
-        @media (max-width: 900px) {
+        @media (max-width: 1366px) {
           .via-home-controls {
             position: relative !important;
             left: auto !important;
