@@ -363,7 +363,7 @@ export default function ViaHomeControls() {
       </Link>
 
       <nav className="via-home-iphone-utility-row" aria-label="VIA iPhone quick controls">
-        <Link prefetch={false} href="/help" aria-label="Handleiding" title="Handleiding"><CircleHelp aria-hidden="true" /></Link>
+        <Link prefetch={false} href="/help" aria-label="Handboek VIA" title="Handboek VIA"><CircleHelp aria-hidden="true" /></Link>
         <Link prefetch={false} href="/radio" aria-label="World Radio" title="World Radio"><RadioTower aria-hidden="true" /></Link>
         <Link prefetch={false} href="/profile" aria-label={t.switchAccount} title={t.switchAccount} className="via-home-iphone-utility-account">
           {avatar ? <img src={avatar} alt="" referrerPolicy="no-referrer" /> : <UsersRound aria-hidden="true" />}
@@ -417,6 +417,10 @@ export default function ViaHomeControls() {
       </section>
 
       {status === "blocked" ? <span style={{ color: "#c6a97b", fontSize: "9px", lineHeight: 1.45 }}>{t.blocked}</span> : null}
+      <Link prefetch={false} href="/help" className="via-home-handbook" aria-label="Handboek VIA" title="Handboek VIA">
+        <CircleHelp aria-hidden="true" />
+        <span>Handboek VIA</span>
+      </Link>
       <style>{`
         .via-home-language-control { position: relative; width: 100%; }
         .via-home-language-menu { position: absolute; right: 0; top: calc(100% + 6px); z-index: 90; min-width: 112px; padding: 6px; border: 1px solid rgba(143,212,169,.22); border-radius: 12px; background: rgba(5,10,7,.98); box-shadow: 0 16px 36px rgba(0,0,0,.42); }
@@ -453,6 +457,32 @@ export default function ViaHomeControls() {
             max-height: 70px !important;
             margin: 0 auto !important;
           }
+        }
+        .via-home-handbook {
+          position: fixed;
+          left: 16px;
+          bottom: 16px;
+          z-index: 12;
+          width: 72px;
+          height: 72px;
+          display: grid;
+          place-items: center;
+          align-content: center;
+          gap: 3px;
+          border: 1px solid rgba(143,212,169,.30);
+          border-radius: 50%;
+          background: rgba(5,11,8,.76);
+          color: #b8ddc5;
+          text-decoration: none;
+          font-size: 8px;
+          font-weight: 700;
+          line-height: 9px;
+          text-align: center;
+        }
+        .via-home-handbook svg { width: 21px; height: 21px; }
+        .via-home-handbook span { max-width: 58px; }
+        @media (max-width: 600px) {
+          .via-home-handbook { width: 72px; height: 72px; left: 10px; bottom: 10px; }
         }
         .via-home-iphone-utility-row { display: none; }
         .via-home-iphone-identity { display: none; }
