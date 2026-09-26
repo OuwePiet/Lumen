@@ -16,6 +16,7 @@ import {
 } from "./deso-identity-session"
 import ViaIdentityStatusMarks from "./via-identity-status"
 import SponsorPlatform from "./sponsor-platform"
+import ViaWorldClock from "./via-world-clock"
 import {
   readViaLocalSettings,
   saveViaLocalSettings,
@@ -374,7 +375,7 @@ export default function ViaHomeControls() {
         </Link>
       </nav>
 
-      <div className="via-home-iphone-clock-inline" />
+      <div className="via-home-iphone-clock-inline"><ViaWorldClock iphoneInline /></div>
 
       <section style={{ display: "grid", gap: "6px" }}>
         <span className="via-home-standard-label" style={sectionLabel}>{t.standard}</span>
@@ -462,6 +463,7 @@ export default function ViaHomeControls() {
         .via-home-iphone-identity { display: none; }
         @media (max-width: 600px) {
           .via-home-language-section { display: none !important; }
+          .via-home-iphone-clock-inline { display: block !important; overflow: hidden; }
           .via-home-standard-label { display: none !important; }
           .via-home-iphone-utility-row {
             display: grid;
