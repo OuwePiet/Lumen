@@ -48,7 +48,7 @@ function formatLocalDate(date: Date, locale: string) {
   }).format(date)
 }
 
-export default function ViaWorldClock() {
+export default function ViaWorldClock({ iphoneInline = false }: { iphoneInline?: boolean }) {
   const [now, setNow] = useState(() => new Date())
   const [rates, setRates] = useState<ViaRates | null>(null)
   const [rateUnavailable, setRateUnavailable] = useState(false)
@@ -106,6 +106,7 @@ export default function ViaWorldClock() {
     <>
       <section
         aria-label="World clock, local date and live DESO price"
+        data-iphone-inline={iphoneInline ? "true" : "false"}
         className="via-home-world-clock"
         style={{
           position: "absolute",
@@ -149,7 +150,7 @@ export default function ViaWorldClock() {
         </span>
       </section>
 
-      <div
+      {!iphoneInline ? <div
         className="via-home-nasa-source"
         style={{
           position: "absolute",
@@ -190,10 +191,11 @@ export default function ViaWorldClock() {
           <span>·</span>
           <span>{t.source}</span>
         </a>
-      </div>
+      </div> : null}
       <style>{`
         @media (max-width: 600px) {
-          .via-home-world-clock {
+          .via-home-world-clock:not([data-iphone-inline="true"]) { display: none !important; }
+          .via-home-world-clock[data-iphone-inline="true"] {
             display: flex !important;
             flex-wrap: nowrap !important;
             gap: 18px !important;
@@ -208,7 +210,7 @@ export default function ViaWorldClock() {
           .via-world-clock-date { display: none !important; }
           .via-world-clock-city,
           .via-world-clock-deso { flex: 0 0 auto !important; }
-          .via-home-world-clock {
+          .via-home-world-clock[data-iphone-inline="true"] {
             animation: viaClockDrift 28s linear infinite;
           }
           @keyframes viaClockDrift {
