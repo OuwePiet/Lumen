@@ -13,7 +13,7 @@ const CITY_POOL = [
   { city: "Singapore", country: "Singapore" },
 ] as const
 
-type CommonsImage = {
+export type CommonsImage = {
   city: string
   country: string
   imageUrl: string | null
@@ -44,7 +44,7 @@ function monthKey(date: Date) {
   return date.getUTCFullYear() * 12 + date.getUTCMonth()
 }
 
-function selectCities(date: Date) {
+export function selectCities(date: Date) {
   const key = monthKey(date)
   const offsets = [0, 3, 6, 9]
   return offsets.map((offset) => CITY_POOL[(key + offset) % CITY_POOL.length])
@@ -55,7 +55,7 @@ function stripHtml(value?: string) {
   return value.replace(/<[^>]*>/g, "").replace(/&nbsp;/g, " ").trim() || null
 }
 
-async function findCommonsImage(city: string, country: string, christmas: boolean): Promise<CommonsImage> {
+export async function findCommonsImage(city: string, country: string, christmas: boolean): Promise<CommonsImage> {
   const search = christmas
     ? `${city} ${country} Christmas lights city`
     : `${city} ${country} skyline city`
@@ -125,18 +125,20 @@ async function findCommonsImage(city: string, country: string, christmas: boolea
   }
 }
 
-export async function GET() {
-  const now = new Date()
-  const christmas = now.getUTCMonth() === 11
-  const cities = selectCities(now)
+export async function getFeaturedCities(date = new Date()) {
+  const christmas = date.getUTCMonth() === 11
+  const cities = selectCities(date)
   const items = await Promise.all(cities.map(({ city, country }) => findCommonsImage(city, country, christmas)))
+  return {
+    month: date.toISOString().slice(0, 7),
+    source: "Wikimedia Commons",
+    items,
+  }
+}
 
+export async function GET() {
   return Response.json(
-    {
-      month: now.toISOString().slice(0, 7),
-      source: "Wikimedia Commons",
-      items,
-    },
+    await getFeaturedCities(),
     {
       headers: {
         "Cache-Control": "public, max-age=3600, s-maxage=2678400, stale-while-revalidate=604800, stale-if-error=2592000",
