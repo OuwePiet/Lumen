@@ -17,17 +17,22 @@ export default function ViaHomeEarth() {
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const [videoFailed, setVideoFailed] = useState(false)
   const [videoReady, setVideoReady] = useState(false)
+  const [videoEnabled, setVideoEnabled] = useState(false)
   const earth = useMemo(() => NASA_EARTHS[new Date().getMonth() % NASA_EARTHS.length], [])
 
   useEffect(() => {
     setVideoFailed(false)
     setVideoReady(false)
+    setVideoEnabled(false)
+
+    const timer = window.setTimeout(() => setVideoEnabled(true), 2500)
+    return () => window.clearTimeout(timer)
   }, [earth.id])
 
   useEffect(() => {
     function keepPlaying() {
       const video = videoRef.current
-      if (!video || videoFailed) return
+      if (!video || videoFailed || !videoEnabled) return
       video.playbackRate = 0.72
       if (video.paused) void video.play().catch(() => undefined)
     }
@@ -42,13 +47,13 @@ export default function ViaHomeEarth() {
       window.removeEventListener("pageshow", keepPlaying)
       window.removeEventListener("focus", keepPlaying)
     }
-  }, [videoFailed, earth.id])
+  }, [videoFailed, videoEnabled, earth.id])
 
   return (
     <div aria-hidden="true" className="via-nasa-earth" data-nasa-visual={earth.id}>
       <img src="/via-earth-approved.jpg" alt="" className="via-nasa-earth-poster" />
 
-      {!videoFailed && (
+      {videoEnabled && !videoFailed && (
         <video
           key={earth.id}
           ref={videoRef}
