@@ -1,61 +1,65 @@
 "use client"
 
 import Link from "next/link"
-import { CircleHelp } from "lucide-react"
-import { useEffect, useState } from "react"
-import { usePathname } from "next/navigation"
-import { readViaLocalSettings, VIA_SETTINGS_EVENT, type ViaLanguage } from "./via-local-settings"
-
-const COPY: Record<ViaLanguage | "Hindi", string> = {
-  Dutch: "Handleiding",
-  English: "Guide",
-  French: "Guide",
-  Spanish: "Guía",
-  Chinese: "指南",
-  Hindi: "मार्गदर्शिका",
-}
+import { BookOpen, Music2 } from "lucide-react"
 
 export default function ViaHelpButton() {
-  const pathname = usePathname()
-  const [language, setLanguage] = useState<ViaLanguage>("English")
-
-  useEffect(() => {
-    const sync = () => setLanguage(readViaLocalSettings().interfaceLanguage)
-    sync()
-    window.addEventListener(VIA_SETTINGS_EVENT, sync)
-    window.addEventListener("storage", sync)
-    return () => {
-      window.removeEventListener(VIA_SETTINGS_EVENT, sync)
-      window.removeEventListener("storage", sync)
-    }
-  }, [])
-
-  const label = COPY[language]
-
   return (
-    <Link
-      href="/help"
-      aria-label={label}
-      title={label}
-      className={`via-help-button ${pathname === "/" || pathname === "/radio" || pathname === "/notifications" || pathname === "/messages" || pathname === "/profile" ? "via-help-button-compact-hidden" : ""} fixed bottom-3 left-3 z-[80] inline-flex min-h-10 items-center gap-2 rounded-full border border-[#285f40] bg-[#07100b]/95 px-3 py-2 text-xs font-semibold text-[#b8ddc5] shadow-xl backdrop-blur transition hover:border-[#8fd4a9]/70 hover:text-white`}
-    >
-      <CircleHelp className="h-4 w-4" aria-hidden="true" />
-      <span className="via-help-label">{label}</span>
+    <nav className="via-global-guides" aria-label="VIA handbook and music">
+      <Link href="/help" aria-label="Handboek VIA" title="Handboek VIA" className="via-global-guide-link">
+        <BookOpen className="h-4 w-4" aria-hidden="true" />
+        <span>Handboek VIA</span>
+      </Link>
+      <Link href="/music" aria-label="VIA Muziek" title="VIA Muziek" className="via-global-guide-link">
+        <Music2 className="h-4 w-4" aria-hidden="true" />
+        <span>VIA Muziek</span>
+      </Link>
       <style>{`
+        .via-global-guides {
+          position: fixed;
+          left: 12px;
+          bottom: 12px;
+          z-index: 80;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+        .via-global-guide-link {
+          min-height: 40px;
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          border: 1px solid #285f40;
+          border-radius: 999px;
+          background: rgba(7,16,11,.95);
+          padding: 8px 12px;
+          color: #b8ddc5;
+          box-shadow: 0 10px 28px rgba(0,0,0,.34);
+          backdrop-filter: blur(10px);
+          text-decoration: none;
+          font-size: 12px;
+          font-weight: 650;
+          transition: border-color .18s ease, color .18s ease;
+        }
+        .via-global-guide-link:hover {
+          border-color: rgba(143,212,169,.7);
+          color: #fff;
+        }
         @media (max-width: 720px) {
-          .via-help-button {
-            left: 10px !important;
-            bottom: calc(env(safe-area-inset-bottom) + 10px) !important;
-            width: 44px !important;
-            height: 44px !important;
-            min-height: 44px !important;
-            padding: 0 !important;
-            justify-content: center !important;
+          .via-global-guides {
+            left: 10px;
+            bottom: calc(env(safe-area-inset-bottom) + 10px);
           }
-          .via-help-label { display: none !important; }
-          .via-help-button-compact-hidden { display: none !important; }
+          .via-global-guide-link {
+            width: 44px;
+            height: 44px;
+            min-height: 44px;
+            padding: 0;
+            justify-content: center;
+          }
+          .via-global-guide-link span { display: none; }
         }
       `}</style>
-    </Link>
+    </nav>
   )
 }
