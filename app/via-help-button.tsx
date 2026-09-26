@@ -63,6 +63,9 @@ export default function ViaHelpButton() {
             padding: 7px 11px;
           }
         }
+        @media (max-width: 600px) {
+          body:has(> .via-home-free-earth) .via-global-guides { display: none !important; }
+        }
         @media (max-width: 720px) {
           .via-global-guides {
             left: 10px;

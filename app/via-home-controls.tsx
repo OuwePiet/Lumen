@@ -462,8 +462,10 @@ export default function ViaHomeControls() {
           .via-home-iphone-utility-row {
             display: grid;
             grid-template-columns: repeat(5, 44px);
+            width: 252px;
+            max-width: 100%;
             justify-content: center;
-            gap: 10px;
+            gap: 8px;
             margin: 0 auto 2px;
           }
           .via-home-iphone-utility-row > a {
