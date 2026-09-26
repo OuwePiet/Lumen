@@ -130,18 +130,18 @@ export default function ViaWorldClock() {
           scrollbarWidth: "none",
         }}
       >
-        <span style={{ color: "#8fd4a9", fontWeight: 750, letterSpacing: ".08em", textTransform: "uppercase", whiteSpace: "nowrap" }}>{t.clock}</span>
-        <span style={{ whiteSpace: "nowrap" }} title={t.date}>
+        <span className="via-world-clock-title" style={{ color: "#8fd4a9", fontWeight: 750, letterSpacing: ".08em", textTransform: "uppercase", whiteSpace: "nowrap" }}>{t.clock}</span>
+        <span className="via-world-clock-date" style={{ whiteSpace: "nowrap" }} title={t.date}>
           <span style={{ color: "#69776f" }}>{t.date}</span>{" "}
           <strong style={{ color: "#c2cbc6", fontWeight: 600 }}>{localDate}</strong>
         </span>
         {clocks.map((clock) => (
-          <span key={clock.timeZone} style={{ whiteSpace: "nowrap" }}>
+          <span className="via-world-clock-city" key={clock.timeZone} style={{ whiteSpace: "nowrap" }}>
             <span style={{ color: "#69776f" }}>{clock.label}</span>{" "}
             <strong style={{ color: "#c2cbc6", fontWeight: 600 }}>{clock.time}</strong>
           </span>
         ))}
-        <span style={{ whiteSpace: "nowrap" }} title={stale ? "DESO rate is stale" : rateUnavailable ? "DESO rate is temporarily unavailable" : "Current DESO reference price in USD"}>
+        <span className="via-world-clock-deso" style={{ whiteSpace: "nowrap" }} title={stale ? "DESO rate is stale" : rateUnavailable ? "DESO rate is temporarily unavailable" : "Current DESO reference price in USD"}>
           <span style={{ color: "#69776f" }}>$DESO</span>{" "}
           <strong style={{ color: usd === null ? "#7f8b85" : "#9adbb2", fontWeight: 700 }}>
             {usd === null ? "—" : `$${usd.toLocaleString(locale, { maximumFractionDigits: 4 })}`}
@@ -192,6 +192,26 @@ export default function ViaWorldClock() {
         </a>
       </div>
       <style>{`
+        @media (max-width: 600px) {
+          .via-home-world-clock {
+            display: grid !important;
+            grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+            gap: 5px 8px !important;
+            margin: 8px 10px !important;
+            padding: 8px 10px !important;
+            min-height: 0 !important;
+            overflow: visible !important;
+            font-size: 8.5px !important;
+          }
+          .via-world-clock-title,
+          .via-world-clock-date { display: none !important; }
+          .via-world-clock-city,
+          .via-world-clock-deso {
+            min-width: 0 !important;
+            text-align: center !important;
+          }
+          .via-home-nasa-source { margin-bottom: 84px !important; }
+        }
         @media (max-width: 1366px) {
           .via-home-world-clock {
             position: relative !important;
