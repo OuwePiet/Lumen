@@ -192,7 +192,7 @@ export default function ViaWorldClock() {
         </a>
       </div>
       <style>{`
-        @media (max-width: 900px) {
+        @media (max-width: 1366px) {
           .via-home-world-clock {
             position: relative !important;
             left: auto !important;
