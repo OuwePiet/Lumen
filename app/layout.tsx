@@ -56,9 +56,16 @@ export const metadata: Metadata = {
     description,
     images: ['/via-logo-original.jpg'],
   },
+  // VIA pre-release protection — @OuwePiet 2026.
   robots: {
-    index: true,
-    follow: true,
+    index: false,
+    follow: false,
+    nocache: true,
+    googleBot: {
+      index: false,
+      follow: false,
+      noimageindex: true,
+    },
   },
   icons: {
     icon: '/icon.svg',
