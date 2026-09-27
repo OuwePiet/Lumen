@@ -7,6 +7,23 @@ export const runtime = "nodejs"
 
 const noStore = { "Cache-Control": "no-store" }
 
+// VIA mint quote protection — @OuwePiet 2026.
+const quoteWindows = new Map<string, { count: number; resetAt: number }>()
+const QUOTE_WINDOW_MS = 60_000
+const MAX_QUOTES_PER_WINDOW = 20
+
+function allowQuote(publicKey: string) {
+  const now = Date.now()
+  const current = quoteWindows.get(publicKey)
+  if (!current || current.resetAt <= now) {
+    quoteWindows.set(publicKey, { count: 1, resetAt: now + QUOTE_WINDOW_MS })
+    return true
+  }
+  if (current.count >= MAX_QUOTES_PER_WINDOW) return false
+  current.count += 1
+  return true
+}
+
 function safeIntegerField(value: unknown) {
   return Number.isSafeInteger(value) && Number(value) >= 0 ? Number(value) : null
 }
@@ -19,6 +36,13 @@ export async function POST(request: Request) {
       return NextResponse.json(
         { resolved: false, reason: "invalid-mint-request", mintAuthorized: false },
         { status: 400, headers: noStore },
+      )
+    }
+
+    if (!allowQuote(input.updaterPublicKey)) {
+      return NextResponse.json(
+        { resolved: false, reason: "mint-quote-rate-limited", mintAuthorized: false },
+        { status: 429, headers: noStore },
       )
     }
 
