@@ -1,5 +1,6 @@
 import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
+import { headers } from 'next/headers'
 import './global.css'
 import './visitor-account-access.css'
 import RadioLocalizer from './radio/radio-localizer'
@@ -12,6 +13,7 @@ import WalletLocalizer from './wallet/wallet-localizer'
 const description =
   'VIA is an international DeSo platform for creators, collectors and communities: discover people, social posts, digital art, NFT collections, markets, live culture, games and world discovery.'
 
+// VIA ownership / provenance marker — @OuwePiet 2026.
 export const metadata: Metadata = {
   metadataBase: new URL('https://viadeso.online'),
   title: {
@@ -20,6 +22,9 @@ export const metadata: Metadata = {
   },
   description,
   applicationName: 'VIA',
+  authors: [{ name: '@OuwePiet' }],
+  creator: '@OuwePiet',
+  publisher: 'VIA / @OuwePiet',
   manifest: '/manifest.webmanifest',
   appleWebApp: {
     capable: true,
@@ -56,9 +61,14 @@ export const metadata: Metadata = {
     description,
     images: ['/via-logo-original.jpg'],
   },
+  // VIA pre-release protection — @OuwePiet 2026.
   robots: {
     index: true,
     follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+    },
   },
   icons: {
     icon: '/icon.svg',
@@ -93,14 +103,14 @@ export const viewport: Viewport = {
   themeColor: '#050807',
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
   return (
     <html lang="en" className="dark">
-      <body className="antialiased via-session-pending">
+      <body className="antialiased via-session-pending" data-via-provenance="@OuwePiet-2026">
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(viaStructuredData) }} />
         <ViaPublicAccountGuard />
         <ViaSiteHeader />

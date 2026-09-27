@@ -48,9 +48,9 @@ function sumKnownNanos(...values: Array<number | null | undefined>) {
   return values.every((value) => typeof value === "number" && Number.isFinite(value)) ? values.reduce<number>((sum, value) => sum + Number(value), 0) : null
 }
 
-export default function MintPreflight() {
+export default function MintPreflight({ initialPostHash = "" }: { initialPostHash?: string }) {
   const [session, setSession] = useState<ViaIdentitySession | null>(null)
-  const [postHash, setPostHash] = useState("")
+  const [postHash, setPostHash] = useState(initialPostHash)
   const [copies, setCopies] = useState("1")
   const [forSale, setForSale] = useState(false)
   const [buyNow, setBuyNow] = useState(false)
@@ -72,6 +72,10 @@ export default function MintPreflight() {
   const [mintMessage, setMintMessage] = useState("")
   const mintPopupRef = useRef<Window | null>(null)
   const mintPopupWatch = useRef<number | null>(null)
+
+  useEffect(() => {
+    if (initialPostHash && /^[0-9a-fA-F]{64}$/.test(initialPostHash)) setPostHash(initialPostHash)
+  }, [initialPostHash])
 
   useEffect(() => {
     setSession(restoreIdentitySession())

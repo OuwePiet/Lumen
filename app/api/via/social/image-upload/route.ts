@@ -6,6 +6,23 @@ export const dynamic = "force-dynamic"
 const MAX_IMAGE_BYTES = 10 * 1024 * 1024
 const ALLOWED_IMAGE_TYPES = new Set(["image/gif", "image/jpeg", "image/png", "image/webp"])
 
+// VIA upload protection — @OuwePiet 2026.
+const uploadWindows = new Map<string, { count: number; resetAt: number }>()
+const UPLOAD_WINDOW_MS = 60_000
+const MAX_UPLOADS_PER_WINDOW = 12
+
+function allowUpload(publicKey: string) {
+  const now = Date.now()
+  const current = uploadWindows.get(publicKey)
+  if (!current || current.resetAt <= now) {
+    uploadWindows.set(publicKey, { count: 1, resetAt: now + UPLOAD_WINDOW_MS })
+    return true
+  }
+  if (current.count >= MAX_UPLOADS_PER_WINDOW) return false
+  current.count += 1
+  return true
+}
+
 function noStore(data: unknown, status = 200) {
   return NextResponse.json(data, { status, headers: { "Cache-Control": "no-store" } })
 }
@@ -42,6 +59,7 @@ export async function POST(request: Request) {
 
   if (!validPublicKey(publicKey)) return noStore({ ok: false, error: "INVALID_PUBLIC_KEY" }, 400)
   if (!validJwt(jwt)) return noStore({ ok: false, error: "INVALID_JWT" }, 400)
+  if (!allowUpload(publicKey)) return noStore({ ok: false, error: "UPLOAD_RATE_LIMITED" }, 429)
   if (!(file instanceof File)) return noStore({ ok: false, error: "INVALID_FILE" }, 400)
   if (!ALLOWED_IMAGE_TYPES.has(file.type)) return noStore({ ok: false, error: "UNSUPPORTED_IMAGE_TYPE" }, 415)
   if (file.size <= 0 || file.size >= MAX_IMAGE_BYTES) return noStore({ ok: false, error: "INVALID_IMAGE_SIZE" }, 413)

@@ -7,12 +7,16 @@ type VercelCountResponse = {
   total?: number
   count?: number
   value?: number
+  data?: {
+    visitors?: number
+    pageviews?: number
+  }
 }
 
 type CountryRow = Record<string, unknown>
 
 function countFromResponse(data: VercelCountResponse) {
-  for (const value of [data.total, data.count, data.value]) {
+  for (const value of [data.data?.visitors, data.total, data.count, data.value, data.data?.pageviews]) {
     if (typeof value === "number" && Number.isFinite(value) && value >= 0) return Math.floor(value)
   }
   return null
@@ -85,7 +89,7 @@ async function readCountries(from: Date, to: Date) {
   const rows = Array.isArray(data)
     ? data
     : data && typeof data === "object"
-      ? (["rows", "data", "results", "items"] as const)
+      ? (["data", "rows", "results", "items"] as const)
           .map((key) => (data as Record<string, unknown>)[key])
           .find(Array.isArray) ?? []
       : []
