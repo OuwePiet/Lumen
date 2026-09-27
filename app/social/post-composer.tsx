@@ -354,8 +354,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
         {mediaInvalid ? <p className="mt-2 text-xs text-amber-300">Media links must be valid HTTPS URLs without embedded credentials.</p> : null}
       </div> : null}
 
-      <div className="mt-2 text-right text-xs text-zinc-500">{body.length.toLocaleString()} / {MAX_POST_LENGTH.toLocaleString()}</div>
-      <div className="mt-4 flex flex-wrap items-center gap-3">
+      <div className="mt-4 flex justify-end">
         <button type="button" onClick={preparePost} disabled={!canPrepare} className="rounded-xl border border-[#8fd4a9]/55 px-4 py-2 text-sm font-semibold text-[#9adbb2] disabled:cursor-not-allowed disabled:border-zinc-800 disabled:text-zinc-600">{status === "preparing" ? "Preparing…" : status === "awaiting-approval" ? "Awaiting approval…" : status === "submitting" ? "Posting…" : isReply ? "Reply" : "Post"}</button>
         
       </div>
