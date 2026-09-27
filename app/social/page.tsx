@@ -6,8 +6,8 @@ import ParticipationGate from "../participation-gate"
 import PostComposer from "./post-composer"
 import SocialLocalizer from "./social-localizer"
 export const metadata: Metadata = {
-  title: "Social",
-  description: "Public DeSo conversations, posts, replies and creator activity on VIA.",
+  title: "VIA Post Home",
+  description: "Write, publish and follow native DeSo posts in the VIA way.",
 }
 
 
@@ -18,10 +18,10 @@ export default function SocialPage() {
       <div className="mx-auto max-w-6xl">
         <header className="mb-5 flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-4">
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Social</h1>
-            <p className="mt-1 text-sm text-zinc-500">Public DeSo conversation on VIA.</p>
+            <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">VIA Post Home</h1>
+            <p className="mt-1 text-sm text-zinc-500">Write, publish and follow DeSo posts in the VIA way.</p>
           </div>
-          <nav className="flex flex-wrap gap-2" aria-label="Social shortcuts">
+          <nav className="flex flex-wrap gap-2" aria-label="VIA Post Home shortcuts">
             <Link href="/notifications" className="rounded-full border border-white/10 bg-white/[0.02] px-4 py-2 text-sm text-zinc-300 transition hover:border-[#8fd4a9]/40 hover:text-[#9adbb2]">Notifications</Link>
             <Link href="/saved" className="rounded-full border border-white/10 bg-white/[0.02] px-4 py-2 text-sm text-zinc-300 transition hover:border-[#8fd4a9]/40 hover:text-[#9adbb2]">Saved</Link>
           </nav>
@@ -30,8 +30,8 @@ export default function SocialPage() {
         <section className="rounded-2xl border border-white/10 bg-black/35 p-4 sm:p-5" aria-labelledby="composer-heading">
           <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#8fd4a9]">Create</p>
-              <h2 id="composer-heading" className="mt-1 text-lg font-semibold">Share a post</h2>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#8fd4a9]">VIA POST</p>
+              <h2 id="composer-heading" className="mt-1 text-lg font-semibold">What do you want to share?</h2>
             </div>
             <Link href="/edit-post" className="text-xs text-zinc-500 transition hover:text-[#9adbb2]">Edit your post</Link>
           </div>
