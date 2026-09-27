@@ -343,9 +343,6 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
         <p className="mt-2 text-xs text-zinc-600">GIF, JPEG, PNG or WebP · smaller than 10 MB · maximum {MAX_IMAGES} images per post.</p>
         {imageUploadMessage ? <p className={`mt-2 text-xs ${imageUploadStatus === "error" ? "text-amber-300" : "text-zinc-400"}`}>{imageUploadMessage}</p> : null}
 
-        <div className="mt-3 space-y-2">{imageInputs.map((value, index) => <input key={index} value={value} onChange={(event) => changeImage(index, event.target.value)} placeholder={`Image HTTPS URL ${index + 1}`} className="w-full rounded-lg border border-zinc-800 bg-black/40 px-3 py-2 text-sm text-zinc-200 outline-none focus:border-[#8fd4a9]/55" />)}</div>
-        {imageInputs.length < MAX_IMAGES ? <button type="button" onClick={() => setImageInputs((current) => [...current, ""])} className="mt-2 text-xs text-[#9adbb2]">+ Add image URL</button> : null}
-
         </>
         : <div>
           <p className="text-sm font-medium text-zinc-200">Video</p>
