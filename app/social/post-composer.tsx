@@ -51,7 +51,6 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
   const [emojiOpen, setEmojiOpen] = useState(false)
   const [status, setStatus] = useState<"idle" | "preparing" | "awaiting-approval" | "submitting" | "done" | "error">("idle")
   const [message, setMessage] = useState("")
-  const [feeNanos, setFeeNanos] = useState<number | null>(null)
   const [imageUploadStatus, setImageUploadStatus] = useState<"idle" | "jwt" | "uploading" | "error">("idle")
   const [imageUploadMessage, setImageUploadMessage] = useState("")
   const [videoUploading, setVideoUploading] = useState(false)
