@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { DESO_IDENTITY_ORIGIN, restoreIdentitySession, VIA_IDENTITY_EVENT, type ViaIdentitySession } from "../deso-identity-session"
 import { requestIdentityJwt } from "../social/identity-jwt"
 
@@ -22,6 +22,29 @@ export default function MintMediaStep({ onPostHash }: { onPostHash?: (postHash: 
   const [message,setMessage]=useState("")
   const [description,setDescription]=useState("")
   const [postBusy,setPostBusy]=useState(false)
+  const postPopupRef=useRef<Window | null>(null)
+
+  useEffect(()=>{
+    const onApproval=async(event:MessageEvent)=>{
+      if(event.origin!==DESO_IDENTITY_ORIGIN || event.source!==postPopupRef.current || !event.data || typeof event.data!=="object") return
+      const data=event.data as Record<string,unknown>
+      if(data.service!=="identity" || !data.payload || typeof data.payload!=="object" || Array.isArray(data.payload)) return
+      const signedTransactionHex=(data.payload as Record<string,unknown>).signedTransactionHex
+      if(typeof signedTransactionHex!=="string" || !signedTransactionHex) return
+      postPopupRef.current?.close(); postPopupRef.current=null
+      setPostBusy(true); setMessage("Submitting approved DeSo source post…")
+      try {
+        const response=await fetch("/api/via/social/post",{method:"POST",headers:{"Content-Type":"application/json"},cache:"no-store",body:JSON.stringify({action:"submit",signedTransactionHex})})
+        const result=await response.json() as {ok?:boolean;postHashHex?:string|null;error?:string}
+        if(!response.ok || !result.ok || !result.postHashHex) throw new Error(result.error || "POST_HASH_MISSING")
+        onPostHash?.(result.postHashHex)
+        setMessage("Source post confirmed. Its DeSo PostHash is ready for the NFT mint terms below.")
+      } catch { setMessage("The approved source post could not be handed to the mint step. Minting did not start.") }
+      finally { setPostBusy(false) }
+    }
+    window.addEventListener("message",onApproval)
+    return ()=>window.removeEventListener("message",onApproval)
+  },[onPostHash])
 
   useEffect(()=>{
     setSession(restoreIdentitySession())
@@ -40,6 +63,7 @@ export default function MintMediaStep({ onPostHash }: { onPostHash?: (postHash: 
       const approveUrl=`${DESO_IDENTITY_ORIGIN}/approve?tx=${encodeURIComponent(data.transactionHex)}`
       const popup=window.open(approveUrl,"via-nft-source-post","popup=yes,width=800,height=900")
       if(!popup) throw new Error("POPUP_BLOCKED")
+      postPopupRef.current=popup
       setMessage("Review and approve the source post in DeSo Identity. Minting has not started yet.")
     } catch { setMessage("The source post could not be prepared. Nothing was posted or minted.") }
     finally { setPostBusy(false) }
