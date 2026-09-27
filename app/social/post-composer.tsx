@@ -295,7 +295,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#8fd4a9]">{isReply ? "Reply" : "Create post"}</p>
           
         </div>
-        <span className="text-xs text-zinc-500">0 / {MAX_POST_LENGTH.toLocaleString()}</span>
+        <span className="text-xs text-zinc-500">{body.length.toLocaleString()} / {MAX_POST_LENGTH.toLocaleString()}</span>
       </div>
 
       <label htmlFor={isReply ? `via-reply-${parentStakeID}` : "via-post-body"} className="mt-4 block text-sm font-medium text-zinc-200">{isReply ? "Reply text" : "Post text"}</label>
