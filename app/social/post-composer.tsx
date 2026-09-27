@@ -56,7 +56,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
   const [imageUploadStatus, setImageUploadStatus] = useState<"idle" | "jwt" | "uploading" | "error">("idle")
   const [imageUploadMessage, setImageUploadMessage] = useState("")
   const [videoUploading, setVideoUploading] = useState(false)
-  const [mediaOpen, setMediaOpen] = useState(!compact)
+  const [mediaOpen, setMediaOpen] = useState(false)
   const [draftMessage, setDraftMessage] = useState("")
   const popupRef = useRef<Window | null>(null)
   const popupWatch = useRef<number | null>(null)
@@ -113,7 +113,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
         setImageUploadStatus("idle")
         setImageUploadMessage("")
         setVideoUploading(false)
-        setMediaOpen(!compact)
+        setMediaOpen(false)
         try {
           window.localStorage.removeItem(isReply ? `${SOCIAL_REPLY_DRAFT_PREFIX}${parentStakeID}` : SOCIAL_DRAFT_STORAGE_KEY)
         } catch {}
@@ -331,9 +331,9 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
 
       {!isReply ? <label className="mt-4 flex items-start gap-3 rounded-xl border border-amber-900/40 bg-amber-950/10 p-3 text-sm text-zinc-300"><input type="checkbox" checked={sensitiveContent} onChange={(event)=>setSensitiveContent(event.target.checked)} className="mt-1 h-4 w-4 accent-[#8fd4a9]" /><span><strong className="text-zinc-200">Expliciete / gevoelige inhoud</strong><span className="mt-1 block text-xs leading-5 text-zinc-500">Vink dit aan voor naakt, seksuele of andere expliciete media. VIA markeert de DeSo-post zodat NFT-weergaven de media standaard afschermen. Dit is geen algemene 18+-poort voor VIA.</span></span></label> : null}
 
-      {compact ? <button type="button" onClick={() => setMediaOpen((open) => !open)} className="mt-3 rounded-lg border border-zinc-800 px-3 py-1.5 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2]">{mediaOpen ? "Hide photo/video" : "Add photo/video"}</button> : null}
+      <button type="button" onClick={() => setMediaOpen((open) => !open)} className="mt-3 rounded-lg border border-zinc-800 px-3 py-1.5 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2]">{mediaOpen ? "Hide photo/video" : "Photo / Video"}</button>
 
-      {(!compact || mediaOpen) ? <div className="mt-4 rounded-xl border border-zinc-800 bg-zinc-950/70 p-3">
+      {mediaOpen ? <div className="mt-4 rounded-xl border border-zinc-800 bg-zinc-950/70 p-3">
         <p className="text-sm font-medium text-zinc-200">Images</p>
         <p className="mt-1 text-xs leading-5 text-zinc-500">Choose an image to upload through DeSo, or paste an existing durable HTTPS URL. VIA does not keep a permanent copy. A short-lived Identity JWT is requested only for the upload.</p>
 
