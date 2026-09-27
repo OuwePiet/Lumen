@@ -63,13 +63,11 @@ export const metadata: Metadata = {
   },
   // VIA pre-release protection — @OuwePiet 2026.
   robots: {
-    index: false,
-    follow: false,
-    nocache: true,
+    index: true,
+    follow: true,
     googleBot: {
-      index: false,
-      follow: false,
-      noimageindex: true,
+      index: true,
+      follow: true,
     },
   },
   icons: {
