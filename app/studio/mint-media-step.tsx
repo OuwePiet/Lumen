@@ -23,6 +23,7 @@ export default function MintMediaStep({ onPostHash }: { onPostHash?: (postHash: 
   const [description,setDescription]=useState("")
   const [postBusy,setPostBusy]=useState(false)
   const postPopupRef=useRef<Window | null>(null)
+  const postPopupWatchRef=useRef<number | null>(null)
 
   useEffect(()=>{
     const onApproval=async(event:MessageEvent)=>{
@@ -32,6 +33,7 @@ export default function MintMediaStep({ onPostHash }: { onPostHash?: (postHash: 
       const signedTransactionHex=(data.payload as Record<string,unknown>).signedTransactionHex
       if(typeof signedTransactionHex!=="string" || !signedTransactionHex) return
       postPopupRef.current?.close(); postPopupRef.current=null
+      if(postPopupWatchRef.current!==null){ window.clearInterval(postPopupWatchRef.current); postPopupWatchRef.current=null }
       setPostBusy(true); setMessage("Submitting approved DeSo source post…")
       try {
         const response=await fetch("/api/via/social/post",{method:"POST",headers:{"Content-Type":"application/json"},cache:"no-store",body:JSON.stringify({action:"submit",signedTransactionHex})})
@@ -43,7 +45,7 @@ export default function MintMediaStep({ onPostHash }: { onPostHash?: (postHash: 
       finally { setPostBusy(false) }
     }
     window.addEventListener("message",onApproval)
-    return ()=>window.removeEventListener("message",onApproval)
+    return ()=>{ window.removeEventListener("message",onApproval); if(postPopupWatchRef.current!==null) window.clearInterval(postPopupWatchRef.current) }
   },[onPostHash])
 
   useEffect(()=>{
@@ -64,6 +66,8 @@ export default function MintMediaStep({ onPostHash }: { onPostHash?: (postHash: 
       const popup=window.open(approveUrl,"via-nft-source-post","popup=yes,width=800,height=900")
       if(!popup) throw new Error("POPUP_BLOCKED")
       postPopupRef.current=popup
+      if(postPopupWatchRef.current!==null) window.clearInterval(postPopupWatchRef.current)
+      postPopupWatchRef.current=window.setInterval(()=>{ if(postPopupRef.current?.closed){ window.clearInterval(postPopupWatchRef.current!); postPopupWatchRef.current=null; postPopupRef.current=null; setPostBusy(false); setMessage("DeSo Identity approval was closed. Nothing was submitted or minted.") } },500)
       setMessage("Review and approve the source post in DeSo Identity. Minting has not started yet.")
     } catch { setMessage("The source post could not be prepared. Nothing was posted or minted.") }
     finally { setPostBusy(false) }
