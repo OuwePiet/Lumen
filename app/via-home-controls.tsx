@@ -31,6 +31,7 @@ type ProfileResponse = { ok?: boolean; profile?: PublicProfile }
 // Homepage groups stay compact so account controls remain visible on tablet heights.
 const standardNav = [
   ["home", "/"],
+  ["social", "/social"],
   ["notifications", "/notifications"],
   ["messages", "/messages"],
   ["discover", "/discover"],
@@ -41,7 +42,6 @@ const standardNav = [
 ] as const
 
 const viaExtraNav = [
-  ["social", "/social"],
   ["nfts", "/collection"],
   ["live", "/live"],
   ["communities", "/communities"],
