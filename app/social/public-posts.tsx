@@ -260,10 +260,10 @@ export default function PublicPosts() {
               : "DeSo login required for Following"
             : feedChoice === "hot"
               ? "Public Hot feed"
-              : "Newest public DeSo posts"}
+              : "Recent public DeSo posts"}
         </p>
         <button type="submit" disabled={loading || (feedChoice === "following" && !session)} className="rounded-xl border border-[#8fd4a9]/45 px-5 py-3 text-sm font-medium text-[#9adbb2] disabled:opacity-50">
-          {loading ? "Loading…" : feedChoice === "following" ? "Open Following" : feedChoice === "hot" ? "Open Hot" : "Open New"}
+          {loading ? "Loading…" : feedChoice === "following" ? "Open Following" : feedChoice === "hot" ? "Open Hot" : "Open Recent"}
         </button>
       </form>
 
