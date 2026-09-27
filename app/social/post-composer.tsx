@@ -280,9 +280,10 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
       }, 500)
       setStatus("awaiting-approval")
       setMessage("Review the exact text, media and poll post in DeSo Identity. VIA will not submit it without that approval.")
-    } catch {
+    } catch (error) {
       setStatus("error")
-      setMessage("The post transaction could not be prepared. Nothing was posted.")
+      const code = error instanceof Error ? error.message : "PREPARE_FAILED"
+      setMessage(`The post could not be prepared (${code}). Nothing was posted.`)
     }
   }
 
