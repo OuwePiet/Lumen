@@ -114,7 +114,7 @@ export default function MintMediaStep({ onPostHash }: { onPostHash?: (postHash: 
       <label className="mt-5 grid gap-2">
         <span className="text-sm font-semibold text-zinc-200">Choose image or video for DeSo, or use Advanced for other NFT media</span>
         <input type="file" onChange={(e)=>{const next=e.target.files?.[0] ?? null; setFile(next); setFileName(next?.name ?? ""); setImageUrl(""); setDescription(""); setSensitiveContent(false); setSourcePostReady(false); setMessage(""); onPostHash?.("")}} className="block w-full rounded-[11px] border border-zinc-700/80 bg-[#050807] px-3 py-3 text-sm text-zinc-300 file:mr-3 file:rounded-lg file:border-0 file:bg-zinc-800 file:px-3 file:py-2 file:font-semibold file:text-zinc-100"/>
-        {fileName ? <span className="text-xs text-zinc-500">Selected locally: {fileName} · {imageUrl ? "uploaded to DeSo" : "not uploaded yet"}{file && file.type.startsWith("image/") && file.size>10*1024*1024 ? " · image exceeds the 10 MB DeSo limit" : ""}</span> : null}
+        {fileName ? <span className="text-xs text-zinc-500">Selected locally: {fileName} · {imageUrl || videoUrl ? "ready on DeSo" : "not uploaded yet"}{file && file.type.startsWith("image/") && file.size>10*1024*1024 ? " · image exceeds the 10 MB DeSo limit" : ""}</span> : null}
       </label>
       {mode==="deso" ? <VideoUploadControl onReady={(url) => { setVideoUrl(url); setImageUrl(""); setSourcePostReady(false); onPostHash?.(""); setMessage("Video is ready on DeSo. Next: add the description and create the source post. NFT minting has not started.") }} /> : null}
 
