@@ -22,6 +22,7 @@ export default function MintMediaStep({ onPostHash }: { onPostHash?: (postHash: 
   const [message,setMessage]=useState("")
   const [description,setDescription]=useState("")
   const [sensitiveContent,setSensitiveContent]=useState(false)
+  const [externalMediaUrl,setExternalMediaUrl]=useState("")
   const [postBusy,setPostBusy]=useState(false)
   const postPopupRef=useRef<Window | null>(null)
   const postPopupWatchRef=useRef<number | null>(null)
@@ -58,10 +59,11 @@ export default function MintMediaStep({ onPostHash }: { onPostHash?: (postHash: 
   },[])
 
   async function createSourcePost(){
-    if(!session || !imageUrl || postBusy) return
+    const sourceUrl=mode==="advanced" ? externalMediaUrl.trim() : imageUrl
+    if(!session || !sourceUrl || postBusy) return
     setPostBusy(true); setMessage("Preparing the DeSo source post…")
     try {
-      const response=await fetch("/api/via/social/post",{method:"POST",headers:{"Content-Type":"application/json"},cache:"no-store",body:JSON.stringify({action:"prepare",publicKey:session.publicKey,body:description,imageUrls:[imageUrl],videoUrls:[],sensitiveContent})})
+      const response=await fetch("/api/via/social/post",{method:"POST",headers:{"Content-Type":"application/json"},cache:"no-store",body:JSON.stringify({action:"prepare",publicKey:session.publicKey,body:description,imageUrls:[sourceUrl],videoUrls:[],sensitiveContent})})
       const data=await response.json() as {ok?:boolean;transactionHex?:string;error?:string}
       if(!response.ok || !data.ok || !data.transactionHex) throw new Error(data.error || "PREPARE_FAILED")
       const approveUrl=`${DESO_IDENTITY_ORIGIN}/approve?tx=${encodeURIComponent(data.transactionHex)}`
@@ -101,7 +103,7 @@ export default function MintMediaStep({ onPostHash }: { onPostHash?: (postHash: 
         {fileName ? <span className="text-xs text-zinc-500">Selected locally: {fileName} · {imageUrl ? "uploaded to DeSo" : "not uploaded yet"}</span> : null}
       </label>
       {mode==="deso" && file?.type.startsWith("image/") ? <button type="button" onClick={uploadStandardImage} disabled={!session || uploading} className="mt-3 rounded-[11px] border border-[#8fd4a9]/50 px-4 py-2 text-sm font-semibold text-[#9adbb2] disabled:opacity-40">{uploading ? "Uploading…" : "Upload image to DeSo"}</button> : null}
-      {imageUrl ? <><label className="mt-4 grid gap-2"><span className="text-sm font-semibold text-zinc-200">Description</span><textarea value={description} onChange={(e)=>setDescription(e.target.value)} maxLength={5000} rows={3} placeholder="Describe this NFT…" className="w-full rounded-[11px] border border-zinc-700/80 bg-[#050807] px-3 py-3 text-sm text-zinc-100 outline-none focus:border-[#8fd4a9]/55"/></label><label className="mt-3 flex items-start gap-2 text-sm text-zinc-300"><input type="checkbox" checked={sensitiveContent} onChange={(e)=>setSensitiveContent(e.target.checked)} className="mt-1"/><span><strong className="font-semibold text-zinc-200">Sensitive / explicit content</strong><span className="block text-xs leading-5 text-zinc-500">Mark the DeSo source post before minting when the media or description requires it.</span></span></label><button type="button" onClick={createSourcePost} disabled={postBusy} className="mt-3 rounded-[11px] border border-zinc-700 px-4 py-2 text-sm font-semibold text-zinc-200 disabled:opacity-40">{postBusy ? "Preparing…" : "Create DeSo source post"}</button></> : null}
+      {(imageUrl || (mode==="advanced" && externalMediaUrl.trim())) ? <><label className="mt-4 grid gap-2"><span className="text-sm font-semibold text-zinc-200">Description</span><textarea value={description} onChange={(e)=>setDescription(e.target.value)} maxLength={5000} rows={3} placeholder="Describe this NFT…" className="w-full rounded-[11px] border border-zinc-700/80 bg-[#050807] px-3 py-3 text-sm text-zinc-100 outline-none focus:border-[#8fd4a9]/55"/></label><label className="mt-3 flex items-start gap-2 text-sm text-zinc-300"><input type="checkbox" checked={sensitiveContent} onChange={(e)=>setSensitiveContent(e.target.checked)} className="mt-1"/><span><strong className="font-semibold text-zinc-200">Sensitive / explicit content</strong><span className="block text-xs leading-5 text-zinc-500">Mark the DeSo source post before minting when the media or description requires it.</span></span></label><button type="button" onClick={createSourcePost} disabled={postBusy} className="mt-3 rounded-[11px] border border-zinc-700 px-4 py-2 text-sm font-semibold text-zinc-200 disabled:opacity-40">{postBusy ? "Preparing…" : "Create DeSo source post"}</button></> : null}
       {message ? <p className="mt-2 text-xs text-zinc-400" role="status">{message}</p> : null}
 
       <div className="mt-5 grid gap-3 sm:grid-cols-3">
@@ -114,7 +116,7 @@ export default function MintMediaStep({ onPostHash }: { onPostHash?: (postHash: 
         ))}
       </div>
 
-      {mode==="advanced" ? <label className="mt-4 grid gap-2"><span className="text-sm font-semibold text-zinc-200">Existing media URL / own server</span><input type="url" placeholder="https://…" className="w-full rounded-[11px] border border-zinc-700/80 bg-[#050807] px-3 py-3 text-base text-zinc-100 outline-none focus:border-[#8fd4a9]/55"/></label> : null}
+      {mode==="advanced" ? <label className="mt-4 grid gap-2"><span className="text-sm font-semibold text-zinc-200">Existing media URL / own server</span><input type="url" value={externalMediaUrl} onChange={(e)=>{setExternalMediaUrl(e.target.value); onPostHash?.("")}} placeholder="https://…" className="w-full rounded-[11px] border border-zinc-700/80 bg-[#050807] px-3 py-3 text-base text-zinc-100 outline-none focus:border-[#8fd4a9]/55"/></label> : null}
 
       <p className="mt-4 rounded-[10px] border border-zinc-800/80 bg-black/20 px-3 py-2 text-xs leading-5 text-zinc-500">{mode==="deso" ? (imageUrl ? "The media upload is complete. Creating the source post requires DeSo Identity approval; NFT minting remains a separate approval in the mint terms below." : "Standard uses VIA’s existing DeSo media route. Nothing is uploaded until you choose Upload image to DeSo.") : "This storage option is not submitted yet. VIA will show the provider and any storage cost before anything is uploaded or charged."}</p>
     </section>
