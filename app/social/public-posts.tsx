@@ -43,11 +43,6 @@ function safeHttps(url: string) {
   }
 }
 
-function youtubeVideoId(text: string) {
-  const match = text.match(/https?:\/\/(?:www\.)?(?:youtube\.com\/(?:watch\?[^\s]*v=|shorts\/|embed\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/i)
-  return match?.[1] ?? null
-}
-
 function postTime(timestampNanos: number) {
   if (!Number.isFinite(timestampNanos) || timestampNanos <= 0) return ""
   const date = new Date(timestampNanos / 1_000_000)
@@ -303,20 +298,6 @@ export default function PublicPosts() {
                 </div>
 
                 {post.body ? <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-zinc-200">{post.body}</p> : <p className="mt-3 text-sm text-zinc-500">Media post</p>}
-
-                {youtubeId ? (
-                  <div className="mt-4 aspect-video w-full overflow-hidden rounded-xl border border-white/10 bg-black">
-                    <iframe
-                      src={`https://www.youtube-nocookie.com/embed/${youtubeId}`}
-                      title="YouTube video in VIA post"
-                      loading="lazy"
-                      allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                      referrerPolicy="strict-origin-when-cross-origin"
-                      className="h-full w-full"
-                    />
-                  </div>
-                ) : null}
 
                 {images.length ? (
                   <div className="mt-4 grid gap-2 sm:grid-cols-2">
