@@ -87,7 +87,8 @@ export default function MintMediaStep({ onPostHash }: { onPostHash?: (postHash: 
 
   async function uploadStandardImage(){
     if(!session){ setMessage("Sign in with DeSo Identity before uploading. Nothing was uploaded or minted."); return }
-    if(!file || uploading || !file.type.startsWith("image/")) return
+    if(!file || uploading) return
+    if(!file.type.startsWith("image/")){ setMessage("Standard · DeSo currently supports image mint media here. Use Advanced for an existing video, audio or other durable media URL."); return }
     if(!["image/gif","image/jpeg","image/png","image/webp"].includes(file.type)){ setMessage("DeSo Standard accepts JPEG, PNG, GIF or WebP images here. Nothing was uploaded."); return }
     if(file.size<=0){ setMessage("The selected image is empty. Nothing was uploaded."); return }
     setUploading(true); setMessage("Authorizing DeSo media upload…")
