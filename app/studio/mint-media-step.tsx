@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { restoreIdentitySession, VIA_IDENTITY_EVENT, type ViaIdentitySession } from "../deso-identity-session"
+import { DESO_IDENTITY_ORIGIN, restoreIdentitySession, VIA_IDENTITY_EVENT, type ViaIdentitySession } from "../deso-identity-session"
 import { requestIdentityJwt } from "../social/identity-jwt"
 
 type StorageMode = "deso" | "protected" | "advanced"
@@ -20,6 +20,8 @@ export default function MintMediaStep({ onPostHash }: { onPostHash?: (postHash: 
   const [uploading,setUploading]=useState(false)
   const [imageUrl,setImageUrl]=useState("")
   const [message,setMessage]=useState("")
+  const [description,setDescription]=useState("")
+  const [postBusy,setPostBusy]=useState(false)
 
   useEffect(()=>{
     setSession(restoreIdentitySession())
@@ -27,6 +29,21 @@ export default function MintMediaStep({ onPostHash }: { onPostHash?: (postHash: 
     window.addEventListener(VIA_IDENTITY_EVENT,onSession)
     return ()=>window.removeEventListener(VIA_IDENTITY_EVENT,onSession)
   },[])
+
+  async function createSourcePost(){
+    if(!session || !imageUrl || postBusy) return
+    setPostBusy(true); setMessage("Preparing the DeSo source post…")
+    try {
+      const response=await fetch("/api/via/social/post",{method:"POST",headers:{"Content-Type":"application/json"},cache:"no-store",body:JSON.stringify({action:"prepare",publicKey:session.publicKey,body:description,imageUrls:[imageUrl],videoUrls:[],sensitiveContent:false})})
+      const data=await response.json() as {ok?:boolean;transactionHex?:string;error?:string}
+      if(!response.ok || !data.ok || !data.transactionHex) throw new Error(data.error || "PREPARE_FAILED")
+      const approveUrl=`${DESO_IDENTITY_ORIGIN}/approve?tx=${encodeURIComponent(data.transactionHex)}`
+      const popup=window.open(approveUrl,"via-nft-source-post","popup=yes,width=800,height=900")
+      if(!popup) throw new Error("POPUP_BLOCKED")
+      setMessage("Review and approve the source post in DeSo Identity. Minting has not started yet.")
+    } catch { setMessage("The source post could not be prepared. Nothing was posted or minted.") }
+    finally { setPostBusy(false) }
+  }
 
   async function uploadStandardImage(){
     if(!session || !file || uploading || !file.type.startsWith("image/")) return
@@ -54,6 +71,7 @@ export default function MintMediaStep({ onPostHash }: { onPostHash?: (postHash: 
         {fileName ? <span className="text-xs text-zinc-500">Selected locally: {fileName} · {imageUrl ? "uploaded to DeSo" : "not uploaded yet"}</span> : null}
       </label>
       {mode==="deso" && file?.type.startsWith("image/") ? <button type="button" onClick={uploadStandardImage} disabled={!session || uploading} className="mt-3 rounded-[11px] border border-[#8fd4a9]/50 px-4 py-2 text-sm font-semibold text-[#9adbb2] disabled:opacity-40">{uploading ? "Uploading…" : "Upload image to DeSo"}</button> : null}
+      {imageUrl ? <><label className="mt-4 grid gap-2"><span className="text-sm font-semibold text-zinc-200">Description</span><textarea value={description} onChange={(e)=>setDescription(e.target.value)} maxLength={5000} rows={3} placeholder="Describe this NFT…" className="w-full rounded-[11px] border border-zinc-700/80 bg-[#050807] px-3 py-3 text-sm text-zinc-100 outline-none focus:border-[#8fd4a9]/55"/></label><button type="button" onClick={createSourcePost} disabled={postBusy} className="mt-3 rounded-[11px] border border-zinc-700 px-4 py-2 text-sm font-semibold text-zinc-200 disabled:opacity-40">{postBusy ? "Preparing…" : "Create DeSo source post"}</button></> : null}
       {message ? <p className="mt-2 text-xs text-zinc-400" role="status">{message}</p> : null}
 
       <div className="mt-5 grid gap-3 sm:grid-cols-3">
