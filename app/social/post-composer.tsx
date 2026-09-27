@@ -108,7 +108,6 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
         setSensitiveContent(false)
         setPollOptions(["", ""])
         setEmojiOpen(false)
-        setFeeNanos(null)
         setImageUploadStatus("idle")
         setImageUploadMessage("")
         setVideoUploading(false)
@@ -246,7 +245,6 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
     if (isReply) saveDraft()
     setStatus("preparing")
     setMessage(isReply ? "Preparing the exact DeSo reply transaction…" : "Preparing the exact DeSo post transaction with its media and poll data…")
-    setFeeNanos(null)
     try {
       const response = await fetch("/api/via/social/post", {
         method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store",
@@ -254,7 +252,6 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
       })
       const data = await response.json() as PrepareResponse
       if (!response.ok || !data.ok || !data.transactionHex) throw new Error(data.error || "PREPARE_FAILED")
-      setFeeNanos(typeof data.feeNanos === "number" ? data.feeNanos : null)
       const approveUrl = `${DESO_IDENTITY_ORIGIN}/approve?tx=${encodeURIComponent(data.transactionHex)}`
       const width = Math.min(800, window.screen.availWidth)
       const height = Math.min(900, window.screen.availHeight)
