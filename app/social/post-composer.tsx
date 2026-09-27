@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from "react"
 import { DESO_IDENTITY_ORIGIN, restoreIdentitySession, VIA_IDENTITY_EVENT, type ViaIdentitySession } from "../deso-identity-session"
 import { requestIdentityJwt } from "./identity-jwt"
 import VideoUploadControl from "./video-upload-control"
-import SponsorPlatform from "../sponsor-platform"
 
 const MAX_POST_LENGTH = 5000
 const MAX_IMAGES = 4
