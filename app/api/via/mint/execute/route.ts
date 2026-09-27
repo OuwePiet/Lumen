@@ -6,6 +6,23 @@ export const dynamic = "force-dynamic"
 
 const DEFAULT_MIN_FEE_RATE_NANOS_PER_KB = 1000
 
+// VIA mint protection — @OuwePiet 2026.
+const mintWindows = new Map<string, { count: number; resetAt: number }>()
+const MINT_WINDOW_MS = 60_000
+const MAX_MINT_PREPARES_PER_WINDOW = 10
+
+function allowMintPrepare(publicKey: string) {
+  const now = Date.now()
+  const current = mintWindows.get(publicKey)
+  if (!current || current.resetAt <= now) {
+    mintWindows.set(publicKey, { count: 1, resetAt: now + MINT_WINDOW_MS })
+    return true
+  }
+  if (current.count >= MAX_MINT_PREPARES_PER_WINDOW) return false
+  current.count += 1
+  return true
+}
+
 function json(data: unknown, status = 200) {
   return NextResponse.json(data, { status, headers: { "Cache-Control": "no-store" } })
 }
@@ -23,6 +40,7 @@ export async function POST(request: Request) {
   if (body.action === "prepare") {
     const mint = validateMintPreflightInput(body.mint)
     if (!mint) return json({ ok: false, error: "INVALID_MINT_REQUEST" }, 400)
+    if (!allowMintPrepare(mint.updaterPublicKey)) return json({ ok: false, error: "MINT_PREPARE_RATE_LIMITED" }, 429)
 
     const configuredRate = Number(process.env.DESO_MIN_FEE_RATE_NANOS_PER_KB)
     const minFeeRate = Number.isFinite(configuredRate) && configuredRate > 0 ? Math.trunc(configuredRate) : DEFAULT_MIN_FEE_RATE_NANOS_PER_KB
