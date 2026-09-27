@@ -283,6 +283,7 @@ export default function PublicPosts() {
             const totalReposts = post.repostCount + post.quoteRepostCount
             const isOwnPost = session?.publicKey === post.publicKey
             const options = pollOptions(post.postExtraData)
+            const postedViaVIA = post.postExtraData?.ViaClient === "viadeso.online"
             const username = typeof post.username === "string" ? post.username.trim().replace(/^@/, "") : ""
 
             return (
@@ -298,6 +299,7 @@ export default function PublicPosts() {
                 </div>
 
                 {post.body ? <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-zinc-200">{post.body}</p> : <p className="mt-3 text-sm text-zinc-500">Media post</p>}
+                {postedViaVIA ? <p className="mt-1 text-[11px] text-zinc-500">Gepost via VIA</p> : null}
 
                 {images.length ? (
                   <div className="mt-4 grid gap-2 sm:grid-cols-2">
