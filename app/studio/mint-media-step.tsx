@@ -63,7 +63,8 @@ export default function MintMediaStep({ onPostHash }: { onPostHash?: (postHash: 
   async function createSourcePost(){
     const sourceUrl=mode==="advanced" ? externalMediaUrl.trim() : imageUrl
     if(mode==="protected"){ setMessage("Protected storage is not connected yet. Nothing was uploaded, posted or minted."); return }
-    if(!session || !sourceUrl || postBusy) return
+    if(!session){ setMessage("Sign in with DeSo Identity before creating the source post. Nothing was posted or minted."); return }
+    if(!sourceUrl || postBusy) return
     if(description.trim().length===0){ setMessage("Add a description before creating the DeSo source post. Nothing was posted or minted."); return }
     if(mode==="advanced"){ try { const parsed=new URL(sourceUrl); if(parsed.protocol!=="https:") throw new Error("HTTPS_REQUIRED") } catch { setMessage("Use a valid HTTPS media URL. Nothing was posted or minted."); return } }
     setPostBusy(true); setMessage("Preparing the DeSo source post…")
@@ -83,7 +84,8 @@ export default function MintMediaStep({ onPostHash }: { onPostHash?: (postHash: 
   }
 
   async function uploadStandardImage(){
-    if(!session || !file || uploading || !file.type.startsWith("image/")) return
+    if(!session){ setMessage("Sign in with DeSo Identity before uploading. Nothing was uploaded or minted."); return }
+    if(!file || uploading || !file.type.startsWith("image/")) return
     if(!["image/gif","image/jpeg","image/png","image/webp"].includes(file.type)){ setMessage("DeSo Standard accepts JPEG, PNG, GIF or WebP images here. Nothing was uploaded."); return }
     if(file.size<=0){ setMessage("The selected image is empty. Nothing was uploaded."); return }
     setUploading(true); setMessage("Authorizing DeSo media upload…")
