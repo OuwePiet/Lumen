@@ -332,6 +332,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
       {isReply ? <button type="button" onClick={() => setMediaOpen((open) => !open)} className="mt-3 rounded-lg border border-zinc-800 px-3 py-1.5 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2]">{mediaOpen ? "Hide photo/video" : "Photo / Video"}</button> : null}
 
       {mediaOpen ? <div className="mt-4 rounded-xl border border-zinc-800 bg-zinc-950/70 p-3">
+        {mediaChoice === "photo" ? <>
         <p className="text-sm font-medium text-zinc-200">Images</p>
         <p className="mt-1 text-xs leading-5 text-zinc-500">Choose up to four images.</p>
 
@@ -345,13 +346,14 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
         <div className="mt-3 space-y-2">{imageInputs.map((value, index) => <input key={index} value={value} onChange={(event) => changeImage(index, event.target.value)} placeholder={`Image HTTPS URL ${index + 1}`} className="w-full rounded-lg border border-zinc-800 bg-black/40 px-3 py-2 text-sm text-zinc-200 outline-none focus:border-[#8fd4a9]/55" />)}</div>
         {imageInputs.length < MAX_IMAGES ? <button type="button" onClick={() => setImageInputs((current) => [...current, ""])} className="mt-2 text-xs text-[#9adbb2]">+ Add image URL</button> : null}
 
-        <div className="mt-5 border-t border-zinc-800 pt-4">
+        </>
+        : <div>
           <p className="text-sm font-medium text-zinc-200">Video</p>
           <p className="mt-1 text-xs leading-5 text-zinc-500">Choose one video.</p>
           <VideoUploadControl onReady={setVideoInput} onBusyChange={setVideoUploading} />
           <input value={videoInput} onChange={(event) => setVideoInput(event.target.value)} placeholder="Ready DeSo video HTTPS URL (optional)" className="mt-3 w-full rounded-lg border border-zinc-800 bg-black/40 px-3 py-2 text-sm text-zinc-200 outline-none focus:border-[#8fd4a9]/55" />
           <p className="mt-1 text-xs text-zinc-600">Uploading or processing a video temporarily disables post preparation. The post itself still requires DeSo Identity approval.</p>
-        </div>
+        </div>}
         {mediaInvalid ? <p className="mt-2 text-xs text-amber-300">Media links must be valid HTTPS URLs without embedded credentials.</p> : null}
       </div> : null}
 
