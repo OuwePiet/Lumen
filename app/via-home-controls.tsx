@@ -49,8 +49,6 @@ const viaExtraNav = [
   ["world", "/world"],
   ["myVia", "/my-via"],
   ["advertising", "/advertising"],
-  ["ideas", "/ideas"],
-  ["storage", "/storage"],
 ] as const
 
 const languageCodes: Record<ViaLanguage | "Hindi", string> = {
