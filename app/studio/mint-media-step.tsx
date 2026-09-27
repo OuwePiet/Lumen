@@ -72,7 +72,7 @@ export default function MintMediaStep({ onPostHash }: { onPostHash?: (postHash: 
     if(mode==="advanced"){ try { const parsed=new URL(sourceUrl); if(parsed.protocol!=="https:" || !parsed.hostname) throw new Error("HTTPS_REQUIRED") } catch { setMessage("Use a valid HTTPS media URL. Nothing was posted or minted."); return } }
     setSourcePostReady(false); onPostHash?.(""); setPostBusy(true); setMessage("Preparing the DeSo source post…")
     try {
-      const response=await fetch("/api/via/social/post",{method:"POST",headers:{"Content-Type":"application/json"},cache:"no-store",body:JSON.stringify({action:"prepare",publicKey:session.publicKey,body:description,imageUrls:[sourceUrl],videoUrls:[],sensitiveContent})})
+      const response=await fetch("/api/via/social/post",{method:"POST",headers:{"Content-Type":"application/json"},cache:"no-store",body:JSON.stringify({action:"prepare",publicKey:session.publicKey,body:description,imageUrls:videoUrl && mode==="deso" ? [] : [sourceUrl],videoUrls:videoUrl && mode==="deso" ? [sourceUrl] : [],sensitiveContent})})
       const data=await response.json() as {ok?:boolean;transactionHex?:string;error?:string}
       if(!response.ok || !data.ok || !data.transactionHex) throw new Error(data.error || "PREPARE_FAILED")
       const approveUrl=`${DESO_IDENTITY_ORIGIN}/approve?tx=${encodeURIComponent(data.transactionHex)}`
