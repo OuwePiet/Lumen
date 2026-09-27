@@ -9,6 +9,11 @@ type VisitorAnalyticsResponse = {
   countries?: Array<{ country?: string; visitors?: number }>
 }
 
+type ActivityAnalyticsResponse = {
+  ok?: boolean
+  activity?: { posts?: number; creators?: number; nftPosts?: number }
+}
+
 type PanelCopy = {
   live: string
   visitors: string
@@ -113,6 +118,9 @@ export default function ViaRightPanels() {
   const [visitorMonth, setVisitorMonth] = useState<number | null>(null)
   const [visitorYear, setVisitorYear] = useState<number | null>(null)
   const [visitorCountries, setVisitorCountries] = useState<Array<{ country: string; visitors: number }>>([])
+  const [activityPosts, setActivityPosts] = useState<number | null>(null)
+  const [activityCreators, setActivityCreators] = useState<number | null>(null)
+  const [activityNfts, setActivityNfts] = useState<number | null>(null)
 
   useEffect(() => {
     const sync = () => setLanguage(readViaLocalSettings().interfaceLanguage)
@@ -143,6 +151,25 @@ export default function ViaRightPanels() {
             .filter((entry): entry is { country: string; visitors: number } => Boolean(entry && typeof entry.country === "string" && typeof entry.visitors === "number" && Number.isFinite(entry.visitors)))
             .slice(0, 12))
         }
+      })
+      .catch(() => {})
+
+    return () => controller.abort()
+  }, [])
+
+  useEffect(() => {
+    const controller = new AbortController()
+    void fetch("/api/via/analytics/activity", {
+      cache: "no-store",
+      signal: controller.signal,
+      headers: { Accept: "application/json" },
+    })
+      .then(async (response) => {
+        const data = await response.json() as ActivityAnalyticsResponse
+        if (!response.ok || !data.ok || !data.activity) return
+        if (typeof data.activity.posts === "number" && Number.isFinite(data.activity.posts)) setActivityPosts(data.activity.posts)
+        if (typeof data.activity.creators === "number" && Number.isFinite(data.activity.creators)) setActivityCreators(data.activity.creators)
+        if (typeof data.activity.nftPosts === "number" && Number.isFinite(data.activity.nftPosts)) setActivityNfts(data.activity.nftPosts)
       })
       .catch(() => {})
 
@@ -181,10 +208,10 @@ export default function ViaRightPanels() {
       </Panel>
 
       <Panel title={copy.activity}>
-        <PendingMetric label={copy.posts} note={copy.sourcePending} />
-        <PendingMetric label={copy.creators} note={copy.sourcePending} />
+        <Metric label={copy.posts} value={activityPosts} note={copy.sourcePending} />
+        <Metric label={copy.creators} value={activityCreators} note={copy.sourcePending} />
         <PendingMetric label={copy.trends} note={copy.sourcePending} />
-        <PendingMetric label={copy.nftActivity} note={copy.sourcePending} />
+        <Metric label={copy.nftActivity} value={activityNfts} note={copy.sourcePending} />
       </Panel>
 
       <Panel title={copy.community}>
