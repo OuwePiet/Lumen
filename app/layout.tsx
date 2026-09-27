@@ -13,6 +13,7 @@ import WalletLocalizer from './wallet/wallet-localizer'
 const description =
   'VIA is an international DeSo platform for creators, collectors and communities: discover people, social posts, digital art, NFT collections, markets, live culture, games and world discovery.'
 
+// VIA ownership / provenance marker — @OuwePiet 2026.
 export const metadata: Metadata = {
   metadataBase: new URL('https://viadeso.online'),
   title: {
@@ -21,6 +22,9 @@ export const metadata: Metadata = {
   },
   description,
   applicationName: 'VIA',
+  authors: [{ name: '@OuwePiet' }],
+  creator: '@OuwePiet',
+  publisher: 'VIA / @OuwePiet',
   manifest: '/manifest.webmanifest',
   appleWebApp: {
     capable: true,
