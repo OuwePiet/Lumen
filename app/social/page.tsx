@@ -27,11 +27,10 @@ export default function SocialPage() {
           </nav>
         </header>
 
-        <section className="rounded-2xl border border-white/10 bg-black/35 p-4 sm:p-5" aria-labelledby="composer-heading">
-          <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+        <section className="rounded-2xl border border-white/10 bg-black/35 p-3 sm:p-4" aria-labelledby="composer-heading">
+          <div className="mb-2 flex flex-wrap items-center justify-between gap-3">
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#8fd4a9]">VIA POST</p>
-              <h2 id="composer-heading" className="mt-1 text-lg font-semibold">What do you want to share?</h2>
+              <h2 id="composer-heading" className="text-base font-semibold sm:text-lg">Post</h2>
             </div>
             <Link href="/edit-post" className="text-xs text-zinc-500 transition hover:text-[#9adbb2]">Edit your post</Link>
           </div>
