@@ -39,6 +39,7 @@ export default function MintMediaStep({ onPostHash }: { onPostHash?: (postHash: 
         const response=await fetch("/api/via/social/post",{method:"POST",headers:{"Content-Type":"application/json"},cache:"no-store",body:JSON.stringify({action:"submit",signedTransactionHex})})
         const result=await response.json() as {ok?:boolean;postHashHex?:string|null;error?:string}
         if(!response.ok || !result.ok || !result.postHashHex) throw new Error(result.error || "POST_HASH_MISSING")
+        if(!/^[0-9a-fA-F]{64}$/.test(result.postHashHex)) throw new Error("INVALID_POST_HASH")
         onPostHash?.(result.postHashHex)
         setMessage("Source post confirmed. Its DeSo PostHash is ready for the NFT mint terms below.")
       } catch { setMessage("The approved source post could not be handed to the mint step. Minting did not start.") }
