@@ -10,9 +10,10 @@ const choices: Array<{id:StorageMode; title:string; text:string}> = [
   { id:"advanced", title:"Advanced", text:"Use a supported external/IPFS provider, your own server, or an existing durable media URL." },
 ]
 
-export default function MintMediaStep() {
+export default function MintMediaStep({ onPostHash }: { onPostHash?: (postHash: string) => void }) {
   const [mode,setMode]=useState<StorageMode>("deso")
   const [fileName,setFileName]=useState("")
+  void onPostHash
   return (
     <section className="mb-4 rounded-[14px] border border-zinc-800/80 bg-zinc-950/55 p-5 sm:p-6" aria-labelledby="mint-media-heading">
       <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#8fd4a9]">Step 1 · Media</p>
