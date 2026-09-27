@@ -101,7 +101,7 @@ export default function MintMediaStep({ onPostHash }: { onPostHash?: (postHash: 
 
       <label className="mt-5 grid gap-2">
         <span className="text-sm font-semibold text-zinc-200">Choose image, video, audio or other NFT media</span>
-        <input type="file" onChange={(e)=>{const next=e.target.files?.[0] ?? null; setFile(next); setFileName(next?.name ?? ""); setImageUrl(""); setMessage(""); onPostHash?.("")}} className="block w-full rounded-[11px] border border-zinc-700/80 bg-[#050807] px-3 py-3 text-sm text-zinc-300 file:mr-3 file:rounded-lg file:border-0 file:bg-zinc-800 file:px-3 file:py-2 file:font-semibold file:text-zinc-100"/>
+        <input type="file" onChange={(e)=>{const next=e.target.files?.[0] ?? null; setFile(next); setFileName(next?.name ?? ""); setImageUrl(""); setDescription(""); setSensitiveContent(false); setMessage(""); onPostHash?.("")}} className="block w-full rounded-[11px] border border-zinc-700/80 bg-[#050807] px-3 py-3 text-sm text-zinc-300 file:mr-3 file:rounded-lg file:border-0 file:bg-zinc-800 file:px-3 file:py-2 file:font-semibold file:text-zinc-100"/>
         {fileName ? <span className="text-xs text-zinc-500">Selected locally: {fileName} · {imageUrl ? "uploaded to DeSo" : "not uploaded yet"}</span> : null}
       </label>
       {mode==="deso" && file?.type.startsWith("image/") ? <button type="button" onClick={uploadStandardImage} disabled={!session || uploading} className="mt-3 rounded-[11px] border border-[#8fd4a9]/50 px-4 py-2 text-sm font-semibold text-[#9adbb2] disabled:opacity-40">{uploading ? "Uploading…" : "Upload image to DeSo"}</button> : null}
