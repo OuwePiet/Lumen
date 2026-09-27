@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import Link from "next/link"
 import MintPreflight from "./mint-preflight"
 import MintPreflightLocalizer from "./mint-preflight-localizer"
+import MintMediaStep from "./mint-media-step"
 
 export const metadata: Metadata = {
   title: "Mint · NF.VIA",
@@ -25,6 +26,7 @@ export default function StudioPage() {
 
         <section id="mint-nft" aria-label="Mint NFT">
           <MintPreflightLocalizer />
+          <MintMediaStep />
           <MintPreflight />
         </section>
       </div>
