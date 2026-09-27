@@ -151,7 +151,11 @@ export async function POST(request: Request) {
         body: JSON.stringify({ TransactionHex: signedTransactionHex }),
       })
       if (!response.ok) return noStore({ ok: false, error: "DESO_SUBMIT_REJECTED" }, 502)
-      return noStore({ ok: true, transaction: await response.json() as Record<string, unknown> })
+      const transaction = await response.json() as Record<string, unknown>
+      const postHashHex = typeof transaction.PostEntryResponse === "object" && transaction.PostEntryResponse !== null
+        ? (transaction.PostEntryResponse as Record<string, unknown>).PostHashHex
+        : undefined
+      return noStore({ ok: true, transaction, postHashHex: validPostHash(postHashHex) ? postHashHex : null })
     } catch {
       return noStore({ ok: false, error: "DESO_SUBMIT_UNAVAILABLE" }, 503)
     }
