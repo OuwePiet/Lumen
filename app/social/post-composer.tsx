@@ -291,15 +291,11 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
 
   return (
     <div className={`${compact ? "mt-3" : "mt-2"} bg-transparent p-0`}>
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#8fd4a9]">{isReply ? "Reply" : "Create post"}</p>
-          
-        </div>
+      <div className="flex justify-end">
         <span className="text-xs text-zinc-500">{body.length.toLocaleString()} / {MAX_POST_LENGTH.toLocaleString()}</span>
       </div>
 
-      <label htmlFor={isReply ? `via-reply-${parentStakeID}` : "via-post-body"} className="mt-4 block text-sm font-medium text-zinc-200">{isReply ? "Reply" : "Post"}</label>
+      <label htmlFor={isReply ? `via-reply-${parentStakeID}` : "via-post-body"} className="sr-only">{isReply ? "Reply" : "Post"}</label>
       <textarea ref={textareaRef} id={isReply ? `via-reply-${parentStakeID}` : "via-post-body"} value={body} onChange={(event) => { setBody(event.target.value); setDraftMessage(""); if (status === "done" || status === "error") { setStatus("idle"); setMessage("") } }} maxLength={MAX_POST_LENGTH} rows={compact ? 3 : 5} placeholder={isReply ? "Write a reply…" : "What do you want to share?"} className="mt-2 w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-3 text-sm text-zinc-100 outline-none focus:border-[#8fd4a9]/55" />
 
       <div className="mt-3 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center">
