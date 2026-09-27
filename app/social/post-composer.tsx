@@ -292,10 +292,10 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
     <div className={`${compact ? "mt-3" : "mt-5"} rounded-2xl border border-[#285f40]/60 bg-black/35 p-4`}>
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#8fd4a9]">{isReply ? "Released write action · DeSo reply" : "Controlled write action · DeSo post + media"}</p>
-          <p className="mt-1 text-xs text-zinc-500">Connected key: {session.publicKey.slice(0, 10)}…{session.publicKey.slice(-6)}</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#8fd4a9]">{isReply ? "Reply" : "Create post"}</p>
+          
         </div>
-        <span className="rounded-full border border-zinc-800 px-3 py-1 text-xs text-zinc-400">Approval required every {isReply ? "reply" : "post"}</span>
+        <span className="text-xs text-zinc-500">0 / {MAX_POST_LENGTH.toLocaleString()}</span>
       </div>
 
       <label htmlFor={isReply ? `via-reply-${parentStakeID}` : "via-post-body"} className="mt-4 block text-sm font-medium text-zinc-200">{isReply ? "Reply text" : "Post text"}</label>
@@ -359,8 +359,8 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
 
       <div className="mt-2 flex flex-wrap items-center justify-between gap-3 text-xs text-zinc-500"><span>{remaining.toLocaleString()} characters left</span>{feeLabel ? <span>{feeLabel}</span> : null}</div>
       <div className="mt-4 flex flex-wrap items-center gap-3">
-        <button type="button" onClick={preparePost} disabled={!canPrepare} className="rounded-xl border border-[#8fd4a9]/55 px-4 py-2 text-sm font-semibold text-[#9adbb2] disabled:cursor-not-allowed disabled:border-zinc-800 disabled:text-zinc-600">{status === "preparing" ? "Preparing…" : status === "awaiting-approval" ? "Awaiting DeSo approval…" : status === "submitting" ? "Submitting…" : isReply ? "Review in DeSo & reply" : "Review in DeSo & post"}</button>
-        <span className="text-xs text-zinc-600">VIA never signs this transaction itself.</span>
+        <button type="button" onClick={preparePost} disabled={!canPrepare} className="rounded-xl border border-[#8fd4a9]/55 px-4 py-2 text-sm font-semibold text-[#9adbb2] disabled:cursor-not-allowed disabled:border-zinc-800 disabled:text-zinc-600">{status === "preparing" ? "Preparing…" : status === "awaiting-approval" ? "Awaiting approval…" : status === "submitting" ? "Posting…" : isReply ? "Reply" : "Post"}</button>
+        
       </div>
       {message ? <p className={`mt-3 text-sm ${status === "done" ? "text-[#9adbb2]" : status === "error" ? "text-amber-300" : "text-zinc-400"}`}>{message}</p> : null}
     </div>
