@@ -335,10 +335,10 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
 
       {mediaOpen ? <div className="mt-4 rounded-xl border border-zinc-800 bg-zinc-950/70 p-3">
         <p className="text-sm font-medium text-zinc-200">Images</p>
-        <p className="mt-1 text-xs leading-5 text-zinc-500">Choose an image to upload through DeSo, or paste an existing durable HTTPS URL. VIA does not keep a permanent copy. A short-lived Identity JWT is requested only for the upload.</p>
+        <p className="mt-1 text-xs leading-5 text-zinc-500">Choose up to four images.</p>
 
         {imageUrls.length < MAX_IMAGES ? <label className="mt-3 inline-flex cursor-pointer items-center rounded-lg border border-[#285f40] px-3 py-2 text-xs font-semibold text-[#9adbb2]">
-          {imageUploading ? "Working with DeSo…" : "Choose image for DeSo upload"}
+          {imageUploading ? "Uploading…" : "Choose image"}
           <input type="file" accept="image/gif,image/jpeg,image/png,image/webp" className="sr-only" disabled={imageUploading} onChange={(event) => { const file = event.target.files?.[0] ?? null; event.currentTarget.value = ""; void uploadImage(file) }} />
         </label> : null}
         <p className="mt-2 text-xs text-zinc-600">GIF, JPEG, PNG or WebP · smaller than 10 MB · maximum {MAX_IMAGES} images per post.</p>
@@ -349,7 +349,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
 
         <div className="mt-5 border-t border-zinc-800 pt-4">
           <p className="text-sm font-medium text-zinc-200">Video</p>
-          <p className="mt-1 text-xs leading-5 text-zinc-500">Upload one video through DeSo&apos;s tokenized tus flow. VIA waits until the stream is ready and then attaches its HTTPS URL to this draft automatically.</p>
+          <p className="mt-1 text-xs leading-5 text-zinc-500">Choose one video.</p>
           <VideoUploadControl onReady={setVideoInput} onBusyChange={setVideoUploading} />
           <input value={videoInput} onChange={(event) => setVideoInput(event.target.value)} placeholder="Ready DeSo video HTTPS URL (optional)" className="mt-3 w-full rounded-lg border border-zinc-800 bg-black/40 px-3 py-2 text-sm text-zinc-200 outline-none focus:border-[#8fd4a9]/55" />
           <p className="mt-1 text-xs text-zinc-600">Uploading or processing a video temporarily disables post preparation. The post itself still requires DeSo Identity approval.</p>
