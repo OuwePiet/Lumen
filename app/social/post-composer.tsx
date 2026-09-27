@@ -15,7 +15,7 @@ const SOCIAL_REPLY_DRAFT_PREFIX = "via:social:reply-draft:v1:"
 const COMPOSER_EMOJI = ["😀", "😄", "😂", "😍", "😎", "🤔", "👏", "👍", "❤️", "🔥", "🎉", "🚀", "🌍", "🎨", "🎵", "✨"] as const
 const ALLOWED_IMAGE_TYPES = new Set(["image/gif", "image/jpeg", "image/png", "image/webp"])
 
-type PrepareResponse = { ok?: boolean; transactionHex?: string; feeNanos?: number | null; error?: string }
+type PrepareResponse = { ok?: boolean; transactionHex?: string; error?: string }
 type SubmitResponse = { ok?: boolean; transaction?: Record<string, unknown>; error?: string }
 type UploadResponse = { ok?: boolean; imageUrl?: string; error?: string }
 type PostComposerProps = { parentStakeID?: string; compact?: boolean; onDone?: () => void }
