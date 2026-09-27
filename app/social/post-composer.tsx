@@ -57,6 +57,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
   const [imageUploadMessage, setImageUploadMessage] = useState("")
   const [videoUploading, setVideoUploading] = useState(false)
   const [mediaOpen, setMediaOpen] = useState(false)
+  const [mediaChoice, setMediaChoice] = useState<"photo" | "video">("photo")
   const [draftMessage, setDraftMessage] = useState("")
   const popupRef = useRef<Window | null>(null)
   const popupWatch = useRef<number | null>(null)
