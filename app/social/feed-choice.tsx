@@ -10,7 +10,7 @@ export const VIA_SOCIAL_FEED_EVENT = "via:social:feed-choice"
 const choices = [
   { id: "following", title: "Following", text: "Posts from accounts followed by the active DeSo identity." },
   { id: "hot", title: "Hot", text: "DeSo Hot ranking." },
-  { id: "recent", title: "New", text: "Newest public posts first." },
+  { id: "recent", title: "Recent", text: "Newest public posts first." },
 ] as const
 
 export type ChoiceId = (typeof choices)[number]["id"]
@@ -81,7 +81,7 @@ export default function FeedChoice() {
               </button>
             )
           })}
-          <Link href="/discover" className={inactiveClass}>#Explore</Link>
+
         </div>
       </div>
       <p className="mt-2 min-h-4 text-[11px] text-zinc-600" role="status" aria-live="polite">{status}</p>
