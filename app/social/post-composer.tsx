@@ -146,8 +146,6 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
   const busy = status === "preparing" || status === "awaiting-approval" || status === "submitting"
   const imageUploading = imageUploadStatus === "jwt" || imageUploadStatus === "uploading"
   const canPrepare = Boolean(session && hasContent && body.length <= MAX_POST_LENGTH && !mediaInvalid && pollValid && !busy && !imageUploading && !videoUploading)
-  const remaining = MAX_POST_LENGTH - body.length
-  const feeLabel = useMemo(() => feeNanos === null ? null : `${feeNanos.toLocaleString()} nanos network fee in the prepared transaction`, [feeNanos])
 
   function insertEmoji(emoji: string) {
     if (body.length + emoji.length > MAX_POST_LENGTH) return
