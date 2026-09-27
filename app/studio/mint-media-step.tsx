@@ -20,6 +20,7 @@ export default function MintMediaStep({ onPostHash }: { onPostHash?: (postHash: 
   const [session,setSession]=useState<ViaIdentitySession | null>(null)
   const [uploading,setUploading]=useState(false)
   const [imageUrl,setImageUrl]=useState("")
+  const [videoUrl,setVideoUrl]=useState("")
   const [message,setMessage]=useState("")
   const [description,setDescription]=useState("")
   const [sensitiveContent,setSensitiveContent]=useState(false)
@@ -62,7 +63,7 @@ export default function MintMediaStep({ onPostHash }: { onPostHash?: (postHash: 
   },[])
 
   async function createSourcePost(){
-    const sourceUrl=mode==="advanced" ? externalMediaUrl.trim() : imageUrl
+    const sourceUrl=mode==="advanced" ? externalMediaUrl.trim() : (videoUrl || imageUrl)
     if(mode==="protected"){ setMessage("Protected storage is not connected yet. Nothing was uploaded, posted or minted."); return }
     if(!session){ setMessage("Sign in with DeSo Identity before creating the source post. Nothing was posted or minted."); return }
     if(!sourceUrl || postBusy) return
