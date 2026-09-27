@@ -56,7 +56,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
   const [imageUploadStatus, setImageUploadStatus] = useState<"idle" | "jwt" | "uploading" | "error">("idle")
   const [imageUploadMessage, setImageUploadMessage] = useState("")
   const [videoUploading, setVideoUploading] = useState(false)
-  const [mediaOpen, setMediaOpen] = useState<"photo" | "video" | null>(null)
+  const [mediaOpen, setMediaOpen] = useState(false)
   const [draftMessage, setDraftMessage] = useState("")
   const popupRef = useRef<Window | null>(null)
   const popupWatch = useRef<number | null>(null)
@@ -300,7 +300,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
 
       <div className="mt-3 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center">
         <button type="button" onClick={() => setEmojiOpen((open) => !open)} disabled={busy} className="min-h-10 rounded-lg border border-zinc-800 px-3 py-1.5 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2] disabled:opacity-50">Emoji</button>
-        {!isReply ? <button type="button" onClick={() => setMediaOpen((open) => open ? null : "photo")} disabled={busy} className="rounded-lg border border-zinc-800 px-3 py-1.5 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2] disabled:opacity-50">Photo / Video</button> : null}
+        {!isReply ? <button type="button" onClick={() => setMediaOpen((open) => !open)} disabled={busy} className="rounded-lg border border-zinc-800 px-3 py-1.5 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2] disabled:opacity-50">Photo / Video</button> : null}
         {!isReply ? <>
           <button type="button" onClick={saveDraft} disabled={busy} className="rounded-lg border border-zinc-800 px-3 py-1.5 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2] disabled:opacity-50">Save</button>
           <button type="button" onClick={() => { setPollOpen((open) => !open); if (pollOpen) setPollOptions(["", ""]) }} disabled={busy} className="rounded-lg border border-zinc-800 px-3 py-1.5 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2] disabled:opacity-50">{pollOpen ? "Remove poll" : "Poll"}</button>
@@ -328,11 +328,10 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
 
       {!isReply ? <label className="mt-3 flex items-center gap-2 text-xs text-zinc-500"><input type="checkbox" checked={sensitiveContent} onChange={(event)=>setSensitiveContent(event.target.checked)} className="h-4 w-4 accent-[#8fd4a9]" /><span>Sensitive content</span></label> : null}
 
-      {isReply ? <button type="button" onClick={() => setMediaOpen((open) => open ? null : "photo")} className="mt-3 rounded-lg border border-zinc-800 px-3 py-1.5 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2]">Photo / Video</button> : null}
+      {isReply ? <button type="button" onClick={() => setMediaOpen((open) => !open)} className="mt-3 rounded-lg border border-zinc-800 px-3 py-1.5 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2]">{mediaOpen ? "Hide photo/video" : "Photo / Video"}</button> : null}
 
       {mediaOpen ? <div className="mt-4 rounded-xl border border-zinc-800 bg-zinc-950/70 p-3">
-        {!isReply ? <div className="mb-3 inline-flex overflow-hidden rounded-lg border border-zinc-800"><button type="button" onClick={() => setMediaOpen("photo")} className={`px-3 py-2 text-xs ${mediaOpen === "photo" ? "bg-[#0c1711] text-[#9adbb2]" : "text-zinc-400"}`}>Photo</button><button type="button" onClick={() => setMediaOpen("video")} className={`border-l border-zinc-800 px-3 py-2 text-xs ${mediaOpen === "video" ? "bg-[#0c1711] text-[#9adbb2]" : "text-zinc-400"}`}>Video</button></div> : null}
-        {mediaOpen === "photo" ? <><p className="text-sm font-medium text-zinc-200">Images</p>
+        <p className="text-sm font-medium text-zinc-200">Images</p>
         <p className="mt-1 text-xs leading-5 text-zinc-500">Choose up to four images.</p>
 
         {imageUrls.length < MAX_IMAGES ? <label className="mt-3 inline-flex cursor-pointer items-center rounded-lg border border-[#285f40] px-3 py-2 text-xs font-semibold text-[#9adbb2]">
@@ -345,14 +344,13 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
         <div className="mt-3 space-y-2">{imageInputs.map((value, index) => <input key={index} value={value} onChange={(event) => changeImage(index, event.target.value)} placeholder={`Image HTTPS URL ${index + 1}`} className="w-full rounded-lg border border-zinc-800 bg-black/40 px-3 py-2 text-sm text-zinc-200 outline-none focus:border-[#8fd4a9]/55" />)}</div>
         {imageInputs.length < MAX_IMAGES ? <button type="button" onClick={() => setImageInputs((current) => [...current, ""])} className="mt-2 text-xs text-[#9adbb2]">+ Add image URL</button> : null}
 
-        </> : null}
-        {mediaOpen === "video" ? <div>
+        <div className="mt-5 border-t border-zinc-800 pt-4">
           <p className="text-sm font-medium text-zinc-200">Video</p>
           <p className="mt-1 text-xs leading-5 text-zinc-500">Choose one video.</p>
           <VideoUploadControl onReady={setVideoInput} onBusyChange={setVideoUploading} />
           <input value={videoInput} onChange={(event) => setVideoInput(event.target.value)} placeholder="Ready DeSo video HTTPS URL (optional)" className="mt-3 w-full rounded-lg border border-zinc-800 bg-black/40 px-3 py-2 text-sm text-zinc-200 outline-none focus:border-[#8fd4a9]/55" />
           <p className="mt-1 text-xs text-zinc-600">Uploading or processing a video temporarily disables post preparation. The post itself still requires DeSo Identity approval.</p>
-        </div> : null}
+        </div>
         {mediaInvalid ? <p className="mt-2 text-xs text-amber-300">Media links must be valid HTTPS URLs without embedded credentials.</p> : null}
       </div> : null}
 
