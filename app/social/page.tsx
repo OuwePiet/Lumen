@@ -21,8 +21,8 @@ export default function SocialPage() {
             <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">VIA Post Home</h1>
             <p className="mt-1 text-sm text-zinc-500">Write, publish and follow DeSo posts in the VIA way.</p>
           </div>
-          <nav className="flex flex-wrap gap-2" aria-label="VIA Post Home shortcuts">
-            <Link href="/notifications" className="rounded-full border border-white/10 bg-white/[0.02] px-4 py-2 text-sm text-zinc-300 transition hover:border-[#8fd4a9]/40 hover:text-[#9adbb2]">Notifications</Link>
+          <nav className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:flex-wrap" aria-label="VIA Post Home shortcuts">
+            <Link href="/notifications" className="rounded-full border border-white/10 bg-white/[0.02] px-3 py-2 text-center text-sm text-zinc-300 transition hover:border-[#8fd4a9]/40 hover:text-[#9adbb2]">Notifications</Link>
             <Link href="/saved" className="rounded-full border border-white/10 bg-white/[0.02] px-4 py-2 text-sm text-zinc-300 transition hover:border-[#8fd4a9]/40 hover:text-[#9adbb2]">Saved</Link>
           </nav>
         </header>
