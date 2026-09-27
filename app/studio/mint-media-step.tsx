@@ -79,6 +79,7 @@ export default function MintMediaStep({ onPostHash }: { onPostHash?: (postHash: 
       if(postPopupWatchRef.current!==null) window.clearInterval(postPopupWatchRef.current)
       postPopupWatchRef.current=window.setInterval(()=>{ if(postPopupRef.current?.closed){ window.clearInterval(postPopupWatchRef.current!); postPopupWatchRef.current=null; postPopupRef.current=null; setPostBusy(false); setMessage("DeSo Identity approval was closed. Nothing was submitted or minted.") } },500)
       setMessage("Review and approve the source post in DeSo Identity. Minting has not started yet.")
+      popup.focus()
     } catch { setMessage("The source post could not be prepared. Nothing was posted or minted.") }
     finally { setPostBusy(false) }
   }
