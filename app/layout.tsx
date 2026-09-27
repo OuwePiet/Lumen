@@ -112,7 +112,7 @@ export default async function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark">
-      <body className="antialiased via-session-pending">
+      <body className="antialiased via-session-pending" data-via-provenance="@OuwePiet-2026">
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(viaStructuredData) }} />
         <ViaPublicAccountGuard />
         <ViaSiteHeader />
