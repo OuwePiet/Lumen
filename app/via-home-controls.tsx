@@ -38,7 +38,6 @@ const standardNav = [
   ["bookmarks", "/saved"],
   ["profile", "/profile"],
   ["wallet", "/wallet"],
-  ["more", "/more"],
 ] as const
 
 const viaExtraNav = [
