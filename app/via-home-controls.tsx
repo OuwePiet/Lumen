@@ -64,7 +64,7 @@ const languageFlags: Record<ViaLanguage | "Hindi", string> = {
 const languageFlagCountry: Record<ViaLanguage, string> = { Dutch: "nl", English: "gb", French: "fr", Spanish: "es", Chinese: "cn", Hindi: "in" }
 
 function LanguageFlag({ language }: { language: ViaLanguage }) {
-  return <img src={`/flags/${languageFlagCountry[language]}.svg`} alt="" aria-hidden="true" width={22} height={15} style={{ width: 22, height: 15, objectFit: "cover", borderRadius: 2, flexShrink: 0 }} />
+  return <img src={`https://flagcdn.com/w40/${languageFlagCountry[language]}.png`} alt="" aria-hidden="true" width={22} height={15} style={{ width: 22, height: 15, objectFit: "cover", borderRadius: 2, flexShrink: 0 }} />
 }
 
 type HomeText = {
