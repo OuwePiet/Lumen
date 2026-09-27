@@ -278,7 +278,7 @@ export default function PublicPosts() {
           {visiblePosts.map((post) => {
             const images = post.imageUrls.map(safeHttps).filter((url): url is string => Boolean(url)).slice(0, 4)
             const videos = post.videoUrls.map(safeHttps).filter((url): url is string => Boolean(url)).slice(0, 2)
-            const time = postTime(post.timestampNanos)\n            const youtubeId = youtubeVideoId(post.body)
+            const time = postTime(post.timestampNanos)
             const isReplying = replyingTo === post.postHash
             const totalReposts = post.repostCount + post.quoteRepostCount
             const isOwnPost = session?.publicKey === post.publicKey
