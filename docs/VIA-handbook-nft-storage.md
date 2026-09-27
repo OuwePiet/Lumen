@@ -72,3 +72,11 @@ Measurement sources stay separated by purpose:
 - VIA/DeSo Identity presence: logged-in versus guest presence only when a reliable aggregated presence mechanism exists.
 
 A page view must not be presented as an active user, and general DeSo activity must not be presented as VIA activity unless the VIA relationship is verifiable. VIA should minimize personal data collection and prefer aggregated counts.
+
+## Post Home — embedded video policy
+
+- A YouTube link in a VIA post should be recognized as the exact referenced video and, where YouTube permits embedding, play inside VIA rather than sending the visitor away by default.
+- VIA should extract and preserve the exact YouTube video ID so the user never has to search for the intended video again.
+- The post presentation should use an in-VIA preview/player. If the video owner disables embedding or playback cannot be provided inside VIA, the fallback link must open that exact video on YouTube.
+- Post Home supports three distinct video paths without duplicating infrastructure: upload/select video, record video where the device/browser permits it, and paste an external video link such as YouTube.
+- Reuse VIA's existing DeSo post/media pipeline wherever possible; do not build a second posting or video transaction system.
