@@ -11,6 +11,23 @@ const MAX_POLL_OPTIONS = 5
 const MAX_POLL_OPTION_LENGTH = 120
 const DEFAULT_MIN_FEE_RATE_NANOS_PER_KB = 1000
 
+// VIA transaction preparation protection — @OuwePiet 2026.
+const prepareWindows = new Map<string, { count: number; resetAt: number }>()
+const PREPARE_WINDOW_MS = 60_000
+const MAX_PREPARES_PER_WINDOW = 30
+
+function allowPrepare(publicKey: string) {
+  const now = Date.now()
+  const current = prepareWindows.get(publicKey)
+  if (!current || current.resetAt <= now) {
+    prepareWindows.set(publicKey, { count: 1, resetAt: now + PREPARE_WINDOW_MS })
+    return true
+  }
+  if (current.count >= MAX_PREPARES_PER_WINDOW) return false
+  current.count += 1
+  return true
+}
+
 function noStore(data: unknown, status = 200) {
   return NextResponse.json(data, { status, headers: { "Cache-Control": "no-store" } })
 }
@@ -86,6 +103,7 @@ export async function POST(request: Request) {
     const sensitiveContent = body.sensitiveContent === true
 
     if (!validPublicKey(publicKey)) return noStore({ ok: false, error: "INVALID_PUBLIC_KEY" }, 400)
+    if (!allowPrepare(publicKey)) return noStore({ ok: false, error: "PREPARE_RATE_LIMITED" }, 429)
     if (text.length > MAX_POST_LENGTH || text.includes("\u0000")) return noStore({ ok: false, error: "INVALID_POST_BODY" }, 400)
     if (!imageUrls) return noStore({ ok: false, error: "INVALID_IMAGE_URLS" }, 400)
     if (!videoUrls) return noStore({ ok: false, error: "INVALID_VIDEO_URLS" }, 400)
