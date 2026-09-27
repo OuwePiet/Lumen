@@ -60,6 +60,7 @@ export default function MintMediaStep({ onPostHash }: { onPostHash?: (postHash: 
 
   async function createSourcePost(){
     const sourceUrl=mode==="advanced" ? externalMediaUrl.trim() : imageUrl
+    if(mode==="protected"){ setMessage("Protected storage is not connected yet. Nothing was uploaded, posted or minted."); return }
     if(!session || !sourceUrl || postBusy) return
     if(mode==="advanced"){ try { const parsed=new URL(sourceUrl); if(parsed.protocol!=="https:") throw new Error("HTTPS_REQUIRED") } catch { setMessage("Use a valid HTTPS media URL. Nothing was posted or minted."); return } }
     setPostBusy(true); setMessage("Preparing the DeSo source post…")
@@ -109,7 +110,7 @@ export default function MintMediaStep({ onPostHash }: { onPostHash?: (postHash: 
 
       <div className="mt-5 grid gap-3 sm:grid-cols-3">
         {choices.map((choice)=>(
-          <button key={choice.id} type="button" onClick={()=>setMode(choice.id)} aria-pressed={mode===choice.id}
+          <button key={choice.id} type="button" onClick={()=>{setMode(choice.id); onPostHash?.(""); setMessage(choice.id==="protected" ? "Protected storage is not connected yet. Nothing will be uploaded until a provider and cost are confirmed." : "")}} aria-pressed={mode===choice.id}
             className={`min-h-32 rounded-[12px] border p-4 text-left transition ${mode===choice.id ? "border-[#8fd4a9]/60 bg-[#0c1711]/60" : "border-zinc-800 bg-black/20 hover:border-zinc-700"}`}>
             <span className="block text-sm font-semibold text-zinc-100">{choice.title}</span>
             <span className="mt-2 block text-xs leading-5 text-zinc-400">{choice.text}</span>
