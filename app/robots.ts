@@ -1,22 +1,12 @@
 import type { MetadataRoute } from 'next'
 
+// VIA pre-release protection — @OuwePiet 2026.
+// Keep public browsing available for invited testers, but do not invite search-engine indexing yet.
 export default function robots(): MetadataRoute.Robots {
   return {
     rules: {
       userAgent: '*',
-      allow: '/',
-      disallow: [
-        '/api/',
-        '/my-via/',
-        '/messages/',
-        '/wallet/',
-        '/settings/',
-        '/notifications/',
-        '/saved/',
-        '/edit-post/',
-      ],
+      disallow: '/',
     },
-    sitemap: 'https://viadeso.online/sitemap.xml',
-    host: 'https://viadeso.online',
   }
 }
