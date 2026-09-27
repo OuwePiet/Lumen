@@ -1,9 +1,10 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { DESO_IDENTITY_ORIGIN, restoreIdentitySession, VIA_IDENTITY_EVENT, type ViaIdentitySession } from "../deso-identity-session"
 import { requestIdentityJwt } from "./identity-jwt"
 import VideoUploadControl from "./video-upload-control"
+import SponsorPlatform from "../sponsor-platform"
 
 const MAX_POST_LENGTH = 5000
 const MAX_IMAGES = 4
@@ -15,7 +16,7 @@ const SOCIAL_REPLY_DRAFT_PREFIX = "via:social:reply-draft:v1:"
 const COMPOSER_EMOJI = ["😀", "😄", "😂", "😍", "😎", "🤔", "👏", "👍", "❤️", "🔥", "🎉", "🚀", "🌍", "🎨", "🎵", "✨"] as const
 const ALLOWED_IMAGE_TYPES = new Set(["image/gif", "image/jpeg", "image/png", "image/webp"])
 
-type PrepareResponse = { ok?: boolean; transactionHex?: string; error?: string }
+type PrepareResponse = { ok?: boolean; transactionHex?: string; feeNanos?: number | null; error?: string }
 type SubmitResponse = { ok?: boolean; transaction?: Record<string, unknown>; error?: string }
 type UploadResponse = { ok?: boolean; imageUrl?: string; error?: string }
 type PostComposerProps = { parentStakeID?: string; compact?: boolean; onDone?: () => void }
@@ -51,6 +52,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
   const [emojiOpen, setEmojiOpen] = useState(false)
   const [status, setStatus] = useState<"idle" | "preparing" | "awaiting-approval" | "submitting" | "done" | "error">("idle")
   const [message, setMessage] = useState("")
+  const [feeNanos, setFeeNanos] = useState<number | null>(null)
   const [imageUploadStatus, setImageUploadStatus] = useState<"idle" | "jwt" | "uploading" | "error">("idle")
   const [imageUploadMessage, setImageUploadMessage] = useState("")
   const [videoUploading, setVideoUploading] = useState(false)
@@ -107,6 +109,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
         setSensitiveContent(false)
         setPollOptions(["", ""])
         setEmojiOpen(false)
+        setFeeNanos(null)
         setImageUploadStatus("idle")
         setImageUploadMessage("")
         setVideoUploading(false)
@@ -143,6 +146,8 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
   const busy = status === "preparing" || status === "awaiting-approval" || status === "submitting"
   const imageUploading = imageUploadStatus === "jwt" || imageUploadStatus === "uploading"
   const canPrepare = Boolean(session && hasContent && body.length <= MAX_POST_LENGTH && !mediaInvalid && pollValid && !busy && !imageUploading && !videoUploading)
+  const remaining = MAX_POST_LENGTH - body.length
+  const feeLabel = useMemo(() => feeNanos === null ? null : `${feeNanos.toLocaleString()} nanos network fee in the prepared transaction`, [feeNanos])
 
   function insertEmoji(emoji: string) {
     if (body.length + emoji.length > MAX_POST_LENGTH) return
@@ -244,6 +249,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
     if (isReply) saveDraft()
     setStatus("preparing")
     setMessage(isReply ? "Preparing the exact DeSo reply transaction…" : "Preparing the exact DeSo post transaction with its media and poll data…")
+    setFeeNanos(null)
     try {
       const response = await fetch("/api/via/social/post", {
         method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store",
@@ -251,6 +257,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
       })
       const data = await response.json() as PrepareResponse
       if (!response.ok || !data.ok || !data.transactionHex) throw new Error(data.error || "PREPARE_FAILED")
+      setFeeNanos(typeof data.feeNanos === "number" ? data.feeNanos : null)
       const approveUrl = `${DESO_IDENTITY_ORIGIN}/approve?tx=${encodeURIComponent(data.transactionHex)}`
       const width = Math.min(800, window.screen.availWidth)
       const height = Math.min(900, window.screen.availHeight)
