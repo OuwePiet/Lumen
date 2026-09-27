@@ -61,6 +61,12 @@ const languageFlags: Record<ViaLanguage | "Hindi", string> = {
   Dutch: "🇳🇱", English: "🇬🇧", French: "🇫🇷", Spanish: "🇪🇸", Chinese: "🇨🇳", Hindi: "🇮🇳",
 }
 
+const languageFlagCountry: Record<ViaLanguage, string> = { Dutch: "nl", English: "gb", French: "fr", Spanish: "es", Chinese: "cn", Hindi: "in" }
+
+function LanguageFlag({ language }: { language: ViaLanguage }) {
+  return <img src={`/flags/${languageFlagCountry[language]}.svg`} alt="" aria-hidden="true" width={22} height={15} style={{ width: 22, height: 15, objectFit: "cover", borderRadius: 2, flexShrink: 0 }} />
+}
+
 type HomeText = {
   standard: string
   viaExtra: string
@@ -389,12 +395,12 @@ export default function ViaHomeControls() {
           <SponsorPlatform compact showIcon={false} />
           <div className="via-home-language-control">
             <button type="button" onClick={() => setLanguageOpen((open) => !open)} aria-label="VIA language" aria-expanded={languageOpen} style={{ ...buttonStyle, minHeight: "34px", padding: "5px 8px", gap: "5px", cursor: "pointer", width: "100%", justifyContent: "center" }}>
-              <span aria-hidden="true" style={{ fontSize: "14px", lineHeight: 1 }}>{languageFlags[language]}</span>
+              <LanguageFlag language={language} />
               <span>{languageCodes[language]}</span>
             </button>
             {languageOpen ? <div className="via-home-language-menu" role="menu" aria-label="VIA language">
               {VIA_LANGUAGES.map((item) => <button key={item} type="button" role="menuitemradio" aria-checked={item === language} onClick={() => changeLanguage(item)} className={item === language ? "is-active" : ""}>
-                <span aria-hidden="true">{languageFlags[item]}</span><span>{languageCodes[item]}</span>
+                <LanguageFlag language={item} /><span>{languageCodes[item]}</span>
               </button>)}
             </div> : null}
           </div>
