@@ -1,5 +1,6 @@
 import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
+import { headers } from 'next/headers'
 import './global.css'
 import './visitor-account-access.css'
 import RadioLocalizer from './radio/radio-localizer'
@@ -100,7 +101,7 @@ export const viewport: Viewport = {
   themeColor: '#050807',
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
