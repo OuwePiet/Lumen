@@ -291,8 +291,9 @@ export default function ViaHomeControls() {
   }, [knownAccounts])
 
   function changeLanguage(next: ViaLanguage) {
-    saveViaLocalSettings({ interfaceLanguage: next })
+    saveViaLocalSettings({ interfaceLanguage: next, defaultLanguage: next })
     setLanguage(next)
+    setLanguageOpen(false)
   }
 
   function openDeSoIdentity() {
@@ -392,7 +393,7 @@ export default function ViaHomeControls() {
               <span>{languageCodes[language]}</span>
             </button>
             {languageOpen ? <div className="via-home-language-menu" role="menu" aria-label="VIA language">
-              {VIA_LANGUAGES.map((item) => <button key={item} type="button" role="menuitemradio" aria-checked={item === language} onClick={() => { changeLanguage(item); setLanguageOpen(false) }} className={item === language ? "is-active" : ""}>
+              {VIA_LANGUAGES.map((item) => <button key={item} type="button" role="menuitemradio" aria-checked={item === language} onClick={() => changeLanguage(item)} className={item === language ? "is-active" : ""}>
                 <span aria-hidden="true">{languageFlags[item]}</span><span>{languageCodes[item]}</span>
               </button>)}
             </div> : null}
