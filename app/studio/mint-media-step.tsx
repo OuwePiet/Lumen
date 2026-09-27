@@ -66,7 +66,7 @@ export default function MintMediaStep({ onPostHash }: { onPostHash?: (postHash: 
     if(!session){ setMessage("Sign in with DeSo Identity before creating the source post. Nothing was posted or minted."); return }
     if(!sourceUrl || postBusy) return
     if(description.trim().length===0){ setMessage("Add a description before creating the DeSo source post. Nothing was posted or minted."); return }
-    if(mode==="advanced"){ try { const parsed=new URL(sourceUrl); if(parsed.protocol!=="https:") throw new Error("HTTPS_REQUIRED") } catch { setMessage("Use a valid HTTPS media URL. Nothing was posted or minted."); return } }
+    if(mode==="advanced"){ try { const parsed=new URL(sourceUrl); if(parsed.protocol!=="https:" || !parsed.hostname) throw new Error("HTTPS_REQUIRED") } catch { setMessage("Use a valid HTTPS media URL. Nothing was posted or minted."); return } }
     setPostBusy(true); setMessage("Preparing the DeSo source post…")
     try {
       const response=await fetch("/api/via/social/post",{method:"POST",headers:{"Content-Type":"application/json"},cache:"no-store",body:JSON.stringify({action:"prepare",publicKey:session.publicKey,body:description,imageUrls:[sourceUrl],videoUrls:[],sensitiveContent})})
