@@ -65,6 +65,7 @@ export default function MintMediaStep({ onPostHash }: { onPostHash?: (postHash: 
     if(mode==="protected"){ setMessage("Protected storage is not connected yet. Nothing was uploaded, posted or minted."); return }
     if(!session){ setMessage("Sign in with DeSo Identity before creating the source post. Nothing was posted or minted."); return }
     if(!sourceUrl || postBusy) return
+    if(postPopupRef.current && !postPopupRef.current.closed){ postPopupRef.current.focus(); setMessage("Finish or close the existing DeSo Identity approval first."); return }
     if(description.trim().length===0){ setMessage("Add a description before creating the DeSo source post. Nothing was posted or minted."); return }
     if(mode==="advanced"){ try { const parsed=new URL(sourceUrl); if(parsed.protocol!=="https:" || !parsed.hostname) throw new Error("HTTPS_REQUIRED") } catch { setMessage("Use a valid HTTPS media URL. Nothing was posted or minted."); return } }
     setSourcePostReady(false); onPostHash?.(""); setPostBusy(true); setMessage("Preparing the DeSo source post…")
