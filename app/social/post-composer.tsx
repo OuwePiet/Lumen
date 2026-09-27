@@ -307,7 +307,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
           <button type="button" onClick={saveDraft} disabled={busy} className="rounded-lg border border-zinc-800 px-3 py-1.5 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2] disabled:opacity-50">Save</button>
           <button type="button" onClick={clearDraft} disabled={busy || (!body && !draftMessage)} className="rounded-lg border border-zinc-800 px-3 py-1.5 text-xs text-zinc-500 hover:border-zinc-700 hover:text-zinc-300 disabled:opacity-40">Clear</button>
           <button type="button" onClick={() => { setPollOpen((open) => !open); if (pollOpen) setPollOptions(["", ""]) }} disabled={busy} className="rounded-lg border border-zinc-800 px-3 py-1.5 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2] disabled:opacity-50">{pollOpen ? "Remove poll" : "Poll"}</button>
-          <SponsorPlatform compact />\n          <span className="text-xs text-zinc-600">Sponsor platform: Diamonds or DESO · every contribution counts. Drafts stay only in this browser.</span>
+
         </> : null}
       </div>
 
