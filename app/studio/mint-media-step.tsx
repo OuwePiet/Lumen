@@ -100,7 +100,7 @@ export default function MintMediaStep({ onPostHash }: { onPostHash?: (postHash: 
       const response=await fetch("/api/via/social/image-upload",{method:"POST",body:form,cache:"no-store"})
       const data=await response.json() as {ok?:boolean;imageUrl?:string;error?:string}
       if(!response.ok || !data.ok || !data.imageUrl) throw new Error(data.error || "UPLOAD_FAILED")
-      setImageUrl(data.imageUrl); setSourcePostReady(false); setMessage("Image uploaded to DeSo. Next: add the description and create the source post. NFT minting has not started.")
+      setImageUrl(data.imageUrl); setVideoUrl(""); setSourcePostReady(false); setMessage("Image uploaded to DeSo. Next: add the description and create the source post. NFT minting has not started.")
       onPostHash?.("")
     } catch { setMessage("Image upload failed. Nothing was posted or minted.") }
     finally { setUploading(false) }
