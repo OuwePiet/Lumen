@@ -24,6 +24,7 @@ export default function MintMediaStep({ onPostHash }: { onPostHash?: (postHash: 
   const [sensitiveContent,setSensitiveContent]=useState(false)
   const [externalMediaUrl,setExternalMediaUrl]=useState("")
   const [postBusy,setPostBusy]=useState(false)
+  const [sourcePostReady,setSourcePostReady]=useState(false)
   const postPopupRef=useRef<Window | null>(null)
   const postPopupWatchRef=useRef<number | null>(null)
 
@@ -43,6 +44,7 @@ export default function MintMediaStep({ onPostHash }: { onPostHash?: (postHash: 
         if(!response.ok || !result.ok || !result.postHashHex) throw new Error(result.error || "POST_HASH_MISSING")
         if(!/^[0-9a-fA-F]{64}$/.test(result.postHashHex)) throw new Error("INVALID_POST_HASH")
         onPostHash?.(result.postHashHex)
+        setSourcePostReady(true)
         setMessage("Source post confirmed. Its DeSo PostHash is ready for the NFT mint terms below.")
       } catch { setMessage("The approved source post could not be handed to the mint step. Minting did not start.") }
       finally { setPostBusy(false) }
@@ -91,7 +93,7 @@ export default function MintMediaStep({ onPostHash }: { onPostHash?: (postHash: 
       const response=await fetch("/api/via/social/image-upload",{method:"POST",body:form,cache:"no-store"})
       const data=await response.json() as {ok?:boolean;imageUrl?:string;error?:string}
       if(!response.ok || !data.ok || !data.imageUrl) throw new Error(data.error || "UPLOAD_FAILED")
-      setImageUrl(data.imageUrl); setMessage("Image uploaded to DeSo. Next: create the source post, then mint it.")
+      setImageUrl(data.imageUrl); setSourcePostReady(false); setMessage("Image uploaded to DeSo. Next: create the source post, then mint it.")
       onPostHash?.("")
     } catch { setMessage("Image upload failed. Nothing was posted or minted.") }
     finally { setUploading(false) }
@@ -104,16 +106,16 @@ export default function MintMediaStep({ onPostHash }: { onPostHash?: (postHash: 
 
       <label className="mt-5 grid gap-2">
         <span className="text-sm font-semibold text-zinc-200">Choose image, video, audio or other NFT media</span>
-        <input type="file" onChange={(e)=>{const next=e.target.files?.[0] ?? null; setFile(next); setFileName(next?.name ?? ""); setImageUrl(""); setDescription(""); setSensitiveContent(false); setMessage(""); onPostHash?.("")}} className="block w-full rounded-[11px] border border-zinc-700/80 bg-[#050807] px-3 py-3 text-sm text-zinc-300 file:mr-3 file:rounded-lg file:border-0 file:bg-zinc-800 file:px-3 file:py-2 file:font-semibold file:text-zinc-100"/>
+        <input type="file" onChange={(e)=>{const next=e.target.files?.[0] ?? null; setFile(next); setFileName(next?.name ?? ""); setImageUrl(""); setDescription(""); setSensitiveContent(false); setSourcePostReady(false); setMessage(""); onPostHash?.("")}} className="block w-full rounded-[11px] border border-zinc-700/80 bg-[#050807] px-3 py-3 text-sm text-zinc-300 file:mr-3 file:rounded-lg file:border-0 file:bg-zinc-800 file:px-3 file:py-2 file:font-semibold file:text-zinc-100"/>
         {fileName ? <span className="text-xs text-zinc-500">Selected locally: {fileName} · {imageUrl ? "uploaded to DeSo" : "not uploaded yet"}{file && file.type.startsWith("image/") && file.size>10*1024*1024 ? " · image exceeds the 10 MB DeSo limit" : ""}</span> : null}
       </label>
       {mode==="deso" && file?.type.startsWith("image/") ? <button type="button" onClick={uploadStandardImage} disabled={!session || uploading || file.size<=0 || file.size>10*1024*1024 || !["image/gif","image/jpeg","image/png","image/webp"].includes(file.type)} className="mt-3 rounded-[11px] border border-[#8fd4a9]/50 px-4 py-2 text-sm font-semibold text-[#9adbb2] disabled:opacity-40">{uploading ? "Uploading…" : "Upload image to DeSo"}</button> : null}
-      {(imageUrl || (mode==="advanced" && externalMediaUrl.trim())) ? <><label className="mt-4 grid gap-2"><span className="text-sm font-semibold text-zinc-200">Description</span><textarea value={description} onChange={(e)=>{setDescription(e.target.value); onPostHash?.("")}} maxLength={5000} rows={3} placeholder="Describe this NFT…" className="w-full rounded-[11px] border border-zinc-700/80 bg-[#050807] px-3 py-3 text-sm text-zinc-100 outline-none focus:border-[#8fd4a9]/55"/></label><label className="mt-3 flex items-start gap-2 text-sm text-zinc-300"><input type="checkbox" checked={sensitiveContent} onChange={(e)=>{setSensitiveContent(e.target.checked); onPostHash?.("")}} className="mt-1"/><span><strong className="font-semibold text-zinc-200">Sensitive / explicit content</strong><span className="block text-xs leading-5 text-zinc-500">Mark the DeSo source post before minting when the media or description requires it.</span></span></label><button type="button" onClick={createSourcePost} disabled={postBusy || description.trim().length===0} className="mt-3 rounded-[11px] border border-zinc-700 px-4 py-2 text-sm font-semibold text-zinc-200 disabled:opacity-40">{postBusy ? "Preparing…" : "Create DeSo source post"}</button></> : null}
-      {message ? <p className="mt-2 text-xs text-zinc-400" role="status">{message}</p> : null}
+      {(imageUrl || (mode==="advanced" && externalMediaUrl.trim())) ? <><label className="mt-4 grid gap-2"><span className="text-sm font-semibold text-zinc-200">Description</span><textarea value={description} onChange={(e)=>{setDescription(e.target.value); setSourcePostReady(false); onPostHash?.("")}} maxLength={5000} rows={3} placeholder="Describe this NFT…" className="w-full rounded-[11px] border border-zinc-700/80 bg-[#050807] px-3 py-3 text-sm text-zinc-100 outline-none focus:border-[#8fd4a9]/55"/></label><label className="mt-3 flex items-start gap-2 text-sm text-zinc-300"><input type="checkbox" checked={sensitiveContent} onChange={(e)=>{setSensitiveContent(e.target.checked); setSourcePostReady(false); onPostHash?.("")}} className="mt-1"/><span><strong className="font-semibold text-zinc-200">Sensitive / explicit content</strong><span className="block text-xs leading-5 text-zinc-500">Mark the DeSo source post before minting when the media or description requires it.</span></span></label><button type="button" onClick={createSourcePost} disabled={postBusy || description.trim().length===0} className="mt-3 rounded-[11px] border border-zinc-700 px-4 py-2 text-sm font-semibold text-zinc-200 disabled:opacity-40">{postBusy ? "Preparing…" : "Create DeSo source post"}</button></> : null}
+      {sourcePostReady ? <p className="mt-2 text-xs font-semibold text-[#9adbb2]">✓ DeSo source post ready for NFT mint terms.</p> : null}{message ? <p className="mt-2 text-xs text-zinc-400" role="status">{message}</p> : null}
 
       <div className="mt-5 grid gap-3 sm:grid-cols-3">
         {choices.map((choice)=>(
-          <button key={choice.id} type="button" onClick={()=>{setMode(choice.id); setImageUrl(""); setExternalMediaUrl(""); setDescription(""); setSensitiveContent(false); onPostHash?.(""); setMessage(choice.id==="protected" ? "Protected storage is not connected yet. Nothing will be uploaded until a provider and cost are confirmed." : "")}} aria-pressed={mode===choice.id}
+          <button key={choice.id} type="button" onClick={()=>{setMode(choice.id); setImageUrl(""); setExternalMediaUrl(""); setDescription(""); setSensitiveContent(false); setSourcePostReady(false); onPostHash?.(""); setMessage(choice.id==="protected" ? "Protected storage is not connected yet. Nothing will be uploaded until a provider and cost are confirmed." : "")}} aria-pressed={mode===choice.id}
             className={`min-h-32 rounded-[12px] border p-4 text-left transition ${mode===choice.id ? "border-[#8fd4a9]/60 bg-[#0c1711]/60" : "border-zinc-800 bg-black/20 hover:border-zinc-700"}`}>
             <span className="block text-sm font-semibold text-zinc-100">{choice.title}</span>
             <span className="mt-2 block text-xs leading-5 text-zinc-400">{choice.text}</span>
@@ -121,7 +123,7 @@ export default function MintMediaStep({ onPostHash }: { onPostHash?: (postHash: 
         ))}
       </div>
 
-      {mode==="advanced" ? <label className="mt-4 grid gap-2"><span className="text-sm font-semibold text-zinc-200">Existing media URL / own server</span><input type="url" value={externalMediaUrl} onChange={(e)=>{setExternalMediaUrl(e.target.value); onPostHash?.("")}} placeholder="https://…" className="w-full rounded-[11px] border border-zinc-700/80 bg-[#050807] px-3 py-3 text-base text-zinc-100 outline-none focus:border-[#8fd4a9]/55"/></label> : null}
+      {mode==="advanced" ? <label className="mt-4 grid gap-2"><span className="text-sm font-semibold text-zinc-200">Existing media URL / own server</span><input type="url" value={externalMediaUrl} onChange={(e)=>{setExternalMediaUrl(e.target.value); setSourcePostReady(false); onPostHash?.("")}} placeholder="https://…" className="w-full rounded-[11px] border border-zinc-700/80 bg-[#050807] px-3 py-3 text-base text-zinc-100 outline-none focus:border-[#8fd4a9]/55"/></label> : null}
 
       <p className="mt-4 rounded-[10px] border border-zinc-800/80 bg-black/20 px-3 py-2 text-xs leading-5 text-zinc-500">{mode==="deso" ? (imageUrl ? "The media upload is complete. Creating the source post requires DeSo Identity approval; NFT minting remains a separate approval in the mint terms below." : "Standard uses VIA’s existing DeSo media route. Nothing is uploaded until you choose Upload image to DeSo.") : "This storage option is not submitted yet. VIA will show the provider and any storage cost before anything is uploaded or charged."}</p>
     </section>
