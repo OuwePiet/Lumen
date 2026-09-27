@@ -51,3 +51,13 @@ Keep storage choices understandable:
 - Advanced — choose storage
 
 Technical provider details can be shown behind an explanation/details control rather than forcing them on every creator.
+
+
+## Pre-release security and platform provenance
+VIA applies layered protection without pretending that a public website can be made impossible to copy. During the pre-release/test period, invited visitors may browse the public site while external search-engine indexing is deliberately discouraged through robots and page metadata.
+
+Security-sensitive actions stay server-controlled and use no-store responses where applicable. DeSo Identity remains the approval/signing boundary: VIA prepares native DeSo transactions, but does not sign transactions on behalf of the user. Uploads are validated for account/JWT, supported media type and size before forwarding to DeSo. Image uploads, social transaction preparation, NFT quote/preflight requests and NFT mint preparation are rate-limited to reduce automated abuse and accidental request floods. These limits are defensive controls, not a replacement for Identity authorization or DeSo validation.
+
+VIA carries non-secret provenance markers for the project/creator (@OuwePiet, 2026) in appropriate source, metadata and rendered-document locations. Provenance is attribution/evidence of origin; it must never be described as copy prevention and must never expose credentials, private keys, tokens or other secrets.
+
+Before public launch, security controls should be reviewed again, including response security headers, external media/provider dependencies, abuse protection suitable for serverless deployment, and whether pre-release no-index restrictions should be changed for the public release.
