@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
+import { Repeat2 } from "lucide-react"
 import { DESO_IDENTITY_ORIGIN, restoreIdentitySession, VIA_IDENTITY_EVENT, type ViaIdentitySession } from "../deso-identity-session"
 import { requestIdentityJwt } from "./identity-jwt"
 import VideoUploadControl from "./video-upload-control"
@@ -46,6 +47,7 @@ export default function RepostButton({ postHash, initialCount, variant = "defaul
   const [count, setCount] = useState(initialCount)
   const [busy, setBusy] = useState(false)
   const [quoteOpen, setQuoteOpen] = useState(false)
+  const [repostMenuOpen, setRepostMenuOpen] = useState(false)
   const [quote, setQuote] = useState("")
   const [emojiOpen, setEmojiOpen] = useState(false)
   const [imageInputs, setImageInputs] = useState([""])
@@ -250,30 +252,28 @@ export default function RepostButton({ postHash, initialCount, variant = "defaul
 
   return (
     <div className="inline-flex flex-wrap items-center gap-2">
-      <button
-        type="button"
-        onClick={() => void prepareRepost(false)}
-        disabled={busy}
-        title="Repost"
-        aria-label={`Repost · ${count}`}
-        className={variant === "icon"
-          ? "inline-flex h-9 min-w-9 items-center justify-center gap-1 rounded-full border border-zinc-800 px-2 text-xs text-zinc-300 transition hover:border-[#8fd4a9] hover:text-white disabled:cursor-wait disabled:opacity-60"
-          : "rounded-full border border-[#285f40]/70 px-3 py-1 text-[#9adbb2] hover:border-[#8fd4a9]/55 disabled:cursor-wait disabled:opacity-60"}
-      >
-        {variant === "icon" ? <><span aria-hidden="true">↻</span><span>{count}</span></> : (busy && !pendingQuote.current ? "Waiting…" : `Repost · ${count}`)}
-      </button>
-      <button
-        type="button"
-        onClick={() => setQuoteOpen((open) => !open)}
-        disabled={busy}
-        title="Quote"
-        aria-label="Quote"
-        className={variant === "icon"
-          ? `grid h-9 w-9 place-items-center rounded-full border text-xs transition ${quoteOpen ? "border-[#8fd4a9] bg-[#285f40] text-white" : "border-zinc-800 text-zinc-300 hover:border-[#8fd4a9] hover:text-white"} disabled:opacity-60`
-          : "rounded-full border border-zinc-800 px-3 py-1 text-zinc-300 hover:border-zinc-700 disabled:opacity-60"}
-      >
-        {variant === "icon" ? "↪" : "Quote"}
-      </button>
+      {variant === "icon" ? <div className="relative">
+        <button
+          type="button"
+          onClick={() => setRepostMenuOpen((open) => !open)}
+          disabled={busy}
+          title="Repost"
+          aria-label={`Repost · ${count}`}
+          aria-expanded={repostMenuOpen}
+          className="inline-flex h-9 min-w-9 items-center justify-center gap-1 rounded-full border border-zinc-800 px-2 text-xs text-zinc-300 transition hover:border-[#8fd4a9] hover:text-white disabled:cursor-wait disabled:opacity-60"
+        >
+          <Repeat2 className="h-4 w-4" aria-hidden="true" />
+          <span>{count}</span>
+        </button>
+        {repostMenuOpen ? <div className="absolute left-0 top-11 z-20 min-w-32 rounded-xl border border-zinc-800 bg-zinc-950 p-1.5 shadow-xl">
+          <button type="button" onClick={() => { setRepostMenuOpen(false); void prepareRepost(false) }} className="block w-full rounded-lg px-3 py-2 text-left text-xs text-zinc-200 hover:bg-zinc-900">Repost</button>
+          <button type="button" onClick={() => { setRepostMenuOpen(false); setQuoteOpen(true) }} className="block w-full rounded-lg px-3 py-2 text-left text-xs text-zinc-200 hover:bg-zinc-900">Quote</button>
+          <button type="button" onClick={() => setRepostMenuOpen(false)} className="mt-1 block w-full border-t border-zinc-800 px-3 py-2 text-left text-[11px] text-zinc-500 hover:text-zinc-300">Sluiten</button>
+        </div> : null}
+      </div> : <>
+        <button type="button" onClick={() => void prepareRepost(false)} disabled={busy} className="rounded-full border border-[#285f40]/70 px-3 py-1 text-[#9adbb2] hover:border-[#8fd4a9]/55 disabled:cursor-wait disabled:opacity-60">{busy && !pendingQuote.current ? "Waiting…" : `Repost · ${count}`}</button>
+        <button type="button" onClick={() => setQuoteOpen((open) => !open)} disabled={busy} className="rounded-full border border-zinc-800 px-3 py-1 text-zinc-300 hover:border-zinc-700 disabled:opacity-60">Quote</button>
+      </>}
 
       {quoteOpen ? <div className="basis-full rounded-xl border border-zinc-800 bg-black/30 p-3">
         <label className="sr-only" htmlFor={`via-quote-${postHash}`}>Quote Repost text</label>
