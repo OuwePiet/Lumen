@@ -288,7 +288,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
     }
   }
 
-  if (!session) return <div className={`${compact ? "mt-3" : "mt-4"} rounded-xl border border-zinc-800 bg-black/30 p-4 text-sm text-zinc-500`}>Connect through the DeSo participation gate before {isReply ? "replying" : "composing a public post"}.</div>
+  if (!session) return <div className={`${compact ? "mt-3" : "mt-4"} rounded-xl border border-zinc-800 bg-black/30 p-4 text-sm text-zinc-500`}>Sign in before {isReply ? "replying" : "creating a post"}.</div>
 
   return (
     <div className={`${compact ? "mt-3" : "mt-2"} bg-transparent p-0`}>
