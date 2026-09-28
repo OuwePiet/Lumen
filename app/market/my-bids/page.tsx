@@ -1,5 +1,6 @@
 import Link from "next/link"
 import { fetchDeSo } from "../../deso-api"
+import MyBidsIdentityRedirect from "./my-bids-identity-redirect"
 
 export const dynamic = "force-dynamic"
 
@@ -69,12 +70,12 @@ export default async function MarketMyBidsPage({ searchParams }: { searchParams:
       </div>
 
       {!publicKey ? (
-        <form className="mt-8 rounded-xl border border-zinc-800 bg-black/20 p-4">
+        <><MyBidsIdentityRedirect /><form className="mt-8 rounded-xl border border-zinc-800 bg-black/20 p-4">
           <label className="text-sm text-zinc-300">DeSo public key
             <input name="publicKey" required placeholder="BC1…" className="mt-2 block w-full rounded-lg border border-zinc-800 bg-black px-3 py-2 text-sm" />
           </label>
           <button className="mt-3 rounded-lg border border-[#285f40] px-4 py-2 text-sm font-semibold text-[#9adbb2]">Show bids</button>
-        </form>
+        </form></>
       ) : error ? <p className="mt-8 text-sm text-amber-300">{error}</p> : bids.length === 0 ? (
         <p className="mt-8 rounded-xl border border-zinc-800 p-5 text-sm text-zinc-400">No active NFT bids found for this DeSo account.</p>
       ) : (
