@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react"
 import { DESO_IDENTITY_ORIGIN, restoreIdentitySession, VIA_IDENTITY_EVENT, type ViaIdentitySession } from "../deso-identity-session"
 import { requestIdentityJwt } from "./identity-jwt"
+import { signViaTransaction } from "../deso-identity-sign"
 import VideoUploadControl from "./video-upload-control"
 import SponsorPlatform from "../sponsor-platform"
 
@@ -268,28 +269,35 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
       const data = await response.json() as PrepareResponse
       if (!response.ok || !data.ok || !data.transactionHex) throw new Error(data.error || "PREPARE_FAILED")
       setFeeNanos(typeof data.feeNanos === "number" ? data.feeNanos : null)
-      const approveUrl = `${DESO_IDENTITY_ORIGIN}/approve?tx=${encodeURIComponent(data.transactionHex)}`
-      const width = Math.min(800, window.screen.availWidth)
-      const height = Math.min(900, window.screen.availHeight)
-      const popup = window.open(approveUrl, "via-deso-approve", `popup=yes,width=${Math.round(width)},height=${Math.round(height)}`)
-      if (!popup) {
-        setStatus("error")
-        setMessage("Approval window was blocked. Nothing was posted. Allow the popup and try again.")
-        return
-      }
-      popupRef.current = popup
-      if (popupWatch.current !== null) window.clearInterval(popupWatch.current)
-      popupWatch.current = window.setInterval(() => {
-        if (popupRef.current?.closed) {
-          popupRef.current = null
-          if (popupWatch.current !== null) window.clearInterval(popupWatch.current)
-          popupWatch.current = null
-          setStatus("idle")
-          setMessage(isReply ? "Approval closed. Your reply was not posted." : "Approval closed. Your post was not published.")
-        }
-      }, 500)
       setStatus("awaiting-approval")
-      setMessage("Review the exact text, media and poll post in DeSo Identity. VIA will not submit it without that approval.")
+      setMessage(isReply ? "Signing your reply with your DeSo Identity session…" : "Signing your post with your DeSo Identity session…")
+      const signedTransactionHex = await signViaTransaction(session.publicKey, data.transactionHex)
+      setStatus("submitting")
+      setMessage(isReply ? "Posting your signed reply…" : "Posting your signed post…")
+      const submitResponse = await fetch("/api/via/social/post", {
+        method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store",
+        body: JSON.stringify({ action: "submit", signedTransactionHex }),
+      })
+      const submitData = await submitResponse.json() as SubmitResponse
+      if (!submitResponse.ok || !submitData.ok) throw new Error(submitData.error || "SUBMIT_FAILED")
+      setStatus("done")
+      setMessage(isReply ? "Reply posted." : "Post published.")
+      setBody("")
+      setImageInputs([""])
+      setVideoInput("")
+      setPollOpen(false)
+      setSensitiveContent(false)
+      setPollOptions(["", ""])
+      setEmojiOpen(false)
+      setFeeNanos(null)
+      setImageUploadStatus("idle")
+      setImageUploadMessage("")
+      setVideoUploading(false)
+      setMediaOpen(false)
+      try { window.localStorage.removeItem(isReply ? `${SOCIAL_REPLY_DRAFT_PREFIX}${parentStakeID}` : SOCIAL_DRAFT_STORAGE_KEY) } catch {}
+      setDraftMessage(isReply ? "Reply sent; local safety copy cleared." : "Local draft cleared after publishing.")
+      if (!isReply) window.dispatchEvent(new Event("via:social:post-published"))
+      onDone?.()
     } catch (error) {
       setStatus("error")
       const code = error instanceof Error ? error.message : "PREPARE_FAILED"
