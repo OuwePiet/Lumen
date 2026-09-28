@@ -5,7 +5,8 @@ import { useEffect, useMemo, useRef, useState } from "react"
 import { ArrowUpRight, AtSign, Badge, Check, CheckCircle2, ChevronsRight, CircleDot, Gem, Heart, Link2, MessageSquare, RefreshCw, Repeat2, ShieldCheck, ShieldOff, Smile, UserPlus, UserRound, LayoutGrid } from "lucide-react"
 
 const QUALITY_SHIELD_STORAGE_KEY = "via:notifications:quality-shield"
-import { DESO_IDENTITY_ORIGIN, restoreIdentitySession, VIA_IDENTITY_EVENT, type ViaIdentitySession } from "../deso-identity-session"
+import { restoreIdentitySession, VIA_IDENTITY_EVENT, type ViaIdentitySession } from "../deso-identity-session"
+import { signViaTransaction } from "../deso-identity-sign"
 import { fetchViaRates, isViaRateStale } from "../via-live-rates"
 import type { ViaLanguage } from "../via-local-settings"
 import LikeButton from "../social/like-button"
@@ -456,35 +457,6 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
   const [rewardUsd, setRewardUsd] = useState("1.00")
   const [rewardMessage, setRewardMessage] = useState("")
   const [rewardBusy, setRewardBusy] = useState(false)
-  const rewardPopup = useRef<Window | null>(null)
-  const rewardPending = useRef<{ postHash: string } | null>(null)
-
-  useEffect(() => {
-    const onMessage = async (event: MessageEvent) => {
-      if (event.origin !== DESO_IDENTITY_ORIGIN || event.source !== rewardPopup.current || !rewardPending.current) return
-      const data = event.data as Record<string, unknown> | null
-      const payload = data?.payload as Record<string, unknown> | undefined
-      const signedTransactionHex = data?.service === "identity" && typeof payload?.signedTransactionHex === "string" ? payload.signedTransactionHex : null
-      if (!signedTransactionHex) return
-      rewardPopup.current?.close()
-      rewardPopup.current = null
-      try {
-        const response = await fetch("/api/via/social/reward", { method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store", body: JSON.stringify({ action: "submit", signedTransactionHex }) })
-        const result = await response.json() as { ok?: boolean }
-        if (!response.ok || !result.ok) throw new Error("SUBMIT_FAILED")
-        setRewardMessage(copy.rewardSent)
-        setRewardPost(null)
-      } catch {
-        setRewardMessage(copy.rewardFailed)
-      } finally {
-        setRewardBusy(false)
-        rewardPending.current = null
-      }
-    }
-    window.addEventListener("message", onMessage)
-    return () => window.removeEventListener("message", onMessage)
-  }, [copy])
-
   async function sendReward(post: PublicPost) {
     if (!session || rewardBusy) return
     const usd = Number(rewardUsd)
@@ -499,10 +471,12 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
       const response = await fetch("/api/via/social/reward", { method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store", body: JSON.stringify({ action: "prepare", senderPublicKey: session.publicKey, recipientPublicKey: post.publicKey, amountNanos, confirmed: true }) })
       const result = await response.json() as { ok?: boolean; transactionHex?: string }
       if (!response.ok || !result.ok || !result.transactionHex) throw new Error("PREPARE")
-      const popup = window.open(`${DESO_IDENTITY_ORIGIN}/approve?tx=${encodeURIComponent(result.transactionHex)}`, "via-post-reward-approve", `popup=yes,width=${Math.min(800, window.screen.availWidth)},height=${Math.min(900, window.screen.availHeight)}`)
-      if (!popup) throw new Error("POPUP")
-      rewardPopup.current = popup
-      rewardPending.current = { postHash: post.postHash }
+      const signedTransactionHex = await signViaTransaction(session.publicKey, result.transactionHex)
+      const submitResponse = await fetch("/api/via/social/reward", { method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store", body: JSON.stringify({ action: "submit", signedTransactionHex }) })
+      const submitResult = await submitResponse.json() as { ok?: boolean }
+      if (!submitResponse.ok || !submitResult.ok) throw new Error("SUBMIT")
+      setRewardBusy(false)
+      setRewardMessage(copy.rewardSent)
     } catch (error) {
       setRewardBusy(false)
       setRewardMessage(error instanceof Error && error.message === "RATE" ? copy.rewardRateUnavailable : copy.rewardFailed)
