@@ -234,6 +234,12 @@ export default function PublicPosts() {
     void loadPosts()
   }, [feedChoice, session?.publicKey])
 
+  useEffect(() => {
+    const refresh = () => void loadPosts()
+    window.addEventListener("via:social:post-published", refresh)
+    return () => window.removeEventListener("via:social:post-published", refresh)
+  }, [feedChoice, session?.publicKey])
+
   async function loadMorePosts() {
     if (loading || feedChoice === "following" || posts.length === 0) return
     requestController.current?.abort()
