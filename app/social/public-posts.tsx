@@ -238,14 +238,14 @@ export default function PublicPosts() {
     <section className="rounded-2xl border border-white/10 bg-black/35 p-4 sm:p-5" aria-labelledby="public-posts-heading">
       <div className="flex flex-wrap items-center justify-end gap-3">
         <h2 id="public-posts-heading" className="sr-only">Posts</h2>
-        <div className="flex flex-wrap gap-2" aria-label="Filter posts">
+        <div className="flex w-full gap-2 overflow-x-auto pb-1 sm:w-auto sm:flex-wrap sm:overflow-visible sm:pb-0" aria-label="Filter posts">
           {(["all", "image", "video", "nft"] as const).map((filter) => (
             <button
               key={filter}
               type="button"
               aria-pressed={mediaFilter === filter}
               onClick={() => setMediaFilter(filter)}
-              className={`rounded-full border px-3 py-1.5 text-xs ${mediaFilter === filter ? "border-[#8fd4a9]/55 text-[#9adbb2]" : "border-zinc-800 text-zinc-500"}`}
+              className={`shrink-0 rounded-full border px-3 py-1.5 text-xs ${mediaFilter === filter ? "border-[#8fd4a9]/55 text-[#9adbb2]" : "border-zinc-800 text-zinc-500"}`}
             >
               {filter === "all" ? "All" : filter === "nft" ? "NFT" : filter[0].toUpperCase() + filter.slice(1)}
             </button>
