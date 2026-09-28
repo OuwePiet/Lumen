@@ -1,24 +1,14 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useState } from "react"
 import { Gem } from "lucide-react"
-import { DESO_IDENTITY_ORIGIN, restoreIdentitySession } from "../deso-identity-session"
+import { restoreIdentitySession } from "../deso-identity-session"
+import { signViaTransaction } from "../deso-identity-sign"
 import { fetchViaRates, isViaRateStale } from "../via-live-rates"
 
 type Props = { postHash: string; receiverPublicKey: string; initialCount: number; variant?: "default" | "icon" }
 type PrepareResponse = { ok?: boolean; transactionHex?: string; feeNanos?: number | null; spendAmountNanos?: number | null; error?: string }
 type DiamondLevelsResponse = { ok?: boolean; diamondLevelMap?: Record<string, number> }
-
-function signedTransactionFromMessage(event: MessageEvent, source: Window | null) {
-  if (event.origin !== DESO_IDENTITY_ORIGIN || event.source !== source) return null
-  if (!event.data || typeof event.data !== "object") return null
-  const data = event.data as Record<string, unknown>
-  if (data.service !== "identity") return null
-  const payload = data.payload
-  if (!payload || typeof payload !== "object" || Array.isArray(payload)) return null
-  const signed = (payload as Record<string, unknown>).signedTransactionHex
-  return typeof signed === "string" && signed.length > 0 ? signed : null
-}
 
 export default function DiamondButton({ postHash, receiverPublicKey, initialCount, variant = "default" }: Props) {
   const [level, setLevel] = useState(1)
@@ -30,8 +20,6 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
   const [feeNanos, setFeeNanos] = useState<number | null>(null)
   const [spendNanos, setSpendNanos] = useState<number | null>(null)
   const [diamondValues, setDiamondValues] = useState<Array<{ level: number; usd: number }> | null>(null)
-  const popupRef = useRef<Window | null>(null)
-  const popupWatch = useRef<number | null>(null)
 
   useEffect(() => {
     if (diamondValues) return
@@ -55,30 +43,6 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
     return () => controller.abort()
   }, [diamondValues])
 
-  useEffect(() => {
-    async function onMessage(event: MessageEvent) {
-      const signedTransactionHex = signedTransactionFromMessage(event, popupRef.current)
-      if (!signedTransactionHex) return
-      if (popupWatch.current !== null) window.clearInterval(popupWatch.current); popupWatch.current = null
-      popupRef.current?.close(); popupRef.current = null
-      setStatus("submitting"); setMessage("Submitting your explicitly approved Diamond to DeSo…")
-      try {
-        const response = await fetch("/api/via/social/diamond", { method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store", body: JSON.stringify({ action: "submit", signedTransactionHex }) })
-        const data = await response.json() as { ok?: boolean; error?: string }
-        if (!response.ok || !data.ok) throw new Error(data.error || "SUBMIT_FAILED")
-        setCount((value) => value + 1); setStatus("done"); setMessage(`Diamond level ${level} submitted.`); setConfirmValue(false)
-      } catch { setStatus("error"); setMessage("Diamond was not submitted by VIA.") }
-    }
-    window.addEventListener("message", onMessage)
-    return () => {
-      window.removeEventListener("message", onMessage)
-      if (popupWatch.current !== null) window.clearInterval(popupWatch.current)
-      popupWatch.current = null
-      popupRef.current?.close()
-      popupRef.current = null
-    }
-  }, [level])
-
   async function prepare() {
     const session = restoreIdentitySession()
     if (!session || !confirmValue || status === "preparing" || status === "approval" || status === "submitting") return
@@ -88,20 +52,13 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
       const data = await response.json() as PrepareResponse
       if (!response.ok || !data.ok || !data.transactionHex) throw new Error(data.error || "PREPARE_FAILED")
       setFeeNanos(typeof data.feeNanos === "number" ? data.feeNanos : null); setSpendNanos(typeof data.spendAmountNanos === "number" ? data.spendAmountNanos : null)
-      const popup = window.open(`${DESO_IDENTITY_ORIGIN}/approve?tx=${encodeURIComponent(data.transactionHex)}`, "via-deso-diamond-approve", `popup=yes,width=${Math.min(800, window.screen.availWidth)},height=${Math.min(900, window.screen.availHeight)}`)
-      if (!popup) { setStatus("error"); setMessage("Approval window was blocked. No Diamond was sent."); return }
-      popupRef.current = popup
-      if (popupWatch.current !== null) window.clearInterval(popupWatch.current)
-      popupWatch.current = window.setInterval(() => {
-        if (popupRef.current?.closed) {
-          popupRef.current = null
-          if (popupWatch.current !== null) window.clearInterval(popupWatch.current)
-          popupWatch.current = null
-          setStatus("idle")
-          setMessage("DeSo approval was closed. No Diamond was sent.")
-        }
-      }, 500)
-      setStatus("approval"); setMessage("Review the exact Diamond value transfer in DeSo Identity. VIA cannot approve it for you.")
+      setStatus("approval"); setMessage("Signing the confirmed Diamond with your VIA DeSo session…")
+      const signedTransactionHex = await signViaTransaction(session.publicKey, data.transactionHex)
+      setStatus("submitting"); setMessage("Submitting your confirmed Diamond to DeSo…")
+      const submitResponse = await fetch("/api/via/social/diamond", { method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store", body: JSON.stringify({ action: "submit", signedTransactionHex }) })
+      const submitData = await submitResponse.json() as { ok?: boolean; error?: string }
+      if (!submitResponse.ok || !submitData.ok) throw new Error(submitData.error || "SUBMIT_FAILED")
+      setCount((value) => value + 1); setStatus("done"); setMessage(`Diamond level ${level} submitted.`); setConfirmValue(false)
     } catch { setStatus("error"); setMessage("Diamond transaction could not be prepared. Nothing was sent.") }
   }
 
