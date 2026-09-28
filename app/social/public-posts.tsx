@@ -365,6 +365,7 @@ export default function PublicPosts() {
                   <details className="relative sm:hidden">
                     <summary aria-label="Meer postacties" title="Meer postacties" className="cursor-pointer list-none rounded-full border border-zinc-800 px-3 py-1 text-zinc-400">•••</summary>
                     <div className="mt-2 flex flex-wrap gap-2">
+                      <button type="button" disabled title="Vertaling wordt nog gekoppeld" className="rounded-full border border-zinc-800 px-3 py-1 text-zinc-500 disabled:cursor-not-allowed">Vertaal post</button>
                       {session ? <button type="button" onClick={() => {
                         const url = `${window.location.origin}/social?post=${encodeURIComponent(post.postHash)}`
                         if (navigator.share) void navigator.share({ title: "VIA · DeSo post", url }).catch(() => {})
