@@ -1,14 +1,27 @@
 import { fetchDeSo } from "../../app/deso-api"
-import { readPublicPosts, type ViaPublicPost } from "./deso-post-read"
+import type { ViaPublicPost } from "./deso-post-read"
 import { readPublicProfile } from "./deso-profile-read"
 
-type DeSoUser = {
-  PublicKeyBase58Check?: unknown
-  PublicKeysBase58CheckFollowedByUser?: unknown
+type DeSoPost = {
+  PostHashHex?: unknown
+  PosterPublicKeyBase58Check?: unknown
+  ProfileEntryResponse?: { Username?: unknown } | null
+  Body?: unknown
+  ImageURLs?: unknown
+  VideoURLs?: unknown
+  TimestampNanos?: unknown
+  LikeCount?: unknown
+  DiamondCount?: unknown
+  CommentCount?: unknown
+  RepostCount?: unknown
+  QuoteRepostCount?: unknown
+  IsNFT?: unknown
+  IsHidden?: unknown
+  PostExtraData?: unknown
 }
 
-type DeSoUsersResponse = {
-  UserList?: unknown
+type DeSoPostsResponse = {
+  PostsFound?: unknown
 }
 
 export type ViaFollowingPost = ViaPublicPost & {
@@ -19,54 +32,79 @@ function text(value: unknown) {
   return typeof value === "string" ? value : ""
 }
 
-function stringArray(value: unknown) {
-  return Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : []
+function count(value: unknown) {
+  return typeof value === "number" && Number.isFinite(value) && value >= 0 ? value : 0
+}
+
+function safeHttpsUrls(value: unknown) {
+  if (!Array.isArray(value)) return []
+  return value
+    .filter((item): item is string => typeof item === "string" && /^https:\/\//i.test(item))
+    .slice(0, 8)
+}
+
+function safePostExtraData(value: unknown) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return {}
+  const entries = Object.entries(value as Record<string, unknown>)
+    .filter(([key, item]) => key.length > 0 && key.length <= 128 && typeof item === "string" && item.length <= 10_000)
+    .slice(0, 64) as Array<[string, string]>
+  return Object.fromEntries(entries)
+}
+
+function normalizeFollowingPost(post: DeSoPost): ViaFollowingPost {
+  const publicKey = text(post.PosterPublicKeyBase58Check)
+  return {
+    postHash: text(post.PostHashHex),
+    publicKey,
+    username: text(post.ProfileEntryResponse?.Username),
+    body: text(post.Body),
+    imageUrls: safeHttpsUrls(post.ImageURLs),
+    videoUrls: safeHttpsUrls(post.VideoURLs),
+    timestampNanos: count(post.TimestampNanos),
+    likeCount: count(post.LikeCount),
+    diamondCount: count(post.DiamondCount),
+    commentCount: count(post.CommentCount),
+    repostCount: count(post.RepostCount),
+    quoteRepostCount: count(post.QuoteRepostCount),
+    isNft: post.IsNFT === true,
+    postExtraData: safePostExtraData(post.PostExtraData),
+    sourcePublicKey: publicKey,
+  }
 }
 
 /**
- * Build a small read-only Following view from public DeSo data.
- * No follow relationship is changed and no wallet/signing authority is requested.
+ * Read DeSo's native following feed for the active identity.
+ * This is read-only: no follow relationship is changed and no wallet/signing
+ * authority is requested.
  */
 export async function readFollowingPosts(
   usernameOrPublicKey: string,
-  creatorLimit = 12,
-  postsPerCreator = 3,
+  limit = 30,
 ): Promise<ViaFollowingPost[]> {
   const profile = await readPublicProfile(usernameOrPublicKey)
   if (!profile?.publicKey) return []
 
-  const response = await fetchDeSo("get-users-stateless", {
+  const numToFetch = Math.max(1, Math.min(50, Math.trunc(limit) || 30))
+  const response = await fetchDeSo("get-posts-stateless", {
     method: "POST",
     headers: { "content-type": "application/json", accept: "application/json" },
     body: JSON.stringify({
-      PublicKeysBase58Check: [profile.publicKey],
-      SkipForLeaderboard: false,
-      IncludeBalance: false,
-      GetUnminedBalance: false,
+      GetPostsForFollowFeed: true,
+      ReaderPublicKeyBase58Check: profile.publicKey,
+      NumToFetch: numToFetch,
+      FetchSubcomments: false,
+      MediaRequired: false,
     }),
   })
 
   if (!response.ok) return []
 
-  const data = (await response.json()) as DeSoUsersResponse
-  const userList = Array.isArray(data.UserList) ? (data.UserList as DeSoUser[]) : []
-  const matchingUser = userList.find((user) => text(user.PublicKeyBase58Check) === profile.publicKey) ?? userList[0]
-  if (!matchingUser) return []
+  const data = (await response.json()) as DeSoPostsResponse
+  const rawPosts = Array.isArray(data.PostsFound) ? (data.PostsFound as DeSoPost[]) : []
 
-  const followedKeys = stringArray(matchingUser.PublicKeysBase58CheckFollowedByUser)
-    .filter((key) => key.startsWith("BC1"))
-    .slice(0, Math.max(1, Math.min(20, creatorLimit)))
-
-  const perCreator = Math.max(1, Math.min(5, postsPerCreator))
-  const batches = await Promise.all(
-    followedKeys.map(async (publicKey) => {
-      const posts = await readPublicPosts(publicKey, perCreator)
-      return posts.map((post) => ({ ...post, sourcePublicKey: publicKey }))
-    }),
-  )
-
-  return batches
-    .flat()
-    .sort((a, b) => b.timestampNanos - a.timestampNanos)
-    .slice(0, 30)
+  return rawPosts
+    .filter((post) => post && typeof post === "object" && post.IsHidden !== true)
+    .slice(0, numToFetch)
+    .map(normalizeFollowingPost)
+    .filter((post) => Boolean(post.postHash && post.publicKey))
 }
