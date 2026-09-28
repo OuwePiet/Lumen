@@ -292,8 +292,8 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
 
   return (
     <div className={`${compact ? "mt-3" : "mt-2"} bg-transparent p-0`}>
-      <div className="flex justify-end">
-        <span className="text-xs text-zinc-500">{body.length.toLocaleString()} / {MAX_POST_LENGTH.toLocaleString()}</span>
+      <div className="flex justify-end sm:flex">
+        <span className="-mb-1 text-[10px] text-zinc-500 sm:mb-0 sm:text-xs">{body.length.toLocaleString()} / {MAX_POST_LENGTH.toLocaleString()}</span>
       </div>
 
       <label htmlFor={isReply ? `via-reply-${parentStakeID}` : "via-post-body"} className="sr-only">{isReply ? "Reply" : "Post"}</label>
