@@ -21,11 +21,20 @@ export default function SocialPage() {
             <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">VIA Post Home</h1>
             <p className="mt-1 hidden text-sm text-zinc-500 sm:block">Write, publish and follow DeSo posts in the VIA way.</p>
           </div>
-          <nav className="flex w-full gap-2 overflow-x-auto pb-1 sm:w-auto sm:flex-wrap sm:overflow-visible sm:pb-0" aria-label="VIA Post Home shortcuts">
-            <Link href="/saved" className="shrink-0 rounded-full border border-white/10 bg-white/[0.02] px-4 py-2 text-center text-sm text-zinc-300 transition hover:border-[#8fd4a9]/40 hover:text-[#9adbb2]">Saved</Link>
-            <Link href="/settings" className="shrink-0 rounded-full border border-white/10 bg-white/[0.02] px-4 py-2 text-center text-sm text-zinc-300 transition hover:border-[#8fd4a9]/40 hover:text-[#9adbb2]">Settings</Link>
-            <Link href="/help" className="shrink-0 rounded-full border border-white/10 bg-white/[0.02] px-4 py-2 text-center text-sm text-zinc-300 transition hover:border-[#8fd4a9]/40 hover:text-[#9adbb2]">Handboek VIA</Link>
-            <Link href="/music" className="shrink-0 rounded-full border border-white/10 bg-white/[0.02] px-4 py-2 text-center text-sm text-zinc-300 transition hover:border-[#8fd4a9]/40 hover:text-[#9adbb2]">VIA Muziek</Link>
+          <details className="w-full sm:hidden">
+            <summary className="w-fit cursor-pointer list-none rounded-full border border-white/10 bg-white/[0.02] px-4 py-2 text-sm text-zinc-300">Snelkeuzes ▾</summary>
+            <nav className="mt-2 flex gap-2 overflow-x-auto pb-1" aria-label="VIA Post Home shortcuts">
+              <Link href="/saved" className="shrink-0 rounded-full border border-white/10 bg-white/[0.02] px-4 py-2 text-center text-sm text-zinc-300">Saved</Link>
+              <Link href="/settings" className="shrink-0 rounded-full border border-white/10 bg-white/[0.02] px-4 py-2 text-center text-sm text-zinc-300">Settings</Link>
+              <Link href="/help" className="shrink-0 rounded-full border border-white/10 bg-white/[0.02] px-4 py-2 text-center text-sm text-zinc-300">Handboek VIA</Link>
+              <Link href="/music" className="shrink-0 rounded-full border border-white/10 bg-white/[0.02] px-4 py-2 text-center text-sm text-zinc-300">VIA Muziek</Link>
+            </nav>
+          </details>
+          <nav className="hidden w-auto flex-wrap gap-2 sm:flex" aria-label="VIA Post Home shortcuts">
+            <Link href="/saved" className="rounded-full border border-white/10 bg-white/[0.02] px-4 py-2 text-center text-sm text-zinc-300 transition hover:border-[#8fd4a9]/40 hover:text-[#9adbb2]">Saved</Link>
+            <Link href="/settings" className="rounded-full border border-white/10 bg-white/[0.02] px-4 py-2 text-center text-sm text-zinc-300 transition hover:border-[#8fd4a9]/40 hover:text-[#9adbb2]">Settings</Link>
+            <Link href="/help" className="rounded-full border border-white/10 bg-white/[0.02] px-4 py-2 text-center text-sm text-zinc-300 transition hover:border-[#8fd4a9]/40 hover:text-[#9adbb2]">Handboek VIA</Link>
+            <Link href="/music" className="rounded-full border border-white/10 bg-white/[0.02] px-4 py-2 text-center text-sm text-zinc-300 transition hover:border-[#8fd4a9]/40 hover:text-[#9adbb2]">VIA Muziek</Link>
           </nav>
         </header>
 
