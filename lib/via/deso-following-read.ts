@@ -5,7 +5,7 @@ import { readPublicProfile } from "./deso-profile-read"
 type DeSoPost = {
   PostHashHex?: unknown
   PosterPublicKeyBase58Check?: unknown
-  ProfileEntryResponse?: { Username?: unknown; ProfilePic?: unknown; IsVerified?: unknown } | null
+  ProfileEntryResponse?: { Username?: unknown } | null
   Body?: unknown
   ImageURLs?: unknown
   VideoURLs?: unknown
@@ -68,7 +68,7 @@ function normalizeFollowingPost(post: DeSoPost): ViaFollowingPost {
     quoteRepostCount: count(post.QuoteRepostCount),
     isNft: post.IsNFT === true,
     postExtraData: safePostExtraData(post.PostExtraData),
-    sourcePublicKey: publicKey,\n
+    sourcePublicKey: publicKey,
   }
 }
 
