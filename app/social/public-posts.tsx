@@ -326,7 +326,7 @@ export default function PublicPosts() {
             const isOwnPost = session?.publicKey === post.publicKey
             const options = pollOptions(post.postExtraData)
             const postedViaVIA = post.postExtraData?.ViaClient === "viadeso.online"
-            const username = typeof post.username === "string" ? post.username.trim().replace(/^@/, "") : ""
+            const username = typeof post.username === "string" ? post.username.trim().replace(/^@/, "") : ""\n            const profilePic = post.publicKey ? `https://node.deso.org/api/v0/get-single-profile-picture/${encodeURIComponent(post.publicKey)}` : ""
 
             return (
               <article key={post.postHash} className="rounded-2xl border border-zinc-800/80 bg-[#050806]/80 p-4 sm:p-5">
