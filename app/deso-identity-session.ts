@@ -1,5 +1,5 @@
 export const DESO_IDENTITY_ORIGIN = "https://identity.deso.org"
-export const DESO_LOGIN_URL = `${DESO_IDENTITY_ORIGIN}/log-in?accessLevelRequest=2`
+export const DESO_LOGIN_URL = `${DESO_IDENTITY_ORIGIN}/log-in?accessLevelRequest=3`
 export const DESO_LOGOUT_URL = `${DESO_IDENTITY_ORIGIN}/logout`
 
 const IDENTITY_USERS_KEY = "identityUsersV2"
