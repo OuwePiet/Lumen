@@ -47,11 +47,11 @@ export default function SocialPage() {
           <PostComposer />
         </section>
 
-        <div className="mt-4">
+        <div className="mt-2 sm:mt-4">
           <FeedChoice />
         </div>
 
-        <section className="mt-4" aria-label="VIA social feed">
+        <section className="mt-2 sm:mt-4" aria-label="VIA social feed">
           <PublicPosts />
         </section>
 
