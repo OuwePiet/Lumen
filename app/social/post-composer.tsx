@@ -119,6 +119,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
           window.localStorage.removeItem(isReply ? `${SOCIAL_REPLY_DRAFT_PREFIX}${parentStakeID}` : SOCIAL_DRAFT_STORAGE_KEY)
         } catch {}
         setDraftMessage(isReply ? "Reply sent; local safety copy cleared." : "Local draft cleared after publishing.")
+        window.dispatchEvent(new Event("via:social:post-published"))
         onDone?.()
       } catch {
         setStatus("error")
