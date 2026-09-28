@@ -404,7 +404,10 @@ export default function PublicPosts() {
                         const text = `VIA · DeSo post\n${url}`
                         window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank", "noopener,noreferrer")
                       }} className="px-3 py-2 text-left text-zinc-300 hover:bg-white/[0.04]">WhatsApp</button> : null}
-                      {session ? <div className="[&_button]:w-full [&_button]:rounded-none [&_button]:border-0 [&_button]:px-3 [&_button]:py-2 [&_button]:text-left">\n                        <LocalSaveButton postHash={post.postHash} body={post.body} publicKey={post.publicKey} timestampNanos={post.timestampNanos} />\n                      </div> : null}\n                      {session ? <Link href={`/?account=${encodeURIComponent(post.publicKey)}#collection-controls`} className="px-3 py-2 text-zinc-300 hover:bg-white/[0.04]">NFTs</Link> : null}
+                      {session ? <div className="[&_button]:w-full [&_button]:rounded-none [&_button]:border-0 [&_button]:px-3 [&_button]:py-2 [&_button]:text-left">
+                        <LocalSaveButton postHash={post.postHash} body={post.body} publicKey={post.publicKey} timestampNanos={post.timestampNanos} />
+                      </div> : null}
+                      {session ? <Link href={`/?account=${encodeURIComponent(post.publicKey)}#collection-controls`} className="px-3 py-2 text-zinc-300 hover:bg-white/[0.04]">NFTs</Link> : null}
                     </div>
                   </details>
                   <div className="hidden flex-wrap items-center gap-2 sm:flex">
