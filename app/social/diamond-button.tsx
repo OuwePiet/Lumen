@@ -104,34 +104,30 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
   }
 
   if (variant === "icon") {
-    return <div className="inline-flex items-center gap-2">
+    return <div className="inline-flex flex-wrap items-center gap-2">
       <button
         type="button"
         onClick={() => setConfirmValue((value) => !value)}
         title="Diamond"
         aria-label={`Diamond · ${count}`}
-        aria-expanded={confirmValue}
+        aria-pressed={confirmValue}
         className={`inline-flex h-9 min-w-9 items-center justify-center gap-1 rounded-full border px-2 text-xs transition ${confirmValue ? "border-[#8fd4a9] bg-[#285f40] text-white" : "border-zinc-800 text-zinc-300 hover:border-[#8fd4a9] hover:text-white"}`}
       >
-        <span aria-hidden="true">💎</span><span>{count}</span>
+        <span aria-hidden="true">◇</span><span>{count}</span>
       </button>
-      {confirmValue ? <div className="absolute z-30 mt-2 w-[min(21rem,calc(100vw-2rem))] rounded-xl border border-zinc-800 bg-[#050806] p-3 shadow-xl">
-        <div className="mb-2 flex items-center justify-between gap-3">
-          <strong className="text-sm text-zinc-200">Choose Diamond value</strong>
-          <button type="button" onClick={() => setConfirmValue(false)} aria-label="Close Diamond menu" className="rounded-full border border-zinc-700 px-2.5 py-1 text-sm text-zinc-300">✕</button>
-        </div>
-        <div className="grid grid-cols-2 gap-2">
-          {(diamondValues ?? Array.from({ length: 6 }, (_, index) => ({ level: index + 1, usd: NaN }))).filter((entry) => entry.level <= 6).map((entry) => (
-            <button key={entry.level} type="button" disabled={!Number.isFinite(entry.usd)} onClick={() => setLevel(entry.level)} aria-pressed={level === entry.level} className={`min-h-14 rounded-xl border px-3 py-2 text-left text-sm ${level === entry.level ? "border-[#8fd4a9] bg-[#285f40] text-white" : "border-zinc-800 text-zinc-300 hover:border-[#8fd4a9]"} disabled:text-zinc-600`}>
-              <span className="font-semibold">{entry.level} 💎</span>
-              <span className="block text-xs">{Number.isFinite(entry.usd) ? entry.usd.toLocaleString(undefined, { style: "currency", currency: "USD", maximumFractionDigits: 3 }) : "Price loading…"}</span>
+      {confirmValue ? <>
+        <div className="flex max-w-full flex-wrap items-center gap-1.5" aria-label="Diamond value">
+          {(diamondValues ?? Array.from({ length: 8 }, (_, index) => ({ level: index + 1, usd: NaN }))).map((entry) => (
+            <button key={entry.level} type="button" onClick={() => setLevel(entry.level)} aria-pressed={level === entry.level} className={`min-w-[3.35rem] rounded-xl border px-2 py-1 text-center text-[10px] transition ${level === entry.level ? "border-[#8fd4a9] bg-[#285f40] text-white" : "border-zinc-800 text-zinc-400 hover:border-[#8fd4a9] hover:text-white"}`}>
+              <span className="block text-sm" aria-hidden="true">💎</span>
+              <span className="block">{Number.isFinite(entry.usd) ? `${entry.usd < 0.01 ? entry.usd.toFixed(3) : entry.usd < 1 ? entry.usd.toFixed(2) : entry.usd.toLocaleString(undefined, { maximumFractionDigits: 2 })}` : "…"}</span>
             </button>
           ))}
         </div>
-        <button type="button" onClick={prepare} disabled={status === "preparing" || status === "approval" || status === "submitting" || !diamondValues} className="mt-3 h-10 w-full rounded-full border border-amber-700/70 px-3 text-sm text-amber-300 disabled:border-zinc-800 disabled:text-zinc-600">
-          {status === "preparing" ? "Preparing…" : status === "approval" ? "Review…" : status === "submitting" ? "Submitting…" : `Send ${level} Diamond${level === 1 ? "" : "s"}`}
+        <button type="button" onClick={prepare} disabled={status === "preparing" || status === "approval" || status === "submitting" || !diamondValues} className="h-9 rounded-full border border-amber-700/70 px-3 text-xs text-amber-300 disabled:border-zinc-800 disabled:text-zinc-600">
+          {status === "preparing" ? "Preparing…" : status === "approval" ? "Review…" : status === "submitting" ? "Submitting…" : "Send"}
         </button>
-      </div> : null}
+      </> : null}
       {message ? <span className="sr-only" role="status" aria-live="polite">{message}</span> : null}
     </div>
   }
