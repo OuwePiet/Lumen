@@ -1,9 +1,13 @@
 "use client"
 
 import Link from "next/link"
+import { usePathname } from "next/navigation"
 import { BookOpen, Music2 } from "lucide-react"
 
 export default function ViaHelpButton() {
+  const pathname = usePathname()
+  if (pathname === "/social") return null
+
   return (
     <nav className="via-global-guides" aria-label="VIA handbook and music">
       <Link href="/help" aria-label="Handboek VIA" title="Handboek VIA" className="via-global-guide-link">
