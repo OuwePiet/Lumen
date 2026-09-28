@@ -171,6 +171,7 @@ export default function PublicPosts() {
       requestController.current?.abort()
       requestController.current = null
       setFeedChoice(choice)
+      setSharedPostView(false)
       setHasMore(true)
       setPosts([])
       setMediaFilter("all")
