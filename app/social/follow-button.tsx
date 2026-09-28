@@ -1,7 +1,8 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
-import { DESO_IDENTITY_ORIGIN, restoreIdentitySession, VIA_IDENTITY_EVENT, type ViaIdentitySession } from "../deso-identity-session"
+import { useEffect, useState } from "react"
+import { restoreIdentitySession, VIA_IDENTITY_EVENT, type ViaIdentitySession } from "../deso-identity-session"
+import { signViaTransaction } from "../deso-identity-sign"
 
 type Props = {
   followedPublicKey: string
@@ -13,17 +14,6 @@ type PrepareResponse = { ok?: boolean; transactionHex?: string; feeNanos?: numbe
 type SubmitResponse = { ok?: boolean; error?: string }
 type StatusResponse = { ok?: boolean; following?: boolean; self?: boolean; error?: string }
 
-function signedTransactionFromMessage(event: MessageEvent, source: Window | null) {
-  if (event.origin !== DESO_IDENTITY_ORIGIN || event.source !== source) return null
-  if (!event.data || typeof event.data !== "object") return null
-  const data = event.data as Record<string, unknown>
-  if (data.service !== "identity") return null
-  const payload = data.payload
-  if (!payload || typeof payload !== "object" || Array.isArray(payload)) return null
-  const signed = (payload as Record<string, unknown>).signedTransactionHex
-  return typeof signed === "string" && signed.length > 0 ? signed : null
-}
-
 export default function FollowButton({ followedPublicKey, variant = "default", followedUsername = "this user" }: Props) {
   const [session, setSession] = useState<ViaIdentitySession | null>(null)
   const [following, setFollowing] = useState(false)
@@ -32,9 +22,6 @@ export default function FollowButton({ followedPublicKey, variant = "default", f
   const [busy, setBusy] = useState(false)
   const [message, setMessage] = useState("")
   const [confirmUnfollow, setConfirmUnfollow] = useState(false)
-  const popupRef = useRef<Window | null>(null)
-  const popupWatch = useRef<number | null>(null)
-  const pendingUnfollow = useRef(false)
 
   useEffect(() => {
     setSession(restoreIdentitySession())
@@ -80,48 +67,10 @@ export default function FollowButton({ followedPublicKey, variant = "default", f
     return () => { cancelled = true }
   }, [session, followedPublicKey, variant])
 
-  useEffect(() => {
-    const onMessage = async (event: MessageEvent) => {
-      const signedTransactionHex = signedTransactionFromMessage(event, popupRef.current)
-      if (!signedTransactionHex) return
-      if (popupWatch.current !== null) window.clearInterval(popupWatch.current)
-      popupWatch.current = null
-      popupRef.current?.close()
-      popupRef.current = null
-      try {
-        const response = await fetch("/api/via/social/follow", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          cache: "no-store",
-          body: JSON.stringify({ action: "submit", signedTransactionHex }),
-        })
-        const data = await response.json() as SubmitResponse
-        if (!response.ok || !data.ok) throw new Error(data.error || "SUBMIT_FAILED")
-        const nextFollowing = !pendingUnfollow.current
-        setFollowing(nextFollowing)
-        setStatusReady(true)
-        setMessage(nextFollowing ? "Followed on DeSo." : "Unfollowed on DeSo.")
-      } catch {
-        setMessage("Follow transaction failed. Nothing was changed by VIA.")
-      } finally {
-        setBusy(false)
-      }
-    }
-    window.addEventListener("message", onMessage)
-    return () => {
-      window.removeEventListener("message", onMessage)
-      if (popupWatch.current !== null) window.clearInterval(popupWatch.current)
-      popupWatch.current = null
-      popupRef.current?.close()
-      popupRef.current = null
-    }
-  }, [])
-
   async function performToggle() {
     if (!session || !statusReady || busy || session.publicKey === followedPublicKey) return
     setConfirmUnfollow(false)
     setBusy(true)
-    pendingUnfollow.current = following
     setMessage(following ? "Preparing DeSo unfollow transaction…" : "Preparing DeSo follow transaction…")
     try {
       const response = await fetch("/api/via/social/follow", {
@@ -137,27 +86,20 @@ export default function FollowButton({ followedPublicKey, variant = "default", f
       })
       const data = await response.json() as PrepareResponse
       if (!response.ok || !data.ok || !data.transactionHex) throw new Error(data.error || "PREPARE_FAILED")
-      const approveUrl = `${DESO_IDENTITY_ORIGIN}/approve?tx=${encodeURIComponent(data.transactionHex)}`
-      const popup = window.open(approveUrl, "via-deso-follow-approve", "popup=yes,width=800,height=900")
-      if (!popup) {
-        setMessage("Approval window was blocked. Nothing changed.")
-        setBusy(false)
-        return
-      }
-      popupRef.current = popup
-      if (popupWatch.current !== null) window.clearInterval(popupWatch.current)
-      popupWatch.current = window.setInterval(() => {
-        if (popupRef.current?.closed) {
-          popupRef.current = null
-          if (popupWatch.current !== null) window.clearInterval(popupWatch.current)
-          popupWatch.current = null
-          setBusy(false)
-          setMessage("DeSo approval was closed. VIA changed nothing.")
-        }
-      }, 500)
-      setMessage(typeof data.feeNanos === "number"
-        ? `Review in DeSo Identity · network fee ${data.feeNanos.toLocaleString()} nanos`
-        : `Review this ${following ? "unfollow" : "follow"} in DeSo Identity.`)
+      const signedTransactionHex = await signViaTransaction(session.publicKey, data.transactionHex)
+      const submitResponse = await fetch("/api/via/social/follow", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        cache: "no-store",
+        body: JSON.stringify({ action: "submit", signedTransactionHex }),
+      })
+      const submitData = await submitResponse.json() as SubmitResponse
+      if (!submitResponse.ok || !submitData.ok) throw new Error(submitData.error || "SUBMIT_FAILED")
+      const nextFollowing = !following
+      setFollowing(nextFollowing)
+      setStatusReady(true)
+      setMessage(nextFollowing ? "Followed on DeSo." : "Unfollowed on DeSo.")
+      setBusy(false)
     } catch {
       setMessage("Follow transaction could not be prepared. Nothing changed.")
       setBusy(false)
