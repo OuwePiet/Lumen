@@ -16,6 +16,14 @@ const SOCIAL_DRAFT_STORAGE_KEY = "via:social:draft:v1"
 const SOCIAL_REPLY_DRAFT_PREFIX = "via:social:reply-draft:v1:"
 const COMPOSER_EMOJI = ["😀", "😄", "😂", "😍", "😎", "🤔", "👏", "👍", "❤️", "🔥", "🎉", "🚀", "🌍", "🎨", "🎵", "✨"] as const
 const ALLOWED_IMAGE_TYPES = new Set(["image/gif", "image/jpeg", "image/png", "image/webp"])
+const POST_REQUEST_TIMEOUT_MS = 20_000
+
+async function fetchWithTimeout(input: RequestInfo | URL, init: RequestInit = {}) {
+  const controller = new AbortController()
+  const timeout = window.setTimeout(() => controller.abort(), POST_REQUEST_TIMEOUT_MS)
+  try { return await fetch(input, { ...init, signal: controller.signal }) }
+  finally { window.clearTimeout(timeout) }
+}
 
 type PrepareResponse = { ok?: boolean; transactionHex?: string; feeNanos?: number | null; error?: string }
 type SubmitResponse = { ok?: boolean; transaction?: Record<string, unknown>; error?: string }
@@ -262,7 +270,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
     setMessage(isReply ? "Preparing your reply…" : "Preparing your post…")
     setFeeNanos(null)
     try {
-      const response = await fetch("/api/via/social/post", {
+      const response = await fetchWithTimeout("/api/via/social/post", {
         method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store",
         body: JSON.stringify({ action: "prepare", publicKey: session.publicKey, body, parentStakeID, imageUrls, videoUrls, pollOptions: preparedPollOptions, sensitiveContent: !isReply && sensitiveContent }),
       })
@@ -274,7 +282,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
       const signedTransactionHex = await signViaTransaction(session.publicKey, data.transactionHex)
       setStatus("submitting")
       setMessage(isReply ? "Posting your signed reply…" : "Posting your signed post…")
-      const submitResponse = await fetch("/api/via/social/post", {
+      const submitResponse = await fetchWithTimeout("/api/via/social/post", {
         method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store",
         body: JSON.stringify({ action: "submit", signedTransactionHex }),
       })
@@ -301,7 +309,8 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
     } catch (error) {
       setStatus("error")
       const code = error instanceof Error ? error.message : "PREPARE_FAILED"
-      setMessage(`The post could not be prepared (${code}). Nothing was posted.`)
+      const timedOut = error instanceof DOMException && error.name === "AbortError"
+      setMessage(timedOut ? "DeSo did not respond in time. Nothing was posted; try again." : `The post could not be prepared (${code}). Nothing was posted.`)
     }
   }
 
