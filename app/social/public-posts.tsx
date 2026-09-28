@@ -32,7 +32,7 @@ type PublicPost = {
 }
 
 type PostsResponse = { ok?: boolean; posts?: PublicPost[] }
-type SinglePostResponse = { ok?: boolean; post?: PublicPost }\ntype CompactProfile = { publicKey?: string; username?: string; profilePic?: string | null; isVerified?: boolean }\ntype CompactProfileResponse = { ok?: boolean; profile?: CompactProfile }
+type SinglePostResponse = { ok?: boolean; post?: PublicPost }
 
 function safeHttps(url: string) {
   try {
@@ -90,7 +90,7 @@ export default function PublicPosts() {
   const [feedChoice, setFeedChoice] = useState<ChoiceId>("hot")
   const [session, setSession] = useState<ViaIdentitySession | null>(null)
   const [replyingTo, setReplyingTo] = useState<string | null>(null)
-  const [sharedPostView, setSharedPostView] = useState(false)\n  const [creatorProfiles, setCreatorProfiles] = useState<Record<string, CompactProfile>>({})
+  const [sharedPostView, setSharedPostView] = useState(false)
 
   useEffect(() => {
     try {
@@ -326,7 +326,7 @@ export default function PublicPosts() {
             const isOwnPost = session?.publicKey === post.publicKey
             const options = pollOptions(post.postExtraData)
             const postedViaVIA = post.postExtraData?.ViaClient === "viadeso.online"
-            const profile = creatorProfiles[post.publicKey]\n            const username = (profile?.username ?? post.username ?? "").trim().replace(/^@/, "")\n            const profilePic = profile?.profilePic ? safeHttps(profile.profilePic) : null
+            const username = typeof post.username === "string" ? post.username.trim().replace(/^@/, "") : ""
 
             return (
               <article key={post.postHash} className="rounded-2xl border border-zinc-800/80 bg-[#050806]/80 p-4 sm:p-5">
