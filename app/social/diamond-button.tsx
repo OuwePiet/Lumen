@@ -137,7 +137,7 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
     <details className="relative">
       <summary className="cursor-pointer list-none rounded-full border border-zinc-800 px-2 py-1 text-xs text-zinc-300">💎 {level} · {diamondValues?.find((entry) => entry.level === level)?.usd.toLocaleString(undefined, { style: "currency", currency: "USD", maximumFractionDigits: 3 }) ?? "…"} ▾</summary>
       <div className="absolute bottom-full left-0 z-30 mb-2 grid w-40 grid-cols-3 gap-1 rounded-xl border border-zinc-800 bg-[#050806] p-2 shadow-xl">
-        {[1,2,3,4,5,6].map((value) => <button key={value} type="button" onClick={() => { setLevel(value); setConfirmValue(false) }} aria-pressed={level === value} className={`rounded-lg border px-2 py-2 text-xs ${level === value ? "border-[#8fd4a9] bg-[#285f40] text-white" : "border-zinc-800 text-zinc-300 hover:border-[#8fd4a9]"}`}>{value} 💎</button>)}
+        {[1,2,3,4,5,6].map((value) => <button key={value} type="button" onClick={() => { setLevel(value); setConfirmValue(false) }} aria-pressed={level === value} className={`rounded-lg border px-2 py-2 text-xs ${level === value ? "border-[#8fd4a9] bg-[#285f40] text-white" : "border-zinc-800 text-zinc-300 hover:border-[#8fd4a9]"}`}><span className="block">{value} 💎</span><span className="block text-[10px]">{diamondValues?.find((entry) => entry.level === value)?.usd.toLocaleString(undefined, { style: "currency", currency: "USD", maximumFractionDigits: 3 }) ?? "…"}</span></button>)}
       </div>
     </details>
     <label className="flex items-center gap-1 text-[11px] text-amber-300"><input type="checkbox" checked={confirmValue} onChange={(e) => setConfirmValue(e.target.checked)} />I understand this sends $DESO value</label>
