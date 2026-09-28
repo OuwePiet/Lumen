@@ -95,7 +95,7 @@ export default function LocalSaveButton({ postHash, body, publicKey }: Props) {
         className="rounded-full border border-zinc-800 px-3 py-1 text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2]"
         title="Local VIA save · no blockchain write"
       >
-        {saved ? "Saved" : "Save"}
+        {saved ? "Bookmarked" : "Bookmark Post"}
       </button>
       {message ? <span className="sr-only" role="status" aria-live="polite">{message}</span> : null}
     </span>
