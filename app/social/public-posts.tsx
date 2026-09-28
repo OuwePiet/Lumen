@@ -376,6 +376,7 @@ export default function PublicPosts() {
                         const text = `VIA · DeSo post\n${url}`
                         window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank", "noopener,noreferrer")
                       }} className="rounded-full border border-zinc-800 px-3 py-1 text-zinc-400">WhatsApp</button> : null}
+                      {session ? <Link href={`/?account=${encodeURIComponent(post.publicKey)}#collection-controls`} className="rounded-full border border-zinc-800 px-3 py-1 text-zinc-400">NFTs</Link> : null}
                     </div>
                   </details>
                   <div className="hidden flex-wrap items-center gap-2 sm:flex">
@@ -391,7 +392,7 @@ export default function PublicPosts() {
                       window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank", "noopener,noreferrer")
                     }} className="rounded-full border border-zinc-800 px-3 py-1 text-zinc-400 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2]">WhatsApp</button> : null}
                   </div>
-                  {session ? <Link href={`/?account=${encodeURIComponent(post.publicKey)}#collection-controls`} className="rounded-full border border-zinc-800 px-3 py-1 text-zinc-400 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2]">NFTs</Link> : null}
+                  {session ? <Link href={`/?account=${encodeURIComponent(post.publicKey)}#collection-controls`} className="hidden rounded-full border border-zinc-800 px-3 py-1 text-zinc-400 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2] sm:inline-flex">NFTs</Link> : null}
                   {isOwnPost ? <Link href={`/edit-post?post=${encodeURIComponent(post.postHash)}`} className="rounded-full border border-[#8fd4a9]/45 px-3 py-1 text-[#9adbb2]">Edit</Link> : null}
                 </div>
 
