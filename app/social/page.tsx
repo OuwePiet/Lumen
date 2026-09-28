@@ -23,6 +23,7 @@ export default function SocialPage() {
           </div>
           <nav className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:flex-wrap" aria-label="VIA Post Home shortcuts">
             <Link href="/saved" className="rounded-full border border-white/10 bg-white/[0.02] px-4 py-2 text-center text-sm text-zinc-300 transition hover:border-[#8fd4a9]/40 hover:text-[#9adbb2]">Saved</Link>
+            <Link href="/settings" className="rounded-full border border-white/10 bg-white/[0.02] px-4 py-2 text-center text-sm text-zinc-300 transition hover:border-[#8fd4a9]/40 hover:text-[#9adbb2]">Settings</Link>
             <Link href="/help" className="rounded-full border border-white/10 bg-white/[0.02] px-4 py-2 text-center text-sm text-zinc-300 transition hover:border-[#8fd4a9]/40 hover:text-[#9adbb2]">Handboek VIA</Link>
             <Link href="/music" className="rounded-full border border-white/10 bg-white/[0.02] px-4 py-2 text-center text-sm text-zinc-300 transition hover:border-[#8fd4a9]/40 hover:text-[#9adbb2]">VIA Muziek</Link>
           </nav>
