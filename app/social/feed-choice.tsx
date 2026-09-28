@@ -59,7 +59,7 @@ export default function FeedChoice() {
   const inactiveClass = "rounded-full border border-zinc-800 px-4 py-2 text-sm text-zinc-400 transition hover:border-zinc-700 hover:text-zinc-200"
 
   return (
-    <section className="rounded-2xl border border-white/10 bg-black/35 px-4 py-3 sm:px-5" aria-labelledby="feed-choice-heading">
+    <section className="rounded-2xl border border-white/10 bg-black/35 px-2 py-2 sm:px-5 sm:py-3" aria-labelledby="feed-choice-heading">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="hidden sm:block">
           <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#8fd4a9]">Feed</p>
