@@ -20,6 +20,18 @@ type PrepareResponse = { ok?: boolean; transactionHex?: string; feeNanos?: numbe
 type SubmitResponse = { ok?: boolean; transaction?: Record<string, unknown>; error?: string }
 type UploadResponse = { ok?: boolean; imageUrl?: string; error?: string }
 type PostComposerProps = { parentStakeID?: string; compact?: boolean; onDone?: () => void }
+type ViaSpeechResultEvent = { results: ArrayLike<{ 0: { transcript: string } }> }
+type ViaSpeechRecognition = {
+  lang: string
+  interimResults: boolean
+  continuous: boolean
+  start: () => void
+  stop: () => void
+  onresult: ((event: ViaSpeechResultEvent) => void) | null
+  onerror: (() => void) | null
+  onend: (() => void) | null
+}
+type ViaSpeechRecognitionConstructor = new () => ViaSpeechRecognition
 
 function signedTransactionFromMessage(event: MessageEvent, source: Window | null) {
   if (event.origin !== DESO_IDENTITY_ORIGIN || event.source !== source) return null
@@ -59,10 +71,20 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
   const [mediaOpen, setMediaOpen] = useState(false)
   const [mediaChoice, setMediaChoice] = useState<"photo" | "video">("photo")
   const [draftMessage, setDraftMessage] = useState("")
+  const [inputChoiceOpen, setInputChoiceOpen] = useState(false)
+  const [speechSupported, setSpeechSupported] = useState(false)
+  const [listening, setListening] = useState(false)
+  const speechRef = useRef<ViaSpeechRecognition | null>(null)
   const popupRef = useRef<Window | null>(null)
   const popupWatch = useRef<number | null>(null)
   const textareaRef = useRef<HTMLTextAreaElement | null>(null)
   const isReply = Boolean(parentStakeID)
+
+  useEffect(() => {
+    const speechWindow = window as typeof window & { SpeechRecognition?: ViaSpeechRecognitionConstructor; webkitSpeechRecognition?: ViaSpeechRecognitionConstructor }
+    setSpeechSupported(Boolean(speechWindow.SpeechRecognition || speechWindow.webkitSpeechRecognition))
+    return () => speechRef.current?.stop()
+  }, [])
 
   useEffect(() => {
     setSession(restoreIdentitySession())
@@ -245,6 +267,41 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
     }
   }
 
+  async function startDictation() {
+    setInputChoiceOpen(false)
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      stream.getTracks().forEach((track) => track.stop())
+      const speechWindow = window as typeof window & { SpeechRecognition?: ViaSpeechRecognitionConstructor; webkitSpeechRecognition?: ViaSpeechRecognitionConstructor }
+      const Recognition = speechWindow.SpeechRecognition || speechWindow.webkitSpeechRecognition
+      if (!Recognition) {
+        setMessage("Dictation is not available in this browser. Use the keyboard instead.")
+        return
+      }
+      const recognition = new Recognition()
+      speechRef.current = recognition
+      recognition.lang = document.documentElement.lang || "nl-NL"
+      recognition.interimResults = false
+      recognition.continuous = true
+      recognition.onresult = (event) => {
+        const latest = event.results[event.results.length - 1]?.[0]?.transcript?.trim()
+        if (!latest) return
+        setBody((current) => `${current}${current ? " " : ""}${latest}`.slice(0, MAX_POST_LENGTH))
+      }
+      recognition.onerror = () => {
+        setListening(false)
+        setMessage("Microphone dictation stopped. You can continue with the keyboard.")
+      }
+      recognition.onend = () => setListening(false)
+      recognition.start()
+      setListening(true)
+      setMessage("Listening… Your words stay in the post box until you choose Send.")
+    } catch {
+      setListening(false)
+      setMessage("Microphone access was not allowed. You can continue with the keyboard.")
+    }
+  }
+
   async function preparePost() {
     if (!session || !canPrepare) return
     if (isReply) saveDraft()
@@ -294,10 +351,15 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
     <div className={`${compact ? "mt-3" : "mt-2"} bg-transparent p-0`}>
       <label htmlFor={isReply ? `via-reply-${parentStakeID}` : "via-post-body"} className="sr-only">{isReply ? "Reply" : "Post"}</label>
       <div className="relative mt-2">
-        <textarea ref={textareaRef} id={isReply ? `via-reply-${parentStakeID}` : "via-post-body"} value={body} onChange={(event) => { setBody(event.target.value); setDraftMessage(""); if (status === "done" || status === "error") { setStatus("idle"); setMessage("") } }} maxLength={MAX_POST_LENGTH} rows={compact ? 3 : 5} placeholder={isReply ? "Write a reply…" : "What do you want to share?"} className="min-h-[8rem] w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-3 pb-7 text-sm text-zinc-100 outline-none transition-[min-height] focus:min-h-[16rem] focus:border-[#8fd4a9]/55 sm:min-h-0 sm:focus:min-h-0" />
+        <textarea ref={textareaRef} id={isReply ? `via-reply-${parentStakeID}` : "via-post-body"} value={body} onFocus={() => { if (!isReply) setInputChoiceOpen(true) }} onChange={(event) => { setBody(event.target.value); setDraftMessage(""); if (status === "done" || status === "error") { setStatus("idle"); setMessage("") } }} maxLength={MAX_POST_LENGTH} rows={compact ? 3 : 5} placeholder={isReply ? "Write a reply…" : "What do you want to share?"} className="min-h-[8rem] w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-3 pb-7 text-sm text-zinc-100 outline-none transition-[min-height] focus:min-h-[16rem] focus:border-[#8fd4a9]/55 sm:min-h-0 sm:focus:min-h-0" />
         {!isReply && body.length < 4900 ? <span aria-hidden="true" className="pointer-events-none absolute bottom-2 right-3 text-[10px] text-zinc-700">max. 5000 tekens</span> : null}
         {body.length >= 4900 ? <span className="pointer-events-none absolute bottom-2 right-3 text-[10px] text-zinc-500" aria-live="polite">{body.length.toLocaleString()} / {MAX_POST_LENGTH.toLocaleString()}</span> : null}
       </div>
+      {!isReply && inputChoiceOpen ? <div className="mt-2 grid grid-cols-2 gap-2 sm:hidden" aria-label="Choose post input">
+        <button type="button" onClick={() => { setInputChoiceOpen(false); textareaRef.current?.focus() }} className="rounded-lg border border-zinc-800 px-3 py-2 text-xs text-zinc-300">⌨ Toetsenbord</button>
+        {speechSupported ? <button type="button" onClick={() => void startDictation()} className="rounded-lg border border-[#285f40] px-3 py-2 text-xs text-[#9adbb2]">🎙 Microfoon</button> : <button type="button" disabled className="rounded-lg border border-zinc-900 px-3 py-2 text-xs text-zinc-700">🎙 Niet beschikbaar</button>}
+      </div> : null}
+      {!isReply && listening ? <button type="button" onClick={() => { speechRef.current?.stop(); setListening(false) }} className="mt-2 text-xs text-[#9adbb2] sm:hidden">Stop microfoon</button> : null}
 
       <div className="mt-3 grid grid-cols-3 gap-2 sm:flex sm:flex-wrap sm:items-center">
         <button type="button" onClick={() => setEmojiOpen((open) => !open)} disabled={busy} className="min-h-10 rounded-lg border border-zinc-800 px-3 py-1.5 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2] disabled:opacity-50">Emoji</button>
