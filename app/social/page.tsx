@@ -55,7 +55,7 @@ export default function SocialPage() {
           <PublicPosts />
         </section>
 
-        <a href="#via-post-composer" aria-label="Write a post" title="Write a post" className="fixed bottom-[calc(env(safe-area-inset-bottom)+72px)] right-4 z-40 inline-flex h-14 min-w-14 items-center justify-center rounded-full border border-[#8fd4a9]/55 bg-[#102117]/95 px-4 text-sm font-semibold text-[#9adbb2] shadow-xl backdrop-blur sm:hidden"><span aria-hidden="true" className="mr-1.5 text-base">✎</span>Post Office</a>
+        <a href="#via-post-composer" aria-label="Write a post" title="Write a post" className="fixed bottom-[calc(env(safe-area-inset-bottom)+72px)] right-3 z-40 inline-flex h-10 items-center justify-center rounded-full border border-[#8fd4a9]/55 bg-[#102117]/95 px-3 text-xs font-semibold text-[#9adbb2] shadow-xl backdrop-blur sm:hidden"><span aria-hidden="true" className="mr-1 text-sm">✎</span>Post Office</a>
 
         <details className="mt-3 rounded-2xl border border-white/10 bg-black/25 p-3 text-sm text-zinc-500 sm:mt-5 sm:p-4">
           <summary className="cursor-pointer font-medium text-zinc-300">Participation & safety</summary>
