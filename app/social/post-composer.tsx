@@ -235,7 +235,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
 
       addUploadedImage(data.imageUrl)
       setImageUploadStatus("idle")
-      setImageUploadMessage("Image uploaded to DeSo and attached by URL. The post itself is not published yet.")
+      setImageUploadMessage("Image attached. Your post has not been published yet.")
     } catch (error) {
       setImageUploadStatus("error")
       const code = error instanceof Error ? error.message : "IMAGE_UPLOAD_FAILED"
