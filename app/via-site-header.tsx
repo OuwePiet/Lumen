@@ -45,32 +45,32 @@ type HeaderCopy = {
 
 const headerCopy: Record<ViaLanguage | "Hindi", HeaderCopy> = {
   Dutch: {
-    home: "Home", feed: "Sociaal", discover: "Ontdekken", nfts: "NFT's", live: "Live", games: "Spellen", communities: "Community's", world: "Wereld", myVia: "Mijn VIA",
+    home: "Home", feed: "Postoffice", discover: "Ontdekken", nfts: "NFT's", live: "Live", games: "Spellen", communities: "Community's", world: "Wereld", myVia: "Mijn VIA",
     search: "Zoek leden", publicEntrance: "Publieke ingang", login: "DeSo Login", wallet: "Mijn Wallet", notifications: "Meldingen", connected: "DeSo verbonden",
     profile: "Mijn profiel", saved: "Bookmarks", drafts: "Concepten", settings: "Instellingen", switchAccount: "Wissel account", desoAccount: "DeSo-account", addAccount: "DeSo-account toevoegen", logout: "Uitloggen uit VIA",
   },
   English: {
-    home: "Home", feed: "Social", discover: "Discover", nfts: "NFTs", live: "Live", games: "Games", communities: "Communities", world: "World", myVia: "My VIA",
+    home: "Home", feed: "Postoffice", discover: "Discover", nfts: "NFTs", live: "Live", games: "Games", communities: "Communities", world: "World", myVia: "My VIA",
     search: "Search members", publicEntrance: "Public Entrance", login: "DeSo Login", wallet: "My Wallet", notifications: "Notifications", connected: "DeSo connected",
     profile: "My Profile", saved: "Bookmarks", drafts: "Drafts", settings: "Settings", switchAccount: "Switch account", desoAccount: "DeSo account", addAccount: "Add DeSo account", logout: "Logout from VIA",
   },
   French: {
-    home: "Accueil", feed: "Social", discover: "Découvrir", nfts: "NFT", live: "Live", games: "Jeux", communities: "Communautés", world: "Monde", myVia: "Mon VIA",
+    home: "Accueil", feed: "Postoffice", discover: "Découvrir", nfts: "NFT", live: "Live", games: "Jeux", communities: "Communautés", world: "Monde", myVia: "Mon VIA",
     search: "Rechercher des membres", publicEntrance: "Entrée publique", login: "Connexion DeSo", wallet: "Mon Wallet", notifications: "Notifications", connected: "DeSo connecté",
     profile: "Mon profil", saved: "Favoris", drafts: "Brouillons", settings: "Paramètres", switchAccount: "Changer de compte", desoAccount: "Compte DeSo", addAccount: "Ajouter un compte DeSo", logout: "Se déconnecter de VIA",
   },
   Spanish: {
-    home: "Inicio", feed: "Social", discover: "Descubrir", nfts: "NFT", live: "Live", games: "Juegos", communities: "Comunidades", world: "Mundo", myVia: "Mi VIA",
+    home: "Inicio", feed: "Postoffice", discover: "Descubrir", nfts: "NFT", live: "Live", games: "Juegos", communities: "Comunidades", world: "Mundo", myVia: "Mi VIA",
     search: "Buscar miembros", publicEntrance: "Entrada pública", login: "Acceso DeSo", wallet: "Mi Wallet", notifications: "Notificaciones", connected: "DeSo conectado",
     profile: "Mi perfil", saved: "Guardados", drafts: "Borradores", settings: "Ajustes", switchAccount: "Cambiar cuenta", desoAccount: "Cuenta DeSo", addAccount: "Añadir cuenta DeSo", logout: "Cerrar sesión en VIA",
   },
   Chinese: {
-    home: "首页", feed: "社交", discover: "发现", nfts: "NFT", live: "直播", games: "游戏", communities: "社区", world: "世界", myVia: "我的 VIA",
+    home: "首页", feed: "Postoffice", discover: "发现", nfts: "NFT", live: "直播", games: "游戏", communities: "社区", world: "世界", myVia: "我的 VIA",
     search: "搜索成员", publicEntrance: "公开入口", login: "DeSo 登录", wallet: "我的钱包", notifications: "通知", connected: "DeSo 已连接",
     profile: "我的资料", saved: "书签", drafts: "草稿", settings: "设置", switchAccount: "切换账户", desoAccount: "DeSo 账户", addAccount: "添加 DeSo 账户", logout: "退出 VIA",
   },
   Hindi: {
-    home: "होम", feed: "सोशल", discover: "खोजें", nfts: "NFT", live: "लाइव", games: "गेम्स", communities: "समुदाय", world: "दुनिया", myVia: "मेरा VIA",
+    home: "होम", feed: "Postoffice", discover: "खोजें", nfts: "NFT", live: "लाइव", games: "गेम्स", communities: "समुदाय", world: "दुनिया", myVia: "मेरा VIA",
     search: "सदस्य खोजें", publicEntrance: "सार्वजनिक प्रवेश", login: "DeSo लॉगिन", wallet: "मेरा वॉलेट", notifications: "सूचनाएँ", connected: "DeSo जुड़ा है",
     profile: "मेरी प्रोफ़ाइल", saved: "बुकमार्क", drafts: "ड्राफ्ट", settings: "सेटिंग्स", switchAccount: "खाता बदलें", desoAccount: "DeSo खाता", addAccount: "DeSo खाता जोड़ें", logout: "VIA से लॉग आउट",
   },

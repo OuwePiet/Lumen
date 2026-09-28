@@ -134,9 +134,12 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
 
   return <div className="flex flex-wrap items-center gap-2">
     <span>{count} Diamonds</span>
-    <select aria-label="Diamond level" value={level} onChange={(e) => { setLevel(Number(e.target.value)); setConfirmValue(false) }} className="rounded-full border border-zinc-800 bg-black px-2 py-1 text-xs text-zinc-300">
-      {[1,2,3,4,5,6].map((value) => <option key={value} value={value}>Level {value}</option>)}
-    </select>
+    <details className="relative">
+      <summary className="cursor-pointer list-none rounded-full border border-zinc-800 px-2 py-1 text-xs text-zinc-300">💎 {level} ▾</summary>
+      <div className="absolute bottom-full left-0 z-30 mb-2 grid w-40 grid-cols-3 gap-1 rounded-xl border border-zinc-800 bg-[#050806] p-2 shadow-xl">
+        {[1,2,3,4,5,6].map((value) => <button key={value} type="button" onClick={() => { setLevel(value); setConfirmValue(false) }} aria-pressed={level === value} className={`rounded-lg border px-2 py-2 text-xs ${level === value ? "border-[#8fd4a9] bg-[#285f40] text-white" : "border-zinc-800 text-zinc-300 hover:border-[#8fd4a9]"}`}>{value} 💎</button>)}
+      </div>
+    </details>
     <label className="flex items-center gap-1 text-[11px] text-amber-300"><input type="checkbox" checked={confirmValue} onChange={(e) => setConfirmValue(e.target.checked)} />I understand this sends $DESO value</label>
     <button type="button" onClick={prepare} disabled={!confirmValue || status === "preparing" || status === "approval" || status === "submitting"} className="rounded-full border border-amber-700/70 px-3 py-1 text-amber-300 disabled:border-zinc-800 disabled:text-zinc-600">{status === "preparing" ? "Preparing…" : status === "approval" ? "Review in DeSo…" : status === "submitting" ? "Submitting…" : "Send Diamond"}</button>
     {(feeNanos !== null || spendNanos !== null) ? <span className="text-[11px] text-zinc-500">Prepared: {spendNanos !== null ? `${spendNanos.toLocaleString()} nanos total spend` : "value transfer"}{feeNanos !== null ? ` · ${feeNanos.toLocaleString()} nanos fee` : ""}</span> : null}

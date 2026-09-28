@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 
 export default function SocialPage() {
   return (
-    <main data-via-social-page className="min-h-screen bg-[#030504] px-3 py-4 text-white sm:px-6 sm:py-6 lg:px-8">
+    <main data-via-social-page className="min-h-screen bg-[#030504] bg-[radial-gradient(circle_at_18%_14%,rgba(143,212,169,0.08),transparent_24%),radial-gradient(circle_at_82%_32%,rgba(255,255,255,0.035),transparent_20%),linear-gradient(180deg,#030504_0%,#050806_48%,#030504_100%)] px-3 py-4 text-white sm:px-6 sm:py-6 lg:px-8">
       <SocialLocalizer />
       <div className="mx-auto w-full max-w-6xl">
         <header className="mb-3 flex flex-wrap items-center justify-between gap-3 border-b border-white/10 pb-3 sm:mb-5 sm:gap-4 sm:pb-4">
