@@ -2,7 +2,8 @@
 
 import { useEffect, useRef, useState } from "react"
 import { Repeat2 } from "lucide-react"
-import { DESO_IDENTITY_ORIGIN, restoreIdentitySession, VIA_IDENTITY_EVENT, type ViaIdentitySession } from "../deso-identity-session"
+import { restoreIdentitySession, VIA_IDENTITY_EVENT, type ViaIdentitySession } from "../deso-identity-session"
+import { signViaTransaction } from "../deso-identity-sign"
 import { requestIdentityJwt } from "./identity-jwt"
 import VideoUploadControl from "./video-upload-control"
 
@@ -21,17 +22,6 @@ type Props = {
 type PrepareResponse = { ok?: boolean; transactionHex?: string; feeNanos?: number | null; error?: string }
 type SubmitResponse = { ok?: boolean; error?: string }
 type UploadResponse = { ok?: boolean; imageUrl?: string; error?: string }
-
-function signedTransactionFromMessage(event: MessageEvent, source: Window | null) {
-  if (event.origin !== DESO_IDENTITY_ORIGIN || event.source !== source) return null
-  if (!event.data || typeof event.data !== "object") return null
-  const data = event.data as Record<string, unknown>
-  if (data.service !== "identity") return null
-  const payload = data.payload
-  if (!payload || typeof payload !== "object" || Array.isArray(payload)) return null
-  const signed = (payload as Record<string, unknown>).signedTransactionHex
-  return typeof signed === "string" && signed.length > 0 ? signed : null
-}
 
 function httpsUrl(value: string) {
   const trimmed = value.trim()
@@ -56,8 +46,6 @@ export default function RepostButton({ postHash, initialCount, variant = "defaul
   const [imageUploadMessage, setImageUploadMessage] = useState("")
   const [videoUploading, setVideoUploading] = useState(false)
   const [message, setMessage] = useState("")
-  const popupRef = useRef<Window | null>(null)
-  const popupWatch = useRef<number | null>(null)
   const pendingQuote = useRef(false)
   const quoteRef = useRef<HTMLTextAreaElement | null>(null)
 
@@ -72,49 +60,6 @@ export default function RepostButton({ postHash, initialCount, variant = "defaul
   }, [])
 
   useEffect(() => setCount(initialCount), [initialCount])
-
-  useEffect(() => {
-    const onMessage = async (event: MessageEvent) => {
-      const signedTransactionHex = signedTransactionFromMessage(event, popupRef.current)
-      if (!signedTransactionHex) return
-      if (popupWatch.current !== null) window.clearInterval(popupWatch.current)
-      popupWatch.current = null
-      popupRef.current?.close()
-      popupRef.current = null
-      try {
-        const response = await fetch("/api/via/social/repost", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          cache: "no-store",
-          body: JSON.stringify({ action: "submit", signedTransactionHex }),
-        })
-        const data = await response.json() as SubmitResponse
-        if (!response.ok || !data.ok) throw new Error(data.error || "SUBMIT_FAILED")
-        setCount((current) => current + 1)
-        setMessage(pendingQuote.current ? "Quote Repost submitted to DeSo." : "Reposted on DeSo.")
-        setQuote("")
-        setEmojiOpen(false)
-        setImageInputs([""])
-        setVideoInput("")
-        setImageUploadStatus("idle")
-        setImageUploadMessage("")
-        setVideoUploading(false)
-        setQuoteOpen(false)
-      } catch {
-        setMessage("Repost transaction failed. Nothing was changed by VIA.")
-      } finally {
-        setBusy(false)
-      }
-    }
-    window.addEventListener("message", onMessage)
-    return () => {
-      window.removeEventListener("message", onMessage)
-      if (popupWatch.current !== null) window.clearInterval(popupWatch.current)
-      popupWatch.current = null
-      popupRef.current?.close()
-      popupRef.current = null
-    }
-  }, [])
 
   const parsedImages = imageInputs.map(httpsUrl)
   const parsedVideo = httpsUrl(videoInput)
@@ -219,29 +164,27 @@ export default function RepostButton({ postHash, initialCount, variant = "defaul
       const data = await response.json() as PrepareResponse
       if (!response.ok || !data.ok || !data.transactionHex) throw new Error(data.error || "PREPARE_FAILED")
 
-      const approveUrl = `${DESO_IDENTITY_ORIGIN}/approve?tx=${encodeURIComponent(data.transactionHex)}`
-      const width = Math.min(800, window.screen.availWidth)
-      const height = Math.min(900, window.screen.availHeight)
-      const popup = window.open(approveUrl, "via-deso-repost-approve", `popup=yes,width=${Math.round(width)},height=${Math.round(height)}`)
-      if (!popup) {
-        setMessage("Approval window was blocked. Nothing changed.")
-        setBusy(false)
-        return
-      }
-      popupRef.current = popup
-      if (popupWatch.current !== null) window.clearInterval(popupWatch.current)
-      popupWatch.current = window.setInterval(() => {
-        if (popupRef.current?.closed) {
-          popupRef.current = null
-          if (popupWatch.current !== null) window.clearInterval(popupWatch.current)
-          popupWatch.current = null
-          setBusy(false)
-          setMessage("DeSo approval was closed. VIA changed nothing.")
-        }
-      }, 500)
-      setMessage(typeof data.feeNanos === "number"
-        ? `Review in DeSo Identity · network fee ${data.feeNanos.toLocaleString()} nanos`
-        : `Review this ${asQuote ? "Quote Repost" : "repost"} in DeSo Identity.`)
+      setMessage(asQuote ? "Signing your Quote Repost with your DeSo Identity session…" : "Signing your repost with your DeSo Identity session…")
+      const signedTransactionHex = await signViaTransaction(session.publicKey, data.transactionHex)
+      const submitResponse = await fetch("/api/via/social/repost", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        cache: "no-store",
+        body: JSON.stringify({ action: "submit", signedTransactionHex }),
+      })
+      const submitData = await submitResponse.json() as SubmitResponse
+      if (!submitResponse.ok || !submitData.ok) throw new Error(submitData.error || "SUBMIT_FAILED")
+      setCount((current) => current + 1)
+      setMessage(asQuote ? "Quote Repost submitted to DeSo." : "Reposted on DeSo.")
+      setQuote("")
+      setEmojiOpen(false)
+      setImageInputs([""])
+      setVideoInput("")
+      setImageUploadStatus("idle")
+      setImageUploadMessage("")
+      setVideoUploading(false)
+      setQuoteOpen(false)
+      setBusy(false)
     } catch {
       setMessage("Repost transaction could not be prepared. Nothing changed.")
       setBusy(false)
