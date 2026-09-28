@@ -126,6 +126,9 @@ export async function requestIdentityJwt(publicKey: string): Promise<string> {
       encryptedSeedHex: credentials.encryptedSeedHex,
       accessLevel: credentials.accessLevel,
       accessLevelHmac: credentials.accessLevelHmac,
+      ...(credentials.derivedPublicKeyBase58Check
+        ? { derivedPublicKeyBase58Check: credentials.derivedPublicKeyBase58Check }
+        : {}),
     })
 
     if (payload.approvalRequired === true) throw new Error("IDENTITY_REAUTHORIZE_REQUIRED")
