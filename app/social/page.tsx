@@ -39,7 +39,7 @@ export default function SocialPage() {
         </header>
 
         <section id="via-post-composer" className="scroll-mt-24 rounded-2xl border border-white/10 bg-black/35 p-3 sm:p-4" aria-labelledby="composer-heading">
-          <div className="mb-2 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center justify-between gap-3 sm:mb-2">
             <div>
               <h2 id="composer-heading" className="sr-only sm:not-sr-only sm:text-lg sm:font-semibold">Post</h2>
             </div>
