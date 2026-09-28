@@ -348,7 +348,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
           <p className="text-sm font-medium text-zinc-200">Video</p>
           <p className="mt-1 text-xs leading-5 text-zinc-500">Choose one video.</p>
           <VideoUploadControl onReady={setVideoInput} onBusyChange={setVideoUploading} />
-          <p className="mt-1 text-xs text-zinc-600">Uploading or processing a video temporarily disables post preparation. The post itself still requires DeSo Identity approval.</p>
+          <p className="mt-1 text-xs text-zinc-600">Your video is attached here. You approve the post before it is published.</p>
         </div>}
         {mediaInvalid ? <p className="mt-2 text-xs text-amber-300">Media links must be valid HTTPS URLs without embedded credentials.</p> : null}
       </div> : null}
