@@ -61,7 +61,7 @@ export default function FeedChoice() {
   return (
     <section className="rounded-2xl border border-white/10 bg-black/35 px-4 py-3 sm:px-5" aria-labelledby="feed-choice-heading">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
+        <div className="hidden sm:block">
           <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#8fd4a9]">Feed</p>
           <h2 id="feed-choice-heading" className="mt-1 text-base font-semibold text-zinc-100">{active.title}</h2>
           <p className="mt-1 text-xs text-zinc-500">{active.text}</p>
