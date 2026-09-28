@@ -240,7 +240,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
       setImageUploadStatus("error")
       const code = error instanceof Error ? error.message : "IMAGE_UPLOAD_FAILED"
       setImageUploadMessage(code === "IDENTITY_REAUTHORIZE_REQUIRED"
-        ? "DeSo Identity needs renewed authorization before this upload. Reconnect and try again."
+        ? "Image upload approval expired. Reconnect and try again."
         : "The image was not attached. No post was published.")
     }
   }
