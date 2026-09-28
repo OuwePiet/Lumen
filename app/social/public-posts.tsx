@@ -363,7 +363,7 @@ export default function PublicPosts() {
                   {session ? <LocalSaveButton postHash={post.postHash} body={post.body} publicKey={post.publicKey} timestampNanos={post.timestampNanos} /> : null}
                   {session ? <FollowButton followedPublicKey={post.publicKey} /> : null}
                   <details className="relative sm:hidden">
-                    <summary className="cursor-pointer list-none rounded-full border border-zinc-800 px-3 py-1 text-zinc-400">Delen ▾</summary>
+                    <summary aria-label="Meer postacties" title="Meer postacties" className="cursor-pointer list-none rounded-full border border-zinc-800 px-3 py-1 text-zinc-400">•••</summary>
                     <div className="mt-2 flex flex-wrap gap-2">
                       {session ? <button type="button" onClick={() => {
                         const url = `${window.location.origin}/social?post=${encodeURIComponent(post.postHash)}`
