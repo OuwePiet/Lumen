@@ -90,6 +90,7 @@ export default function PublicPosts() {
   const [feedChoice, setFeedChoice] = useState<ChoiceId>("hot")
   const [session, setSession] = useState<ViaIdentitySession | null>(null)
   const [replyingTo, setReplyingTo] = useState<string | null>(null)
+  const [sharedPostView, setSharedPostView] = useState(false)
 
   useEffect(() => {
     try {
@@ -99,6 +100,8 @@ export default function PublicPosts() {
 
       const sharedPost = params.get("post")?.trim().toLowerCase() ?? ""
       if (/^[0-9a-f]{64}$/.test(sharedPost)) {
+        setSharedPostView(true)
+        setHasMore(false)
         const controller = new AbortController()
         requestController.current?.abort()
         requestController.current = controller
@@ -399,7 +402,7 @@ export default function PublicPosts() {
         </div>
       ) : null}
 
-      {posts.length > 0 && feedChoice !== "following" && hasMore ? (
+      {posts.length > 0 && feedChoice !== "following" && !sharedPostView && hasMore ? (
         <div className="mt-5 text-center">
           <button type="button" onClick={() => void loadMorePosts()} disabled={loading} className="text-xs text-zinc-500 transition hover:text-[#9adbb2] disabled:cursor-wait disabled:opacity-50">
             {loading ? "Laden…" : "Meer laden"}
