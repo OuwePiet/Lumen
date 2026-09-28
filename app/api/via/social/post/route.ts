@@ -64,7 +64,9 @@ function parseHttpsUrls(value: unknown, maxItems: number) {
 
 function parsePollOptions(value: unknown) {
   if (value === undefined) return [] as string[]
-  if (!Array.isArray(value) || value.length < 2 || value.length > MAX_POLL_OPTIONS) return null
+  if (!Array.isArray(value) || value.length > MAX_POLL_OPTIONS) return null
+  if (value.length === 0) return [] as string[]
+  if (value.length < 2) return null
 
   const options: string[] = []
   for (const item of value) {

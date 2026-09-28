@@ -56,7 +56,8 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
   const [imageUploadStatus, setImageUploadStatus] = useState<"idle" | "jwt" | "uploading" | "error">("idle")
   const [imageUploadMessage, setImageUploadMessage] = useState("")
   const [videoUploading, setVideoUploading] = useState(false)
-  const [mediaOpen, setMediaOpen] = useState(!compact)
+  const [mediaOpen, setMediaOpen] = useState(false)
+  const [mediaChoice, setMediaChoice] = useState<"photo" | "video">("photo")
   const [draftMessage, setDraftMessage] = useState("")
   const popupRef = useRef<Window | null>(null)
   const popupWatch = useRef<number | null>(null)
@@ -92,7 +93,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
       popupRef.current?.close()
       popupRef.current = null
       setStatus("submitting")
-      setMessage(isReply ? "Submitting the approved reply to DeSo…" : "Submitting the approved post to DeSo…")
+      setMessage(isReply ? "Posting your approved reply…" : "Posting your approved post…")
       try {
         const response = await fetch("/api/via/social/post", {
           method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store",
@@ -101,7 +102,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
         const data = await response.json() as SubmitResponse
         if (!response.ok || !data.ok) throw new Error(data.error || "SUBMIT_FAILED")
         setStatus("done")
-        setMessage(isReply ? "Reply submitted to DeSo." : "Post submitted to DeSo.")
+        setMessage(isReply ? "Reply posted." : "Post published.")
         setBody("")
         setImageInputs([""])
         setVideoInput("")
@@ -113,11 +114,12 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
         setImageUploadStatus("idle")
         setImageUploadMessage("")
         setVideoUploading(false)
-        setMediaOpen(!compact)
+        setMediaOpen(false)
         try {
           window.localStorage.removeItem(isReply ? `${SOCIAL_REPLY_DRAFT_PREFIX}${parentStakeID}` : SOCIAL_DRAFT_STORAGE_KEY)
         } catch {}
         setDraftMessage(isReply ? "Reply sent; local safety copy cleared." : "Local draft cleared after publishing.")
+        if (!isReply) window.dispatchEvent(new Event("via:social:post-published"))
         onDone?.()
       } catch {
         setStatus("error")
@@ -183,7 +185,15 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
     if (isReply) return
     try { window.localStorage.removeItem(SOCIAL_DRAFT_STORAGE_KEY) } catch {}
     setBody("")
+    setImageInputs([""])
+    setVideoInput("")
+    setPollOpen(false)
+    setPollOptions(["", ""])
     setSensitiveContent(false)
+    setEmojiOpen(false)
+    setMediaOpen(false)
+    setImageUploadStatus("idle")
+    setImageUploadMessage("")
     setDraftMessage("Draft cleared.")
   }
 
@@ -218,11 +228,11 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
 
     try {
       setImageUploadStatus("jwt")
-      setImageUploadMessage("Authorizing this image upload with DeSo Identity…")
+      setImageUploadMessage("Preparing image upload approval…")
       const jwt = await requestIdentityJwt(session.publicKey)
 
       setImageUploadStatus("uploading")
-      setImageUploadMessage("Uploading image to the DeSo media endpoint…")
+      setImageUploadMessage("Uploading image…")
       const form = new FormData()
       form.set("publicKey", session.publicKey)
       form.set("jwt", jwt)
@@ -234,12 +244,12 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
 
       addUploadedImage(data.imageUrl)
       setImageUploadStatus("idle")
-      setImageUploadMessage("Image uploaded to DeSo and attached by URL. The post itself is not published yet.")
+      setImageUploadMessage("Image attached. Your post has not been published yet.")
     } catch (error) {
       setImageUploadStatus("error")
       const code = error instanceof Error ? error.message : "IMAGE_UPLOAD_FAILED"
       setImageUploadMessage(code === "IDENTITY_REAUTHORIZE_REQUIRED"
-        ? "DeSo Identity needs renewed authorization before this upload. Reconnect and try again."
+        ? "Image upload approval expired. Reconnect and try again."
         : "The image was not attached. No post was published.")
     }
   }
@@ -248,7 +258,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
     if (!session || !canPrepare) return
     if (isReply) saveDraft()
     setStatus("preparing")
-    setMessage(isReply ? "Preparing the exact DeSo reply transaction…" : "Preparing the exact DeSo post transaction with its media and poll data…")
+    setMessage(isReply ? "Preparing your reply…" : "Preparing your post…")
     setFeeNanos(null)
     try {
       const response = await fetch("/api/via/social/post", {
@@ -275,39 +285,37 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
           if (popupWatch.current !== null) window.clearInterval(popupWatch.current)
           popupWatch.current = null
           setStatus("idle")
-          setMessage(isReply ? "DeSo approval was closed. VIA posted no reply." : "DeSo approval was closed. VIA posted nothing.")
+          setMessage(isReply ? "Approval closed. Your reply was not posted." : "Approval closed. Your post was not published.")
         }
       }, 500)
       setStatus("awaiting-approval")
       setMessage("Review the exact text, media and poll post in DeSo Identity. VIA will not submit it without that approval.")
-    } catch {
+    } catch (error) {
       setStatus("error")
-      setMessage("The post transaction could not be prepared. Nothing was posted.")
+      const code = error instanceof Error ? error.message : "PREPARE_FAILED"
+      setMessage(`The post could not be prepared (${code}). Nothing was posted.`)
     }
   }
 
-  if (!session) return <div className={`${compact ? "mt-3" : "mt-4"} rounded-xl border border-zinc-800 bg-black/30 p-4 text-sm text-zinc-500`}>Connect through the DeSo participation gate before {isReply ? "replying" : "composing a public post"}.</div>
+  if (!session) return <div className={`${compact ? "mt-3" : "mt-4"} rounded-xl border border-zinc-800 bg-black/30 p-4 text-sm text-zinc-500`}>Sign in before {isReply ? "replying" : "creating a post"}.</div>
 
   return (
-    <div className={`${compact ? "mt-3" : "mt-5"} rounded-2xl border border-[#285f40]/60 bg-black/35 p-4`}>
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#8fd4a9]">{isReply ? "Released write action · DeSo reply" : "Controlled write action · DeSo post + media"}</p>
-          <p className="mt-1 text-xs text-zinc-500">Connected key: {session.publicKey.slice(0, 10)}…{session.publicKey.slice(-6)}</p>
-        </div>
-        <span className="rounded-full border border-zinc-800 px-3 py-1 text-xs text-zinc-400">Approval required every {isReply ? "reply" : "post"}</span>
+    <div className={`${compact ? "mt-3" : "mt-2"} bg-transparent p-0`}>
+      <label htmlFor={isReply ? `via-reply-${parentStakeID}` : "via-post-body"} className="sr-only">{isReply ? "Reply" : "Post"}</label>
+      <div className="relative mt-2">
+        <textarea ref={textareaRef} id={isReply ? `via-reply-${parentStakeID}` : "via-post-body"} value={body} onChange={(event) => { setBody(event.target.value); setDraftMessage(""); if (status === "done" || status === "error") { setStatus("idle"); setMessage("") } }} maxLength={MAX_POST_LENGTH} rows={compact ? 3 : 5} placeholder={isReply ? "Write a reply…" : "What do you want to share?"} className="min-h-[8rem] w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-3 pb-7 text-sm text-zinc-100 outline-none transition-[min-height] focus:min-h-[16rem] focus:border-[#8fd4a9]/55 sm:min-h-0 sm:focus:min-h-0" />
+        {!isReply && body.length < 4900 ? <span aria-hidden="true" className="pointer-events-none absolute bottom-2 right-3 text-[10px] text-zinc-700">max. 5000 tekens</span> : null}
+        {body.length >= 4900 ? <span className="pointer-events-none absolute bottom-2 right-3 text-[10px] text-zinc-500" aria-live="polite">{body.length.toLocaleString()} / {MAX_POST_LENGTH.toLocaleString()}</span> : null}
       </div>
 
-      <label htmlFor={isReply ? `via-reply-${parentStakeID}` : "via-post-body"} className="mt-4 block text-sm font-medium text-zinc-200">{isReply ? "Reply text" : "Post text"}</label>
-      <textarea ref={textareaRef} id={isReply ? `via-reply-${parentStakeID}` : "via-post-body"} value={body} onChange={(event) => { setBody(event.target.value); setDraftMessage(""); if (status === "done" || status === "error") { setStatus("idle"); setMessage("") } }} maxLength={MAX_POST_LENGTH} rows={compact ? 3 : 5} placeholder={isReply ? "Write a public reply on DeSo…" : "What would you like to share on DeSo?"} className="mt-2 w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-3 text-sm text-zinc-100 outline-none focus:border-[#8fd4a9]/55" />
-
-      <div className="mt-3 flex flex-wrap items-center gap-2">
-        <button type="button" onClick={() => setEmojiOpen((open) => !open)} disabled={busy} className="rounded-lg border border-zinc-800 px-3 py-1.5 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2] disabled:opacity-50">{emojiOpen ? "Hide emoji" : "Emoji"}</button>
+      <div className="mt-3 grid grid-cols-3 gap-2 sm:flex sm:flex-wrap sm:items-center">
+        <button type="button" onClick={() => setEmojiOpen((open) => !open)} disabled={busy} className="min-h-10 rounded-lg border border-zinc-800 px-3 py-1.5 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2] disabled:opacity-50">Emoji</button>
+        {!isReply ? <button type="button" onClick={() => setMediaOpen((open) => !open)} disabled={busy} className="rounded-lg border border-zinc-800 px-3 py-1.5 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2] disabled:opacity-50"><span onClick={(event) => { event.stopPropagation(); setMediaChoice("photo"); setMediaOpen(true) }}>Photo</span><span className="mx-2 text-zinc-700">|</span><span onClick={(event) => { event.stopPropagation(); setMediaChoice("video"); setMediaOpen(true) }}>Video</span></button> : null}
         {!isReply ? <>
-          <button type="button" onClick={saveDraft} disabled={busy} className="rounded-lg border border-zinc-800 px-3 py-1.5 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2] disabled:opacity-50">Save draft</button>
-          <button type="button" onClick={clearDraft} disabled={busy || (!body && !draftMessage)} className="rounded-lg border border-zinc-800 px-3 py-1.5 text-xs text-zinc-500 hover:border-zinc-700 hover:text-zinc-300 disabled:opacity-40">Clear draft</button>
-          <button type="button" onClick={() => { setPollOpen((open) => !open); if (pollOpen) setPollOptions(["", ""]) }} disabled={busy} className="rounded-lg border border-zinc-800 px-3 py-1.5 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2] disabled:opacity-50">{pollOpen ? "Remove poll" : "Add poll"}</button>
-          <SponsorPlatform compact />\n          <span className="text-xs text-zinc-600">Sponsor platform: Diamonds or DESO · every contribution counts. Drafts stay only in this browser.</span>
+          <button type="button" onClick={saveDraft} disabled={busy} className="rounded-lg border border-zinc-800 px-3 py-1.5 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2] disabled:opacity-50">Save</button>
+          <button type="button" onClick={() => { setPollOpen((open) => !open); if (pollOpen) setPollOptions(["", ""]) }} disabled={busy} className="rounded-lg border border-zinc-800 px-3 py-1.5 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2] disabled:opacity-50">{pollOpen ? "Remove poll" : "Poll"}</button>
+
+          <button type="button" onClick={preparePost} disabled={!canPrepare} className="rounded-lg border border-[#8fd4a9]/55 px-3 py-1.5 text-xs font-semibold text-[#9adbb2] disabled:cursor-not-allowed disabled:border-zinc-800 disabled:text-zinc-600">{status === "preparing" ? "Preparing…" : status === "awaiting-approval" ? "Awaiting approval…" : status === "submitting" ? "Sending…" : "Send"}</button>
         </> : null}
       </div>
 
@@ -318,7 +326,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
 
       {!isReply && pollOpen ? <div className="mt-4 rounded-xl border border-zinc-800 bg-zinc-950/70 p-3">
         <p className="text-sm font-medium text-zinc-200">Poll options</p>
-        <p className="mt-1 text-xs text-zinc-500">Add 2–5 unique choices. Voting uses VIA&apos;s existing DeSo poll response flow.</p>
+        <p className="mt-1 hidden text-xs text-zinc-500 sm:block">Add 2–5 unique choices.</p>
         <div className="mt-3 space-y-2">
           {pollOptions.map((option, index) => <div key={index} className="flex gap-2">
             <input value={option} maxLength={MAX_POLL_OPTION_LENGTH} onChange={(event) => setPollOptions((current) => current.map((item, itemIndex) => itemIndex === index ? event.target.value : item))} placeholder={`Option ${index + 1}`} className="min-w-0 flex-1 rounded-lg border border-zinc-800 bg-black/40 px-3 py-2 text-sm text-zinc-200 outline-none focus:border-[#8fd4a9]/55" />
@@ -329,39 +337,35 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
         {!pollValid ? <p className="mt-2 text-xs text-amber-300">Use at least two different, non-empty poll options.</p> : null}
       </div> : null}
 
-      {!isReply ? <label className="mt-4 flex items-start gap-3 rounded-xl border border-amber-900/40 bg-amber-950/10 p-3 text-sm text-zinc-300"><input type="checkbox" checked={sensitiveContent} onChange={(event)=>setSensitiveContent(event.target.checked)} className="mt-1 h-4 w-4 accent-[#8fd4a9]" /><span><strong className="text-zinc-200">Expliciete / gevoelige inhoud</strong><span className="mt-1 block text-xs leading-5 text-zinc-500">Vink dit aan voor naakt, seksuele of andere expliciete media. VIA markeert de DeSo-post zodat NFT-weergaven de media standaard afschermen. Dit is geen algemene 18+-poort voor VIA.</span></span></label> : null}
+      {!isReply ? <label className="mt-2 inline-flex items-center gap-1.5 text-[11px] text-zinc-600"><input type="checkbox" checked={sensitiveContent} onChange={(event)=>setSensitiveContent(event.target.checked)} className="h-3.5 w-3.5 accent-[#8fd4a9]" /><span>Sensitive content</span></label> : null}
 
-      {compact ? <button type="button" onClick={() => setMediaOpen((open) => !open)} className="mt-3 rounded-lg border border-zinc-800 px-3 py-1.5 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2]">{mediaOpen ? "Hide photo/video" : "Add photo/video"}</button> : null}
+      {isReply ? <button type="button" onClick={() => setMediaOpen((open) => !open)} className="mt-3 rounded-lg border border-zinc-800 px-3 py-1.5 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2]"><span onClick={(event) => { event.stopPropagation(); setMediaChoice("photo"); setMediaOpen(true) }}>Photo</span><span className="mx-2 text-zinc-700">|</span><span onClick={(event) => { event.stopPropagation(); setMediaChoice("video"); setMediaOpen(true) }}>Video</span></button> : null}
 
-      {(!compact || mediaOpen) ? <div className="mt-4 rounded-xl border border-zinc-800 bg-zinc-950/70 p-3">
+      {mediaOpen ? <div className="mt-4 rounded-xl border border-zinc-800 bg-zinc-950/70 p-3">
+        {mediaChoice === "photo" ? <>
         <p className="text-sm font-medium text-zinc-200">Images</p>
-        <p className="mt-1 text-xs leading-5 text-zinc-500">Choose an image to upload through DeSo, or paste an existing durable HTTPS URL. VIA does not keep a permanent copy. A short-lived Identity JWT is requested only for the upload.</p>
+        <p className="mt-1 hidden text-xs leading-5 text-zinc-500 sm:block">Choose up to four images.</p>
 
         {imageUrls.length < MAX_IMAGES ? <label className="mt-3 inline-flex cursor-pointer items-center rounded-lg border border-[#285f40] px-3 py-2 text-xs font-semibold text-[#9adbb2]">
-          {imageUploading ? "Working with DeSo…" : "Choose image for DeSo upload"}
+          {imageUploading ? "Uploading…" : "Choose image"}
           <input type="file" accept="image/gif,image/jpeg,image/png,image/webp" className="sr-only" disabled={imageUploading} onChange={(event) => { const file = event.target.files?.[0] ?? null; event.currentTarget.value = ""; void uploadImage(file) }} />
         </label> : null}
-        <p className="mt-2 text-xs text-zinc-600">GIF, JPEG, PNG or WebP · smaller than 10 MB · maximum {MAX_IMAGES} images per post.</p>
+        <p className="mt-2 text-xs text-zinc-600">Up to {MAX_IMAGES} images · maximum 10 MB each.</p>
         {imageUploadMessage ? <p className={`mt-2 text-xs ${imageUploadStatus === "error" ? "text-amber-300" : "text-zinc-400"}`}>{imageUploadMessage}</p> : null}
 
-        <div className="mt-3 space-y-2">{imageInputs.map((value, index) => <input key={index} value={value} onChange={(event) => changeImage(index, event.target.value)} placeholder={`Image HTTPS URL ${index + 1}`} className="w-full rounded-lg border border-zinc-800 bg-black/40 px-3 py-2 text-sm text-zinc-200 outline-none focus:border-[#8fd4a9]/55" />)}</div>
-        {imageInputs.length < MAX_IMAGES ? <button type="button" onClick={() => setImageInputs((current) => [...current, ""])} className="mt-2 text-xs text-[#9adbb2]">+ Add image URL</button> : null}
-
-        <div className="mt-5 border-t border-zinc-800 pt-4">
+        </>
+        : <div>
           <p className="text-sm font-medium text-zinc-200">Video</p>
-          <p className="mt-1 text-xs leading-5 text-zinc-500">Upload one video through DeSo&apos;s tokenized tus flow. VIA waits until the stream is ready and then attaches its HTTPS URL to this draft automatically.</p>
+          <p className="mt-1 text-xs leading-5 text-zinc-500">Choose one video.</p>
           <VideoUploadControl onReady={setVideoInput} onBusyChange={setVideoUploading} />
-          <input value={videoInput} onChange={(event) => setVideoInput(event.target.value)} placeholder="Ready DeSo video HTTPS URL (optional)" className="mt-3 w-full rounded-lg border border-zinc-800 bg-black/40 px-3 py-2 text-sm text-zinc-200 outline-none focus:border-[#8fd4a9]/55" />
-          <p className="mt-1 text-xs text-zinc-600">Uploading or processing a video temporarily disables post preparation. The post itself still requires DeSo Identity approval.</p>
-        </div>
-        {mediaInvalid ? <p className="mt-2 text-xs text-amber-300">Media links must be valid HTTPS URLs without embedded credentials.</p> : null}
+          <p className="mt-1 text-xs text-zinc-600">Your video is attached here. You approve the post before it is published.</p>
+        </div>}
+        {mediaInvalid ? <p className="mt-2 text-xs text-amber-300">One of the attached media items is not valid.</p> : null}
       </div> : null}
 
-      <div className="mt-2 flex flex-wrap items-center justify-between gap-3 text-xs text-zinc-500"><span>{remaining.toLocaleString()} characters left</span>{feeLabel ? <span>{feeLabel}</span> : null}</div>
-      <div className="mt-4 flex flex-wrap items-center gap-3">
-        <button type="button" onClick={preparePost} disabled={!canPrepare} className="rounded-xl border border-[#8fd4a9]/55 px-4 py-2 text-sm font-semibold text-[#9adbb2] disabled:cursor-not-allowed disabled:border-zinc-800 disabled:text-zinc-600">{status === "preparing" ? "Preparing…" : status === "awaiting-approval" ? "Awaiting DeSo approval…" : status === "submitting" ? "Submitting…" : isReply ? "Review in DeSo & reply" : "Review in DeSo & post"}</button>
-        <span className="text-xs text-zinc-600">VIA never signs this transaction itself.</span>
-      </div>
+      {isReply ? <div className="mt-4 flex justify-end">
+        <button type="button" onClick={preparePost} disabled={!canPrepare} className="rounded-xl border border-[#8fd4a9]/55 px-4 py-2 text-sm font-semibold text-[#9adbb2] disabled:cursor-not-allowed disabled:border-zinc-800 disabled:text-zinc-600">{status === "preparing" ? "Preparing…" : status === "awaiting-approval" ? "Awaiting approval…" : status === "submitting" ? "Posting…" : "Reply"}</button>
+      </div> : null}
       {message ? <p className={`mt-3 text-sm ${status === "done" ? "text-[#9adbb2]" : status === "error" ? "text-amber-300" : "text-zinc-400"}`}>{message}</p> : null}
     </div>
   )

@@ -85,10 +85,12 @@ export default function PublicPosts() {
   const [posts, setPosts] = useState<PublicPost[]>([])
   const [mediaFilter, setMediaFilter] = useState<"all" | "image" | "video" | "nft">("all")
   const [loading, setLoading] = useState(false)
+  const [hasMore, setHasMore] = useState(true)
   const [message, setMessage] = useState("Choose a feed and load posts.")
   const [feedChoice, setFeedChoice] = useState<ChoiceId>("hot")
   const [session, setSession] = useState<ViaIdentitySession | null>(null)
   const [replyingTo, setReplyingTo] = useState<string | null>(null)
+  const [sharedPostView, setSharedPostView] = useState(false)
 
   useEffect(() => {
     try {
@@ -98,6 +100,8 @@ export default function PublicPosts() {
 
       const sharedPost = params.get("post")?.trim().toLowerCase() ?? ""
       if (/^[0-9a-f]{64}$/.test(sharedPost)) {
+        setSharedPostView(true)
+        setHasMore(false)
         const controller = new AbortController()
         requestController.current?.abort()
         requestController.current = controller
@@ -167,6 +171,8 @@ export default function PublicPosts() {
       requestController.current?.abort()
       requestController.current = null
       setFeedChoice(choice)
+      setSharedPostView(false)
+      setHasMore(true)
       setPosts([])
       setMediaFilter("all")
       setLoading(false)
@@ -205,6 +211,7 @@ export default function PublicPosts() {
     }
 
     setLoading(true)
+    setHasMore(true)
     setMessage("Loading…")
     try {
       const endpoint = feedChoice === "following"
@@ -230,21 +237,59 @@ export default function PublicPosts() {
     }
   }
 
+  useEffect(() => {
+    void loadPosts()
+  }, [feedChoice, session?.publicKey])
+
+  useEffect(() => {
+    const refresh = () => void loadPosts()
+    window.addEventListener("via:social:post-published", refresh)
+    return () => window.removeEventListener("via:social:post-published", refresh)
+  }, [feedChoice, session?.publicKey])
+
+  async function loadMorePosts() {
+    if (loading || feedChoice === "following" || posts.length === 0) return
+    requestController.current?.abort()
+    const controller = new AbortController()
+    requestController.current = controller
+    setLoading(true)
+    setMessage("Loading…")
+    try {
+      const seen = posts.map((post) => post.postHash).filter(Boolean).slice(-100).join(",")
+      const endpoint = feedChoice === "hot"
+        ? `/api/via/discovery?limit=20&seen=${encodeURIComponent(seen)}`
+        : `/api/via/discovery?limit=20&sort=new&seen=${encodeURIComponent(seen)}`
+      const response = await fetch(endpoint, { signal: controller.signal })
+      const data = (await response.json()) as PostsResponse
+      const nextPosts = response.ok && data.ok && Array.isArray(data.posts) ? data.posts : []
+      setPosts((current) => {
+        const known = new Set(current.map((post) => post.postHash))
+        return [...current, ...nextPosts.filter((post) => !known.has(post.postHash))]
+      })
+      setHasMore(nextPosts.length > 0)
+      setMessage(nextPosts.length ? `${nextPosts.length} more posts loaded.` : "No more posts found.")
+    } catch (error) {
+      if (!(error instanceof DOMException && error.name === "AbortError")) setMessage("More posts are temporarily unavailable.")
+    } finally {
+      if (requestController.current === controller) {
+        requestController.current = null
+        setLoading(false)
+      }
+    }
+  }
+
   return (
     <section className="rounded-2xl border border-white/10 bg-black/35 p-4 sm:p-5" aria-labelledby="public-posts-heading">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#8fd4a9]">Feed</p>
-          <h2 id="public-posts-heading" className="mt-1 text-xl font-semibold text-zinc-100">Posts</h2>
-        </div>
-        <div className="flex flex-wrap gap-2" aria-label="Filter posts">
+      <div className="flex flex-wrap items-center justify-end gap-3">
+        <h2 id="public-posts-heading" className="sr-only">Posts</h2>
+        <div className="flex w-full gap-2 overflow-x-auto pb-1 sm:w-auto sm:flex-wrap sm:overflow-visible sm:pb-0" aria-label="Filter posts">
           {(["all", "image", "video", "nft"] as const).map((filter) => (
             <button
               key={filter}
               type="button"
               aria-pressed={mediaFilter === filter}
               onClick={() => setMediaFilter(filter)}
-              className={`rounded-full border px-3 py-1.5 text-xs ${mediaFilter === filter ? "border-[#8fd4a9]/55 text-[#9adbb2]" : "border-zinc-800 text-zinc-500"}`}
+              className={`shrink-0 rounded-full border px-3 py-1.5 text-xs ${mediaFilter === filter ? "border-[#8fd4a9]/55 text-[#9adbb2]" : "border-zinc-800 text-zinc-500"}`}
             >
               {filter === "all" ? "All" : filter === "nft" ? "NFT" : filter[0].toUpperCase() + filter.slice(1)}
             </button>
@@ -252,7 +297,7 @@ export default function PublicPosts() {
         </div>
       </div>
 
-      <form onSubmit={loadPosts} className="mt-4 flex max-w-2xl flex-col gap-3 sm:flex-row">
+      <div className="mt-4 hidden max-w-2xl sm:flex">
         <p className="flex-1 self-center text-sm text-zinc-500">
           {feedChoice === "following"
             ? session
@@ -260,14 +305,11 @@ export default function PublicPosts() {
               : "DeSo login required for Following"
             : feedChoice === "hot"
               ? "Public Hot feed"
-              : "Newest public DeSo posts"}
+              : "Recent public DeSo posts"}
         </p>
-        <button type="submit" disabled={loading || (feedChoice === "following" && !session)} className="rounded-xl border border-[#8fd4a9]/45 px-5 py-3 text-sm font-medium text-[#9adbb2] disabled:opacity-50">
-          {loading ? "Loading…" : feedChoice === "following" ? "Open Following" : feedChoice === "hot" ? "Open Hot" : "Open New"}
-        </button>
-      </form>
+      </div>
 
-      <p className="mt-3 text-xs text-zinc-500" role="status" aria-live="polite">{message}</p>
+      <p className={`mt-3 text-xs text-zinc-500 ${loading || message.includes("unavailable") || message.includes("Log in") || message.includes("No posts") || message.includes("shared post") ? "" : "hidden sm:block"}`} role="status" aria-live="polite">{message}</p>
 
       {posts.length > 0 && visiblePosts.length === 0 ? (
         <p className="mt-5 rounded-xl border border-zinc-800 bg-black/25 p-4 text-sm text-zinc-500">No loaded posts match this filter.</p>
@@ -283,6 +325,7 @@ export default function PublicPosts() {
             const totalReposts = post.repostCount + post.quoteRepostCount
             const isOwnPost = session?.publicKey === post.publicKey
             const options = pollOptions(post.postExtraData)
+            const postedViaVIA = post.postExtraData?.ViaClient === "viadeso.online"
             const username = typeof post.username === "string" ? post.username.trim().replace(/^@/, "") : ""
 
             return (
@@ -298,6 +341,7 @@ export default function PublicPosts() {
                 </div>
 
                 {post.body ? <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-zinc-200">{post.body}</p> : <p className="mt-3 text-sm text-zinc-500">Media post</p>}
+                {postedViaVIA ? <p className="mt-1 text-[11px] text-zinc-500">Gepost via VIA</p> : null}
 
                 {images.length ? (
                   <div className="mt-4 grid gap-2 sm:grid-cols-2">
@@ -316,20 +360,40 @@ export default function PublicPosts() {
                   {session ? <button type="button" onClick={() => setReplyingTo(isReplying ? null : post.postHash)} className="rounded-full border border-zinc-800 px-3 py-1 text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2]">Reply · {post.commentCount}</button> : <span>Reply · {post.commentCount}</span>}
                   {session ? <RepostButton postHash={post.postHash} initialCount={totalReposts} /> : <span>Repost · {totalReposts}</span>}
                   {session ? <DiamondButton postHash={post.postHash} receiverPublicKey={post.publicKey} initialCount={post.diamondCount} /> : <span>Diamond · {post.diamondCount}</span>}
-                  {session ? <LocalSaveButton postHash={post.postHash} body={post.body} publicKey={post.publicKey} timestampNanos={post.timestampNanos} /> : null}
+                  {session ? <div className="hidden sm:contents"><LocalSaveButton postHash={post.postHash} body={post.body} publicKey={post.publicKey} timestampNanos={post.timestampNanos} /></div> : null}
                   {session ? <FollowButton followedPublicKey={post.publicKey} /> : null}
-                  {session ? <button type="button" onClick={() => {
-                    const url = `${window.location.origin}/social?post=${encodeURIComponent(post.postHash)}`
-                    if (navigator.share) void navigator.share({ title: "VIA · DeSo post", url }).catch(() => {})
-                    else void navigator.clipboard?.writeText(url)
-                  }} className="rounded-full border border-zinc-800 px-3 py-1 text-zinc-400 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2]">Share</button> : null}
-                  <XShareButton href={`/social?post=${encodeURIComponent(post.postHash)}`} text={post.body ? post.body.slice(0, 180) : "VIA · DeSo post"} label="X" className="rounded-full border border-zinc-800 px-3 py-1 text-zinc-400 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2]" />
-                  {session ? <button type="button" onClick={() => {
-                    const url = `${window.location.origin}/social?post=${encodeURIComponent(post.postHash)}`
-                    const text = `VIA · DeSo post\n${url}`
-                    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank", "noopener,noreferrer")
-                  }} className="rounded-full border border-zinc-800 px-3 py-1 text-zinc-400 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2]">WhatsApp</button> : null}
-                  {session ? <Link href={`/?account=${encodeURIComponent(post.publicKey)}#collection-controls`} className="rounded-full border border-zinc-800 px-3 py-1 text-zinc-400 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2]">NFTs</Link> : null}
+                  <details className="relative sm:hidden">
+                    <summary aria-label="Meer postacties" title="Meer postacties" className="cursor-pointer list-none rounded-full border border-zinc-800 px-3 py-1 text-zinc-400">•••</summary>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {session ? <button type="button" onClick={() => {
+                        const url = `${window.location.origin}/social?post=${encodeURIComponent(post.postHash)}`
+                        if (navigator.share) void navigator.share({ title: "VIA · DeSo post", url }).catch(() => {})
+                        else void navigator.clipboard?.writeText(url)
+                      }} className="rounded-full border border-zinc-800 px-3 py-1 text-zinc-400">Share</button> : null}
+                      <XShareButton href={`/social?post=${encodeURIComponent(post.postHash)}`} text={post.body ? post.body.slice(0, 180) : "VIA · DeSo post"} label="X" className="rounded-full border border-zinc-800 px-3 py-1 text-zinc-400" />
+                      {session ? <button type="button" onClick={() => {
+                        const url = `${window.location.origin}/social?post=${encodeURIComponent(post.postHash)}`
+                        const text = `VIA · DeSo post\n${url}`
+                        window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank", "noopener,noreferrer")
+                      }} className="rounded-full border border-zinc-800 px-3 py-1 text-zinc-400">WhatsApp</button> : null}
+                      {session ? <LocalSaveButton postHash={post.postHash} body={post.body} publicKey={post.publicKey} timestampNanos={post.timestampNanos} /> : null}
+                      {session ? <Link href={`/?account=${encodeURIComponent(post.publicKey)}#collection-controls`} className="rounded-full border border-zinc-800 px-3 py-1 text-zinc-400">NFTs</Link> : null}
+                    </div>
+                  </details>
+                  <div className="hidden flex-wrap items-center gap-2 sm:flex">
+                    {session ? <button type="button" onClick={() => {
+                      const url = `${window.location.origin}/social?post=${encodeURIComponent(post.postHash)}`
+                      if (navigator.share) void navigator.share({ title: "VIA · DeSo post", url }).catch(() => {})
+                      else void navigator.clipboard?.writeText(url)
+                    }} className="rounded-full border border-zinc-800 px-3 py-1 text-zinc-400 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2]">Share</button> : null}
+                    <XShareButton href={`/social?post=${encodeURIComponent(post.postHash)}`} text={post.body ? post.body.slice(0, 180) : "VIA · DeSo post"} label="X" className="rounded-full border border-zinc-800 px-3 py-1 text-zinc-400 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2]" />
+                    {session ? <button type="button" onClick={() => {
+                      const url = `${window.location.origin}/social?post=${encodeURIComponent(post.postHash)}`
+                      const text = `VIA · DeSo post\n${url}`
+                      window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank", "noopener,noreferrer")
+                    }} className="rounded-full border border-zinc-800 px-3 py-1 text-zinc-400 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2]">WhatsApp</button> : null}
+                  </div>
+                  {session ? <Link href={`/?account=${encodeURIComponent(post.publicKey)}#collection-controls`} className="hidden rounded-full border border-zinc-800 px-3 py-1 text-zinc-400 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2] sm:inline-flex">NFTs</Link> : null}
                   {isOwnPost ? <Link href={`/edit-post?post=${encodeURIComponent(post.postHash)}`} className="rounded-full border border-[#8fd4a9]/45 px-3 py-1 text-[#9adbb2]">Edit</Link> : null}
                 </div>
 
@@ -338,6 +402,14 @@ export default function PublicPosts() {
               </article>
             )
           })}
+        </div>
+      ) : null}
+
+      {posts.length > 0 && feedChoice !== "following" && !sharedPostView && hasMore ? (
+        <div className="mt-5 text-center">
+          <button type="button" onClick={() => void loadMorePosts()} disabled={loading} className="text-xs text-zinc-500 transition hover:text-[#9adbb2] disabled:cursor-wait disabled:opacity-50">
+            {loading ? "Laden…" : "Meer laden"}
+          </button>
         </div>
       ) : null}
     </section>

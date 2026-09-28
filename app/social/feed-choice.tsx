@@ -10,7 +10,7 @@ export const VIA_SOCIAL_FEED_EVENT = "via:social:feed-choice"
 const choices = [
   { id: "following", title: "Following", text: "Posts from accounts followed by the active DeSo identity." },
   { id: "hot", title: "Hot", text: "DeSo Hot ranking." },
-  { id: "recent", title: "New", text: "Newest public posts first." },
+  { id: "recent", title: "Recent", text: "Newest public posts first." },
 ] as const
 
 export type ChoiceId = (typeof choices)[number]["id"]
@@ -59,14 +59,14 @@ export default function FeedChoice() {
   const inactiveClass = "rounded-full border border-zinc-800 px-4 py-2 text-sm text-zinc-400 transition hover:border-zinc-700 hover:text-zinc-200"
 
   return (
-    <section className="rounded-2xl border border-white/10 bg-black/35 px-4 py-3 sm:px-5" aria-labelledby="feed-choice-heading">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
+    <section className="rounded-2xl border border-white/10 bg-black/35 px-2 py-2 sm:px-5 sm:py-3" aria-labelledby="feed-choice-heading">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="hidden sm:block">
           <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#8fd4a9]">Feed</p>
           <h2 id="feed-choice-heading" className="mt-1 text-base font-semibold text-zinc-100">{active.title}</h2>
           <p className="mt-1 text-xs text-zinc-500">{active.text}</p>
         </div>
-        <div className="flex flex-wrap gap-2" aria-label="Choose social feed">
+        <div className="grid w-full grid-cols-3 gap-2 sm:flex sm:w-auto sm:flex-wrap" aria-label="Choose social feed">
           {choices.map((choice) => {
             const isActive = selected === choice.id
             return (
@@ -75,16 +75,16 @@ export default function FeedChoice() {
                 type="button"
                 aria-pressed={isActive}
                 onClick={() => choose(choice.id)}
-                className={isActive ? "rounded-full border border-[#8fd4a9]/55 bg-[#102117]/70 px-4 py-2 text-sm text-[#9adbb2] transition" : inactiveClass}
+                className={isActive ? "rounded-full border border-[#8fd4a9]/55 bg-[#102117]/70 px-3 py-2 text-center text-sm text-[#9adbb2] transition sm:px-4" : `${inactiveClass} px-3 text-center sm:px-4`}
               >
                 {choice.title}
               </button>
             )
           })}
-          <Link href="/discover" className={inactiveClass}>#Explore</Link>
+
         </div>
       </div>
-      <p className="mt-2 min-h-4 text-[11px] text-zinc-600" role="status" aria-live="polite">{status}</p>
+      <p className={`text-[11px] text-zinc-600 sm:mt-2 sm:min-h-4 ${status ? "mt-2" : "hidden sm:block"}`} role="status" aria-live="polite">{status}</p>
     </section>
   )
 }

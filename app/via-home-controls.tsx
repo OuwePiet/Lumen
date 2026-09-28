@@ -31,17 +31,16 @@ type ProfileResponse = { ok?: boolean; profile?: PublicProfile }
 // Homepage groups stay compact so account controls remain visible on tablet heights.
 const standardNav = [
   ["home", "/"],
+  ["social", "/social"],
   ["notifications", "/notifications"],
   ["messages", "/messages"],
   ["discover", "/discover"],
   ["bookmarks", "/saved"],
   ["profile", "/profile"],
   ["wallet", "/wallet"],
-  ["more", "/more"],
 ] as const
 
 const viaExtraNav = [
-  ["social", "/social"],
   ["nfts", "/collection"],
   ["live", "/live"],
   ["communities", "/communities"],
@@ -49,8 +48,6 @@ const viaExtraNav = [
   ["world", "/world"],
   ["myVia", "/my-via"],
   ["advertising", "/advertising"],
-  ["ideas", "/ideas"],
-  ["storage", "/storage"],
 ] as const
 
 const languageCodes: Record<ViaLanguage | "Hindi", string> = {
@@ -103,7 +100,7 @@ type HomeText = {
 
 const copy: Record<ViaLanguage | "Hindi", HomeText> = {
   Dutch: {
-    standard: "Maak uw keuze", viaExtra: "", account: "Taal", home: "Home",
+    standard: "", viaExtra: "", account: "Taal", home: "Home",
     social: "Sociaal", discover: "Ontdekken", nfts: "NFT's", live: "Live",
     communities: "Community's", games: "Spellen", world: "Wereld", profile: "Mijn profiel", myVia: "Mijn VIA",
     bookmarks: "Bookmarks", messages: "Berichten", more: "Meer",
@@ -112,7 +109,7 @@ const copy: Record<ViaLanguage | "Hindi", HomeText> = {
     connected: "Verbonden", switchAccount: "Wissel account", addAccount: "DeSo-account toevoegen", inactive90: "90+ dagen inactief", advertising: "Reclame", ideas: "Ideeënbus", storage: "Externe opslag",
   },
   English: {
-    standard: "Make your choice", viaExtra: "", account: "Language", home: "Home",
+    standard: "", viaExtra: "", account: "Language", home: "Home",
     social: "Social", discover: "Discover", nfts: "NFTs", live: "Live",
     communities: "Communities", games: "Games", world: "World", profile: "My Profile", myVia: "My VIA",
     bookmarks: "Bookmarks", messages: "Messages", more: "More",
@@ -121,7 +118,7 @@ const copy: Record<ViaLanguage | "Hindi", HomeText> = {
     connected: "Connected", switchAccount: "Switch account", addAccount: "Add DeSo account", inactive90: "Inactive 90+ days", advertising: "Advertising", ideas: "Ideas Box", storage: "External storage",
   },
   French: {
-    standard: "Faites votre choix", viaExtra: "", account: "Langue", home: "Accueil",
+    standard: "", viaExtra: "", account: "Langue", home: "Accueil",
     social: "Social", discover: "Découvrir", nfts: "NFT", live: "Live",
     communities: "Communautés", games: "Jeux", world: "Monde", profile: "Mon profil", myVia: "Mon VIA",
     bookmarks: "Favoris", messages: "Messages", more: "Plus",
@@ -130,7 +127,7 @@ const copy: Record<ViaLanguage | "Hindi", HomeText> = {
     connected: "Connecté", switchAccount: "Changer de compte", addAccount: "Ajouter un compte DeSo", inactive90: "Inactif depuis 90+ jours", advertising: "Publicité", ideas: "Boîte à idées", storage: "Stockage externe",
   },
   Spanish: {
-    standard: "Haga su elección", viaExtra: "", account: "Idioma", home: "Inicio",
+    standard: "", viaExtra: "", account: "Idioma", home: "Inicio",
     social: "Social", discover: "Descubrir", nfts: "NFT", live: "Live",
     communities: "Comunidades", games: "Juegos", world: "Mundo", profile: "Mi perfil", myVia: "Mi VIA",
     bookmarks: "Guardados", messages: "Mensajes", more: "Más",
@@ -139,7 +136,7 @@ const copy: Record<ViaLanguage | "Hindi", HomeText> = {
     connected: "Conectado", switchAccount: "Cambiar cuenta", addAccount: "Añadir cuenta DeSo", inactive90: "Inactivo 90+ días", advertising: "Publicidad", ideas: "Buzón de ideas", storage: "Almacenamiento externo",
   },
   Chinese: {
-    standard: "请选择", viaExtra: "", account: "语言", home: "首页",
+    standard: "", viaExtra: "", account: "语言", home: "首页",
     social: "社交", discover: "发现", nfts: "NFT", live: "直播",
     communities: "社区", games: "游戏", world: "世界", profile: "我的资料", myVia: "我的 VIA",
     bookmarks: "书签", messages: "消息", more: "更多",
@@ -148,7 +145,7 @@ const copy: Record<ViaLanguage | "Hindi", HomeText> = {
     connected: "已连接", switchAccount: "切换账户", addAccount: "添加 DeSo 账户", inactive90: "90+ 天未活跃", advertising: "广告", ideas: "意见箱", storage: "外部存储",
   },
   Hindi: {
-    standard: "अपना विकल्प चुनें", viaExtra: "", account: "भाषा", home: "होम",
+    standard: "", viaExtra: "", account: "भाषा", home: "होम",
     social: "सोशल", discover: "खोजें", nfts: "NFT", live: "लाइव", communities: "समुदाय", games: "गेम्स", world: "दुनिया",
     profile: "मेरी प्रोफ़ाइल", myVia: "मेरा VIA", bookmarks: "बुकमार्क", messages: "संदेश", more: "और",
     search: "सदस्य खोजें", publicEntrance: "सार्वजनिक प्रवेश", wallet: "मेरा वॉलेट", notifications: "सूचनाएँ",
@@ -385,10 +382,10 @@ export default function ViaHomeControls() {
       <div className="via-home-iphone-clock-inline"><ViaWorldClock iphoneInline /></div>
 
       <section style={{ display: "grid", gap: "6px" }}>
-        <span className="via-home-standard-label" style={sectionLabel}>{t.standard}</span>
+        {t.standard ? <span className="via-home-standard-label" style={sectionLabel}>{t.standard}</span> : null}
         <nav aria-label="VIA standard navigation" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "7px" }}>
           {standardNav.map(([key, href]) => href ? (
-            <Link prefetch={href === "/notifications"} key={key} href={href} style={{ ...buttonStyle, width: "100%", justifyContent: "center", paddingInline: "9px", borderColor: "rgba(143,212,169,.30)", background: "linear-gradient(180deg, rgba(13,31,21,.78), rgba(5,15,9,.78))", color: "#dce8e1" }}>{t[key]}</Link>
+            <Link prefetch={href === "/notifications"} key={key} href={href} style={{ ...buttonStyle, width: "100%", justifyContent: "center", paddingInline: "9px" }}>{key === "social" ? <span aria-hidden="true" style={{ color: "#3f7654", marginRight: "5px", fontSize: "13px" }}>✎</span> : null}{t[key]}</Link>
           ) : (
             <span key={key} aria-disabled="true" title="Wordt op de eigen Berichten-pagina aangesloten" style={{ ...disabledButtonStyle, width: "100%", justifyContent: "center", paddingInline: "9px" }}>{t[key]}</span>
           ))}

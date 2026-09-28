@@ -8,9 +8,14 @@ export async function GET(request: Request) {
   const rawLimit = Number(url.searchParams.get("limit") ?? "20")
   const limit = Number.isFinite(rawLimit) ? rawLimit : 20
   const sortByNew = url.searchParams.get("sort") === "new"
+  const seenPosts = (url.searchParams.get("seen") ?? "")
+    .split(",")
+    .map((hash) => hash.trim())
+    .filter((hash) => /^[0-9a-f]{64}$/i.test(hash))
+    .slice(0, 100)
 
   try {
-    const posts = await readDiscoveryPosts(limit, sortByNew)
+    const posts = await readDiscoveryPosts(limit, sortByNew, seenPosts)
     return NextResponse.json(
       {
         ok: true,

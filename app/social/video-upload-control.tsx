@@ -110,8 +110,8 @@ export default function VideoUploadControl({ onReady, onBusyChange }: VideoUploa
 
   return (
     <div className="mt-4 rounded-xl border border-zinc-800 bg-zinc-950/70 p-4">
-      <p className="text-sm font-medium text-zinc-200">Direct DeSo video upload</p>
-      <p className="mt-1 text-xs leading-5 text-zinc-500">One video at a time · up to 250 MB · uploaded through DeSo&apos;s tokenized tus route. VIA keeps no permanent video copy.</p>
+      <p className="hidden text-sm font-medium text-zinc-200 sm:block">Video upload</p>
+      <p className="mt-1 text-xs leading-5 text-zinc-500">One video at a time · up to 250 MB.</p>
 
       <div className="mt-3 flex flex-wrap items-center gap-2">
         <label className="inline-flex cursor-pointer items-center rounded-lg border border-[#285f40] px-3 py-2 text-xs font-semibold text-[#9adbb2]">
