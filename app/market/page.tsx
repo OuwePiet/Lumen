@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import Link from "next/link"
 import { fetchDeSo } from "../deso-api"
 import MarketLocalizedText from "./market-localized-text"
+import MarketIdentityRedirect from "./market-identity-redirect"
 export const metadata: Metadata = {
   title: "NFT Market",
   description: "Browse DeSo NFT listings, sale offers, bids and transfers through the VIA marketplace.",
@@ -107,14 +108,14 @@ export default async function MarketPage({ searchParams }: { searchParams: Promi
       </nav>
 
       {!publicKey ? (
-        <section className="mt-8 rounded-xl border border-zinc-800 bg-black/20 p-4" aria-labelledby="market-account-heading">
+        <><MarketIdentityRedirect /><section className="mt-8 rounded-xl border border-zinc-800 bg-black/20 p-4" aria-labelledby="market-account-heading">
           <h2 id="market-account-heading" className="text-sm font-semibold text-zinc-200"><MarketLocalizedText kind="chooseAccount" /></h2>
           <p className="mt-1 text-sm text-zinc-500"><MarketLocalizedText kind="readOnly" /></p>
           <form className="mt-4 flex flex-wrap gap-3">
             <input name="publicKey" required placeholder="DeSo public key (BC1…)" aria-label="DeSo public key" className="min-w-0 flex-1 rounded-lg border border-zinc-800 bg-black px-3 py-2 text-sm" />
             <button className="rounded-lg border border-[#285f40] px-4 py-2 text-sm font-semibold text-[#9adbb2]"><MarketLocalizedText kind="openMarket" /></button>
           </form>
-        </section>
+        </section></>
       ) : error ? <p className="mt-8 text-sm text-amber-300"><MarketLocalizedText kind="loadError" /></p> : (
         <>
           <section id="listings" className="mt-10 scroll-mt-24">
