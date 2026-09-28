@@ -1,7 +1,8 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import { DESO_IDENTITY_ORIGIN, restoreIdentitySession, VIA_IDENTITY_EVENT, type ViaIdentitySession } from "../deso-identity-session"
+import { restoreIdentitySession, VIA_IDENTITY_EVENT, type ViaIdentitySession } from "../deso-identity-session"
+import { signViaTransaction } from "../deso-identity-sign"
 
 type Props = {
   postHash: string
@@ -96,25 +97,21 @@ export default function LikeButton({ postHash, initialCount, variant = "default"
       })
       const data = await response.json() as PrepareResponse
       if (!response.ok || !data.ok || !data.transactionHex) throw new Error(data.error || "PREPARE_FAILED")
-      const approveUrl = `${DESO_IDENTITY_ORIGIN}/approve?tx=${encodeURIComponent(data.transactionHex)}`
-      const popup = window.open(approveUrl, "via-deso-like-approve", "popup=yes,width=800,height=900")
-      if (!popup) {
-        setMessage("Approval window was blocked. Nothing changed.")
-        setBusy(false)
-        return
-      }
-      popupRef.current = popup
-      if (popupWatch.current !== null) window.clearInterval(popupWatch.current)
-      popupWatch.current = window.setInterval(() => {
-        if (popupRef.current?.closed) {
-          popupRef.current = null
-          if (popupWatch.current !== null) window.clearInterval(popupWatch.current)
-          popupWatch.current = null
-          setBusy(false)
-          setMessage("DeSo approval was closed. VIA changed nothing.")
-        }
-      }, 500)
-      setMessage(typeof data.feeNanos === "number" ? `Review in DeSo Identity · network fee ${data.feeNanos.toLocaleString()} nanos` : "Review this like in DeSo Identity.")
+      setMessage("Signing this like with your DeSo Identity session…")
+      const signedTransactionHex = await signViaTransaction(session.publicKey, data.transactionHex)
+      const submitResponse = await fetch("/api/via/social/like", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        cache: "no-store",
+        body: JSON.stringify({ action: "submit", signedTransactionHex }),
+      })
+      const submitData = await submitResponse.json() as SubmitResponse
+      if (!submitResponse.ok || !submitData.ok) throw new Error(submitData.error || "SUBMIT_FAILED")
+      const nextLiked = !liked
+      setLiked(nextLiked)
+      setCount((current) => Math.max(0, current + (nextLiked ? 1 : -1)))
+      setMessage(nextLiked ? "Liked on DeSo." : "Like removed on DeSo.")
+      setBusy(false)
     } catch {
       setMessage("Like transaction could not be prepared. Nothing changed.")
       setBusy(false)
