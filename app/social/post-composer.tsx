@@ -330,7 +330,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
 
       {!isReply ? <label className="mt-2 inline-flex items-center gap-1.5 text-[11px] text-zinc-600"><input type="checkbox" checked={sensitiveContent} onChange={(event)=>setSensitiveContent(event.target.checked)} className="h-3.5 w-3.5 accent-[#8fd4a9]" /><span>Sensitive content</span></label> : null}
 
-      {isReply ? <button type="button" onClick={() => setMediaOpen((open) => !open)} className="mt-3 rounded-lg border border-zinc-800 px-3 py-1.5 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2]">{mediaOpen ? "Hide photo/video" : "Photo / Video"}</button> : null}
+      {isReply ? <button type="button" onClick={() => setMediaOpen((open) => !open)} className="mt-3 rounded-lg border border-zinc-800 px-3 py-1.5 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2]"><span onClick={(event) => { event.stopPropagation(); setMediaChoice("photo"); setMediaOpen(true) }}>Photo</span><span className="mx-2 text-zinc-700">|</span><span onClick={(event) => { event.stopPropagation(); setMediaChoice("video"); setMediaOpen(true) }}>Video</span></button> : null}
 
       {mediaOpen ? <div className="mt-4 rounded-xl border border-zinc-800 bg-zinc-950/70 p-3">
         {mediaChoice === "photo" ? <>
