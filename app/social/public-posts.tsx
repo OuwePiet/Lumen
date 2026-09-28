@@ -236,11 +236,8 @@ export default function PublicPosts() {
 
   return (
     <section className="rounded-2xl border border-white/10 bg-black/35 p-4 sm:p-5" aria-labelledby="public-posts-heading">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#8fd4a9]">Feed</p>
-          <h2 id="public-posts-heading" className="mt-1 text-xl font-semibold text-zinc-100">Posts</h2>
-        </div>
+      <div className="flex flex-wrap items-center justify-end gap-3">
+        <h2 id="public-posts-heading" className="sr-only">Posts</h2>
         <div className="flex flex-wrap gap-2" aria-label="Filter posts">
           {(["all", "image", "video", "nft"] as const).map((filter) => (
             <button
