@@ -68,7 +68,7 @@ function normalizeFollowingPost(post: DeSoPost): ViaFollowingPost {
     quoteRepostCount: count(post.QuoteRepostCount),
     isNft: post.IsNFT === true,
     postExtraData: safePostExtraData(post.PostExtraData),
-    sourcePublicKey: publicKey,\n    profilePic: text(post.ProfileEntryResponse?.ProfilePic),\n    isVerified: post.ProfileEntryResponse?.IsVerified === true,
+    sourcePublicKey: publicKey,\n
   }
 }
 
