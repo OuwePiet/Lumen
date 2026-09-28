@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import { MessageCircle } from "lucide-react"
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react"
 import { ChoiceId, defaultSocialFeedChoice, VIA_SOCIAL_FEED_EVENT, VIA_SOCIAL_FEED_STORAGE_KEY } from "./feed-choice"
 import PostComposer from "./post-composer"
@@ -384,7 +385,7 @@ export default function PublicPosts() {
 
                 <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-white/[0.06] pt-3 text-xs text-zinc-500">
                   {session ? <LikeButton postHash={post.postHash} initialCount={post.likeCount} variant="icon" /> : <span>Like · {post.likeCount}</span>}
-                  {session ? <button type="button" onClick={() => setReplyingTo(isReplying ? null : post.postHash)} title="Reply" aria-label={`Reply · ${post.commentCount}`} className="inline-flex h-9 min-w-9 items-center justify-center gap-1 rounded-full border border-zinc-800 px-2 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2]"><span aria-hidden="true">▢</span><span>{post.commentCount}</span></button> : <span>Reply · {post.commentCount}</span>}
+                  {session ? <button type="button" onClick={() => setReplyingTo(isReplying ? null : post.postHash)} title="Reply" aria-label={`Reply · ${post.commentCount}`} className="inline-flex h-9 min-w-9 items-center justify-center gap-1 rounded-full border border-zinc-800 px-2 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2]"><MessageCircle aria-hidden="true" className="h-4 w-4" /><span>{post.commentCount}</span></button> : <span>Reply · {post.commentCount}</span>}
                   {session ? <RepostButton postHash={post.postHash} initialCount={totalReposts} variant="icon" /> : <span>Repost · {totalReposts}</span>}
                   {session ? <DiamondButton postHash={post.postHash} receiverPublicKey={post.publicKey} initialCount={post.diamondCount} variant="icon" /> : <span>Diamond · {post.diamondCount}</span>}
                   {session ? <div className="hidden xl:contents"><LocalSaveButton postHash={post.postHash} body={post.body} publicKey={post.publicKey} timestampNanos={post.timestampNanos} /></div> : null}
