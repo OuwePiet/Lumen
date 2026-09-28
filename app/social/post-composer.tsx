@@ -326,7 +326,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
 
       {!isReply && pollOpen ? <div className="mt-4 rounded-xl border border-zinc-800 bg-zinc-950/70 p-3">
         <p className="text-sm font-medium text-zinc-200">Poll options</p>
-        <p className="mt-1 text-xs text-zinc-500">Add 2–5 unique choices.</p>
+        <p className="mt-1 hidden text-xs text-zinc-500 sm:block">Add 2–5 unique choices.</p>
         <div className="mt-3 space-y-2">
           {pollOptions.map((option, index) => <div key={index} className="flex gap-2">
             <input value={option} maxLength={MAX_POLL_OPTION_LENGTH} onChange={(event) => setPollOptions((current) => current.map((item, itemIndex) => itemIndex === index ? event.target.value : item))} placeholder={`Option ${index + 1}`} className="min-w-0 flex-1 rounded-lg border border-zinc-800 bg-black/40 px-3 py-2 text-sm text-zinc-200 outline-none focus:border-[#8fd4a9]/55" />
