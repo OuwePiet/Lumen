@@ -23,6 +23,7 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
   const [level, setLevel] = useState(1)
   const [count, setCount] = useState(initialCount)
   const [confirmValue, setConfirmValue] = useState(false)
+  const [compactOpen, setCompactOpen] = useState(false)
   const [status, setStatus] = useState<"idle" | "preparing" | "approval" | "submitting" | "done" | "error">("idle")
   const [message, setMessage] = useState("")
   const [feeNanos, setFeeNanos] = useState<number | null>(null)
@@ -107,27 +108,31 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
     return <div className="inline-flex flex-wrap items-center gap-2">
       <button
         type="button"
-        onClick={() => setConfirmValue((value) => !value)}
+        onClick={() => { setCompactOpen((open) => !open); setConfirmValue(false) }}
         title="Diamond"
         aria-label={`Diamond · ${count}`}
-        aria-pressed={confirmValue}
-        className={`inline-flex h-9 min-w-9 items-center justify-center gap-1 rounded-full border px-2 text-xs transition ${confirmValue ? "border-[#8fd4a9] bg-[#285f40] text-white" : "border-zinc-800 text-zinc-300 hover:border-[#8fd4a9] hover:text-white"}`}
+        aria-expanded={compactOpen}
+        className={`inline-flex h-9 min-w-9 items-center justify-center gap-1 rounded-full border px-2 text-xs transition ${compactOpen ? "border-[#8fd4a9] bg-[#285f40] text-white" : "border-zinc-800 text-zinc-300 hover:border-[#8fd4a9] hover:text-white"}`}
       >
         <span aria-hidden="true">◇</span><span>{count}</span>
       </button>
-      {confirmValue ? <>
+      {compactOpen ? <div className="basis-full rounded-xl border border-zinc-800 bg-[#050806] p-2">
         <div className="flex max-w-full flex-wrap items-center gap-1.5" aria-label="Diamond value">
           {(diamondValues ?? Array.from({ length: 8 }, (_, index) => ({ level: index + 1, usd: NaN }))).map((entry) => (
-            <button key={entry.level} type="button" onClick={() => setLevel(entry.level)} aria-pressed={level === entry.level} className={`min-w-[3.35rem] rounded-xl border px-2 py-1 text-center text-[10px] transition ${level === entry.level ? "border-[#8fd4a9] bg-[#285f40] text-white" : "border-zinc-800 text-zinc-400 hover:border-[#8fd4a9] hover:text-white"}`}>
+            <button key={entry.level} type="button" onClick={() => { setLevel(entry.level); setConfirmValue(false) }} aria-pressed={level === entry.level} className={`min-w-[3.35rem] rounded-xl border px-2 py-1 text-center text-[10px] transition ${level === entry.level ? "border-[#8fd4a9] bg-[#285f40] text-white" : "border-zinc-800 text-zinc-400 hover:border-[#8fd4a9] hover:text-white"}`}>
               <span className="block text-sm" aria-hidden="true">💎</span>
-              <span className="block">{Number.isFinite(entry.usd) ? `${entry.usd < 0.01 ? entry.usd.toFixed(3) : entry.usd < 1 ? entry.usd.toFixed(2) : entry.usd.toLocaleString(undefined, { maximumFractionDigits: 2 })}` : "…"}</span>
+              <span className="block">{Number.isFinite(entry.usd) ? `$${entry.usd < 0.01 ? entry.usd.toFixed(3) : entry.usd < 1 ? entry.usd.toFixed(2) : entry.usd.toLocaleString(undefined, { maximumFractionDigits: 2 })}` : "prijs laden…"}</span>
             </button>
           ))}
         </div>
-        <button type="button" onClick={prepare} disabled={status === "preparing" || status === "approval" || status === "submitting" || !diamondValues} className="h-9 rounded-full border border-amber-700/70 px-3 text-xs text-amber-300 disabled:border-zinc-800 disabled:text-zinc-600">
-          {status === "preparing" ? "Preparing…" : status === "approval" ? "Review…" : status === "submitting" ? "Submitting…" : "Send"}
-        </button>
-      </> : null}
+        <label className="mt-2 flex items-center gap-1.5 text-[11px] text-amber-300"><input type="checkbox" checked={confirmValue} onChange={(event) => setConfirmValue(event.target.checked)} />I understand this sends $DESO value</label>
+        <div className="mt-2 flex flex-wrap gap-2">
+          <button type="button" onClick={prepare} disabled={!confirmValue || !diamondValues || status === "preparing" || status === "approval" || status === "submitting"} className="h-9 rounded-full border border-amber-700/70 px-3 text-xs text-amber-300 disabled:border-zinc-800 disabled:text-zinc-600">
+            {status === "preparing" ? "Preparing…" : status === "approval" ? "Review…" : status === "submitting" ? "Submitting…" : "Send"}
+          </button>
+          <button type="button" onClick={() => { setCompactOpen(false); setConfirmValue(false) }} disabled={status === "preparing" || status === "approval" || status === "submitting"} className="h-9 rounded-full border border-zinc-700 px-3 text-xs text-zinc-300 disabled:opacity-60">Sluiten</button>
+        </div>
+      </div> : null}
       {message ? <span className="sr-only" role="status" aria-live="polite">{message}</span> : null}
     </div>
   }
