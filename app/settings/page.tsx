@@ -18,19 +18,21 @@ const quietAction = "inline-flex min-h-10 items-center rounded-[10px] border bor
 const selectClass = "min-h-11 w-full rounded-[10px] border border-zinc-700/80 bg-[#050807] px-3 py-2 text-sm text-zinc-100 outline-none focus:border-[#8fd4a9]/55 focus:ring-2 focus:ring-[#8fd4a9]/10"
 
 export default function SettingsPage() {
+  const [interfaceLanguage, setInterfaceLanguage] = useState<ViaLanguage>(DEFAULT_VIA_SETTINGS.interfaceLanguage)
   const [language, setLanguage] = useState<ViaLanguage>(DEFAULT_VIA_SETTINGS.defaultLanguage)
   const [feed, setFeed] = useState<ViaFeed>(DEFAULT_VIA_SETTINGS.defaultFeed)
   const [status, setStatus] = useState("Settings are stored only in this browser.")
 
   useEffect(() => {
     const settings = readViaLocalSettings()
+    setInterfaceLanguage(settings.interfaceLanguage)
     setLanguage(settings.defaultLanguage)
     setFeed(settings.defaultFeed)
   }, [])
 
   function save() {
     try {
-      saveViaLocalSettings({ defaultLanguage: language, defaultFeed: feed })
+      saveViaLocalSettings({ interfaceLanguage, defaultLanguage: language, defaultFeed: feed })
       setStatus("VIA preferences saved on this device.")
     } catch {
       setStatus("Preferences could not be saved in this browser.")
@@ -78,6 +80,11 @@ export default function SettingsPage() {
           <p className="mt-2 text-sm leading-6 text-zinc-400">These defaults are used when VIA Studio opens without an already saved draft.</p>
 
           <div className="mt-5 grid gap-4 sm:grid-cols-2">
+            <label className="grid gap-2 text-sm font-semibold text-zinc-200">VIA interface language
+              <select value={interfaceLanguage} onChange={(event) => setInterfaceLanguage(event.target.value as ViaLanguage)} className={selectClass}>
+                {VIA_LANGUAGES.map((item) => <option key={item} value={item}>{item}</option>)}
+              </select>
+            </label>
             <label className="grid gap-2 text-sm font-semibold text-zinc-200">Default post language
               <select value={language} onChange={(event) => setLanguage(event.target.value as ViaLanguage)} className={selectClass}>
                 {VIA_LANGUAGES.map((item) => <option key={item} value={item}>{item}</option>)}
