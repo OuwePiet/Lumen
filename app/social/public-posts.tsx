@@ -253,7 +253,7 @@ export default function PublicPosts() {
         </div>
       </div>
 
-      <div className="mt-4 flex max-w-2xl">
+      <div className="mt-4 hidden max-w-2xl sm:flex">
         <p className="flex-1 self-center text-sm text-zinc-500">
           {feedChoice === "following"
             ? session
