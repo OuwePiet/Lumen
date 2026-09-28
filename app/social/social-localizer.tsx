@@ -12,7 +12,13 @@ const COPY: Record<ViaLanguage | "Hindi", Copy> = {
   English: { exact: {}, patterns: [] },
   Dutch: {
     exact: {
-      "Public DeSo conversation on VIA.": "Openbare DeSo-gesprekken op VIA.",
+            "VIA Post Office": "VIA Postkantoor",
+      "Post Office": "Postkantoor",
+      "VIA Post Office shortcuts": "VIA Postkantoor snelkeuzes",
+      "VIA Post Office feed": "VIA Postkantoor feed",
+      "Write a post": "Schrijf een bericht",
+      "Write, publish and follow DeSo posts in the VIA way.": "Schrijf, publiceer en volg DeSo-berichten op de VIA-manier.",
+"Public DeSo conversation on VIA.": "Openbare DeSo-gesprekken op VIA.",
       "Social shortcuts": "Sociale snelkoppelingen",
       "Notifications": "Meldingen",
       "Saved": "Opgeslagen",
@@ -72,7 +78,13 @@ const COPY: Record<ViaLanguage | "Hindi", Copy> = {
   },
   French: {
     exact: {
-      "Public DeSo conversation on VIA.": "Conversation DeSo publique sur VIA.",
+            "VIA Post Office": "VIA Bureau de poste",
+      "Post Office": "Bureau de poste",
+      "VIA Post Office shortcuts": "Raccourcis du Bureau de poste VIA",
+      "VIA Post Office feed": "Fil du Bureau de poste VIA",
+      "Write a post": "Écrire une publication",
+      "Write, publish and follow DeSo posts in the VIA way.": "Écrivez, publiez et suivez les publications DeSo à la manière VIA.",
+"Public DeSo conversation on VIA.": "Conversation DeSo publique sur VIA.",
       "Notifications": "Notifications",
       "Saved": "Enregistrés",
       "Create": "Créer",
@@ -115,7 +127,13 @@ const COPY: Record<ViaLanguage | "Hindi", Copy> = {
   },
   Spanish: {
     exact: {
-      "Public DeSo conversation on VIA.": "Conversación pública de DeSo en VIA.",
+            "VIA Post Office": "VIA Oficina de correos",
+      "Post Office": "Oficina de correos",
+      "VIA Post Office shortcuts": "Accesos de la Oficina de correos VIA",
+      "VIA Post Office feed": "Feed de la Oficina de correos VIA",
+      "Write a post": "Escribir una publicación",
+      "Write, publish and follow DeSo posts in the VIA way.": "Escribe, publica y sigue publicaciones DeSo al estilo VIA.",
+"Public DeSo conversation on VIA.": "Conversación pública de DeSo en VIA.",
       "Notifications": "Notificaciones",
       "Saved": "Guardados",
       "Create": "Crear",
@@ -158,7 +176,13 @@ const COPY: Record<ViaLanguage | "Hindi", Copy> = {
   },
   Chinese: {
     exact: {
-      "Public DeSo conversation on VIA.": "VIA 上的公开 DeSo 对话。",
+            "VIA Post Office": "VIA 邮局",
+      "Post Office": "邮局",
+      "VIA Post Office shortcuts": "VIA 邮局快捷方式",
+      "VIA Post Office feed": "VIA 邮局动态",
+      "Write a post": "撰写帖子",
+      "Write, publish and follow DeSo posts in the VIA way.": "以 VIA 的方式撰写、发布和关注 DeSo 帖子。",
+"Public DeSo conversation on VIA.": "VIA 上的公开 DeSo 对话。",
       "Notifications": "通知",
       "Saved": "已保存",
       "Create": "创建",
@@ -201,7 +225,13 @@ const COPY: Record<ViaLanguage | "Hindi", Copy> = {
   },
   Hindi: {
     exact: {
-      "Public DeSo conversation on VIA.": "VIA पर सार्वजनिक DeSo बातचीत।",
+            "VIA Post Office": "VIA डाकघर",
+      "Post Office": "डाकघर",
+      "VIA Post Office shortcuts": "VIA डाकघर शॉर्टकट",
+      "VIA Post Office feed": "VIA डाकघर फ़ीड",
+      "Write a post": "पोस्ट लिखें",
+      "Write, publish and follow DeSo posts in the VIA way.": "VIA के तरीके से DeSo पोस्ट लिखें, प्रकाशित करें और फ़ॉलो करें।",
+"Public DeSo conversation on VIA.": "VIA पर सार्वजनिक DeSo बातचीत।",
       "Social shortcuts": "सोशल शॉर्टकट",
       "Notifications": "सूचनाएँ",
       "Saved": "सहेजे गए",
