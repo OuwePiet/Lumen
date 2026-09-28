@@ -101,7 +101,7 @@ type HomeText = {
 const copy: Record<ViaLanguage | "Hindi", HomeText> = {
   Dutch: {
     standard: "", viaExtra: "", account: "Taal", home: "Home",
-    social: "Sociaal", discover: "Ontdekken", nfts: "NFT's", live: "Live",
+    social: "Postoffice", discover: "Ontdekken", nfts: "NFT's", live: "Live",
     communities: "Community's", games: "Spellen", world: "Wereld", profile: "Mijn profiel", myVia: "Mijn VIA",
     bookmarks: "Bookmarks", messages: "Berichten", more: "Meer",
     search: "Zoek leden", publicEntrance: "Publieke ingang", wallet: "Mijn Wallet", notifications: "Meldingen",
@@ -110,7 +110,7 @@ const copy: Record<ViaLanguage | "Hindi", HomeText> = {
   },
   English: {
     standard: "", viaExtra: "", account: "Language", home: "Home",
-    social: "Social", discover: "Discover", nfts: "NFTs", live: "Live",
+    social: "Postoffice", discover: "Discover", nfts: "NFTs", live: "Live",
     communities: "Communities", games: "Games", world: "World", profile: "My Profile", myVia: "My VIA",
     bookmarks: "Bookmarks", messages: "Messages", more: "More",
     search: "Search members", publicEntrance: "Public Entrance", wallet: "My Wallet", notifications: "Notifications",
@@ -119,7 +119,7 @@ const copy: Record<ViaLanguage | "Hindi", HomeText> = {
   },
   French: {
     standard: "", viaExtra: "", account: "Langue", home: "Accueil",
-    social: "Social", discover: "Découvrir", nfts: "NFT", live: "Live",
+    social: "Postoffice", discover: "Découvrir", nfts: "NFT", live: "Live",
     communities: "Communautés", games: "Jeux", world: "Monde", profile: "Mon profil", myVia: "Mon VIA",
     bookmarks: "Favoris", messages: "Messages", more: "Plus",
     search: "Rechercher des membres", publicEntrance: "Entrée publique", wallet: "Mon Wallet", notifications: "Notifications",
@@ -128,7 +128,7 @@ const copy: Record<ViaLanguage | "Hindi", HomeText> = {
   },
   Spanish: {
     standard: "", viaExtra: "", account: "Idioma", home: "Inicio",
-    social: "Social", discover: "Descubrir", nfts: "NFT", live: "Live",
+    social: "Postoffice", discover: "Descubrir", nfts: "NFT", live: "Live",
     communities: "Comunidades", games: "Juegos", world: "Mundo", profile: "Mi perfil", myVia: "Mi VIA",
     bookmarks: "Guardados", messages: "Mensajes", more: "Más",
     search: "Buscar miembros", publicEntrance: "Entrada pública", wallet: "Mi Wallet", notifications: "Notificaciones",
@@ -137,7 +137,7 @@ const copy: Record<ViaLanguage | "Hindi", HomeText> = {
   },
   Chinese: {
     standard: "", viaExtra: "", account: "语言", home: "首页",
-    social: "社交", discover: "发现", nfts: "NFT", live: "直播",
+    social: "Postoffice", discover: "发现", nfts: "NFT", live: "直播",
     communities: "社区", games: "游戏", world: "世界", profile: "我的资料", myVia: "我的 VIA",
     bookmarks: "书签", messages: "消息", more: "更多",
     search: "搜索成员", publicEntrance: "公开入口", wallet: "我的钱包", notifications: "通知",
@@ -146,7 +146,7 @@ const copy: Record<ViaLanguage | "Hindi", HomeText> = {
   },
   Hindi: {
     standard: "", viaExtra: "", account: "भाषा", home: "होम",
-    social: "सोशल", discover: "खोजें", nfts: "NFT", live: "लाइव", communities: "समुदाय", games: "गेम्स", world: "दुनिया",
+    social: "Postoffice", discover: "खोजें", nfts: "NFT", live: "लाइव", communities: "समुदाय", games: "गेम्स", world: "दुनिया",
     profile: "मेरी प्रोफ़ाइल", myVia: "मेरा VIA", bookmarks: "बुकमार्क", messages: "संदेश", more: "और",
     search: "सदस्य खोजें", publicEntrance: "सार्वजनिक प्रवेश", wallet: "मेरा वॉलेट", notifications: "सूचनाएँ",
     login: "DeSo लॉगिन", connecting: "कनेक्ट हो रहा है…", logout: "लॉग आउट", blocked: "Safari ने DeSo Identity विंडो को ब्लॉक कर दिया।",
