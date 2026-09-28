@@ -219,7 +219,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
 
     try {
       setImageUploadStatus("jwt")
-      setImageUploadMessage("Authorizing this image upload with DeSo Identity…")
+      setImageUploadMessage("Preparing image upload approval…")
       const jwt = await requestIdentityJwt(session.publicKey)
 
       setImageUploadStatus("uploading")
