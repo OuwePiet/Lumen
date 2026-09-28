@@ -134,9 +134,9 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
 
   return <div className="flex flex-wrap items-center gap-2">
     <span>{count} Diamonds</span>
-    <details className="relative">
+    <details className="relative" open={confirmValue} onToggle={(event) => setConfirmValue(event.currentTarget.open)}>
       <summary className="cursor-pointer list-none rounded-full border border-zinc-800 px-3 py-2 text-sm text-zinc-300">💎 {level} · {diamondValues?.find((entry) => entry.level === level)?.usd.toLocaleString(undefined, { style: "currency", currency: "USD", maximumFractionDigits: 3 }) ?? "price loading…"} ▾</summary>
-      <div className="absolute bottom-full left-0 z-30 mb-2 grid w-64 grid-cols-2 gap-2 rounded-xl border border-zinc-800 bg-[#050806] p-3 shadow-xl">
+      <div className="absolute bottom-full left-0 z-30 mb-2 w-[min(21rem,calc(100vw-2rem))] rounded-xl border border-zinc-800 bg-[#050806] p-3 shadow-xl"><div className="mb-2 flex items-center justify-between gap-3"><strong className="text-sm text-zinc-200">Choose Diamond value</strong><button type="button" onClick={() => setConfirmValue(false)} aria-label="Close Diamond menu" className="rounded-full border border-zinc-700 px-2.5 py-1 text-sm text-zinc-300">✕</button></div><div className="grid grid-cols-2 gap-2">
         {(diamondValues ?? Array.from({ length: 6 }, (_, index) => ({ level: index + 1, usd: NaN }))).filter((entry) => entry.level <= 6).map((entry) => <button key={entry.level} type="button" disabled={!Number.isFinite(entry.usd)} onClick={() => { setLevel(entry.level); setConfirmValue(false) }} aria-pressed={level === entry.level} className={`min-h-14 rounded-xl border px-3 py-2 text-left text-sm ${level === entry.level ? "border-[#8fd4a9] bg-[#285f40] text-white" : "border-zinc-800 text-zinc-300 hover:border-[#8fd4a9]"} disabled:text-zinc-600`}><span className="font-semibold">{entry.level} 💎</span><span className="block text-xs">{Number.isFinite(entry.usd) ? entry.usd.toLocaleString(undefined, { style: "currency", currency: "USD", maximumFractionDigits: 3 }) : "Price loading…"}</span></button>)}
       </div>
     </details>
