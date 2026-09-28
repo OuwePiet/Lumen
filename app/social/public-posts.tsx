@@ -85,6 +85,7 @@ export default function PublicPosts() {
   const [posts, setPosts] = useState<PublicPost[]>([])
   const [mediaFilter, setMediaFilter] = useState<"all" | "image" | "video" | "nft">("all")
   const [loading, setLoading] = useState(false)
+  const [hasMore, setHasMore] = useState(true)
   const [message, setMessage] = useState("Choose a feed and load posts.")
   const [feedChoice, setFeedChoice] = useState<ChoiceId>("hot")
   const [session, setSession] = useState<ViaIdentitySession | null>(null)
@@ -167,6 +168,7 @@ export default function PublicPosts() {
       requestController.current?.abort()
       requestController.current = null
       setFeedChoice(choice)
+      setHasMore(true)
       setPosts([])
       setMediaFilter("all")
       setLoading(false)
@@ -205,6 +207,7 @@ export default function PublicPosts() {
     }
 
     setLoading(true)
+    setHasMore(true)
     setMessage("Loading…")
     try {
       const endpoint = feedChoice === "following"
@@ -259,6 +262,7 @@ export default function PublicPosts() {
         const known = new Set(current.map((post) => post.postHash))
         return [...current, ...nextPosts.filter((post) => !known.has(post.postHash))]
       })
+      setHasMore(nextPosts.length > 0)
       setMessage(nextPosts.length ? `${nextPosts.length} more posts loaded.` : "No more posts found.")
     } catch (error) {
       if (!(error instanceof DOMException && error.name === "AbortError")) setMessage("More posts are temporarily unavailable.")
@@ -395,7 +399,7 @@ export default function PublicPosts() {
         </div>
       ) : null}
 
-      {posts.length > 0 && feedChoice !== "following" ? (
+      {posts.length > 0 && feedChoice !== "following" && hasMore ? (
         <div className="mt-5 text-center">
           <button type="button" onClick={() => void loadMorePosts()} disabled={loading} className="text-xs text-zinc-500 transition hover:text-[#9adbb2] disabled:cursor-wait disabled:opacity-50">
             {loading ? "Laden…" : "Meer laden"}
