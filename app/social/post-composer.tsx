@@ -249,7 +249,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
     if (!session || !canPrepare) return
     if (isReply) saveDraft()
     setStatus("preparing")
-    setMessage(isReply ? "Preparing the exact DeSo reply transaction…" : "Preparing the exact DeSo post transaction with its media and poll data…")
+    setMessage(isReply ? "Preparing your reply…" : "Preparing your post…")
     setFeeNanos(null)
     try {
       const response = await fetch("/api/via/social/post", {
