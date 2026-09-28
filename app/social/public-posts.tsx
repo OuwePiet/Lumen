@@ -359,7 +359,7 @@ export default function PublicPosts() {
                     {creatorPic ? <img src={creatorPic} alt="" loading="lazy" className="h-9 w-9 shrink-0 rounded-full object-cover" /> : <div aria-hidden="true" className="h-9 w-9 shrink-0 rounded-full border border-zinc-800 bg-black/30" />}
                     <div className="min-w-0">
                     <p className="text-xs font-semibold text-zinc-300">
-                      DeSo · <Link href={`/profile/${encodeURIComponent(post.publicKey)}`} className="text-zinc-200 transition hover:text-[#9adbb2]">{creatorUsername ? `@${creatorUsername}` : shortPublicKey(post.publicKey)}{creator?.isVerified ? " ✓" : ""}</Link>
+                      DeSo · <Link href={`/?account=${encodeURIComponent(post.publicKey)}#profile-controls`} className="text-zinc-200 transition hover:text-[#9adbb2]">{creatorUsername ? `@${creatorUsername}` : shortPublicKey(post.publicKey)}{creator?.isVerified ? " ✓" : ""}</Link>{postedViaVIA ? <span className="ml-2 rounded-full border border-[#8fd4a9]/30 px-2 py-0.5 text-[10px] font-medium text-[#9adbb2]">VIA</span> : null}
                     </p>
                     {time ? <p className="mt-1 text-[11px] text-zinc-600">{time}</p> : null}
                     </div>
@@ -368,8 +368,6 @@ export default function PublicPosts() {
                 </div>
 
                 {post.body ? <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-zinc-200">{post.body}</p> : <p className="mt-3 text-sm text-zinc-500">Media post</p>}
-                {postedViaVIA ? <p className="mt-1 text-[11px] text-zinc-500">Gepost via VIA</p> : null}
-
                 {images.length ? (
                   <div className="mt-4 grid gap-2 sm:grid-cols-2">
                     {images.map((url, index) => <img key={`${post.postHash}-image-${index}`} src={url} alt="DeSo post media" loading="lazy" className="max-h-[32rem] w-full rounded-xl object-contain" />)}
@@ -387,9 +385,9 @@ export default function PublicPosts() {
                   {session ? <button type="button" onClick={() => setReplyingTo(isReplying ? null : post.postHash)} className="rounded-full border border-zinc-800 px-3 py-1 text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2]">Reply · {post.commentCount}</button> : <span>Reply · {post.commentCount}</span>}
                   {session ? <RepostButton postHash={post.postHash} initialCount={totalReposts} /> : <span>Repost · {totalReposts}</span>}
                   {session ? <DiamondButton postHash={post.postHash} receiverPublicKey={post.publicKey} initialCount={post.diamondCount} /> : <span>Diamond · {post.diamondCount}</span>}
-                  {session ? <div className="hidden sm:contents"><LocalSaveButton postHash={post.postHash} body={post.body} publicKey={post.publicKey} timestampNanos={post.timestampNanos} /></div> : null}
-                  {session ? <FollowButton followedPublicKey={post.publicKey} /> : null}
-                  <details className="relative sm:hidden">
+                  {session ? <div className="hidden xl:contents"><LocalSaveButton postHash={post.postHash} body={post.body} publicKey={post.publicKey} timestampNanos={post.timestampNanos} /></div> : null}
+                  {session && !isOwnPost ? <FollowButton followedPublicKey={post.publicKey} /> : null}
+                  <details className="relative xl:hidden">
                     <summary aria-label="Meer postacties" title="Meer postacties" className="cursor-pointer list-none rounded-full border border-zinc-800 px-3 py-1 text-zinc-400">•••</summary>
                     <div className="mt-2 flex flex-col overflow-hidden rounded-xl border border-zinc-800 bg-[#050806] text-left">
                       <button type="button" onClick={() => void navigator.clipboard?.writeText(`${window.location.origin}/social?post=${encodeURIComponent(post.postHash)}`)} className="px-3 py-2 text-left text-zinc-300 hover:bg-white/[0.04]">Link to Post</button>
@@ -410,7 +408,7 @@ export default function PublicPosts() {
                       {session ? <Link href={`/?account=${encodeURIComponent(post.publicKey)}#collection-controls`} className="px-3 py-2 text-zinc-300 hover:bg-white/[0.04]">NFTs</Link> : null}
                     </div>
                   </details>
-                  <details className="relative hidden sm:block">
+                  <details className="relative hidden xl:block">
                     <summary className="cursor-pointer list-none rounded-full border border-zinc-800 px-3 py-1 text-zinc-400 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2]">Delen ▾</summary>
                     <div className="absolute right-0 z-20 mt-2 flex min-w-36 flex-col overflow-hidden rounded-xl border border-zinc-800 bg-[#050806] p-1 shadow-xl">
                     {session ? <button type="button" onClick={() => {
@@ -426,7 +424,7 @@ export default function PublicPosts() {
                     }} className="px-3 py-2 text-left text-zinc-300 hover:bg-white/[0.04]">WhatsApp</button> : null}
                     </div>
                   </details>
-                  {session ? <Link href={`/?account=${encodeURIComponent(post.publicKey)}#collection-controls`} className="hidden rounded-full border border-zinc-800 px-3 py-1 text-zinc-400 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2] sm:inline-flex">NFTs</Link> : null}
+                  {session ? <Link href={`/?account=${encodeURIComponent(post.publicKey)}#collection-controls`} className="hidden rounded-full border border-zinc-800 px-3 py-1 text-zinc-400 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2] xl:inline-flex">NFTs</Link> : null}
                   {isOwnPost ? <Link href={`/edit-post?post=${encodeURIComponent(post.postHash)}`} className="rounded-full border border-[#8fd4a9]/45 px-3 py-1 text-[#9adbb2]">Edit</Link> : null}
                 </div>
 
