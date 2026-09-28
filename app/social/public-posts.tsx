@@ -359,7 +359,7 @@ export default function PublicPosts() {
                     {creatorPic ? <img src={creatorPic} alt="" loading="lazy" className="h-9 w-9 shrink-0 rounded-full object-cover" /> : <div aria-hidden="true" className="h-9 w-9 shrink-0 rounded-full border border-zinc-800 bg-black/30" />}
                     <div className="min-w-0">
                     <p className="text-xs font-semibold text-zinc-300">
-                      DeSo · <Link href={`/?account=${encodeURIComponent(post.publicKey)}#profile-controls`} className="text-zinc-200 transition hover:text-[#9adbb2]">{creatorUsername ? `@${creatorUsername}` : shortPublicKey(post.publicKey)}{creator?.isVerified ? " ✓" : ""}</Link>
+                      DeSo · <Link href={`/?account=${encodeURIComponent(post.publicKey)}#profile-controls`} className="text-zinc-200 transition hover:text-[#9adbb2]">{creatorUsername ? `@${creatorUsername}` : shortPublicKey(post.publicKey)}{creator?.isVerified ? " ✓" : ""}</Link>{postedViaVIA ? <span className="ml-2 rounded-full border border-[#8fd4a9]/30 px-2 py-0.5 text-[10px] font-medium text-[#9adbb2]">VIA</span> : null}
                     </p>
                     {time ? <p className="mt-1 text-[11px] text-zinc-600">{time}</p> : null}
                     </div>
