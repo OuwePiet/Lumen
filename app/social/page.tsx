@@ -6,7 +6,7 @@ import ParticipationGate from "../participation-gate"
 import PostComposer from "./post-composer"
 import SocialLocalizer from "./social-localizer"
 export const metadata: Metadata = {
-  title: "VIA Post Home",
+  title: "VIA Postoffice",
   description: "Write, publish and follow native DeSo posts in the VIA way.",
 }
 
@@ -18,19 +18,19 @@ export default function SocialPage() {
       <div className="mx-auto w-full max-w-6xl">
         <header className="mb-3 flex flex-wrap items-center justify-between gap-3 border-b border-white/10 pb-3 sm:mb-5 sm:gap-4 sm:pb-4">
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">VIA Post Home</h1>
+            <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">VIA Postoffice</h1>
             <p className="mt-1 hidden text-sm text-zinc-500 sm:block">Write, publish and follow DeSo posts in the VIA way.</p>
           </div>
           <details className="w-full sm:hidden">
             <summary className="w-fit cursor-pointer list-none rounded-full border border-white/10 bg-white/[0.02] px-4 py-2 text-sm text-zinc-300">Snelkeuzes ▾</summary>
-            <nav className="mt-2 flex gap-2 overflow-x-auto pb-1" aria-label="VIA Post Home shortcuts">
+            <nav className="mt-2 flex gap-2 overflow-x-auto pb-1" aria-label="VIA Postoffice shortcuts">
               <Link href="/saved" className="shrink-0 rounded-full border border-white/10 bg-white/[0.02] px-4 py-2 text-center text-sm text-zinc-300">Saved</Link>
               <Link href="/settings" className="shrink-0 rounded-full border border-white/10 bg-white/[0.02] px-4 py-2 text-center text-sm text-zinc-300">Settings</Link>
               <Link href="/help" className="shrink-0 rounded-full border border-white/10 bg-white/[0.02] px-4 py-2 text-center text-sm text-zinc-300">Handboek VIA</Link>
               <Link href="/music" className="shrink-0 rounded-full border border-white/10 bg-white/[0.02] px-4 py-2 text-center text-sm text-zinc-300">VIA Muziek</Link>
             </nav>
           </details>
-          <nav className="hidden w-auto flex-wrap gap-2 sm:flex" aria-label="VIA Post Home shortcuts">
+          <nav className="hidden w-auto flex-wrap gap-2 sm:flex" aria-label="VIA Postoffice shortcuts">
             <Link href="/saved" className="rounded-full border border-white/10 bg-white/[0.02] px-4 py-2 text-center text-sm text-zinc-300 transition hover:border-[#8fd4a9]/40 hover:text-[#9adbb2]">Saved</Link>
             <Link href="/settings" className="rounded-full border border-white/10 bg-white/[0.02] px-4 py-2 text-center text-sm text-zinc-300 transition hover:border-[#8fd4a9]/40 hover:text-[#9adbb2]">Settings</Link>
             <Link href="/help" className="rounded-full border border-white/10 bg-white/[0.02] px-4 py-2 text-center text-sm text-zinc-300 transition hover:border-[#8fd4a9]/40 hover:text-[#9adbb2]">Handboek VIA</Link>
@@ -41,7 +41,7 @@ export default function SocialPage() {
         <section id="via-post-composer" className="scroll-mt-24 rounded-2xl border border-white/10 bg-black/35 p-3 sm:p-4" aria-labelledby="composer-heading">
           <div className="flex flex-wrap items-center justify-between gap-3 sm:mb-2">
             <div>
-              <h2 id="composer-heading" className="sr-only sm:not-sr-only sm:text-lg sm:font-semibold">Post</h2>
+              <h2 id="composer-heading" className="sr-only sm:not-sr-only sm:text-lg sm:font-semibold">Postoffice</h2>
             </div>
           </div>
           <PostComposer />
@@ -55,7 +55,7 @@ export default function SocialPage() {
           <PublicPosts />
         </section>
 
-        <a href="#via-post-composer" aria-label="Write a post" title="Write a post" className="fixed bottom-[calc(env(safe-area-inset-bottom)+72px)] right-4 z-40 inline-flex h-14 min-w-14 items-center justify-center rounded-full border border-[#8fd4a9]/55 bg-[#102117]/95 px-4 text-sm font-semibold text-[#9adbb2] shadow-xl backdrop-blur sm:hidden"><span aria-hidden="true" className="mr-1.5 text-base">✎</span>Post</a>
+        <a href="#via-post-composer" aria-label="Write a post" title="Write a post" className="fixed bottom-[calc(env(safe-area-inset-bottom)+72px)] right-4 z-40 inline-flex h-14 min-w-14 items-center justify-center rounded-full border border-[#8fd4a9]/55 bg-[#102117]/95 px-4 text-sm font-semibold text-[#9adbb2] shadow-xl backdrop-blur sm:hidden"><span aria-hidden="true" className="mr-1.5 text-base">✎</span>Postoffice</a>
 
         <details className="mt-3 rounded-2xl border border-white/10 bg-black/25 p-3 text-sm text-zinc-500 sm:mt-5 sm:p-4">
           <summary className="cursor-pointer font-medium text-zinc-300">Participation & safety</summary>
