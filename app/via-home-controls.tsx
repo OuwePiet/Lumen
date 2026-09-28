@@ -385,7 +385,7 @@ export default function ViaHomeControls() {
         {t.standard ? <span className="via-home-standard-label" style={sectionLabel}>{t.standard}</span> : null}
         <nav aria-label="VIA standard navigation" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "7px" }}>
           {standardNav.map(([key, href]) => href ? (
-            <Link prefetch={href === "/notifications"} key={key} href={href} style={{ ...buttonStyle, width: "100%", justifyContent: "center", paddingInline: "9px" }}>{t[key]}</Link>
+            <Link prefetch={href === "/notifications"} key={key} href={href} style={{ ...buttonStyle, width: "100%", justifyContent: "center", paddingInline: "9px" }}>{key === "social" ? <span aria-hidden="true" style={{ color: "#3f7654", marginRight: "5px", fontSize: "13px" }}>✎</span> : null}{t[key]}</Link>
           ) : (
             <span key={key} aria-disabled="true" title="Wordt op de eigen Berichten-pagina aangesloten" style={{ ...disabledButtonStyle, width: "100%", justifyContent: "center", paddingInline: "9px" }}>{t[key]}</span>
           ))}
