@@ -27,22 +27,22 @@ export async function GET(request: Request) {
   if (followerPublicKey === followedPublicKey) return noStore({ ok: true, following: false, self: true })
 
   try {
-    const response = await fetchDeSo("get-users-stateless", {
+    const response = await fetchDeSo("get-follows-stateless", {
       method: "POST",
       headers: { "Content-Type": "application/json", accept: "application/json" },
       body: JSON.stringify({
-        PublicKeysBase58Check: [followerPublicKey],
-        SkipForLeaderboard: false,
-        IncludeBalance: false,
-        GetUnminedBalance: false,
+        PublicKeyBase58Check: followerPublicKey,
+        Username: "",
+        GetEntriesFollowingUsername: false,
+        LastPublicKeyBase58Check: "",
+        NumToFetch: 0,
       }),
     })
     if (!response.ok) return noStore({ ok: false, error: "DESO_STATUS_REJECTED" }, 502)
     const data = await response.json() as Record<string, unknown>
-    const userList = Array.isArray(data.UserList) ? data.UserList : []
-    const user = userList[0]
-    const followedKeys = user && typeof user === "object" && Array.isArray((user as Record<string, unknown>).PublicKeysBase58CheckFollowedByUser)
-      ? ((user as Record<string, unknown>).PublicKeysBase58CheckFollowedByUser as unknown[]).filter((value): value is string => typeof value === "string")
+    const followed = data.PublicKeyToProfileEntry
+    const followedKeys = followed && typeof followed === "object" && !Array.isArray(followed)
+      ? Object.keys(followed as Record<string, unknown>)
       : []
     return noStore({ ok: true, following: followedKeys.includes(followedPublicKey) })
   } catch {
