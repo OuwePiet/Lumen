@@ -234,6 +234,36 @@ export default function PublicPosts() {
     void loadPosts()
   }, [feedChoice, session?.publicKey])
 
+  async function loadMorePosts() {
+    if (loading || feedChoice === "following" || posts.length === 0) return
+    requestController.current?.abort()
+    const controller = new AbortController()
+    requestController.current = controller
+    setLoading(true)
+    setMessage("Loading…")
+    try {
+      const seen = posts.map((post) => post.postHash).filter(Boolean).slice(-100).join(",")
+      const endpoint = feedChoice === "hot"
+        ? `/api/via/discovery?limit=20&seen=${encodeURIComponent(seen)}`
+        : `/api/via/discovery?limit=20&sort=new&seen=${encodeURIComponent(seen)}`
+      const response = await fetch(endpoint, { signal: controller.signal })
+      const data = (await response.json()) as PostsResponse
+      const nextPosts = response.ok && data.ok && Array.isArray(data.posts) ? data.posts : []
+      setPosts((current) => {
+        const known = new Set(current.map((post) => post.postHash))
+        return [...current, ...nextPosts.filter((post) => !known.has(post.postHash))]
+      })
+      setMessage(nextPosts.length ? `${nextPosts.length} more posts loaded.` : "No more posts found.")
+    } catch (error) {
+      if (!(error instanceof DOMException && error.name === "AbortError")) setMessage("More posts are temporarily unavailable.")
+    } finally {
+      if (requestController.current === controller) {
+        requestController.current = null
+        setLoading(false)
+      }
+    }
+  }
+
   return (
     <section className="rounded-2xl border border-white/10 bg-black/35 p-4 sm:p-5" aria-labelledby="public-posts-heading">
       <div className="flex flex-wrap items-center justify-end gap-3">
@@ -356,6 +386,14 @@ export default function PublicPosts() {
               </article>
             )
           })}
+        </div>
+      ) : null}
+
+      {posts.length > 0 && feedChoice !== "following" ? (
+        <div className="mt-5 text-center">
+          <button type="button" onClick={() => void loadMorePosts()} disabled={loading} className="text-xs text-zinc-500 transition hover:text-[#9adbb2] disabled:cursor-wait disabled:opacity-50">
+            {loading ? "Laden…" : "Meer laden"}
+          </button>
         </div>
       ) : null}
     </section>
