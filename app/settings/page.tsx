@@ -96,7 +96,7 @@ export default function SettingsPage() {
             </label>
             <label className="grid gap-2 text-sm font-semibold text-zinc-200">Default feed
               <select value={feed} onChange={(event) => setFeed(event.target.value as ViaFeed)} className={selectClass}>
-                {VIA_FEEDS.map((item) => <option key={item} value={item}>{item}</option>)}
+                {VIA_FEEDS.map((item) => <option key={item} value={item}>{item === "Hot Feed" ? "Hot" : item === "New" ? "Recent" : item}</option>)}
               </select>
             </label>
           </div>
