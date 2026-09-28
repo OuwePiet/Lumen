@@ -102,7 +102,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
         const data = await response.json() as SubmitResponse
         if (!response.ok || !data.ok) throw new Error(data.error || "SUBMIT_FAILED")
         setStatus("done")
-        setMessage(isReply ? "Reply submitted to DeSo." : "Post submitted to DeSo.")
+        setMessage(isReply ? "Reply posted." : "Post published.")
         setBody("")
         setImageInputs([""])
         setVideoInput("")
