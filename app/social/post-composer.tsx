@@ -93,7 +93,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
       popupRef.current?.close()
       popupRef.current = null
       setStatus("submitting")
-      setMessage(isReply ? "Submitting the approved reply to DeSo…" : "Submitting the approved post to DeSo…")
+      setMessage(isReply ? "Posting your approved reply…" : "Posting your approved post…")
       try {
         const response = await fetch("/api/via/social/post", {
           method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store",
