@@ -350,7 +350,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
           <VideoUploadControl onReady={setVideoInput} onBusyChange={setVideoUploading} />
           <p className="mt-1 text-xs text-zinc-600">Your video is attached here. You approve the post before it is published.</p>
         </div>}
-        {mediaInvalid ? <p className="mt-2 text-xs text-amber-300">Media links must be valid HTTPS URLs without embedded credentials.</p> : null}
+        {mediaInvalid ? <p className="mt-2 text-xs text-amber-300">One of the attached media items is not valid.</p> : null}
       </div> : null}
 
       <div className="mt-4 flex justify-end">
