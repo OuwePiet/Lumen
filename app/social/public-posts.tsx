@@ -265,7 +265,7 @@ export default function PublicPosts() {
         </p>
       </div>
 
-      <p className="mt-3 text-xs text-zinc-500" role="status" aria-live="polite">{message}</p>
+      <p className={`mt-3 text-xs text-zinc-500 ${loading || message.includes("unavailable") || message.includes("Log in") || message.includes("No posts") || message.includes("shared post") ? "" : "hidden sm:block"}`} role="status" aria-live="polite">{message}</p>
 
       {posts.length > 0 && visiblePosts.length === 0 ? (
         <p className="mt-5 rounded-xl border border-zinc-800 bg-black/25 p-4 text-sm text-zinc-500">No loaded posts match this filter.</p>
