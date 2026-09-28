@@ -318,17 +318,35 @@ export default function PublicPosts() {
                   {session ? <DiamondButton postHash={post.postHash} receiverPublicKey={post.publicKey} initialCount={post.diamondCount} /> : <span>Diamond · {post.diamondCount}</span>}
                   {session ? <LocalSaveButton postHash={post.postHash} body={post.body} publicKey={post.publicKey} timestampNanos={post.timestampNanos} /> : null}
                   {session ? <FollowButton followedPublicKey={post.publicKey} /> : null}
-                  {session ? <button type="button" onClick={() => {
-                    const url = `${window.location.origin}/social?post=${encodeURIComponent(post.postHash)}`
-                    if (navigator.share) void navigator.share({ title: "VIA · DeSo post", url }).catch(() => {})
-                    else void navigator.clipboard?.writeText(url)
-                  }} className="rounded-full border border-zinc-800 px-3 py-1 text-zinc-400 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2]">Share</button> : null}
-                  <XShareButton href={`/social?post=${encodeURIComponent(post.postHash)}`} text={post.body ? post.body.slice(0, 180) : "VIA · DeSo post"} label="X" className="rounded-full border border-zinc-800 px-3 py-1 text-zinc-400 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2]" />
-                  {session ? <button type="button" onClick={() => {
-                    const url = `${window.location.origin}/social?post=${encodeURIComponent(post.postHash)}`
-                    const text = `VIA · DeSo post\n${url}`
-                    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank", "noopener,noreferrer")
-                  }} className="rounded-full border border-zinc-800 px-3 py-1 text-zinc-400 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2]">WhatsApp</button> : null}
+                  <details className="relative sm:hidden">
+                    <summary className="cursor-pointer list-none rounded-full border border-zinc-800 px-3 py-1 text-zinc-400">Delen ▾</summary>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {session ? <button type="button" onClick={() => {
+                        const url = `${window.location.origin}/social?post=${encodeURIComponent(post.postHash)}`
+                        if (navigator.share) void navigator.share({ title: "VIA · DeSo post", url }).catch(() => {})
+                        else void navigator.clipboard?.writeText(url)
+                      }} className="rounded-full border border-zinc-800 px-3 py-1 text-zinc-400">Share</button> : null}
+                      <XShareButton href={`/social?post=${encodeURIComponent(post.postHash)}`} text={post.body ? post.body.slice(0, 180) : "VIA · DeSo post"} label="X" className="rounded-full border border-zinc-800 px-3 py-1 text-zinc-400" />
+                      {session ? <button type="button" onClick={() => {
+                        const url = `${window.location.origin}/social?post=${encodeURIComponent(post.postHash)}`
+                        const text = `VIA · DeSo post\n${url}`
+                        window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank", "noopener,noreferrer")
+                      }} className="rounded-full border border-zinc-800 px-3 py-1 text-zinc-400">WhatsApp</button> : null}
+                    </div>
+                  </details>
+                  <div className="hidden flex-wrap items-center gap-2 sm:flex">
+                    {session ? <button type="button" onClick={() => {
+                      const url = `${window.location.origin}/social?post=${encodeURIComponent(post.postHash)}`
+                      if (navigator.share) void navigator.share({ title: "VIA · DeSo post", url }).catch(() => {})
+                      else void navigator.clipboard?.writeText(url)
+                    }} className="rounded-full border border-zinc-800 px-3 py-1 text-zinc-400 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2]">Share</button> : null}
+                    <XShareButton href={`/social?post=${encodeURIComponent(post.postHash)}`} text={post.body ? post.body.slice(0, 180) : "VIA · DeSo post"} label="X" className="rounded-full border border-zinc-800 px-3 py-1 text-zinc-400 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2]" />
+                    {session ? <button type="button" onClick={() => {
+                      const url = `${window.location.origin}/social?post=${encodeURIComponent(post.postHash)}`
+                      const text = `VIA · DeSo post\n${url}`
+                      window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank", "noopener,noreferrer")
+                    }} className="rounded-full border border-zinc-800 px-3 py-1 text-zinc-400 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2]">WhatsApp</button> : null}
+                  </div>
                   {session ? <Link href={`/?account=${encodeURIComponent(post.publicKey)}#collection-controls`} className="rounded-full border border-zinc-800 px-3 py-1 text-zinc-400 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2]">NFTs</Link> : null}
                   {isOwnPost ? <Link href={`/edit-post?post=${encodeURIComponent(post.postHash)}`} className="rounded-full border border-[#8fd4a9]/45 px-3 py-1 text-[#9adbb2]">Edit</Link> : null}
                 </div>
