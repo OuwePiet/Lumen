@@ -230,6 +230,10 @@ export default function PublicPosts() {
     }
   }
 
+  useEffect(() => {
+    void loadPosts()
+  }, [feedChoice, session?.publicKey])
+
   return (
     <section className="rounded-2xl border border-white/10 bg-black/35 p-4 sm:p-5" aria-labelledby="public-posts-heading">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -252,7 +256,7 @@ export default function PublicPosts() {
         </div>
       </div>
 
-      <form onSubmit={loadPosts} className="mt-4 flex max-w-2xl flex-col gap-3 sm:flex-row">
+      <div className="mt-4 flex max-w-2xl">
         <p className="flex-1 self-center text-sm text-zinc-500">
           {feedChoice === "following"
             ? session
@@ -262,10 +266,7 @@ export default function PublicPosts() {
               ? "Public Hot feed"
               : "Recent public DeSo posts"}
         </p>
-        <button type="submit" disabled={loading || (feedChoice === "following" && !session)} className="rounded-xl border border-[#8fd4a9]/45 px-5 py-3 text-sm font-medium text-[#9adbb2] disabled:opacity-50">
-          {loading ? "Loading…" : feedChoice === "following" ? "Open Following" : feedChoice === "hot" ? "Open Hot" : "Open Recent"}
-        </button>
-      </form>
+      </div>
 
       <p className="mt-3 text-xs text-zinc-500" role="status" aria-live="polite">{message}</p>
 
