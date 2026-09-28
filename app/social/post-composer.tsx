@@ -276,7 +276,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
           if (popupWatch.current !== null) window.clearInterval(popupWatch.current)
           popupWatch.current = null
           setStatus("idle")
-          setMessage(isReply ? "DeSo approval was closed. VIA posted no reply." : "DeSo approval was closed. VIA posted nothing.")
+          setMessage(isReply ? "Approval closed. Your reply was not posted." : "Approval closed. Your post was not published.")
         }
       }, 500)
       setStatus("awaiting-approval")
