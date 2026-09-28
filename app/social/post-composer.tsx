@@ -223,7 +223,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
       const jwt = await requestIdentityJwt(session.publicKey)
 
       setImageUploadStatus("uploading")
-      setImageUploadMessage("Uploading image to the DeSo media endpoint…")
+      setImageUploadMessage("Uploading image…")
       const form = new FormData()
       form.set("publicKey", session.publicKey)
       form.set("jwt", jwt)
