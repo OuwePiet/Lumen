@@ -20,7 +20,7 @@ type PrepareResponse = { ok?: boolean; transactionHex?: string; feeNanos?: numbe
 type SubmitResponse = { ok?: boolean; transaction?: Record<string, unknown>; error?: string }
 type UploadResponse = { ok?: boolean; imageUrl?: string; error?: string }
 type PostComposerProps = { parentStakeID?: string; compact?: boolean; onDone?: () => void }
-type ViaSpeechResultEvent = { results: ArrayLike<{ 0: { transcript: string } }> }
+type ViaSpeechResultEvent = { results: { length: number; [index: number]: { [index: number]: { transcript: string } } } }
 type ViaSpeechRecognition = {
   lang: string
   interimResults: boolean
@@ -284,7 +284,8 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
       recognition.interimResults = false
       recognition.continuous = true
       recognition.onresult = (event) => {
-        const latest = event.results[event.results.length - 1]?.[0]?.transcript?.trim()
+        const result = event.results[event.results.length - 1]
+        const latest = result?.[0]?.transcript?.trim()
         if (!latest) return
         setBody((current) => `${current}${current ? " " : ""}${latest}`.slice(0, MAX_POST_LENGTH))
       }
