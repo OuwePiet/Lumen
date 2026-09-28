@@ -32,7 +32,7 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
   const popupWatch = useRef<number | null>(null)
 
   useEffect(() => {
-    if (!confirmValue || diamondValues) return
+    if (diamondValues) return
     const controller = new AbortController()
     Promise.all([
       fetch("/api/via/social/diamond", { method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store", body: JSON.stringify({ action: "levels" }), signal: controller.signal }).then(async (response) => {
@@ -51,7 +51,7 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
       if (values.length) setDiamondValues(values)
     }).catch(() => setDiamondValues(null))
     return () => controller.abort()
-  }, [confirmValue, diamondValues])
+  }, [diamondValues])
 
   useEffect(() => {
     async function onMessage(event: MessageEvent) {
@@ -135,7 +135,7 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
   return <div className="flex flex-wrap items-center gap-2">
     <span>{count} Diamonds</span>
     <details className="relative">
-      <summary className="cursor-pointer list-none rounded-full border border-zinc-800 px-2 py-1 text-xs text-zinc-300">💎 {level} ▾</summary>
+      <summary className="cursor-pointer list-none rounded-full border border-zinc-800 px-2 py-1 text-xs text-zinc-300">💎 {level} · {diamondValues?.find((entry) => entry.level === level)?.usd.toLocaleString(undefined, { style: "currency", currency: "USD", maximumFractionDigits: 3 }) ?? "…"} ▾</summary>
       <div className="absolute bottom-full left-0 z-30 mb-2 grid w-40 grid-cols-3 gap-1 rounded-xl border border-zinc-800 bg-[#050806] p-2 shadow-xl">
         {[1,2,3,4,5,6].map((value) => <button key={value} type="button" onClick={() => { setLevel(value); setConfirmValue(false) }} aria-pressed={level === value} className={`rounded-lg border px-2 py-2 text-xs ${level === value ? "border-[#8fd4a9] bg-[#285f40] text-white" : "border-zinc-800 text-zinc-300 hover:border-[#8fd4a9]"}`}>{value} 💎</button>)}
       </div>
