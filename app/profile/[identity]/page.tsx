@@ -3,6 +3,12 @@
 import Link from "next/link"
 import { useParams } from "next/navigation"
 import { useEffect, useState } from "react"
+import { MessageCircle } from "lucide-react"
+import LikeButton from "../../social/like-button"
+import RepostButton from "../../social/repost-button"
+import DiamondButton from "../../social/diamond-button"
+import PostComposer from "../../social/post-composer"
+import { restoreIdentitySession } from "../../deso-identity-session"
 import FollowButton from "../../social/follow-button"
 import ProfileActionMenu from "../profile-action-menu"
 import ViaIdentityStatusMarks from "../../via-identity-status"
@@ -80,6 +86,10 @@ export default function PublicProfilePage() {
   const [posts, setPosts] = useState<PublicPost[]>([])
   const [postsLoading, setPostsLoading] = useState(false)
   const [postsError, setPostsError] = useState("")
+  const [hasSession, setHasSession] = useState(false)
+  const [replyingTo, setReplyingTo] = useState<string | null>(null)
+
+  useEffect(() => setHasSession(Boolean(restoreIdentitySession())), [])
 
   useEffect(() => {
     if (!identity) {
@@ -275,13 +285,14 @@ export default function PublicProfilePage() {
                           ))}
                         </div>
                       ) : null}
-                      <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-zinc-800/70 pt-3 text-xs text-zinc-500">
-                        <span>{formatNumber(post.commentCount)} replies</span>
-                        <span>{formatNumber(post.likeCount)} likes</span>
-                        <span>{formatNumber(post.diamondCount)} diamonds</span>
-                        <span>{formatNumber(post.repostCount + post.quoteRepostCount)} reposts</span>
+                      <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-zinc-800/70 pt-3 text-xs text-zinc-500">
+                        {hasSession ? <LikeButton postHash={post.postHash} initialCount={post.likeCount} variant="icon" /> : <span>Like · {formatNumber(post.likeCount)}</span>}
+                        {hasSession ? <button type="button" onClick={() => setReplyingTo(replyingTo === post.postHash ? null : post.postHash)} title="Reply" aria-label={`Reply · ${post.commentCount}`} className="inline-flex h-9 min-w-9 items-center justify-center gap-1 rounded-full border border-zinc-800 px-2 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2]"><MessageCircle aria-hidden="true" className="h-4 w-4" /><span>{post.commentCount}</span></button> : <span>Reply · {formatNumber(post.commentCount)}</span>}
+                        {hasSession ? <RepostButton postHash={post.postHash} initialCount={post.repostCount + post.quoteRepostCount} variant="icon" /> : <span>Repost · {formatNumber(post.repostCount + post.quoteRepostCount)}</span>}
+                        {hasSession ? <DiamondButton postHash={post.postHash} receiverPublicKey={profile.publicKey} initialCount={post.diamondCount} variant="icon" /> : <span>Diamond · {formatNumber(post.diamondCount)}</span>}
                         <Link href={`/social?post=${encodeURIComponent(post.postHash)}`} className="ml-auto rounded-full border border-zinc-800 px-3 py-1 text-zinc-400 transition hover:border-[#8fd4a9]/45 hover:text-[#9adbb2]">Open in Social</Link>
                       </div>
+                      {hasSession && replyingTo === post.postHash ? <div className="mt-3"><PostComposer parentStakeID={post.postHash} compact onDone={() => setReplyingTo(null)} /></div> : null}
                     </article>
                   ))}
                 </div>
