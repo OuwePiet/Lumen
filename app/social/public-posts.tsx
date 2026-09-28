@@ -388,7 +388,7 @@ export default function PublicPosts() {
                   {session ? <RepostButton postHash={post.postHash} initialCount={totalReposts} /> : <span>Repost · {totalReposts}</span>}
                   {session ? <DiamondButton postHash={post.postHash} receiverPublicKey={post.publicKey} initialCount={post.diamondCount} /> : <span>Diamond · {post.diamondCount}</span>}
                   {session ? <div className="hidden sm:contents"><LocalSaveButton postHash={post.postHash} body={post.body} publicKey={post.publicKey} timestampNanos={post.timestampNanos} /></div> : null}
-                  {session ? <FollowButton followedPublicKey={post.publicKey} /> : null}
+                  {session && !isOwnPost ? <FollowButton followedPublicKey={post.publicKey} /> : null}
                   <details className="relative sm:hidden">
                     <summary aria-label="Meer postacties" title="Meer postacties" className="cursor-pointer list-none rounded-full border border-zinc-800 px-3 py-1 text-zinc-400">•••</summary>
                     <div className="mt-2 flex flex-col overflow-hidden rounded-xl border border-zinc-800 bg-[#050806] text-left">
