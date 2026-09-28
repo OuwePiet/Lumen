@@ -16,7 +16,7 @@ export default function SocialPage() {
     <main data-via-social-page className="min-h-screen bg-[#030504] px-3 py-4 text-white sm:px-6 sm:py-6 lg:px-8">
       <SocialLocalizer />
       <div className="mx-auto w-full max-w-6xl">
-        <header className="mb-5 flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-4">
+        <header className="mb-3 flex flex-wrap items-center justify-between gap-3 border-b border-white/10 pb-3 sm:mb-5 sm:gap-4 sm:pb-4">
           <div>
             <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">VIA Post Home</h1>
             <p className="mt-1 hidden text-sm text-zinc-500 sm:block">Write, publish and follow DeSo posts in the VIA way.</p>
