@@ -34,6 +34,8 @@ type PublicPost = {
 type PostsResponse = { ok?: boolean; posts?: PublicPost[] }
 type SinglePostResponse = { ok?: boolean; post?: PublicPost }
 
+type CompactProfile = { username?: string; profilePic?: string | null; isVerified?: boolean }
+type CompactProfileResponse = { ok?: boolean; profile?: CompactProfile }
 function safeHttps(url: string) {
   try {
     const parsed = new URL(url)
@@ -91,6 +93,25 @@ export default function PublicPosts() {
   const [session, setSession] = useState<ViaIdentitySession | null>(null)
   const [replyingTo, setReplyingTo] = useState<string | null>(null)
   const [sharedPostView, setSharedPostView] = useState(false)
+  const [creatorProfiles, setCreatorProfiles] = useState<Record<string, CompactProfile>>({})
+
+  useEffect(() => {
+    const missing = Array.from(new Set(posts.map((post) => post.publicKey))).filter((key) => key && !creatorProfiles[key])
+    if (!missing.length) return
+    let cancelled = false
+    void Promise.all(missing.slice(0, 20).map(async (publicKey) => {
+      try {
+        const response = await fetch(`/api/via/profile?identity=${encodeURIComponent(publicKey)}&compact=1`)
+        const data = (await response.json()) as CompactProfileResponse
+        return response.ok && data.ok && data.profile ? [publicKey, data.profile] as const : null
+      } catch { return null }
+    })).then((entries) => {
+      if (cancelled) return
+      const valid = entries.filter((entry): entry is readonly [string, CompactProfile] => Boolean(entry))
+      if (valid.length) setCreatorProfiles((current) => ({ ...current, ...Object.fromEntries(valid) }))
+    })
+    return () => { cancelled = true }
+  }, [posts, creatorProfiles])
 
   useEffect(() => {
     try {
@@ -327,15 +348,21 @@ export default function PublicPosts() {
             const options = pollOptions(post.postExtraData)
             const postedViaVIA = post.postExtraData?.ViaClient === "viadeso.online"
             const username = typeof post.username === "string" ? post.username.trim().replace(/^@/, "") : ""
+            const creator = creatorProfiles[post.publicKey]
+            const creatorUsername = creator?.username?.trim().replace(/^@/, "") || username
+            const creatorPic = creator?.profilePic ? safeHttps(creator.profilePic) : null
 
             return (
               <article key={post.postHash} className="rounded-2xl border border-zinc-800/80 bg-[#050806]/80 p-4 sm:p-5">
                 <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div className="min-w-0">
+                  <div className="flex min-w-0 items-center gap-2.5">
+                    {creatorPic ? <img src={creatorPic} alt="" loading="lazy" className="h-9 w-9 shrink-0 rounded-full object-cover" /> : <div aria-hidden="true" className="h-9 w-9 shrink-0 rounded-full border border-zinc-800 bg-black/30" />}
+                    <div className="min-w-0">
                     <p className="text-xs font-semibold text-zinc-300">
-                      DeSo · <Link href={`/profile/${encodeURIComponent(post.publicKey)}`} className="text-zinc-200 transition hover:text-[#9adbb2]">{username ? `@${username}` : shortPublicKey(post.publicKey)}</Link>
+                      DeSo · <Link href={`/profile/${encodeURIComponent(post.publicKey)}`} className="text-zinc-200 transition hover:text-[#9adbb2]">{creatorUsername ? `@${creatorUsername}` : shortPublicKey(post.publicKey)}{creator?.isVerified ? " ✓" : ""}</Link>
                     </p>
                     {time ? <p className="mt-1 text-[11px] text-zinc-600">{time}</p> : null}
+                    </div>
                   </div>
                   {post.isNft ? <span className="rounded-full border border-[#8fd4a9]/35 px-2.5 py-1 text-[11px] text-[#9adbb2]">NFT</span> : null}
                 </div>
