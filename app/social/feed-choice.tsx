@@ -84,7 +84,7 @@ export default function FeedChoice() {
 
         </div>
       </div>
-      <p className="mt-2 min-h-4 text-[11px] text-zinc-600" role="status" aria-live="polite">{status}</p>
+      <p className={`text-[11px] text-zinc-600 sm:mt-2 sm:min-h-4 ${status ? "mt-2" : "hidden sm:block"}`} role="status" aria-live="polite">{status}</p>
     </section>
   )
 }
