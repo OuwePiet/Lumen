@@ -33,7 +33,6 @@ export default function SocialPage() {
             <div>
               <h2 id="composer-heading" className="text-base font-semibold sm:text-lg">Post</h2>
             </div>
-            <Link href="/edit-post" className="text-xs text-zinc-500 transition hover:text-[#9adbb2]">Edit your post</Link>
           </div>
           <PostComposer />
         </section>
