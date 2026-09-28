@@ -331,20 +331,11 @@ export default function PublicPosts() {
             return (
               <article key={post.postHash} className="rounded-2xl border border-zinc-800/80 bg-[#050806]/80 p-4 sm:p-5">
                 <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div className="flex min-w-0 items-center gap-3">
-                    <div className="h-10 w-10 shrink-0 overflow-hidden rounded-full border border-zinc-800 bg-zinc-950">
-                      {profilePic ? <img src={profilePic} alt="" loading="lazy" className="h-full w-full object-cover" /> : <span className="flex h-full w-full items-center justify-center text-xs font-semibold text-zinc-500">DeSo</span>}
-                    </div>
-                    <div className="min-w-0">
-                      <p className="truncate text-xs font-semibold text-zinc-300">
-                        <Link href={`/profile/${encodeURIComponent(post.publicKey)}`} className="text-zinc-200 transition hover:text-[#9adbb2]">
-                          {username || shortPublicKey(post.publicKey)}
-                        </Link>
-                        {post.isVerified ? <span className="ml-1 text-[#8fd4a9]" title="Verified DeSo profile">✓</span> : null}
-                        {username ? <span className="ml-1 font-normal text-zinc-500">@{username}</span> : null}
-                      </p>
-                      {time ? <p className="mt-1 text-[11px] text-zinc-600">{time}</p> : null}
-                    </div>
+                  <div className="min-w-0">
+                    <p className="text-xs font-semibold text-zinc-300">
+                      DeSo · <Link href={`/profile/${encodeURIComponent(post.publicKey)}`} className="text-zinc-200 transition hover:text-[#9adbb2]">{username ? `@${username}` : shortPublicKey(post.publicKey)}</Link>
+                    </p>
+                    {time ? <p className="mt-1 text-[11px] text-zinc-600">{time}</p> : null}
                   </div>
                   {post.isNft ? <span className="rounded-full border border-[#8fd4a9]/35 px-2.5 py-1 text-[11px] text-[#9adbb2]">NFT</span> : null}
                 </div>
