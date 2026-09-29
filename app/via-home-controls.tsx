@@ -373,9 +373,28 @@ export default function ViaHomeControls() {
         <Link prefetch={false} href="/help" aria-label="Handboek VIA" title="Handboek VIA"><CircleHelp aria-hidden="true" /></Link>
         <Link prefetch={false} href="/music" aria-label="VIA Muziek" title="VIA Muziek"><Music2 aria-hidden="true" /></Link>
         <Link prefetch={false} href="/radio" aria-label="World Radio" title="World Radio"><RadioTower aria-hidden="true" /></Link>
-        <Link prefetch={false} href="/profile" aria-label={t.switchAccount} title={t.switchAccount} className="via-home-iphone-utility-account">
-          {avatar ? <img src={avatar} alt="" referrerPolicy="no-referrer" /> : <UsersRound aria-hidden="true" />}
-        </Link>
+        <div className="via-home-iphone-account-wrap">
+          <button type="button" onClick={() => { refreshAccounts(); setAccountsOpen((open) => !open) }} aria-label={t.switchAccount} title={t.switchAccount} className="via-home-iphone-utility-account" aria-expanded={accountsOpen} aria-haspopup="menu">
+            {avatar ? <img src={avatar} alt="" referrerPolicy="no-referrer" /> : <UsersRound aria-hidden="true" />}
+          </button>
+          {accountsOpen ? (
+            <div className="via-home-account-menu" role="menu" aria-label={t.switchAccount}>
+              <Link prefetch={false} href="/profile" role="menuitem">{t.profile}</Link>
+              <Link prefetch={false} href="/my-via" role="menuitem">{t.myVia}</Link>
+              {otherAccounts.map((account) => {
+                const accountProfile = profiles[account.publicKey]
+                const accountAvatar = safeProfileImage(accountProfile?.profilePic)
+                return <button key={account.publicKey} type="button" onClick={() => chooseAccount(account.publicKey)} role="menuitem">
+                  {accountAvatar ? <img src={accountAvatar} alt="" referrerPolicy="no-referrer" /> : <UsersRound aria-hidden="true" />}
+                  <span>{accountProfile?.username ? `@${accountProfile.username}` : shortPublicKey(account.publicKey)}</span>
+                </button>
+              })}
+              <button type="button" onClick={openDeSoIdentity} role="menuitem">{t.addAccount}</button>
+              <button type="button" onClick={logout} role="menuitem">{t.logout}</button>
+              <button type="button" onClick={() => setAccountsOpen(false)} role="menuitem">Sluiten</button>
+            </div>
+          ) : null}
+        </div>
         <Link prefetch={false} href="/my-via" aria-label="VIA Future" title="VIA Future" className="via-home-iphone-utility-future">
           <span>VIA</span><span>Future</span>
         </Link>
@@ -489,7 +508,7 @@ export default function ViaHomeControls() {
             gap: 8px;
             margin: 0 auto 2px;
           }
-          .via-home-iphone-utility-row > a {
+          .via-home-iphone-utility-row > a,\n          .via-home-iphone-utility-account {
             width: 44px !important;
             height: 44px !important;
             min-height: 44px !important;
@@ -506,12 +525,18 @@ export default function ViaHomeControls() {
             width: 18px;
             height: 18px;
           }
+          .via-home-iphone-account-wrap { position: relative; width: 44px; height: 44px; }
+          .via-home-iphone-utility-account { cursor: pointer; }
           .via-home-iphone-utility-account img {
             width: 34px;
             height: 34px;
             border-radius: 50%;
             object-fit: cover;
           }
+          .via-home-account-menu { position: absolute; right: 0; top: 50px; z-index: 120; width: min(270px, calc(100vw - 28px)); max-height: 70vh; overflow-y: auto; padding: 7px; border: 1px solid rgba(143,212,169,.22); border-radius: 14px; background: rgba(5,10,7,.99); box-shadow: 0 18px 44px rgba(0,0,0,.42); }
+          .via-home-account-menu > a, .via-home-account-menu > button { width: 100%; min-height: 38px; display: flex; align-items: center; gap: 8px; padding: 8px 9px; border: 0; border-radius: 9px; background: transparent; color: #d3ddd7; text-decoration: none; font: inherit; font-size: 11px; text-align: left; cursor: pointer; box-sizing: border-box; }
+          .via-home-account-menu > button img, .via-home-account-menu > button svg { width: 26px; height: 26px; border-radius: 50%; object-fit: cover; flex: 0 0 auto; }
+          .via-home-account-menu > a:hover, .via-home-account-menu > button:hover { background: rgba(143,212,169,.10); }
           .via-home-iphone-utility-future {
             font-size: 7px !important;
             font-weight: 800 !important;
