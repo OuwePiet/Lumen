@@ -17,7 +17,7 @@ const SOCIAL_REPLY_DRAFT_PREFIX = "via:social:reply-draft:v1:"
 const COMPOSER_EMOJI = ["😀", "😄", "😂", "😍", "😎", "🤔", "👏", "👍", "❤️", "🔥", "🎉", "🚀", "🌍", "🎨", "🎵", "✨"] as const
 const ALLOWED_IMAGE_TYPES = new Set(["image/gif", "image/jpeg", "image/png", "image/webp"])
 const POST_REQUEST_TIMEOUT_MS = 20_000
-const DESO_NODE = (process.env.NEXT_PUBLIC_DESO_NODE || "https://node.deso.org").replace(/\/$/, "")
+const DESO_NODE = "https://node.deso.org"
 
 async function fetchWithTimeout(input: RequestInfo | URL, init: RequestInit = {}) {
   const controller = new AbortController()
