@@ -31,13 +31,25 @@ export function signViaTransaction(publicKey: string, transactionHex: string): P
     iframe.style.zIndex = "2147483647"
     iframe.style.display = "none"
 
+    const infoId = requestId()
     const id = requestId()
     let initialized = false
+    let infoRequested = false
+    let signRequested = false
     let settled = false
     const cleanup = () => { window.removeEventListener("message", onMessage); iframe.remove(); window.clearTimeout(timeout) }
     const fail = (message: string) => { if (settled) return; settled = true; cleanup(); reject(new Error(message)) }
     const post = (message: Record<string, unknown>) => iframe.contentWindow?.postMessage(message, DESO_IDENTITY_ORIGIN)
-    const request = () => post({
+    const requestInfo = () => {
+      if (infoRequested) return
+      infoRequested = true
+      post({ id: infoId, service: "identity", method: "info" })
+    }
+    const request = () => {
+      if (signRequested) return
+      signRequested = true
+      iframe.style.display = "none"
+      post({
       id,
       service: "identity",
       method: "sign",
@@ -48,6 +60,7 @@ export function signViaTransaction(publicKey: string, transactionHex: string): P
         transactionHex,
       },
     })
+    }
 
     function onMessage(event: MessageEvent) {
       if (event.origin !== DESO_IDENTITY_ORIGIN || event.source !== iframe.contentWindow || !isRecord(event.data)) return
@@ -55,7 +68,21 @@ export function signViaTransaction(publicKey: string, transactionHex: string): P
       if (message.service !== "identity") return
       if (message.method === "initialize" && typeof message.id === "string") {
         post({ id: message.id, service: "identity", payload: {} })
-        if (!initialized) { initialized = true; window.setTimeout(request, 0) }
+        if (!initialized) { initialized = true; window.setTimeout(requestInfo, 0) }
+        return
+      }
+      if (message.method === "storageGranted") {
+        request()
+        return
+      }
+      if (message.id === infoId && isRecord(message.payload)) {
+        const info = message.payload
+        if (info.browserSupported === false) {
+          fail("This browser cannot use DeSo Identity securely.")
+          return
+        }
+        if (info.hasStorageAccess === true) request()
+        else iframe.style.display = "block"
         return
       }
       if (message.id !== id || !isRecord(message.payload)) return
