@@ -69,17 +69,18 @@ export function signViaTransaction(publicKey: string, transactionHex: string): P
           return
         }
 
+        const activeApprovalWindow = approvalWindow
         let approvalTimeout = 0
 
         function onApprovalMessage(approvalEvent: MessageEvent) {
-          if (approvalEvent.origin !== DESO_IDENTITY_ORIGIN || approvalEvent.source !== approvalWindow || !isRecord(approvalEvent.data)) return
+          if (approvalEvent.origin !== DESO_IDENTITY_ORIGIN || approvalEvent.source !== activeApprovalWindow || !isRecord(approvalEvent.data)) return
           const approvalMessage = approvalEvent.data as IdentityMessage
           if (approvalMessage.service !== "identity" || !isRecord(approvalMessage.payload)) return
           const approvalPayload = approvalMessage.payload
           if (typeof approvalPayload.error === "string" && approvalPayload.error) {
             window.clearTimeout(approvalTimeout)
             window.removeEventListener("message", onApprovalMessage)
-            try { approvalWindow.close() } catch {}
+            try { activeApprovalWindow.close() } catch {}
             fail(approvalPayload.error)
             return
           }
@@ -87,7 +88,7 @@ export function signViaTransaction(publicKey: string, transactionHex: string): P
           if (typeof approvedTransactionHex !== "string" || !approvedTransactionHex) return
           window.clearTimeout(approvalTimeout)
           window.removeEventListener("message", onApprovalMessage)
-          try { approvalWindow.close() } catch {}
+          try { activeApprovalWindow.close() } catch {}
           settled = true
           cleanup()
           resolve(approvedTransactionHex)
@@ -96,7 +97,7 @@ export function signViaTransaction(publicKey: string, transactionHex: string): P
         window.addEventListener("message", onApprovalMessage)
         approvalTimeout = window.setTimeout(() => {
           window.removeEventListener("message", onApprovalMessage)
-          try { approvalWindow.close() } catch {}
+          try { activeApprovalWindow.close() } catch {}
           fail("DeSo Identity transaction approval timed out.")
         }, 90_000)
         return
