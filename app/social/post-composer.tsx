@@ -54,6 +54,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
   const [session, setSession] = useState<ViaIdentitySession | null>(null)
   const [body, setBody] = useState("")
   const [imageInputs, setImageInputs] = useState([""])
+  const [imagePreviews, setImagePreviews] = useState<string[]>([])
   const [videoInput, setVideoInput] = useState("")
   const [pollOpen, setPollOpen] = useState(false)
   const [sensitiveContent, setSensitiveContent] = useState(false)
@@ -221,12 +222,16 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
     })
   }
 
+  function clearImagePreviews() {
+    setImagePreviews((current) => { current.forEach((url) => URL.revokeObjectURL(url)); return [] })
+  }
+
   async function uploadImage(file: File | null) {
     if (!session || !file || imageUrls.length >= MAX_IMAGES || imageUploading) return
 
-    if (!ALLOWED_IMAGE_TYPES.has(file.type)) {
+    if (!file.type.startsWith("image/")) {
       setImageUploadStatus("error")
-      setImageUploadMessage("Use GIF, JPEG, PNG or WebP only.")
+      setImageUploadMessage("Choose an image from your photo library.")
       return
     }
     if (file.size <= 0 || file.size >= MAX_IMAGE_BYTES) {
@@ -254,6 +259,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
       addUploadedImage(data.imageUrl)
       setImageUploadStatus("idle")
       setImageUploadMessage("Image attached. Your post has not been published yet.")
+      setImagePreviews((current) => { current.forEach((url) => URL.revokeObjectURL(url)); return [] })
     } catch (error) {
       setImageUploadStatus("error")
       const code = error instanceof Error ? error.message : "IMAGE_UPLOAD_FAILED"
@@ -320,7 +326,8 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
     <div className={`${compact ? "mt-3" : "mt-2"} bg-transparent p-0`}>
       <label htmlFor={isReply ? `via-reply-${parentStakeID}` : "via-post-body"} className="sr-only">{isReply ? "Reply" : "Post"}</label>
       <div className="relative mt-2">
-        <textarea ref={textareaRef} id={isReply ? `via-reply-${parentStakeID}` : "via-post-body"} value={body} onChange={(event) => { setBody(event.target.value); setDraftMessage(""); if (status === "done" || status === "error") { setStatus("idle"); setMessage("") } }} maxLength={MAX_POST_LENGTH} rows={compact ? 3 : 5} placeholder={isReply ? "Write a reply…" : "What do you want to share?"} className="min-h-[8rem] w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-3 pb-7 text-sm text-zinc-100 outline-none transition-[min-height] focus:min-h-[16rem] focus:border-[#8fd4a9]/55 sm:min-h-0 sm:focus:min-h-0" />
+        {!isReply ? <span className="pointer-events-none absolute left-3 top-2 z-10 text-[10px] tracking-[0.08em] text-zinc-600">Gepost via VIA</span> : null}
+        <textarea ref={textareaRef} id={isReply ? `via-reply-${parentStakeID}` : "via-post-body"} value={body} onChange={(event) => { setBody(event.target.value); setDraftMessage(""); if (status === "done" || status === "error") { setStatus("idle"); setMessage("") } }} maxLength={MAX_POST_LENGTH} rows={compact ? 3 : 5} placeholder={isReply ? "Write a reply…" : "What do you want to share?"} className="min-h-[8rem] w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 pb-7 pt-7 text-sm text-zinc-100 outline-none transition-[min-height] focus:min-h-[16rem] focus:border-[#8fd4a9]/55 sm:min-h-0 sm:focus:min-h-0" />
         {!isReply && body.length < 4900 ? <span aria-hidden="true" className="pointer-events-none absolute bottom-2 right-3 text-[10px] text-zinc-700">max. 5000 tekens</span> : null}
         {body.length >= 4900 ? <span className="pointer-events-none absolute bottom-2 right-3 text-[10px] text-zinc-500" aria-live="polite">{body.length.toLocaleString()} / {MAX_POST_LENGTH.toLocaleString()}</span> : null}
       </div>
@@ -365,9 +372,11 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
 
         {imageUrls.length < MAX_IMAGES ? <label className="mt-3 inline-flex cursor-pointer items-center rounded-lg border border-[#285f40] px-3 py-2 text-xs font-semibold text-[#9adbb2]">
           {imageUploading ? "Uploading…" : "Choose image"}
-          <input type="file" accept="image/gif,image/jpeg,image/png,image/webp" className="sr-only" disabled={imageUploading} onChange={(event) => { const file = event.target.files?.[0] ?? null; event.currentTarget.value = ""; void uploadImage(file) }} />
+          <input type="file" accept="image/*" className="sr-only" disabled={imageUploading} onChange={(event) => { const file = event.target.files?.[0] ?? null; event.currentTarget.value = ""; void uploadImage(file) }} />
         </label> : null}
         <p className="mt-2 text-xs text-zinc-600">Up to {MAX_IMAGES} images · maximum 10 MB each.</p>
+        {imagePreviews.length ? <div className="mt-3 flex flex-wrap gap-2">{imagePreviews.map((url, index) => <div key={url} className="relative h-24 w-24 overflow-hidden rounded-lg border border-zinc-800"><img src={url} alt={`Selected image ${index + 1}`} className="h-full w-full object-cover" /></div>)}</div> : null}
+        {imagePreviews.length ? <button type="button" onClick={clearImagePreviews} className="mt-2 text-xs text-zinc-500 hover:text-zinc-300">Sluiten</button> : null}
         {imageUploadMessage ? <p className={`mt-2 text-xs ${imageUploadStatus === "error" ? "text-amber-300" : "text-zinc-400"}`}>{imageUploadMessage}</p> : null}
 
         </>
