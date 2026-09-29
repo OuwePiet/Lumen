@@ -2,6 +2,7 @@
 
 import { DESO_IDENTITY_ORIGIN, getIdentityCredentials } from "./deso-identity-session"
 
+type IdentityPayload = Record<string, unknown>
 type IdentityMessage = { id?: unknown; service?: unknown; method?: unknown; payload?: unknown }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -10,7 +11,39 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 function requestId() {
   if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") return crypto.randomUUID()
-  return `via-sign-${Date.now()}-${Math.random().toString(16).slice(2)}`
+  return `via-identity-${Date.now()}-${Math.random().toString(16).slice(2)}`
+}
+
+function openApproval(transactionHex: string): Promise<IdentityPayload> {
+  return new Promise((resolve, reject) => {
+    const url = new URL(`${DESO_IDENTITY_ORIGIN}/approve`)
+    url.searchParams.set("tx", transactionHex)
+    const popup = window.open(url.toString(), null, "toolbar=no,width=800,height=1000")
+    if (!popup) { reject(new Error("DeSo Identity approval window was blocked.")); return }
+
+    const timeout = window.setTimeout(() => finish(new Error("DeSo Identity transaction approval timed out.")), 90_000)
+    const watch = window.setInterval(() => {
+      if (popup.closed) finish(new Error("DeSo Identity approval was closed before completion."))
+    }, 400)
+
+    function finish(value: IdentityPayload | Error) {
+      window.clearTimeout(timeout)
+      window.clearInterval(watch)
+      window.removeEventListener("message", onMessage)
+      if (!popup.closed) popup.close()
+      if (value instanceof Error) reject(value)
+      else resolve(value)
+    }
+
+    function onMessage(event: MessageEvent) {
+      if (event.origin !== DESO_IDENTITY_ORIGIN || event.source !== popup || !isRecord(event.data)) return
+      const message = event.data as IdentityMessage
+      if (message.service !== "identity" || !isRecord(message.payload)) return
+      if (typeof message.payload.signedTransactionHex === "string" && message.payload.signedTransactionHex) finish(message.payload)
+    }
+
+    window.addEventListener("message", onMessage)
+  })
 }
 
 export function signViaTransaction(publicKey: string, transactionHex: string): Promise<string> {
@@ -21,59 +54,72 @@ export function signViaTransaction(publicKey: string, transactionHex: string): P
 
   return new Promise((resolve, reject) => {
     const iframe = document.createElement("iframe")
-    iframe.src = `${DESO_IDENTITY_ORIGIN}/embed`
-    iframe.title = "DeSo Identity transaction approval"
-    iframe.style.position = "fixed"
-    iframe.style.inset = "0"
-    iframe.style.width = "100vw"
-    iframe.style.height = "100vh"
-    iframe.style.border = "0"
-    iframe.style.zIndex = "2147483647"
+    iframe.src = `${DESO_IDENTITY_ORIGIN}/embed?v=2`
+    iframe.title = "DeSo Identity"
     iframe.style.display = "none"
+    document.body.appendChild(iframe)
 
     const id = requestId()
     let initialized = false
     let settled = false
+    const pending: Record<string, unknown>[] = []
+
     const cleanup = () => { window.removeEventListener("message", onMessage); iframe.remove(); window.clearTimeout(timeout) }
     const fail = (message: string) => { if (settled) return; settled = true; cleanup(); reject(new Error(message)) }
-    const post = (message: Record<string, unknown>) => iframe.contentWindow?.postMessage(message, DESO_IDENTITY_ORIGIN)
-    const request = () => post({
-      id,
-      service: "identity",
-      method: "sign",
-      payload: {
-        encryptedSeedHex: credentials.encryptedSeedHex,
-        accessLevel: credentials.accessLevel,
-        accessLevelHmac: credentials.accessLevelHmac,
-        transactionHex,
-      },
-    })
+    const finish = (signed: string) => { if (settled) return; settled = true; cleanup(); resolve(signed) }
+    const post = (message: Record<string, unknown>) => {
+      if (initialized) iframe.contentWindow?.postMessage(message, DESO_IDENTITY_ORIGIN)
+      else pending.push(message)
+    }
 
     function onMessage(event: MessageEvent) {
       if (event.origin !== DESO_IDENTITY_ORIGIN || event.source !== iframe.contentWindow || !isRecord(event.data)) return
       const message = event.data as IdentityMessage
       if (message.service !== "identity") return
+
       if (message.method === "initialize" && typeof message.id === "string") {
-        post({ id: message.id, service: "identity", payload: {} })
-        if (!initialized) { initialized = true; window.setTimeout(request, 0) }
+        iframe.contentWindow?.postMessage({ id: message.id, service: "identity", payload: {} }, DESO_IDENTITY_ORIGIN)
+        if (!initialized) {
+          initialized = true
+          pending.splice(0).forEach((item) => iframe.contentWindow?.postMessage(item, DESO_IDENTITY_ORIGIN))
+        }
         return
       }
+
       if (message.id !== id || !isRecord(message.payload)) return
       const response = message.payload
+      if (typeof response.error === "string" && response.error) { fail(response.error); return }
+
       if (response.approvalRequired === true) {
-        fail("DeSo Identity approval is required for this transaction.")
+        void openApproval(transactionHex).then((approved) => {
+          const signed = approved.signedTransactionHex
+          if (typeof signed === "string" && signed) finish(signed)
+          else fail("DeSo Identity did not return an approved signed transaction.")
+        }).catch((error) => fail(error instanceof Error ? error.message : "DeSo Identity approval failed."))
         return
       }
-      if (typeof response.error === "string" && response.error) { fail(response.error); return }
-      const signedTransactionHex = response.signedTransactionHex
-      if (typeof signedTransactionHex !== "string" || !signedTransactionHex) { fail("DeSo Identity did not return a signed transaction."); return }
-      settled = true
-      cleanup()
-      resolve(signedTransactionHex)
+
+      const signed = response.signedTransactionHex
+      if (typeof signed === "string" && signed) finish(signed)
+      else fail("DeSo Identity did not return a signed transaction.")
     }
 
-    const timeout = window.setTimeout(() => fail("DeSo Identity transaction signing timed out."), 90_000)
     window.addEventListener("message", onMessage)
-    document.body.appendChild(iframe)
+    post({
+      id,
+      service: "identity",
+      method: "sign",
+      payload: {
+        transactionHex,
+        encryptedSeedHex: credentials.encryptedSeedHex,
+        accessLevel: credentials.accessLevel,
+        accessLevelHmac: credentials.accessLevelHmac,
+        encryptedMessagingKeyRandomness: credentials.encryptedMessagingKeyRandomness,
+        ownerPublicKeyBase58Check: credentials.ownerPublicKeyBase58Check ?? publicKey,
+        derivedPublicKeyBase58Check: credentials.derivedPublicKeyBase58Check,
+      },
+    })
+
+    const timeout = window.setTimeout(() => fail("DeSo Identity transaction signing timed out."), 90_000)
   })
 }
