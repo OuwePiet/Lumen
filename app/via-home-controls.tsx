@@ -405,7 +405,31 @@ export default function ViaHomeControls() {
       <section style={{ display: "grid", gap: "6px" }}>
         {t.standard ? <span className="via-home-standard-label" style={sectionLabel}>{t.standard}</span> : null}
         <nav aria-label="VIA standard navigation" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "7px" }}>
-          {standardNav.map(([key, href]) => href ? (
+          {standardNav.map(([key, href]) => key === "home" ? (
+            <div key={key} className="via-home-grid-account-wrap" style={{ position: "relative", width: "100%" }}>
+              <button type="button" onClick={() => { refreshAccounts(); setAccountsOpen((open) => !open) }} aria-label={t.switchAccount} title={t.switchAccount} aria-expanded={accountsOpen} aria-haspopup="menu" style={{ ...buttonStyle, width: "100%", justifyContent: "center", paddingInline: "9px", cursor: "pointer" }}>
+                {avatar ? <img src={avatar} alt="" referrerPolicy="no-referrer" style={{ width: 24, height: 24, borderRadius: "50%", objectFit: "cover" }} /> : <UsersRound aria-hidden="true" size={18} />}
+                <span>{accountName}</span>
+              </button>
+              {accountsOpen ? (
+                <div className="via-home-account-menu via-home-grid-account-menu" role="menu" aria-label={t.switchAccount}>
+                  <Link prefetch={false} href="/profile" role="menuitem">{t.profile}</Link>
+                  <Link prefetch={false} href="/my-via" role="menuitem">{t.myVia}</Link>
+                  {otherAccounts.map((account) => {
+                    const accountProfile = profiles[account.publicKey]
+                    const accountAvatar = safeProfileImage(accountProfile?.profilePic)
+                    return <button key={account.publicKey} type="button" onClick={() => chooseAccount(account.publicKey)} role="menuitem">
+                      {accountAvatar ? <img src={accountAvatar} alt="" referrerPolicy="no-referrer" /> : <UsersRound aria-hidden="true" />}
+                      <span>{accountProfile?.username ? `@${accountProfile.username}` : shortPublicKey(account.publicKey)}</span>
+                    </button>
+                  })}
+                  <button type="button" onClick={openDeSoIdentity} role="menuitem">{t.addAccount}</button>
+                  <button type="button" onClick={logout} role="menuitem">{t.logout}</button>
+                  <button type="button" onClick={() => setAccountsOpen(false)} role="menuitem">Sluiten</button>
+                </div>
+              ) : null}
+            </div>
+          ) : href ? (
             <Link prefetch={href === "/notifications"} key={key} href={href} style={{ ...buttonStyle, width: "100%", justifyContent: "center", paddingInline: "9px" }}>{key === "social" ? <span aria-hidden="true" style={{ color: "#3f7654", marginRight: "5px", fontSize: "13px" }}>✎</span> : null}{t[key]}</Link>
           ) : (
             <span key={key} aria-disabled="true" title="Wordt op de eigen Berichten-pagina aangesloten" style={{ ...disabledButtonStyle, width: "100%", justifyContent: "center", paddingInline: "9px" }}>{t[key]}</span>
@@ -450,6 +474,7 @@ export default function ViaHomeControls() {
       {status === "blocked" ? <span style={{ color: "#c6a97b", fontSize: "9px", lineHeight: 1.45 }}>{t.blocked}</span> : null}
       <style>{`
         .via-home-language-control { position: relative; width: 100%; }
+        .via-home-grid-account-menu { left: 0; right: auto; top: calc(100% + 6px); }
         .via-home-language-menu { position: absolute; right: 0; top: calc(100% + 6px); z-index: 90; min-width: 112px; padding: 6px; border: 1px solid rgba(143,212,169,.22); border-radius: 12px; background: rgba(5,10,7,.98); box-shadow: 0 16px 36px rgba(0,0,0,.42); }
         .via-home-language-menu button { width: 100%; min-height: 34px; display: flex; align-items: center; justify-content: flex-start; gap: 8px; border: 0; border-radius: 8px; padding: 7px 9px; background: transparent; color: #d3ddd7; font: inherit; font-size: 12px; cursor: pointer; }
         .via-home-language-menu button.is-active { background: rgba(143,212,169,.12); color: #eef5f0; }
