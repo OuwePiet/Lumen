@@ -301,46 +301,38 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
     if (!session || !canPrepare) return
     if (isReply) saveDraft()
     setStatus("preparing")
-    setMessage(isReply ? "Step 1/4 · sending reply to DeSo…" : "Step 1/4 · sending post to DeSo…")
+    setMessage(isReply ? "Preparing your reply…" : "Preparing your post…")
     setFeeNanos(null)
     try {
-      const postExtraData: Record<string, string> = { ViaClient: "viadeso.online" }
-      if (preparedPollOptions.length >= 2) postExtraData.PollOptions = JSON.stringify(preparedPollOptions)
-      if (!isReply && sensitiveContent) postExtraData.ViaSensitiveContent = "1"
-      const response = await fetchWithTimeout(`${DESO_NODE}/api/v0/submit-post`, {
+      const response = await fetchWithTimeout("/api/via/social/post", {
         method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store",
         body: JSON.stringify({
-          UpdaterPublicKeyBase58Check: session.publicKey,
-          PostHashHexToModify: "",
-          ParentStakeID: parentStakeID,
-          RepostedPostHashHex: "",
-          Title: "",
-          BodyObj: { Body: body.trim(), ImageURLs: imageUrls, VideoURLs: videoUrls },
-          PostExtraData: postExtraData,
-          Sub: "",
-          IsHidden: false,
-          MinFeeRateNanosPerKB: 1000,
-          TransactionFees: [],
+          action: "prepare",
+          publicKey: session.publicKey,
+          body: body.trim(),
+          parentStakeID,
+          imageUrls,
+          videoUrls,
+          pollOptions: preparedPollOptions,
+          sensitiveContent: !isReply && sensitiveContent,
         }),
       })
-      setMessage(`Step 2/4 · DeSo HTTP ${response.status} · reading response…`)
-      const prepared = await response.json() as { TransactionHex?: string; FeeNanos?: number; error?: string }
-      setMessage("Step 3/4 · DeSo transaction prepared · opening Identity…")
-      if (!response.ok || !prepared.TransactionHex) {
-        throw new Error(prepared.error || `DeSo prepare failed: HTTP ${response.status} ${response.statusText || ""}`.trim())
+      const prepared = await response.json() as PrepareResponse
+      if (!response.ok || !prepared.ok || !prepared.transactionHex) {
+        throw new Error(prepared.error || `DeSo prepare failed: HTTP ${response.status}`)
       }
-      setFeeNanos(typeof prepared.FeeNanos === "number" ? prepared.FeeNanos : null)
+      setFeeNanos(typeof prepared.feeNanos === "number" ? prepared.feeNanos : null)
       setStatus("awaiting-approval")
       setMessage(isReply ? "Signing your reply with your DeSo Identity session…" : "Signing your post with your DeSo Identity session…")
-      const signedTransactionHex = await signViaTransaction(session.publicKey, prepared.TransactionHex, setMessage)
+      const signedTransactionHex = await signViaTransaction(session.publicKey, prepared.transactionHex, setMessage)
       setStatus("submitting")
       setMessage(isReply ? "Posting your signed reply…" : "Posting your signed post…")
-      const submitResponse = await fetchWithTimeout(`${DESO_NODE}/api/v0/submit-transaction`, {
+      const submitResponse = await fetchWithTimeout("/api/via/social/post", {
         method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store",
-        body: JSON.stringify({ TransactionHex: signedTransactionHex }),
+        body: JSON.stringify({ action: "submit", signedTransactionHex }),
       })
-      if (!submitResponse.ok) throw new Error("DESO_SUBMIT_FAILED")
-      await submitResponse.json()
+      const submitted = await submitResponse.json() as SubmitResponse
+      if (!submitResponse.ok || !submitted.ok) throw new Error(submitted.error || "DESO_SUBMIT_FAILED")
       setStatus("done")
       setMessage(isReply ? "Reply posted." : "Post published.")
       setBody("")
@@ -362,8 +354,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
     } catch (error) {
       setStatus("error")
       const code = error instanceof Error ? error.message : "PREPARE_FAILED"
-      const timedOut = error instanceof DOMException && error.name === "AbortError"
-      setMessage(timedOut ? "DeSo did not respond in time. Nothing was posted; try again." : `The post could not be prepared (${code}). Nothing was posted.`)
+      setMessage(`The post could not be prepared (${code}). Nothing was posted.`)
     }
   }
 
