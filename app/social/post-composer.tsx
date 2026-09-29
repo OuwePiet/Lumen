@@ -270,6 +270,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
       if (!response.ok || !data.ok || !data.imageUrl) throw new Error(data.error || "IMAGE_UPLOAD_FAILED")
 
       addUploadedImage(data.imageUrl)
+      setMediaOpen(false)
       setImageUploadStatus("idle")
       setImageUploadMessage("Image attached. Your post has not been published yet.")
       setImagePreviews((current) => { current.forEach((url) => URL.revokeObjectURL(url)); return [] })
@@ -380,7 +381,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
 
       {isReply ? <button type="button" onClick={() => setMediaOpen((open) => !open)} className="mt-3 rounded-lg border border-zinc-800 px-3 py-1.5 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2]"><span onClick={(event) => { event.stopPropagation(); setMediaChoice("photo"); setMediaOpen(true) }}>Photo</span><span className="mx-2 text-zinc-700">|</span><span onClick={(event) => { event.stopPropagation(); setMediaChoice("video"); setMediaOpen(true) }}>Video</span></button> : null}
 
-      {mediaOpen ? <div className="mt-4 rounded-xl border border-zinc-800 bg-zinc-950/70 p-3">
+      {mediaOpen ? <div className="mt-4 rounded-xl border border-zinc-800 bg-zinc-950/70 p-3"><div className="flex justify-end"><button type="button" onClick={() => setMediaOpen(false)} className="text-xs text-zinc-500 hover:text-zinc-300">Sluiten</button></div>
         {mediaChoice === "photo" ? <>
         <p className="text-sm font-medium text-zinc-200">Images</p>
         <p className="mt-1 hidden text-xs leading-5 text-zinc-500 sm:block">Choose up to four images.</p>
