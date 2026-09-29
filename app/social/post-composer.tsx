@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useMemo, useRef, useState } from "react"
-import { DESO_IDENTITY_ORIGIN, restoreIdentitySession, VIA_IDENTITY_EVENT, type ViaIdentitySession } from "../deso-identity-session"
+import { restoreIdentitySession, VIA_IDENTITY_EVENT, type ViaIdentitySession } from "../deso-identity-session"
 import { requestIdentityJwt } from "./identity-jwt"
 import { signViaTransaction } from "../deso-identity-sign"
 import VideoUploadControl from "./video-upload-control"
@@ -44,17 +44,6 @@ type SubmitResponse = { ok?: boolean; transaction?: Record<string, unknown>; err
 type UploadResponse = { ok?: boolean; imageUrl?: string; error?: string }
 type PostComposerProps = { parentStakeID?: string; compact?: boolean; onDone?: () => void }
 
-function signedTransactionFromMessage(event: MessageEvent, source: Window | null) {
-  if (event.origin !== DESO_IDENTITY_ORIGIN || event.source !== source) return null
-  if (!event.data || typeof event.data !== "object") return null
-  const data = event.data as Record<string, unknown>
-  if (data.service !== "identity") return null
-  const payload = data.payload
-  if (!payload || typeof payload !== "object" || Array.isArray(payload)) return null
-  const signed = (payload as Record<string, unknown>).signedTransactionHex
-  return typeof signed === "string" && signed.length > 0 ? signed : null
-}
-
 function httpsUrl(value: string) {
   const trimmed = value.trim()
   if (!trimmed) return ""
@@ -83,8 +72,6 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
   const [mediaOpen, setMediaOpen] = useState(false)
   const [mediaChoice, setMediaChoice] = useState<"photo" | "video">("photo")
   const [draftMessage, setDraftMessage] = useState("")
-  const popupRef = useRef<Window | null>(null)
-  const popupWatch = useRef<number | null>(null)
   const textareaRef = useRef<HTMLTextAreaElement | null>(null)
   const isReply = Boolean(parentStakeID)
 
@@ -107,58 +94,6 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
       setDraftMessage("Local drafts are unavailable in this browser.")
     }
   }, [isReply, parentStakeID])
-
-  useEffect(() => {
-    const onMessage = async (event: MessageEvent) => {
-      const signedTransactionHex = signedTransactionFromMessage(event, popupRef.current)
-      if (!signedTransactionHex) return
-      if (popupWatch.current !== null) window.clearInterval(popupWatch.current)
-      popupWatch.current = null
-      popupRef.current?.close()
-      popupRef.current = null
-      setStatus("submitting")
-      setMessage(isReply ? "Posting your approved reply…" : "Posting your approved post…")
-      try {
-        const response = await fetch("/api/via/social/post", {
-          method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store",
-          body: JSON.stringify({ action: "submit", signedTransactionHex }),
-        })
-        const data = await response.json() as SubmitResponse
-        if (!response.ok || !data.ok) throw new Error(data.error || "SUBMIT_FAILED")
-        setStatus("done")
-        setMessage(isReply ? "Reply posted." : "Post published.")
-        setBody("")
-        setImageInputs([""])
-        setVideoInput("")
-        setPollOpen(false)
-        setSensitiveContent(false)
-        setPollOptions(["", ""])
-        setEmojiOpen(false)
-        setFeeNanos(null)
-        setImageUploadStatus("idle")
-        setImageUploadMessage("")
-        setVideoUploading(false)
-        setMediaOpen(false)
-        try {
-          window.localStorage.removeItem(isReply ? `${SOCIAL_REPLY_DRAFT_PREFIX}${parentStakeID}` : SOCIAL_DRAFT_STORAGE_KEY)
-        } catch {}
-        setDraftMessage(isReply ? "Reply sent; local safety copy cleared." : "Local draft cleared after publishing.")
-        if (!isReply) window.dispatchEvent(new Event("via:social:post-published"))
-        onDone?.()
-      } catch {
-        setStatus("error")
-        setMessage(isReply ? "The reply could not be submitted. Nothing was posted by VIA." : "The post could not be submitted. Nothing was posted by VIA.")
-      }
-    }
-    window.addEventListener("message", onMessage)
-    return () => {
-      window.removeEventListener("message", onMessage)
-      if (popupWatch.current !== null) window.clearInterval(popupWatch.current)
-      popupWatch.current = null
-      popupRef.current?.close()
-      popupRef.current = null
-    }
-  }, [compact, isReply, onDone])
 
   const parsedImages = imageInputs.map(httpsUrl)
   const parsedVideo = httpsUrl(videoInput)
