@@ -311,7 +311,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
           <button type="button" onClick={saveDraft} disabled={busy} className="rounded-lg border border-zinc-800 px-3 py-1.5 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2] disabled:opacity-50">Save</button>
           <button type="button" onClick={() => { setPollOpen((open) => !open); if (pollOpen) setPollOptions(["", ""]) }} disabled={busy} className="rounded-lg border border-zinc-800 px-3 py-1.5 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2] disabled:opacity-50">{pollOpen ? "Remove poll" : "Poll"}</button>
 
-          <button type="button" onClick={preparePost} disabled={!canPrepare} className="rounded-lg border border-[#8fd4a9]/55 px-3 py-1.5 text-xs font-semibold text-[#9adbb2] disabled:cursor-not-allowed disabled:border-zinc-800 disabled:text-zinc-600">{status === "preparing" ? "Preparing…" : status === "awaiting-approval" ? "Awaiting approval…" : status === "submitting" ? "Sending…" : "Send"}</button>
+          <button type="button" onClick={preparePost} disabled={!canPrepare} className="rounded-lg border border-[#8fd4a9]/55 px-3 py-1.5 text-xs font-semibold text-[#9adbb2] disabled:cursor-not-allowed disabled:border-zinc-800 disabled:text-zinc-600">{imageUploading ? "Uploading…" : videoUploading ? "Uploading…" : status === "preparing" ? "Preparing…" : status === "awaiting-approval" ? "Awaiting approval…" : status === "submitting" ? "Sending…" : "Send"}</button>
         </> : null}
       </div>
 
