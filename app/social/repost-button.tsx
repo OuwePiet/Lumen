@@ -248,7 +248,10 @@ export default function RepostButton({ postHash, initialCount, variant = "defaul
         </div>
 
         {mediaInvalid ? <p className="mt-2 text-xs text-amber-300">Use valid HTTPS media URLs only.</p> : null}
-        <button type="button" onClick={() => void prepareRepost(true)} disabled={busy || !quote.trim() || mediaInvalid || imageUploading || videoUploading} className="mt-3 rounded-lg border border-[#285f40] px-3 py-1.5 text-xs font-medium text-[#9adbb2] disabled:border-zinc-800 disabled:text-zinc-600">Review Quote Repost in DeSo</button>
+        <div className="mt-3 flex flex-wrap gap-2">
+          <button type="button" onClick={() => void prepareRepost(true)} disabled={busy || !quote.trim() || mediaInvalid || imageUploading || videoUploading} className="rounded-lg border border-[#285f40] px-3 py-1.5 text-xs font-medium text-[#9adbb2] disabled:border-zinc-800 disabled:text-zinc-600">Review Quote Repost in DeSo</button>
+          <button type="button" onClick={() => setQuoteOpen(false)} disabled={busy || imageUploading || videoUploading} className="rounded-lg border border-zinc-800 px-3 py-1.5 text-xs text-zinc-400 hover:border-zinc-700 hover:text-zinc-200 disabled:opacity-60">Sluiten</button>
+        </div>
         {message ? <p className="mt-2 text-xs text-zinc-500" role="status" aria-live="polite">{message}</p> : null}
       </div> : null}
 
