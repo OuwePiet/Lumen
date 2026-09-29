@@ -20,23 +20,24 @@ function openApproval(transactionHex: string): Promise<IdentityPayload> {
     url.searchParams.set("tx", transactionHex)
     const popup = window.open(url.toString(), null, "toolbar=no,width=800,height=1000")
     if (!popup) { reject(new Error("DeSo Identity approval window was blocked.")); return }
+    const activePopup = popup
 
     const timeout = window.setTimeout(() => finish(new Error("DeSo Identity transaction approval timed out.")), 90_000)
     const watch = window.setInterval(() => {
-      if (popup.closed) finish(new Error("DeSo Identity approval was closed before completion."))
+      if (activePopup.closed) finish(new Error("DeSo Identity approval was closed before completion."))
     }, 400)
 
     function finish(value: IdentityPayload | Error) {
       window.clearTimeout(timeout)
       window.clearInterval(watch)
       window.removeEventListener("message", onMessage)
-      if (!popup.closed) popup.close()
+      if (!activePopup.closed) activePopup.close()
       if (value instanceof Error) reject(value)
       else resolve(value)
     }
 
     function onMessage(event: MessageEvent) {
-      if (event.origin !== DESO_IDENTITY_ORIGIN || event.source !== popup || !isRecord(event.data)) return
+      if (event.origin !== DESO_IDENTITY_ORIGIN || event.source !== activePopup || !isRecord(event.data)) return
       const message = event.data as IdentityMessage
       if (message.service !== "identity" || !isRecord(message.payload)) return
       if (typeof message.payload.signedTransactionHex === "string" && message.payload.signedTransactionHex) finish(message.payload)
