@@ -68,8 +68,36 @@ export function signViaTransaction(publicKey: string, transactionHex: string): P
           fail("DeSo Identity approval window was blocked.")
           return
         }
-        iframe.style.display = "block"
-        fail("DeSo Identity approval opened. Approve the transaction, then send it again.")
+
+        const approvalTimeout = window.setTimeout(() => {
+          window.removeEventListener("message", onApprovalMessage)
+          try { approvalWindow.close() } catch {}
+          fail("DeSo Identity transaction approval timed out.")
+        }, 90_000)
+
+        function onApprovalMessage(approvalEvent: MessageEvent) {
+          if (approvalEvent.origin !== DESO_IDENTITY_ORIGIN || approvalEvent.source !== approvalWindow || !isRecord(approvalEvent.data)) return
+          const approvalMessage = approvalEvent.data as IdentityMessage
+          if (approvalMessage.service !== "identity" || !isRecord(approvalMessage.payload)) return
+          const approvalPayload = approvalMessage.payload
+          if (typeof approvalPayload.error === "string" && approvalPayload.error) {
+            window.clearTimeout(approvalTimeout)
+            window.removeEventListener("message", onApprovalMessage)
+            try { approvalWindow.close() } catch {}
+            fail(approvalPayload.error)
+            return
+          }
+          const approvedTransactionHex = approvalPayload.signedTransactionHex
+          if (typeof approvedTransactionHex !== "string" || !approvedTransactionHex) return
+          window.clearTimeout(approvalTimeout)
+          window.removeEventListener("message", onApprovalMessage)
+          try { approvalWindow.close() } catch {}
+          settled = true
+          cleanup()
+          resolve(approvedTransactionHex)
+        }
+
+        window.addEventListener("message", onApprovalMessage)
         return
       }
       if (typeof response.error === "string" && response.error) { fail(response.error); return }
