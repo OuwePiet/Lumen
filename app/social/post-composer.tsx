@@ -320,7 +320,8 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
     <div className={`${compact ? "mt-3" : "mt-2"} bg-transparent p-0`}>
       <label htmlFor={isReply ? `via-reply-${parentStakeID}` : "via-post-body"} className="sr-only">{isReply ? "Reply" : "Post"}</label>
       <div className="relative mt-2">
-        <textarea ref={textareaRef} id={isReply ? `via-reply-${parentStakeID}` : "via-post-body"} value={body} onChange={(event) => { setBody(event.target.value); setDraftMessage(""); if (status === "done" || status === "error") { setStatus("idle"); setMessage("") } }} maxLength={MAX_POST_LENGTH} rows={compact ? 3 : 5} placeholder={isReply ? "Write a reply…" : "What do you want to share?"} className="min-h-[8rem] w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-3 pb-7 text-sm text-zinc-100 outline-none transition-[min-height] focus:min-h-[16rem] focus:border-[#8fd4a9]/55 sm:min-h-0 sm:focus:min-h-0" />
+        {!isReply ? <div className="pointer-events-none absolute left-3 top-2 z-10 text-[10px] font-medium tracking-[0.04em] text-zinc-600">Gepost via VIA</div> : null}
+        <textarea ref={textareaRef} id={isReply ? `via-reply-${parentStakeID}` : "via-post-body"} value={body} onChange={(event) => { setBody(event.target.value); setDraftMessage(""); if (status === "done" || status === "error") { setStatus("idle"); setMessage("") } }} maxLength={MAX_POST_LENGTH} rows={compact ? 3 : 5} placeholder={isReply ? "Write a reply…" : "What do you want to share?"} className="min-h-[8rem] w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 pb-7 pt-7 text-sm text-zinc-100 outline-none transition-[min-height] focus:min-h-[16rem] focus:border-[#8fd4a9]/55 sm:min-h-0 sm:focus:min-h-0" />
         {!isReply && body.length < 4900 ? <span aria-hidden="true" className="pointer-events-none absolute bottom-2 right-3 text-[10px] text-zinc-700">max. 5000 tekens</span> : null}
         {body.length >= 4900 ? <span className="pointer-events-none absolute bottom-2 right-3 text-[10px] text-zinc-500" aria-live="polite">{body.length.toLocaleString()} / {MAX_POST_LENGTH.toLocaleString()}</span> : null}
       </div>
@@ -367,7 +368,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
           {imageUploading ? "Uploading…" : "Choose image"}
           <input type="file" accept="image/gif,image/jpeg,image/png,image/webp" className="sr-only" disabled={imageUploading} onChange={(event) => { const file = event.target.files?.[0] ?? null; event.currentTarget.value = ""; void uploadImage(file) }} />
         </label> : null}
-        <p className="mt-2 text-xs text-zinc-600">Up to {MAX_IMAGES} images · maximum 10 MB each.</p>
+        {imageUrls.length ? <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">{imageUrls.map((url, index) => <div key={`${url}-${index}`} className="relative overflow-hidden rounded-lg border border-zinc-800 bg-black/30"><img src={url} alt={`Attached image ${index + 1}`} className="aspect-square w-full object-cover" /><button type="button" onClick={() => changeImage(index, "")} className="absolute right-1.5 top-1.5 rounded-md border border-zinc-700 bg-black/80 px-2 py-1 text-[10px] text-zinc-300">Remove</button></div>)}</div> : null}\n        <p className="mt-2 text-xs text-zinc-600">Up to {MAX_IMAGES} images · maximum 10 MB each.</p>
         {imageUploadMessage ? <p className={`mt-2 text-xs ${imageUploadStatus === "error" ? "text-amber-300" : "text-zinc-400"}`}>{imageUploadMessage}</p> : null}
 
         </>
