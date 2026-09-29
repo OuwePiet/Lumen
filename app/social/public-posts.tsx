@@ -13,7 +13,6 @@ import LocalSaveButton from "./local-save-button"
 import PollVoteControl from "./poll-vote-control"
 import XShareButton from "../x-share-button"
 import { restoreIdentitySession, VIA_IDENTITY_EVENT, type ViaIdentitySession } from "../deso-identity-session"
-import { readViaLocalSettings } from "../via-local-settings"
 
 type PublicPost = {
   postHash: string
@@ -392,10 +391,6 @@ export default function PublicPosts() {
                   <details className="relative">
                     <summary aria-label="Meer postacties" title="Meer postacties" className="cursor-pointer list-none rounded-full border border-zinc-800 px-3 py-1 text-zinc-400">•••</summary>
                     <div className="mt-2 flex flex-col overflow-hidden rounded-xl border border-zinc-800 bg-[#050806] text-left">
-                      <button type="button" onClick={() => {
-                        const target = ({ Dutch: "nl", English: "en", French: "fr", Spanish: "es", Chinese: "zh-CN", Hindi: "hi" } as const)[readViaLocalSettings().interfaceLanguage] ?? "en"
-                        window.open(`https://translate.google.com/?sl=auto&tl=${encodeURIComponent(target)}&text=${encodeURIComponent(post.body)}&op=translate`, "_blank", "noopener,noreferrer")
-                      }} disabled={!post.body} className="px-3 py-2 text-left text-zinc-300 hover:bg-white/[0.04] disabled:opacity-40">Vertalen</button>
                       <button type="button" onClick={() => void navigator.clipboard?.writeText(`${window.location.origin}/social?post=${encodeURIComponent(post.postHash)}`)} className="px-3 py-2 text-left text-zinc-300 hover:bg-white/[0.04]">Link to Post</button>
                       {session ? <button type="button" onClick={() => {
                         const url = `${window.location.origin}/social?post=${encodeURIComponent(post.postHash)}`
