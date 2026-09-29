@@ -13,7 +13,7 @@ function requestId() {
   return `via-sign-${Date.now()}-${Math.random().toString(16).slice(2)}`
 }
 
-export function signViaTransaction(publicKey: string, transactionHex: string): Promise<string> {
+export function signViaTransaction(publicKey: string, transactionHex: string, onProgress?: (message: string) => void): Promise<string> {
   if (typeof window === "undefined" || typeof document === "undefined") return Promise.reject(new Error("DeSo Identity is only available in the browser."))
   const credentials = getIdentityCredentials(publicKey)
   if (!credentials) return Promise.reject(new Error("No usable DeSo Identity credentials are available."))
@@ -43,11 +43,13 @@ export function signViaTransaction(publicKey: string, transactionHex: string): P
     const requestInfo = () => {
       if (infoRequested) return
       infoRequested = true
+      onProgress?.("DeSo Identity controleren…")
       post({ id: infoId, service: "identity", method: "info" })
     }
     const request = () => {
       if (signRequested) return
       signRequested = true
+      onProgress?.("Wachten op ondertekening door DeSo Identity…")
       iframe.style.display = "none"
       post({
       id,
@@ -73,6 +75,7 @@ export function signViaTransaction(publicKey: string, transactionHex: string): P
         return
       }
       if (message.method === "storageGranted") {
+        onProgress?.("DeSo Identity-opslagtoegang ontvangen…")
         request()
         return
       }
@@ -83,12 +86,16 @@ export function signViaTransaction(publicKey: string, transactionHex: string): P
           return
         }
         if (info.hasStorageAccess === true) request()
-        else iframe.style.display = "block"
+        else {
+          onProgress?.("Wachten op DeSo Identity-opslagtoegang…")
+          iframe.style.display = "block"
+        }
         return
       }
       if (message.id !== id || !isRecord(message.payload)) return
       const response = message.payload
       if (response.approvalRequired === true) {
+        onProgress?.("DeSo Identity vraagt transactiegoedkeuring…")
         const approvalUrl = new URL(`${DESO_IDENTITY_ORIGIN}/approve`)
         approvalUrl.searchParams.set("tx", transactionHex)
         const approvalWindow = window.open(approvalUrl.toString(), "via-deso-approve", "toolbar=no,width=800,height=1000")
