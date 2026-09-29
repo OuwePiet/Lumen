@@ -107,6 +107,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
   const busy = status === "preparing" || status === "awaiting-approval" || status === "submitting"
   const imageUploading = imageUploadStatus === "jwt" || imageUploadStatus === "uploading"
   const canPrepare = Boolean(session && hasContent && body.length <= MAX_POST_LENGTH && !mediaInvalid && pollValid && !busy && !imageUploading && !videoUploading)
+  const sendBlockedReason = canPrepare ? "" : !session ? "DeSo session unavailable." : !hasContent ? "Add text, a photo or video." : mediaInvalid ? "One media link is invalid." : !pollValid ? "Complete or remove the poll." : imageUploading ? "Photo upload is still running." : videoUploading ? "Video upload is still running." : busy ? "Publishing is already in progress." : "Send is waiting for valid post content."
   const remaining = MAX_POST_LENGTH - body.length
   const feeLabel = useMemo(() => feeNanos === null ? null : `${feeNanos.toLocaleString()} nanos network fee in the prepared transaction`, [feeNanos])
 
@@ -314,6 +315,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
           <button type="button" onClick={preparePost} disabled={!canPrepare} className="rounded-lg border border-[#8fd4a9]/55 px-3 py-1.5 text-xs font-semibold text-[#9adbb2] disabled:cursor-not-allowed disabled:border-zinc-800 disabled:text-zinc-600">{imageUploading ? "Uploading…" : videoUploading ? "Uploading…" : status === "preparing" ? "Preparing…" : status === "awaiting-approval" ? "Awaiting approval…" : status === "submitting" ? "Sending…" : "Send"}</button>
         </> : null}
       </div>
+      {!isReply && !canPrepare && hasContent ? <p className="mt-2 text-[11px] text-amber-300" role="status" aria-live="polite">Send unavailable: {sendBlockedReason}</p> : null}
 
       {emojiOpen ? <div className="mt-2 flex flex-wrap gap-1 rounded-xl border border-zinc-800 bg-zinc-950/70 p-2" aria-label="Insert emoji">
         {COMPOSER_EMOJI.map((emoji) => <button key={emoji} type="button" onClick={() => insertEmoji(emoji)} disabled={busy || body.length + emoji.length > MAX_POST_LENGTH} className="rounded-lg px-2 py-1 text-lg hover:bg-white/[0.06] disabled:opacity-40" aria-label={`Insert ${emoji}`}>{emoji}</button>)}
