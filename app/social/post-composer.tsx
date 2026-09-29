@@ -345,6 +345,8 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
         {body.length >= 4900 ? <span className="pointer-events-none absolute bottom-2 right-3 text-[10px] text-zinc-500" aria-live="polite">{body.length.toLocaleString()} / {MAX_POST_LENGTH.toLocaleString()}</span> : null}
       </div>
 
+      {imagePreviews.length || imageUrls.length ? <div className="mt-2 flex flex-wrap gap-2">{imagePreviews.map((url, index) => <div key={`local-${url}`} className="relative h-28 w-28 overflow-hidden rounded-lg border border-zinc-800 bg-black"><img src={url} alt={`Selected image ${index + 1}`} className="h-full w-full object-cover" /></div>)}{imageUrls.map((url, index) => <div key={`attached-${url}`} className="relative h-28 w-28 overflow-hidden rounded-lg border border-zinc-800 bg-black"><img src={url} alt={`Attached image ${index + 1}`} className="h-full w-full object-cover" /><button type="button" onClick={() => removeUploadedImage(index)} aria-label={`Remove attached image ${index + 1}`} className="absolute right-1 top-1 rounded-md bg-black/75 px-1.5 py-0.5 text-[10px] text-zinc-200">×</button></div>)}</div> : null}
+
       <div className="mt-3 grid grid-cols-3 gap-2 sm:flex sm:flex-wrap sm:items-center">
         <button type="button" onClick={() => setEmojiOpen((open) => !open)} disabled={busy} className="min-h-10 rounded-lg border border-zinc-800 px-3 py-1.5 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2] disabled:opacity-50">Emoji</button>
         {!isReply ? <button type="button" onClick={() => setMediaOpen((open) => !open)} disabled={busy} className="rounded-lg border border-zinc-800 px-3 py-1.5 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2] disabled:opacity-50"><span onClick={(event) => { event.stopPropagation(); setMediaChoice("photo"); setMediaOpen(true) }}>Photo</span><span className="mx-2 text-zinc-700">|</span><span onClick={(event) => { event.stopPropagation(); setMediaChoice("video"); setMediaOpen(true) }}>Video</span></button> : null}
@@ -388,9 +390,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
           <input type="file" accept="image/*" className="sr-only" disabled={imageUploading} onChange={(event) => { const file = event.target.files?.[0] ?? null; event.currentTarget.value = ""; void uploadImage(file) }} />
         </label> : null}
         <p className="mt-2 text-xs text-zinc-600">Up to {MAX_IMAGES} images · maximum 10 MB each.</p>
-        {imagePreviews.length ? <div className="mt-3 flex flex-wrap gap-2">{imagePreviews.map((url, index) => <div key={url} className="relative h-24 w-24 overflow-hidden rounded-lg border border-zinc-800"><img src={url} alt={`Selected image ${index + 1}`} className="h-full w-full object-cover" /></div>)}</div> : null}
         {imagePreviews.length ? <button type="button" onClick={clearImagePreviews} className="mt-2 text-xs text-zinc-500 hover:text-zinc-300">Sluiten</button> : null}
-        {imageUrls.length ? <div className="mt-3 flex flex-wrap gap-2">{imageUrls.map((url, index) => <div key={url} className="relative h-24 w-24 overflow-hidden rounded-lg border border-zinc-800"><img src={url} alt={`Attached image ${index + 1}`} className="h-full w-full object-cover" /><button type="button" onClick={() => removeUploadedImage(index)} aria-label={`Remove attached image ${index + 1}`} className="absolute right-1 top-1 rounded-md bg-black/75 px-1.5 py-0.5 text-[10px] text-zinc-200">×</button></div>)}</div> : null}
         {imageUploadMessage ? <p className={`mt-2 text-xs ${imageUploadStatus === "error" ? "text-amber-300" : "text-zinc-400"}`}>{imageUploadMessage}</p> : null}
 
         </>
