@@ -17,6 +17,7 @@ const SOCIAL_REPLY_DRAFT_PREFIX = "via:social:reply-draft:v1:"
 const COMPOSER_EMOJI = ["😀", "😄", "😂", "😍", "😎", "🤔", "👏", "👍", "❤️", "🔥", "🎉", "🚀", "🌍", "🎨", "🎵", "✨"] as const
 const ALLOWED_IMAGE_TYPES = new Set(["image/gif", "image/jpeg", "image/png", "image/webp"])
 const POST_REQUEST_TIMEOUT_MS = 20_000
+const DESO_NODE = (process.env.NEXT_PUBLIC_DESO_NODE || "https://node.deso.org").replace(/\/$/, "")
 
 async function fetchWithTimeout(input: RequestInfo | URL, init: RequestInit = {}) {
   const controller = new AbortController()
@@ -290,24 +291,39 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
     setMessage(isReply ? "Preparing your reply…" : "Preparing your post…")
     setFeeNanos(null)
     try {
-      const response = await fetchWithTimeout("/api/via/social/post", {
+      const postExtraData: Record<string, string> = { ViaClient: "viadeso.online" }
+      if (preparedPollOptions.length >= 2) postExtraData.PollOptions = JSON.stringify(preparedPollOptions)
+      if (!isReply && sensitiveContent) postExtraData.ViaSensitiveContent = "1"
+      const response = await fetchWithTimeout(`${DESO_NODE}/api/v0/submit-post`, {
         method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store",
-        body: JSON.stringify({ action: "prepare", publicKey: session.publicKey, body, parentStakeID, imageUrls, videoUrls, pollOptions: preparedPollOptions, sensitiveContent: !isReply && sensitiveContent }),
+        body: JSON.stringify({
+          UpdaterPublicKeyBase58Check: session.publicKey,
+          PostHashHexToModify: "",
+          ParentStakeID: parentStakeID,
+          RepostedPostHashHex: "",
+          Title: "",
+          BodyObj: { Body: body.trim(), ImageURLs: imageUrls, VideoURLs: videoUrls },
+          PostExtraData: postExtraData,
+          Sub: "",
+          IsHidden: false,
+          MinFeeRateNanosPerKB: 1000,
+          TransactionFees: [],
+        }),
       })
-      const data = await response.json() as PrepareResponse
-      if (!response.ok || !data.ok || !data.transactionHex) throw new Error(data.error || "PREPARE_FAILED")
-      setFeeNanos(typeof data.feeNanos === "number" ? data.feeNanos : null)
+      const prepared = await response.json() as { TransactionHex?: string; FeeNanos?: number; error?: string }
+      if (!response.ok || !prepared.TransactionHex) throw new Error(prepared.error || "DESO_PREPARE_FAILED")
+      setFeeNanos(typeof prepared.FeeNanos === "number" ? prepared.FeeNanos : null)
       setStatus("awaiting-approval")
       setMessage(isReply ? "Signing your reply with your DeSo Identity session…" : "Signing your post with your DeSo Identity session…")
-      const signedTransactionHex = await signViaTransaction(session.publicKey, data.transactionHex, setMessage)
+      const signedTransactionHex = await signViaTransaction(session.publicKey, prepared.TransactionHex, setMessage)
       setStatus("submitting")
       setMessage(isReply ? "Posting your signed reply…" : "Posting your signed post…")
-      const submitResponse = await fetchWithTimeout("/api/via/social/post", {
+      const submitResponse = await fetchWithTimeout(`${DESO_NODE}/api/v0/submit-transaction`, {
         method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store",
-        body: JSON.stringify({ action: "submit", signedTransactionHex }),
+        body: JSON.stringify({ TransactionHex: signedTransactionHex }),
       })
-      const submitData = await submitResponse.json() as SubmitResponse
-      if (!submitResponse.ok || !submitData.ok) throw new Error(submitData.error || "SUBMIT_FAILED")
+      if (!submitResponse.ok) throw new Error("DESO_SUBMIT_FAILED")
+      await submitResponse.json()
       setStatus("done")
       setMessage(isReply ? "Reply posted." : "Post published.")
       setBody("")
