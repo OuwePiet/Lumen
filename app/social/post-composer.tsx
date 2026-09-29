@@ -222,6 +222,16 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
     })
   }
 
+  function removeUploadedImage(index: number) {
+    setImageInputs((current) => {
+      const attached = current.filter((value) => value.trim())
+      attached.splice(index, 1)
+      return attached.length ? [...attached, ""].slice(0, MAX_IMAGES) : [""]
+    })
+    setImageUploadStatus("idle")
+    setImageUploadMessage("")
+  }
+
   function clearImagePreviews() {
     setImagePreviews((current) => { current.forEach((url) => URL.revokeObjectURL(url)); return [] })
   }
@@ -377,6 +387,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
         <p className="mt-2 text-xs text-zinc-600">Up to {MAX_IMAGES} images · maximum 10 MB each.</p>
         {imagePreviews.length ? <div className="mt-3 flex flex-wrap gap-2">{imagePreviews.map((url, index) => <div key={url} className="relative h-24 w-24 overflow-hidden rounded-lg border border-zinc-800"><img src={url} alt={`Selected image ${index + 1}`} className="h-full w-full object-cover" /></div>)}</div> : null}
         {imagePreviews.length ? <button type="button" onClick={clearImagePreviews} className="mt-2 text-xs text-zinc-500 hover:text-zinc-300">Sluiten</button> : null}
+        {imageUrls.length ? <div className="mt-3 flex flex-wrap gap-2">{imageUrls.map((url, index) => <div key={url} className="relative h-24 w-24 overflow-hidden rounded-lg border border-zinc-800"><img src={url} alt={`Attached image ${index + 1}`} className="h-full w-full object-cover" /><button type="button" onClick={() => removeUploadedImage(index)} aria-label={`Remove attached image ${index + 1}`} className="absolute right-1 top-1 rounded-md bg-black/75 px-1.5 py-0.5 text-[10px] text-zinc-200">×</button></div>)}</div> : null}
         {imageUploadMessage ? <p className={`mt-2 text-xs ${imageUploadStatus === "error" ? "text-amber-300" : "text-zinc-400"}`}>{imageUploadMessage}</p> : null}
 
         </>
