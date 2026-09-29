@@ -355,7 +355,7 @@ export default function ViaSiteHeader() {
               </Link>
               <div ref={accountWrapRef} style={styles.accountWrap} className="via-site-header-account-wrap">
               <button type="button" style={styles.accountButton} className="via-site-header-account-button" onClick={() => { refreshKnownAccounts(); setMenuOpen((open) => !open) }} aria-label="Open VIA account menu" aria-expanded={menuOpen} aria-haspopup="menu">
-                <span className="via-site-header-account-menu-icon" aria-hidden="true">⋯</span>
+                {avatar ? <img src={avatar} alt="" style={styles.avatar} referrerPolicy="no-referrer" /> : <span style={styles.avatarFallback} aria-hidden="true">{profile?.username?.slice(0, 1).toUpperCase() ?? "V"}</span>}
                 <span className="via-site-header-account-label">{accountLabel}</span>
                 <span className="via-site-header-account-label"><ViaIdentityStatusMarks verified={Boolean(profile?.isVerified)} inactive={Boolean(profile?.isInactive)} compact language={language} /></span>
                 <span className="via-site-header-account-caret" aria-hidden="true">▾</span>
