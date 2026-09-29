@@ -19,11 +19,13 @@ const ALLOWED_IMAGE_TYPES = new Set(["image/gif", "image/jpeg", "image/png", "im
 const POST_REQUEST_TIMEOUT_MS = 20_000
 const DESO_NODE = "https://node.deso.org"
 
-async function fetchWithTimeout(input: RequestInfo | URL, init: RequestInit = {}) {
+async function fetchJsonWithTimeout<T>(input: RequestInfo | URL, init: RequestInit = {}) {
   const controller = new AbortController()
   const timeout = window.setTimeout(() => controller.abort(), POST_REQUEST_TIMEOUT_MS)
   try {
-    return await fetch(input, { ...init, signal: controller.signal })
+    const response = await fetch(input, { ...init, signal: controller.signal })
+    const data = await response.json() as T
+    return { response, data }
   } catch (error) {
     if (error instanceof DOMException && error.name === "AbortError") {
       throw new Error(`DeSo request timed out after ${POST_REQUEST_TIMEOUT_MS / 1000}s`)
@@ -302,7 +304,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
     setMessage(isReply ? "Preparing your reply…" : "Preparing your post…")
     setFeeNanos(null)
     try {
-      const response = await fetchWithTimeout("/api/via/social/post", {
+      const { response, data: prepared } = await fetchJsonWithTimeout<PrepareResponse>("/api/via/social/post", {
         method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store",
         body: JSON.stringify({
           action: "prepare",
@@ -315,7 +317,6 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
           sensitiveContent: !isReply && sensitiveContent,
         }),
       })
-      const prepared = await response.json() as PrepareResponse
       if (!response.ok || !prepared.ok || !prepared.transactionHex) {
         throw new Error(prepared.error || `DeSo prepare failed: HTTP ${response.status}`)
       }
@@ -325,11 +326,10 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
       const signedTransactionHex = await signViaTransaction(session.publicKey, prepared.transactionHex, setMessage)
       setStatus("submitting")
       setMessage(isReply ? "Posting your signed reply…" : "Posting your signed post…")
-      const submitResponse = await fetchWithTimeout("/api/via/social/post", {
+      const { response: submitResponse, data: submitted } = await fetchJsonWithTimeout<SubmitResponse>("/api/via/social/post", {
         method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store",
         body: JSON.stringify({ action: "submit", signedTransactionHex }),
       })
-      const submitted = await submitResponse.json() as SubmitResponse
       if (!submitResponse.ok || !submitted.ok) throw new Error(submitted.error || "DESO_SUBMIT_FAILED")
       setStatus("done")
       setMessage(isReply ? "Reply posted." : "Post published.")
