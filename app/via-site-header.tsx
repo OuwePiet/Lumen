@@ -11,6 +11,7 @@ import {
   persistIdentityLogin,
   restoreIdentitySession,
   switchIdentitySession,
+  VIA_IDENTITY_EVENT,
   type ViaIdentitySession,
 } from "./deso-identity-session"
 import ViaIdentityStatusMarks from "./via-identity-status"
