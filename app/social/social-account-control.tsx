@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react"
 import {
   DESO_LOGIN_URL,
+  clearIdentitySession,
   VIA_IDENTITY_EVENT,
   listIdentitySessions,
   persistIdentityLogin,
@@ -58,6 +59,12 @@ export default function SocialAccountControl() {
     setOpen(false)
   }
 
+  function logout() {
+    clearIdentitySession()
+    sync()
+    setOpen(false)
+  }
+
   const others = accounts.filter((account) => account.publicKey !== session?.publicKey)
 
   return (
@@ -74,6 +81,7 @@ export default function SocialAccountControl() {
             </button>
           ))}
           <button type="button" onClick={addAccount} className="block w-full border-t border-zinc-800 px-3 py-2 text-left text-sm text-zinc-300 hover:bg-white/[0.04]">DeSo-account toevoegen</button>
+          {session ? <button type="button" onClick={logout} className="block w-full border-t border-zinc-800 px-3 py-2 text-left text-sm text-zinc-300 hover:bg-white/[0.04]">Uitloggen</button> : null}
           <button type="button" onClick={() => setOpen(false)} className="block w-full border-t border-zinc-800 px-3 py-2 text-left text-sm text-zinc-400 hover:bg-white/[0.04]">Sluiten</button>
         </div>
       ) : null}
