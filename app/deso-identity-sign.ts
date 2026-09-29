@@ -126,14 +126,37 @@ async function ensureStorageAccess() {
   })
 }
 
-export async function signViaTransaction(publicKey: string, transactionHex: string): Promise<string> {
+export async function signViaTransaction(publicKey: string, transactionHex: string, onProgress?: (message: string) => void): Promise<string> {
   if (typeof window === "undefined" || typeof document === "undefined") return Promise.reject(new Error("DeSo Identity is only available in the browser."))
   const credentials = getIdentityCredentials(publicKey)
   if (!credentials) return Promise.reject(new Error("No usable DeSo Identity credentials are available."))
   if (!/^[0-9a-fA-F]+$/.test(transactionHex) || transactionHex.length % 2 !== 0) return Promise.reject(new Error("Invalid DeSo transaction hex."))
 
   ensureIdentityFrame()
-  await ensureStorageAccess()
+  onProgress?.("DeSo Identity: checking Safari storage…")
+  const info = await requestIdentityInfo()
+  const supported = info.browserSupported !== false
+  const hasStorage = info.hasStorageAccess !== false
+  onProgress?.(`DeSo Identity: browser ${supported ? "supported" : "unsupported"} · storage ${hasStorage ? "available" : "permission required"}`)
+  if (!supported) throw new Error("This browser cannot use DeSo Identity securely.")
+  if (!hasStorage) {
+    if (!identityFrame) throw new Error("DeSo Identity is unavailable.")
+    identityFrame.style.display = "block"
+    onProgress?.("DeSo Identity: grant storage access in the Identity screen…")
+    await new Promise<void>((resolve, reject) => {
+      const timeout = window.setTimeout(() => {
+        if (storageGrantedResolve) storageGrantedResolve = null
+        reject(new Error("DeSo Identity storage access timed out."))
+      }, 90_000)
+      storageGrantedResolve = () => {
+        window.clearTimeout(timeout)
+        onProgress?.("DeSo Identity: storage granted · signing…")
+        resolve()
+      }
+    })
+  } else {
+    onProgress?.("DeSo Identity: signing…")
+  }
   const id = requestId()
 
   return new Promise((resolve, reject) => {

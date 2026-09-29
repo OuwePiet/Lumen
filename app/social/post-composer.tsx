@@ -299,7 +299,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
       setFeeNanos(typeof data.feeNanos === "number" ? data.feeNanos : null)
       setStatus("awaiting-approval")
       setMessage(isReply ? "Signing your reply with your DeSo Identity session…" : "Signing your post with your DeSo Identity session…")
-      const signedTransactionHex = await signViaTransaction(session.publicKey, data.transactionHex)
+      const signedTransactionHex = await signViaTransaction(session.publicKey, data.transactionHex, setMessage)
       setStatus("submitting")
       setMessage(isReply ? "Posting your signed reply…" : "Posting your signed post…")
       const submitResponse = await fetchWithTimeout("/api/via/social/post", {
