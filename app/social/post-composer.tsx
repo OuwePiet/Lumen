@@ -250,6 +250,9 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
       return
     }
 
+    const previewUrl = URL.createObjectURL(file)
+    setImagePreviews((current) => [...current, previewUrl].slice(-MAX_IMAGES))
+
     try {
       setImageUploadStatus("jwt")
       setImageUploadMessage("Preparing image upload approval…")
