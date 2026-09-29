@@ -61,7 +61,15 @@ export function signViaTransaction(publicKey: string, transactionHex: string): P
       if (message.id !== id || !isRecord(message.payload)) return
       const response = message.payload
       if (response.approvalRequired === true) {
-        fail("DeSo Identity approval is required for this transaction.")
+        const approvalUrl = new URL(`${DESO_IDENTITY_ORIGIN}/approve`)
+        approvalUrl.searchParams.set("tx", transactionHex)
+        const approvalWindow = window.open(approvalUrl.toString(), "via-deso-approve", "toolbar=no,width=800,height=1000")
+        if (!approvalWindow) {
+          fail("DeSo Identity approval window was blocked.")
+          return
+        }
+        iframe.style.display = "block"
+        fail("DeSo Identity approval opened. Approve the transaction, then send it again.")
         return
       }
       if (typeof response.error === "string" && response.error) { fail(response.error); return }
