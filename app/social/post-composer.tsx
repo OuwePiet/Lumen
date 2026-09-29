@@ -22,8 +22,19 @@ const DESO_NODE = (process.env.NEXT_PUBLIC_DESO_NODE || "https://node.deso.org")
 async function fetchWithTimeout(input: RequestInfo | URL, init: RequestInit = {}) {
   const controller = new AbortController()
   const timeout = window.setTimeout(() => controller.abort(), POST_REQUEST_TIMEOUT_MS)
-  try { return await fetch(input, { ...init, signal: controller.signal }) }
-  finally { window.clearTimeout(timeout) }
+  try {
+    return await fetch(input, { ...init, signal: controller.signal })
+  } catch (error) {
+    if (error instanceof DOMException && error.name === "AbortError") {
+      throw new Error(`DeSo request timed out after ${POST_REQUEST_TIMEOUT_MS / 1000}s`)
+    }
+    if (error instanceof Error) {
+      throw new Error(`DeSo browser request failed: ${error.name}: ${error.message}`)
+    }
+    throw new Error("DeSo browser request failed")
+  } finally {
+    window.clearTimeout(timeout)
+  }
 }
 
 type PrepareResponse = { ok?: boolean; transactionHex?: string; feeNanos?: number | null; error?: string }
@@ -311,7 +322,9 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
         }),
       })
       const prepared = await response.json() as { TransactionHex?: string; FeeNanos?: number; error?: string }
-      if (!response.ok || !prepared.TransactionHex) throw new Error(prepared.error || "DESO_PREPARE_FAILED")
+      if (!response.ok || !prepared.TransactionHex) {
+        throw new Error(prepared.error || `DeSo prepare failed: HTTP ${response.status} ${response.statusText || ""}`.trim())
+      }
       setFeeNanos(typeof prepared.FeeNanos === "number" ? prepared.FeeNanos : null)
       setStatus("awaiting-approval")
       setMessage(isReply ? "Signing your reply with your DeSo Identity session…" : "Signing your post with your DeSo Identity session…")
