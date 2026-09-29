@@ -142,7 +142,10 @@ export async function POST(request: Request) {
         }),
       })
 
-      if (!response.ok) return noStore({ ok: false, error: "DESO_PREPARE_REJECTED" }, 502)
+      if (!response.ok) {
+        console.error("[VIA post prepare] DeSo rejected", response.status, response.statusText)
+        return noStore({ ok: false, error: `DESO_PREPARE_REJECTED_${response.status}` }, 502)
+      }
       const data = await response.json() as Record<string, unknown>
       const transactionHex = data.TransactionHex
       const feeNanos = data.FeeNanos
@@ -155,8 +158,10 @@ export async function POST(request: Request) {
         media: { images: imageUrls.length, videos: videoUrls.length },
         poll: pollOptions.length ? { options: pollOptions.length } : null,
       })
-    } catch {
-      return noStore({ ok: false, error: "DESO_PREPARE_UNAVAILABLE" }, 503)
+    } catch (error) {
+      const detail = error instanceof Error ? `${error.name}:${error.message}` : "UNKNOWN"
+      console.error("[VIA post prepare] DeSo unavailable", detail)
+      return noStore({ ok: false, error: `DESO_PREPARE_UNAVAILABLE_${detail}` }, 503)
     }
   }
 
