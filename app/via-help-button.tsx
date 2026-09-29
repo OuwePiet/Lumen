@@ -50,8 +50,7 @@ export default function ViaHelpButton() {
           color: #fff;
         }
         body:has(> .via-home-free-earth) .via-global-guides {
-          left: 12px;
-          bottom: 12px;
+          display: none !important;
         }
         body:has(> .via-home-free-earth) .via-global-guide-link {
           background: rgba(7,16,11,.72);
