@@ -414,7 +414,6 @@ export default function ViaHomeControls() {
       </section>
 
       <section className="via-home-language-section" style={{ display: "grid", gap: "6px" }}>
-        <span className="via-home-language-label" style={sectionLabel}>{t.account}</span>
         {!session ? <div aria-label="VIA utility controls"><button type="button" onClick={enterPublicMode} style={{ ...buttonStyle, width: "100%", cursor: "pointer" }}>{t.publicEntrance}</button></div> : null}
 
         {session ? null : (
