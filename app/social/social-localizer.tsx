@@ -12,6 +12,11 @@ const COPY: Record<ViaLanguage | "Hindi", Copy> = {
   English: { exact: {}, patterns: [] },
   Dutch: {
     exact: {
+      "Account": "Account",
+      "Geen actief DeSo-account": "Geen actief DeSo-account",
+      "DeSo-account toevoegen": "DeSo-account toevoegen",
+      "Uitloggen": "Uitloggen",
+      "Sluiten": "Sluiten",
             "VIA Post Office": "VIA Postkantoor",
       "Post Office": "Postkantoor",
       "VIA Post Office shortcuts": "VIA Postkantoor snelkeuzes",
@@ -66,6 +71,8 @@ const COPY: Record<ViaLanguage | "Hindi", Copy> = {
       "Quote Repost": "Quote Repost"
     },
     patterns: [
+      [/^Actief · (.+)$/u, (account) => `Actief · ${account}`],
+      [/^Wissel · (.+)$/u, (account) => `Wissel · ${account}`],
       [/^(\d+) posts loaded\.$/u, (count) => `${count} berichten geladen.`],
       [/^Following for (.+)$/u, (account) => `Volgend voor ${account}`],
       [/^Like · (\d+)$/u, (count) => `Vind ik leuk · ${count}`],
@@ -78,6 +85,11 @@ const COPY: Record<ViaLanguage | "Hindi", Copy> = {
   },
   French: {
     exact: {
+      "Account": "Compte",
+      "Geen actief DeSo-account": "Aucun compte DeSo actif",
+      "DeSo-account toevoegen": "Ajouter un compte DeSo",
+      "Uitloggen": "Se déconnecter",
+      "Sluiten": "Fermer",
             "VIA Post Office": "VIA Bureau de poste",
       "Post Office": "Bureau de poste",
       "VIA Post Office shortcuts": "Raccourcis du Bureau de poste VIA",
@@ -116,6 +128,8 @@ const COPY: Record<ViaLanguage | "Hindi", Copy> = {
       "Publish": "Publier"
     },
     patterns: [
+      [/^Actief · (.+)$/u, (account) => `Actif · ${account}`],
+      [/^Wissel · (.+)$/u, (account) => `Changer · ${account}`],
       [/^(\d+) posts loaded\.$/u, (count) => `${count} publications chargées.`],
       [/^Following for (.+)$/u, (account) => `Following pour ${account}`],
       [/^Like · (\d+)$/u, (count) => `J’aime · ${count}`],
@@ -127,6 +141,11 @@ const COPY: Record<ViaLanguage | "Hindi", Copy> = {
   },
   Spanish: {
     exact: {
+      "Account": "Cuenta",
+      "Geen actief DeSo-account": "No hay una cuenta DeSo activa",
+      "DeSo-account toevoegen": "Añadir cuenta DeSo",
+      "Uitloggen": "Cerrar sesión",
+      "Sluiten": "Cerrar",
             "VIA Post Office": "VIA Oficina de correos",
       "Post Office": "Oficina de correos",
       "VIA Post Office shortcuts": "Accesos de la Oficina de correos VIA",
@@ -165,6 +184,8 @@ const COPY: Record<ViaLanguage | "Hindi", Copy> = {
       "Publish": "Publicar"
     },
     patterns: [
+      [/^Actief · (.+)$/u, (account) => `Activo · ${account}`],
+      [/^Wissel · (.+)$/u, (account) => `Cambiar · ${account}`],
       [/^(\d+) posts loaded\.$/u, (count) => `${count} publicaciones cargadas.`],
       [/^Following for (.+)$/u, (account) => `Following para ${account}`],
       [/^Like · (\d+)$/u, (count) => `Me gusta · ${count}`],
@@ -176,6 +197,11 @@ const COPY: Record<ViaLanguage | "Hindi", Copy> = {
   },
   Chinese: {
     exact: {
+      "Account": "账户",
+      "Geen actief DeSo-account": "没有活跃的 DeSo 账户",
+      "DeSo-account toevoegen": "添加 DeSo 账户",
+      "Uitloggen": "退出登录",
+      "Sluiten": "关闭",
             "VIA Post Office": "VIA 邮局",
       "Post Office": "邮局",
       "VIA Post Office shortcuts": "VIA 邮局快捷方式",
@@ -214,6 +240,8 @@ const COPY: Record<ViaLanguage | "Hindi", Copy> = {
       "Publish": "发布"
     },
     patterns: [
+      [/^Actief · (.+)$/u, (account) => `当前 · ${account}`],
+      [/^Wissel · (.+)$/u, (account) => `切换 · ${account}`],
       [/^(\d+) posts loaded\.$/u, (count) => `已加载 ${count} 个帖子。`],
       [/^Following for (.+)$/u, (account) => `${account} 的 Following`],
       [/^Like · (\d+)$/u, (count) => `点赞 · ${count}`],
@@ -225,6 +253,11 @@ const COPY: Record<ViaLanguage | "Hindi", Copy> = {
   },
   Hindi: {
     exact: {
+      "Account": "खाता",
+      "Geen actief DeSo-account": "कोई सक्रिय DeSo खाता नहीं",
+      "DeSo-account toevoegen": "DeSo खाता जोड़ें",
+      "Uitloggen": "लॉग आउट",
+      "Sluiten": "बंद करें",
             "VIA Post Office": "VIA डाकघर",
       "Post Office": "डाकघर",
       "VIA Post Office shortcuts": "VIA डाकघर शॉर्टकट",
@@ -275,6 +308,8 @@ const COPY: Record<ViaLanguage | "Hindi", Copy> = {
       "Quote Repost": "Quote Repost"
     },
     patterns: [
+      [/^Actief · (.+)$/u, (account) => `सक्रिय · ${account}`],
+      [/^Wissel · (.+)$/u, (account) => `बदलें · ${account}`],
       [/^(\\d+) posts loaded\\.$/u, (count) => `${count} पोस्ट लोड हुईं।`],
       [/^Following for (.+)$/u, (account) => `${account} के लिए Following`],
       [/^Like · (\\d+)$/u, (count) => `पसंद · ${count}`],
