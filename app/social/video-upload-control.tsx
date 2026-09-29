@@ -22,6 +22,7 @@ export default function VideoUploadControl({ onReady, onBusyChange }: VideoUploa
   const [message, setMessage] = useState("")
   const [progress, setProgress] = useState(0)
   const [videoUrl, setVideoUrl] = useState("")
+  const [localPreviewUrl, setLocalPreviewUrl] = useState("")
   const [pendingVideo, setPendingVideo] = useState<PendingVideo | null>(null)
 
   useEffect(() => {
@@ -35,6 +36,19 @@ export default function VideoUploadControl({ onReady, onBusyChange }: VideoUploa
     onBusyChange?.(status === "uploading" || status === "processing")
     return () => onBusyChange?.(false)
   }, [status, onBusyChange])
+
+  useEffect(() => () => { if (localPreviewUrl) URL.revokeObjectURL(localPreviewUrl) }, [localPreviewUrl])
+
+  function clearVideo() {
+    if (localPreviewUrl) URL.revokeObjectURL(localPreviewUrl)
+    setLocalPreviewUrl("")
+    setPendingVideo(null)
+    setVideoUrl("")
+    setProgress(0)
+    setStatus("idle")
+    setMessage("")
+    onReady?.("")
+  }
 
   function markReady(nextVideoUrl: string) {
     setPendingVideo(null)
@@ -79,6 +93,9 @@ export default function VideoUploadControl({ onReady, onBusyChange }: VideoUploa
       setMessage("Video must be 250 MB or smaller.")
       return
     }
+
+    const previewUrl = URL.createObjectURL(file)
+    setLocalPreviewUrl((current) => { if (current) URL.revokeObjectURL(current); return previewUrl })
 
     try {
       setPendingVideo(null)
@@ -140,6 +157,7 @@ export default function VideoUploadControl({ onReady, onBusyChange }: VideoUploa
         ) : null}
       </div>
 
+      {localPreviewUrl ? <div className="mt-3"><video src={localPreviewUrl} controls preload="metadata" className="max-h-56 w-full rounded-lg border border-zinc-800 bg-black" /><button type="button" onClick={clearVideo} disabled={status === "uploading" || status === "processing"} className="mt-2 text-xs text-zinc-500 hover:text-zinc-300 disabled:opacity-40">Verwijderen</button></div> : null}
       {message ? <p className={`mt-2 text-xs ${status === "error" ? "text-amber-300" : status === "pending" ? "text-amber-200" : "text-zinc-400"}`}>{message}</p> : null}
       {videoUrl ? <input readOnly value={videoUrl} aria-label="Ready DeSo video URL" className="mt-3 w-full rounded-lg border border-zinc-800 bg-black/40 px-3 py-2 text-xs text-zinc-300" /> : null}
     </div>
