@@ -413,8 +413,8 @@ export default function ViaHomeControls() {
               </button>
               {accountsOpen ? (
                 <div className="via-home-account-menu via-home-grid-account-menu" role="menu" aria-label={t.switchAccount}>
-                  <Link prefetch={false} href="/profile" role="menuitem">{t.profile}</Link>
-                  <Link prefetch={false} href="/my-via" role="menuitem">{t.myVia}</Link>
+                  <Link prefetch={false} href="/profile" role="menuitem" onClick={() => setAccountsOpen(false)}>{t.profile}</Link>
+                  <Link prefetch={false} href="/my-via" role="menuitem" onClick={() => setAccountsOpen(false)}>{t.myVia}</Link>
                   {otherAccounts.map((account) => {
                     const accountProfile = profiles[account.publicKey]
                     const accountAvatar = safeProfileImage(accountProfile?.profilePic)
@@ -474,7 +474,9 @@ export default function ViaHomeControls() {
       {status === "blocked" ? <span style={{ color: "#c6a97b", fontSize: "9px", lineHeight: 1.45 }}>{t.blocked}</span> : null}
       <style>{`
         .via-home-language-control { position: relative; width: 100%; }
-        .via-home-grid-account-menu { left: 0; right: auto; top: calc(100% + 6px); }
+        .via-home-grid-account-menu { left: 0; right: auto; top: calc(100% + 6px); width: 252px !important; padding: 7px !important; border-radius: 12px !important; }
+        .via-home-grid-account-menu > a, .via-home-grid-account-menu > button { min-height: 36px !important; padding: 7px 9px !important; border-bottom: 1px solid rgba(143,212,169,.10) !important; }
+        .via-home-grid-account-menu > :last-child { border-bottom: 0 !important; }
         .via-home-language-menu { position: absolute; right: 0; top: calc(100% + 6px); z-index: 90; min-width: 112px; padding: 6px; border: 1px solid rgba(143,212,169,.22); border-radius: 12px; background: rgba(5,10,7,.98); box-shadow: 0 16px 36px rgba(0,0,0,.42); }
         .via-home-language-menu button { width: 100%; min-height: 34px; display: flex; align-items: center; justify-content: flex-start; gap: 8px; border: 0; border-radius: 8px; padding: 7px 9px; background: transparent; color: #d3ddd7; font: inherit; font-size: 12px; cursor: pointer; }
         .via-home-language-menu button.is-active { background: rgba(143,212,169,.12); color: #eef5f0; }
