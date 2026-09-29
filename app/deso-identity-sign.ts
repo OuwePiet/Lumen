@@ -57,6 +57,7 @@ export function signViaTransaction(publicKey: string, transactionHex: string): P
         encryptedSeedHex: credentials.encryptedSeedHex,
         accessLevel: credentials.accessLevel,
         accessLevelHmac: credentials.accessLevelHmac,
+        derivedPublicKeyBase58Check: credentials.derivedPublicKeyBase58Check,
         transactionHex,
       },
     })
