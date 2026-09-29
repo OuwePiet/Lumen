@@ -69,11 +69,7 @@ export function signViaTransaction(publicKey: string, transactionHex: string): P
           return
         }
 
-        const approvalTimeout = window.setTimeout(() => {
-          window.removeEventListener("message", onApprovalMessage)
-          try { approvalWindow.close() } catch {}
-          fail("DeSo Identity transaction approval timed out.")
-        }, 90_000)
+        let approvalTimeout = 0
 
         function onApprovalMessage(approvalEvent: MessageEvent) {
           if (approvalEvent.origin !== DESO_IDENTITY_ORIGIN || approvalEvent.source !== approvalWindow || !isRecord(approvalEvent.data)) return
@@ -98,6 +94,11 @@ export function signViaTransaction(publicKey: string, transactionHex: string): P
         }
 
         window.addEventListener("message", onApprovalMessage)
+        approvalTimeout = window.setTimeout(() => {
+          window.removeEventListener("message", onApprovalMessage)
+          try { approvalWindow.close() } catch {}
+          fail("DeSo Identity transaction approval timed out.")
+        }, 90_000)
         return
       }
       if (typeof response.error === "string" && response.error) { fail(response.error); return }
