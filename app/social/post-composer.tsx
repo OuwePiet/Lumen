@@ -23,7 +23,9 @@ async function fetchWithTimeout(input: RequestInfo | URL, init: RequestInit = {}
   const controller = new AbortController()
   const timeout = window.setTimeout(() => controller.abort(), POST_REQUEST_TIMEOUT_MS)
   try {
-    return await fetch(input, { ...init, signal: controller.signal })
+    const response = await fetch(input, { ...init, signal: controller.signal })
+    await response.clone().arrayBuffer()
+    return response
   } catch (error) {
     if (error instanceof DOMException && error.name === "AbortError") {
       throw new Error(`DeSo request timed out after ${POST_REQUEST_TIMEOUT_MS / 1000}s`)
