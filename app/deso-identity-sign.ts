@@ -21,7 +21,7 @@ export function signViaTransaction(publicKey: string, transactionHex: string): P
 
   return new Promise((resolve, reject) => {
     const iframe = document.createElement("iframe")
-    iframe.src = `${DESO_IDENTITY_ORIGIN}/embed`
+    iframe.src = `${DESO_IDENTITY_ORIGIN}/embed?v=2`
     iframe.title = "DeSo Identity transaction approval"
     iframe.style.position = "fixed"
     iframe.style.inset = "0"
@@ -46,6 +46,9 @@ export function signViaTransaction(publicKey: string, transactionHex: string): P
         accessLevel: credentials.accessLevel,
         accessLevelHmac: credentials.accessLevelHmac,
         transactionHex,
+        encryptedMessagingKeyRandomness: credentials.encryptedMessagingKeyRandomness,
+        ownerPublicKeyBase58Check: credentials.ownerPublicKeyBase58Check ?? publicKey,
+        derivedPublicKeyBase58Check: credentials.derivedPublicKeyBase58Check,
       },
     })
 
