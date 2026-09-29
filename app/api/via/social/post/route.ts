@@ -94,7 +94,6 @@ export async function POST(request: Request) {
 
   const body = input as Record<string, unknown>
   const action = body.action
-  console.info("[VIA post action]", action === "prepare" || action === "submit" ? action : "invalid")
 
   if (action === "prepare") {
     const publicKey = body.publicKey
@@ -181,7 +180,6 @@ export async function POST(request: Request) {
       const postHashHex = typeof transaction.PostEntryResponse === "object" && transaction.PostEntryResponse !== null
         ? (transaction.PostEntryResponse as Record<string, unknown>).PostHashHex
         : undefined
-      console.info("[VIA post submit]", validPostHash(postHashHex) ? "postHash returned" : "no postHash returned")
       return noStore({ ok: true, transaction, postHashHex: validPostHash(postHashHex) ? postHashHex : null })
     } catch {
       return noStore({ ok: false, error: "DESO_SUBMIT_UNAVAILABLE" }, 503)
