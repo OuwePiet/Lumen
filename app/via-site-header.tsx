@@ -11,6 +11,7 @@ import {
   persistIdentityLogin,
   restoreIdentitySession,
   switchIdentitySession,
+  VIA_IDENTITY_EVENT,
   type ViaIdentitySession,
 } from "./deso-identity-session"
 import ViaIdentityStatusMarks from "./via-identity-status"
@@ -171,11 +172,17 @@ export default function ViaSiteHeader() {
       refreshKnownAccounts()
       setMenuOpen(false)
     }
+    const syncIdentity = () => {
+      setSession(restoreIdentitySession())
+      refreshKnownAccounts()
+    }
     window.addEventListener("message", handleIdentityMessage)
     window.addEventListener(VIA_SETTINGS_EVENT, syncSettings)
+    window.addEventListener(VIA_IDENTITY_EVENT, syncIdentity)
     return () => {
       window.removeEventListener("message", handleIdentityMessage)
       window.removeEventListener(VIA_SETTINGS_EVENT, syncSettings)
+      window.removeEventListener(VIA_IDENTITY_EVENT, syncIdentity)
     }
   }, [])
 
