@@ -292,67 +292,9 @@ export default function ViaSiteHeader() {
           {pathname !== "/messages" && pathname !== "/radio" ? <Link href="/wallet" style={pill} className={`via-site-header-utility ${pathname === "/notifications" ? "via-site-header-wallet-notifications" : ""}`}>{t.wallet}</Link> : null}
           {pathname !== "/notifications" && pathname !== "/messages" && pathname !== "/radio" ? <Link href="/notifications" style={pill} className="via-site-header-utility">{t.notifications}</Link> : null}
 
-          {session ? (
+          {session && !isHomepage ? (
             <>
               {pathname === "/notifications" || pathname === "/radio" || pathname === "/messages" || pathname === "/profile" ? <span className="via-notifications-future-mark">VIA Future</span> : null}
-              <Link
-                href="/profile"
-                aria-label={t.profile}
-                title={t.profile}
-                className={`via-profile-shortcut ${pathname === "/notifications" || pathname === "/radio" || pathname === "/messages" || pathname === "/profile" ? "via-profile-shortcut-notifications" : ""}`}
-                style={{
-                  ...pill,
-                  width: "48px",
-                  minWidth: "48px",
-                  height: "44px",
-                  padding: "4px",
-                  borderRadius: "14px",
-                  flex: "0 0 auto",
-                  position: "relative",
-                  overflow: "visible",
-                  borderColor: "transparent",
-                  background: "transparent",
-                  boxShadow: "none",
-                }}
-              >
-                {avatar ? (
-                  <img src={avatar} alt="" referrerPolicy="no-referrer" style={{ width: "36px", height: "36px", borderRadius: "50%", objectFit: "cover", border: 0, boxShadow: "none" }} />
-                ) : (
-                  <span aria-hidden="true" style={{ width: "36px", height: "36px", display: "grid", placeItems: "center", borderRadius: "50%", background: "#183326", color: "#9adbb2", fontSize: "15px", fontWeight: 900, border: "1px solid rgba(143,212,169,.30)" }}>
-                    {profile?.username?.slice(0, 1).toUpperCase() ?? "V"}
-                  </span>
-                )}
-                <span className="via-profile-shortcut-status" style={{ position: "absolute", right: "-7px", bottom: "-7px", zIndex: 2 }}>
-                  <ViaIdentityStatusMarks verified={Boolean(profile?.isVerified)} inactive={Boolean(profile?.isInactive)} viaRecognized={Boolean(profile?.viaRecognized)} compact language={language} />
-                </span>
-                {pathname === "/notifications" || pathname === "/radio" || pathname === "/messages" || pathname === "/profile" ? (
-                  <>
-                    <span
-                      className="via-notifications-status-caret"
-                      role="button"
-                      tabIndex={0}
-                      aria-expanded={notificationStatusOpen}
-                      aria-label="Open DeSo and VIA status information"
-                      onClick={(event) => { event.preventDefault(); event.stopPropagation(); setNotificationStatusOpen((open) => !open) }}
-                      onKeyDown={(event) => {
-                        if (event.key === "Enter" || event.key === " ") {
-                          event.preventDefault()
-                          event.stopPropagation()
-                          setNotificationStatusOpen((open) => !open)
-                        }
-                      }}
-                    >▾</span>
-                    {notificationStatusOpen ? (
-                      <span className="via-notifications-status-info" role="status" onClick={(event) => { event.preventDefault(); event.stopPropagation() }}>
-                        <strong>{language === "Dutch" ? "DeSo Verified" : language === "French" ? "Vérifié par DeSo" : language === "Spanish" ? "Verificado por DeSo" : language === "Chinese" ? "DeSo 已验证" : "DeSo Verified"}</strong>
-                        <span>{language === "Dutch" ? "Originele DeSo-verificatie. VIA kan deze status niet toekennen, wijzigen of verwijderen." : language === "French" ? "Vérification DeSo d'origine. VIA ne peut ni attribuer, ni modifier, ni supprimer ce statut." : language === "Spanish" ? "Verificación original de DeSo. VIA no puede conceder, cambiar ni eliminar este estado." : language === "Chinese" ? "这是 DeSo 原始验证状态。VIA 不能授予、更改或移除此状态。" : "Original DeSo verification. VIA cannot grant, change or remove this status."}</span>
-                        <strong>{language === "Dutch" ? "VIA-erkenning" : language === "French" ? "Reconnaissance VIA" : language === "Spanish" ? "Reconocimiento VIA" : language === "Chinese" ? "VIA 认可" : "VIA Recognition"}</strong>
-                        <span>{language === "Dutch" ? "Het VIA-blaadje wordt verdiend door aantoonbare positieve betrokkenheid bij VIA volgens vaste VIA-criteria. De erkenning is niet te koop en wordt pas bij de echte livegang geactiveerd." : language === "French" ? "La feuille VIA s'obtient par une participation positive et vérifiable à VIA selon des critères VIA fixes. Cette reconnaissance ne peut pas être achetée et ne sera activée qu'au lancement public réel." : language === "Spanish" ? "La hoja VIA se obtiene mediante una participación positiva y verificable en VIA según criterios fijos de VIA. Este reconocimiento no se puede comprar y solo se activará en el lanzamiento público real." : language === "Chinese" ? "VIA 叶标需按照固定的 VIA 标准，通过可验证的积极参与获得。该认可不可购买，并且只会在正式公开上线时启用。" : "The VIA leaf is earned through verifiable positive participation in VIA under fixed VIA criteria. This recognition cannot be bought and will only be enabled at the real public launch."}</span>
-                      </span>
-                    ) : null}
-                  </>
-                ) : null}
-              </Link>
               <div ref={accountWrapRef} style={styles.accountWrap} className="via-site-header-account-wrap">
               <button type="button" style={styles.accountButton} className="via-site-header-account-button" onClick={() => { refreshKnownAccounts(); setMenuOpen((open) => !open) }} aria-label="Open VIA account menu" aria-expanded={menuOpen} aria-haspopup="menu">
                 {avatar ? <img src={avatar} alt="" style={styles.avatar} referrerPolicy="no-referrer" /> : <span style={styles.avatarFallback} aria-hidden="true">{profile?.username?.slice(0, 1).toUpperCase() ?? "V"}</span>}
@@ -425,25 +367,9 @@ export default function ViaSiteHeader() {
           .via-site-header-nav-compact-mobile { display: none !important; }
           .via-site-header-account-menu { top: 44px !important; right: 0 !important; width: min(280px, calc(100vw - 20px)) !important; }
           /* Notifications iPhone: one layout process only. Keep every top-row control in DOM order. */
-          .via-site-header-tools-notifications > .via-profile-shortcut-notifications {
-            grid-column: 4 !important;
-            justify-self: center !important;
-            transform: translateX(-2px) !important;
-          }
           .via-site-header-tools-notifications > .via-site-header-account-wrap {
             grid-column: 7 !important;
             justify-self: end !important;
-          }
-          .via-site-header-tools-notifications .via-profile-shortcut-notifications {
-            position: relative !important;
-            right: auto !important;
-            top: 0 !important;
-            flex: 0 0 34px !important;
-            width: 34px !important;
-            min-width: 34px !important;
-            height: 34px !important;
-            padding: 2px !important;
-            border-radius: 50% !important;
           }
           .via-site-header-tools-notifications .via-site-header-account-wrap {
             position: relative !important;
@@ -458,10 +384,6 @@ export default function ViaSiteHeader() {
             width: 34px !important;
             height: 34px !important;
             padding: 3px !important;
-          }
-          .via-site-header-tools-notifications .via-profile-shortcut-status {
-            right: -10px !important;
-            bottom: -7px !important;
           }
           .via-site-header-tools-notifications .via-notifications-future-mark {
             position: absolute !important;
@@ -487,7 +409,7 @@ export default function ViaSiteHeader() {
           .via-site-header-tools-notifications {
             left: 78px !important;
             right: 10px !important;
-            grid-template-columns: repeat(6, 34px) !important;
+            grid-template-columns: repeat(5, 34px) !important;
             justify-content: space-between !important;
             column-gap: 0 !important;
           }
@@ -530,24 +452,6 @@ export default function ViaSiteHeader() {
           }
           .via-notifications-home-label { display: block; }
           .via-site-header-tools-notifications > .via-notifications-future-mark { grid-column: 4 !important; justify-self: center !important; }
-          .via-site-header-tools-notifications > .via-profile-shortcut-notifications {
-            grid-column: 5 !important;
-            transform: translateX(0) !important;
-            justify-self: end !important;
-            margin-right: 0 !important;
-            padding: 0 !important;
-            border: 0 !important;
-            background: transparent !important;
-            box-shadow: none !important;
-          }
-          .via-site-header-tools-notifications .via-profile-shortcut-notifications > img {
-            width: 34px !important;
-            height: 34px !important;
-            border-radius: 50% !important;
-            object-fit: cover !important;
-            border: 1px solid rgba(143,212,169,.52) !important;
-            box-shadow: none !important;
-          }
           .via-site-header-tools-notifications .via-notifications-future-mark {
             position: relative !important;
             left: auto !important;
@@ -583,12 +487,12 @@ export default function ViaSiteHeader() {
             display: none !important;
           }
           .via-site-header-tools-notifications .via-site-header-account-menu-icon {
-            display: block !important;
+            display: none !important;
             font-size: 18px !important;
             line-height: 1 !important;
           }
           .via-site-header-tools-notifications > .via-site-header-account-wrap {
-            grid-column: 6 !important;
+            grid-column: 5 !important;
             position: relative !important;
             right: auto !important;
             top: 0 !important;
