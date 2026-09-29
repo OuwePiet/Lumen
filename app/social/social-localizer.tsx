@@ -343,6 +343,8 @@ function translateRoot(root: HTMLElement, language: ViaLanguage | "Hindi") {
     const current = textNode.nodeValue ?? ""
     const trimmed = current.trim()
     if (trimmed) {
+      const dynamic = textNode.parentElement?.hasAttribute("data-via-dynamic-text") === true
+      if (dynamic) originalText.set(textNode, trimmed)
       const source = originalText.get(textNode) ?? trimmed
       if (!originalText.has(textNode)) originalText.set(textNode, source)
       const next = language === "English" ? source : translated(source, copy)
