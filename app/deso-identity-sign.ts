@@ -3,7 +3,7 @@
 import { DESO_IDENTITY_ORIGIN, getIdentityCredentials } from "./deso-identity-session"
 
 type IdentityMessage = { id?: unknown; service?: unknown; method?: unknown; payload?: unknown }
-type PendingSign = { resolve: (signed: string) => void; reject: (error: Error) => void; timeout: number }
+type PendingSign = { resolve: (signed: string) => void; reject: (error: Error) => void; timeout: number; transactionHex: string; approvalWindow?: Window | null }
 type PendingInfo = { resolve: (info: Record<string, unknown>) => void; reject: (error: Error) => void; timeout: number }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -28,7 +28,10 @@ function post(message: Record<string, unknown>) {
 }
 
 function handleIdentityMessage(event: MessageEvent) {
-  if (event.origin !== DESO_IDENTITY_ORIGIN || !identityFrame || event.source !== identityFrame.contentWindow || !isRecord(event.data)) return
+  if (event.origin !== DESO_IDENTITY_ORIGIN || !identityFrame || !isRecord(event.data)) return
+  const fromFrame = event.source === identityFrame.contentWindow
+  const approvalRequest = [...pending.values()].find((item) => item.approvalWindow && event.source === item.approvalWindow)
+  if (!fromFrame && !approvalRequest) return
   const message = event.data as IdentityMessage
   if (message.service !== "identity") return
 
@@ -64,7 +67,15 @@ function handleIdentityMessage(event: MessageEvent) {
 
   const response = message.payload
   if (response.approvalRequired === true) {
-    request.reject(new Error("DeSo Identity approval is required for this transaction."))
+    const approvalWindow = window.open(`${DESO_IDENTITY_ORIGIN}/approve?tx=${encodeURIComponent(request.transactionHex)}`, "via-deso-approve")
+    if (!approvalWindow) {
+      pending.delete(message.id)
+      window.clearTimeout(request.timeout)
+      request.reject(new Error("DeSo Identity approval window was blocked."))
+      return
+    }
+    request.approvalWindow = approvalWindow
+    pending.set(message.id, request)
     return
   }
   if (typeof response.error === "string" && response.error) {
@@ -72,7 +83,7 @@ function handleIdentityMessage(event: MessageEvent) {
     return
   }
   const signed = response.signedTransactionHex
-  if (typeof signed === "string" && signed) request.resolve(signed)
+  if (typeof signed === "string" && signed) { request.approvalWindow?.close(); request.resolve(signed) }
   else request.reject(new Error("DeSo Identity did not return a signed transaction."))
 }
 
@@ -165,7 +176,7 @@ export async function signViaTransaction(publicKey: string, transactionHex: stri
       reject(new Error("DeSo Identity transaction signing timed out."))
     }, 90_000)
 
-    pending.set(id, { resolve, reject, timeout })
+    pending.set(id, { resolve, reject, timeout, transactionHex })
     post({
       id,
       service: "identity",
