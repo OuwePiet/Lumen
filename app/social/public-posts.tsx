@@ -415,7 +415,7 @@ export default function PublicPosts() {
                 </div>
 
                 {options.length >= 2 ? <PollVoteControl postHash={post.postHash} options={options} /> : null}
-                {session && isReplying ? <PostComposer parentStakeID={post.postHash} compact onDone={() => { setReplyingTo(null); void loadPosts() }} /> : null}
+                {session && isReplying ? <PostComposer parentStakeID={post.postHash} compact onCancel={() => setReplyingTo(null)} onDone={() => { setReplyingTo(null); void loadPosts() }} /> : null}
               </article>
             )
           })}

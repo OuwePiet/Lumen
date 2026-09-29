@@ -42,7 +42,7 @@ async function fetchJsonWithTimeout<T>(input: RequestInfo | URL, init: RequestIn
 type PrepareResponse = { ok?: boolean; transactionHex?: string; feeNanos?: number | null; error?: string }
 type SubmitResponse = { ok?: boolean; transaction?: Record<string, unknown>; error?: string }
 type UploadResponse = { ok?: boolean; imageUrl?: string; error?: string }
-type PostComposerProps = { parentStakeID?: string; compact?: boolean; onDone?: () => void }
+type PostComposerProps = { parentStakeID?: string; compact?: boolean; onDone?: () => void; onCancel?: () => void }
 
 function httpsUrl(value: string) {
   const trimmed = value.trim()
@@ -53,7 +53,7 @@ function httpsUrl(value: string) {
   } catch { return null }
 }
 
-export default function PostComposer({ parentStakeID = "", compact = false, onDone }: PostComposerProps) {
+export default function PostComposer({ parentStakeID = "", compact = false, onDone, onCancel }: PostComposerProps) {
   const [session, setSession] = useState<ViaIdentitySession | null>(null)
   const [body, setBody] = useState("")
   const [imageInputs, setImageInputs] = useState([""])
@@ -360,7 +360,8 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
         {mediaInvalid ? <p className="mt-2 text-xs text-amber-300">One of the attached media items is not valid.</p> : null}
       </div> : null}
 
-      {isReply ? <div className="mt-4 flex justify-end">
+      {isReply ? <div className="mt-4 flex justify-end gap-2">
+        {onCancel ? <button type="button" onClick={onCancel} disabled={busy} className="rounded-xl border border-zinc-800 px-4 py-2 text-sm text-zinc-400 hover:border-zinc-700 hover:text-zinc-200 disabled:opacity-60">Sluiten</button> : null}
         <button type="button" onClick={preparePost} disabled={!canPrepare} className="rounded-xl border border-[#8fd4a9]/55 px-4 py-2 text-sm font-semibold text-[#9adbb2] disabled:cursor-not-allowed disabled:border-zinc-800 disabled:text-zinc-600">{status === "preparing" ? "Preparing…" : status === "awaiting-approval" ? "Awaiting approval…" : status === "submitting" ? "Posting…" : "Reply"}</button>
       </div> : null}
       {message ? <p data-via-dynamic-text className={`mt-3 text-sm ${status === "done" ? "text-[#9adbb2]" : status === "error" ? "text-amber-300" : "text-zinc-400"}`}>{message}</p> : null}
