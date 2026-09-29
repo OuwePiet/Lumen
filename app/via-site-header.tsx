@@ -366,11 +366,6 @@ export default function ViaSiteHeader() {
           .via-site-header-wallet-notifications { display: none !important; }
           .via-site-header-nav-compact-mobile { display: none !important; }
           .via-site-header-account-menu { top: 44px !important; right: 0 !important; width: min(280px, calc(100vw - 20px)) !important; }
-          /* Notifications iPhone: one layout process only. Keep every top-row control in DOM order. */
-          .via-site-header-tools-notifications > .via-site-header-account-wrap {
-            grid-column: 7 !important;
-            justify-self: end !important;
-          }
           .via-site-header-tools-notifications .via-site-header-account-wrap {
             position: relative !important;
             right: auto !important;
@@ -520,11 +515,11 @@ export default function ViaSiteHeader() {
           .via-site-header-tools-notifications .via-notifications-status-caret {
             display: none !important;
           }
-          /* World Radio iPhone: use the same six-slot geometry, without legacy Wallet/Notifications controls. */
+          /* World Radio iPhone: use the same five-slot geometry, without legacy Wallet/Notifications controls. */
           .via-site-header-tools-radio {
             left: 78px !important;
             right: 10px !important;
-            grid-template-columns: repeat(6, 34px) !important;
+            grid-template-columns: repeat(5, 34px) !important;
             justify-content: space-between !important;
             column-gap: 0 !important;
           }
@@ -532,14 +527,13 @@ export default function ViaSiteHeader() {
           .via-site-header-tools-radio > .via-site-header-language-wrap { grid-column: 2 !important; }
           .via-site-header-tools-radio > .via-notifications-home-top { grid-column: 3 !important; display: grid !important; place-items: center !important; }
           .via-site-header-tools-radio > .via-notifications-future-mark { grid-column: 4 !important; }
-          .via-site-header-tools-radio > .via-profile-shortcut-notifications { grid-column: 5 !important; }
-          .via-site-header-tools-radio > .via-site-header-account-wrap { grid-column: 6 !important; }
+          .via-site-header-tools-radio > .via-site-header-account-wrap { grid-column: 5 !important; }
           .via-site-header-tools-radio > a[href="/wallet"], .via-site-header-tools-radio > a[href="/notifications"] { display: none !important; }
-          /* Messages iPhone: one definitive six-slot toolbar. */
+          /* Messages iPhone: one definitive five-slot toolbar. */
           .via-site-header-tools-messages {
             left: 78px !important;
             right: 10px !important;
-            grid-template-columns: repeat(6, 34px) !important;
+            grid-template-columns: repeat(5, 34px) !important;
             justify-content: space-between !important;
             align-items: start !important;
             column-gap: 0 !important;
@@ -549,8 +543,7 @@ export default function ViaSiteHeader() {
           .via-site-header-tools-messages > .via-notifications-home-top { grid-column: 3 !important; display: grid !important; place-items: center !important; }
           .via-site-header-tools-messages > .via-notifications-radio-top { display: none !important; }
           .via-site-header-tools-messages > .via-notifications-future-mark { grid-column: 4 !important; }
-          .via-site-header-tools-messages > .via-profile-shortcut-notifications { grid-column: 5 !important; }
-          .via-site-header-tools-messages > .via-site-header-account-wrap { grid-column: 6 !important; }
+          .via-site-header-tools-messages > .via-site-header-account-wrap { grid-column: 5 !important; }
           .via-site-header-tools-messages > a[href="/wallet"], .via-site-header-tools-messages > a[href="/notifications"] { display: none !important; }\n          .via-site-header-tools-messages .via-radio-top-label { display: none !important; }
                     /* Messages/Profile/Radio logged-out mobile: keep utility controls in one scrollable row instead of the fixed six-slot Notifications geometry. */
           .via-site-header-tools-notifications:not(.via-site-header-tools-messages):has(> button) {
@@ -581,7 +574,6 @@ export default function ViaSiteHeader() {
         }
         @media (min-width: 721px) {
           .via-site-header-account-menu-icon { display: none !important; }
-          .via-profile-shortcut-status { display: none !important; }\n          .via-profile-shortcut-notifications { top: 3px !important; width: 52px !important; min-width: 52px !important; height: 52px !important; padding: 5px !important; border-radius: 14px !important; }\n          .via-profile-shortcut-notifications > img, .via-profile-shortcut-notifications > span[aria-hidden="true"] { width: 40px !important; height: 40px !important; }
         }
       `}</style>
     </header>
