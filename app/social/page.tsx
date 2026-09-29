@@ -5,6 +5,7 @@ import PublicPosts from "./public-posts"
 import ParticipationGate from "../participation-gate"
 import PostComposer from "./post-composer"
 import SocialLocalizer from "./social-localizer"
+import SocialAccountControl from "./social-account-control"
 export const metadata: Metadata = {
   title: "VIA Post Office",
   description: "Write, publish and follow native DeSo posts in the VIA way.",
@@ -21,6 +22,7 @@ export default function SocialPage() {
             <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">VIA Post Office</h1>
             <p className="mt-1 hidden text-sm text-zinc-500 sm:block">Write, publish and follow DeSo posts in the VIA way.</p>
           </div>
+          <div className="ml-auto"><SocialAccountControl /></div>
           <details className="w-full sm:hidden">
             <summary className="w-fit cursor-pointer list-none rounded-full border border-white/10 bg-white/[0.02] px-4 py-2 text-sm text-zinc-300">Snelkeuzes ▾</summary>
             <nav className="mt-2 flex gap-2 overflow-x-auto pb-1" aria-label="VIA Post Office shortcuts">
