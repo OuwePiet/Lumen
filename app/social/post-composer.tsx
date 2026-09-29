@@ -301,7 +301,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
     if (!session || !canPrepare) return
     if (isReply) saveDraft()
     setStatus("preparing")
-    setMessage(isReply ? "Preparing your reply…" : "Preparing your post…")
+    setMessage(isReply ? "Step 1/4 · sending reply to DeSo…" : "Step 1/4 · sending post to DeSo…")
     setFeeNanos(null)
     try {
       const postExtraData: Record<string, string> = { ViaClient: "viadeso.online" }
@@ -323,7 +323,9 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
           TransactionFees: [],
         }),
       })
+      setMessage(`Step 2/4 · DeSo HTTP ${response.status} · reading response…`)
       const prepared = await response.json() as { TransactionHex?: string; FeeNanos?: number; error?: string }
+      setMessage("Step 3/4 · DeSo transaction prepared · opening Identity…")
       if (!response.ok || !prepared.TransactionHex) {
         throw new Error(prepared.error || `DeSo prepare failed: HTTP ${response.status} ${response.statusText || ""}`.trim())
       }
