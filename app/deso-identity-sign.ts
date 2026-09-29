@@ -4,6 +4,7 @@ import { DESO_IDENTITY_ORIGIN, getIdentityCredentials } from "./deso-identity-se
 
 type IdentityMessage = { id?: unknown; service?: unknown; method?: unknown; payload?: unknown }
 type PendingSign = { resolve: (signed: string) => void; reject: (error: Error) => void; timeout: number }
+type PendingInfo = { resolve: (info: Record<string, unknown>) => void; reject: (error: Error) => void; timeout: number }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value)
@@ -18,6 +19,8 @@ let identityFrame: HTMLIFrameElement | null = null
 let initialized = false
 const queued: Record<string, unknown>[] = []
 const pending = new Map<string, PendingSign>()
+const pendingInfo = new Map<string, PendingInfo>()
+let storageGrantedResolve: (() => void) | null = null
 
 function post(message: Record<string, unknown>) {
   if (initialized) identityFrame?.contentWindow?.postMessage(message, "*")
@@ -38,7 +41,22 @@ function handleIdentityMessage(event: MessageEvent) {
     return
   }
 
+  if (message.method === "storageGranted") {
+    identityFrame.style.display = "none"
+    storageGrantedResolve?.()
+    storageGrantedResolve = null
+    return
+  }
+
   if (typeof message.id !== "string" || !isRecord(message.payload)) return
+  const infoRequest = pendingInfo.get(message.id)
+  if (infoRequest) {
+    pendingInfo.delete(message.id)
+    window.clearTimeout(infoRequest.timeout)
+    infoRequest.resolve(message.payload)
+    return
+  }
+
   const request = pending.get(message.id)
   if (!request) return
   pending.delete(message.id)
@@ -65,18 +83,57 @@ function ensureIdentityFrame() {
   identityFrame.id = "via-deso-identity"
   identityFrame.src = `${DESO_IDENTITY_ORIGIN}/embed?v=2`
   identityFrame.title = "DeSo Identity"
+  identityFrame.style.position = "fixed"
+  identityFrame.style.inset = "0"
+  identityFrame.style.width = "100vw"
+  identityFrame.style.height = "100vh"
+  identityFrame.style.border = "0"
+  identityFrame.style.zIndex = "2147483647"
+  identityFrame.style.background = "#000"
   identityFrame.style.display = "none"
   window.addEventListener("message", handleIdentityMessage)
   document.body.appendChild(identityFrame)
 }
 
-export function signViaTransaction(publicKey: string, transactionHex: string): Promise<string> {
+function requestIdentityInfo(): Promise<Record<string, unknown>> {
+  const id = requestId()
+  return new Promise((resolve, reject) => {
+    const timeout = window.setTimeout(() => {
+      pendingInfo.delete(id)
+      reject(new Error("DeSo Identity info timed out."))
+    }, 20_000)
+    pendingInfo.set(id, { resolve, reject, timeout })
+    post({ id, service: "identity", method: "info", payload: {} })
+  })
+}
+
+async function ensureStorageAccess() {
+  const info = await requestIdentityInfo()
+  if (info.browserSupported === false) throw new Error("This browser cannot use DeSo Identity securely.")
+  if (info.hasStorageAccess !== false) return
+
+  if (!identityFrame) throw new Error("DeSo Identity is unavailable.")
+  identityFrame.style.display = "block"
+  await new Promise<void>((resolve, reject) => {
+    const timeout = window.setTimeout(() => {
+      if (storageGrantedResolve) storageGrantedResolve = null
+      reject(new Error("DeSo Identity storage access timed out."))
+    }, 90_000)
+    storageGrantedResolve = () => {
+      window.clearTimeout(timeout)
+      resolve()
+    }
+  })
+}
+
+export async function signViaTransaction(publicKey: string, transactionHex: string): Promise<string> {
   if (typeof window === "undefined" || typeof document === "undefined") return Promise.reject(new Error("DeSo Identity is only available in the browser."))
   const credentials = getIdentityCredentials(publicKey)
   if (!credentials) return Promise.reject(new Error("No usable DeSo Identity credentials are available."))
   if (!/^[0-9a-fA-F]+$/.test(transactionHex) || transactionHex.length % 2 !== 0) return Promise.reject(new Error("Invalid DeSo transaction hex."))
 
   ensureIdentityFrame()
+  await ensureStorageAccess()
   const id = requestId()
 
   return new Promise((resolve, reject) => {
