@@ -28,7 +28,7 @@ function openApproval(transactionHex: string): Promise<IdentityPayload> {
     }, 400)
 
     function finish(value: IdentityPayload | Error) {
-      window.clearTimeout(timeout)
+      if (timeout !== undefined) window.clearTimeout(timeout)
       window.clearInterval(watch)
       window.removeEventListener("message", onMessage)
       if (!activePopup.closed) activePopup.close()
@@ -63,6 +63,7 @@ export function signViaTransaction(publicKey: string, transactionHex: string): P
     const id = requestId()
     let initialized = false
     let settled = false
+    let timeout: number | undefined
     const pending: Record<string, unknown>[] = []
 
     const cleanup = () => { window.removeEventListener("message", onMessage); iframe.remove(); window.clearTimeout(timeout) }
@@ -121,6 +122,6 @@ export function signViaTransaction(publicKey: string, transactionHex: string): P
       },
     })
 
-    const timeout = window.setTimeout(() => fail("DeSo Identity transaction signing timed out."), 90_000)
+    timeout = window.setTimeout(() => fail("DeSo Identity transaction signing timed out."), 90_000)
   })
 }
