@@ -285,12 +285,12 @@ export default function ViaSiteHeader() {
               </button>)}
             </div> : null}
           </div>
-          {pathname === "/notifications" || pathname === "/radio" || pathname === "/messages" ? <Link href="/" className="via-notifications-home-top" aria-label="Home" title="Home"><span className="via-notifications-home-label">Home</span></Link> : null}
+          {pathname === "/notifications" || pathname === "/radio" || pathname === "/messages" || pathname === "/profile" ? <Link href="/" className="via-notifications-home-top" aria-label="Home" title="Home"><span className="via-notifications-home-label">Home</span></Link> : null}
           {pathname === "/messages" ? <Link href="/radio" className="via-notifications-radio-top" aria-label="World Radio" title="World Radio"><Radio className="h-4 w-4" aria-hidden="true" /><span className="via-radio-top-label">Radio</span></Link> : null}
           {!session && pathname !== "/messages" ? <button type="button" onClick={enterPublicMode} style={{ ...pill, cursor: "pointer" }}>{t.publicEntrance}</button> : null}
           {!session && pathname !== "/messages" ? <a href={DESO_LOGIN_URL} target="via-deso-identity" style={styles.login}>{t.login}</a> : null}
-          {pathname !== "/messages" && pathname !== "/radio" ? <Link href="/wallet" style={pill} className={`via-site-header-utility ${pathname === "/notifications" ? "via-site-header-wallet-notifications" : ""}`}>{t.wallet}</Link> : null}
-          {pathname !== "/notifications" && pathname !== "/messages" && pathname !== "/radio" ? <Link href="/notifications" style={pill} className="via-site-header-utility">{t.notifications}</Link> : null}
+          {pathname !== "/messages" && pathname !== "/radio" && pathname !== "/profile" ? <Link href="/wallet" style={pill} className={`via-site-header-utility ${pathname === "/notifications" ? "via-site-header-wallet-notifications" : ""}`}>{t.wallet}</Link> : null}
+          {pathname !== "/notifications" && pathname !== "/messages" && pathname !== "/radio" && pathname !== "/profile" ? <Link href="/notifications" style={pill} className="via-site-header-utility">{t.notifications}</Link> : null}
 
           {session && !isHomepage ? (
             <>
