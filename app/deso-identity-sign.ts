@@ -38,13 +38,13 @@ function handleIdentityMessage(event: MessageEvent) {
   // Identity window messages can return with a different WindowProxy on iPad
   // Safari. The official client trusts the Identity origin and active flow.
   if (message.method === "initialize" && typeof message.id === "string") {
-    // Both the iframe and the interactive approval window require this
-    // handshake. Only the iframe initialization may release queued requests.
-    if (fromFrame && !initialized) {
+    // Match the official DeSo Window API: every Identity window is
+    // acknowledged, and the first initialize releases queued iframe calls.
+    if (!initialized) {
       initialized = true
-      queued.splice(0).forEach((request) => identityFrame?.contentWindow?.postMessage(request, DESO_IDENTITY_ORIGIN))
+      queued.splice(0).forEach((request) => identityFrame?.contentWindow?.postMessage(request, "*"))
     }
-    ;(event.source as WindowProxy).postMessage({ id: message.id, service: "identity", payload: {} }, DESO_IDENTITY_ORIGIN)
+    ;(event.source as WindowProxy).postMessage({ id: message.id, service: "identity", payload: {} }, "*")
     return
   }
 
@@ -86,7 +86,7 @@ function handleIdentityMessage(event: MessageEvent) {
 
   const response = message.payload
   if (response.approvalRequired === true) {
-    const approvalWindow = request.approvalWindow && !request.approvalWindow.closed ? request.approvalWindow : window.open("", "via-deso-approve")
+    const approvalWindow = request.approvalWindow && !request.approvalWindow.closed ? request.approvalWindow : window.open("", "_blank")
     if (!approvalWindow) {
       pending.delete(message.id)
       window.clearTimeout(request.timeout)
