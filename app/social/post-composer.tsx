@@ -235,7 +235,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
 
   async function preparePost() {
     if (!session || !canPrepare) return
-    const reservedApprovalWindow = window.open("", "via-deso-approve")
+    const reservedApprovalWindow = window.open("", "_blank")
     if (isReply) saveDraft()
     setStatus("preparing")
     setMessage(isReply ? "Preparing your reply…" : "Preparing your post…")
