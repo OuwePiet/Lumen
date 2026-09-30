@@ -51,6 +51,22 @@ function handleIdentityMessage(event: MessageEvent) {
     return
   }
 
+  // The /approve window completes through the Identity window API, not the
+  // iframe request id. Its response is method "login", id null, with the
+  // signed transaction in the payload.
+  if (approvalRequest && message.method === "login" && isRecord(message.payload)) {
+    const approvalEntry = [...pending.entries()].find(([, item]) => item === approvalRequest)
+    if (!approvalEntry) return
+    const [approvalId, request] = approvalEntry
+    pending.delete(approvalId)
+    window.clearTimeout(request.timeout)
+    const signed = message.payload.signedTransactionHex
+    request.approvalWindow?.close()
+    if (typeof signed === "string" && signed) request.resolve(signed)
+    else request.reject(new Error("DeSo Identity approval was cancelled."))
+    return
+  }
+
   if (typeof message.id !== "string" || !isRecord(message.payload)) return
   const infoRequest = pendingInfo.get(message.id)
   if (infoRequest) {
