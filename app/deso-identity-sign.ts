@@ -30,11 +30,13 @@ function post(message: Record<string, unknown>) {
 function handleIdentityMessage(event: MessageEvent) {
   if (event.origin !== DESO_IDENTITY_ORIGIN || !identityFrame || !isRecord(event.data)) return
   const fromFrame = event.source === identityFrame.contentWindow
-  const approvalRequest = [...pending.values()].find((item) => item.approvalWindow && event.source === item.approvalWindow)
-  if (!fromFrame && !approvalRequest) return
+  const approvalEntries = [...pending.entries()].filter(([, item]) => item.approvalWindow)
+  const approvalEntry = approvalEntries.length === 1 ? approvalEntries[0] : undefined
   const message = event.data as IdentityMessage
   if (message.service !== "identity") return
 
+  // Identity window messages can return with a different WindowProxy on iPad
+  // Safari. The official client trusts the Identity origin and active flow.
   if (message.method === "initialize" && typeof message.id === "string") {
     if (!initialized) {
       initialized = true
@@ -54,9 +56,7 @@ function handleIdentityMessage(event: MessageEvent) {
   // The /approve window completes through the Identity window API, not the
   // iframe request id. Its response is method "login", id null, with the
   // signed transaction in the payload.
-  if (approvalRequest && message.method === "login" && isRecord(message.payload)) {
-    const approvalEntry = [...pending.entries()].find(([, item]) => item === approvalRequest)
-    if (!approvalEntry) return
+  if (approvalEntry && message.method === "login" && isRecord(message.payload)) {
     const [approvalId, request] = approvalEntry
     pending.delete(approvalId)
     window.clearTimeout(request.timeout)
@@ -67,6 +67,7 @@ function handleIdentityMessage(event: MessageEvent) {
     return
   }
 
+  if (!fromFrame) return
   if (typeof message.id !== "string" || !isRecord(message.payload)) return
   const infoRequest = pendingInfo.get(message.id)
   if (infoRequest) {
