@@ -235,6 +235,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
 
   async function preparePost() {
     if (!session || !canPrepare) return
+    const reservedApprovalWindow = window.open("", "via-deso-approve")
     if (isReply) saveDraft()
     setStatus("preparing")
     setMessage(isReply ? "Preparing your reply…" : "Preparing your post…")
@@ -259,7 +260,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
       setFeeNanos(typeof prepared.feeNanos === "number" ? prepared.feeNanos : null)
       setStatus("awaiting-approval")
       setMessage(isReply ? "Signing your reply with your DeSo Identity session…" : "Signing your post with your DeSo Identity session…")
-      const signedTransactionHex = await signViaTransaction(session.publicKey, prepared.transactionHex, () => setMessage(isReply ? "Publishing your reply…" : "Publishing your post…"))
+      const signedTransactionHex = await signViaTransaction(session.publicKey, prepared.transactionHex, () => setMessage(isReply ? "Publishing your reply…" : "Publishing your post…"), reservedApprovalWindow)
       setStatus("submitting")
       setMessage(isReply ? "Posting your signed reply…" : "Posting your signed post…")
       const { response: submitResponse, data: submitted } = await fetchJsonWithTimeout<SubmitResponse>("/api/via/social/post", {
@@ -267,6 +268,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
         body: JSON.stringify({ action: "submit", signedTransactionHex }),
       })
       if (!submitResponse.ok || !submitted.ok) throw new Error(submitted.error || "DESO_SUBMIT_FAILED")
+      reservedApprovalWindow?.close()
       setStatus("done")
       setMessage(isReply ? "Reply posted." : "Post published.")
       setBody("")
@@ -286,6 +288,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
       if (!isReply) window.dispatchEvent(new Event("via:social:post-published"))
       onDone?.()
     } catch (error) {
+      reservedApprovalWindow?.close()
       setStatus("error")
       const code = error instanceof Error ? error.message : "PREPARE_FAILED"
       setMessage(`The post could not be prepared (${code}). Nothing was posted.`)
