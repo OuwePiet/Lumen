@@ -347,17 +347,21 @@ export default function ViaSiteHeader() {
         </div>
       </div>
       <style>{`
-        .via-site-header-language-wrap { position: relative; flex: 0 0 auto; }\n        .via-notifications-top-control { display: contents; }\n        .via-notifications-top-label { display: none; }
+        .via-site-header-language-wrap { position: relative; flex: 0 0 auto; }
+        .via-notifications-top-control { display: contents; }
+        .via-notifications-top-label { display: none; }
         .via-site-header-language { gap: 6px !important; min-width: 68px; }
         .via-site-header-language-menu { position: absolute; top: 44px; left: 0; z-index: 220; width: 118px; max-height: min(330px, calc(100vh - 90px)); overflow-y: auto; padding: 5px; border: 1px solid rgba(143,212,169,.22); border-radius: 12px; background: rgba(5,10,7,.99); box-shadow: 0 14px 34px rgba(0,0,0,.42); }
         .via-site-header-language-menu button { width: 100%; display: flex; align-items: center; gap: 8px; padding: 7px 9px; border: 0; border-radius: 8px; background: transparent; color: #cfd9d3; font-size: 12px; cursor: pointer; text-align: left; }
         .via-site-header-language-menu button:hover, .via-site-header-language-menu button:focus-visible, .via-site-header-language-menu button.is-active { background: rgba(40,95,64,.58); color: white; outline: none; }
         @media (max-width: 720px) {
-          .via-site-header-shell { width: 100% !important; padding: 0 12px 0 6px !important; box-sizing: border-box !important; grid-template-columns: 72px minmax(0, 1fr) !important; grid-template-rows: 58px 50px !important; column-gap: 6px !important; }\n          .via-site-header-shell:has(.via-site-header-tools-notifications) { grid-template-rows: 52px !important; }
+          .via-site-header-shell { width: 100% !important; padding: 0 12px 0 6px !important; box-sizing: border-box !important; grid-template-columns: 72px minmax(0, 1fr) !important; grid-template-rows: 58px 50px !important; column-gap: 6px !important; }
+          .via-site-header-shell:has(.via-site-header-tools-notifications) { grid-template-rows: 52px !important; }
           .via-site-header-brand { grid-column: 1 !important; grid-row: 1 !important; justify-content: flex-start !important; overflow: visible !important; }
           .via-site-header-logo { width: 68px !important; height: 52px !important; margin-left: -3px !important; }
           .via-site-header-top { grid-column: 2 !important; grid-row: 1 !important; padding-right: 46px !important; }
-          .via-site-header-nav { justify-content: flex-start !important; overflow-x: auto !important; scrollbar-width: none !important; }\n          .via-site-header-nav-compact-mobile { display: none !important; }
+          .via-site-header-nav { justify-content: flex-start !important; overflow-x: auto !important; scrollbar-width: none !important; }
+          .via-site-header-nav-compact-mobile { display: none !important; }
           .via-site-header-nav::-webkit-scrollbar, .via-site-header-tools::-webkit-scrollbar { display: none; }
           .via-site-header-link { padding: 18px 8px 15px !important; font-size: 11px !important; }
           .via-site-header-tools { grid-column: 1 / span 2 !important; grid-row: 2 !important; justify-content: flex-start !important; overflow-x: auto !important; overflow-y: hidden !important; gap: 6px !important; padding: 6px 8px !important; }
@@ -551,7 +555,8 @@ export default function ViaSiteHeader() {
           .via-site-header-tools-messages > .via-notifications-radio-top { display: none !important; }
           .via-site-header-tools-messages > .via-notifications-future-mark { grid-column: 4 !important; }
           .via-site-header-tools-messages > .via-site-header-account-wrap { grid-column: 5 !important; }
-          .via-site-header-tools-messages > a[href="/wallet"], .via-site-header-tools-messages > a[href="/notifications"] { display: none !important; }\n          .via-site-header-tools-messages .via-radio-top-label { display: none !important; }
+          .via-site-header-tools-messages > a[href="/wallet"], .via-site-header-tools-messages > a[href="/notifications"] { display: none !important; }
+          .via-site-header-tools-messages .via-radio-top-label { display: none !important; }
                     /* Messages/Profile/Radio logged-out mobile: keep utility controls in one scrollable row instead of the fixed six-slot Notifications geometry. */
           .via-site-header-tools-notifications:not(.via-site-header-tools-messages):has(> button) {
             position: relative !important;
