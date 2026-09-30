@@ -67,13 +67,14 @@ function handleIdentityMessage(event: MessageEvent) {
 
   const response = message.payload
   if (response.approvalRequired === true) {
-    const approvalWindow = window.open(`${DESO_IDENTITY_ORIGIN}/approve?tx=${encodeURIComponent(request.transactionHex)}`, "via-deso-approve")
+    const approvalWindow = request.approvalWindow && !request.approvalWindow.closed ? request.approvalWindow : window.open("", "via-deso-approve")
     if (!approvalWindow) {
       pending.delete(message.id)
       window.clearTimeout(request.timeout)
       request.reject(new Error("DeSo Identity approval window was blocked."))
       return
     }
+    approvalWindow.location.href = `${DESO_IDENTITY_ORIGIN}/approve?tx=${encodeURIComponent(request.transactionHex)}`
     request.approvalWindow = approvalWindow
     pending.set(message.id, request)
     return
@@ -137,7 +138,7 @@ async function ensureStorageAccess() {
   })
 }
 
-export async function signViaTransaction(publicKey: string, transactionHex: string, onProgress?: (message: string) => void): Promise<string> {
+export async function signViaTransaction(publicKey: string, transactionHex: string, onProgress?: (message: string) => void, reservedApprovalWindow?: Window | null): Promise<string> {
   if (typeof window === "undefined" || typeof document === "undefined") return Promise.reject(new Error("DeSo Identity is only available in the browser."))
   const credentials = getIdentityCredentials(publicKey)
   if (!credentials) return Promise.reject(new Error("No usable DeSo Identity credentials are available."))
@@ -176,7 +177,7 @@ export async function signViaTransaction(publicKey: string, transactionHex: stri
       reject(new Error("DeSo Identity transaction signing timed out."))
     }, 90_000)
 
-    pending.set(id, { resolve, reject, timeout, transactionHex })
+    pending.set(id, { resolve, reject, timeout, transactionHex, approvalWindow: reservedApprovalWindow })
     post({
       id,
       service: "identity",
