@@ -6,6 +6,12 @@ type IdentityMessage = { id?: unknown; service?: unknown; method?: unknown; payl
 type PendingSign = { resolve: (signed: string) => void; reject: (error: Error) => void; timeout: number; transactionHex: string; approvalWindow?: Window | null }
 type PendingInfo = { resolve: (info: Record<string, unknown>) => void; reject: (error: Error) => void; timeout: number }
 
+function identityTrace(step: string) {
+  try {
+    window.dispatchEvent(new CustomEvent("via:identity-sign-trace", { detail: step }))
+  } catch {}
+}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value)
 }
@@ -64,7 +70,7 @@ function handleIdentityMessage(event: MessageEvent) {
     window.clearTimeout(request.timeout)
     const signed = message.payload.signedTransactionHex
     request.approvalWindow?.close()
-    if (typeof signed === "string" && signed) request.resolve(signed)
+    if (typeof signed === "string" && signed) { identityTrace("signedTransactionHex received"); request.resolve(signed) }
     else request.reject(new Error("DeSo Identity approval was cancelled."))
     return
   }
@@ -86,6 +92,7 @@ function handleIdentityMessage(event: MessageEvent) {
 
   const response = message.payload
   if (response.approvalRequired === true) {
+    identityTrace("approvalRequired")
     const approvalWindow = request.approvalWindow && !request.approvalWindow.closed ? request.approvalWindow : window.open("", "_blank")
     if (!approvalWindow) {
       pending.delete(message.id)
@@ -93,6 +100,7 @@ function handleIdentityMessage(event: MessageEvent) {
       request.reject(new Error("DeSo Identity approval window was blocked."))
       return
     }
+    identityTrace("opening approval")
     approvalWindow.location.href = `${DESO_IDENTITY_ORIGIN}/approve?tx=${encodeURIComponent(request.transactionHex)}`
     request.approvalWindow = approvalWindow
     pending.set(message.id, request)
@@ -187,6 +195,7 @@ export async function signViaTransaction(publicKey: string, transactionHex: stri
     })
   } else {
     onProgress?.("DeSo Identity: signing…")
+    identityTrace("sign request")
   }
   const id = requestId()
 
