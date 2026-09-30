@@ -19,6 +19,12 @@ const ALLOWED_IMAGE_TYPES = new Set(["image/gif", "image/jpeg", "image/png", "im
 const POST_REQUEST_TIMEOUT_MS = 20_000
 const DESO_NODE = "https://node.deso.org"
 
+function reserveIdentityApprovalWindow() {
+  const navigatorWithStandalone = navigator as Navigator & { standalone?: boolean }
+  const standalone = navigatorWithStandalone.standalone === true || window.matchMedia("(display-mode: standalone)").matches
+  return window.open(standalone ? "about:blank" : "", "_blank")
+}
+
 async function fetchJsonWithTimeout<T>(input: RequestInfo | URL, init: RequestInit = {}) {
   const controller = new AbortController()
   const timeout = window.setTimeout(() => controller.abort(), POST_REQUEST_TIMEOUT_MS)
@@ -235,7 +241,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
 
   async function preparePost() {
     if (!session || !canPrepare) return
-    const reservedApprovalWindow = window.open("", "_blank")
+    const reservedApprovalWindow = reserveIdentityApprovalWindow()
     if (isReply) saveDraft()
     setStatus("preparing")
     setMessage(isReply ? "Preparing your reply…" : "Preparing your post…")
