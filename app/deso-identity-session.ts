@@ -63,7 +63,7 @@ function isUsableCredentials(value: unknown): value is DeSoIdentityCredentials &
     value.accessLevelHmac.length > 0 &&
     typeof accessLevel === "number" &&
     Number.isInteger(accessLevel) &&
-    accessLevel >= 2 &&
+    accessLevel >= 3 &&
     accessLevel <= 4
   )
 }
@@ -136,7 +136,13 @@ export function persistIdentityLogin(event: MessageEvent): ViaIdentitySession | 
   if (!payload || !isRecord(payload.users)) return null
 
   const existingUsers = readIdentityUsers()
+  // Do not replace a previously authorized level-3 account with stale
+  // level-2 credentials from an Identity login response.
   const mergedUsers = { ...existingUsers, ...payload.users }
+  for (const [key, incoming] of Object.entries(payload.users)) {
+    const previous = existingUsers[key]
+    if (isUsableCredentials(previous) && !isUsableCredentials(incoming)) mergedUsers[key] = previous
+  }
   localStorage.setItem(IDENTITY_USERS_KEY, JSON.stringify(mergedUsers))
   localStorage.setItem(VIA_ACTIVE_PUBLIC_KEY, session.publicKey)
   window.dispatchEvent(new CustomEvent(VIA_IDENTITY_EVENT, { detail: session }))
