@@ -621,7 +621,7 @@ export default function MessagesClient() {
                         <button type="button" onClick={() => void sendCurrentMessage()} disabled={!draft.trim() || sending} title={t.identityNote} className="rounded-[12px] border border-[#8fd4a9]/25 px-4 text-sm font-semibold text-[#9adbb2] disabled:border-zinc-800 disabled:text-zinc-600">{sending ? "…" : t.send}</button>
                       </div>
                     </div>
-                    {sendError ? <p className="px-4 pb-3 text-xs text-amber-300">{t.unavailable}</p> : null}
+                    {sendError ? <p role="alert" className="px-4 pb-3 text-xs text-amber-300">{sendError === "MESSAGES_UNAVAILABLE" ? t.unavailable : sendError}</p> : null}
                   </>
                 ) : (
                   <div className="grid flex-1 place-items-center p-6 text-sm text-zinc-500">{t.selectConversation}</div>
