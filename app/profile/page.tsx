@@ -322,7 +322,10 @@ export default function ProfilePage() {
           </div>
           <div className="flex flex-wrap gap-2">
             {session?.publicKey ? (
-              <Link href={`/collection?account=${encodeURIComponent(session.publicKey)}`} className={quietAction}>{t.myNfts}</Link>
+              <>
+                <Link href={`/profile/${encodeURIComponent(session.publicKey)}#profile-posts-heading`} className={quietAction}>My Posts</Link>
+                <Link href={`/collection?account=${encodeURIComponent(session.publicKey)}`} className={quietAction}>{t.myNfts}</Link>
+              </>
             ) : null}
             <Link href="/my-via" className={quietAction}>{t.back}</Link>
           </div>
