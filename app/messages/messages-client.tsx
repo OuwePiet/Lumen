@@ -537,8 +537,9 @@ export default function MessagesClient() {
       setThreadMessages(messages)
       setThreadHasMore(messages.length === 25)
     }
-  } catch {
-    setSendError("MESSAGES_UNAVAILABLE")
+  } catch (error) {
+    const detail = error instanceof Error ? error.message : ""
+    setSendError(detail.startsWith("DeSo Identity") || detail.includes("messaging-key authorization") || detail.includes("credentials") ? detail : "MESSAGES_UNAVAILABLE")
   } finally {
     setSending(false)
   }
