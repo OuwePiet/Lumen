@@ -240,6 +240,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
     setStatus("preparing")
     setMessage(isReply ? "Preparing your reply…" : "Preparing your post…")
     setFeeNanos(null)
+    let submissionStarted = false
     try {
       const { response, data: prepared } = await fetchJsonWithTimeout<PrepareResponse>("/api/via/social/post", {
         method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store",
@@ -261,6 +262,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
       setStatus("awaiting-approval")
       setMessage(isReply ? "Signing your reply with your DeSo Identity session…" : "Signing your post with your DeSo Identity session…")
       const signedTransactionHex = await signViaTransaction(session.publicKey, prepared.transactionHex, () => setMessage(isReply ? "Publishing your reply…" : "Publishing your post…"), reservedApprovalWindow)
+      submissionStarted = true
       setStatus("submitting")
       setMessage(isReply ? "Posting your signed reply…" : "Posting your signed post…")
       const { response: submitResponse, data: submitted } = await fetchJsonWithTimeout<SubmitResponse>("/api/via/social/post", {
@@ -291,7 +293,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
       reservedApprovalWindow?.close()
       setStatus("error")
       const code = error instanceof Error ? error.message : "PREPARE_FAILED"
-      setMessage(status === "submitting" ? `DeSo did not confirm publication (${code}). Check your feed before retrying to avoid a duplicate post.` : `The post could not be completed (${code}). Your draft is still available.`)
+      setMessage(submissionStarted ? `DeSo did not confirm publication (${code}). Check your feed before retrying to avoid a duplicate post.` : `The post could not be completed (${code}). Your draft is still available.`)
     }
   }
 
