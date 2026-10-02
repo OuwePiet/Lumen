@@ -356,7 +356,7 @@ export default function ProfilePage() {
           >
             {coverPhoto ? (
               <div className="-mx-6 -mt-6 mb-6 overflow-hidden sm:-mx-8 sm:-mt-8">
-                <img src={coverPhoto} alt="" className="block h-auto w-full object-contain" loading="lazy" referrerPolicy="no-referrer" />
+                <img src={coverPhoto} alt="" className="block h-auto w-full object-contain [@media(orientation:landscape)_and_(min-width:768px)_and_(max-width:1199px)]:max-h-[420px]" loading="lazy" referrerPolicy="no-referrer" />
               </div>
             ) : null}
             <div className="pointer-events-none absolute -right-20 -top-24 h-56 w-56 rounded-full bg-[#8fd4a9]/10 blur-3xl" aria-hidden="true" />
