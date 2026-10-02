@@ -6,6 +6,7 @@ import { Copy, MoreVertical, UserRoundPen, WalletCards } from "lucide-react"
 import { restoreIdentitySession, VIA_IDENTITY_EVENT, type ViaIdentitySession } from "../deso-identity-session"
 import { readViaLocalSettings, VIA_SETTINGS_EVENT, type ViaLanguage } from "../via-local-settings"
 import ViaIdentityStatusMarks from "../via-identity-status"
+import PostComposer from "../social/post-composer"
 
 type PublicProfile = {
   publicKey: string
@@ -323,7 +324,6 @@ export default function ProfilePage() {
           <div className="flex flex-wrap gap-2">
             {session?.publicKey ? (
               <>
-                <Link href={`/profile/${encodeURIComponent(session.publicKey)}#profile-posts-heading`} className={quietAction}>My Posts</Link>
                 <Link href={`/collection?account=${encodeURIComponent(session.publicKey)}`} className={quietAction}>{t.myNfts}</Link>
               </>
             ) : null}
@@ -429,6 +429,7 @@ export default function ProfilePage() {
             </div>
           </section>
         ) : null}
+        {session && profile ? <section className="mt-5 rounded-[14px] border border-zinc-800/80 bg-zinc-950/50 p-4 sm:p-5" aria-label="Write a post"><PostComposer /></section> : null}
       </div>
       <style>{`\n        .via-profile-own-actions { display:flex; align-items:center; gap:7px; margin-left:auto; }\n        .via-profile-action-button { width:36px; height:36px; display:inline-grid; place-items:center; border:1px solid rgba(143,212,169,.28); border-radius:50%; background:rgba(5,11,8,.58); color:#9adbb2; text-decoration:none; }\n        .via-profile-action-menu-wrap { position:relative; }\n        .via-profile-action-menu { position:absolute; right:0; top:42px; z-index:30; min-width:170px; padding:6px; border:1px solid rgba(143,212,169,.22); border-radius:12px; background:rgba(5,10,7,.98); box-shadow:0 16px 36px rgba(0,0,0,.42); }\n        .via-profile-action-menu button { width:100%; display:flex; align-items:center; gap:8px; border:0; border-radius:8px; padding:9px 10px; background:transparent; color:#d3ddd7; font-size:12px; text-align:left; }\n        @media (max-width:720px) { .via-profile-own-actions { width:100%; justify-content:flex-end; margin:-2px 0 4px; } .via-profile-action-button { width:34px; height:34px; } }\n      `}</style>
     </main>
