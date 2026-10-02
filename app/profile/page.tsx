@@ -26,7 +26,6 @@ type PublicProfile = {
 }
 
 type ProfileResponse = { ok?: boolean; profile?: PublicProfile }
-type WalletResponse = { ok?: boolean; wallet?: { balanceDeSo?: number } }
 type OwnPost = { postHash: string; body: string; imageUrls: string[]; videoUrls: string[]; timestampNanos: number }
 type OwnPostsResponse = { ok?: boolean; posts?: OwnPost[] }
 
@@ -220,8 +219,6 @@ export default function ProfilePage() {
   const [postsRefresh, setPostsRefresh] = useState(0)
   const [loading, setLoading] = useState(true)
   const [profileUnavailable, setProfileUnavailable] = useState(false)
-  const [balanceDeSo, setBalanceDeSo] = useState<number | null>(null)
-  const [walletUnavailable, setWalletUnavailable] = useState(false)
   const [language, setLanguage] = useState<ViaLanguage>("English")
   const [profileMenuOpen, setProfileMenuOpen] = useState(false)
   const [copiedKey, setCopiedKey] = useState(false)
@@ -270,40 +267,6 @@ export default function ProfilePage() {
         }
       })
       .finally(() => setLoading(false))
-
-    return () => controller.abort()
-  }, [session?.publicKey])
-
-  useEffect(() => {
-    if (!session?.publicKey) {
-      setBalanceDeSo(null)
-      setWalletUnavailable(false)
-      return
-    }
-
-    const controller = new AbortController()
-    setWalletUnavailable(false)
-    void fetch(`/api/via/wallet?publicKey=${encodeURIComponent(session.publicKey)}`, {
-      cache: "no-store",
-      signal: controller.signal,
-      headers: { Accept: "application/json" },
-    })
-      .then(async (response) => {
-        const data = response.ok ? (await response.json()) as WalletResponse : null
-        const balance = data?.wallet?.balanceDeSo
-        if (!response.ok || !data?.ok || typeof balance !== "number" || !Number.isFinite(balance)) throw new Error("WALLET_UNAVAILABLE")
-        return balance
-      })
-      .then((balance) => {
-        setBalanceDeSo(balance)
-        setWalletUnavailable(false)
-      })
-      .catch((reason) => {
-        if (!(reason instanceof DOMException && reason.name === "AbortError")) {
-          setBalanceDeSo(null)
-          setWalletUnavailable(true)
-        }
-      })
 
     return () => controller.abort()
   }, [session?.publicKey])
@@ -391,8 +354,8 @@ export default function ProfilePage() {
             }}
           >
             {coverPhoto ? (
-              <div className="-mx-6 -mt-6 mb-6 h-36 overflow-hidden sm:-mx-8 sm:-mt-8 sm:h-48">
-                <img src={coverPhoto} alt="" className="h-full w-full object-cover" loading="lazy" referrerPolicy="no-referrer" />
+              <div className="-mx-6 -mt-6 mb-6 overflow-hidden sm:-mx-8 sm:-mt-8">
+                <img src={coverPhoto} alt="" className="block h-auto w-full object-contain" loading="lazy" referrerPolicy="no-referrer" />
               </div>
             ) : null}
             <div className="pointer-events-none absolute -right-20 -top-24 h-56 w-56 rounded-full bg-[#8fd4a9]/10 blur-3xl" aria-hidden="true" />
@@ -415,7 +378,7 @@ export default function ProfilePage() {
                 <div className="mt-3 flex flex-wrap items-center gap-2">
                   <div className="via-profile-own-actions" aria-label="Profile actions">
                     <Link href="/profile/edit" className="via-profile-action-button" aria-label="Edit profile" title="Edit profile"><UserRoundPen className="h-4 w-4" aria-hidden="true" /></Link>
-                    <Link href="/profile/coin" className="via-profile-action-button" aria-label="Buy creator coins" title="Buy creator coins"><WalletCards className="h-4 w-4" aria-hidden="true" /></Link>
+                    <Link href="/wallet" className="via-profile-action-button" aria-label="Open My Wallet" title="My Wallet"><WalletCards className="h-4 w-4" aria-hidden="true" /></Link>
                     <div className="via-profile-action-menu-wrap"><button type="button" className="via-profile-action-button" aria-label="More profile actions" title="More" aria-expanded={profileMenuOpen} onClick={() => setProfileMenuOpen((open) => !open)}><MoreVertical className="h-4 w-4" aria-hidden="true" /></button>{profileMenuOpen ? <div className="via-profile-action-menu"><button type="button" onClick={copyPublicKey}><Copy className="h-4 w-4" aria-hidden="true" />{copiedKey ? "Public key copied" : "Copy public key"}</button></div> : null}</div>
                   </div>
                   <span className={profile.isInactive ? "rounded-full border border-zinc-500/35 bg-zinc-500/10 px-3 py-1 text-xs font-semibold text-zinc-400" : "rounded-full border border-[#8fd4a9]/30 bg-[#8fd4a9]/10 px-3 py-1 text-xs font-semibold text-[#a9dfbc]"}>
@@ -427,15 +390,7 @@ export default function ProfilePage() {
                   ) : null}
                 </div>
 
-                <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-3">
-                  <Link href="/wallet" className={metricLink} title={walletUnavailable ? t.walletUnavailable : t.yourDeso}>
-                    <p className="text-[11px] uppercase tracking-[0.12em] text-zinc-500">{t.yourDeso}</p>
-                    <p className="mt-1 text-sm font-medium text-zinc-100">{walletUnavailable ? "—" : formatDeSo(balanceDeSo)}</p>
-                  </Link>
-                  <div className="rounded-[12px] border border-zinc-800/80 bg-black/25 p-3">
-                    <p className="text-[11px] uppercase tracking-[0.12em] text-zinc-500">{t.coinPrice}</p>
-                    <p className="mt-1 text-sm font-medium text-zinc-100">{formatDeSoNanos(profile.coinPriceDeSoNanos)}</p>
-                  </div>
+                <div className="mt-5 grid grid-cols-2 gap-2">
                   <Link href={`/profile/connections?mode=followers&identity=${encodeURIComponent(profile.publicKey)}`} className={metricLink}>
                     <p className="text-[11px] uppercase tracking-[0.12em] text-zinc-500">{t.followers}</p>
                     <p className="mt-1 text-sm font-medium text-zinc-100">{formatCompact(profile.followersCount)}</p>
@@ -444,18 +399,6 @@ export default function ProfilePage() {
                     <p className="text-[11px] uppercase tracking-[0.12em] text-zinc-500">{t.following}</p>
                     <p className="mt-1 text-sm font-medium text-zinc-100">{formatCompact(profile.followingCount)}</p>
                   </Link>
-                  <div className="rounded-[12px] border border-zinc-800/80 bg-black/25 p-3">
-                    <p className="text-[11px] uppercase tracking-[0.12em] text-zinc-500">FR</p>
-                    <p className="mt-1 text-sm font-medium text-zinc-100">{formatBasisPoints(profile.creatorBasisPoints)}</p>
-                  </div>
-                  <div className="rounded-[12px] border border-zinc-800/80 bg-black/25 p-3">
-                    <p className="text-[11px] uppercase tracking-[0.12em] text-zinc-500">{t.coinHolders}</p>
-                    <p className="mt-1 text-sm font-medium text-zinc-100">{formatCompact(profile.numberOfHolders)}</p>
-                  </div>
-                  <div className="rounded-[12px] border border-zinc-800/80 bg-black/25 p-3">
-                    <p className="text-[11px] uppercase tracking-[0.12em] text-zinc-500">{t.coinsCirculation}</p>
-                    <p className="mt-1 text-sm font-medium text-zinc-100">{formatCoins(profile.coinsInCirculationNanos)}</p>
-                  </div>
                 </div>
 
                 <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-zinc-700/80 bg-black/25 px-3 py-1.5 text-xs text-zinc-400" title="Voluntary country registration can be added later">
