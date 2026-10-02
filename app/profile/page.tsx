@@ -13,6 +13,7 @@ type PublicProfile = {
   username: string
   description: string
   profilePic: string | null
+  coverPhoto: string | null
   isVerified: boolean
   creatorBasisPoints: number | null
   coinPriceDeSoNanos: number | null
@@ -337,6 +338,7 @@ export default function ProfilePage() {
   }, [])
 
   const image = safeImage(profile?.profilePic ?? null)
+  const coverPhoto = safeImage(profile?.coverPhoto ?? null)
 
   async function copyPublicKey() {
     if (!profile?.publicKey) return
@@ -388,6 +390,11 @@ export default function ProfilePage() {
               backdropFilter: "blur(18px)",
             }}
           >
+            {coverPhoto ? (
+              <div className="-mx-6 -mt-6 mb-6 h-36 overflow-hidden sm:-mx-8 sm:-mt-8 sm:h-48">
+                <img src={coverPhoto} alt="" className="h-full w-full object-cover" loading="lazy" referrerPolicy="no-referrer" />
+              </div>
+            ) : null}
             <div className="pointer-events-none absolute -right-20 -top-24 h-56 w-56 rounded-full bg-[#8fd4a9]/10 blur-3xl" aria-hidden="true" />
             <div className="relative flex flex-col gap-6 sm:flex-row sm:items-start">
               <div className="relative shrink-0 self-start">
