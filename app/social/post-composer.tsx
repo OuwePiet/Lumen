@@ -235,7 +235,17 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
 
   async function preparePost() {
     if (!session || !canPrepare) return
+    // Safari needs a synchronously reserved window for a possible DeSo approval.
+    // Never leave the customer on an unexplained blank about:blank page.
     const reservedApprovalWindow = window.open("", "_blank")
+    if (reservedApprovalWindow) {
+      try {
+        reservedApprovalWindow.document.title = "VIA · DeSo Identity"
+        reservedApprovalWindow.document.body.innerHTML = '<main style="font:16px system-ui,sans-serif;background:#050807;color:#e5f5e9;min-height:100vh;padding:2rem"><h1>VIA · DeSo Identity</h1><p>Preparing your post securely. If DeSo requires approval, this page will open the approval screen automatically.</p><p>You can return to VIA while signing continues.</p></main>'
+        reservedApprovalWindow.document.body.style.margin = "0"
+      } catch { /* An existing cross-origin window may not be writable. */ }
+      window.focus()
+    }
     if (isReply) saveDraft()
     setStatus("preparing")
     setMessage(isReply ? "Preparing your reply…" : "Preparing your post…")
