@@ -236,6 +236,14 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
   async function preparePost() {
     if (!session || !canPrepare) return
     const reservedApprovalWindow = window.open("", "_blank")
+    // Safari may foreground the reserved approval tab before DeSo needs it.
+    // Identify that tab immediately, while keeping popup-blocker-safe approval.
+    if (reservedApprovalWindow) {
+      try {
+        reservedApprovalWindow.document.title = "VIA - DeSo approval pending"
+        reservedApprovalWindow.document.body.textContent = "VIA is preparing your post. Return to VIA; this tab is only needed if DeSo asks for approval."
+      } catch { /* The tab may already be cross-origin. */ }
+    }
     if (isReply) saveDraft()
     setStatus("preparing")
     setMessage(isReply ? "Preparing your reply…" : "Preparing your post…")
