@@ -135,9 +135,9 @@ export function persistIdentityLogin(event: MessageEvent): ViaIdentitySession | 
   const payload = (event.data as LoginMessage).payload
   if (!payload || !isRecord(payload.users)) return null
 
-  const existingUsers = readIdentityUsers()
-  const mergedUsers = { ...existingUsers, ...payload.users }
-  localStorage.setItem(IDENTITY_USERS_KEY, JSON.stringify(mergedUsers))
+  // DeSo returns the current authorized users and may rotate credentials.
+  // Replace the old snapshot so stale accounts cannot retain expired access.
+  localStorage.setItem(IDENTITY_USERS_KEY, JSON.stringify(payload.users))
   localStorage.setItem(VIA_ACTIVE_PUBLIC_KEY, session.publicKey)
   window.dispatchEvent(new CustomEvent(VIA_IDENTITY_EVENT, { detail: session }))
   return session
