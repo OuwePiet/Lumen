@@ -402,7 +402,7 @@ export default function ProfilePage() {
                   </Link>
                 </div>
 
-                <div className="mt-2 inline-flex items-center gap-2 rounded-full border border-zinc-700/80 bg-black/25 px-3 py-1.5 text-xs text-zinc-400 sm:mt-4" title="Voluntary country registration can be added later">
+                <div className="mt-2 flex w-fit max-w-full flex-wrap items-center gap-2 rounded-full border border-zinc-700/80 bg-black/25 px-3 py-1.5 text-xs text-zinc-400 sm:mt-4" title="Voluntary country registration can be added later">
                   <span aria-hidden="true">📍</span>
                   <span>{t.countryVoluntary}</span>
                 </div>
