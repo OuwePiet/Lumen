@@ -87,9 +87,8 @@ function handleIdentityMessage(event: MessageEvent) {
 
   const request = pending.get(message.id)
   if (!request) return
-  pending.delete(message.id)
-  window.clearTimeout(request.timeout)
-
+  // Keep the timeout active while an external approval window is pending.
+  // Otherwise a lost approval response can leave signing stuck indefinitely.
   const response = message.payload
   if (response.approvalRequired === true) {
     identityTrace("approvalRequired")
@@ -106,6 +105,8 @@ function handleIdentityMessage(event: MessageEvent) {
     pending.set(message.id, request)
     return
   }
+  pending.delete(message.id)
+  window.clearTimeout(request.timeout)
   if (typeof response.error === "string" && response.error) {
     request.reject(new Error(response.error))
     return
