@@ -26,7 +26,10 @@ async function readCount(from: Date, to: Date) {
   const token = process.env.VIA_VERCEL_ANALYTICS_TOKEN
   const teamId = process.env.VIA_VERCEL_ANALYTICS_TEAM_ID
   const projectId = process.env.VIA_VERCEL_ANALYTICS_PROJECT_ID
-  if (!token || !teamId || !projectId) return null
+  if (!token || !teamId || !projectId) {
+    console.error("[VIA analytics] Missing required configuration", { tokenPresent: Boolean(token), teamPresent: Boolean(teamId), projectPresent: Boolean(projectId) })
+    return null
+  }
 
   const url = new URL(VERCEL_ANALYTICS_URL)
   url.searchParams.set("teamId", teamId)
@@ -42,7 +45,10 @@ async function readCount(from: Date, to: Date) {
     cache: "no-store",
   })
 
-  if (!response.ok) return null
+  if (!response.ok) {
+    console.error("[VIA analytics] Upstream request failed", { status: response.status, endpoint: url.pathname })
+    return null
+  }
   const data = await response.json() as VercelCountResponse
   return countFromResponse(data)
 }
@@ -67,7 +73,10 @@ async function readCountries(from: Date, to: Date) {
   const token = process.env.VIA_VERCEL_ANALYTICS_TOKEN
   const teamId = process.env.VIA_VERCEL_ANALYTICS_TEAM_ID
   const projectId = process.env.VIA_VERCEL_ANALYTICS_PROJECT_ID
-  if (!token || !teamId || !projectId) return null
+  if (!token || !teamId || !projectId) {
+    console.error("[VIA analytics] Missing required configuration", { tokenPresent: Boolean(token), teamPresent: Boolean(teamId), projectPresent: Boolean(projectId) })
+    return null
+  }
 
   const url = new URL(VERCEL_ANALYTICS_AGGREGATE_URL)
   url.searchParams.set("teamId", teamId)
@@ -84,7 +93,10 @@ async function readCountries(from: Date, to: Date) {
     cache: "no-store",
   })
 
-  if (!response.ok) return null
+  if (!response.ok) {
+    console.error("[VIA analytics] Upstream request failed", { status: response.status, endpoint: url.pathname })
+    return null
+  }
   const data = await response.json() as unknown
   const rows = Array.isArray(data)
     ? data
