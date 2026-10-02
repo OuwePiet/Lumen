@@ -181,7 +181,9 @@ export async function signViaTransaction(publicKey: string, transactionHex: stri
   if (!hasStorage) {
     if (!identityFrame) throw new Error("DeSo Identity is unavailable.")
     identityFrame.style.display = "block"
-    onProgress?.("DeSo Identity: grant storage access in the Identity screen…")
+    identityFrame.style.pointerEvents = "auto"
+    identityFrame.focus()
+    onProgress?.("DeSo Identity: tap the DeSo Identity screen to unlock wallet / allow Safari storage access…")
     await new Promise<void>((resolve, reject) => {
       const timeout = window.setTimeout(() => {
         if (storageGrantedResolve) storageGrantedResolve = null
