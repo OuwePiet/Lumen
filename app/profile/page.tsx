@@ -26,7 +26,6 @@ type PublicProfile = {
 }
 
 type ProfileResponse = { ok?: boolean; profile?: PublicProfile }
-type WalletResponse = { ok?: boolean; wallet?: { balanceDeSo?: number } }
 type OwnPost = { postHash: string; body: string; imageUrls: string[]; videoUrls: string[]; timestampNanos: number }
 type OwnPostsResponse = { ok?: boolean; posts?: OwnPost[] }
 
@@ -220,8 +219,6 @@ export default function ProfilePage() {
   const [postsRefresh, setPostsRefresh] = useState(0)
   const [loading, setLoading] = useState(true)
   const [profileUnavailable, setProfileUnavailable] = useState(false)
-  const [balanceDeSo, setBalanceDeSo] = useState<number | null>(null)
-  const [walletUnavailable, setWalletUnavailable] = useState(false)
   const [language, setLanguage] = useState<ViaLanguage>("English")
   const [profileMenuOpen, setProfileMenuOpen] = useState(false)
   const [copiedKey, setCopiedKey] = useState(false)
@@ -270,40 +267,6 @@ export default function ProfilePage() {
         }
       })
       .finally(() => setLoading(false))
-
-    return () => controller.abort()
-  }, [session?.publicKey])
-
-  useEffect(() => {
-    if (!session?.publicKey) {
-      setBalanceDeSo(null)
-      setWalletUnavailable(false)
-      return
-    }
-
-    const controller = new AbortController()
-    setWalletUnavailable(false)
-    void fetch(`/api/via/wallet?publicKey=${encodeURIComponent(session.publicKey)}`, {
-      cache: "no-store",
-      signal: controller.signal,
-      headers: { Accept: "application/json" },
-    })
-      .then(async (response) => {
-        const data = response.ok ? (await response.json()) as WalletResponse : null
-        const balance = data?.wallet?.balanceDeSo
-        if (!response.ok || !data?.ok || typeof balance !== "number" || !Number.isFinite(balance)) throw new Error("WALLET_UNAVAILABLE")
-        return balance
-      })
-      .then((balance) => {
-        setBalanceDeSo(balance)
-        setWalletUnavailable(false)
-      })
-      .catch((reason) => {
-        if (!(reason instanceof DOMException && reason.name === "AbortError")) {
-          setBalanceDeSo(null)
-          setWalletUnavailable(true)
-        }
-      })
 
     return () => controller.abort()
   }, [session?.publicKey])
