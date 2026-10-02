@@ -391,8 +391,8 @@ export default function ProfilePage() {
             }}
           >
             {coverPhoto ? (
-              <div className="-mx-6 -mt-6 mb-6 h-36 overflow-hidden sm:-mx-8 sm:-mt-8 sm:h-48">
-                <img src={coverPhoto} alt="" className="h-full w-full object-cover" loading="lazy" referrerPolicy="no-referrer" />
+              <div className="-mx-6 -mt-6 mb-6 overflow-hidden sm:-mx-8 sm:-mt-8">
+                <img src={coverPhoto} alt="" className="block h-auto w-full object-contain" loading="lazy" referrerPolicy="no-referrer" />
               </div>
             ) : null}
             <div className="pointer-events-none absolute -right-20 -top-24 h-56 w-56 rounded-full bg-[#8fd4a9]/10 blur-3xl" aria-hidden="true" />
@@ -427,15 +427,7 @@ export default function ProfilePage() {
                   ) : null}
                 </div>
 
-                <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-3">
-                  <Link href="/wallet" className={metricLink} title={walletUnavailable ? t.walletUnavailable : t.yourDeso}>
-                    <p className="text-[11px] uppercase tracking-[0.12em] text-zinc-500">{t.yourDeso}</p>
-                    <p className="mt-1 text-sm font-medium text-zinc-100">{walletUnavailable ? "—" : formatDeSo(balanceDeSo)}</p>
-                  </Link>
-                  <div className="rounded-[12px] border border-zinc-800/80 bg-black/25 p-3">
-                    <p className="text-[11px] uppercase tracking-[0.12em] text-zinc-500">{t.coinPrice}</p>
-                    <p className="mt-1 text-sm font-medium text-zinc-100">{formatDeSoNanos(profile.coinPriceDeSoNanos)}</p>
-                  </div>
+                <div className="mt-5 grid grid-cols-2 gap-2">
                   <Link href={`/profile/connections?mode=followers&identity=${encodeURIComponent(profile.publicKey)}`} className={metricLink}>
                     <p className="text-[11px] uppercase tracking-[0.12em] text-zinc-500">{t.followers}</p>
                     <p className="mt-1 text-sm font-medium text-zinc-100">{formatCompact(profile.followersCount)}</p>
@@ -444,20 +436,6 @@ export default function ProfilePage() {
                     <p className="text-[11px] uppercase tracking-[0.12em] text-zinc-500">{t.following}</p>
                     <p className="mt-1 text-sm font-medium text-zinc-100">{formatCompact(profile.followingCount)}</p>
                   </Link>
-                  <div className="rounded-[12px] border border-zinc-800/80 bg-black/25 p-3">
-                    <p className="text-[11px] uppercase tracking-[0.12em] text-zinc-500">FR</p>
-                    <p className="mt-1 text-sm font-medium text-zinc-100">{formatBasisPoints(profile.creatorBasisPoints)}</p>
-                  </div>
-                  <div className="rounded-[12px] border border-zinc-800/80 bg-black/25 p-3">
-                    <p className="text-[11px] uppercase tracking-[0.12em] text-zinc-500">{t.coinHolders}</p>
-                    <p className="mt-1 text-sm font-medium text-zinc-100">{formatCompact(profile.numberOfHolders)}</p>
-                  </div>
-                  <div className="rounded-[12px] border border-zinc-800/80 bg-black/25 p-3">
-                    <p className="text-[11px] uppercase tracking-[0.12em] text-zinc-500">{t.coinsCirculation}</p>
-                    <p className="mt-1 text-sm font-medium text-zinc-100">{formatCoins(profile.coinsInCirculationNanos)}</p>
-                  </div>
-                </div>
-
                 <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-zinc-700/80 bg-black/25 px-3 py-1.5 text-xs text-zinc-400" title="Voluntary country registration can be added later">
                   <span aria-hidden="true">📍</span>
                   <span>{t.countryVoluntary}</span>
