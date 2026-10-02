@@ -94,9 +94,9 @@ function handleIdentityMessage(event: MessageEvent) {
     identityTrace("approvalRequired")
     const approvalWindow = request.approvalWindow && !request.approvalWindow.closed ? request.approvalWindow : window.open("", "_blank")
     if (!approvalWindow) {
-      pending.delete(message.id)
-      window.clearTimeout(request.timeout)
-      request.reject(new Error("DeSo Identity approval window was blocked."))
+      // Safari requires a fresh user gesture. Keep the signing request alive
+      // and let the composer expose a real approval button.
+      window.dispatchEvent(new CustomEvent("via:deso-approval-needed", { detail: { requestId: message.id } }))
       return
     }
     identityTrace("opening approval")
@@ -164,6 +164,17 @@ async function ensureStorageAccess() {
       resolve()
     }
   })
+}
+
+export function openPendingDesoApproval(): boolean {
+  const waiting = [...pending.entries()].filter(([, item]) => !item.approvalWindow)
+  if (waiting.length !== 1) return false
+  const [id, request] = waiting[0]
+  const popup = window.open(`${DESO_IDENTITY_ORIGIN}/approve?tx=${encodeURIComponent(request.transactionHex)}`, "_blank")
+  if (!popup) return false
+  request.approvalWindow = popup
+  pending.set(id, request)
+  return true
 }
 
 export async function signViaTransaction(publicKey: string, transactionHex: string, onProgress?: (message: string) => void, reservedApprovalWindow?: Window | null): Promise<string> {
