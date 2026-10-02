@@ -291,7 +291,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
       reservedApprovalWindow?.close()
       setStatus("error")
       const code = error instanceof Error ? error.message : "PREPARE_FAILED"
-      setMessage(`The post could not be prepared (${code}). Nothing was posted.`)
+      setMessage(status === "submitting" ? `DeSo did not confirm publication (${code}). Check your feed before retrying to avoid a duplicate post.` : `The post could not be completed (${code}). Your draft is still available.`)
     }
   }
 
