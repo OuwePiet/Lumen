@@ -343,7 +343,7 @@ export default function ProfilePage() {
           <section className="rounded-[14px] border border-zinc-800/80 bg-zinc-950/50 p-6 text-sm text-zinc-400" role="status">{t.unavailable}</section>
         ) : profile ? (
           <section
-            className="relative overflow-hidden rounded-[28px] border border-[#8fd4a9]/25 p-3 sm:p-8 shadow-[0_24px_80px_rgba(0,0,0,.45)] sm:p-8"
+            className="relative overflow-hidden rounded-[28px] border border-[#8fd4a9]/25 p-3 sm:p-8 shadow-[0_24px_80px_rgba(0,0,0,.45)]"
             style={{
               background: profile.isInactive
                 ? "linear-gradient(145deg, rgba(48,55,51,.82), rgba(5,10,7,.96) 62%)"
@@ -402,7 +402,7 @@ export default function ProfilePage() {
                   </Link>
                 </div>
 
-                <div className="mt-2 inline-flex items-center gap-2 rounded-full sm:mt-4" border border-zinc-700/80 bg-black/25 px-3 py-1.5 text-xs text-zinc-400" title="Voluntary country registration can be added later">
+                <div className="mt-2 inline-flex items-center gap-2 rounded-full border border-zinc-700/80 bg-black/25 px-3 py-1.5 text-xs text-zinc-400 sm:mt-4" title="Voluntary country registration can be added later">
                   <span aria-hidden="true">📍</span>
                   <span>{t.countryVoluntary}</span>
                 </div>
