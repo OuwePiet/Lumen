@@ -5,6 +5,7 @@ export type ViaPublicProfile = {
   username: string
   description: string
   profilePic: string | null
+  coverPhoto: string | null
   isVerified: boolean
   verificationSources: string[]
   creatorBasisPoints: number | null
@@ -82,6 +83,20 @@ function extraDataRecord(value: unknown): Record<string, unknown> | null {
   } catch {
     return null
   }
+}
+
+function profileCoverPhoto(profile: NonNullable<DeSoProfileResponse["Profile"]>) {
+  const extra = extraDataRecord(profile.ExtraData) ?? extraDataRecord(profile.extraData)
+  if (!extra) return null
+  for (const key of ["CoverPhotoURL", "CoverPhotoUrl", "BannerImageURL", "BannerImageUrl", "BannerURL", "ProfileBannerURL", "ProfileCoverPhotoURL"]) {
+    const value = extra[key]
+    if (typeof value !== "string") continue
+    try {
+      const url = new URL(value)
+      if (url.protocol === "https:" && !url.username && !url.password) return url.href
+    } catch { /* Invalid or unsupported URL. */ }
+  }
+  return null
 }
 
 function verificationFromProfile(profile: NonNullable<DeSoProfileResponse["Profile"]>) {
@@ -279,6 +294,7 @@ export async function readPublicProfile(
     publicKey,
     username,
     description: text(profile.Description),
+    coverPhoto: profileCoverPhoto(profile),
     profilePic: profilePictureUrl(publicKey, profilePic),
     isVerified: verificationSources.length > 0,
     verificationSources,
