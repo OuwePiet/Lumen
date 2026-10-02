@@ -186,6 +186,7 @@ export async function signViaTransaction(publicKey: string, transactionHex: stri
     await new Promise<void>((resolve, reject) => {
       const timeout = window.setTimeout(() => {
         if (storageGrantedResolve) storageGrantedResolve = null
+        identityFrame.style.display = "none"
         reject(new Error("DeSo Identity storage access timed out."))
       }, 90_000)
       storageGrantedResolve = () => {
