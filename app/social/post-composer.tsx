@@ -236,7 +236,6 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
   async function preparePost() {
     if (!session || !canPrepare) return
     // Do not open an empty Safari tab on every Send; DeSo opens approval only if required.
-    const reservedApprovalWindow: Window | null = null
     if (isReply) saveDraft()
     setStatus("preparing")
     setMessage(isReply ? "Preparing your reply…" : "Preparing your post…")
@@ -261,7 +260,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
       setFeeNanos(typeof prepared.feeNanos === "number" ? prepared.feeNanos : null)
       setStatus("awaiting-approval")
       setMessage(isReply ? "Signing your reply with your DeSo Identity session…" : "Signing your post with your DeSo Identity session…")
-      const signedTransactionHex = await signViaTransaction(session.publicKey, prepared.transactionHex, () => setMessage(isReply ? "Publishing your reply…" : "Publishing your post…"), reservedApprovalWindow)
+      const signedTransactionHex = await signViaTransaction(session.publicKey, prepared.transactionHex, () => setMessage(isReply ? "Publishing your reply…" : "Publishing your post…"))
       setStatus("submitting")
       setMessage(isReply ? "Posting your signed reply…" : "Posting your signed post…")
       const { response: submitResponse, data: submitted } = await fetchJsonWithTimeout<SubmitResponse>("/api/via/social/post", {
@@ -288,7 +287,6 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
       if (!isReply) window.dispatchEvent(new Event("via:social:post-published"))
       onDone?.()
     } catch (error) {
-      reservedApprovalWindow?.close()
       setStatus("error")
       const code = error instanceof Error ? error.message : "PREPARE_FAILED"
       setMessage(`The post could not be prepared (${code}). Nothing was posted.`)
