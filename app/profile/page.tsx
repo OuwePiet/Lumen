@@ -343,7 +343,7 @@ export default function ProfilePage() {
           <section className="rounded-[14px] border border-zinc-800/80 bg-zinc-950/50 p-6 text-sm text-zinc-400" role="status">{t.unavailable}</section>
         ) : profile ? (
           <section
-            className="relative overflow-hidden rounded-[28px] border border-[#8fd4a9]/25 p-6 shadow-[0_24px_80px_rgba(0,0,0,.45)] sm:p-8"
+            className="relative overflow-hidden rounded-[28px] border border-[#8fd4a9]/25 p-3 sm:p-8 shadow-[0_24px_80px_rgba(0,0,0,.45)]"
             style={{
               background: profile.isInactive
                 ? "linear-gradient(145deg, rgba(48,55,51,.82), rgba(5,10,7,.96) 62%)"
@@ -360,12 +360,12 @@ export default function ProfilePage() {
               </div>
             ) : null}
             <div className="pointer-events-none absolute -right-20 -top-24 h-56 w-56 rounded-full bg-[#8fd4a9]/10 blur-3xl" aria-hidden="true" />
-            <div className="relative flex flex-col gap-6 sm:flex-row sm:items-start">
+            <div className="relative flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-6">
               <div className="relative shrink-0 self-start">
                 {image ? (
-                  <img src={image} alt="" className="h-28 w-28 rounded-full border border-[#8fd4a9]/35 object-cover shadow-[0_0_28px_rgba(143,212,169,.12)] sm:h-32 sm:w-32" referrerPolicy="no-referrer" />
+                  <img src={image} alt="" className="h-16 w-16 rounded-full border border-[#8fd4a9]/35 object-cover shadow-[0_0_28px_rgba(143,212,169,.12)] sm:h-32 sm:w-32" referrerPolicy="no-referrer" />
                 ) : (
-                  <div className="grid h-28 w-28 place-items-center rounded-full border border-[#8fd4a9]/30 bg-[#112019] text-3xl font-semibold text-[#9adbb2] sm:h-32 sm:w-32" aria-hidden="true">{profile.username.slice(0, 1).toUpperCase() || "V"}</div>
+                  <div className="grid h-16 w-16 place-items-center rounded-full border border-[#8fd4a9]/30 bg-[#112019] text-3xl font-semibold text-[#9adbb2] sm:h-32 sm:w-32" aria-hidden="true">{profile.username.slice(0, 1).toUpperCase() || "V"}</div>
                 )}
                 <span className="absolute -bottom-2 -right-2 rounded-full bg-[#06100a]/95 p-1.5 shadow-lg">
                   <ViaIdentityStatusMarks verified={profile.isVerified} inactive={profile.isInactive} compact={false} showLeaf={false} language={language} />
@@ -373,10 +373,10 @@ export default function ProfilePage() {
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-3">
-                  <h2 className="text-3xl font-semibold tracking-tight text-zinc-50">@{profile.username}</h2>
+                  <h2 className="text-xl font-semibold tracking-tight text-zinc-50 sm:text-3xl">@{profile.username}</h2>
                   <ViaIdentityStatusMarks verified={profile.isVerified} inactive={profile.isInactive} compact={false} language={language} />
                 </div>
-                <div className="mt-3 flex flex-wrap items-center gap-2">
+                <div className="mt-2 flex flex-wrap items-center gap-2 sm:mt-3">
                   <div className="via-profile-own-actions" aria-label="Profile actions">
                     <Link href="/profile/edit" className="via-profile-action-button" aria-label="Edit profile" title="Edit profile"><UserRoundPen className="h-4 w-4" aria-hidden="true" /></Link>
                     <Link href="/wallet" className="via-profile-action-button" aria-label="Open My Wallet" title="My Wallet"><WalletCards className="h-4 w-4" aria-hidden="true" /></Link>
@@ -391,7 +391,7 @@ export default function ProfilePage() {
                   ) : null}
                 </div>
 
-                <div className="mt-5 grid grid-cols-2 gap-2">
+                <div className="mt-3 grid grid-cols-2 gap-2 sm:mt-5">
                   <Link href={`/profile/connections?mode=followers&identity=${encodeURIComponent(profile.publicKey)}`} className={metricLink}>
                     <p className="text-[11px] uppercase tracking-[0.12em] text-zinc-500">{t.followers}</p>
                     <p className="mt-1 text-sm font-medium text-zinc-100">{formatCompact(profile.followersCount)}</p>
@@ -402,12 +402,12 @@ export default function ProfilePage() {
                   </Link>
                 </div>
 
-                <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-zinc-700/80 bg-black/25 px-3 py-1.5 text-xs text-zinc-400" title="Voluntary country registration can be added later">
+                <div className="mt-2 inline-flex items-center gap-2 rounded-full border border-zinc-700/80 bg-black/25 px-3 py-1.5 text-xs text-zinc-400 sm:mt-4" title="Voluntary country registration can be added later">
                   <span aria-hidden="true">📍</span>
                   <span>{t.countryVoluntary}</span>
                 </div>
-                <p className="mt-5 whitespace-pre-wrap text-sm leading-6 text-zinc-300">{profile.description || t.noBio}</p>
-                <div className="mt-5 rounded-[12px] border border-zinc-800/80 bg-black/25 p-4">
+                <p className="mt-3 whitespace-pre-wrap text-sm leading-5 text-zinc-300 sm:mt-5 sm:leading-6">{profile.description || t.noBio}</p>
+                <div className="mt-3 rounded-[12px] border border-zinc-800/80 bg-black/25 p-3 sm:mt-5 sm:p-4">
                   <p className="text-xs font-semibold uppercase tracking-[0.14em] text-zinc-500">{t.publicKey}</p>
                   <p className="mt-2 break-all font-mono text-xs leading-5 text-zinc-400">{profile.publicKey}</p>
                 </div>
@@ -429,7 +429,7 @@ export default function ProfilePage() {
           </> : ownPostsLoading ? <p className="text-sm text-zinc-400">Loading gallery…</p> : ownPostsError ? <p role="status" className="text-sm text-zinc-400">Gallery temporarily unavailable.</p> : <div role="tabpanel" className="grid grid-cols-2 gap-2 sm:grid-cols-3">{ownPosts.flatMap((post) => post.imageUrls.map((url, index) => ({ url, hash: post.postHash, index }))).map((item) => <Link key={`${item.hash}-${item.index}`} href={`/social?post=${encodeURIComponent(item.hash)}`} className="overflow-hidden rounded-xl border border-zinc-800" aria-label="Open image post"><img src={item.url} alt="" loading="lazy" referrerPolicy="no-referrer" className="aspect-square w-full object-cover" /></Link>)}{!ownPosts.some((post) => post.imageUrls.length > 0) ? <p className="col-span-full text-sm text-zinc-400">No images in the loaded posts.</p> : null}</div>}
         </section> : null}
       </div>
-      <style>{`\n        .via-profile-own-actions { display:flex; align-items:center; gap:7px; margin-left:auto; }\n        .via-profile-action-button { width:36px; height:36px; display:inline-grid; place-items:center; border:1px solid rgba(143,212,169,.28); border-radius:50%; background:rgba(5,11,8,.58); color:#9adbb2; text-decoration:none; }\n        .via-profile-action-menu-wrap { position:relative; }\n        .via-profile-action-menu { position:absolute; right:0; top:42px; z-index:30; min-width:170px; padding:6px; border:1px solid rgba(143,212,169,.22); border-radius:12px; background:rgba(5,10,7,.98); box-shadow:0 16px 36px rgba(0,0,0,.42); }\n        .via-profile-action-menu button { width:100%; display:flex; align-items:center; gap:8px; border:0; border-radius:8px; padding:9px 10px; background:transparent; color:#d3ddd7; font-size:12px; text-align:left; }\n        @media (max-width:720px) { .via-profile-own-actions { width:100%; justify-content:flex-end; margin:-2px 0 4px; } .via-profile-action-button { width:34px; height:34px; } }\n      `}</style>
+      <style>{`\n        .via-profile-own-actions { display:flex; align-items:center; gap:7px; margin-left:auto; }\n        .via-profile-action-button { width:36px; height:36px; display:inline-grid; place-items:center; border:1px solid rgba(143,212,169,.28); border-radius:50%; background:rgba(5,11,8,.58); color:#9adbb2; text-decoration:none; }\n        .via-profile-action-menu-wrap { position:relative; }\n        .via-profile-action-menu { position:absolute; right:0; top:42px; z-index:30; min-width:170px; padding:6px; border:1px solid rgba(143,212,169,.22); border-radius:12px; background:rgba(5,10,7,.98); box-shadow:0 16px 36px rgba(0,0,0,.42); }\n        .via-profile-action-menu button { width:100%; display:flex; align-items:center; gap:8px; border:0; border-radius:8px; padding:9px 10px; background:transparent; color:#d3ddd7; font-size:12px; text-align:left; }\n        @media (max-width:720px) { .via-profile-own-actions { width:auto; justify-content:flex-start; margin:0; } .via-profile-action-button { width:34px; height:34px; } }\n      `}</style>
     </main>
   )
 }
