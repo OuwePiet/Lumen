@@ -236,7 +236,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
   async function preparePost() {
     if (!session || !canPrepare) return
     // Do not open an empty Safari tab on every Send; DeSo opens approval only if required.
-    const reservedApprovalWindow = null
+    const reservedApprovalWindow: Window | null = null
     if (isReply) saveDraft()
     setStatus("preparing")
     setMessage(isReply ? "Preparing your reply…" : "Preparing your post…")
