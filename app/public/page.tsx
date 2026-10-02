@@ -2,7 +2,6 @@
 
 import Link from "next/link"
 import { useEffect, useState } from "react"
-import { clearIdentitySession } from "../deso-identity-session"
 import { readViaLocalSettings, VIA_SETTINGS_EVENT, type ViaLanguage } from "../via-local-settings"
 
 type Copy = {
@@ -127,7 +126,6 @@ export default function PublicEntrancePage() {
   const [language, setLanguage] = useState<ViaLanguage>("English")
 
   useEffect(() => {
-    clearIdentitySession()
     const refresh = () => setLanguage(readViaLocalSettings().interfaceLanguage)
     refresh()
     window.addEventListener(VIA_SETTINGS_EVENT, refresh)
