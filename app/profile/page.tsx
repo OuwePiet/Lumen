@@ -436,6 +436,8 @@ export default function ProfilePage() {
                     <p className="text-[11px] uppercase tracking-[0.12em] text-zinc-500">{t.following}</p>
                     <p className="mt-1 text-sm font-medium text-zinc-100">{formatCompact(profile.followingCount)}</p>
                   </Link>
+                </div>
+
                 <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-zinc-700/80 bg-black/25 px-3 py-1.5 text-xs text-zinc-400" title="Voluntary country registration can be added later">
                   <span aria-hidden="true">📍</span>
                   <span>{t.countryVoluntary}</span>
