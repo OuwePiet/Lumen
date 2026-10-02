@@ -91,7 +91,7 @@ function handleIdentityMessage(event: MessageEvent) {
   // Otherwise a lost approval response can leave signing stuck indefinitely.
   const response = message.payload
   if (response.approvalRequired === true) {
-    identityTrace("approvalRequired")
+    identityTrace("approvalRequired: DeSo requested additional authorization for the current credentials")
     const approvalWindow = request.approvalWindow && !request.approvalWindow.closed ? request.approvalWindow : window.open("", "_blank")
     if (!approvalWindow) {
       pending.delete(message.id)
