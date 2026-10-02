@@ -170,6 +170,7 @@ export async function signViaTransaction(publicKey: string, transactionHex: stri
   if (typeof window === "undefined" || typeof document === "undefined") return Promise.reject(new Error("DeSo Identity is only available in the browser."))
   const credentials = getIdentityCredentials(publicKey)
   if (!credentials) return Promise.reject(new Error("No usable DeSo Identity credentials are available."))
+  if (credentials.accessLevel < 3) return Promise.reject(new Error("This DeSo account has transaction-by-transaction permission (level 2). Reconnect the account through VIA login to approve automatic non-spending posts once."))
   if (!/^[0-9a-fA-F]+$/.test(transactionHex) || transactionHex.length % 2 !== 0) return Promise.reject(new Error("Invalid DeSo transaction hex."))
 
   ensureIdentityFrame()
