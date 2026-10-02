@@ -269,7 +269,6 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
         body: JSON.stringify({ action: "submit", signedTransactionHex }),
       })
       if (!submitResponse.ok || !submitted.ok) throw new Error(submitted.error || "DESO_SUBMIT_FAILED")
-      reservedApprovalWindow?.close()
       setStatus("done")
       setMessage(isReply ? "Reply posted." : "Post published.")
       setBody("")
