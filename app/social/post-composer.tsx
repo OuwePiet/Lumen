@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react"
 import { restoreIdentitySession, VIA_IDENTITY_EVENT, type ViaIdentitySession } from "../deso-identity-session"
 import { requestIdentityJwt } from "./identity-jwt"
-import { signViaTransaction } from "../deso-identity-sign"
+import { openPendingDesoApproval, signViaTransaction } from "../deso-identity-sign"
 import VideoUploadControl from "./video-upload-control"
 import SponsorPlatform from "../sponsor-platform"
 
@@ -66,6 +66,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
   const [status, setStatus] = useState<"idle" | "preparing" | "awaiting-approval" | "submitting" | "done" | "error">("idle")
   const [message, setMessage] = useState("")
   const [feeNanos, setFeeNanos] = useState<number | null>(null)
+  const [approvalNeeded, setApprovalNeeded] = useState(false)
   const [imageUploadStatus, setImageUploadStatus] = useState<"idle" | "jwt" | "uploading" | "error">("idle")
   const [imageUploadMessage, setImageUploadMessage] = useState("")
   const [videoUploading, setVideoUploading] = useState(false)
@@ -81,6 +82,17 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
     window.addEventListener(VIA_IDENTITY_EVENT, onSession)
     return () => window.removeEventListener(VIA_IDENTITY_EVENT, onSession)
   }, [])
+
+  useEffect(() => {
+    const onApproval = () => {
+      if (status === "awaiting-approval") {
+        setApprovalNeeded(true)
+        setMessage("DeSo needs approval. Tap Approve with DeSo to continue.")
+      }
+    }
+    window.addEventListener("via:deso-approval-needed", onApproval)
+    return () => window.removeEventListener("via:deso-approval-needed", onApproval)
+  }, [status])
 
   useEffect(() => {
     try {
@@ -238,6 +250,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
     // Do not open an empty Safari tab on every Send; DeSo opens approval only if required.
     if (isReply) saveDraft()
     setStatus("preparing")
+    setApprovalNeeded(false)
     setMessage(isReply ? "Preparing your reply…" : "Preparing your post…")
     setFeeNanos(null)
     try {
@@ -261,6 +274,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
       setStatus("awaiting-approval")
       setMessage(isReply ? "Signing your reply with your DeSo Identity session…" : "Signing your post with your DeSo Identity session…")
       const signedTransactionHex = await signViaTransaction(session.publicKey, prepared.transactionHex, (progress) => setMessage(progress))
+      setApprovalNeeded(false)
       setStatus("submitting")
       setMessage(isReply ? "Posting your signed reply…" : "Posting your signed post…")
       const { response: submitResponse, data: submitted } = await fetchJsonWithTimeout<SubmitResponse>("/api/via/social/post", {
@@ -287,6 +301,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
       if (!isReply) window.dispatchEvent(new Event("via:social:post-published"))
       onDone?.()
     } catch (error) {
+      setApprovalNeeded(false)
       setStatus("error")
       const code = error instanceof Error ? error.message : "PREPARE_FAILED"
       setMessage(`The post could not be prepared (${code}). Nothing was posted.`)
@@ -316,6 +331,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
           <button type="button" onClick={preparePost} disabled={!canPrepare} className="rounded-lg border border-[#8fd4a9]/55 px-3 py-1.5 text-xs font-semibold text-[#9adbb2] disabled:cursor-not-allowed disabled:border-zinc-800 disabled:text-zinc-600">{imageUploading ? "Uploading…" : videoUploading ? "Uploading…" : status === "preparing" ? "Preparing…" : status === "awaiting-approval" ? "Awaiting approval…" : status === "submitting" ? "Sending…" : "Send"}</button>
         </> : null}
       </div>
+      {approvalNeeded && status === "awaiting-approval" ? <button type="button" onClick={() => { if (openPendingDesoApproval()) { setApprovalNeeded(false); setMessage("Complete approval in the DeSo window…") } else setMessage("Safari blocked the approval window. Allow pop-ups for VIA and try again.") }} className="mt-3 rounded-lg border border-[#8fd4a9] px-4 py-2 text-sm font-semibold text-[#9adbb2]">Approve with DeSo</button> : null}
       {!isReply && !canPrepare && hasContent ? <p className="mt-2 text-[11px] text-amber-300" role="status" aria-live="polite">Send unavailable: {sendBlockedReason}</p> : null}
 
       {emojiOpen ? <div className="mt-2 flex flex-wrap gap-1 rounded-xl border border-zinc-800 bg-zinc-950/70 p-2" aria-label="Insert emoji">
