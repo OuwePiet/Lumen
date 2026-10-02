@@ -2,11 +2,16 @@
 
 import Link from "next/link"
 import { useEffect, useState } from "react"
-import { Copy, MoreVertical, UserRoundPen, WalletCards } from "lucide-react"
+import { Copy, MoreVertical, UserRoundPen, WalletCards, MessageSquare } from "lucide-react"
 import { restoreIdentitySession, VIA_IDENTITY_EVENT, type ViaIdentitySession } from "../deso-identity-session"
 import { readViaLocalSettings, VIA_SETTINGS_EVENT, type ViaLanguage } from "../via-local-settings"
 import ViaIdentityStatusMarks from "../via-identity-status"
 import PostComposer from "../social/post-composer"
+import LikeButton from "../social/like-button"
+import RepostButton from "../social/repost-button"
+import DiamondButton from "../social/diamond-button"
+import LocalSaveButton from "../social/local-save-button"
+import XShareButton from "../x-share-button"
 
 type PublicProfile = {
   publicKey: string
@@ -26,7 +31,7 @@ type PublicProfile = {
 
 type ProfileResponse = { ok?: boolean; profile?: PublicProfile }
 type WalletResponse = { ok?: boolean; wallet?: { balanceDeSo?: number } }
-type OwnPost = { postHash: string; body: string; imageUrls: string[]; videoUrls: string[]; timestampNanos: number }
+type OwnPost = { postHash: string; publicKey: string; body: string; imageUrls: string[]; videoUrls: string[]; timestampNanos: number; likeCount: number; diamondCount: number; commentCount: number; repostCount: number; quoteRepostCount: number }
 type OwnPostsResponse = { ok?: boolean; posts?: OwnPost[] }
 
 type Copy = {
@@ -217,6 +222,7 @@ export default function ProfilePage() {
   const [ownPostsLoading, setOwnPostsLoading] = useState(false)
   const [ownPostsError, setOwnPostsError] = useState(false)
   const [postsRefresh, setPostsRefresh] = useState(0)
+  const [replyingTo, setReplyingTo] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [profileUnavailable, setProfileUnavailable] = useState(false)
   const [balanceDeSo, setBalanceDeSo] = useState<number | null>(null)
@@ -471,7 +477,16 @@ export default function ProfilePage() {
             <p className="whitespace-pre-wrap text-sm text-zinc-200">{post.body}</p>
             {post.imageUrls?.length ? <div className="mt-3 grid gap-2 sm:grid-cols-2">{post.imageUrls.slice(0, 4).map((url) => <img key={url} src={url} alt="" loading="lazy" referrerPolicy="no-referrer" className="max-h-96 w-full rounded-lg object-cover" />)}</div> : null}
             {post.videoUrls?.length ? <div className="mt-3 space-y-2">{post.videoUrls.slice(0, 2).map((url) => <video key={url} src={url} controls playsInline preload="none" className="max-h-96 w-full" />)}</div> : null}
-            <Link href={`/social?post=${encodeURIComponent(post.postHash)}`} className="mt-3 inline-block text-xs text-[#9adbb2]">Open post</Link>
+            <div className="mt-3 flex flex-wrap items-center gap-2" aria-label="DeSo post actions">
+              <button type="button" onClick={() => setReplyingTo((current) => current === post.postHash ? null : post.postHash)} title="Reply" aria-label="Reply" className="inline-flex h-9 items-center gap-1 rounded-full border border-zinc-800 px-2 text-xs"><MessageSquare className="h-4 w-4" />{post.commentCount}</button>
+              <RepostButton postHash={post.postHash} initialCount={post.repostCount + post.quoteRepostCount} variant="icon" />
+              <LikeButton postHash={post.postHash} initialCount={post.likeCount} variant="icon" />
+              <DiamondButton postHash={post.postHash} receiverPublicKey={post.publicKey} initialCount={post.diamondCount} variant="icon" />
+              <LocalSaveButton postHash={post.postHash} body={post.body} publicKey={post.publicKey} timestampNanos={post.timestampNanos} />
+              <XShareButton href={`/social?post=${encodeURIComponent(post.postHash)}`} text={post.body.slice(0, 180)} label="X" />
+              <Link href={`/social?post=${encodeURIComponent(post.postHash)}`} className="text-xs text-[#9adbb2]">Open post</Link>
+            </div>
+            {replyingTo === post.postHash ? <PostComposer parentStakeID={post.postHash} compact onCancel={() => setReplyingTo(null)} onDone={() => { setReplyingTo(null); setPostsRefresh((current) => current + 1) }} /> : null}
           </article>)}</div>}
         </section> : null}
       </div>
