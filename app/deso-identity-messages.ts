@@ -83,7 +83,7 @@ function identityRequest(publicKey: string, method: "encrypt" | "decrypt" | "sig
         const info = message.payload as IdentityInfo
         if (info.browserSupported === false) { fail("This browser cannot use DeSo Identity securely."); return }
         if (info.hasStorageAccess === true) request()
-        else iframe.style.display = "block"
+        else fail("DeSo Identity requires wallet unlock for private messages. VIA will not open a full-screen wallet automatically.")
         return
       }
       if (message.id === id && isRecord(message.payload)) {
