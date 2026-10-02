@@ -88,7 +88,7 @@ function extraDataRecord(value: unknown): Record<string, unknown> | null {
 function profileCoverPhoto(profile: NonNullable<DeSoProfileResponse["Profile"]>) {
   const extra = extraDataRecord(profile.ExtraData) ?? extraDataRecord(profile.extraData)
   if (!extra) return null
-  for (const key of ["CoverPhotoURL", "CoverPhotoUrl", "BannerImageURL", "BannerImageUrl", "BannerURL", "ProfileBannerURL", "ProfileCoverPhotoURL"]) {
+  for (const key of ["FeaturedImageURL", "CoverPhotoURL", "CoverPhotoUrl", "BannerImageURL", "BannerImageUrl", "BannerURL", "ProfileBannerURL", "ProfileCoverPhotoURL"]) {
     const value = extra[key]
     if (typeof value !== "string") continue
     try {
