@@ -6,7 +6,6 @@ import { Copy, MoreVertical, UserRoundPen, WalletCards } from "lucide-react"
 import { restoreIdentitySession, VIA_IDENTITY_EVENT, type ViaIdentitySession } from "../deso-identity-session"
 import { readViaLocalSettings, VIA_SETTINGS_EVENT, type ViaLanguage } from "../via-local-settings"
 import ViaIdentityStatusMarks from "../via-identity-status"
-import PostComposer from "../social/post-composer"
 
 type PublicProfile = {
   publicKey: string
@@ -26,8 +25,6 @@ type PublicProfile = {
 
 type ProfileResponse = { ok?: boolean; profile?: PublicProfile }
 type WalletResponse = { ok?: boolean; wallet?: { balanceDeSo?: number } }
-type OwnPost = { postHash: string; body: string; imageUrls: string[]; videoUrls: string[]; timestampNanos: number }
-type OwnPostsResponse = { ok?: boolean; posts?: OwnPost[] }
 
 type Copy = {
   kicker: string
@@ -213,10 +210,6 @@ function formatCoins(value: number | null) {
 export default function ProfilePage() {
   const [session, setSession] = useState<ViaIdentitySession | null>(null)
   const [profile, setProfile] = useState<PublicProfile | null>(null)
-  const [ownPosts, setOwnPosts] = useState<OwnPost[]>([])
-  const [ownPostsLoading, setOwnPostsLoading] = useState(false)
-  const [ownPostsError, setOwnPostsError] = useState(false)
-  const [postsRefresh, setPostsRefresh] = useState(0)
   const [loading, setLoading] = useState(true)
   const [profileUnavailable, setProfileUnavailable] = useState(false)
   const [balanceDeSo, setBalanceDeSo] = useState<number | null>(null)
@@ -307,35 +300,6 @@ export default function ProfilePage() {
     return () => controller.abort()
   }, [session?.publicKey])
 
-  useEffect(() => {
-    if (!session?.publicKey) {
-      setOwnPosts([])
-      setOwnPostsError(false)
-      setOwnPostsLoading(false)
-      return
-    }
-    const controller = new AbortController()
-    setOwnPosts([])
-    setOwnPostsError(false)
-    setOwnPostsLoading(true)
-    void fetch(`/api/via/posts?identity=${encodeURIComponent(session.publicKey)}&limit=50`, { cache: "no-store", signal: controller.signal })
-      .then(async (response) => {
-        if (!response.ok) throw new Error("POST_READ_UNAVAILABLE")
-        const data = await response.json() as OwnPostsResponse
-        if (!data.ok || !Array.isArray(data.posts)) throw new Error("POST_READ_UNAVAILABLE")
-        if (!controller.signal.aborted) setOwnPosts(data.posts)
-      })
-      .catch(() => { if (!controller.signal.aborted) setOwnPostsError(true) })
-      .finally(() => { if (!controller.signal.aborted) setOwnPostsLoading(false) })
-    return () => controller.abort()
-  }, [session?.publicKey, postsRefresh])
-
-  useEffect(() => {
-    const onPublished = () => setPostsRefresh((current) => current + 1)
-    window.addEventListener("via:social:post-published", onPublished)
-    return () => window.removeEventListener("via:social:post-published", onPublished)
-  }, [])
-
   const image = safeImage(profile?.profilePic ?? null)
 
   async function copyPublicKey() {
@@ -359,6 +323,7 @@ export default function ProfilePage() {
           <div className="flex flex-wrap gap-2">
             {session?.publicKey ? (
               <>
+                <Link href={`/profile/${encodeURIComponent(session.publicKey)}#profile-posts-heading`} className={quietAction}>My Posts</Link>
                 <Link href={`/collection?account=${encodeURIComponent(session.publicKey)}`} className={quietAction}>{t.myNfts}</Link>
               </>
             ) : null}
@@ -464,18 +429,7 @@ export default function ProfilePage() {
             </div>
           </section>
         ) : null}
-        {session && profile ? <section className="mt-5 rounded-[14px] border border-zinc-800/80 bg-zinc-950/50 p-4 sm:p-5" aria-label="Write a post"><PostComposer /></section> : null}
-        {session && profile ? <section className="mt-5" aria-label="Your DeSo posts">
-          <div className="mb-3 flex items-center justify-between gap-3"><h2 className="text-xl font-semibold">My Posts</h2><button type="button" onClick={() => setPostsRefresh((current) => current + 1)} className="text-xs text-[#9adbb2]">Refresh</button></div>
-          {ownPostsLoading ? <p className="text-sm text-zinc-400">Loading DeSo posts…</p> : ownPostsError ? <p className="text-sm text-zinc-400" role="status">DeSo posts are temporarily unavailable.</p> : ownPosts.length === 0 ? <p className="text-sm text-zinc-400">No posts returned for the active DeSo account.</p> : <div className="space-y-3">{ownPosts.map((post) => <article key={post.postHash} className="rounded-[14px] border border-zinc-800/80 bg-zinc-950/50 p-4">
-            <p className="whitespace-pre-wrap text-sm text-zinc-200">{post.body}</p>
-            {post.imageUrls?.length ? <div className="mt-3 grid gap-2 sm:grid-cols-2">{post.imageUrls.slice(0, 4).map((url) => <img key={url} src={url} alt="" loading="lazy" referrerPolicy="no-referrer" className="max-h-96 w-full rounded-lg object-cover" />)}</div> : null}
-            {post.videoUrls?.length ? <div className="mt-3 space-y-2">{post.videoUrls.slice(0, 2).map((url) => <video key={url} src={url} controls playsInline preload="none" className="max-h-96 w-full" />)}</div> : null}
-            <Link href={`/social?post=${encodeURIComponent(post.postHash)}`} className="mt-3 inline-block text-xs text-[#9adbb2]">Open post</Link>
-          </article>)}</div>}
-        </section> : null}
       </div>
-      <style>{`\n        .via-profile-own-actions { display:flex; align-items:center; gap:7px; margin-left:auto; }\n        .via-profile-action-button { width:36px; height:36px; display:inline-grid; place-items:center; border:1px solid rgba(143,212,169,.28); border-radius:50%; background:rgba(5,11,8,.58); color:#9adbb2; text-decoration:none; }\n        .via-profile-action-menu-wrap { position:relative; }\n        .via-profile-action-menu { position:absolute; right:0; top:42px; z-index:30; min-width:170px; padding:6px; border:1px solid rgba(143,212,169,.22); border-radius:12px; background:rgba(5,10,7,.98); box-shadow:0 16px 36px rgba(0,0,0,.42); }\n        .via-profile-action-menu button { width:100%; display:flex; align-items:center; gap:8px; border:0; border-radius:8px; padding:9px 10px; background:transparent; color:#d3ddd7; font-size:12px; text-align:left; }\n        @media (max-width:720px) { .via-profile-own-actions { width:100%; justify-content:flex-end; margin:-2px 0 4px; } .via-profile-action-button { width:34px; height:34px; } }\n      `}</style>
-    </main>
+      <style>{`\n        .via-profile-own-actions { display:flex; align-items:center; gap:7px; margin-left:auto; }\n        .via-profile-action-button { width:36px; height:36px; display:inline-grid; place-items:center; border:1px solid rgba(143,212,169,.28); border-radius:50%; background:rgba(5,11,8,.58); color:#9adbb2; text-decoration:none; }\n        .via-profile-action-menu-wrap { position:relative; }\n        .via-profile-action-menu { position:absolute; right:0; top:42px; z-index:30; min-width:170px; padding:6px; border:1px solid rgba(143,212,169,.22); border-radius:12px; background:rgba(5,10,7,.98); box-shadow:0 16px 36px rgba(0,0,0,.42); }\n        .via-profile-action-menu button { width:100%; display:flex; align-items:center; gap:8px; border:0; border-radius:8px; padding:9px 10px; background:transparent; color:#d3ddd7; font-size:12px; text-align:left; }\n        @media (max-width:720px) { .via-profile-own-actions { width:100%; justify-content:flex-end; margin:-2px 0 4px; } .via-profile-action-button { width:34px; height:34px; } }\n      `}</style>\n    </main>
   )
 }
