@@ -62,6 +62,7 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
   async function prepare(chosenLevel = level) {
     const session = restoreIdentitySession()
     if (!session || !diamondValues?.some((item) => item.level === chosenLevel) || status === "preparing" || status === "approval" || status === "submitting") return
+    let submissionAttempted = false
     setCelebrate(false); setStatus("preparing"); setMessage("Preparing the exact value-transfer transaction…"); setFeeNanos(null); setSpendNanos(null)
     try {
       const response = await fetch("/api/via/social/diamond", { method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store", body: JSON.stringify({ action: "prepare", senderPublicKey: session.publicKey, receiverPublicKey, diamondPostHashHex: postHash, diamondLevel: chosenLevel, confirmed: true }) })
@@ -73,6 +74,7 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
       setStatus("approval"); setMessage("Signing the confirmed Diamond with your VIA DeSo session…")
       const signedTransactionHex = await signViaTransaction(session.publicKey, data.transactionHex)
       setStatus("submitting"); setMessage("Submitting your confirmed Diamond to DeSo…")
+      submissionAttempted = true
       const submitResponse = await fetch("/api/via/social/diamond", { method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store", body: JSON.stringify({ action: "submit", signedTransactionHex }) })
       const submitData = await submitResponse.json() as { ok?: boolean; error?: string }
       if (!submitResponse.ok || !submitData.ok) throw new Error(submitData.error || "SUBMIT_FAILED")
@@ -91,7 +93,7 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
         } catch { /* Never resubmit a payment while checking. */ }
       }
       setMessage("DeSo accepted the transaction, but the new count is not confirmed yet. Do not resend; check again later.")
-    } catch { setStatus("error"); setMessage("Diamond status uncertain. Do not retry until the DeSo transaction has been checked.") }
+    } catch { setStatus("error"); setMessage(submissionAttempted ? "Diamond submission status uncertain. Do not resend until the DeSo transaction has been checked." : "Diamond was not submitted by VIA. Preparation or signing failed.") }
   }
 
   if (variant === "icon") {
