@@ -24,6 +24,8 @@ type PanelCopy = {
   desoAccounts: string
   guests: string
   countries: string
+  countryCount: string
+  countryVisitors: string
   today: string
   month: string
   year: string
@@ -38,37 +40,37 @@ type PanelCopy = {
 const COPY: Record<ViaLanguage | "Hindi", PanelCopy> = {
   Dutch: {
     live: "VIA Live", visitors: "VIA Bezoekers", activity: "VIA Activiteit", community: "VIA Community",
-    activeNow: "Nu aanwezig", desoAccounts: "DeSo-accounts", guests: "Zonder DeSo", countries: "Landen",
+    activeNow: "Nu aanwezig", desoAccounts: "DeSo-accounts", guests: "Zonder DeSo", countries: "Landen", countryCount: "landen", countryVisitors: "bezoekers",
     today: "Vandaag", month: "Deze maand", year: "Dit jaar", posts: "Posts", creators: "Actieve creators",
     trends: "Trends", nftActivity: "NFT-activiteit", welcome: "Welcome / First Post", sourcePending: "Betrouwbare meetbron nog niet gekoppeld.",
   },
   English: {
     live: "VIA Live", visitors: "VIA Visitors", activity: "VIA Activity", community: "VIA Community",
-    activeNow: "Active now", desoAccounts: "DeSo accounts", guests: "Without DeSo", countries: "Countries",
+    activeNow: "Active now", desoAccounts: "DeSo accounts", guests: "Without DeSo", countries: "Countries", countryCount: "countries", countryVisitors: "visitors",
     today: "Today", month: "This month", year: "This year", posts: "Posts", creators: "Active creators",
     trends: "Trends", nftActivity: "NFT activity", welcome: "Welcome / First Post", sourcePending: "Reliable measurement source not connected yet.",
   },
   French: {
     live: "VIA Live", visitors: "VIA Visiteurs", activity: "VIA Activité", community: "VIA Communauté",
-    activeNow: "Présents maintenant", desoAccounts: "Comptes DeSo", guests: "Sans DeSo", countries: "Pays",
+    activeNow: "Présents maintenant", desoAccounts: "Comptes DeSo", guests: "Sans DeSo", countries: "Pays", countryCount: "pays", countryVisitors: "visiteurs",
     today: "Aujourd’hui", month: "Ce mois-ci", year: "Cette année", posts: "Publications", creators: "Créateurs actifs",
     trends: "Tendances", nftActivity: "Activité NFT", welcome: "Welcome / First Post", sourcePending: "Source de mesure fiable pas encore connectée.",
   },
   Spanish: {
     live: "VIA Live", visitors: "VIA Visitantes", activity: "VIA Actividad", community: "VIA Comunidad",
-    activeNow: "Activos ahora", desoAccounts: "Cuentas DeSo", guests: "Sin DeSo", countries: "Países",
+    activeNow: "Activos ahora", desoAccounts: "Cuentas DeSo", guests: "Sin DeSo", countries: "Países", countryCount: "países", countryVisitors: "visitantes",
     today: "Hoy", month: "Este mes", year: "Este año", posts: "Publicaciones", creators: "Creadores activos",
     trends: "Tendencias", nftActivity: "Actividad NFT", welcome: "Welcome / First Post", sourcePending: "La fuente de medición fiable aún no está conectada.",
   },
   Chinese: {
     live: "VIA 实时", visitors: "VIA 访客", activity: "VIA 活动", community: "VIA 社区",
-    activeNow: "当前在线", desoAccounts: "DeSo 账户", guests: "未使用 DeSo", countries: "国家/地区",
+    activeNow: "当前在线", desoAccounts: "DeSo 账户", guests: "未使用 DeSo", countries: "国家/地区", countryCount: "个国家/地区", countryVisitors: "位访客",
     today: "今天", month: "本月", year: "今年", posts: "帖子", creators: "活跃创作者",
     trends: "趋势", nftActivity: "NFT 活动", welcome: "Welcome / First Post", sourcePending: "尚未连接可靠的统计来源。",
   },
   Hindi: {
     live: "VIA लाइव", visitors: "VIA आगंतुक", activity: "VIA गतिविधि", community: "VIA समुदाय",
-    activeNow: "अभी सक्रिय", desoAccounts: "DeSo खाते", guests: "DeSo के बिना", countries: "देश",
+    activeNow: "अभी सक्रिय", desoAccounts: "DeSo खाते", guests: "DeSo के बिना", countries: "देश", countryCount: "देश", countryVisitors: "आगंतुक",
     today: "आज", month: "इस महीने", year: "इस वर्ष", posts: "पोस्ट", creators: "सक्रिय क्रिएटर",
     trends: "रुझान", nftActivity: "NFT गतिविधि", welcome: "स्वागत / पहली पोस्ट", sourcePending: "विश्वसनीय मापन स्रोत अभी जुड़ा नहीं है।",
   },
@@ -115,6 +117,7 @@ function PendingMetric({ label, note }: { label: string; note: string }) {
 
 export default function ViaRightPanels() {
   const [language, setLanguage] = useState<ViaLanguage>("English")
+  const [countriesExpanded, setCountriesExpanded] = useState(false)
   const [visitorToday, setVisitorToday] = useState<number | null>(null)
   const [visitorMonth, setVisitorMonth] = useState<number | null>(null)
   const [visitorYear, setVisitorYear] = useState<number | null>(null)
@@ -150,7 +153,7 @@ export default function ViaRightPanels() {
         if (Array.isArray(data.countries)) {
           setVisitorCountries(data.countries
             .filter((entry): entry is { country: string; visitors: number } => Boolean(entry && typeof entry.country === "string" && typeof entry.visitors === "number" && Number.isFinite(entry.visitors)))
-            .slice(0, 12))
+             )
         }
       })
       .catch(() => {})
@@ -187,18 +190,26 @@ export default function ViaRightPanels() {
         <PendingMetric label={copy.desoAccounts} note={copy.sourcePending} />
         <PendingMetric label={copy.guests} note={copy.sourcePending} />
         {visitorCountries.length ? (
-          <div className="rounded-xl border border-zinc-800 bg-black/25 px-3 py-2">
-            <div className="flex items-center justify-between gap-3">
+          <div className="rounded-xl border border-zinc-800 bg-black/25">
+            <button type="button" aria-expanded={countriesExpanded} aria-controls="via-countries-list"
+              onClick={() => setCountriesExpanded((open) => !open)}
+              className="flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2 text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#9adbb2]">
               <span className="text-zinc-300">{copy.countries}</span>
-              <span className="text-[10px] text-zinc-600">{visitorCountries.length}</span>
-            </div>
-            <div className="mt-2 flex flex-wrap gap-1.5">
-              {visitorCountries.map((entry) => (
-                <span key={entry.country} className="rounded-full border border-[#285f40]/70 bg-[#07100b] px-2 py-1 text-[10px] text-[#b8ddc5]">
-                  {countryFlag(entry.country)} {entry.country} {entry.visitors.toLocaleString()}
-                </span>
-              ))}
-            </div>
+              <span className="flex items-center gap-2 text-[#9adbb2]">
+                {visitorCountries.length} {copy.countryCount}
+                <span aria-hidden="true">{countriesExpanded ? "⌃" : "⌄"}</span>
+              </span>
+            </button>
+            {countriesExpanded ? (
+              <div id="via-countries-list" className="max-h-52 space-y-1 overflow-y-auto border-t border-zinc-800 px-3 py-2">
+                {visitorCountries.map((entry) => (
+                  <div key={entry.country} className="flex items-center justify-between gap-2 py-1 text-zinc-300">
+                    <span>{countryFlag(entry.country)} {entry.country}</span>
+                    <span className="text-[#9adbb2]">{entry.visitors.toLocaleString()} {copy.countryVisitors}</span>
+                  </div>
+                ))}
+              </div>
+            ) : null}
           </div>
         ) : <PendingMetric label={copy.countries} note={copy.sourcePending} />}
       </Panel>
