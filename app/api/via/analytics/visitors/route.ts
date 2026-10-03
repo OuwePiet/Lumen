@@ -174,5 +174,5 @@ export async function GET() {
     },
     todayCountSource: todayFromCountries ? "country-aggregate-provisional" : "visits-count",
     countries: countries ?? [],
-  })
+  }, { headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=300" } })
 }
