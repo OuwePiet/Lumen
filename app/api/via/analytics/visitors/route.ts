@@ -87,8 +87,6 @@ async function readCountries(from: Date, to: Date) {
   url.searchParams.set("since", from.toISOString())
   url.searchParams.set("until", to.toISOString())
   url.searchParams.set("by", "country")
-  // Vercel defaults to 10 groups; request all possible ISO country groups.
-  url.searchParams.set("limit", "250")
 
   const response = await fetch(url, {
     headers: {
