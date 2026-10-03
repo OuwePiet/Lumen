@@ -90,7 +90,7 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
           <button type="button" onClick={() => { setCompactOpen(false); setConfirmValue(false) }} disabled={status === "preparing" || status === "approval" || status === "submitting"} className="h-9 rounded-full border border-zinc-700 px-3 text-xs text-zinc-300 disabled:opacity-60">Sluiten</button>
         </div>
       </div> : null}
-      {celebrate && compactOpen ? <span role="status" className="text-lg" aria-label="Diamond verzonden">🎉 ✨ 🎊</span> : null}
+      {celebrate && compactOpen ? <span role="status" className="text-lg" aria-label="Diamond verzonden">💎 💎 💎</span> : null}
       {message ? <span className="sr-only" role="status" aria-live="polite">{message}</span> : null}
     </div>
   }
@@ -104,7 +104,7 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
         <button type="button" onClick={(event) => { setConfirmValue(false); (event.currentTarget.closest("details") as HTMLDetailsElement | null)?.removeAttribute("open") }} className="col-span-2 rounded-lg border border-zinc-700 px-2 py-2 text-xs text-zinc-300 hover:border-[#8fd4a9]">Sluiten</button>
       </div>
     </details>
-    {celebrate ? <span role="status" className="text-lg" aria-label="Diamond verzonden">🎉 ✨ 🎊</span> : null}
+    {celebrate ? <span role="status" className="text-lg" aria-label="Diamond verzonden">💎 💎 💎</span> : null}
     {(feeNanos !== null || spendNanos !== null) ? <span className="text-[11px] text-zinc-500">Prepared: {spendNanos !== null ? `${spendNanos.toLocaleString()} nanos total spend` : "value transfer"}{feeNanos !== null ? ` · ${feeNanos.toLocaleString()} nanos fee` : ""}</span> : null}
     {message ? <span className={`text-[11px] ${status === "error" ? "text-amber-300" : "text-zinc-500"}`}>{message}</span> : null}
   </div>
