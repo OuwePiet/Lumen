@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { Gem } from "lucide-react"
 import { restoreIdentitySession } from "../deso-identity-session"
 import { signViaTransaction } from "../deso-identity-sign"
@@ -15,7 +15,20 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
   const [count, setCount] = useState(initialCount)
   const [confirmValue, setConfirmValue] = useState(false)
   const [compactOpen, setCompactOpen] = useState(false)
+  const menuRootRef = useRef<HTMLDivElement>(null)
   const [celebrate, setCelebrate] = useState(false)
+  useEffect(() => {
+    function dismissOnOutsidePointer(event: PointerEvent) {
+      const root = menuRootRef.current
+      if (root && event.target instanceof Node && !root.contains(event.target)) {
+        setCompactOpen(false)
+        root.querySelectorAll("details[open]").forEach((menu) => menu.removeAttribute("open"))
+      }
+    }
+    document.addEventListener("pointerdown", dismissOnOutsidePointer)
+    return () => document.removeEventListener("pointerdown", dismissOnOutsidePointer)
+  }, [])
+
   const leafRain = celebrate ? <div aria-hidden="true" className="pointer-events-none fixed inset-0 z-[90] overflow-hidden">{Array.from({ length: 28 }, (_, i) => <span key={i} className="absolute top-[-12%] animate-[viaLeafFall_3s_ease-in_forwards]" style={{ left: `${(i * 37) % 100}%`, animationDelay: `${(i % 10) * 0.12}s`, transform: `rotate(${i * 41}deg)` }}><img src="/via-leaf.svg" alt="" width="36" height="34" className="h-9 w-9 object-contain" /></span>)}<style>{`@keyframes viaLeafFall { from { translate: 0 -10vh; opacity: 1 } to { translate: 8vw 115vh; opacity: 0 } }`}</style></div> : null
   const [status, setStatus] = useState<"idle" | "preparing" | "approval" | "submitting" | "done" | "error">("idle")
   const [message, setMessage] = useState("")
@@ -96,7 +109,7 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
     </div>
   }
 
-  return <div className="flex flex-wrap items-center gap-2">
+  return <div ref={menuRootRef} className="flex flex-wrap items-center gap-2">
     <span>{count} Diamonds</span>
     <details className="relative">
       <summary className="inline-flex cursor-pointer list-none items-center gap-1 rounded-full border border-zinc-800 px-2 py-1 text-xs text-zinc-300"><Gem className="h-3.5 w-3.5" aria-hidden="true" /> {level} ▾</summary>
