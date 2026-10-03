@@ -132,7 +132,7 @@ export async function GET() {
   const now = new Date()
   const dayStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()))
   const monthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1))
-  const yearStart = new Date(Date.UTC(now.getUTCFullYear(), 0, 1))
+  const yearStart = new Date(Date.UTC(2026, 8, 17))
 
   const [today, month, year, countries] = await Promise.all([
     readCount(dayStart, now),
