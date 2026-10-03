@@ -11,6 +11,7 @@ type VisitorAnalyticsResponse = {
 
 type ActivityAnalyticsResponse = {
   ok?: boolean
+  scope?: string
   activity?: { posts?: number; creators?: number; nftPosts?: number }
 }
 
@@ -166,7 +167,8 @@ export default function ViaRightPanels() {
     })
       .then(async (response) => {
         const data = await response.json() as ActivityAnalyticsResponse
-        if (!response.ok || !data.ok || !data.activity) return
+        // Do not display bounded feed samples as lifetime VIA totals.
+        if (!response.ok || !data.ok || !data.activity || data.scope !== "verified-via-lifetime") return
         if (typeof data.activity.posts === "number" && Number.isFinite(data.activity.posts)) setActivityPosts(data.activity.posts)
         if (typeof data.activity.creators === "number" && Number.isFinite(data.activity.creators)) setActivityCreators(data.activity.creators)
         if (typeof data.activity.nftPosts === "number" && Number.isFinite(data.activity.nftPosts)) setActivityNfts(data.activity.nftPosts)
