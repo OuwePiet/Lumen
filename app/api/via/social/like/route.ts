@@ -39,10 +39,10 @@ export async function GET(request: Request) {
     const data = await response.json() as { PostFound?: { LikeCount?: unknown; PostEntryReaderState?: { LikedByReader?: unknown } } }
     const post = data.PostFound
     if (!post || typeof post.LikeCount !== "number" || !Number.isFinite(post.LikeCount) ||
-      typeof post.PostEntryReaderState?.LikedByReader !== "boolean") {
+      (post.PostEntryReaderState != null && typeof post.PostEntryReaderState.LikedByReader !== "boolean")) {
       return noStore({ ok: false, error: "LIKE_STATE_UNAVAILABLE" }, 503)
     }
-    return noStore({ ok: true, likeCount: Math.max(0, Math.trunc(post.LikeCount)), liked: post.PostEntryReaderState.LikedByReader })
+    return noStore({ ok: true, likeCount: Math.max(0, Math.trunc(post.LikeCount)), liked: post.PostEntryReaderState?.LikedByReader === true })
   } catch { return noStore({ ok: false, error: "POST_READ_UNAVAILABLE" }, 503) }
 }
 
