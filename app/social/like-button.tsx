@@ -18,6 +18,7 @@ export default function LikeButton({ postHash, initialCount, variant = "default"
   const [session, setSession] = useState<ViaIdentitySession | null>(null)
   const [count, setCount] = useState(initialCount)
   const [liked, setLiked] = useState(false)
+  const [verified, setVerified] = useState(false)
   const [busy, setBusy] = useState(false)
   const [message, setMessage] = useState("")
 
@@ -33,8 +34,22 @@ export default function LikeButton({ postHash, initialCount, variant = "default"
 
   useEffect(() => setCount(initialCount), [initialCount])
 
+  useEffect(() => {
+    let cancelled = false
+    setVerified(false)
+    if (!session) return
+    void fetch("/api/via/social/like?publicKey=" + encodeURIComponent(session.publicKey) + "&postHash=" + encodeURIComponent(postHash), { cache: "no-store" })
+      .then(async (response) => {
+        const data = await response.json() as { ok?: boolean; liked?: boolean; likeCount?: number }
+        if (!response.ok || !data.ok || typeof data.liked !== "boolean" || typeof data.likeCount !== "number") throw new Error("LIKE_STATE_UNAVAILABLE")
+        if (!cancelled) { setLiked(data.liked); setCount(data.likeCount); setVerified(true) }
+      })
+      .catch(() => { if (!cancelled) setMessage("DeSo Like-status niet beschikbaar.") })
+    return () => { cancelled = true }
+  }, [session?.publicKey, postHash])
+
   async function toggleLike() {
-    if (!session || busy) return
+    if (!session || busy || !verified) return
     setBusy(true)
     setMessage("Preparing DeSo like transaction…")
     try {
@@ -56,13 +71,18 @@ export default function LikeButton({ postHash, initialCount, variant = "default"
       })
       const submitData = await submitResponse.json() as SubmitResponse
       if (!submitResponse.ok || !submitData.ok) throw new Error(submitData.error || "SUBMIT_FAILED")
-      const nextLiked = !liked
-      setLiked(nextLiked)
-      setCount((current) => Math.max(0, current + (nextLiked ? 1 : -1)))
-      setMessage(nextLiked ? "Liked on DeSo." : "Like removed on DeSo.")
+      setVerified(false)
+      const stateResponse = await fetch("/api/via/social/like?publicKey=" + encodeURIComponent(session.publicKey) + "&postHash=" + encodeURIComponent(postHash), { cache: "no-store" })
+      const state = await stateResponse.json() as { ok?: boolean; liked?: boolean; likeCount?: number }
+      if (!stateResponse.ok || !state.ok || typeof state.liked !== "boolean" || typeof state.likeCount !== "number") throw new Error("LIKE_STATE_UNAVAILABLE")
+      setLiked(state.liked)
+      setCount(state.likeCount)
+      setVerified(true)
+      setMessage("DeSo Like-status bijgewerkt.")
       setBusy(false)
     } catch {
-      setMessage("Like transaction could not be prepared. Nothing changed.")
+      setVerified(false)
+      setMessage("DeSo kon de Like-status niet bevestigen. Vernieuw de pagina.")
       setBusy(false)
     }
   }
@@ -74,8 +94,8 @@ export default function LikeButton({ postHash, initialCount, variant = "default"
       <button
         type="button"
         onClick={toggleLike}
-        disabled={busy}
-        title={liked ? "Unlike" : "Like"}
+        disabled={busy || !verified}
+        title={!verified ? "DeSo-status controleren" : liked ? "Unlike" : "Like"}
         aria-label={liked ? `Unlike · ${count}` : `Like · ${count}`}
         className={variant === "icon"
           ? `inline-flex h-9 min-w-9 items-center justify-center gap-1 rounded-full border px-2 text-xs transition disabled:cursor-wait disabled:opacity-60 ${liked ? "border-[#8fd4a9] bg-[#285f40] text-white" : "border-zinc-800 text-zinc-300 hover:border-[#8fd4a9] hover:text-white"}`
