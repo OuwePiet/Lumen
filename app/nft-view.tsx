@@ -3,6 +3,7 @@ import CopyNFTLink from "./copy-nft-link"
 import { fetchDeSo } from "./deso-api"
 import EditionOwners from "./edition-owners"
 import NFTMedia from "./nft-media"
+import ViaWatermark from "./via-watermark"
 import NFTBidControl from "./nft-bid-control"
 import NFTOwnerSaleControl from "./nft-owner-sale-control"
 import NFTAcceptTransferControl from "./nft-accept-transfer-control"
@@ -220,6 +221,7 @@ const styles = {
     alignItems: "start",
   },
   mediaFrame: {
+    position: "relative" as const,
     aspectRatio: "1 / 1",
     background: "rgba(9,13,11,.78)",
     backdropFilter: "blur(4px)",
@@ -556,6 +558,7 @@ export default async function NFTView({
                 placeholderStyle={styles.placeholder}
                 sensitive={isViaSensitiveContent(post.PostExtraData ?? post.ExtraData)}
               />
+              <ViaWatermark />
             </div>
 
             <section style={styles.card}>
