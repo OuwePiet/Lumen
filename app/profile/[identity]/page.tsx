@@ -8,6 +8,8 @@ import LikeButton from "../../social/like-button"
 import RepostButton from "../../social/repost-button"
 import DiamondButton from "../../social/diamond-button"
 import PostComposer from "../../social/post-composer"
+import LocalSaveButton from "../../social/local-save-button"
+import XShareButton from "../../x-share-button"
 import { restoreIdentitySession } from "../../deso-identity-session"
 import FollowButton from "../../social/follow-button"
 import ProfileActionMenu from "../profile-action-menu"
@@ -286,11 +288,13 @@ export default function PublicProfilePage() {
                         </div>
                       ) : null}
                       <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-zinc-800/70 pt-3 text-xs text-zinc-500">
-                        {hasSession ? <LikeButton postHash={post.postHash} initialCount={post.likeCount} variant="icon" /> : <span>Like · {formatNumber(post.likeCount)}</span>}
                         {hasSession ? <button type="button" onClick={() => setReplyingTo(replyingTo === post.postHash ? null : post.postHash)} title="Reply" aria-label={`Reply · ${post.commentCount}`} className="inline-flex h-9 min-w-9 items-center justify-center gap-1 rounded-full border border-zinc-800 px-2 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2]"><MessageCircle aria-hidden="true" className="h-4 w-4" /><span>{post.commentCount}</span></button> : <span>Reply · {formatNumber(post.commentCount)}</span>}
                         {hasSession ? <RepostButton postHash={post.postHash} initialCount={post.repostCount + post.quoteRepostCount} variant="icon" /> : <span>Repost · {formatNumber(post.repostCount + post.quoteRepostCount)}</span>}
+                        {hasSession ? <LikeButton postHash={post.postHash} initialCount={post.likeCount} variant="icon" /> : <span>Like · {formatNumber(post.likeCount)}</span>}
                         {hasSession ? <DiamondButton postHash={post.postHash} receiverPublicKey={profile.publicKey} initialCount={post.diamondCount} variant="icon" /> : <span>Diamond · {formatNumber(post.diamondCount)}</span>}
-                        <Link href={`/social?post=${encodeURIComponent(post.postHash)}`} className="ml-auto rounded-full border border-zinc-800 px-3 py-1 text-zinc-400 transition hover:border-[#8fd4a9]/45 hover:text-[#9adbb2]">Open in Social</Link>
+                        <XShareButton href={`/social?post=${encodeURIComponent(post.postHash)}`} text={post.body.slice(0, 180)} label="Share on X" />
+                        <LocalSaveButton postHash={post.postHash} body={post.body} publicKey={profile.publicKey} timestampNanos={post.timestampNanos} />
+                        <Link href={`/social?post=${encodeURIComponent(post.postHash)}`} className="rounded-full border border-zinc-800 px-3 py-1 text-zinc-400 transition hover:border-[#8fd4a9]/45 hover:text-[#9adbb2]">Open post</Link>
                       </div>
                       {hasSession && replyingTo === post.postHash ? <div className="mt-3"><PostComposer parentStakeID={post.postHash} compact onDone={() => setReplyingTo(null)} /></div> : null}
                     </article>
