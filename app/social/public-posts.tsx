@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { MessageSquare } from "lucide-react"
+import { readViaLocalSettings } from "../via-local-settings"
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react"
 import { ChoiceId, defaultSocialFeedChoice, VIA_SOCIAL_FEED_EVENT, VIA_SOCIAL_FEED_STORAGE_KEY } from "./feed-choice"
 import PostComposer from "./post-composer"
@@ -94,6 +95,11 @@ export default function PublicPosts() {
   const [session, setSession] = useState<ViaIdentitySession | null>(null)
   const [replyingTo, setReplyingTo] = useState<string | null>(null)
   const [sharedPostView, setSharedPostView] = useState(false)
+  const [translationPost, setTranslationPost] = useState<string | null>(null)
+  const [translationLanguage, setTranslationLanguage] = useState("en")
+  const [translatedText, setTranslatedText] = useState("")
+  const [translationMessage, setTranslationMessage] = useState("")
+  const [translationBusy, setTranslationBusy] = useState(false)
   const [creatorProfiles, setCreatorProfiles] = useState<Record<string, CompactProfile>>({})
 
   useEffect(() => {
@@ -218,6 +224,51 @@ export default function PublicPosts() {
       (mediaFilter === "nft" && post.isNft),
     )
   }, [feedChoice, posts, mediaFilter])
+
+  async function translatePost(post: PublicPost, targetLanguage: string) {
+    setTranslationPost(post.postHash)
+    setTranslationLanguage(targetLanguage)
+    setTranslatedText("")
+    setTranslationMessage("")
+    if (!post.body.trim()) {
+      setTranslationMessage("This post has no text to translate.")
+      return
+    }
+    // Local browser translation only: never send DeSo post text to a paid API.
+    type LocalTranslator = {
+      translate: (text: string) => Promise<string>
+    }
+    type BrowserTranslator = {
+      create: (options: { sourceLanguage: string; targetLanguage: string }) => Promise<LocalTranslator>
+    }
+    const browser = globalThis as typeof globalThis & { Translator?: BrowserTranslator }
+    if (!browser.Translator) {
+      setTranslationMessage("Translation is not supported by this browser. Copy the original text to translate with your preferred app.")
+      return
+    }
+    setTranslationBusy(true)
+    try {
+      // Let the browser detect the source language if supported by its model.
+      const detector = globalThis as typeof globalThis & {
+        LanguageDetector?: { create: () => Promise<{ detect: (text: string) => Promise<Array<{ detectedLanguage: string; confidence: number }>> }> }
+      }
+      if (!detector.LanguageDetector) throw new Error("DETECTION_UNAVAILABLE")
+      const model = await detector.LanguageDetector.create()
+      const detected = await model.detect(post.body)
+      const sourceLanguage = detected[0]?.detectedLanguage
+      if (!sourceLanguage || sourceLanguage === "und") throw new Error("LANGUAGE_UNAVAILABLE")
+      if (sourceLanguage === targetLanguage) {
+        setTranslatedText(post.body)
+      } else {
+        const translator = await browser.Translator.create({ sourceLanguage, targetLanguage })
+        setTranslatedText(await translator.translate(post.body))
+      }
+    } catch {
+      setTranslationMessage("Local translation is unavailable for this language or browser. Copy the original text to use your preferred translator.")
+    } finally {
+      setTranslationBusy(false)
+    }
+  }
 
   async function loadPosts(event?: FormEvent) {
     event?.preventDefault()
@@ -391,6 +442,15 @@ export default function PublicPosts() {
                   <details className="relative">
                     <summary aria-label="Meer postacties" title="Meer postacties" className="cursor-pointer list-none rounded-full border border-zinc-800 px-3 py-1 text-zinc-400">•••</summary>
                     <div className="mt-2 flex flex-col overflow-hidden rounded-xl border border-zinc-800 bg-[#050806] text-left">
+                      <button type="button" onClick={() => {
+                        const lang = readViaLocalSettings().interfaceLanguage
+                        const target = ({ Dutch: "nl", English: "en", French: "fr", Spanish: "es", Chinese: "zh", Hindi: "hi" } as Record<string, string>)[lang] ?? "en"
+                        setTranslationPost(post.postHash)
+                        setTranslationLanguage(target)
+                        setTranslatedText("")
+                        setTranslationMessage("")
+                        ;(document.activeElement as HTMLElement | null)?.closest("details")?.removeAttribute("open")
+                      }} className="px-3 py-2 text-left text-zinc-300 hover:bg-white/[0.04]">🌐 Translate / Vertalen</button>
                       <button type="button" onClick={() => void navigator.clipboard?.writeText(`${window.location.origin}/social?post=${encodeURIComponent(post.postHash)}`)} className="px-3 py-2 text-left text-zinc-300 hover:bg-white/[0.04]">Link to Post</button>
                       {session ? <button type="button" onClick={() => {
                         const url = `${window.location.origin}/social?post=${encodeURIComponent(post.postHash)}`
@@ -413,6 +473,22 @@ export default function PublicPosts() {
                   </details>
                   {isOwnPost ? <Link href={`/edit-post?post=${encodeURIComponent(post.postHash)}`} className="rounded-full border border-[#8fd4a9]/45 px-3 py-1 text-[#9adbb2]">Edit</Link> : null}
                 </div>
+
+                {translationPost === post.postHash ? (
+                  <div className="mt-3 rounded-xl border border-[#8fd4a9]/35 bg-black/40 p-3 text-sm text-zinc-300">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span>Translate:</span>
+                      {([["🇳🇱","nl"],["🇬🇧","en"],["🇫🇷","fr"],["🇪🇸","es"],["🇨🇳","zh"],["🇮🇳","hi"]] as const).map(([flag, code]) => (
+                        <button key={code} type="button" aria-label={code} aria-pressed={translationLanguage === code} disabled={translationBusy} onClick={() => void translatePost(post, code)} className="rounded-md border border-zinc-700 px-2 py-1 disabled:opacity-50">{flag}</button>
+                      ))}
+                      <button type="button" onClick={() => { setTranslationPost(null); setTranslatedText(""); setTranslationMessage("") }} className="ml-auto rounded-md border border-zinc-700 px-2 py-1">Sluiten</button>
+                    </div>
+                    {translationBusy ? <p className="mt-2">Translating locally…</p> : null}
+                    {translatedText ? <p className="mt-3 whitespace-pre-wrap break-words">{translatedText}</p> : null}
+                    {translationMessage ? <p className="mt-2 text-zinc-400">{translationMessage}</p> : null}
+                    <button type="button" onClick={() => void navigator.clipboard?.writeText(post.body)} className="mt-2 rounded-md border border-zinc-700 px-2 py-1">Copy original text</button>
+                  </div>
+                ) : null}
 
                 {options.length >= 2 ? <PollVoteControl postHash={post.postHash} options={options} /> : null}
                 {session && isReplying ? <PostComposer parentStakeID={post.postHash} compact onCancel={() => setReplyingTo(null)} onDone={() => { setReplyingTo(null); void loadPosts() }} /> : null}
