@@ -7,6 +7,10 @@ import { restoreIdentitySession, VIA_IDENTITY_EVENT, type ViaIdentitySession } f
 import { readViaLocalSettings, VIA_SETTINGS_EVENT, type ViaLanguage } from "../via-local-settings"
 import ViaIdentityStatusMarks from "../via-identity-status"
 import PostComposer from "../social/post-composer"
+import LikeButton from "../social/like-button"
+import RepostButton from "../social/repost-button"
+import LocalSaveButton from "../social/local-save-button"
+import XShareButton from "../x-share-button"
 
 type PublicProfile = {
   publicKey: string
@@ -26,7 +30,7 @@ type PublicProfile = {
 }
 
 type ProfileResponse = { ok?: boolean; profile?: PublicProfile }
-type OwnPost = { postHash: string; body: string; imageUrls: string[]; videoUrls: string[]; timestampNanos: number }
+type OwnPost = { postHash: string; body: string; imageUrls: string[]; videoUrls: string[]; timestampNanos: number; likeCount: number; diamondCount: number; commentCount: number; repostCount: number; quoteRepostCount: number }
 type OwnPostsResponse = { ok?: boolean; posts?: OwnPost[] }
 
 type Copy = {
@@ -214,6 +218,7 @@ export default function ProfilePage() {
   const [session, setSession] = useState<ViaIdentitySession | null>(null)
   const [profile, setProfile] = useState<PublicProfile | null>(null)
   const [ownPosts, setOwnPosts] = useState<OwnPost[]>([])
+  const [replyingToOwnPost, setReplyingToOwnPost] = useState<string | null>(null)
   const [ownPostsLoading, setOwnPostsLoading] = useState(false)
   const [ownPostsError, setOwnPostsError] = useState(false)
   const [postsRefresh, setPostsRefresh] = useState(0)
@@ -425,7 +430,16 @@ export default function ProfilePage() {
             <p className="whitespace-pre-wrap text-sm text-zinc-200">{post.body}</p>
             {post.imageUrls?.length ? <div className="mt-3 grid gap-2 sm:grid-cols-2">{post.imageUrls.slice(0, 4).map((url) => <img key={url} src={url} alt="" loading="lazy" referrerPolicy="no-referrer" className="max-h-96 w-full rounded-lg object-cover" />)}</div> : null}
             {post.videoUrls?.length ? <div className="mt-3 space-y-2">{post.videoUrls.slice(0, 2).map((url) => <video key={url} src={url} controls playsInline preload="none" className="max-h-96 w-full" />)}</div> : null}
-            <Link href={`/social?post=${encodeURIComponent(post.postHash)}`} className="mt-3 inline-block text-xs text-[#9adbb2]">Open post</Link>
+            <div className="mt-3 flex flex-wrap items-center gap-2" aria-label="DeSo post actions">
+              <button type="button" onClick={() => setReplyingToOwnPost(replyingToOwnPost === post.postHash ? null : post.postHash)} className="rounded-full border border-zinc-800 px-3 py-2 text-xs">Reply · {post.commentCount}</button>
+              <RepostButton postHash={post.postHash} initialCount={post.repostCount + post.quoteRepostCount} variant="icon" />
+              <LikeButton postHash={post.postHash} initialCount={post.likeCount} variant="icon" />
+              <span className="rounded-full border border-zinc-800 px-3 py-2 text-xs text-zinc-400" title="DeSo does not allow sending Diamonds to yourself">Diamonds · {post.diamondCount}</span>
+              <XShareButton href={`/social?post=${encodeURIComponent(post.postHash)}`} text={post.body.slice(0, 180)} label="Share on X" />
+              <LocalSaveButton postHash={post.postHash} body={post.body} publicKey={session.publicKey} timestampNanos={post.timestampNanos} />
+              <Link href={`/social?post=${encodeURIComponent(post.postHash)}`} className="rounded-full border border-zinc-800 px-3 py-2 text-xs">Open post</Link>
+            </div>
+            {replyingToOwnPost === post.postHash ? <PostComposer parentStakeID={post.postHash} compact onCancel={() => setReplyingToOwnPost(null)} onDone={() => { setReplyingToOwnPost(null); setPostsRefresh((value) => value + 1) }} /> : null}
           </article>)}</div>}
           </> : ownPostsLoading ? <p className="text-sm text-zinc-400">Loading gallery…</p> : ownPostsError ? <p role="status" className="text-sm text-zinc-400">Gallery temporarily unavailable.</p> : <div role="tabpanel" className="grid grid-cols-2 gap-2 sm:grid-cols-3">{ownPosts.flatMap((post) => post.imageUrls.map((url, index) => ({ url, hash: post.postHash, index }))).map((item) => <Link key={`${item.hash}-${item.index}`} href={`/social?post=${encodeURIComponent(item.hash)}`} className="overflow-hidden rounded-xl border border-zinc-800" aria-label="Open image post"><img src={item.url} alt="" loading="lazy" referrerPolicy="no-referrer" className="aspect-square w-full object-cover" /></Link>)}{!ownPosts.some((post) => post.imageUrls.length > 0) ? <p className="col-span-full text-sm text-zinc-400">No images in the loaded posts.</p> : null}</div>}
         </section> : null}
