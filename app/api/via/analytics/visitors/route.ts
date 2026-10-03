@@ -46,7 +46,12 @@ async function readCount(from: Date, to: Date) {
   })
 
   if (!response.ok) {
-    console.error("[VIA analytics] Upstream request failed", { status: response.status })
+    const body = await response.json().catch(() => null) as { error?: { code?: unknown }; code?: unknown } | null
+    const code = body?.error?.code ?? body?.code
+    console.error("[VIA analytics] Upstream request failed", {
+      status: response.status,
+      errorCode: typeof code === "string" ? code.slice(0, 80) : "unavailable",
+    })
     return null
   }
   const data = await response.json() as VercelCountResponse
@@ -94,7 +99,12 @@ async function readCountries(from: Date, to: Date) {
   })
 
   if (!response.ok) {
-    console.error("[VIA analytics] Upstream request failed", { status: response.status })
+    const body = await response.json().catch(() => null) as { error?: { code?: unknown }; code?: unknown } | null
+    const code = body?.error?.code ?? body?.code
+    console.error("[VIA analytics] Upstream request failed", {
+      status: response.status,
+      errorCode: typeof code === "string" ? code.slice(0, 80) : "unavailable",
+    })
     return null
   }
   const data = await response.json() as unknown
