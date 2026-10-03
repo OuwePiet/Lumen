@@ -149,15 +149,17 @@ export async function GET() {
     }, { status: 503 })
   }
 
-  // Country aggregation and count responses can disagree. Never publish a
-  // confirmed zero for today while the same interval has country activity.
-  const todayConsistent = !(today === 0 && countries?.some((row) => row.visitors > 0))
-  if (!todayConsistent) console.warn("[VIA analytics] Today count conflicts with country aggregate", {
+  // When the count endpoint reports zero but country aggregation has
+  // visitors for the same interval, use the country breakdown as a
+  // provisional count. A visitor switching countries may be counted twice.
+  const countryTotal = countries?.reduce((sum, row) => sum + row.visitors, 0) ?? 0
+  const todayFromCountries = today === 0 && countryTotal > 0
+  const resolvedToday = todayFromCountries ? countryTotal : today
+  if (todayFromCountries) console.warn("[VIA analytics] Daily count sourced from country aggregate", {
     intervalStart: dayStart.toISOString(),
     intervalEnd: now.toISOString(),
-    dailyVisitors: today,
-    countryGroups: countries?.length ?? null,
-    countryVisitors: countries?.reduce((sum, row) => sum + row.visitors, 0) ?? null,
+    dailyCount: today,
+    countryVisitors: countryTotal,
   })
 
   return NextResponse.json({
@@ -166,10 +168,11 @@ export async function GET() {
     privacy: "aggregated",
     measuredAt: now.toISOString(),
     visitors: {
-      today: todayConsistent ? today : null,
+      today: resolvedToday,
       month,
       year,
     },
+    todayCountSource: todayFromCountries ? "country-aggregate-provisional" : "visits-count",
     countries: countries ?? [],
   })
 }
