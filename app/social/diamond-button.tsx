@@ -86,7 +86,7 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
           const actual = result.post?.diamondCount
           if (verified.ok && result.ok && typeof actual === "number" && Number.isFinite(actual)) {
             setCount(actual)
-            if (actual > count) { setCelebrate(true); setMessage("DeSo confirmed the diamond. The count has been updated."); return }
+            if (actual > count) { setMessage("DeSo post count increased. This alone does not verify your individual payment; check DeSo transaction history before retrying."); return }
           }
         } catch { /* Never resubmit a payment while checking. */ }
       }
