@@ -21,6 +21,31 @@ function validHex(value: unknown): value is string {
   return typeof value === "string" && value.length >= 2 && value.length <= 500_000 && value.length % 2 === 0 && /^[0-9a-fA-F]+$/.test(value)
 }
 
+export async function GET(request: Request) {
+  const url = new URL(request.url)
+  const publicKey = url.searchParams.get("publicKey")
+  const postHash = url.searchParams.get("postHash")
+  if (!validPublicKey(publicKey) || !validPostHash(postHash)) return noStore({ ok: false, error: "INVALID_REQUEST" }, 400)
+  try {
+    const response = await fetchDeSo("get-single-post", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        PostHashHex: postHash, ReaderPublicKeyBase58Check: publicKey,
+        FetchParents: false, CommentOffset: 0, CommentLimit: 0, AddGlobalFeedBool: false,
+      }),
+    })
+    if (!response.ok) return noStore({ ok: false, error: "POST_READ_UNAVAILABLE" }, 502)
+    const data = await response.json() as { PostFound?: { LikeCount?: unknown; PostEntryReaderState?: { LikedByReader?: unknown } } }
+    const post = data.PostFound
+    if (!post || typeof post.LikeCount !== "number" || !Number.isFinite(post.LikeCount) ||
+      (post.PostEntryReaderState != null && typeof post.PostEntryReaderState.LikedByReader !== "boolean")) {
+      return noStore({ ok: false, error: "LIKE_STATE_UNAVAILABLE" }, 503)
+    }
+    return noStore({ ok: true, likeCount: Math.max(0, Math.trunc(post.LikeCount)), liked: post.PostEntryReaderState?.LikedByReader === true })
+  } catch { return noStore({ ok: false, error: "POST_READ_UNAVAILABLE" }, 503) }
+}
+
 export async function POST(request: Request) {
   let input: unknown
   try { input = await request.json() } catch { return noStore({ ok: false, error: "INVALID_JSON" }, 400) }
