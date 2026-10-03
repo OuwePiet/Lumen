@@ -13,6 +13,7 @@ type DiamondLevelsResponse = { ok?: boolean; diamondLevelMap?: Record<string, nu
 export default function DiamondButton({ postHash, receiverPublicKey, initialCount, variant = "default" }: Props) {
   const [level, setLevel] = useState(1)
   const [count, setCount] = useState(initialCount)
+  useEffect(() => setCount(initialCount), [initialCount])
   const [confirmValue, setConfirmValue] = useState(false)
   const [compactOpen, setCompactOpen] = useState(false)
   const menuRootRef = useRef<HTMLDivElement>(null)
@@ -75,8 +76,22 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
       const submitResponse = await fetch("/api/via/social/diamond", { method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store", body: JSON.stringify({ action: "submit", signedTransactionHex }) })
       const submitData = await submitResponse.json() as { ok?: boolean; error?: string }
       if (!submitResponse.ok || !submitData.ok) throw new Error(submitData.error || "SUBMIT_FAILED")
-      setCount((value) => value + 1); setStatus("done"); setCelebrate(true); setMessage(`Diamond level ${chosenLevel} submitted.`); setConfirmValue(false)
-    } catch { setStatus("error"); setMessage("Diamond transaction could not be prepared. Nothing was sent.") }
+      setStatus("done"); setMessage("DeSo accepted the transaction. Checking the blockchain count…"); setConfirmValue(false)
+      // Do not assume a paid reaction succeeded just because submission returned OK.
+      for (let attempt = 0; attempt < 4; attempt++) {
+        await new Promise((resolve) => window.setTimeout(resolve, 4000 + attempt * 3000))
+        try {
+          const verified = await fetch(`/api/via/post?hash=${encodeURIComponent(postHash)}&verify=${Date.now()}`, { cache: "no-store" })
+          const result = await verified.json() as { ok?: boolean; post?: { diamondCount?: number } }
+          const actual = result.post?.diamondCount
+          if (verified.ok && result.ok && typeof actual === "number" && Number.isFinite(actual)) {
+            setCount(actual)
+            if (actual > count) { setCelebrate(true); setMessage("DeSo confirmed the diamond. The count has been updated."); return }
+          }
+        } catch { /* Never resubmit a payment while checking. */ }
+      }
+      setMessage("DeSo accepted the transaction, but the new count is not confirmed yet. Do not resend; check again later.")
+    } catch { setStatus("error"); setMessage("Diamond status uncertain. Do not retry until the DeSo transaction has been checked.") }
   }
 
   if (variant === "icon") {
@@ -105,7 +120,7 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
         </div>
       </div> : null}
       {leafRain}
-      {message ? <span className="sr-only" role="status" aria-live="polite">{message}</span> : null}
+      {message ? <span className={`basis-full text-xs ${status === "error" ? "text-amber-300" : "text-[#9adbb2]"}`} role="status" aria-live="polite">{message}</span> : null}
     </div>
   }
 
