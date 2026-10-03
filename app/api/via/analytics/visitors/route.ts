@@ -54,7 +54,15 @@ async function readCount(from: Date, to: Date) {
     return null
   }
   const data = await response.json() as VercelCountResponse
-  return countFromResponse(data)
+  const count = countFromResponse(data)
+  // Report only structural metadata, never tokens or visitor identifiers.
+  if (count === 0) {
+    console.info("[VIA analytics] Zero count response shape", {
+      topLevelFields: Object.keys(data).slice(0, 12),
+      dataFields: data.data && typeof data.data === "object" ? Object.keys(data.data).slice(0, 12) : [],
+    })
+  }
+  return count
 }
 
 function countryFromRow(row: CountryRow) {
