@@ -94,6 +94,7 @@ export default function PublicPosts() {
   const [feedChoice, setFeedChoice] = useState<ChoiceId>("hot")
   const [session, setSession] = useState<ViaIdentitySession | null>(null)
   const [replyingTo, setReplyingTo] = useState<string | null>(null)
+  const [actionLoginPost, setActionLoginPost] = useState<string | null>(null)
   const [sharedPostView, setSharedPostView] = useState(false)
   const [translationPost, setTranslationPost] = useState<string | null>(null)
   const [translationLanguage, setTranslationLanguage] = useState("en")
@@ -443,10 +444,10 @@ export default function PublicPosts() {
                 ) : null}
 
                 <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-white/[0.06] pt-3 text-xs text-zinc-500">
-                  {session ? <button type="button" onClick={() => setReplyingTo(isReplying ? null : post.postHash)} title="Reply" aria-label={`Reply · ${post.commentCount}`} className="inline-flex h-9 min-w-9 items-center justify-center gap-1 rounded-full border border-zinc-800 px-2 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2]"><MessageSquare aria-hidden="true" className="h-4 w-4" /><span>{post.commentCount}</span></button> : <span>Reply · {post.commentCount}</span>}
-                  {session ? <RepostButton postHash={post.postHash} initialCount={totalReposts} variant="icon" /> : <span>Repost · {totalReposts}</span>}
-                  {session ? <LikeButton postHash={post.postHash} initialCount={post.likeCount} variant="icon" /> : <span>Like · {post.likeCount}</span>}
-                  {session ? <DiamondButton postHash={post.postHash} receiverPublicKey={post.publicKey} initialCount={post.diamondCount} variant="icon" /> : <span>Diamond · {post.diamondCount}</span>}
+                  <button type="button" onClick={() => session ? setReplyingTo(isReplying ? null : post.postHash) : setActionLoginPost(post.postHash)} title="Reply" aria-label={`Reply · ${post.commentCount}`} className="inline-flex h-9 min-w-9 items-center justify-center gap-1 rounded-full border border-zinc-800 px-2 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2]"><MessageSquare aria-hidden="true" className="h-4 w-4" /><span>{post.commentCount}</span></button>
+                  {session ? <RepostButton postHash={post.postHash} initialCount={totalReposts} variant="icon" /> : <button type="button" title="Repost (DeSo login required)" onClick={() => setActionLoginPost(post.postHash)} className="inline-flex h-9 min-w-9 items-center justify-center gap-1 rounded-full border border-zinc-800 px-2 text-xs text-zinc-300">Repost · {totalReposts}</button>}
+                  {session ? <LikeButton postHash={post.postHash} initialCount={post.likeCount} variant="icon" /> : <button type="button" title="Like (DeSo login required)" onClick={() => setActionLoginPost(post.postHash)} className="inline-flex h-9 min-w-9 items-center justify-center gap-1 rounded-full border border-zinc-800 px-2 text-xs text-zinc-300">Like · {post.likeCount}</button>}
+                  {session ? <DiamondButton postHash={post.postHash} receiverPublicKey={post.publicKey} initialCount={post.diamondCount} variant="icon" /> : <button type="button" title="Diamond (DeSo login required)" onClick={() => setActionLoginPost(post.postHash)} className="inline-flex h-9 min-w-9 items-center justify-center gap-1 rounded-full border border-zinc-800 px-2 text-xs text-zinc-300">Diamond · {post.diamondCount}</button>}
                   <details className="relative">
                     <summary aria-label="Meer postacties" title="Meer postacties" className="cursor-pointer list-none rounded-full border border-zinc-800 px-3 py-1 text-zinc-400">•••</summary>
                     <div className="mt-2 flex flex-col overflow-hidden rounded-xl border border-zinc-800 bg-[#050806] text-left">
@@ -482,6 +483,12 @@ export default function PublicPosts() {
                   {isOwnPost ? <Link href={`/edit-post?post=${encodeURIComponent(post.postHash)}`} className="rounded-full border border-[#8fd4a9]/45 px-3 py-1 text-[#9adbb2]">Edit</Link> : null}
                 </div>
 
+                {actionLoginPost === post.postHash && !session ? (
+                  <div role="status" className="mt-2 flex flex-wrap items-center gap-2 rounded-lg border border-[#8fd4a9]/35 p-3 text-sm text-zinc-300">
+                    <span>Connect your DeSo account through VIA before replying, reposting, liking or sending Diamonds. No transaction was sent.</span>
+                    <button type="button" onClick={() => setActionLoginPost(null)} className="rounded-full border border-zinc-700 px-3 py-1">Sluiten</button>
+                  </div>
+                ) : null}
                 {translationPost === post.postHash ? (
                   <div id={`via-translation-${post.postHash}`} role="region" aria-label="Post translation" className="mt-3 scroll-mt-28 rounded-xl border border-[#8fd4a9]/35 bg-black/40 p-3 text-sm text-zinc-300">
                     <div className="flex flex-wrap items-center gap-2">
