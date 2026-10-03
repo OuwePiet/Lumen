@@ -152,7 +152,13 @@ export async function GET() {
   // Country aggregation and count responses can disagree. Never publish a
   // confirmed zero for today while the same interval has country activity.
   const todayConsistent = !(today === 0 && countries?.some((row) => row.visitors > 0))
-  if (!todayConsistent) console.warn("[VIA analytics] Today count conflicts with country aggregate")
+  if (!todayConsistent) console.warn("[VIA analytics] Today count conflicts with country aggregate", {
+    intervalStart: dayStart.toISOString(),
+    intervalEnd: now.toISOString(),
+    dailyVisitors: today,
+    countryGroups: countries?.length ?? null,
+    countryVisitors: countries?.reduce((sum, row) => sum + row.visitors, 0) ?? null,
+  })
 
   return NextResponse.json({
     ok: true,
