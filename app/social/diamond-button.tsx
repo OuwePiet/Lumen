@@ -13,6 +13,7 @@ type DiamondLevelsResponse = { ok?: boolean; diamondLevelMap?: Record<string, nu
 export default function DiamondButton({ postHash, receiverPublicKey, initialCount, variant = "default" }: Props) {
   const [level, setLevel] = useState(1)
   const [count, setCount] = useState(initialCount)
+  useEffect(() => setCount(initialCount), [initialCount])
   const [confirmValue, setConfirmValue] = useState(false)
   const [compactOpen, setCompactOpen] = useState(false)
   const menuRootRef = useRef<HTMLDivElement>(null)
@@ -60,7 +61,8 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
 
   async function prepare(chosenLevel = level) {
     const session = restoreIdentitySession()
-    if (!session || !diamondValues?.some((item) => item.level === chosenLevel) || status === "preparing" || status === "approval" || status === "submitting") return
+    if (!session || !diamondValues?.some((item) => item.level === chosenLevel) || status === "preparing" || status === "approval" || status === "submitting" || status === "done" || status === "error") return
+    let submissionAttempted = false
     setCelebrate(false); setStatus("preparing"); setMessage("Preparing the exact value-transfer transaction…"); setFeeNanos(null); setSpendNanos(null)
     try {
       const response = await fetch("/api/via/social/diamond", { method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store", body: JSON.stringify({ action: "prepare", senderPublicKey: session.publicKey, receiverPublicKey, diamondPostHashHex: postHash, diamondLevel: chosenLevel, confirmed: true }) })
@@ -72,11 +74,26 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
       setStatus("approval"); setMessage("Signing the confirmed Diamond with your VIA DeSo session…")
       const signedTransactionHex = await signViaTransaction(session.publicKey, data.transactionHex)
       setStatus("submitting"); setMessage("Submitting your confirmed Diamond to DeSo…")
+      submissionAttempted = true
       const submitResponse = await fetch("/api/via/social/diamond", { method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store", body: JSON.stringify({ action: "submit", signedTransactionHex }) })
       const submitData = await submitResponse.json() as { ok?: boolean; error?: string }
       if (!submitResponse.ok || !submitData.ok) throw new Error(submitData.error || "SUBMIT_FAILED")
-      setCount((value) => value + 1); setStatus("done"); setCelebrate(true); setMessage(`Diamond level ${chosenLevel} submitted.`); setConfirmValue(false)
-    } catch { setStatus("error"); setMessage("Diamond transaction could not be prepared. Nothing was sent.") }
+      setStatus("done"); setMessage("DeSo accepted the transaction. Checking the blockchain count…"); setConfirmValue(false)
+      // Do not assume a paid reaction succeeded just because submission returned OK.
+      for (let attempt = 0; attempt < 4; attempt++) {
+        await new Promise((resolve) => window.setTimeout(resolve, 4000 + attempt * 3000))
+        try {
+          const verified = await fetch(`/api/via/post?hash=${encodeURIComponent(postHash)}&verify=${Date.now()}`, { cache: "no-store" })
+          const result = await verified.json() as { ok?: boolean; post?: { diamondCount?: number } }
+          const actual = result.post?.diamondCount
+          if (verified.ok && result.ok && typeof actual === "number" && Number.isFinite(actual)) {
+            setCount(actual)
+            if (actual > count) { setMessage("DeSo post count increased. This alone does not verify your individual payment; check DeSo transaction history before retrying."); return }
+          }
+        } catch { /* Never resubmit a payment while checking. */ }
+      }
+      setMessage("DeSo accepted the transaction, but the new count is not confirmed yet. Do not resend; check again later.")
+    } catch { setStatus("error"); setMessage(submissionAttempted ? "Diamond submission status uncertain. Do not resend until the DeSo transaction has been checked." : "Diamond was not submitted by VIA. Preparation or signing failed.") }
   }
 
   if (variant === "icon") {
@@ -94,18 +111,18 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
       {compactOpen ? <div className="basis-full rounded-xl border border-zinc-800 bg-[#050806] p-2">
         <div className="flex max-w-full flex-wrap items-center gap-1.5" aria-label="Diamond value">
           {(diamondValues ?? Array.from({ length: 8 }, (_, index) => ({ level: index + 1, usd: NaN }))).map((entry) => (
-            <button key={entry.level} type="button" onClick={() => { if (!Number.isFinite(entry.usd) || status === "preparing" || status === "approval" || status === "submitting") return; setLevel(entry.level); void prepare(entry.level) }} aria-pressed={level === entry.level} className={`min-w-[3.35rem] rounded-xl border px-2 py-1 text-center text-[10px] transition ${level === entry.level ? "border-[#8fd4a9] bg-[#285f40] text-white" : "border-zinc-800 text-zinc-400 hover:border-[#8fd4a9] hover:text-white"}`}>
+            <button key={entry.level} type="button" onClick={() => { if (!Number.isFinite(entry.usd) || status === "preparing" || status === "approval" || status === "submitting" || status === "done" || status === "error") return; setLevel(entry.level); void prepare(entry.level) }} aria-pressed={level === entry.level} className={`min-w-[3.35rem] rounded-xl border px-2 py-1 text-center text-[10px] transition ${level === entry.level ? "border-[#8fd4a9] bg-[#285f40] text-white" : "border-zinc-800 text-zinc-400 hover:border-[#8fd4a9] hover:text-white"}`}>
               <span className="block">{Number.isFinite(entry.usd) ? `$${entry.usd < 0.01 ? entry.usd.toFixed(3) : entry.usd < 1 ? entry.usd.toFixed(2) : entry.usd.toLocaleString(undefined, { maximumFractionDigits: 2 })}` : "prijs laden…"}</span>
               <Gem className="mx-auto h-4 w-4" aria-hidden="true" /><span className="block">{entry.level}</span>
             </button>
           ))}
         </div>
         <div className="mt-2 flex flex-wrap gap-2">
-          <button type="button" onClick={() => { setCompactOpen(false); setConfirmValue(false) }} disabled={status === "preparing" || status === "approval" || status === "submitting"} className="h-9 rounded-full border border-zinc-700 px-3 text-xs text-zinc-300 disabled:opacity-60">Sluiten</button>
+          <button type="button" onClick={() => { setCompactOpen(false); setConfirmValue(false) }} disabled={status === "preparing" || status === "approval" || status === "submitting" || status === "done" || status === "error"} className="h-9 rounded-full border border-zinc-700 px-3 text-xs text-zinc-300 disabled:opacity-60">Sluiten</button>
         </div>
       </div> : null}
       {leafRain}
-      {message ? <span className="sr-only" role="status" aria-live="polite">{message}</span> : null}
+      {message ? <span className={`basis-full text-xs ${status === "error" ? "text-amber-300" : "text-[#9adbb2]"}`} role="status" aria-live="polite">{message}</span> : null}
     </div>
   }
 
@@ -114,7 +131,7 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
     <details className="relative">
       <summary className="inline-flex cursor-pointer list-none items-center gap-1 rounded-full border border-zinc-800 px-2 py-1 text-xs text-zinc-300"><Gem className="h-3.5 w-3.5" aria-hidden="true" /> {level} ▾</summary>
       <div className="absolute bottom-full left-0 z-30 mb-2 grid w-56 grid-cols-2 gap-1 rounded-xl border border-zinc-800 bg-[#050806] p-2 shadow-xl">
-        {(diamondValues ?? Array.from({ length: 8 }, (_, index) => ({ level: index + 1, usd: NaN }))).map((entry) => <button key={entry.level} type="button" onClick={() => { if (!Number.isFinite(entry.usd) || status === "preparing" || status === "approval" || status === "submitting") return; setLevel(entry.level); void prepare(entry.level) }} aria-pressed={level === entry.level} className={`rounded-lg border px-2 py-2 text-xs ${level === entry.level ? "border-[#8fd4a9] bg-[#285f40] text-white" : "border-zinc-800 text-zinc-300 hover:border-[#8fd4a9]"}`}><span className="block text-[11px] text-amber-300">{Number.isFinite(entry.usd) ? `${entry.usd < 0.01 ? entry.usd.toFixed(3) : entry.usd < 1 ? entry.usd.toFixed(2) : entry.usd.toLocaleString(undefined, { maximumFractionDigits: 2 })}` : "prijs laden…"}</span><span className="block">{entry.level} 💎</span></button>)}
+        {(diamondValues ?? Array.from({ length: 8 }, (_, index) => ({ level: index + 1, usd: NaN }))).map((entry) => <button key={entry.level} type="button" onClick={() => { if (!Number.isFinite(entry.usd) || status === "preparing" || status === "approval" || status === "submitting" || status === "done" || status === "error") return; setLevel(entry.level); void prepare(entry.level) }} aria-pressed={level === entry.level} className={`rounded-lg border px-2 py-2 text-xs ${level === entry.level ? "border-[#8fd4a9] bg-[#285f40] text-white" : "border-zinc-800 text-zinc-300 hover:border-[#8fd4a9]"}`}><span className="block text-[11px] text-amber-300">{Number.isFinite(entry.usd) ? `${entry.usd < 0.01 ? entry.usd.toFixed(3) : entry.usd < 1 ? entry.usd.toFixed(2) : entry.usd.toLocaleString(undefined, { maximumFractionDigits: 2 })}` : "prijs laden…"}</span><span className="block">{entry.level} 💎</span></button>)}
         <button type="button" onClick={(event) => { setConfirmValue(false); (event.currentTarget.closest("details") as HTMLDetailsElement | null)?.removeAttribute("open") }} className="col-span-2 rounded-lg border border-zinc-700 px-2 py-2 text-xs text-zinc-300 hover:border-[#8fd4a9]">Sluiten</button>
       </div>
     </details>
