@@ -161,25 +161,6 @@ export default function ViaRightPanels() {
     return () => controller.abort()
   }, [])
 
-  useEffect(() => {
-    const controller = new AbortController()
-    void fetch("/api/via/analytics/activity", {
-      cache: "no-store",
-      signal: controller.signal,
-      headers: { Accept: "application/json" },
-    })
-      .then(async (response) => {
-        const data = await response.json() as ActivityAnalyticsResponse
-        // Do not display bounded feed samples as lifetime VIA totals.
-        if (!response.ok || !data.ok || !data.activity || data.scope !== "verified-via-lifetime") return
-        if (typeof data.activity.posts === "number" && Number.isFinite(data.activity.posts)) setActivityPosts(data.activity.posts)
-        if (typeof data.activity.creators === "number" && Number.isFinite(data.activity.creators)) setActivityCreators(data.activity.creators)
-        if (typeof data.activity.nftPosts === "number" && Number.isFinite(data.activity.nftPosts)) setActivityNfts(data.activity.nftPosts)
-      })
-      .catch(() => {})
-
-    return () => controller.abort()
-  }, [])
 
   const copy = COPY[language]
 
