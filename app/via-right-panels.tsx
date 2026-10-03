@@ -54,25 +54,25 @@ const COPY: Record<ViaLanguage | "Hindi", PanelCopy> = {
     live: "VIA Live", visitors: "VIA Visiteurs", activity: "VIA Activité", community: "VIA Communauté",
     activeNow: "Présents maintenant", desoAccounts: "Comptes DeSo", guests: "Sans DeSo", countries: "Pays", countryCount: "pays", countryVisitors: "visiteurs",
     today: "Aujourd’hui", month: "Ce mois-ci", year: "Start VIA 17-09-2026", posts: "Publications VIA récentes", creators: "Créateurs VIA récents",
-    trends: "Tendances", nftActivity: "Activité NFT", welcome: "Welcome / First Post", sourcePending: "Source de mesure fiable pas encore connectée.",
+    trends: "Tendances", nftActivity: "Publications NFT VIA récentes", welcome: "Welcome / First Post", sourcePending: "Source de mesure fiable pas encore connectée.",
   },
   Spanish: {
     live: "VIA Live", visitors: "VIA Visitantes", activity: "VIA Actividad", community: "VIA Comunidad",
     activeNow: "Activos ahora", desoAccounts: "Cuentas DeSo", guests: "Sin DeSo", countries: "Países", countryCount: "países", countryVisitors: "visitantes",
     today: "Hoy", month: "Este mes", year: "Start VIA 17-09-2026", posts: "Publicaciones VIA recientes", creators: "Creadores VIA recientes",
-    trends: "Tendencias", nftActivity: "Actividad NFT", welcome: "Welcome / First Post", sourcePending: "La fuente de medición fiable aún no está conectada.",
+    trends: "Tendencias", nftActivity: "Publicaciones NFT VIA recientes", welcome: "Welcome / First Post", sourcePending: "La fuente de medición fiable aún no está conectada.",
   },
   Chinese: {
     live: "VIA 实时", visitors: "VIA 访客", activity: "VIA 活动", community: "VIA 社区",
     activeNow: "当前在线", desoAccounts: "DeSo 账户", guests: "未使用 DeSo", countries: "国家/地区", countryCount: "个国家/地区", countryVisitors: "位访客",
     today: "今天", month: "本月", year: "Start VIA 17-09-2026", posts: "近期 VIA 帖子", creators: "近期 VIA 创作者",
-    trends: "趋势", nftActivity: "NFT 活动", welcome: "Welcome / First Post", sourcePending: "尚未连接可靠的统计来源。",
+    trends: "趋势", nftActivity: "近期 VIA NFT 帖子", welcome: "Welcome / First Post", sourcePending: "尚未连接可靠的统计来源。",
   },
   Hindi: {
     live: "VIA लाइव", visitors: "VIA आगंतुक", activity: "VIA गतिविधि", community: "VIA समुदाय",
     activeNow: "अभी सक्रिय", desoAccounts: "DeSo खाते", guests: "DeSo के बिना", countries: "देश", countryCount: "देश", countryVisitors: "आगंतुक",
     today: "आज", month: "इस महीने", year: "Start VIA 17-09-2026", posts: "हालिया VIA पोस्ट", creators: "हालिया VIA क्रिएटर",
-    trends: "रुझान", nftActivity: "NFT गतिविधि", welcome: "स्वागत / पहली पोस्ट", sourcePending: "विश्वसनीय मापन स्रोत अभी जुड़ा नहीं है।",
+    trends: "रुझान", nftActivity: "हालिया VIA NFT पोस्ट", welcome: "स्वागत / पहली पोस्ट", sourcePending: "विश्वसनीय मापन स्रोत अभी जुड़ा नहीं है।",
   },
 }
 
