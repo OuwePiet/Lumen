@@ -12,7 +12,17 @@ function isViaPost(post: Awaited<ReturnType<typeof readDiscoveryPosts>>[number])
 export async function GET() {
   try {
     // Bounded native DeSo read. General DeSo activity is never counted as VIA activity.
-    const posts = await readDiscoveryPosts(30, true)
+    const posts: Awaited<ReturnType<typeof readDiscoveryPosts>> = []
+    const seen: string[] = []
+    for (let page = 0; page < 4; page += 1) {
+      const batch = await readDiscoveryPosts(30, true, seen)
+      const unseen = batch.filter((post) => post.postHash && !seen.includes(post.postHash))
+      if (!unseen.length) break
+      posts.push(...unseen)
+      seen.push(...unseen.map((post) => post.postHash))
+      if (batch.length < 30) break
+    }
+    // Counts below describe only the inspected recent feed, not all VIA activity.
     const viaPosts = posts.filter(isViaPost)
     const creators = new Set(viaPosts.map((post) => post.publicKey).filter(Boolean))
     const nftPosts = viaPosts.filter((post) => post.isNft)
@@ -22,6 +32,7 @@ export async function GET() {
         ok: true,
         source: "deso-new-feed",
         scope: "bounded-recent-via-posts",
+        sampledPosts: posts.length,
         activity: {
           posts: viaPosts.length,
           creators: creators.size,
