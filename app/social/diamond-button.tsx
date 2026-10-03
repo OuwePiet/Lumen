@@ -10,6 +10,14 @@ type Props = { postHash: string; receiverPublicKey: string; initialCount: number
 type PrepareResponse = { ok?: boolean; transactionHex?: string; diamondLevel?: number; feeNanos?: number | null; spendAmountNanos?: number | null; error?: string }
 type DiamondLevelsResponse = { ok?: boolean; diamondLevelMap?: Record<string, number> }
 
+function formatDiamondUsd(usd: number): string {
+  if (!Number.isFinite(usd) || usd <= 0) return "prijs laden…"
+  // Tiny transfers must never appear as $0.000 or $0.00.
+  if (usd < 0.005) return "<$0.01"
+  if (usd < 1) return `${usd.toFixed(2)}`
+  return `${Math.round(usd).toLocaleString("en-US")}`
+}
+
 export default function DiamondButton({ postHash, receiverPublicKey, initialCount, variant = "default" }: Props) {
   const [level, setLevel] = useState(1)
   const [count, setCount] = useState(initialCount)
@@ -95,7 +103,7 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
         <div className="flex max-w-full flex-wrap items-center gap-1.5" aria-label="Diamond value">
           {(diamondValues ?? Array.from({ length: 8 }, (_, index) => ({ level: index + 1, usd: NaN }))).map((entry) => (
             <button key={entry.level} type="button" onClick={() => { if (!Number.isFinite(entry.usd) || status === "preparing" || status === "approval" || status === "submitting") return; setLevel(entry.level); void prepare(entry.level) }} aria-pressed={level === entry.level} className={`min-w-[3.35rem] rounded-xl border px-2 py-1 text-center text-[10px] transition ${level === entry.level ? "border-[#8fd4a9] bg-[#285f40] text-white" : "border-zinc-800 text-zinc-400 hover:border-[#8fd4a9] hover:text-white"}`}>
-              <span className="block">{Number.isFinite(entry.usd) ? `$${entry.usd < 0.01 ? entry.usd.toFixed(3) : entry.usd < 1 ? entry.usd.toFixed(2) : entry.usd.toLocaleString(undefined, { maximumFractionDigits: 2 })}` : "prijs laden…"}</span>
+              <span className="block">{Number.isFinite(entry.usd) ? formatDiamondUsd(entry.usd) : "prijs laden…"}</span>
               <Gem className="mx-auto h-4 w-4" aria-hidden="true" /><span className="block">{entry.level}</span>
             </button>
           ))}
@@ -114,7 +122,7 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
     <details className="relative">
       <summary className="inline-flex cursor-pointer list-none items-center gap-1 rounded-full border border-zinc-800 px-2 py-1 text-xs text-zinc-300"><Gem className="h-3.5 w-3.5" aria-hidden="true" /> {level} ▾</summary>
       <div className="absolute bottom-full left-0 z-30 mb-2 grid w-56 grid-cols-2 gap-1 rounded-xl border border-zinc-800 bg-[#050806] p-2 shadow-xl">
-        {(diamondValues ?? Array.from({ length: 8 }, (_, index) => ({ level: index + 1, usd: NaN }))).map((entry) => <button key={entry.level} type="button" onClick={() => { if (!Number.isFinite(entry.usd) || status === "preparing" || status === "approval" || status === "submitting") return; setLevel(entry.level); void prepare(entry.level) }} aria-pressed={level === entry.level} className={`rounded-lg border px-2 py-2 text-xs ${level === entry.level ? "border-[#8fd4a9] bg-[#285f40] text-white" : "border-zinc-800 text-zinc-300 hover:border-[#8fd4a9]"}`}><span className="block text-[11px] text-amber-300">{Number.isFinite(entry.usd) ? `${entry.usd < 0.01 ? entry.usd.toFixed(3) : entry.usd < 1 ? entry.usd.toFixed(2) : entry.usd.toLocaleString(undefined, { maximumFractionDigits: 2 })}` : "prijs laden…"}</span><span className="block">{entry.level} 💎</span></button>)}
+        {(diamondValues ?? Array.from({ length: 8 }, (_, index) => ({ level: index + 1, usd: NaN }))).map((entry) => <button key={entry.level} type="button" onClick={() => { if (!Number.isFinite(entry.usd) || status === "preparing" || status === "approval" || status === "submitting") return; setLevel(entry.level); void prepare(entry.level) }} aria-pressed={level === entry.level} className={`rounded-lg border px-2 py-2 text-xs ${level === entry.level ? "border-[#8fd4a9] bg-[#285f40] text-white" : "border-zinc-800 text-zinc-300 hover:border-[#8fd4a9]"}`}><span className="block text-[11px] text-amber-300">{Number.isFinite(entry.usd) ? formatDiamondUsd(entry.usd) : "prijs laden…"}</span><span className="block">{entry.level} 💎</span></button>)}
         <button type="button" onClick={(event) => { setConfirmValue(false); (event.currentTarget.closest("details") as HTMLDetailsElement | null)?.removeAttribute("open") }} className="col-span-2 rounded-lg border border-zinc-700 px-2 py-2 text-xs text-zinc-300 hover:border-[#8fd4a9]">Sluiten</button>
       </div>
     </details>
