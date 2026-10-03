@@ -124,7 +124,6 @@ async function readCountries(from: Date, to: Date) {
     })
     .filter((entry): entry is { country: string; visitors: number } => Boolean(entry))
     .sort((a, b) => b.visitors - a.visitors)
-    .slice(0, 12)
 
   return countries
 }
