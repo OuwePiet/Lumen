@@ -41,7 +41,7 @@ export async function POST(request: Request) {
       if (!rawMap || typeof rawMap !== "object" || Array.isArray(rawMap)) return noStore({ ok: false, error: "INVALID_DIAMOND_LEVELS" }, 502)
       const diamondLevelMap = Object.fromEntries(
         Object.entries(rawMap as Record<string, unknown>)
-          .filter(([key, value]) => /^\\d+$/.test(key) && typeof value === "number" && Number.isFinite(value) && value > 0)
+          .filter(([key, value]) => /^\d+$/.test(key) && typeof value === "number" && Number.isFinite(value) && value > 0)
           .map(([key, value]) => [key, Math.trunc(value as number)])
       )
       if (Object.keys(diamondLevelMap).length === 0) return noStore({ ok: false, error: "INVALID_DIAMOND_LEVELS" }, 502)
