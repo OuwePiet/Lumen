@@ -32,7 +32,6 @@ async function readCount(from: Date, to: Date) {
   }
 
   const url = new URL(VERCEL_ANALYTICS_URL)
-  url.searchParams.set("teamId", teamId)
   url.searchParams.set("projectId", projectId)
   url.searchParams.set("since", from.toISOString())
   url.searchParams.set("until", to.toISOString())
@@ -79,7 +78,6 @@ async function readCountries(from: Date, to: Date) {
   }
 
   const url = new URL(VERCEL_ANALYTICS_AGGREGATE_URL)
-  url.searchParams.set("teamId", teamId)
   url.searchParams.set("projectId", projectId)
   url.searchParams.set("since", from.toISOString())
   url.searchParams.set("until", to.toISOString())
