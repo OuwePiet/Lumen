@@ -16,6 +16,7 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
   const [confirmValue, setConfirmValue] = useState(false)
   const [compactOpen, setCompactOpen] = useState(false)
   const [celebrate, setCelebrate] = useState(false)
+  const leafRain = celebrate ? <div aria-hidden="true" className="pointer-events-none fixed inset-0 z-[90] overflow-hidden">{Array.from({ length: 28 }, (_, i) => <span key={i} className="absolute top-[-12%] text-2xl animate-[viaLeafFall_3s_ease-in_forwards]" style={{ left: `${(i * 37) % 100}%`, animationDelay: `${(i % 10) * 0.12}s`, transform: `rotate(${i * 41}deg)` }}>🍃</span>)}<style>{`@keyframes viaLeafFall { from { translate: 0 -10vh; opacity: 1 } to { translate: 8vw 115vh; opacity: 0 } }`}</style></div> : null
   const [status, setStatus] = useState<"idle" | "preparing" | "approval" | "submitting" | "done" | "error">("idle")
   const [message, setMessage] = useState("")
   const [feeNanos, setFeeNanos] = useState<number | null>(null)
@@ -90,7 +91,7 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
           <button type="button" onClick={() => { setCompactOpen(false); setConfirmValue(false) }} disabled={status === "preparing" || status === "approval" || status === "submitting"} className="h-9 rounded-full border border-zinc-700 px-3 text-xs text-zinc-300 disabled:opacity-60">Sluiten</button>
         </div>
       </div> : null}
-      {celebrate && compactOpen ? <span role="status" className="text-lg" aria-label="Diamond verzonden">💎 💎 💎</span> : null}
+      {leafRain}
       {message ? <span className="sr-only" role="status" aria-live="polite">{message}</span> : null}
     </div>
   }
@@ -104,7 +105,7 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
         <button type="button" onClick={(event) => { setConfirmValue(false); (event.currentTarget.closest("details") as HTMLDetailsElement | null)?.removeAttribute("open") }} className="col-span-2 rounded-lg border border-zinc-700 px-2 py-2 text-xs text-zinc-300 hover:border-[#8fd4a9]">Sluiten</button>
       </div>
     </details>
-    {celebrate ? <span role="status" className="text-lg" aria-label="Diamond verzonden">💎 💎 💎</span> : null}
+    {leafRain}
     {(feeNanos !== null || spendNanos !== null) ? <span className="text-[11px] text-zinc-500">Prepared: {spendNanos !== null ? `${spendNanos.toLocaleString()} nanos total spend` : "value transfer"}{feeNanos !== null ? ` · ${feeNanos.toLocaleString()} nanos fee` : ""}</span> : null}
     {message ? <span className={`text-[11px] ${status === "error" ? "text-amber-300" : "text-zinc-500"}`}>{message}</span> : null}
   </div>
