@@ -149,12 +149,19 @@ export async function GET() {
     }, { status: 503 })
   }
 
-  // Country aggregation and count responses can disagree. Never publish a\n  // confirmed zero for today while the same interval has country activity.\n  const todayConsistent = !(today === 0 && countries?.some((row) => row.visitors > 0))\n  if (!todayConsistent) console.warn("[VIA analytics] Today count conflicts with country aggregate")\n\n  return NextResponse.json({\n    ok: true,
+  // Country aggregation and count responses can disagree. Never publish a
+  // confirmed zero for today while the same interval has country activity.
+  const todayConsistent = !(today === 0 && countries?.some((row) => row.visitors > 0))
+  if (!todayConsistent) console.warn("[VIA analytics] Today count conflicts with country aggregate")
+
+  return NextResponse.json({
+    ok: true,
     source: "vercel-web-analytics",
     privacy: "aggregated",
     measuredAt: now.toISOString(),
     visitors: {
-      today: todayConsistent ? today : null,\n      month,
+      today: todayConsistent ? today : null,
+      month,
       year,
     },
     countries: countries ?? [],
