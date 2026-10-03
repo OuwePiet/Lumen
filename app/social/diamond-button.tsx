@@ -80,7 +80,7 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
   }
 
   if (variant === "icon") {
-    return <div className="inline-flex flex-wrap items-center gap-2">
+    return <div ref={menuRootRef} className="inline-flex flex-wrap items-center gap-2">
       <button
         type="button"
         onClick={() => { setCompactOpen((open) => !open); setConfirmValue(false) }}
