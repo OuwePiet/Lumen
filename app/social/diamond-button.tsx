@@ -7,7 +7,7 @@ import { signViaTransaction } from "../deso-identity-sign"
 import { fetchViaRates, isViaRateStale } from "../via-live-rates"
 
 type Props = { postHash: string; receiverPublicKey: string; initialCount: number; variant?: "default" | "icon" }
-type PrepareResponse = { ok?: boolean; transactionHex?: string; feeNanos?: number | null; spendAmountNanos?: number | null; error?: string }
+type PrepareResponse = { ok?: boolean; transactionHex?: string; diamondLevel?: number; feeNanos?: number | null; spendAmountNanos?: number | null; error?: string }
 type DiamondLevelsResponse = { ok?: boolean; diamondLevelMap?: Record<string, number> }
 
 export default function DiamondButton({ postHash, receiverPublicKey, initialCount, variant = "default" }: Props) {
@@ -19,7 +19,7 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
   const [message, setMessage] = useState("")
   const [feeNanos, setFeeNanos] = useState<number | null>(null)
   const [spendNanos, setSpendNanos] = useState<number | null>(null)
-  const [diamondValues, setDiamondValues] = useState<Array<{ level: number; usd: number }> | null>(null)
+  const [diamondValues, setDiamondValues] = useState<Array<{ level: number; usd: number; nanos: number }> | null>(null)
 
   useEffect(() => {
     if (diamondValues) return
@@ -35,7 +35,7 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
       const usdRate = rates.rates?.USD
       if (typeof usdRate !== "number" || !Number.isFinite(usdRate) || isViaRateStale(rates.checkedAt)) throw new Error("RATE_UNAVAILABLE")
       const values = Object.entries(levelMap)
-        .map(([key, nanos]) => ({ level: Number(key), usd: (nanos / 1_000_000_000) * usdRate }))
+        .map(([key, nanos]) => ({ level: Number(key), usd: (nanos / 1_000_000_000) * usdRate, nanos }))
         .filter((entry) => Number.isInteger(entry.level) && entry.level >= 1 && entry.level <= 8 && Number.isFinite(entry.usd))
         .sort((a, b) => a.level - b.level)
       if (values.length) setDiamondValues(values)
@@ -45,12 +45,14 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
 
   async function prepare() {
     const session = restoreIdentitySession()
-    if (!session || !confirmValue || status === "preparing" || status === "approval" || status === "submitting") return
+    if (!session || !confirmValue || !diamondValues?.some((item) => item.level === level) || status === "preparing" || status === "approval" || status === "submitting") return
     setStatus("preparing"); setMessage("Preparing the exact value-transfer transaction…"); setFeeNanos(null); setSpendNanos(null)
     try {
       const response = await fetch("/api/via/social/diamond", { method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store", body: JSON.stringify({ action: "prepare", senderPublicKey: session.publicKey, receiverPublicKey, diamondPostHashHex: postHash, diamondLevel: level, confirmed: true }) })
       const data = await response.json() as PrepareResponse
       if (!response.ok || !data.ok || !data.transactionHex) throw new Error(data.error || "PREPARE_FAILED")
+      const selected = diamondValues?.find((item) => item.level === level)
+      if (!selected || data.diamondLevel !== level || !Number.isFinite(data.spendAmountNanos) || !Number.isFinite(data.feeNanos) || typeof data.spendAmountNanos !== "number" || typeof data.feeNanos !== "number" || data.spendAmountNanos <= 0 || data.feeNanos < 0 || data.spendAmountNanos > selected.nanos + data.feeNanos) throw new Error("DIAMOND_COST_MISMATCH")
       setFeeNanos(typeof data.feeNanos === "number" ? data.feeNanos : null); setSpendNanos(typeof data.spendAmountNanos === "number" ? data.spendAmountNanos : null)
       setStatus("approval"); setMessage("Signing the confirmed Diamond with your VIA DeSo session…")
       const signedTransactionHex = await signViaTransaction(session.publicKey, data.transactionHex)
