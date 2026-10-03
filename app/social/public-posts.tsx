@@ -225,6 +225,14 @@ export default function PublicPosts() {
     )
   }, [feedChoice, posts, mediaFilter])
 
+  useEffect(() => {
+    if (!translationPost) return
+    document.getElementById(`via-translation-${translationPost}`)?.scrollIntoView({
+      behavior: "smooth",
+      block: "center",
+    })
+  }, [translationPost])
+
   async function translatePost(post: PublicPost, targetLanguage: string) {
     setTranslationPost(post.postHash)
     setTranslationLanguage(targetLanguage)
@@ -475,7 +483,7 @@ export default function PublicPosts() {
                 </div>
 
                 {translationPost === post.postHash ? (
-                  <div className="mt-3 rounded-xl border border-[#8fd4a9]/35 bg-black/40 p-3 text-sm text-zinc-300">
+                  <div id={`via-translation-${post.postHash}`} role="region" aria-label="Post translation" className="mt-3 scroll-mt-28 rounded-xl border border-[#8fd4a9]/35 bg-black/40 p-3 text-sm text-zinc-300">
                     <div className="flex flex-wrap items-center gap-2">
                       <span>Translate:</span>
                       {([["🇳🇱","nl"],["🇬🇧","en"],["🇫🇷","fr"],["🇪🇸","es"],["🇨🇳","zh"],["🇮🇳","hi"]] as const).map(([flag, code]) => (
