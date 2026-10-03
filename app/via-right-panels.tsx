@@ -41,37 +41,37 @@ const COPY: Record<ViaLanguage | "Hindi", PanelCopy> = {
   Dutch: {
     live: "VIA Live", visitors: "VIA Bezoekers", activity: "VIA Activiteit", community: "VIA Community",
     activeNow: "Nu aanwezig", desoAccounts: "DeSo-accounts", guests: "Zonder DeSo", countries: "Landen", countryCount: "landen", countryVisitors: "bezoekers",
-    today: "Vandaag", month: "Deze maand", year: "Start VIA 17-09-2026", posts: "Posts", creators: "Actieve creators",
-    trends: "Trends", nftActivity: "NFT-activiteit", welcome: "Welcome / First Post", sourcePending: "Betrouwbare meetbron nog niet gekoppeld.",
+    today: "Vandaag", month: "Deze maand", year: "Start VIA 17-09-2026", posts: "Recente VIA-posts", creators: "Recente VIA-creators",
+    trends: "Trends", nftActivity: "Recente VIA-NFT-posts", welcome: "Welcome / First Post", sourcePending: "Betrouwbare meetbron nog niet gekoppeld.",
   },
   English: {
     live: "VIA Live", visitors: "VIA Visitors", activity: "VIA Activity", community: "VIA Community",
     activeNow: "Active now", desoAccounts: "DeSo accounts", guests: "Without DeSo", countries: "Countries", countryCount: "countries", countryVisitors: "visitors",
-    today: "Today", month: "This month", year: "Start VIA 17-09-2026", posts: "Posts", creators: "Active creators",
-    trends: "Trends", nftActivity: "NFT activity", welcome: "Welcome / First Post", sourcePending: "Reliable measurement source not connected yet.",
+    today: "Today", month: "This month", year: "Start VIA 17-09-2026", posts: "Recent VIA posts", creators: "Recent VIA creators",
+    trends: "Trends", nftActivity: "Recent VIA NFT posts", welcome: "Welcome / First Post", sourcePending: "Reliable measurement source not connected yet.",
   },
   French: {
     live: "VIA Live", visitors: "VIA Visiteurs", activity: "VIA Activité", community: "VIA Communauté",
     activeNow: "Présents maintenant", desoAccounts: "Comptes DeSo", guests: "Sans DeSo", countries: "Pays", countryCount: "pays", countryVisitors: "visiteurs",
-    today: "Aujourd’hui", month: "Ce mois-ci", year: "Start VIA 17-09-2026", posts: "Publications", creators: "Créateurs actifs",
+    today: "Aujourd’hui", month: "Ce mois-ci", year: "Start VIA 17-09-2026", posts: "Publications VIA récentes", creators: "Créateurs VIA récents",
     trends: "Tendances", nftActivity: "Activité NFT", welcome: "Welcome / First Post", sourcePending: "Source de mesure fiable pas encore connectée.",
   },
   Spanish: {
     live: "VIA Live", visitors: "VIA Visitantes", activity: "VIA Actividad", community: "VIA Comunidad",
     activeNow: "Activos ahora", desoAccounts: "Cuentas DeSo", guests: "Sin DeSo", countries: "Países", countryCount: "países", countryVisitors: "visitantes",
-    today: "Hoy", month: "Este mes", year: "Start VIA 17-09-2026", posts: "Publicaciones", creators: "Creadores activos",
+    today: "Hoy", month: "Este mes", year: "Start VIA 17-09-2026", posts: "Publicaciones VIA recientes", creators: "Creadores VIA recientes",
     trends: "Tendencias", nftActivity: "Actividad NFT", welcome: "Welcome / First Post", sourcePending: "La fuente de medición fiable aún no está conectada.",
   },
   Chinese: {
     live: "VIA 实时", visitors: "VIA 访客", activity: "VIA 活动", community: "VIA 社区",
     activeNow: "当前在线", desoAccounts: "DeSo 账户", guests: "未使用 DeSo", countries: "国家/地区", countryCount: "个国家/地区", countryVisitors: "位访客",
-    today: "今天", month: "本月", year: "Start VIA 17-09-2026", posts: "帖子", creators: "活跃创作者",
+    today: "今天", month: "本月", year: "Start VIA 17-09-2026", posts: "近期 VIA 帖子", creators: "近期 VIA 创作者",
     trends: "趋势", nftActivity: "NFT 活动", welcome: "Welcome / First Post", sourcePending: "尚未连接可靠的统计来源。",
   },
   Hindi: {
     live: "VIA लाइव", visitors: "VIA आगंतुक", activity: "VIA गतिविधि", community: "VIA समुदाय",
     activeNow: "अभी सक्रिय", desoAccounts: "DeSo खाते", guests: "DeSo के बिना", countries: "देश", countryCount: "देश", countryVisitors: "आगंतुक",
-    today: "आज", month: "इस महीने", year: "Start VIA 17-09-2026", posts: "पोस्ट", creators: "सक्रिय क्रिएटर",
+    today: "आज", month: "इस महीने", year: "Start VIA 17-09-2026", posts: "हालिया VIA पोस्ट", creators: "हालिया VIA क्रिएटर",
     trends: "रुझान", nftActivity: "NFT गतिविधि", welcome: "स्वागत / पहली पोस्ट", sourcePending: "विश्वसनीय मापन स्रोत अभी जुड़ा नहीं है।",
   },
 }
@@ -161,6 +161,24 @@ export default function ViaRightPanels() {
     return () => controller.abort()
   }, [])
 
+
+  useEffect(() => {
+    const controller = new AbortController()
+    void fetch("/api/via/analytics/activity", {
+      signal: controller.signal,
+      headers: { Accept: "application/json" },
+    })
+      .then(async (response) => {
+        if (!response.ok) return
+        const data = await response.json() as ActivityAnalyticsResponse
+        if (!data.ok || data.scope !== "bounded-recent-via-posts") return
+        if (typeof data.activity?.posts === "number") setActivityPosts(data.activity.posts)
+        if (typeof data.activity?.creators === "number") setActivityCreators(data.activity.creators)
+        if (typeof data.activity?.nftPosts === "number") setActivityNfts(data.activity.nftPosts)
+      })
+      .catch(() => {})
+    return () => controller.abort()
+  }, [])
 
   const copy = COPY[language]
 
