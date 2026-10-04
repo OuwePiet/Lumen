@@ -6,7 +6,7 @@ import { restoreIdentitySession } from "../deso-identity-session"
 import { signViaTransaction } from "../deso-identity-sign"
 
 type Props = { postHash: string; receiverPublicKey: string; initialCount: number; variant?: "default" | "icon" }
-type PrepareResponse = { ok?: boolean; transactionHex?: string; diamondLevel?: number; feeNanos?: number | null; totalInputNanos?: number | null; changeAmountNanos?: number | null; error?: string }
+type PrepareResponse = { ok?: boolean; transactionHex?: string; diamondLevel?: number; feeNanos?: number | null; error?: string }
 type DiamondLevelsResponse = { ok?: boolean; diamondLevelMap?: Record<string, number> }
 
 export default function DiamondButton({ postHash, receiverPublicKey, initialCount, variant = "default" }: Props) {
