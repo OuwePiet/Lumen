@@ -124,7 +124,8 @@ export async function POST(request: Request) {
       })
       if (!response.ok) return noStore({ ok: false, error: "DESO_TRANSACTION_NOT_CONFIRMED" }, 502)
       const transaction = await response.json()
-      if (!transaction || typeof transaction !== "object" || Array.isArray(transaction)) return noStore({ ok: false, error: "INVALID_DESO_TRANSACTION_RESPONSE" }, 502)
+      if (!transaction || typeof transaction !== "object" || Array.isArray(transaction) || typeof transaction.TxnFound !== "boolean") return noStore({ ok: false, error: "INVALID_DESO_TRANSACTION_RESPONSE" }, 502)
+      if (!transaction.TxnFound) return noStore({ ok: false, error: "DESO_TRANSACTION_NOT_FOUND" }, 409)
       return noStore({ ok: true, transaction })
     } catch {
       return noStore({ ok: false, error: "DESO_TRANSACTION_UNAVAILABLE" }, 503)
