@@ -221,6 +221,7 @@ export default function ProfilePage() {
   const [replyingToOwnPost, setReplyingToOwnPost] = useState<string | null>(null)
   const [replyComments, setReplyComments] = useState<OwnPost[]>([])
   const [replyCommentsBusy, setReplyCommentsBusy] = useState(false)
+  const [commentsRefresh, setCommentsRefresh] = useState(0)
   useEffect(() => {
     if (!replyingToOwnPost) { setReplyComments([]); return }
     const controller = new AbortController()
@@ -231,7 +232,7 @@ export default function ProfilePage() {
       .catch(() => { if (!controller.signal.aborted) setReplyComments([]) })
       .finally(() => { if (!controller.signal.aborted) setReplyCommentsBusy(false) })
     return () => controller.abort()
-  }, [replyingToOwnPost])
+  }, [replyingToOwnPost, commentsRefresh])
   const [ownPostsLoading, setOwnPostsLoading] = useState(false)
   const [ownPostsError, setOwnPostsError] = useState(false)
   const [postsRefresh, setPostsRefresh] = useState(0)
@@ -466,7 +467,7 @@ export default function ProfilePage() {
                     {replyComments.map((comment) => <div key={comment.postHash} className="rounded-lg border border-zinc-800 p-2 text-sm"><p className="whitespace-pre-wrap break-words">{comment.body}</p></div>)}
                   </div>
                   <p className="mt-4 text-sm text-zinc-400">Replying to your post</p>
-                  <PostComposer parentStakeID={post.postHash} compact onCancel={() => setReplyingToOwnPost(null)} onDone={() => { setReplyingToOwnPost(null); setPostsRefresh((value) => value + 1) }} />
+                  <PostComposer parentStakeID={post.postHash} compact onCancel={() => setReplyingToOwnPost(null)} onDone={() => { setCommentsRefresh((value) => value + 1); setPostsRefresh((value) => value + 1) }} />
                 </section>
               </div>
             ) : null}
