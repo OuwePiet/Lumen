@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Heart } from "lucide-react"
+import { ThumbsUp } from "lucide-react"
 import { restoreIdentitySession, VIA_IDENTITY_EVENT, type ViaIdentitySession } from "../deso-identity-session"
 import { signViaTransaction } from "../deso-identity-sign"
 
@@ -81,7 +81,7 @@ export default function LikeButton({ postHash, initialCount, variant = "default"
           ? `inline-flex h-9 min-w-9 items-center justify-center gap-1 rounded-full border px-2 text-xs transition disabled:cursor-wait disabled:opacity-60 ${liked ? "border-[#8fd4a9] bg-[#285f40] text-white" : "border-zinc-800 text-zinc-300 hover:border-[#8fd4a9] hover:text-white"}`
           : "rounded-full border border-[#285f40]/70 px-3 py-1 text-[#9adbb2] hover:border-[#8fd4a9]/55 disabled:cursor-wait disabled:opacity-60"}
       >
-        {variant === "icon" ? <><Heart className={`h-4 w-4 ${liked ? "fill-current" : ""}`} aria-hidden="true" /><span>{count}</span></> : (busy ? "Waiting…" : liked ? `Unlike · ${count}` : `Like · ${count}`)}
+        {variant === "icon" ? <><ThumbsUp className={`h-4 w-4 ${liked ? "fill-current" : ""}`} aria-hidden="true" /><span>{count}</span></> : (busy ? "Waiting…" : liked ? `Unlike · ${count}` : `Like · ${count}`)}
       </button>
       {message ? <span className="sr-only" role="status" aria-live="polite">{message}</span> : null}
     </span>
