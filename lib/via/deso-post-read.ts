@@ -2,7 +2,7 @@ import { fetchDeSo } from "../../app/deso-api"
 
 export type ViaPublicPost = {
   postHash: string
-  parentStakeID: string
+  parentStakeID?: string
   publicKey: string
   username: string
   body: string
