@@ -83,11 +83,8 @@ export async function POST(request: Request) {
       const data = await response.json() as Record<string, unknown>
       const transactionHex = data.TransactionHex
       const feeNanos = data.FeeNanos
-      const totalInputNanos = data.TotalInputNanos
-      const changeAmountNanos = data.ChangeAmountNanos
-      // Preserve DeSo transaction fields unchanged; do not calculate a VIA price.
       if (!validHex(transactionHex)) return noStore({ ok: false, error: "INVALID_PREPARED_TRANSACTION" }, 502)
-      return noStore({ ok: true, transactionHex, feeNanos: typeof feeNanos === "number" ? feeNanos : null, totalInputNanos, changeAmountNanos, diamondLevel })
+      return noStore({ ok: true, transactionHex, feeNanos: typeof feeNanos === "number" ? feeNanos : null, diamondLevel })
     } catch {
       return noStore({ ok: false, error: "DESO_PREPARE_UNAVAILABLE" }, 503)
     }
