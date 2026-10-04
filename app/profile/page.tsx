@@ -31,6 +31,7 @@ type PublicProfile = {
 
 type ProfileResponse = { ok?: boolean; profile?: PublicProfile }
 type OwnPost = { postHash: string; body: string; imageUrls: string[]; videoUrls: string[]; timestampNanos: number; likeCount: number; diamondCount: number; commentCount: number; repostCount: number; quoteRepostCount: number; comments?: OwnPost[] }
+type ReplyComment = { postHash: string; username?: string; publicKey?: string; body: string; comments?: ReplyComment[] }
 type OwnPostsResponse = { ok?: boolean; posts?: OwnPost[] }
 
 type Copy = {
@@ -219,7 +220,7 @@ export default function ProfilePage() {
   const [profile, setProfile] = useState<PublicProfile | null>(null)
   const [ownPosts, setOwnPosts] = useState<OwnPost[]>([])
   const [replyingToOwnPost, setReplyingToOwnPost] = useState<string | null>(null)
-  const [replyComments, setReplyComments] = useState<OwnPost[]>([])
+  const [replyComments, setReplyComments] = useState<ReplyComment[]>([])
   const [replyCommentsBusy, setReplyCommentsBusy] = useState(false)
   const [replyCommentsError, setReplyCommentsError] = useState(false)
   const [commentsRefresh, setCommentsRefresh] = useState(0)
@@ -230,7 +231,7 @@ export default function ProfilePage() {
     setReplyCommentsError(false)
     fetch(`/api/via/post?hash=${encodeURIComponent(replyingToOwnPost)}&comments=1`, { cache: "no-store", signal: controller.signal })
       .then((response) => { if (!response.ok) throw new Error("DESO_COMMENTS_UNAVAILABLE"); return response.json() })
-      .then((data: { comments?: OwnPost[] } | null) => { if (!controller.signal.aborted) setReplyComments(Array.isArray(data?.comments) ? data.comments : []) })
+      .then((data: { comments?: ReplyComment[] } | null) => { if (!controller.signal.aborted) setReplyComments(Array.isArray(data?.comments) ? data.comments : []) })
       .catch(() => { if (!controller.signal.aborted) setReplyCommentsError(true) })
       .finally(() => { if (!controller.signal.aborted) setReplyCommentsBusy(false) })
     return () => controller.abort()
@@ -467,7 +468,7 @@ export default function ProfilePage() {
                   <div className="mt-3 max-h-40 space-y-2 overflow-y-auto" aria-label="DeSo reactions">
                     {replyCommentsBusy ? <p className="text-xs text-zinc-400">Loading DeSo replies…</p> : null}
                         {replyCommentsError ? <p role="alert" className="text-xs text-amber-300">DeSo replies could not be loaded. Try reopening this post.</p> : null}
-                    {replyComments.map((comment) => <div key={comment.postHash} className="rounded-lg border border-zinc-800 p-2 text-sm"><p className="whitespace-pre-wrap break-words">{comment.body}</p>{comment.comments?.map((child) => <div key={child.postHash} className="ml-4 mt-2 border-l border-zinc-700 pl-3"><p className="whitespace-pre-wrap break-words">{child.body}</p></div>)}</div>)}
+                    {replyComments.map((comment) => <div key={comment.postHash} className="rounded-lg border border-zinc-800 p-2 text-sm"><p className="text-xs text-zinc-400">{comment.username ? `@${comment.username}` : comment.publicKey ? `${comment.publicKey.slice(0, 10)}…` : "DeSo member"}</p><p className="whitespace-pre-wrap break-words">{comment.body}</p>{comment.comments?.map((child) => <div key={child.postHash} className="ml-4 mt-2 border-l border-zinc-700 pl-3"><p className="text-xs text-zinc-400">{child.username ? `@${child.username}` : child.publicKey ? `${child.publicKey.slice(0, 10)}…` : "DeSo member"}</p><p className="whitespace-pre-wrap break-words">{child.body}</p></div>)}</div>)}
                   </div>
                   <p className="mt-4 text-sm text-zinc-400">Replying to your post</p>
                   <PostComposer parentStakeID={post.postHash} compact onCancel={() => setReplyingToOwnPost(null)} onDone={() => { setReplyingToOwnPost(null); setPostsRefresh((value) => value + 1) }} />
