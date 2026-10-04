@@ -81,7 +81,7 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
       const upgradeNanos = selected && typeof previousNanos === "number" ? selected.nanos - previousNanos : null
       if (!selected || upgradeNanos === null || upgradeNanos <= 0 || data.diamondLevel !== chosenLevel || !Number.isFinite(data.spendAmountNanos) || !Number.isFinite(data.feeNanos) || typeof data.spendAmountNanos !== "number" || typeof data.feeNanos !== "number" || data.spendAmountNanos <= 0 || data.feeNanos < 0 || data.spendAmountNanos > upgradeNanos + data.feeNanos) throw new Error("DIAMOND_COST_MISMATCH")
       setFeeNanos(typeof data.feeNanos === "number" ? data.feeNanos : null); setSpendNanos(typeof data.spendAmountNanos === "number" ? data.spendAmountNanos : null)
-      setStatus("approval"); setMessage("Signing the confirmed Diamond with your VIA DeSo session…")
+      setStatus("approval"); setMessage("DeSo prepared the transaction. Requesting identity signature; no transaction has been submitted yet…")
       const signedTransactionHex = await signViaTransaction(session.publicKey, data.transactionHex)
       setStatus("submitting"); setMessage("Submitting your confirmed Diamond to DeSo…")
       submissionAttempted = true
@@ -126,7 +126,7 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
         <Gem className="h-4 w-4" aria-hidden="true" /><span>{count}</span>
       </button>
       {compactOpen ? <div className="basis-full rounded-xl border border-zinc-800 bg-[#050806] p-2">
-        <div className="flex max-w-full flex-wrap items-center gap-1.5" aria-label="Diamond value">
+        <div className="flex max-w-full flex-wrap items-center gap-1.5" aria-label="DeSo diamond level total values; upgrade cost may be lower">
           {(diamondValues ?? Array.from({ length: 8 }, (_, index) => ({ level: index + 1, usd: NaN }))).map((entry) => (
             <button key={entry.level} type="button" onClick={() => { if (!Number.isFinite(entry.usd) || status === "preparing" || status === "approval" || status === "submitting" || submissionLocked) return; setLevel(entry.level); setConfirmValue(true) }} aria-pressed={level === entry.level} className={`min-w-[3.35rem] rounded-xl border px-2 py-1 text-center text-[10px] transition ${level === entry.level ? "border-[#8fd4a9] bg-[#285f40] text-white" : "border-zinc-800 text-zinc-400 hover:border-[#8fd4a9] hover:text-white"}`}>
               <span className="block">{Number.isFinite(entry.usd) ? `$${entry.usd < 0.01 ? entry.usd.toFixed(3) : entry.usd < 1 ? entry.usd.toFixed(2) : entry.usd.toLocaleString(undefined, { maximumFractionDigits: 2 })}` : "prijs laden…"}</span>
@@ -134,7 +134,7 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
             </button>
           ))}
         </div>
-        {confirmValue ? <div className="mt-2 rounded-lg border border-amber-500/50 p-2 text-xs text-amber-200">Confirm diamond level {level}. DeSo determines the actual upgrade cost and network fee before signing. <button type="button" className="ml-2 rounded border px-2 py-1" onClick={() => { setConfirmValue(false); void prepare(level) }}>Confirm</button><button type="button" className="ml-2 rounded border px-2 py-1" onClick={() => setConfirmValue(false)}>Cancel</button></div> : null}
+        {confirmValue ? <div className="mt-2 rounded-lg border border-amber-500/50 p-2 text-xs text-amber-200">Confirm diamond level {level}. Listed prices are full DeSo level values, not upgrade prices. DeSo calculates the actual upgrade and fee. <button type="button" className="ml-2 rounded border px-2 py-1" onClick={() => { setConfirmValue(false); void prepare(level) }}>Confirm</button><button type="button" className="ml-2 rounded border px-2 py-1" onClick={() => setConfirmValue(false)}>Cancel</button></div> : null}
         <div className="mt-2 flex flex-wrap gap-2">
           <button type="button" onClick={() => { setCompactOpen(false); setConfirmValue(false) }} disabled={status === "preparing" || status === "approval" || status === "submitting"} className="h-9 rounded-full border border-zinc-700 px-3 text-xs text-zinc-300 disabled:opacity-60">Sluiten</button>
         </div>
@@ -153,7 +153,7 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
         <button type="button" onClick={(event) => { setConfirmValue(false); (event.currentTarget.closest("details") as HTMLDetailsElement | null)?.removeAttribute("open") }} className="col-span-2 rounded-lg border border-zinc-700 px-2 py-2 text-xs text-zinc-300 hover:border-[#8fd4a9]">Sluiten</button>
       </div>
     </details>
-    {confirmValue ? <span className="text-xs">Confirm diamond level {level}. DeSo calculates the upgrade cost and fee before signing. <button type="button" className="rounded border px-2" onClick={() => { setConfirmValue(false); void prepare(level) }}>Confirm</button> <button type="button" className="rounded border px-2" onClick={() => setConfirmValue(false)}>Cancel</button></span> : null}
+    {confirmValue ? <span className="text-xs">Confirm diamond level {level}. Listed prices are full DeSo level values, not upgrade prices. DeSo calculates the actual upgrade and fee. <button type="button" className="rounded border px-2" onClick={() => { setConfirmValue(false); void prepare(level) }}>Confirm</button> <button type="button" className="rounded border px-2" onClick={() => setConfirmValue(false)}>Cancel</button></span> : null}
     {leafRain}
     {(feeNanos !== null || spendNanos !== null) ? <span className="text-[11px] text-zinc-500">Prepared: {spendNanos !== null ? `${spendNanos.toLocaleString()} nanos total spend` : "value transfer"}{feeNanos !== null ? ` · ${feeNanos.toLocaleString()} nanos fee` : ""}</span> : null}
     {message ? <span className={`text-[11px] ${status === "error" ? "text-amber-300" : "text-zinc-500"}`}>{message}</span> : null}
