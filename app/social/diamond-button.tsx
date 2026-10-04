@@ -112,8 +112,25 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
         setMessage("DeSo submission returned no verifiable transaction hash. Check DeSo before any further action; do not resend.")
         return
       }
+      const transactionResponse = await fetch("/api/via/social/diamond", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        cache: "no-store",
+        body: JSON.stringify({ action: "transaction-status", txnHashHex: submittedTxnHash }),
+      }).catch(() => null)
+      if (!transactionResponse?.ok) {
+        setStatus("error")
+        setMessage("DeSo transaction lookup is pending or unavailable. Check DeSo before any further action; do not resend.")
+        return
+      }
+      const transactionStatus = await transactionResponse.json() as { ok?: boolean; transaction?: unknown }
+      if (!transactionStatus.ok || !transactionStatus.transaction) {
+        setStatus("error")
+        setMessage("DeSo transaction not yet verified. Check DeSo before any further action; do not resend.")
+        return
+      }
       setConfirmValue(false)
-      setMessage("DeSo accepted submission. Waiting for the DeSo reader state to confirm the diamond…")
+      setMessage("DeSo transaction located. Waiting for the DeSo reader state to confirm the diamond…")
       let confirmedByDeSo = false
       for (let attempt = 0; attempt < 4; attempt++) {
         await new Promise((resolve) => setTimeout(resolve, 4000 + attempt * 3000))
