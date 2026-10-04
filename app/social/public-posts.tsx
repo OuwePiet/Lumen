@@ -31,6 +31,7 @@ type PublicPost = {
   isNft: boolean
   postExtraData?: Record<string, string>
   sourcePublicKey?: string
+  comments?: PublicPost[]
 }
 
 type PostsResponse = { ok?: boolean; posts?: PublicPost[] }
