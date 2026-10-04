@@ -152,6 +152,7 @@ export default function PublicPosts() {
   const showerEligiblePosts = useMemo(() => showerSelectedPosts.filter((post) => typeof showerExisting[post.postHash] === "number" && showerExisting[post.postHash] < showerLevel && (!session || post.publicKey !== session.publicKey)), [showerSelectedPosts, showerExisting, showerLevel, session])
   const [showerExistingBusy, setShowerExistingBusy] = useState(false)
   const [showerExistingError, setShowerExistingError] = useState(false)
+  const [showerPreviewBusy, setShowerPreviewBusy] = useState(false)
   const showerValueNanos = showerEligiblePosts.reduce((sum, post) => {
     const selected = showerLevels?.[String(showerLevel)]
     const previous = showerExisting[post.postHash] === 0 ? 0 : showerLevels?.[String(showerExisting[post.postHash])]
@@ -177,7 +178,6 @@ export default function PublicPosts() {
     readLevels().catch(() => { if (!controller.signal.aborted) setShowerExistingError(true) }).finally(() => { if (!controller.signal.aborted) setShowerExistingBusy(false) })
     return () => controller.abort()
   }, [showerTarget, showerPreview, showerSelectedPosts, session?.publicKey])
-  const [showerPreviewBusy, setShowerPreviewBusy] = useState(false)
   useEffect(() => {
     if (!showerTarget) { setShowerPreview(null); return }
     const controller = new AbortController()
