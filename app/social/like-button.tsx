@@ -36,7 +36,7 @@ export default function LikeButton({ postHash, initialCount, variant = "default"
   useEffect(() => setCount(initialCount), [initialCount])
 
   async function toggleLike(emoji?: string) {
-    if (emoji) setChosenEmoji(emoji)
+    if (emoji && liked) { setChosenEmoji(emoji); setEmojiOpen(false); return }
     setEmojiOpen(false)
     if (!session || busy) return
     setBusy(true)
@@ -62,6 +62,7 @@ export default function LikeButton({ postHash, initialCount, variant = "default"
       if (!submitResponse.ok || !submitData.ok) throw new Error(submitData.error || "SUBMIT_FAILED")
       const nextLiked = !liked
       setLiked(nextLiked)
+      if (nextLiked && emoji) setChosenEmoji(emoji)
       setCount((current) => Math.max(0, current + (nextLiked ? 1 : -1)))
       setMessage(nextLiked ? "Liked on DeSo." : "Like removed on DeSo.")
       setBusy(false)
@@ -87,7 +88,7 @@ export default function LikeButton({ postHash, initialCount, variant = "default"
       >
         {variant === "icon" ? <><Heart className={`h-4 w-4 ${liked ? "fill-current" : ""}`} aria-hidden="true" /><span>{count}</span></> : (busy ? "Waiting…" : liked ? `Unlike · ${count}` : `Like · ${count}`)}
       </button>
-      {variant === "icon" && emojiOpen ? <span className="inline-flex flex-wrap gap-1 rounded-lg border border-zinc-700 p-1" role="group" aria-label="Choose emoji for DeSo like">{["❤️", "👍", "😂", "😮", "😢", "🎉"].map((emoji) => <button key={emoji} type="button" disabled={busy} onClick={() => void toggleLike(emoji)} title={`DeSo Like ${emoji}`} className="rounded px-1.5 py-1 text-base hover:bg-white/10">{emoji}</button>)}<button type="button" onClick={() => setEmojiOpen(false)} className="rounded px-1 text-xs">Sluiten</button></span> : null}
+      {variant === "icon" && emojiOpen ? <span className="inline-flex flex-wrap gap-1 rounded-lg border border-zinc-700 p-1" role="group" aria-label="VIA emoji keuze">{["❤️", "👍", "😂", "😮", "😢", "🎉"].map((emoji) => <button key={emoji} type="button" disabled={busy} onClick={() => void toggleLike(emoji)} title={`VIA emoji ${emoji}`} className="rounded px-1.5 py-1 text-base hover:bg-white/10">{emoji}</button>)}<button type="button" onClick={() => setEmojiOpen(false)} className="rounded px-1 text-xs">Sluiten</button></span> : null}
       {liked && variant === "icon" ? <span className="text-xs" aria-label="Selected emoji">{chosenEmoji}</span> : null}
       {message ? <span className="sr-only" role="status" aria-live="polite">{message}</span> : null}
     </span>
