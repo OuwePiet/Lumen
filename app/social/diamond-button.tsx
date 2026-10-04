@@ -112,21 +112,28 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
         setMessage("DeSo submission returned no verifiable transaction hash. Check DeSo before any further action; do not resend.")
         return
       }
-      const transactionResponse = await fetch("/api/via/social/diamond", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        cache: "no-store",
-        body: JSON.stringify({ action: "transaction-status", txnHashHex: submittedTxnHash }),
-      }).catch(() => null)
-      if (!transactionResponse?.ok) {
-        setStatus("error")
-        setMessage("DeSo transaction lookup is pending or unavailable. Check DeSo before any further action; do not resend.")
-        return
+      let committedByDeSo = false
+      for (let attempt = 0; attempt < 4; attempt++) {
+        if (attempt > 0) await new Promise((resolve) => setTimeout(resolve, 4000 + attempt * 3000))
+        try {
+          const transactionResponse = await fetch("/api/via/social/diamond", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            cache: "no-store",
+            body: JSON.stringify({ action: "transaction-status", txnHashHex: submittedTxnHash }),
+          })
+          if (transactionResponse.ok) {
+            const transactionStatus = await transactionResponse.json() as { ok?: boolean; transaction?: { TxnFound?: boolean } }
+            if (transactionStatus.ok && transactionStatus.transaction?.TxnFound === true) {
+              committedByDeSo = true
+              break
+            }
+          }
+        } catch { /* A failed read must never cause a paid transaction to be resubmitted. */ }
       }
-      const transactionStatus = await transactionResponse.json() as { ok?: boolean; transaction?: unknown }
-      if (!transactionStatus.ok || !transactionStatus.transaction) {
+      if (!committedByDeSo) {
         setStatus("error")
-        setMessage("DeSo transaction not yet verified. Check DeSo before any further action; do not resend.")
+        setMessage("DeSo has not confirmed the committed transaction yet. Check DeSo before any further action; do not resend.")
         return
       }
       setConfirmValue(false)
