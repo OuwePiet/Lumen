@@ -303,7 +303,7 @@ export default function ProfilePage() {
       return
     }
     const controller = new AbortController()
-    setOwnPosts([])
+    // Preserve the open reply dialog while refreshing posts from DeSo.
     setOwnPostsError(false)
     setOwnPostsLoading(true)
     void fetch(`/api/via/posts?identity=${encodeURIComponent(session.publicKey)}&limit=50`, { cache: "no-store", signal: controller.signal })
@@ -474,7 +474,7 @@ export default function ProfilePage() {
                     {replyComments.map((comment) => <div key={comment.postHash} className="rounded-lg border border-zinc-800 p-2 text-sm"><p className="text-xs text-zinc-400">{comment.username ? `@${comment.username}` : comment.publicKey ? `${comment.publicKey.slice(0, 10)}…` : "DeSo member"}</p><p className="whitespace-pre-wrap break-words">{comment.body}</p><button type="button" className="mt-1 text-xs text-[#9adbb2]" onClick={() => setReplyParent({ hash: comment.postHash, name: comment.username ? `@${comment.username}` : "DeSo member" })}>Reply</button><div className="mt-2 flex flex-wrap gap-2"><LikeButton postHash={comment.postHash} initialCount={comment.likeCount} variant="icon" /><RepostButton postHash={comment.postHash} initialCount={comment.repostCount + comment.quoteRepostCount} variant="icon" /><span className="text-xs text-zinc-400">Diamonds · {comment.diamondCount}</span></div>{comment.comments?.map((child) => <div key={child.postHash} className="ml-4 mt-2 border-l border-zinc-700 pl-3"><p className="text-xs text-zinc-400">{child.username ? `@${child.username}` : child.publicKey ? `${child.publicKey.slice(0, 10)}…` : "DeSo member"}</p><p className="whitespace-pre-wrap break-words">{child.body}</p><button type="button" className="mt-1 text-xs text-[#9adbb2]" onClick={() => setReplyParent({ hash: child.postHash, name: child.username ? `@${child.username}` : "DeSo member" })}>Reply</button><div className="mt-2 flex flex-wrap gap-2"><LikeButton postHash={child.postHash} initialCount={child.likeCount} variant="icon" /><RepostButton postHash={child.postHash} initialCount={child.repostCount + child.quoteRepostCount} variant="icon" /><span className="text-xs text-zinc-400">Diamonds · {child.diamondCount}</span></div></div>)}</div>)}
                   </div>
                   <p className="mt-4 text-sm text-zinc-400">Replying to {replyParent?.name ?? "your post"}</p>
-                  <PostComposer key={replyParent?.hash ?? post.postHash} parentStakeID={replyParent?.hash ?? post.postHash} compact onCancel={() => { setReplyParent(null); setReplyingToOwnPost(null) }} onDone={() => { setReplyParent(null); setCommentsRefresh((value) => value + 1); setPostsRefresh((value) => value + 1) }} />
+                  <PostComposer key={replyParent?.hash ?? post.postHash} parentStakeID={replyParent?.hash ?? post.postHash} compact onCancel={() => { setReplyParent(null); setReplyingToOwnPost(null) }} onDone={() => { setReplyParent(null); setCommentsRefresh((value) => value + 1) }} />
                 </section>
               </div>
             ) : null}
