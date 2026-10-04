@@ -540,7 +540,7 @@ export default function PublicPosts() {
                         {commentPosts.map((comment) => <div key={comment.postHash} className="rounded-lg border border-zinc-800 p-2 text-sm"><p className="text-xs text-zinc-400">{comment.username ? `@${comment.username}` : shortPublicKey(comment.publicKey)}</p><p className="mt-1 whitespace-pre-wrap break-words">{comment.body}</p>{comment.comments?.map((child) => <div key={child.postHash} className="ml-4 mt-2 border-l border-zinc-700 pl-3"><p className="text-xs text-zinc-400">{child.username ? `@${child.username}` : shortPublicKey(child.publicKey)}</p><p className="whitespace-pre-wrap break-words">{child.body}</p></div>)}</div>)}
                       </div>
                       <p className="mt-4 text-sm text-zinc-400">Replying to {creatorUsername ? `@${creatorUsername}` : shortPublicKey(post.publicKey)}</p>
-                      {session ? <PostComposer parentStakeID={post.postHash} compact onCancel={() => setReplyingTo(null)} onDone={() => { setReplyingTo(null); void loadPosts() }} /> : <p className="mt-4 text-sm text-zinc-400">Sign in with DeSo to write a reply. Existing replies are public.</p>}
+                      {session ? <PostComposer parentStakeID={post.postHash} compact onCancel={() => setReplyingTo(null)} onDone={() => { setCommentsRefresh((value) => value + 1); void loadPosts() }} /> : <p className="mt-4 text-sm text-zinc-400">Sign in with DeSo to write a reply. Existing replies are public.</p>}
                     </section>
                   </div>
                 ) : null}
