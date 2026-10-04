@@ -221,15 +221,17 @@ export default function ProfilePage() {
   const [replyingToOwnPost, setReplyingToOwnPost] = useState<string | null>(null)
   const [replyComments, setReplyComments] = useState<OwnPost[]>([])
   const [replyCommentsBusy, setReplyCommentsBusy] = useState(false)
+  const [replyCommentsError, setReplyCommentsError] = useState(false)
   const [commentsRefresh, setCommentsRefresh] = useState(0)
   useEffect(() => {
     if (!replyingToOwnPost) { setReplyComments([]); return }
     const controller = new AbortController()
     setReplyCommentsBusy(true)
+    setReplyCommentsError(false)
     fetch(`/api/via/post?hash=${encodeURIComponent(replyingToOwnPost)}&comments=1`, { cache: "no-store", signal: controller.signal })
-      .then((response) => response.ok ? response.json() : null)
+      .then((response) => { if (!response.ok) throw new Error("DESO_COMMENTS_UNAVAILABLE"); return response.json() })
       .then((data: { comments?: OwnPost[] } | null) => { if (!controller.signal.aborted) setReplyComments(Array.isArray(data?.comments) ? data.comments : []) })
-      .catch(() => { if (!controller.signal.aborted) setReplyComments([]) })
+      .catch(() => { if (!controller.signal.aborted) setReplyCommentsError(true) })
       .finally(() => { if (!controller.signal.aborted) setReplyCommentsBusy(false) })
     return () => controller.abort()
   }, [replyingToOwnPost, commentsRefresh])
@@ -464,6 +466,7 @@ export default function ProfilePage() {
                   </div>
                   <div className="mt-3 max-h-40 space-y-2 overflow-y-auto" aria-label="DeSo reactions">
                     {replyCommentsBusy ? <p className="text-xs text-zinc-400">Loading DeSo replies…</p> : null}
+                        {replyCommentsError ? <p role="alert" className="text-xs text-amber-300">DeSo replies could not be loaded. Try reopening this post.</p> : null}
                     {replyComments.map((comment) => <div key={comment.postHash} className="rounded-lg border border-zinc-800 p-2 text-sm"><p className="whitespace-pre-wrap break-words">{comment.body}</p></div>)}
                   </div>
                   <p className="mt-4 text-sm text-zinc-400">Replying to your post</p>
