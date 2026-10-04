@@ -471,7 +471,7 @@ export default function ProfilePage() {
                     {replyComments.map((comment) => <div key={comment.postHash} className="rounded-lg border border-zinc-800 p-2 text-sm"><p className="text-xs text-zinc-400">{comment.username ? `@${comment.username}` : comment.publicKey ? `${comment.publicKey.slice(0, 10)}…` : "DeSo member"}</p><p className="whitespace-pre-wrap break-words">{comment.body}</p>{comment.comments?.map((child) => <div key={child.postHash} className="ml-4 mt-2 border-l border-zinc-700 pl-3"><p className="text-xs text-zinc-400">{child.username ? `@${child.username}` : child.publicKey ? `${child.publicKey.slice(0, 10)}…` : "DeSo member"}</p><p className="whitespace-pre-wrap break-words">{child.body}</p></div>)}</div>)}
                   </div>
                   <p className="mt-4 text-sm text-zinc-400">Replying to your post</p>
-                  <PostComposer parentStakeID={post.postHash} compact onCancel={() => setReplyingToOwnPost(null)} onDone={() => { setReplyingToOwnPost(null); setPostsRefresh((value) => value + 1) }} />
+                  <PostComposer parentStakeID={post.postHash} compact onCancel={() => setReplyingToOwnPost(null)} onDone={() => { setCommentsRefresh((value) => value + 1); setPostsRefresh((value) => value + 1) }} />
                 </section>
               </div>
             ) : null}
