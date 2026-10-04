@@ -96,15 +96,17 @@ export default function PublicPosts() {
   const [replyingTo, setReplyingTo] = useState<string | null>(null)
   const [commentPosts, setCommentPosts] = useState<PublicPost[]>([])
   const [commentsBusy, setCommentsBusy] = useState(false)
+  const [commentsError, setCommentsError] = useState(false)
   const [commentsRefresh, setCommentsRefresh] = useState(0)
   useEffect(() => {
     if (!replyingTo) { setCommentPosts([]); return }
     const controller = new AbortController()
     setCommentsBusy(true)
+    setCommentsError(false)
     fetch(`/api/via/post?hash=${encodeURIComponent(replyingTo)}&comments=1`, { cache: "no-store", signal: controller.signal })
-      .then((response) => response.ok ? response.json() : null)
+      .then((response) => { if (!response.ok) throw new Error("DESO_COMMENTS_UNAVAILABLE"); return response.json() })
       .then((data: { comments?: PublicPost[] } | null) => { if (!controller.signal.aborted) setCommentPosts(Array.isArray(data?.comments) ? data.comments : []) })
-      .catch(() => { if (!controller.signal.aborted) setCommentPosts([]) })
+      .catch(() => { if (!controller.signal.aborted) setCommentsError(true) })
       .finally(() => { if (!controller.signal.aborted) setCommentsBusy(false) })
     return () => controller.abort()
   }, [replyingTo, commentsRefresh])
@@ -531,6 +533,7 @@ export default function PublicPosts() {
                       </div>
                       <div className="mt-3 max-h-40 space-y-2 overflow-y-auto" aria-label="DeSo reactions">
                         {commentsBusy ? <p className="text-xs text-zinc-400">Loading DeSo replies…</p> : null}
+                        {commentsError ? <p role="alert" className="text-xs text-amber-300">DeSo replies could not be loaded. Try reopening this post.</p> : null}
                         {commentPosts.map((comment) => <div key={comment.postHash} className="rounded-lg border border-zinc-800 p-2 text-sm"><p className="text-xs text-zinc-400">{comment.username ? `@${comment.username}` : shortPublicKey(comment.publicKey)}</p><p className="mt-1 whitespace-pre-wrap break-words">{comment.body}</p></div>)}
                       </div>
                       <p className="mt-4 text-sm text-zinc-400">Replying to {creatorUsername ? `@${creatorUsername}` : shortPublicKey(post.publicKey)}</p>
