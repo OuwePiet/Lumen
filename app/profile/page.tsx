@@ -303,7 +303,7 @@ export default function ProfilePage() {
       return
     }
     const controller = new AbortController()
-    setOwnPosts([])
+    // Preserve the open reply dialog while refreshing posts from DeSo.
     setOwnPostsError(false)
     setOwnPostsLoading(true)
     void fetch(`/api/via/posts?identity=${encodeURIComponent(session.publicKey)}&limit=50`, { cache: "no-store", signal: controller.signal })
