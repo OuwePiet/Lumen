@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 export default function SocialPage() {
   return (
     <main data-via-social-page className="min-h-screen bg-[#030504] bg-[radial-gradient(circle_at_18%_14%,rgba(143,212,169,0.08),transparent_24%),radial-gradient(circle_at_82%_32%,rgba(255,255,255,0.035),transparent_20%),linear-gradient(180deg,#030504_0%,#050806_48%,#030504_100%)] px-3 py-4 text-white sm:px-6 sm:py-6 lg:px-8">
-      <style>{`[data-via-social-page]{position:relative;isolation:isolate;background:#030504}[data-via-social-page]::before{content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;background:url("/via-postoffice-background.jpeg") center top/cover no-repeat}[data-via-social-page]::after{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:linear-gradient(180deg,rgba(3,7,5,.48) 0%,rgba(3,7,5,.72) 46%,rgba(3,7,5,.9) 100%)}`}</style>
+      <style>{`[data-via-social-page]{position:relative;isolation:isolate;background:#030504}[data-via-social-page]::before{content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;background:url("/E96CBFD2-473E-4017-B9E1-3689FFFE801D.png") center top/cover no-repeat}[data-via-social-page]::after{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:linear-gradient(180deg,rgba(3,7,5,.48) 0%,rgba(3,7,5,.72) 46%,rgba(3,7,5,.9) 100%)}`}</style>
       <SocialLocalizer />
       <div className="mx-auto w-full max-w-6xl">
         <header className="mb-3 flex flex-wrap items-center justify-between gap-3 border-b border-white/10 pb-3 sm:mb-5 sm:gap-4 sm:pb-4">
