@@ -94,6 +94,19 @@ export default function PublicPosts() {
   const [feedChoice, setFeedChoice] = useState<ChoiceId>("hot")
   const [session, setSession] = useState<ViaIdentitySession | null>(null)
   const [replyingTo, setReplyingTo] = useState<string | null>(null)
+  const [commentPosts, setCommentPosts] = useState<PublicPost[]>([])
+  const [commentsBusy, setCommentsBusy] = useState(false)
+  useEffect(() => {
+    if (!replyingTo) { setCommentPosts([]); return }
+    const controller = new AbortController()
+    setCommentsBusy(true)
+    fetch(`/api/via/post?hash=${encodeURIComponent(replyingTo)}&comments=1`, { cache: "no-store", signal: controller.signal })
+      .then((response) => response.ok ? response.json() : null)
+      .then((data: { comments?: PublicPost[] } | null) => { if (!controller.signal.aborted) setCommentPosts(Array.isArray(data?.comments) ? data.comments : []) })
+      .catch(() => { if (!controller.signal.aborted) setCommentPosts([]) })
+      .finally(() => { if (!controller.signal.aborted) setCommentsBusy(false) })
+    return () => controller.abort()
+  }, [replyingTo])
   const [actionLoginPost, setActionLoginPost] = useState<string | null>(null)
   const [sharedPostView, setSharedPostView] = useState(false)
   const [translationPost, setTranslationPost] = useState<string | null>(null)
@@ -514,6 +527,10 @@ export default function PublicPosts() {
                         <p className="text-sm font-semibold text-zinc-100">{creatorUsername ? `@${creatorUsername}` : shortPublicKey(post.publicKey)}</p>
                         {post.body ? <p className="mt-3 max-h-40 overflow-auto whitespace-pre-wrap break-words text-sm text-zinc-300">{post.body}</p> : null}
                         {images[0] ? <img src={images[0]} alt="Original post attachment" className="mt-2 max-h-36 rounded-lg object-contain" /> : null}
+                      </div>
+                      <div className="mt-3 max-h-40 space-y-2 overflow-y-auto" aria-label="DeSo reactions">
+                        {commentsBusy ? <p className="text-xs text-zinc-400">Loading DeSo replies…</p> : null}
+                        {commentPosts.map((comment) => <div key={comment.postHash} className="rounded-lg border border-zinc-800 p-2 text-sm"><p className="text-xs text-zinc-400">{comment.username ? `@${comment.username}` : shortPublicKey(comment.publicKey)}</p><p className="mt-1 whitespace-pre-wrap break-words">{comment.body}</p></div>)}
                       </div>
                       <p className="mt-4 text-sm text-zinc-400">Replying to {creatorUsername ? `@${creatorUsername}` : shortPublicKey(post.publicKey)}</p>
                       <PostComposer parentStakeID={post.postHash} compact onCancel={() => setReplyingTo(null)} onDone={() => { setReplyingTo(null); void loadPosts() }} />
