@@ -219,6 +219,9 @@ export default function ProfilePage() {
   const [session, setSession] = useState<ViaIdentitySession | null>(null)
   const [profile, setProfile] = useState<PublicProfile | null>(null)
   const [ownPosts, setOwnPosts] = useState<OwnPost[]>([])
+  const [galleryPosts, setGalleryPosts] = useState<OwnPost[]>([])
+  const [galleryLoading, setGalleryLoading] = useState(false)
+  const [galleryError, setGalleryError] = useState(false)
   const [replyingToOwnPost, setReplyingToOwnPost] = useState<string | null>(null)
   const [replyParent, setReplyParent] = useState<{ hash: string; name: string } | null>(null)
   const [replyComments, setReplyComments] = useState<ReplyComment[]>([])
@@ -317,6 +320,19 @@ export default function ProfilePage() {
       .finally(() => { if (!controller.signal.aborted) setOwnPostsLoading(false) })
     return () => controller.abort()
   }, [session?.publicKey, postsRefresh])
+
+  useEffect(() => {
+    if (contentTab !== "gallery" || !session?.publicKey) return
+    const controller = new AbortController()
+    setGalleryLoading(true)
+    setGalleryError(false)
+    fetch(`/api/via/posts?identity=${encodeURIComponent(session.publicKey)}&limit=50&media=1`, { cache: "no-store", signal: controller.signal })
+      .then(async response => { if (!response.ok) throw new Error("DESO_GALLERY_UNAVAILABLE"); return response.json() as Promise<OwnPostsResponse> })
+      .then(data => { if (!data.ok || !Array.isArray(data.posts)) throw new Error("DESO_GALLERY_UNAVAILABLE"); if (!controller.signal.aborted) setGalleryPosts(data.posts) })
+      .catch(() => { if (!controller.signal.aborted) setGalleryError(true) })
+      .finally(() => { if (!controller.signal.aborted) setGalleryLoading(false) })
+    return () => controller.abort()
+  }, [contentTab, session?.publicKey, postsRefresh])
 
   useEffect(() => {
     const onPublished = () => setPostsRefresh((current) => current + 1)
@@ -479,7 +495,7 @@ export default function ProfilePage() {
               </div>
             ) : null}
           </article>)}</div>}
-          </> : ownPostsLoading ? <p className="text-sm text-zinc-400">Loading gallery…</p> : ownPostsError ? <p role="status" className="text-sm text-zinc-400">Gallery temporarily unavailable.</p> : <div role="tabpanel" className="grid grid-cols-2 gap-2 sm:grid-cols-3">{ownPosts.flatMap((post) => post.imageUrls.map((url, index) => ({ url, hash: post.postHash, index }))).map((item) => <Link key={`${item.hash}-${item.index}`} href={`/social?post=${encodeURIComponent(item.hash)}`} className="overflow-hidden rounded-xl border border-zinc-800" aria-label="Open image post"><img src={item.url} alt="" loading="lazy" referrerPolicy="no-referrer" className="aspect-square w-full object-cover" /></Link>)}{!ownPosts.some((post) => post.imageUrls.length > 0) ? <p className="col-span-full text-sm text-zinc-400">No images in the loaded posts.</p> : null}</div>}
+          </> : galleryLoading ? <p className="text-sm text-zinc-400">Loading gallery…</p> : galleryError ? <p role="status" className="text-sm text-zinc-400">Gallery temporarily unavailable.</p> : <div role="tabpanel" className="grid grid-cols-2 gap-2 sm:grid-cols-3">{galleryPosts.flatMap((post) => post.imageUrls.map((url, index) => ({ url, hash: post.postHash, index }))).map((item) => <Link key={`${item.hash}-${item.index}`} href={`/social?post=${encodeURIComponent(item.hash)}`} className="overflow-hidden rounded-xl border border-zinc-800" aria-label="Open image post"><img src={item.url} alt="" loading="lazy" referrerPolicy="no-referrer" className="aspect-square w-full object-cover" /></Link>)}{!galleryPosts.some((post) => post.imageUrls.length > 0) ? <p className="col-span-full text-sm text-zinc-400">No images in the loaded posts.</p> : null}</div>}
         </section> : null}
       </div>
       <style>{`\n        .via-profile-own-actions { display:flex; align-items:center; gap:7px; margin-left:auto; }\n        .via-profile-action-button { width:36px; height:36px; display:inline-grid; place-items:center; border:1px solid rgba(143,212,169,.28); border-radius:50%; background:rgba(5,11,8,.58); color:#9adbb2; text-decoration:none; }\n        .via-profile-action-menu-wrap { position:relative; }\n        .via-profile-action-menu { position:absolute; right:0; top:42px; z-index:30; min-width:170px; padding:6px; border:1px solid rgba(143,212,169,.22); border-radius:12px; background:rgba(5,10,7,.98); box-shadow:0 16px 36px rgba(0,0,0,.42); }\n        .via-profile-action-menu button { width:100%; display:flex; align-items:center; gap:8px; border:0; border-radius:8px; padding:9px 10px; background:transparent; color:#d3ddd7; font-size:12px; text-align:left; }\n        @media (max-width:720px) { .via-profile-own-actions { width:auto; justify-content:flex-start; margin:0; } .via-profile-action-button { width:34px; height:34px; } }\n      `}</style>
