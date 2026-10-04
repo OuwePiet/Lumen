@@ -106,6 +106,12 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
       const submitResponse = await fetch("/api/via/social/diamond", { method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store", body: JSON.stringify({ action: "submit", signedTransactionHex }) })
       const submitData = await submitResponse.json() as { ok?: boolean; error?: string; transaction?: { TxnHashHex?: string } }
       if (!submitResponse.ok || !submitData.ok) throw new Error(submitData.error || "SUBMIT_FAILED")
+      const submittedTxnHash = submitData.transaction?.TxnHashHex
+      if (!submittedTxnHash || !/^[0-9a-fA-F]{64}$/.test(submittedTxnHash)) {
+        setStatus("error")
+        setMessage("DeSo submission returned no verifiable transaction hash. Check DeSo before any further action; do not resend.")
+        return
+      }
       setConfirmValue(false)
       setMessage("DeSo accepted submission. Waiting for the DeSo reader state to confirm the diamond…")
       let confirmedByDeSo = false
