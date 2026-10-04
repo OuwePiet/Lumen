@@ -51,6 +51,24 @@ export async function POST(request: Request) {
     }
   }
 
+  if (body.action === "reader-level") {
+    if (!validPostHash(body.postHash) || !validPublicKey(body.readerPublicKey)) return noStore({ ok: false, error: "INVALID_READER_REQUEST" }, 400)
+    try {
+      const response = await fetchDeSo("get-single-post", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ PostHashHex: body.postHash, ReaderPublicKeyBase58Check: body.readerPublicKey, FetchParents: false, CommentOffset: 0, CommentLimit: 0, AddGlobalFeedBool: false }),
+        cache: "no-store",
+      })
+      if (!response.ok) return noStore({ ok: false, error: "DESO_READER_UNAVAILABLE" }, 502)
+      const data = await response.json() as { PostFound?: { PostEntryReaderState?: { DiamondLevelBestowed?: unknown } } }
+      const level = data.PostFound?.PostEntryReaderState?.DiamondLevelBestowed
+      if (level !== undefined && (!Number.isInteger(level) || (level as number) < 0 || (level as number) > 8)) return noStore({ ok: false, error: "INVALID_DESO_LEVEL" }, 502)
+      if (!data.PostFound || !data.PostFound.PostEntryReaderState) return noStore({ ok: false, error: "DESO_READER_STATE_UNAVAILABLE" }, 503)
+      return noStore({ ok: true, diamondLevelBestowed: level ?? 0 })
+    } catch { return noStore({ ok: false, error: "DESO_READER_UNAVAILABLE" }, 503) }
+  }
+
   if (body.action === "prepare") {
     const senderPublicKey = body.senderPublicKey
     const receiverPublicKey = body.receiverPublicKey
