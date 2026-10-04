@@ -157,7 +157,7 @@ export default function PublicPosts() {
     const previous = showerExisting[post.postHash] === 0 ? 0 : showerLevels?.[String(showerExisting[post.postHash])]
     return typeof selected === "number" && typeof previous === "number" && selected > previous ? sum + selected - previous : sum
   }, 0)
-  const showerValueVerified = Boolean(showerLevels && session && !showerExistingBusy && !showerExistingError && showerSelectedPosts.every((post) => typeof showerExisting[post.postHash] === "number") && showerEligiblePosts.every((post) => typeof showerLevels[String(showerExisting[post.postHash])] === "number" || showerExisting[post.postHash] === 0))
+  const showerValueVerified = Boolean(showerLevels && session && !showerExistingBusy && !showerExistingError && !showerPreviewBusy && !showerPreviewError && !showerAdditionalBusy && !showerAdditionalError && showerSelectedPosts.every((post) => typeof showerExisting[post.postHash] === "number") && showerEligiblePosts.every((post) => typeof showerLevels[String(showerExisting[post.postHash])] === "number" || showerExisting[post.postHash] === 0))
   useEffect(() => {
     if (!showerTarget || !session?.publicKey || !showerPreview) return
     const controller = new AbortController()
