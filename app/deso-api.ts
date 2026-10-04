@@ -7,6 +7,7 @@ const SAFE_POST_RETRY_ENDPOINTS = new Set([
   "get-single-profile",
   "get-nfts-for-user",
   "get-posts-for-public-key",
+  "get-single-post",
   "get-posts-stateless",
   "get-notifications",
   "get-user-dm-threads-ordered-by-timestamp",
