@@ -30,7 +30,7 @@ type PublicProfile = {
 }
 
 type ProfileResponse = { ok?: boolean; profile?: PublicProfile }
-type OwnPost = { postHash: string; body: string; imageUrls: string[]; videoUrls: string[]; timestampNanos: number; likeCount: number; diamondCount: number; commentCount: number; repostCount: number; quoteRepostCount: number }
+type OwnPost = { postHash: string; body: string; imageUrls: string[]; videoUrls: string[]; timestampNanos: number; likeCount: number; diamondCount: number; commentCount: number; repostCount: number; quoteRepostCount: number; comments?: OwnPost[] }
 type OwnPostsResponse = { ok?: boolean; posts?: OwnPost[] }
 
 type Copy = {
