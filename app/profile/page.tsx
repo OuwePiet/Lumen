@@ -30,6 +30,7 @@ type PublicProfile = {
 }
 
 type ProfileResponse = { ok?: boolean; profile?: PublicProfile }
+type ReplyComment = { postHash: string; username?: string; publicKey?: string; body: string; comments?: ReplyComment[] }
 type OwnPost = { postHash: string; body: string; imageUrls: string[]; videoUrls: string[]; timestampNanos: number; likeCount: number; diamondCount: number; commentCount: number; repostCount: number; quoteRepostCount: number }
 type OwnPostsResponse = { ok?: boolean; posts?: OwnPost[] }
 
@@ -219,6 +220,22 @@ export default function ProfilePage() {
   const [profile, setProfile] = useState<PublicProfile | null>(null)
   const [ownPosts, setOwnPosts] = useState<OwnPost[]>([])
   const [replyingToOwnPost, setReplyingToOwnPost] = useState<string | null>(null)
+  const [replyComments, setReplyComments] = useState<ReplyComment[]>([])
+  const [replyCommentsBusy, setReplyCommentsBusy] = useState(false)
+  const [replyCommentsError, setReplyCommentsError] = useState(false)
+  const [commentsRefresh, setCommentsRefresh] = useState(0)
+  useEffect(() => {
+    if (!replyingToOwnPost) { setReplyComments([]); return }
+    const controller = new AbortController()
+    setReplyCommentsBusy(true)
+    setReplyCommentsError(false)
+    fetch(`/api/via/post?hash=${encodeURIComponent(replyingToOwnPost)}&comments=1`, { cache: "no-store", signal: controller.signal })
+      .then((response) => { if (!response.ok) throw new Error("DESO_COMMENTS_UNAVAILABLE"); return response.json() })
+      .then((data: { comments?: ReplyComment[] } | null) => { if (!controller.signal.aborted) setReplyComments(Array.isArray(data?.comments) ? data.comments : []) })
+      .catch(() => { if (!controller.signal.aborted) setReplyCommentsError(true) })
+      .finally(() => { if (!controller.signal.aborted) setReplyCommentsBusy(false) })
+    return () => controller.abort()
+  }, [replyingToOwnPost, commentsRefresh])
   const [ownPostsLoading, setOwnPostsLoading] = useState(false)
   const [ownPostsError, setOwnPostsError] = useState(false)
   const [postsRefresh, setPostsRefresh] = useState(0)
@@ -439,7 +456,27 @@ export default function ProfilePage() {
               <LocalSaveButton postHash={post.postHash} body={post.body} publicKey={session.publicKey} timestampNanos={post.timestampNanos} />
               <Link href={`/social?post=${encodeURIComponent(post.postHash)}`} className="rounded-full border border-zinc-800 px-3 py-2 text-xs">Open post</Link>
             </div>
-            {replyingToOwnPost === post.postHash ? <PostComposer parentStakeID={post.postHash} compact onCancel={() => setReplyingToOwnPost(null)} onDone={() => { setReplyingToOwnPost(null); setPostsRefresh((value) => value + 1) }} /> : null}
+            {replyingToOwnPost === post.postHash ? (
+              <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-2 sm:p-6" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setReplyingToOwnPost(null) }}>
+                <section role="dialog" aria-modal="true" aria-label="Reply to DeSo post" className="relative flex max-h-[94dvh] w-full max-w-2xl flex-col overflow-y-auto rounded-xl border border-zinc-700 bg-[#080b09] p-4 shadow-2xl sm:p-6">
+                  <button type="button" onClick={() => setReplyingToOwnPost(null)} aria-label="Close reply" className="absolute right-3 top-3 rounded-full border border-zinc-700 px-3 py-1 text-xl text-zinc-200">×</button>
+                  <div className="border-b border-zinc-800 pb-4 pr-12">
+                    <p className="text-sm font-semibold text-zinc-100">Your DeSo post</p>
+                    {post.body ? <p className="mt-3 max-h-40 overflow-auto whitespace-pre-wrap break-words text-sm text-zinc-300">{post.body}</p> : null}
+                    {post.imageUrls[0] ? <img src={post.imageUrls[0]} alt="Original post attachment" className="mt-2 max-h-36 rounded-lg object-contain" /> : null}
+                  </div>
+                  <div className="mt-3 max-h-40 space-y-2 overflow-y-auto" aria-label="DeSo reactions">
+                    {replyCommentsBusy ? <p className="text-xs text-zinc-400">Loading DeSo replies…</p> : null}
+                        {replyCommentsError ? <div role="alert" className="flex flex-wrap items-center gap-2 text-xs text-amber-300"><span>DeSo replies could not be loaded.</span><button type="button" onClick={() => setCommentsRefresh((value) => value + 1)} className="rounded-lg border border-amber-500/40 px-2 py-1">Retry</button></div> : null}
+                    {!replyCommentsBusy && !replyCommentsError && replyComments.length === 0 ? <p className="text-xs text-zinc-500">No replies returned by DeSo yet.</p> : null}
+                    {!replyCommentsBusy ? <button type="button" onClick={() => setCommentsRefresh((value) => value + 1)} className="rounded-lg border border-zinc-700 px-2 py-1 text-xs text-zinc-300">Refresh replies</button> : null}
+                    {replyComments.map((comment) => <div key={comment.postHash} className="rounded-lg border border-zinc-800 p-2 text-sm"><p className="text-xs text-zinc-400">{comment.username ? `@${comment.username}` : comment.publicKey ? `${comment.publicKey.slice(0, 10)}…` : "DeSo member"}</p><p className="whitespace-pre-wrap break-words">{comment.body}</p>{comment.comments?.map((child) => <div key={child.postHash} className="ml-4 mt-2 border-l border-zinc-700 pl-3"><p className="text-xs text-zinc-400">{child.username ? `@${child.username}` : child.publicKey ? `${child.publicKey.slice(0, 10)}…` : "DeSo member"}</p><p className="whitespace-pre-wrap break-words">{child.body}</p></div>)}</div>)}
+                  </div>
+                  <p className="mt-4 text-sm text-zinc-400">Replying to your post</p>
+                  <PostComposer parentStakeID={post.postHash} compact onCancel={() => setReplyingToOwnPost(null)} onDone={() => { setCommentsRefresh((value) => value + 1); setPostsRefresh((value) => value + 1) }} />
+                </section>
+              </div>
+            ) : null}
           </article>)}</div>}
           </> : ownPostsLoading ? <p className="text-sm text-zinc-400">Loading gallery…</p> : ownPostsError ? <p role="status" className="text-sm text-zinc-400">Gallery temporarily unavailable.</p> : <div role="tabpanel" className="grid grid-cols-2 gap-2 sm:grid-cols-3">{ownPosts.flatMap((post) => post.imageUrls.map((url, index) => ({ url, hash: post.postHash, index }))).map((item) => <Link key={`${item.hash}-${item.index}`} href={`/social?post=${encodeURIComponent(item.hash)}`} className="overflow-hidden rounded-xl border border-zinc-800" aria-label="Open image post"><img src={item.url} alt="" loading="lazy" referrerPolicy="no-referrer" className="aspect-square w-full object-cover" /></Link>)}{!ownPosts.some((post) => post.imageUrls.length > 0) ? <p className="col-span-full text-sm text-zinc-400">No images in the loaded posts.</p> : null}</div>}
         </section> : null}
