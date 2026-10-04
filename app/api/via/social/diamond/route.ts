@@ -56,15 +56,13 @@ export async function POST(request: Request) {
     const receiverPublicKey = body.receiverPublicKey
     const diamondPostHashHex = body.diamondPostHashHex
     const diamondLevel = body.diamondLevel
-    const confirmed = body.confirmed === true
-
+  
     if (!validPublicKey(senderPublicKey)) return noStore({ ok: false, error: "INVALID_SENDER_PUBLIC_KEY" }, 400)
     if (!validPublicKey(receiverPublicKey)) return noStore({ ok: false, error: "INVALID_RECEIVER_PUBLIC_KEY" }, 400)
     if (senderPublicKey === receiverPublicKey) return noStore({ ok: false, error: "SELF_DIAMOND_NOT_ALLOWED" }, 400)
     if (!validPostHash(diamondPostHashHex)) return noStore({ ok: false, error: "INVALID_POST_HASH" }, 400)
     if (!Number.isInteger(diamondLevel) || (diamondLevel as number) < 1 || (diamondLevel as number) > 8) return noStore({ ok: false, error: "INVALID_DIAMOND_LEVEL" }, 400)
-    if (!confirmed) return noStore({ ok: false, error: "EXPLICIT_VALUE_CONFIRMATION_REQUIRED" }, 400)
-
+  
     const configuredRate = Number(process.env.DESO_MIN_FEE_RATE_NANOS_PER_KB)
     const minFeeRate = Number.isFinite(configuredRate) && configuredRate > 0 ? Math.trunc(configuredRate) : DEFAULT_MIN_FEE_RATE_NANOS_PER_KB
 
