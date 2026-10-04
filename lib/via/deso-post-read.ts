@@ -187,9 +187,12 @@ export async function readPublicPostComments(postHash: string, offset = 0, limit
   const data = (await response.json()) as DeSoSinglePostResponse
   const parent = data.PostFound as DeSoPost | undefined
   if (!parent || parent.IsHidden === true || text(parent.PostHashHex).toLowerCase() !== hash) return null
+  // DeSo may encode a nil Go comments slice as JSON null for posts without replies.
+  // That is a valid empty result, not a failed read.
   const comments = Array.isArray(parent.Comments) ? parent.Comments : Array.isArray(data.Comments) ? data.Comments : null
-  if (!comments) return null
-  return comments.filter((item): item is DeSoPost => Boolean(item) && typeof item === "object")
+  if (!comments && count(parent.CommentCount) > 0) return null
+  const safeComments = comments ?? []
+  return safeComments.filter((item): item is DeSoPost => Boolean(item) && typeof item === "object")
     .filter((item) => item.IsHidden !== true)
     .map(normalizePublicPost).filter((item) => Boolean(item.postHash))
 }
