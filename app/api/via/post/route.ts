@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { readPublicPostByHash } from "../../../../lib/via/deso-post-read"
+import { readPublicPostByHash, readPublicPostComments } from "../../../../lib/via/deso-post-read"
 
 export const dynamic = "force-dynamic"
 
@@ -13,6 +13,12 @@ export async function GET(request: Request) {
   }
 
   try {
+    if (url.searchParams.has("comments")) {
+      const offset = Math.max(0, Math.min(10000, Number(url.searchParams.get("offset") || 0) || 0))
+      const comments = await readPublicPostComments(hash, offset, 20)
+      if (comments === null) return NextResponse.json({ ok: false, error: "COMMENTS_UNAVAILABLE" }, { status: 503, headers: { "Cache-Control": "no-store" } })
+      return NextResponse.json({ ok: true, comments }, { headers: { "Cache-Control": "no-store" } })
+    }
     const post = await readPublicPostByHash(hash)
     if (!post) {
       return NextResponse.json({ ok: false, error: "POST_NOT_FOUND" }, { status: 404, headers: { "Cache-Control": "no-store" } })
