@@ -103,6 +103,7 @@ function normalizePublicPost(post: DeSoPost): ViaPublicPost {
 export async function readPublicPosts(
   usernameOrPublicKey: string,
   limit = 20,
+  mediaRequired = false,
 ): Promise<ViaPublicPost[]> {
   const identity = usernameOrPublicKey.trim().replace(/^@/, "")
   if (!identity || identity.length > 128) return []
@@ -118,7 +119,7 @@ export async function readPublicPosts(
       Username: isPublicKey ? "" : identity,
       ReaderPublicKeyBase58Check: "",
       NumToFetch: numToFetch,
-      MediaRequired: false,
+      MediaRequired: mediaRequired,
     }),
   })
 
