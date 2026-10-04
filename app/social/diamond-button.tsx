@@ -71,7 +71,7 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
       if (!submitResponse.ok || !submitData.ok) throw new Error(submitData.error || "SUBMIT_FAILED")
       setStatus("done"); setMessage(`Diamond level ${chosenLevel} submitted to DeSo. Awaiting the DeSo count.`); setConfirmValue(false)
       window.dispatchEvent(new Event("via:social:post-published"))
-    } catch { setStatus("error"); setMessage("Diamond transaction could not be prepared. Nothing was sent.") }
+    } catch { setStatus("error"); setMessage("DeSo did not confirm completion. Check the transaction on DeSo before trying again.") }
   }
 
   if (variant === "icon") {
