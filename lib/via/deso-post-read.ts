@@ -15,6 +15,7 @@ export type ViaPublicPost = {
   quoteRepostCount: number
   isNft: boolean
   postExtraData: Record<string, string>
+  comments?: ViaPublicPost[]
 }
 
 type DeSoPost = {
@@ -92,6 +93,7 @@ function normalizePublicPost(post: DeSoPost): ViaPublicPost {
     quoteRepostCount: count(post.QuoteRepostCount),
     isNft: post.IsNFT === true,
     postExtraData: safePostExtraData(post.PostExtraData),
+    comments: Array.isArray(post.Comments) ? post.Comments.filter((item): item is DeSoPost => Boolean(item) && typeof item === "object" && item.IsHidden !== true).map(normalizePublicPost) : undefined,
   }
 }
 
