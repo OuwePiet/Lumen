@@ -94,6 +94,22 @@ export default function PublicPosts() {
   const [feedChoice, setFeedChoice] = useState<ChoiceId>("hot")
   const [session, setSession] = useState<ViaIdentitySession | null>(null)
   const [replyingTo, setReplyingTo] = useState<string | null>(null)
+  const [replyParent, setReplyParent] = useState<string | null>(null)
+  const [commentPosts, setCommentPosts] = useState<PublicPost[]>([])
+  const [commentsBusy, setCommentsBusy] = useState(false)
+  const [commentsError, setCommentsError] = useState(false)
+  const [commentsRefresh, setCommentsRefresh] = useState(0)
+  useEffect(() => {
+    if (!replyingTo) { setCommentPosts([]); return }
+    const controller = new AbortController()
+    setCommentsBusy(true); setCommentsError(false)
+    fetch(`/api/via/post?hash=${encodeURIComponent(replyingTo)}&comments=1`, { cache: "no-store", signal: controller.signal })
+      .then(async response => { if (!response.ok) throw new Error("COMMENTS_UNAVAILABLE"); return response.json() })
+      .then((data: { comments?: PublicPost[] }) => { if (!controller.signal.aborted) setCommentPosts(Array.isArray(data.comments) ? data.comments : []) })
+      .catch(() => { if (!controller.signal.aborted) setCommentsError(true) })
+      .finally(() => { if (!controller.signal.aborted) setCommentsBusy(false) })
+    return () => controller.abort()
+  }, [replyingTo, commentsRefresh])
   const [actionLoginPost, setActionLoginPost] = useState<string | null>(null)
   const [sharedPostView, setSharedPostView] = useState(false)
   const [translationPost, setTranslationPost] = useState<string | null>(null)
@@ -444,7 +460,7 @@ export default function PublicPosts() {
                 ) : null}
 
                 <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-white/[0.06] pt-3 text-xs text-zinc-500">
-                  <button type="button" onClick={() => session ? setReplyingTo(isReplying ? null : post.postHash) : setActionLoginPost(post.postHash)} title="Reply" aria-label={`Reply · ${post.commentCount}`} className="inline-flex h-9 min-w-9 items-center justify-center gap-1 rounded-full border border-zinc-800 px-2 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2]"><MessageSquare aria-hidden="true" className="h-4 w-4" /><span>{post.commentCount}</span></button>
+                  <button type="button" onClick={() => (setReplyParent(null), setReplyingTo(isReplying ? null : post.postHash))} title="Reply" aria-label={`Reply · ${post.commentCount}`} className="inline-flex h-9 min-w-9 items-center justify-center gap-1 rounded-full border border-zinc-800 px-2 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2]"><MessageSquare aria-hidden="true" className="h-4 w-4" /><span>{post.commentCount}</span></button>
                   {session ? <RepostButton postHash={post.postHash} initialCount={totalReposts} variant="icon" /> : <button type="button" title="Repost (DeSo login required)" onClick={() => setActionLoginPost(post.postHash)} className="inline-flex h-9 min-w-9 items-center justify-center gap-1 rounded-full border border-zinc-800 px-2 text-xs text-zinc-300">Repost · {totalReposts}</button>}
                   {session ? <LikeButton postHash={post.postHash} initialCount={post.likeCount} variant="icon" /> : <button type="button" title="Like (DeSo login required)" onClick={() => setActionLoginPost(post.postHash)} className="inline-flex h-9 min-w-9 items-center justify-center gap-1 rounded-full border border-zinc-800 px-2 text-xs text-zinc-300">Like · {post.likeCount}</button>}
                   {session ? <DiamondButton postHash={post.postHash} receiverPublicKey={post.publicKey} initialCount={post.diamondCount} variant="icon" /> : <button type="button" title="Diamond (DeSo login required)" onClick={() => setActionLoginPost(post.postHash)} className="inline-flex h-9 min-w-9 items-center justify-center gap-1 rounded-full border border-zinc-800 px-2 text-xs text-zinc-300">Diamond · {post.diamondCount}</button>}
@@ -506,7 +522,12 @@ export default function PublicPosts() {
                 ) : null}
 
                 {options.length >= 2 ? <PollVoteControl postHash={post.postHash} options={options} /> : null}
-                {session && isReplying ? <PostComposer parentStakeID={post.postHash} compact onCancel={() => setReplyingTo(null)} onDone={() => { setReplyingTo(null); void loadPosts() }} /> : null}
+                {isReplying ? <section className="mt-3 space-y-3 rounded-xl border border-zinc-700 p-3" aria-label="DeSo replies">
+                  <div className="flex items-center justify-between"><strong className="text-sm">DeSo replies</strong><button type="button" onClick={() => { setReplyingTo(null); setReplyParent(null) }} aria-label="Close replies">×</button></div>
+                  {commentsBusy ? <p>Loading replies…</p> : commentsError ? <p role="alert">DeSo replies unavailable. <button type="button" onClick={() => setCommentsRefresh(n => n + 1)}>Retry</button></p> : commentPosts.length === 0 ? <p>No replies returned by DeSo.</p> : commentPosts.map(comment => <div key={comment.postHash} className="rounded-lg border border-zinc-800 p-2 text-sm"><p className="text-zinc-400">{comment.username ? `@${comment.username}` : shortPublicKey(comment.publicKey)}</p><p className="whitespace-pre-wrap break-words">{comment.body}</p><div className="flex flex-wrap gap-2"><button type="button" onClick={() => setReplyParent(comment.postHash)}>Reply</button>{session ? <><LikeButton postHash={comment.postHash} initialCount={comment.likeCount} variant="icon" /><RepostButton postHash={comment.postHash} initialCount={comment.repostCount + comment.quoteRepostCount} variant="icon" /><DiamondButton postHash={comment.postHash} receiverPublicKey={comment.publicKey} initialCount={comment.diamondCount} variant="icon" /></> : null}</div></div>)}
+                  <button type="button" onClick={() => setCommentsRefresh(n => n + 1)} disabled={commentsBusy}>Refresh replies</button>
+                  {session ? <PostComposer key={replyParent ?? post.postHash} parentStakeID={replyParent ?? post.postHash} compact onCancel={() => setReplyParent(null)} onDone={() => { setReplyParent(null); setCommentsRefresh(n => n + 1); void loadPosts() }} /> : <p>Sign in with DeSo to reply.</p>}
+                </section> : null}
               </article>
             )
           })}
