@@ -100,9 +100,11 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
           if (readerResponse.ok && readerData.ok && readerData.diamondLevelBestowed === chosenLevel) {
             confirmedByDeSo = true
             setBestowedLevel(chosenLevel)
-            const countResponse = await fetch(`/api/via/post?hash=${encodeURIComponent(postHash)}&verify=${Date.now()}`, { cache: "no-store" })
-            const countData = await countResponse.json() as { ok?: boolean; post?: { diamondCount?: number } }
-            if (countResponse.ok && countData.ok && typeof countData.post?.diamondCount === "number") setCount(countData.post.diamondCount)
+            try {
+              const countResponse = await fetch(`/api/via/post?hash=${encodeURIComponent(postHash)}&verify=${Date.now()}`, { cache: "no-store" })
+              const countData = await countResponse.json() as { ok?: boolean; post?: { diamondCount?: number } }
+              if (countResponse.ok && countData.ok && typeof countData.post?.diamondCount === "number") setCount(countData.post.diamondCount)
+            } catch { /* Counter read cannot invalidate a DeSo-confirmed diamond. */ }
             break
           }
         } catch { /* Never retry a paid submission after a read failure. */ }
