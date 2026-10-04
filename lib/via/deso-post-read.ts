@@ -182,7 +182,9 @@ export async function readPublicPostComments(postHash: string, offset = 0, limit
   if (!response.ok) return null
   const data = (await response.json()) as DeSoSinglePostResponse
   const parent = data.PostFound as DeSoPost | undefined
-  const comments = Array.isArray(parent?.Comments) ? parent.Comments : Array.isArray(data.Comments) ? data.Comments : []
+  if (!parent || parent.IsHidden === true || text(parent.PostHashHex).toLowerCase() !== hash) return null
+  const comments = Array.isArray(parent.Comments) ? parent.Comments : Array.isArray(data.Comments) ? data.Comments : null
+  if (!comments) return null
   return comments.filter((item): item is DeSoPost => Boolean(item) && typeof item === "object")
     .filter((item) => item.IsHidden !== true)
     .map(normalizePublicPost).filter((item) => Boolean(item.postHash))
