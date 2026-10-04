@@ -461,7 +461,7 @@ export default function PublicPosts() {
                 ) : null}
 
                 <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-white/[0.06] pt-3 text-xs text-zinc-500">
-                  <button type="button" onClick={() => session ? setReplyingTo(isReplying ? null : post.postHash) : setActionLoginPost(post.postHash)} title="Reply" aria-label={`Reply · ${post.commentCount}`} className="inline-flex h-9 min-w-9 items-center justify-center gap-1 rounded-full border border-zinc-800 px-2 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2]"><MessageSquare aria-hidden="true" className="h-4 w-4" /><span>{post.commentCount}</span></button>
+                  <button type="button" onClick={() => setReplyingTo(isReplying ? null : post.postHash)} title="Reply" aria-label={`Reply · ${post.commentCount}`} className="inline-flex h-9 min-w-9 items-center justify-center gap-1 rounded-full border border-zinc-800 px-2 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2]"><MessageSquare aria-hidden="true" className="h-4 w-4" /><span>{post.commentCount}</span></button>
                   {session ? <RepostButton postHash={post.postHash} initialCount={totalReposts} variant="icon" /> : <button type="button" title="Repost (DeSo login required)" onClick={() => setActionLoginPost(post.postHash)} className="inline-flex h-9 min-w-9 items-center justify-center gap-1 rounded-full border border-zinc-800 px-2 text-xs text-zinc-300">Repost · {totalReposts}</button>}
                   {session ? <LikeButton postHash={post.postHash} initialCount={post.likeCount} variant="icon" /> : <button type="button" title="Like (DeSo login required)" onClick={() => setActionLoginPost(post.postHash)} className="inline-flex h-9 min-w-9 items-center justify-center gap-1 rounded-full border border-zinc-800 px-2 text-xs text-zinc-300">Like · {post.likeCount}</button>}
                   {session ? <DiamondButton postHash={post.postHash} receiverPublicKey={post.publicKey} initialCount={post.diamondCount} variant="icon" /> : <button type="button" title="Diamond (DeSo login required)" onClick={() => setActionLoginPost(post.postHash)} className="inline-flex h-9 min-w-9 items-center justify-center gap-1 rounded-full border border-zinc-800 px-2 text-xs text-zinc-300">Diamond · {post.diamondCount}</button>}
@@ -523,7 +523,7 @@ export default function PublicPosts() {
                 ) : null}
 
                 {options.length >= 2 ? <PollVoteControl postHash={post.postHash} options={options} /> : null}
-                {session && isReplying ? (
+                {isReplying ? (
                   <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-2 sm:p-6" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setReplyingTo(null) }}>
                     <section role="dialog" aria-modal="true" aria-label="Reply to DeSo post" className="relative flex max-h-[94dvh] w-full max-w-2xl flex-col overflow-y-auto rounded-xl border border-zinc-700 bg-[#080b09] p-4 shadow-2xl sm:p-6">
                       <button type="button" onClick={() => setReplyingTo(null)} aria-label="Close reply" className="absolute right-3 top-3 rounded-full border border-zinc-700 px-3 py-1 text-xl text-zinc-200">×</button>
@@ -538,7 +538,7 @@ export default function PublicPosts() {
                         {commentPosts.map((comment) => <div key={comment.postHash} className="rounded-lg border border-zinc-800 p-2 text-sm"><p className="text-xs text-zinc-400">{comment.username ? `@${comment.username}` : shortPublicKey(comment.publicKey)}</p><p className="mt-1 whitespace-pre-wrap break-words">{comment.body}</p>{comment.comments?.map((child) => <div key={child.postHash} className="ml-4 mt-2 border-l border-zinc-700 pl-3"><p className="whitespace-pre-wrap break-words">{child.body}</p></div>)}</div>)}
                       </div>
                       <p className="mt-4 text-sm text-zinc-400">Replying to {creatorUsername ? `@${creatorUsername}` : shortPublicKey(post.publicKey)}</p>
-                      <PostComposer parentStakeID={post.postHash} compact onCancel={() => setReplyingTo(null)} onDone={() => { setReplyingTo(null); void loadPosts() }} />
+                      {session ? <PostComposer parentStakeID={post.postHash} compact onCancel={() => setReplyingTo(null)} onDone={() => { setReplyingTo(null); void loadPosts() }} /> : <p className="mt-4 text-sm text-zinc-400">Sign in with DeSo to write a reply. Existing replies are public.</p>}
                     </section>
                   </div>
                 ) : null}
