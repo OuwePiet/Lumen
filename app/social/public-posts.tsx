@@ -17,6 +17,7 @@ import { restoreIdentitySession, VIA_IDENTITY_EVENT, type ViaIdentitySession } f
 
 type PublicPost = {
   postHash: string
+  comments?: PublicPost[]
   publicKey: string
   username?: string
   body: string
@@ -534,7 +535,7 @@ export default function PublicPosts() {
                       <div className="mt-3 max-h-40 space-y-2 overflow-y-auto" aria-label="DeSo reactions">
                         {commentsBusy ? <p className="text-xs text-zinc-400">Loading DeSo replies…</p> : null}
                         {commentsError ? <p role="alert" className="text-xs text-amber-300">DeSo replies could not be loaded. Try reopening this post.</p> : null}
-                        {commentPosts.map((comment) => <div key={comment.postHash} className="rounded-lg border border-zinc-800 p-2 text-sm"><p className="text-xs text-zinc-400">{comment.username ? `@${comment.username}` : shortPublicKey(comment.publicKey)}</p><p className="mt-1 whitespace-pre-wrap break-words">{comment.body}</p></div>)}
+                        {commentPosts.map((comment) => <div key={comment.postHash} className="rounded-lg border border-zinc-800 p-2 text-sm"><p className="text-xs text-zinc-400">{comment.username ? `@${comment.username}` : shortPublicKey(comment.publicKey)}</p><p className="mt-1 whitespace-pre-wrap break-words">{comment.body}</p>{comment.comments?.map((child) => <div key={child.postHash} className="ml-4 mt-2 border-l border-zinc-700 pl-3"><p className="whitespace-pre-wrap break-words">{child.body}</p></div>)}</div>)}
                       </div>
                       <p className="mt-4 text-sm text-zinc-400">Replying to {creatorUsername ? `@${creatorUsername}` : shortPublicKey(post.publicKey)}</p>
                       <PostComposer parentStakeID={post.postHash} compact onCancel={() => setReplyingTo(null)} onDone={() => { setReplyingTo(null); void loadPosts() }} />
