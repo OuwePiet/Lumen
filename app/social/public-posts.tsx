@@ -341,10 +341,10 @@ export default function PublicPosts() {
   }, [feedChoice, session?.publicKey])
 
   useEffect(() => {
-    const refresh = () => void loadPosts()
+    const refresh = () => { void loadPosts(); if (replyingTo) setCommentsRefresh((value) => value + 1) }
     window.addEventListener("via:social:post-published", refresh)
     return () => window.removeEventListener("via:social:post-published", refresh)
-  }, [feedChoice, session?.publicKey])
+  }, [feedChoice, session?.publicKey, replyingTo])
 
   async function loadMorePosts() {
     if (loading || feedChoice === "following" || posts.length === 0) return
