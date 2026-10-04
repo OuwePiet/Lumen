@@ -100,6 +100,7 @@ export default function PublicPosts() {
   const [commentsBusy, setCommentsBusy] = useState(false)
   const [commentsError, setCommentsError] = useState(false)
   const [commentsRefresh, setCommentsRefresh] = useState(0)
+  const [showerTarget, setShowerTarget] = useState<{ publicKey: string; username: string } | null>(null)
   useEffect(() => {
     if (!replyingTo) { setCommentPosts([]); return }
     const controller = new AbortController()
@@ -410,6 +411,7 @@ export default function PublicPosts() {
         </p>
       </div>
 
+      {showerTarget ? <div role="dialog" aria-modal="true" aria-label="Diamond Shower" className="fixed inset-0 z-[110] flex items-center justify-center bg-black/85 p-4"><div className="w-full max-w-lg rounded-xl border border-zinc-700 bg-[#080b09] p-5 text-zinc-200"><h2 className="text-lg font-semibold">Diamond Shower to @{showerTarget.username}</h2><p className="mt-3 text-sm">DeSo sends Diamonds to individual posts. Bulk sending is not enabled until each post and its DeSo transaction cost can be verified. No Diamonds have been sent.</p><button type="button" onClick={() => setShowerTarget(null)} className="mt-5 rounded-lg border border-zinc-600 px-4 py-2">Close</button></div></div> : null}
       <p className={`mt-3 text-xs text-zinc-500 ${loading || message.includes("unavailable") || message.includes("Log in") || message.includes("No posts") || message.includes("shared post") ? "" : "hidden sm:block"}`} role="status" aria-live="polite">{message}</p>
 
       {posts.length > 0 && visiblePosts.length === 0 ? (
@@ -494,6 +496,7 @@ export default function PublicPosts() {
                       {session ? <div className="[&_button]:w-full [&_button]:rounded-none [&_button]:border-0 [&_button]:px-3 [&_button]:py-2 [&_button]:text-left">
                         <LocalSaveButton postHash={post.postHash} body={post.body} publicKey={post.publicKey} timestampNanos={post.timestampNanos} />
                       </div> : null}
+                      {session && session.publicKey !== post.publicKey ? <button type="button" onClick={() => setShowerTarget({ publicKey: post.publicKey, username: creatorUsername || shortPublicKey(post.publicKey) })} className="px-3 py-2 text-left text-zinc-300 hover:bg-white/[0.04]">Diamond Shower</button> : null}
                       {session ? <div className="[&_button]:w-full [&_button]:rounded-none [&_button]:border-0 [&_button]:px-3 [&_button]:py-2 [&_button]:text-left"><FollowButton followedPublicKey={post.publicKey} followedUsername={creatorUsername || "this user"} /></div> : null}
                       
                       <button type="button" onClick={(event) => (event.currentTarget.closest("details") as HTMLDetailsElement | null)?.removeAttribute("open")} className="border-t border-zinc-800 px-3 py-2 text-left text-zinc-400 hover:bg-white/[0.04]">Sluiten</button>
