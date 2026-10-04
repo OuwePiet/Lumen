@@ -14,12 +14,12 @@ export const metadata: Metadata = {
 export default function SocialPage() {
   return (
     <main data-via-social-page className="min-h-screen bg-[#030504] bg-[radial-gradient(circle_at_18%_14%,rgba(143,212,169,0.08),transparent_24%),radial-gradient(circle_at_82%_32%,rgba(255,255,255,0.035),transparent_20%),linear-gradient(180deg,#030504_0%,#050806_48%,#030504_100%)] px-3 py-4 text-white sm:px-6 sm:py-6 lg:px-8">
-      <style>{`[data-via-social-page]{position:relative;isolation:isolate;background:#d6c1a1}[data-via-social-page]::before{content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;background:url("/E96CBFD2-473E-4017-B9E1-3689FFFE801D.png") center top/cover no-repeat}[data-via-social-page]::after{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:rgba(10,16,12,.08)}[data-via-social-page]>div{background:rgba(5,14,10,.96);border:1px solid rgba(203,185,146,.36);border-radius:20px;padding:clamp(12px,2.5vw,28px);box-shadow:0 18px 65px rgba(0,0,0,.3)}[data-via-social-page] :is(article,section){background-color:#07110d}[data-via-social-page] h1{color:#f6f3e9}@media(min-width:900px){[data-via-social-page]>div{max-width:1080px}}`}</style>
+      <style>{`[data-via-social-page]{position:relative;isolation:isolate;background:#d6c1a1}[data-via-social-page]::before{content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;background:url("/E96CBFD2-473E-4017-B9E1-3689FFFE801D.png") center top/cover no-repeat}[data-via-social-page]::after{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:rgba(10,16,12,.08)}[data-via-social-page]>div{background:rgba(8,20,14,.94);border:1px solid rgba(185,157,107,.55);border-radius:17px;padding:clamp(12px,2vw,24px);box-shadow:0 12px 42px rgba(0,0,0,.22),inset 0 0 0 1px rgba(71,112,81,.17)}[data-via-social-page] :is(article,section){background-color:#07110d}[data-via-social-page] h1{color:#f6f3e9}@media(min-width:900px){[data-via-social-page]>div{max-width:1040px}}`}</style>
       <SocialLocalizer />
       <div className="mx-auto w-full max-w-6xl">
         <header className="mb-3 flex flex-wrap items-center justify-between gap-3 border-b border-white/10 pb-3 sm:mb-5 sm:gap-4 sm:pb-4">
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">VIA Post Office</h1>
+            <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Post Office</h1>
             <p className="mt-1 hidden text-sm text-zinc-500 sm:block">Write, publish and follow DeSo posts in the VIA way.</p>
           </div>
           <details className="w-full sm:hidden">
