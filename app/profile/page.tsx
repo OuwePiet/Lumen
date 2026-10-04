@@ -439,7 +439,20 @@ export default function ProfilePage() {
               <LocalSaveButton postHash={post.postHash} body={post.body} publicKey={session.publicKey} timestampNanos={post.timestampNanos} />
               <Link href={`/social?post=${encodeURIComponent(post.postHash)}`} className="rounded-full border border-zinc-800 px-3 py-2 text-xs">Open post</Link>
             </div>
-            {replyingToOwnPost === post.postHash ? <PostComposer parentStakeID={post.postHash} compact onCancel={() => setReplyingToOwnPost(null)} onDone={() => { setReplyingToOwnPost(null); setPostsRefresh((value) => value + 1) }} /> : null}
+            {replyingToOwnPost === post.postHash ? (
+              <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-2 sm:p-6" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setReplyingToOwnPost(null) }}>
+                <section role="dialog" aria-modal="true" aria-label="Reply to DeSo post" className="relative flex max-h-[94dvh] w-full max-w-2xl flex-col overflow-y-auto rounded-xl border border-zinc-700 bg-[#080b09] p-4 shadow-2xl sm:p-6">
+                  <button type="button" onClick={() => setReplyingToOwnPost(null)} aria-label="Close reply" className="absolute right-3 top-3 rounded-full border border-zinc-700 px-3 py-1 text-xl text-zinc-200">×</button>
+                  <div className="border-b border-zinc-800 pb-4 pr-12">
+                    <p className="text-sm font-semibold text-zinc-100">Your DeSo post</p>
+                    {post.body ? <p className="mt-3 max-h-40 overflow-auto whitespace-pre-wrap break-words text-sm text-zinc-300">{post.body}</p> : null}
+                    {post.imageUrls[0] ? <img src={post.imageUrls[0]} alt="Original post attachment" className="mt-2 max-h-36 rounded-lg object-contain" /> : null}
+                  </div>
+                  <p className="mt-4 text-sm text-zinc-400">Replying to your post</p>
+                  <PostComposer parentStakeID={post.postHash} compact onCancel={() => setReplyingToOwnPost(null)} onDone={() => { setReplyingToOwnPost(null); setPostsRefresh((value) => value + 1) }} />
+                </section>
+              </div>
+            ) : null}
           </article>)}</div>}
           </> : ownPostsLoading ? <p className="text-sm text-zinc-400">Loading gallery…</p> : ownPostsError ? <p role="status" className="text-sm text-zinc-400">Gallery temporarily unavailable.</p> : <div role="tabpanel" className="grid grid-cols-2 gap-2 sm:grid-cols-3">{ownPosts.flatMap((post) => post.imageUrls.map((url, index) => ({ url, hash: post.postHash, index }))).map((item) => <Link key={`${item.hash}-${item.index}`} href={`/social?post=${encodeURIComponent(item.hash)}`} className="overflow-hidden rounded-xl border border-zinc-800" aria-label="Open image post"><img src={item.url} alt="" loading="lazy" referrerPolicy="no-referrer" className="aspect-square w-full object-cover" /></Link>)}{!ownPosts.some((post) => post.imageUrls.length > 0) ? <p className="col-span-full text-sm text-zinc-400">No images in the loaded posts.</p> : null}</div>}
         </section> : null}
