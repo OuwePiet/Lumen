@@ -119,7 +119,7 @@ export async function POST(request: Request) {
       const response = await fetchDeSo("get-txn", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ TxnHashHex: body.txnHashHex }),
+        body: JSON.stringify({ TxnHashHex: body.txnHashHex, TxnStatus: "Committed" }),
         cache: "no-store",
       })
       if (!response.ok) return noStore({ ok: false, error: "DESO_TRANSACTION_NOT_CONFIRMED" }, 502)
