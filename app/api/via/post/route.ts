@@ -6,6 +6,7 @@ export const dynamic = "force-dynamic"
 export async function GET(request: Request) {
   const url = new URL(request.url)
   const hash = (url.searchParams.get("hash") ?? "").trim().toLowerCase()
+  const verificationRead = url.searchParams.has("verify")
 
   if (!/^[0-9a-f]{64}$/.test(hash)) {
     return NextResponse.json({ ok: false, error: "INVALID_POST_HASH" }, { status: 400, headers: { "Cache-Control": "no-store" } })
@@ -18,7 +19,7 @@ export async function GET(request: Request) {
     }
     return NextResponse.json({ ok: true, post }, {
       status: 200,
-      headers: { "Cache-Control": "public, max-age=0, s-maxage=30, stale-while-revalidate=60" },
+      headers: { "Cache-Control": verificationRead ? "no-store" : "public, max-age=0, s-maxage=30, stale-while-revalidate=60" },
     })
   } catch {
     return NextResponse.json({ ok: false, error: "POST_READ_UNAVAILABLE" }, { status: 503, headers: { "Cache-Control": "no-store" } })
