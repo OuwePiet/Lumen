@@ -2,6 +2,7 @@ import { fetchDeSo } from "../../app/deso-api"
 
 export type ViaPublicPost = {
   postHash: string
+  parentStakeID?: string
   publicKey: string
   username: string
   body: string
@@ -15,10 +16,12 @@ export type ViaPublicPost = {
   quoteRepostCount: number
   isNft: boolean
   postExtraData: Record<string, string>
+  comments?: ViaPublicPost[]
 }
 
 type DeSoPost = {
   PostHashHex?: unknown
+  ParentStakeID?: unknown
   PosterPublicKeyBase58Check?: unknown
   ProfileEntryResponse?: { Username?: unknown } | null
   Body?: unknown
@@ -32,6 +35,7 @@ type DeSoPost = {
   QuoteRepostCount?: unknown
   IsNFT?: unknown
   IsHidden?: unknown
+  Comments?: unknown
   PostExtraData?: unknown
 }
 
@@ -42,6 +46,7 @@ type DeSoPostsResponse = {
 
 type DeSoSinglePostResponse = {
   PostFound?: unknown
+  Comments?: unknown
 }
 
 function text(value: unknown) {
@@ -77,6 +82,7 @@ function safePostExtraData(value: unknown) {
 function normalizePublicPost(post: DeSoPost): ViaPublicPost {
   return {
     postHash: text(post.PostHashHex),
+    parentStakeID: text(post.ParentStakeID),
     publicKey: text(post.PosterPublicKeyBase58Check),
     username: text(post.ProfileEntryResponse?.Username),
     body: text(post.Body),
@@ -90,6 +96,7 @@ function normalizePublicPost(post: DeSoPost): ViaPublicPost {
     quoteRepostCount: count(post.QuoteRepostCount),
     isNft: post.IsNFT === true,
     postExtraData: safePostExtraData(post.PostExtraData),
+    comments: Array.isArray(post.Comments) ? post.Comments.filter((item): item is DeSoPost => Boolean(item) && typeof item === "object" && item.IsHidden !== true).map(normalizePublicPost) : undefined,
   }
 }
 
@@ -127,6 +134,8 @@ export async function readPublicPosts(
   return rawPosts
     .filter((value): value is DeSoPost => Boolean(value) && typeof value === "object")
     .filter((post) => post.IsHidden !== true)
+    // DeSo replies are posts with a ParentStakeID; show them inside their parent thread.
+    .filter((post) => !text(post.ParentStakeID))
     .slice(0, numToFetch)
     .map(normalizePublicPost)
     .filter((post) => Boolean(post.postHash))
@@ -159,4 +168,36 @@ export async function readPublicPostByHash(postHash: string): Promise<ViaPublicP
 
   const normalized = normalizePublicPost(post)
   return normalized.postHash.toLowerCase() === hash ? normalized : null
+}
+
+/** Read DeSo-native comments, never a VIA-only reply store. */
+export async function readPublicPostComments(postHash: string, offset = 0, limit = 20): Promise<ViaPublicPost[] | null> {
+  const hash = postHash.trim().toLowerCase()
+  if (!/^[0-9a-f]{64}$/.test(hash)) return null
+  const response = await fetchDeSo("get-single-post", {
+    method: "POST",
+    headers: { "content-type": "application/json", accept: "application/json" },
+    body: JSON.stringify({
+      PostHashHex: hash,
+      FetchParents: false,
+      CommentOffset: Math.max(0, Math.trunc(offset)),
+      CommentLimit: Math.max(1, Math.min(30, Math.trunc(limit) || 20)),
+      ThreadLevelLimit: 2,
+      ThreadLeafLimit: 10,
+      ReaderPublicKeyBase58Check: "",
+      AddGlobalFeedBool: false,
+    }),
+  })
+  if (!response.ok) return null
+  const data = (await response.json()) as DeSoSinglePostResponse
+  const parent = data.PostFound as DeSoPost | undefined
+  if (!parent || parent.IsHidden === true || text(parent.PostHashHex).toLowerCase() !== hash) return null
+  // DeSo may encode a nil Go comments slice as JSON null for posts without replies.
+  // That is a valid empty result, not a failed read.
+  const comments = Array.isArray(parent.Comments) ? parent.Comments : Array.isArray(data.Comments) ? data.Comments : null
+  if (!comments && count(parent.CommentCount) > 0) return null
+  const safeComments = comments ?? []
+  return safeComments.filter((item): item is DeSoPost => Boolean(item) && typeof item === "object")
+    .filter((item) => item.IsHidden !== true)
+    .map(normalizePublicPost).filter((item) => Boolean(item.postHash))
 }

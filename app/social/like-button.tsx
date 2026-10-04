@@ -18,6 +18,8 @@ export default function LikeButton({ postHash, initialCount, variant = "default"
   const [session, setSession] = useState<ViaIdentitySession | null>(null)
   const [count, setCount] = useState(initialCount)
   const [liked, setLiked] = useState(false)
+  const [emojiOpen, setEmojiOpen] = useState(false)
+  const [chosenEmoji, setChosenEmoji] = useState("❤️")
   const [busy, setBusy] = useState(false)
   const [message, setMessage] = useState("")
 
@@ -33,7 +35,9 @@ export default function LikeButton({ postHash, initialCount, variant = "default"
 
   useEffect(() => setCount(initialCount), [initialCount])
 
-  async function toggleLike() {
+  async function toggleLike(emoji?: string) {
+    if (emoji && liked) { setChosenEmoji(emoji); setEmojiOpen(false); return }
+    setEmojiOpen(false)
     if (!session || busy) return
     setBusy(true)
     setMessage("Preparing DeSo like transaction…")
@@ -58,6 +62,7 @@ export default function LikeButton({ postHash, initialCount, variant = "default"
       if (!submitResponse.ok || !submitData.ok) throw new Error(submitData.error || "SUBMIT_FAILED")
       const nextLiked = !liked
       setLiked(nextLiked)
+      if (nextLiked && emoji) setChosenEmoji(emoji)
       setCount((current) => Math.max(0, current + (nextLiked ? 1 : -1)))
       setMessage(nextLiked ? "Liked on DeSo." : "Like removed on DeSo.")
       setBusy(false)
@@ -73,7 +78,7 @@ export default function LikeButton({ postHash, initialCount, variant = "default"
     <span className="inline-flex items-center gap-2">
       <button
         type="button"
-        onClick={toggleLike}
+        onClick={() => variant === "icon" ? setEmojiOpen((open) => !open) : void toggleLike()}
         disabled={busy}
         title={liked ? "Unlike" : "Like"}
         aria-label={liked ? `Unlike · ${count}` : `Like · ${count}`}
@@ -83,6 +88,8 @@ export default function LikeButton({ postHash, initialCount, variant = "default"
       >
         {variant === "icon" ? <><Heart className={`h-4 w-4 ${liked ? "fill-current" : ""}`} aria-hidden="true" /><span>{count}</span></> : (busy ? "Waiting…" : liked ? `Unlike · ${count}` : `Like · ${count}`)}
       </button>
+      {variant === "icon" && emojiOpen ? <span className="inline-flex flex-wrap gap-1 rounded-lg border border-zinc-700 p-1" role="group" aria-label="VIA emoji keuze">{["❤️", "👍", "😂", "😮", "😢", "🎉"].map((emoji) => <button key={emoji} type="button" disabled={busy} onClick={() => void toggleLike(emoji)} title={`VIA emoji ${emoji}`} className="rounded px-1.5 py-1 text-base hover:bg-white/10">{emoji}</button>)}<button type="button" onClick={() => setEmojiOpen(false)} className="rounded px-1 text-xs">Sluiten</button></span> : null}
+      {liked && variant === "icon" ? <span className="text-xs" aria-label="Selected emoji">{chosenEmoji}</span> : null}
       {message ? <span className="sr-only" role="status" aria-live="polite">{message}</span> : null}
     </span>
   )

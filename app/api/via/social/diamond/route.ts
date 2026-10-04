@@ -51,6 +51,24 @@ export async function POST(request: Request) {
     }
   }
 
+  if (body.action === "reader-level") {
+    if (!validPostHash(body.postHash) || !validPublicKey(body.readerPublicKey)) return noStore({ ok: false, error: "INVALID_READER_REQUEST" }, 400)
+    try {
+      const response = await fetchDeSo("get-single-post", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ PostHashHex: body.postHash, ReaderPublicKeyBase58Check: body.readerPublicKey, FetchParents: false, CommentOffset: 0, CommentLimit: 0, AddGlobalFeedBool: false }),
+        cache: "no-store",
+      })
+      if (!response.ok) return noStore({ ok: false, error: "DESO_READER_UNAVAILABLE" }, 502)
+      const data = await response.json() as { PostFound?: { PostEntryReaderState?: { DiamondLevelBestowed?: unknown } } }
+      const level = data.PostFound?.PostEntryReaderState?.DiamondLevelBestowed
+      if (level !== undefined && (!Number.isInteger(level) || (level as number) < 0 || (level as number) > 8)) return noStore({ ok: false, error: "INVALID_DESO_LEVEL" }, 502)
+      if (!data.PostFound || !data.PostFound.PostEntryReaderState) return noStore({ ok: false, error: "DESO_READER_STATE_UNAVAILABLE" }, 503)
+      return noStore({ ok: true, diamondLevelBestowed: level ?? 0 })
+    } catch { return noStore({ ok: false, error: "DESO_READER_UNAVAILABLE" }, 503) }
+  }
+
   if (body.action === "prepare") {
     const senderPublicKey = body.senderPublicKey
     const receiverPublicKey = body.receiverPublicKey
@@ -92,6 +110,25 @@ export async function POST(request: Request) {
       return noStore({ ok: true, transactionHex, feeNanos: typeof feeNanos === "number" ? feeNanos : null, spendAmountNanos, diamondLevel })
     } catch {
       return noStore({ ok: false, error: "DESO_PREPARE_UNAVAILABLE" }, 503)
+    }
+  }
+
+  if (body.action === "transaction-status") {
+    if (!validPostHash(body.txnHashHex)) return noStore({ ok: false, error: "INVALID_TRANSACTION_HASH" }, 400)
+    try {
+      const response = await fetchDeSo("get-txn", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ TxnHashHex: body.txnHashHex, TxnStatus: "Committed" }),
+        cache: "no-store",
+      })
+      if (!response.ok) return noStore({ ok: false, error: "DESO_TRANSACTION_NOT_CONFIRMED" }, 502)
+      const transaction = await response.json()
+      if (!transaction || typeof transaction !== "object" || Array.isArray(transaction) || typeof transaction.TxnFound !== "boolean") return noStore({ ok: false, error: "INVALID_DESO_TRANSACTION_RESPONSE" }, 502)
+      if (!transaction.TxnFound) return noStore({ ok: false, error: "DESO_TRANSACTION_NOT_FOUND" }, 409)
+      return noStore({ ok: true, transaction })
+    } catch {
+      return noStore({ ok: false, error: "DESO_TRANSACTION_UNAVAILABLE" }, 503)
     }
   }
 

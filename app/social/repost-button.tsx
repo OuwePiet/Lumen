@@ -69,11 +69,11 @@ export default function RepostButton({ postHash, initialCount, variant = "defaul
   const imageUploading = imageUploadStatus === "jwt" || imageUploadStatus === "uploading"
 
   function insertEmoji(emoji: string) {
-    if (quote.length + emoji.length > MAX_QUOTE_LENGTH) return
     const textarea = quoteRef.current
     const start = textarea?.selectionStart ?? quote.length
     const end = textarea?.selectionEnd ?? quote.length
-    const next = `${quote.slice(0, start)}${emoji}${quote.slice(end)}`.slice(0, MAX_QUOTE_LENGTH)
+    const next = `${quote.slice(0, start)}${emoji}${quote.slice(end)}`
+    if (next.length > MAX_QUOTE_LENGTH) return
     setQuote(next)
     window.requestAnimationFrame(() => {
       textarea?.focus()

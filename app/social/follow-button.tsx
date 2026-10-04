@@ -107,7 +107,7 @@ export default function FollowButton({ followedPublicKey, variant = "default", f
   }
 
   function toggleFollow() {
-    if (variant === "profile" && following && statusReady && !busy) {
+    if (following && statusReady && !busy) {
       setConfirmUnfollow(true)
       return
     }
@@ -141,7 +141,7 @@ export default function FollowButton({ followedPublicKey, variant = "default", f
       </button>
       {message ? <span className="sr-only" role="status" aria-live="polite">{message}</span> : null}
 
-      {variant === "profile" && confirmUnfollow ? (
+      {confirmUnfollow ? (
         <span className="fixed inset-0 z-50 grid place-items-center bg-black/75 p-5" role="presentation" onClick={() => setConfirmUnfollow(false)}>
           <span className="w-full max-w-sm rounded-[16px] border border-zinc-700 bg-[#0a0d0b] p-5 text-left shadow-2xl" role="dialog" aria-modal="true" aria-label="Confirm unfollow" onClick={(event) => event.stopPropagation()}>
             <span className="block text-base font-medium text-zinc-100">Are you sure you want to unfollow @{followedUsername}?</span>
