@@ -76,7 +76,9 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
       const data = await response.json() as PrepareResponse
       if (!response.ok || !data.ok || !data.transactionHex) throw new Error(data.error || "PREPARE_FAILED")
       const selected = diamondValues?.find((item) => item.level === chosenLevel)
-      if (!selected || data.diamondLevel !== chosenLevel || !Number.isFinite(data.spendAmountNanos) || !Number.isFinite(data.feeNanos) || typeof data.spendAmountNanos !== "number" || typeof data.feeNanos !== "number" || data.spendAmountNanos <= 0 || data.feeNanos < 0 || data.spendAmountNanos > selected.nanos + data.feeNanos) throw new Error("DIAMOND_COST_MISMATCH")
+      const previousNanos = existingLevel === 0 ? 0 : diamondValues?.find((item) => item.level === existingLevel)?.nanos
+      const upgradeNanos = selected && typeof previousNanos === "number" ? selected.nanos - previousNanos : null
+      if (!selected || upgradeNanos === null || upgradeNanos <= 0 || data.diamondLevel !== chosenLevel || !Number.isFinite(data.spendAmountNanos) || !Number.isFinite(data.feeNanos) || typeof data.spendAmountNanos !== "number" || typeof data.feeNanos !== "number" || data.spendAmountNanos <= 0 || data.feeNanos < 0 || data.spendAmountNanos > upgradeNanos + data.feeNanos) throw new Error("DIAMOND_COST_MISMATCH")
       setFeeNanos(typeof data.feeNanos === "number" ? data.feeNanos : null); setSpendNanos(typeof data.spendAmountNanos === "number" ? data.spendAmountNanos : null)
       setStatus("approval"); setMessage("Signing the confirmed Diamond with your VIA DeSo session…")
       const signedTransactionHex = await signViaTransaction(session.publicKey, data.transactionHex)
