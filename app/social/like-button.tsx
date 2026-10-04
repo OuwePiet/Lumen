@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { ThumbsUp } from "lucide-react"
+import { Heart } from "lucide-react"
 import { restoreIdentitySession, VIA_IDENTITY_EVENT, type ViaIdentitySession } from "../deso-identity-session"
 import { signViaTransaction } from "../deso-identity-sign"
 
@@ -18,6 +18,8 @@ export default function LikeButton({ postHash, initialCount, variant = "default"
   const [session, setSession] = useState<ViaIdentitySession | null>(null)
   const [count, setCount] = useState(initialCount)
   const [liked, setLiked] = useState(false)
+  const [emojiOpen, setEmojiOpen] = useState(false)
+  const [chosenEmoji, setChosenEmoji] = useState("❤️")
   const [busy, setBusy] = useState(false)
   const [message, setMessage] = useState("")
 
@@ -33,7 +35,9 @@ export default function LikeButton({ postHash, initialCount, variant = "default"
 
   useEffect(() => setCount(initialCount), [initialCount])
 
-  async function toggleLike() {
+  async function toggleLike(emoji?: string) {
+    if (emoji) setChosenEmoji(emoji)
+    setEmojiOpen(false)
     if (!session || busy) return
     setBusy(true)
     setMessage("Preparing DeSo like transaction…")
@@ -73,7 +77,7 @@ export default function LikeButton({ postHash, initialCount, variant = "default"
     <span className="inline-flex items-center gap-2">
       <button
         type="button"
-        onClick={toggleLike}
+        onClick={() => variant === "icon" ? setEmojiOpen((open) => !open) : void toggleLike()}
         disabled={busy}
         title={liked ? "Unlike" : "Like"}
         aria-label={liked ? `Unlike · ${count}` : `Like · ${count}`}
@@ -81,8 +85,10 @@ export default function LikeButton({ postHash, initialCount, variant = "default"
           ? `inline-flex h-9 min-w-9 items-center justify-center gap-1 rounded-full border px-2 text-xs transition disabled:cursor-wait disabled:opacity-60 ${liked ? "border-[#8fd4a9] bg-[#285f40] text-white" : "border-zinc-800 text-zinc-300 hover:border-[#8fd4a9] hover:text-white"}`
           : "rounded-full border border-[#285f40]/70 px-3 py-1 text-[#9adbb2] hover:border-[#8fd4a9]/55 disabled:cursor-wait disabled:opacity-60"}
       >
-        {variant === "icon" ? <><ThumbsUp className={`h-4 w-4 ${liked ? "fill-current" : ""}`} aria-hidden="true" /><span>{count}</span></> : (busy ? "Waiting…" : liked ? `Unlike · ${count}` : `Like · ${count}`)}
+        {variant === "icon" ? <><Heart className={`h-4 w-4 ${liked ? "fill-current" : ""}`} aria-hidden="true" /><span>{count}</span></> : (busy ? "Waiting…" : liked ? `Unlike · ${count}` : `Like · ${count}`)}
       </button>
+      {variant === "icon" && emojiOpen ? <span className="inline-flex flex-wrap gap-1 rounded-lg border border-zinc-700 p-1" role="group" aria-label="Choose emoji for DeSo like">{["❤️", "👍", "😂", "😮", "😢", "🎉"].map((emoji) => <button key={emoji} type="button" disabled={busy} onClick={() => void toggleLike(emoji)} title={`DeSo Like ${emoji}`} className="rounded px-1.5 py-1 text-base hover:bg-white/10">{emoji}</button>)}<button type="button" onClick={() => setEmojiOpen(false)} className="rounded px-1 text-xs">Sluiten</button></span> : null}
+      {liked && variant === "icon" ? <span className="text-xs" aria-label="Selected emoji">{chosenEmoji}</span> : null}
       {message ? <span className="sr-only" role="status" aria-live="polite">{message}</span> : null}
     </span>
   )
