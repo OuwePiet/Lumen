@@ -13,6 +13,7 @@ type DiamondLevelsResponse = { ok?: boolean; diamondLevelMap?: Record<string, nu
 export default function DiamondButton({ postHash, receiverPublicKey, initialCount, variant = "default" }: Props) {
   const [level, setLevel] = useState(1)
   const [count, setCount] = useState(initialCount)
+  useEffect(() => { setCount(initialCount) }, [initialCount])
   const [confirmValue, setConfirmValue] = useState(false)
   const [compactOpen, setCompactOpen] = useState(false)
   const menuRootRef = useRef<HTMLDivElement>(null)
@@ -75,7 +76,7 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
       const submitResponse = await fetch("/api/via/social/diamond", { method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store", body: JSON.stringify({ action: "submit", signedTransactionHex }) })
       const submitData = await submitResponse.json() as { ok?: boolean; error?: string }
       if (!submitResponse.ok || !submitData.ok) throw new Error(submitData.error || "SUBMIT_FAILED")
-      setCount((value) => value + 1); setStatus("done"); setCelebrate(true); setMessage(`Diamond level ${chosenLevel} submitted.`); setConfirmValue(false)
+      setStatus("done"); setMessage("DeSo accepted submission; count awaits DeSo refresh."); setConfirmValue(false)
     } catch { setStatus("error"); setMessage("Diamond transaction could not be prepared. Nothing was sent.") }
   }
 
