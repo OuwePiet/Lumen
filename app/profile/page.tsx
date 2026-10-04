@@ -219,6 +219,9 @@ export default function ProfilePage() {
   const [session, setSession] = useState<ViaIdentitySession | null>(null)
   const [profile, setProfile] = useState<PublicProfile | null>(null)
   const [ownPosts, setOwnPosts] = useState<OwnPost[]>([])
+  const [galleryPosts, setGalleryPosts] = useState<OwnPost[]>([])
+  const [galleryLoading, setGalleryLoading] = useState(false)
+  const [galleryError, setGalleryError] = useState(false)
   const [replyingToOwnPost, setReplyingToOwnPost] = useState<string | null>(null)
   const [replyParent, setReplyParent] = useState<{ hash: string; name: string } | null>(null)
   const [replyComments, setReplyComments] = useState<ReplyComment[]>([])
@@ -317,6 +320,19 @@ export default function ProfilePage() {
       .finally(() => { if (!controller.signal.aborted) setOwnPostsLoading(false) })
     return () => controller.abort()
   }, [session?.publicKey, postsRefresh])
+
+  useEffect(() => {
+    if (contentTab !== "gallery" || !session?.publicKey) return
+    const controller = new AbortController()
+    setGalleryLoading(true)
+    setGalleryError(false)
+    fetch(`/api/via/posts?identity=${encodeURIComponent(session.publicKey)}&limit=50&media=1`, { cache: "no-store", signal: controller.signal })
+      .then(async response => { if (!response.ok) throw new Error("DESO_GALLERY_UNAVAILABLE"); return response.json() as Promise<OwnPostsResponse> })
+      .then(data => { if (!data.ok || !Array.isArray(data.posts)) throw new Error("DESO_GALLERY_UNAVAILABLE"); if (!controller.signal.aborted) setGalleryPosts(data.posts) })
+      .catch(() => { if (!controller.signal.aborted) setGalleryError(true) })
+      .finally(() => { if (!controller.signal.aborted) setGalleryLoading(false) })
+    return () => controller.abort()
+  }, [contentTab, session?.publicKey, postsRefresh])
 
   useEffect(() => {
     const onPublished = () => setPostsRefresh((current) => current + 1)
@@ -440,8 +456,8 @@ export default function ProfilePage() {
         ) : null}
         {session && profile ? <section className="mt-5 rounded-[14px] border border-zinc-800/80 bg-zinc-950/50 p-4 sm:p-5" aria-label="Write a post"><PostComposer /></section> : null}
         {session && profile ? <section className="mt-5" aria-label="Your DeSo posts and gallery">
-          <div className="mb-4 flex gap-2" role="tablist" aria-label="Profile content">{(["posts", "gallery"] as const).map((tab) => <button key={tab} type="button" role="tab" aria-selected={contentTab === tab} onClick={() => setContentTab(tab)} className={`rounded-xl border px-4 py-2 text-sm ${contentTab === tab ? "border-[#8fd4a9] bg-[#10271a] text-[#9adbb2]" : "border-zinc-800 text-zinc-400"}`}>{tab === "posts" ? "Posts" : "Gallery"}</button>)}</div>
-          <nav aria-label="Profile sections" className="mb-4 flex flex-wrap gap-2 text-sm"><Link href="/profile/coin" className="rounded-xl border border-zinc-800 px-3 py-2 text-zinc-200">Creator Coin</Link><Link href="/wallet" className="rounded-xl border border-zinc-800 px-3 py-2 text-zinc-200">Diamonds</Link><Link href="/collection" className="rounded-xl border border-zinc-800 px-3 py-2 text-zinc-200">NFTs</Link></nav>
+          <div className="mb-5 grid grid-cols-5 gap-1.5 border-t border-zinc-800/70 pt-4 sm:gap-3" aria-label="Profile content">{(["posts", "gallery"] as const).map((tab) => <button key={tab} type="button" role="tab" aria-selected={contentTab === tab} onClick={() => setContentTab(tab)} className={`flex min-w-0 items-center justify-center rounded-xl border px-1 py-2 text-center text-[11px] sm:px-3 sm:text-sm ${contentTab === tab ? "border-[#8fd4a9] bg-[#10271a] text-[#9adbb2]" : "border-zinc-800 text-zinc-400"}`}>{tab === "posts" ? "Posts" : "Gallery"}</button>)}
+          <nav aria-label="Other DeSo profile sections" className="contents"><Link href="/profile/coin" className="flex min-w-0 items-center justify-center rounded-xl border border-zinc-800 px-1 py-2 text-center text-[11px] text-zinc-200 sm:px-3 sm:text-sm">Creator Coin</Link><Link href="/wallet" className="flex min-w-0 items-center justify-center rounded-xl border border-zinc-800 px-1 py-2 text-center text-[11px] text-zinc-200 sm:px-3 sm:text-sm">Diamonds</Link><Link href="/collection" className="flex min-w-0 items-center justify-center rounded-xl border border-zinc-800 px-1 py-2 text-center text-[11px] text-zinc-200 sm:px-3 sm:text-sm">NFTs</Link></nav></div>
           {contentTab === "posts" ? <>
           <div className="mb-3 flex items-center justify-between gap-3"><h2 className="text-xl font-semibold">My Posts</h2><button type="button" onClick={() => setPostsRefresh((current) => current + 1)} className="text-xs text-[#9adbb2]">Refresh</button></div>
           {ownPostsLoading ? <p className="text-sm text-zinc-400">Loading DeSo posts…</p> : ownPostsError ? <p className="text-sm text-zinc-400" role="status">DeSo posts are temporarily unavailable.</p> : ownPosts.length === 0 ? <p className="text-sm text-zinc-400">No posts returned for the active DeSo account.</p> : <div className="space-y-3">{ownPosts.map((post) => <article key={post.postHash} className="rounded-[14px] border border-zinc-800/80 bg-zinc-950/50 p-4">
@@ -479,7 +495,7 @@ export default function ProfilePage() {
               </div>
             ) : null}
           </article>)}</div>}
-          </> : ownPostsLoading ? <p className="text-sm text-zinc-400">Loading gallery…</p> : ownPostsError ? <p role="status" className="text-sm text-zinc-400">Gallery temporarily unavailable.</p> : <div role="tabpanel" className="grid grid-cols-2 gap-2 sm:grid-cols-3">{ownPosts.flatMap((post) => post.imageUrls.map((url, index) => ({ url, hash: post.postHash, index }))).map((item) => <Link key={`${item.hash}-${item.index}`} href={`/social?post=${encodeURIComponent(item.hash)}`} className="overflow-hidden rounded-xl border border-zinc-800" aria-label="Open image post"><img src={item.url} alt="" loading="lazy" referrerPolicy="no-referrer" className="aspect-square w-full object-cover" /></Link>)}{!ownPosts.some((post) => post.imageUrls.length > 0) ? <p className="col-span-full text-sm text-zinc-400">No images in the loaded posts.</p> : null}</div>}
+          </> : galleryLoading ? <p className="text-sm text-zinc-400">Loading gallery…</p> : galleryError ? <p role="status" className="text-sm text-zinc-400">Gallery temporarily unavailable.</p> : <div role="tabpanel" className="grid grid-cols-2 gap-2 sm:grid-cols-3">{galleryPosts.flatMap((post) => post.imageUrls.map((url, index) => ({ url, hash: post.postHash, index }))).map((item) => <Link key={`${item.hash}-${item.index}`} href={`/social?post=${encodeURIComponent(item.hash)}`} className="overflow-hidden rounded-xl border border-zinc-800" aria-label="Open image post"><img src={item.url} alt="" loading="lazy" referrerPolicy="no-referrer" className="aspect-square w-full object-cover" /></Link>)}{galleryPosts.flatMap((post) => post.videoUrls.map((url, index) => ({ url, hash: post.postHash, index }))).map((item) => <div key={`${item.hash}-video-${item.index}`} className="overflow-hidden rounded-xl border border-zinc-800"><video src={item.url} controls playsInline preload="none" className="aspect-square w-full object-contain" /><Link href={`/social?post=${encodeURIComponent(item.hash)}`} className="block p-2 text-xs text-[#9adbb2]">Open post</Link></div>)}{!galleryPosts.some((post) => post.imageUrls.length > 0 || post.videoUrls.length > 0) ? <p className="col-span-full text-sm text-zinc-400">No media returned by DeSo.</p> : null}</div>}
         </section> : null}
       </div>
       <style>{`\n        .via-profile-own-actions { display:flex; align-items:center; gap:7px; margin-left:auto; }\n        .via-profile-action-button { width:36px; height:36px; display:inline-grid; place-items:center; border:1px solid rgba(143,212,169,.28); border-radius:50%; background:rgba(5,11,8,.58); color:#9adbb2; text-decoration:none; }\n        .via-profile-action-menu-wrap { position:relative; }\n        .via-profile-action-menu { position:absolute; right:0; top:42px; z-index:30; min-width:170px; padding:6px; border:1px solid rgba(143,212,169,.22); border-radius:12px; background:rgba(5,10,7,.98); box-shadow:0 16px 36px rgba(0,0,0,.42); }\n        .via-profile-action-menu button { width:100%; display:flex; align-items:center; gap:8px; border:0; border-radius:8px; padding:9px 10px; background:transparent; color:#d3ddd7; font-size:12px; text-align:left; }\n        @media (max-width:720px) { .via-profile-own-actions { width:auto; justify-content:flex-start; margin:0; } .via-profile-action-button { width:34px; height:34px; } }\n      `}</style>
