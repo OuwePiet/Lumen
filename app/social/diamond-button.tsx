@@ -89,18 +89,27 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
       const submitResponse = await fetch("/api/via/social/diamond", { method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store", body: JSON.stringify({ action: "submit", signedTransactionHex }) })
       const submitData = await submitResponse.json() as { ok?: boolean; error?: string }
       if (!submitResponse.ok || !submitData.ok) throw new Error(submitData.error || "SUBMIT_FAILED")
-      setStatus("done"); setMessage("DeSo accepted submission. Checking DeSo count…"); setConfirmValue(false)
+      setConfirmValue(false)
+      setMessage("DeSo accepted submission. Waiting for the DeSo reader state to confirm the diamond…")
+      let confirmedByDeSo = false
       for (let attempt = 0; attempt < 4; attempt++) {
         await new Promise((resolve) => setTimeout(resolve, 4000 + attempt * 3000))
         try {
-          const response = await fetch(`/api/via/post?hash=${encodeURIComponent(postHash)}&verify=${Date.now()}`, { cache: "no-store" })
-          const data = await response.json() as { ok?: boolean; post?: { diamondCount?: number } }
-          if (response.ok && data.ok && typeof data.post?.diamondCount === "number" && Number.isFinite(data.post.diamondCount)) {
-            setCount(data.post.diamondCount)
+          const readerResponse = await fetch("/api/via/social/diamond", { method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store", body: JSON.stringify({ action: "reader-level", postHash, readerPublicKey: session.publicKey }) })
+          const readerData = await readerResponse.json() as { ok?: boolean; diamondLevelBestowed?: number }
+          if (readerResponse.ok && readerData.ok && readerData.diamondLevelBestowed === chosenLevel) {
+            confirmedByDeSo = true
+            setBestowedLevel(chosenLevel)
+            const countResponse = await fetch(`/api/via/post?hash=${encodeURIComponent(postHash)}&verify=${Date.now()}`, { cache: "no-store" })
+            const countData = await countResponse.json() as { ok?: boolean; post?: { diamondCount?: number } }
+            if (countResponse.ok && countData.ok && typeof countData.post?.diamondCount === "number") setCount(countData.post.diamondCount)
+            break
           }
-        } catch { /* Never repeat a paid transaction on a failed read. */ }
+        } catch { /* Never retry a paid submission after a read failure. */ }
       }
-      setMessage("DeSo count checked. If the payment is not visible yet, verify the transaction on DeSo before trying again.")
+      setStatus(confirmedByDeSo ? "done" : "error")
+      setMessage(confirmedByDeSo ? "Diamond confirmed by DeSo reader state." : "Submission accepted, but DeSo confirmation is pending. Check DeSo before taking further action; do not resend.")
+
     } catch { setStatus("error"); setMessage(submissionAttempted ? "Diamond status uncertain. Check DeSo before trying again; do not resend yet." : "Diamond preparation or signing failed; no submission was attempted.") }
   }
 
