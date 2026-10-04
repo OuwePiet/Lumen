@@ -17,6 +17,7 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
   useEffect(() => { setCount(initialCount) }, [initialCount])
   const [confirmValue, setConfirmValue] = useState(false)
   const [submissionLocked, setSubmissionLocked] = useState(false)
+  const [prepared, setPrepared] = useState<{ hex: string; level: number; publicKey: string } | null>(null)
   const [compactOpen, setCompactOpen] = useState(false)
   const menuRootRef = useRef<HTMLDivElement>(null)
   const [celebrate, setCelebrate] = useState(false)
@@ -64,7 +65,7 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
   async function prepare(chosenLevel = level) {
     const session = restoreIdentitySession()
     if (submissionLocked || !session || !diamondValues?.some((item) => item.level === chosenLevel) || status === "preparing" || status === "approval" || status === "submitting") return
-    setCelebrate(false); setStatus("preparing"); setMessage("Preparing the exact value-transfer transaction…"); setFeeNanos(null); setSpendNanos(null)
+    setPrepared(null); setCelebrate(false); setStatus("preparing"); setMessage("Preparing the exact value-transfer transaction…"); setFeeNanos(null); setSpendNanos(null)
     let submissionAttempted = false
     try {
       const readerResponse = await fetch("/api/via/social/diamond", { method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store", body: JSON.stringify({ action: "reader-level", postHash, readerPublicKey: session.publicKey }) })
@@ -81,8 +82,24 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
       const upgradeNanos = selected && typeof previousNanos === "number" ? selected.nanos - previousNanos : null
       if (!selected || upgradeNanos === null || upgradeNanos <= 0 || data.diamondLevel !== chosenLevel || !Number.isFinite(data.spendAmountNanos) || !Number.isFinite(data.feeNanos) || typeof data.spendAmountNanos !== "number" || typeof data.feeNanos !== "number" || data.spendAmountNanos <= 0 || data.feeNanos < 0 || data.spendAmountNanos > upgradeNanos + data.feeNanos) throw new Error("DIAMOND_COST_MISMATCH")
       setFeeNanos(typeof data.feeNanos === "number" ? data.feeNanos : null); setSpendNanos(typeof data.spendAmountNanos === "number" ? data.spendAmountNanos : null)
-      setStatus("approval"); setMessage("DeSo prepared the transaction. Requesting identity signature; no transaction has been submitted yet…")
-      const signedTransactionHex = await signViaTransaction(session.publicKey, data.transactionHex)
+      setPrepared({ hex: data.transactionHex, level: chosenLevel, publicKey: session.publicKey })
+      setStatus("approval")
+      setMessage("DeSo prepared the exact spend and network fee. Review them before signing.")
+      return
+    } catch { setStatus("error"); setMessage("DeSo diamond preparation failed; no transaction was submitted.") }
+  }
+
+  async function signPrepared() {
+    const pending = prepared
+    if (!pending || submissionLocked || status !== "approval") return
+    const session = restoreIdentitySession()
+    if (!session || session.publicKey !== pending.publicKey) { setPrepared(null); setStatus("error"); setMessage("DeSo account changed; prepare again."); return }
+    setPrepared(null)
+    let submissionAttempted = false
+    try {
+      const chosenLevel = pending.level
+      setStatus("submitting")
+      const signedTransactionHex = await signViaTransaction(session.publicKey, pending.hex)
       setStatus("submitting"); setMessage("Submitting your confirmed Diamond to DeSo…")
       submissionAttempted = true
       setSubmissionLocked(true)
@@ -141,7 +158,8 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
           <button type="button" onClick={() => { setCompactOpen(false); setConfirmValue(false) }} disabled={status === "preparing" || status === "approval" || status === "submitting"} className="h-9 rounded-full border border-zinc-700 px-3 text-xs text-zinc-300 disabled:opacity-60">Sluiten</button>
         </div>
       </div> : null}
-      {leafRain}
+      {prepared && status === "approval" ? <div className="basis-full rounded border border-amber-500 p-2 text-xs">DeSo diamond level {prepared.level}: total wallet spend {spendNanos?.toLocaleString()} nanos, including network fee {feeNanos?.toLocaleString()} nanos. <button type="button" className="rounded border px-2" onClick={() => void signPrepared()}>Sign and submit</button> <button type="button" className="rounded border px-2" onClick={() => { setPrepared(null); setStatus("idle") }}>Cancel</button></div> : null}
+    {leafRain}
       {message ? <span className="sr-only" role="status" aria-live="polite">{message}</span> : null}
     </div>
   }
@@ -156,6 +174,7 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
       </div>
     </details>
     {confirmValue ? <span className="text-xs">Confirm diamond level {level}. Listed prices are full DeSo level values, not upgrade prices. DeSo calculates the actual upgrade and fee. <button type="button" className="rounded border px-2" onClick={() => { setConfirmValue(false); void prepare(level) }}>Confirm</button> <button type="button" className="rounded border px-2" onClick={() => setConfirmValue(false)}>Cancel</button></span> : null}
+    {prepared && status === "approval" ? <div className="basis-full rounded border border-amber-500 p-2 text-xs">DeSo diamond level {prepared.level}: total wallet spend {spendNanos?.toLocaleString()} nanos, including network fee {feeNanos?.toLocaleString()} nanos. <button type="button" className="rounded border px-2" onClick={() => void signPrepared()}>Sign and submit</button> <button type="button" className="rounded border px-2" onClick={() => { setPrepared(null); setStatus("idle") }}>Cancel</button></div> : null}
     {leafRain}
     {(feeNanos !== null || spendNanos !== null) ? <span className="text-[11px] text-zinc-500">Prepared: {spendNanos !== null ? `${spendNanos.toLocaleString()} nanos total spend` : "value transfer"}{feeNanos !== null ? ` · ${feeNanos.toLocaleString()} nanos fee` : ""}</span> : null}
     {message ? <span className={`text-[11px] ${status === "error" ? "text-amber-300" : "text-zinc-500"}`}>{message}</span> : null}
