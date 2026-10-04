@@ -17,6 +17,7 @@ import { restoreIdentitySession, VIA_IDENTITY_EVENT, type ViaIdentitySession } f
 
 type PublicPost = {
   postHash: string
+  parentStakeID?: string
   comments?: PublicPost[]
   publicKey: string
   username?: string
@@ -236,10 +237,11 @@ export default function PublicPosts() {
   const visiblePosts = useMemo(() => {
     const ordered = feedChoice === "recent" ? [...posts].sort((a, b) => b.timestampNanos - a.timestampNanos) : posts
     return ordered.filter((post) =>
+      !post.parentStakeID && (
       mediaFilter === "all" ||
       (mediaFilter === "image" && post.imageUrls.length > 0) ||
       (mediaFilter === "video" && post.videoUrls.length > 0) ||
-      (mediaFilter === "nft" && post.isNft),
+      (mediaFilter === "nft" && post.isNft)),
     )
   }, [feedChoice, posts, mediaFilter])
 
