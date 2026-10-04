@@ -2,6 +2,7 @@ import { fetchDeSo } from "../../app/deso-api"
 
 export type ViaPublicPost = {
   postHash: string
+  parentStakeID: string
   publicKey: string
   username: string
   body: string
@@ -20,6 +21,7 @@ export type ViaPublicPost = {
 
 type DeSoPost = {
   PostHashHex?: unknown
+  ParentStakeID?: unknown
   PosterPublicKeyBase58Check?: unknown
   ProfileEntryResponse?: { Username?: unknown } | null
   Body?: unknown
@@ -80,6 +82,7 @@ function safePostExtraData(value: unknown) {
 function normalizePublicPost(post: DeSoPost): ViaPublicPost {
   return {
     postHash: text(post.PostHashHex),
+    parentStakeID: text(post.ParentStakeID),
     publicKey: text(post.PosterPublicKeyBase58Check),
     username: text(post.ProfileEntryResponse?.Username),
     body: text(post.Body),
@@ -131,6 +134,8 @@ export async function readPublicPosts(
   return rawPosts
     .filter((value): value is DeSoPost => Boolean(value) && typeof value === "object")
     .filter((post) => post.IsHidden !== true)
+    // DeSo replies are posts with a ParentStakeID; show them inside their parent thread.
+    .filter((post) => !text(post.ParentStakeID))
     .slice(0, numToFetch)
     .map(normalizePublicPost)
     .filter((post) => Boolean(post.postHash))
