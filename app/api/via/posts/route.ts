@@ -7,6 +7,7 @@ export async function GET(request: Request) {
   const url = new URL(request.url)
   const identity = (url.searchParams.get("identity") ?? "").trim()
   const requestedLimit = Number(url.searchParams.get("limit") ?? 20)
+  const mediaRequired = url.searchParams.get("media") === "1"
 
   if (!identity || identity.length > 128) {
     return NextResponse.json(
@@ -20,7 +21,7 @@ export async function GET(request: Request) {
     : 20
 
   try {
-    const posts = await readPublicPosts(identity, limit)
+    const posts = await readPublicPosts(identity, limit, mediaRequired)
     return NextResponse.json(
       { ok: true, posts },
       {
