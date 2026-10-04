@@ -96,6 +96,7 @@ export default function PublicPosts() {
   const [replyingTo, setReplyingTo] = useState<string | null>(null)
   const [commentPosts, setCommentPosts] = useState<PublicPost[]>([])
   const [commentsBusy, setCommentsBusy] = useState(false)
+  const [commentsRefresh, setCommentsRefresh] = useState(0)
   useEffect(() => {
     if (!replyingTo) { setCommentPosts([]); return }
     const controller = new AbortController()
@@ -106,7 +107,7 @@ export default function PublicPosts() {
       .catch(() => { if (!controller.signal.aborted) setCommentPosts([]) })
       .finally(() => { if (!controller.signal.aborted) setCommentsBusy(false) })
     return () => controller.abort()
-  }, [replyingTo])
+  }, [replyingTo, commentsRefresh])
   const [actionLoginPost, setActionLoginPost] = useState<string | null>(null)
   const [sharedPostView, setSharedPostView] = useState(false)
   const [translationPost, setTranslationPost] = useState<string | null>(null)
@@ -533,7 +534,7 @@ export default function PublicPosts() {
                         {commentPosts.map((comment) => <div key={comment.postHash} className="rounded-lg border border-zinc-800 p-2 text-sm"><p className="text-xs text-zinc-400">{comment.username ? `@${comment.username}` : shortPublicKey(comment.publicKey)}</p><p className="mt-1 whitespace-pre-wrap break-words">{comment.body}</p></div>)}
                       </div>
                       <p className="mt-4 text-sm text-zinc-400">Replying to {creatorUsername ? `@${creatorUsername}` : shortPublicKey(post.publicKey)}</p>
-                      <PostComposer parentStakeID={post.postHash} compact onCancel={() => setReplyingTo(null)} onDone={() => { setReplyingTo(null); void loadPosts() }} />
+                      <PostComposer parentStakeID={post.postHash} compact onCancel={() => setReplyingTo(null)} onDone={() => { setCommentsRefresh((value) => value + 1); void loadPosts() }} />
                     </section>
                   </div>
                 ) : null}
