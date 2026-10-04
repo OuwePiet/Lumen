@@ -32,6 +32,7 @@ type DeSoPost = {
   QuoteRepostCount?: unknown
   IsNFT?: unknown
   IsHidden?: unknown
+  Comments?: unknown
   PostExtraData?: unknown
 }
 
@@ -42,6 +43,7 @@ type DeSoPostsResponse = {
 
 type DeSoSinglePostResponse = {
   PostFound?: unknown
+  Comments?: unknown
 }
 
 function text(value: unknown) {
@@ -159,4 +161,29 @@ export async function readPublicPostByHash(postHash: string): Promise<ViaPublicP
 
   const normalized = normalizePublicPost(post)
   return normalized.postHash.toLowerCase() === hash ? normalized : null
+}
+
+/** Read DeSo-native comments, never a VIA-only reply store. */
+export async function readPublicPostComments(postHash: string, offset = 0, limit = 20): Promise<ViaPublicPost[] | null> {
+  const hash = postHash.trim().toLowerCase()
+  if (!/^[0-9a-f]{64}$/.test(hash)) return null
+  const response = await fetchDeSo("get-single-post", {
+    method: "POST",
+    headers: { "content-type": "application/json", accept: "application/json" },
+    body: JSON.stringify({
+      PostHashHex: hash,
+      FetchParents: false,
+      CommentOffset: Math.max(0, Math.trunc(offset)),
+      CommentLimit: Math.max(1, Math.min(50, Math.trunc(limit) || 20)),
+      ReaderPublicKeyBase58Check: "",
+      AddGlobalFeedBool: false,
+    }),
+  })
+  if (!response.ok) return null
+  const data = (await response.json()) as DeSoSinglePostResponse
+  const parent = data.PostFound as DeSoPost | undefined
+  const comments = Array.isArray(parent?.Comments) ? parent.Comments : Array.isArray(data.Comments) ? data.Comments : []
+  return comments.filter((item): item is DeSoPost => Boolean(item) && typeof item === "object")
+    .filter((item) => item.IsHidden !== true)
+    .map(normalizePublicPost).filter((item) => Boolean(item.postHash))
 }
