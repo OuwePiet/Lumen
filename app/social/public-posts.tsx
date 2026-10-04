@@ -469,7 +469,7 @@ export default function PublicPosts() {
                   {session ? <DiamondButton postHash={post.postHash} receiverPublicKey={post.publicKey} initialCount={post.diamondCount} variant="icon" /> : <button type="button" title="Diamond (DeSo login required)" onClick={() => setActionLoginPost(post.postHash)} className="inline-flex h-9 min-w-9 items-center justify-center gap-1 rounded-full border border-zinc-800 px-2 text-xs text-zinc-300">Diamond · {post.diamondCount}</button>}
                   <details className="relative">
                     <summary aria-label="Meer postacties" title="Meer postacties" className="cursor-pointer list-none rounded-full border border-zinc-800 px-3 py-1 text-zinc-400">•••</summary>
-                    <div className="mt-2 flex flex-col overflow-hidden rounded-xl border border-zinc-800 bg-[#050806] text-left">
+                    <div className="absolute right-0 z-30 mt-2 flex max-h-[65vh] min-w-44 flex-col overflow-y-auto rounded-xl border border-zinc-800 bg-[#050806] text-left shadow-2xl">
                       <button type="button" onClick={() => {
                         const lang = readViaLocalSettings().interfaceLanguage
                         const target = ({ Dutch: "nl", English: "en", French: "fr", Spanish: "es", Chinese: "zh", Hindi: "hi" } as Record<string, string>)[lang] ?? "en"
