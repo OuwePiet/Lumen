@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from "react"
 import { Gem } from "lucide-react"
 import { restoreIdentitySession } from "../deso-identity-session"
 import { signViaTransaction } from "../deso-identity-sign"
-import { fetchViaRates, isViaRateStale } from "../via-live-rates"
 
 type Props = { postHash: string; receiverPublicKey: string; initialCount: number; variant?: "default" | "icon" }
 type PrepareResponse = { ok?: boolean; transactionHex?: string; diamondLevel?: number; feeNanos?: number | null; spendAmountNanos?: number | null; error?: string }
@@ -35,27 +34,21 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
   const [message, setMessage] = useState("")
   const [feeNanos, setFeeNanos] = useState<number | null>(null)
   const [spendNanos, setSpendNanos] = useState<number | null>(null)
-  const [diamondValues, setDiamondValues] = useState<Array<{ level: number; usd: number; nanos: number }> | null>(null)
+  const [diamondValues, setDiamondValues] = useState<Array<{ level: number; nanos: number }> | null>(null)
 
   useEffect(() => {
     if (diamondValues) return
     const controller = new AbortController()
-    Promise.all([
-      fetch("/api/via/social/diamond", { method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store", body: JSON.stringify({ action: "levels" }), signal: controller.signal }).then(async (response) => {
+    fetch("/api/via/social/diamond", { method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store", body: JSON.stringify({ action: "levels" }), signal: controller.signal })
+      .then(async (response) => {
         const data = await response.json() as DiamondLevelsResponse
         if (!response.ok || !data.ok || !data.diamondLevelMap) throw new Error("DIAMOND_LEVELS_UNAVAILABLE")
-        return data.diamondLevelMap
-      }),
-      fetchViaRates(controller.signal),
-    ]).then(([levelMap, rates]) => {
-      const usdRate = rates.rates?.USD
-      if (typeof usdRate !== "number" || !Number.isFinite(usdRate) || isViaRateStale(rates.checkedAt)) throw new Error("RATE_UNAVAILABLE")
-      const values = Object.entries(levelMap)
-        .map(([key, nanos]) => ({ level: Number(key), usd: (nanos / 1_000_000_000) * usdRate, nanos }))
-        .filter((entry) => Number.isInteger(entry.level) && entry.level >= 1 && entry.level <= 8 && Number.isFinite(entry.usd))
-        .sort((a, b) => a.level - b.level)
-      if (values.length) setDiamondValues(values)
-    }).catch(() => setDiamondValues(null))
+        const values = Object.entries(data.diamondLevelMap)
+          .map(([key, nanos]) => ({ level: Number(key), nanos }))
+          .filter((entry) => Number.isInteger(entry.level) && entry.level >= 1 && entry.level <= 8 && Number.isFinite(entry.nanos) && entry.nanos > 0)
+          .sort((a, b) => a.level - b.level)
+        if (values.length) setDiamondValues(values)
+      }).catch(() => setDiamondValues(null))
     return () => controller.abort()
   }, [diamondValues])
 
@@ -95,9 +88,9 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
       </button>
       {compactOpen ? <div className="basis-full rounded-xl border border-zinc-800 bg-[#050806] p-2">
         <div className="flex max-w-full flex-wrap items-center gap-1.5" aria-label="Diamond value">
-          {(diamondValues ?? Array.from({ length: 8 }, (_, index) => ({ level: index + 1, usd: NaN }))).map((entry) => (
-            <button key={entry.level} type="button" onClick={() => { if (!Number.isFinite(entry.usd) || status === "preparing" || status === "approval" || status === "submitting") return; setLevel(entry.level); void prepare(entry.level) }} aria-pressed={level === entry.level} className={`min-w-[3.35rem] rounded-xl border px-2 py-1 text-center text-[10px] transition ${level === entry.level ? "border-[#8fd4a9] bg-[#285f40] text-white" : "border-zinc-800 text-zinc-400 hover:border-[#8fd4a9] hover:text-white"}`}>
-              <span className="block">{Number.isFinite(entry.usd) ? `$${entry.usd < 0.01 ? entry.usd.toFixed(3) : entry.usd < 1 ? entry.usd.toFixed(2) : entry.usd.toLocaleString(undefined, { maximumFractionDigits: 2 })}` : "prijs laden…"}</span>
+          {(diamondValues ?? Array.from({ length: 8 }, (_, index) => ({ level: index + 1, nanos: NaN }))).map((entry) => (
+            <button key={entry.level} type="button" onClick={() => { if (!Number.isFinite(entry.nanos) || status === "preparing" || status === "approval" || status === "submitting") return; setLevel(entry.level); void prepare(entry.level) }} aria-pressed={level === entry.level} className={`min-w-[3.35rem] rounded-xl border px-2 py-1 text-center text-[10px] transition ${level === entry.level ? "border-[#8fd4a9] bg-[#285f40] text-white" : "border-zinc-800 text-zinc-400 hover:border-[#8fd4a9] hover:text-white"}`}>
+              <span className="block">{Number.isFinite(entry.nanos) ? `${entry.nanos.toLocaleString()} nanos` : "prijs laden…"}</span>
               <Gem className="mx-auto h-4 w-4" aria-hidden="true" /><span className="block">{entry.level}</span>
             </button>
           ))}
@@ -116,7 +109,7 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
     <details className="relative">
       <summary className="inline-flex cursor-pointer list-none items-center gap-1 rounded-full border border-zinc-800 px-2 py-1 text-xs text-zinc-300"><Gem className="h-3.5 w-3.5" aria-hidden="true" /> {level} ▾</summary>
       <div className="absolute bottom-full left-0 z-30 mb-2 grid w-56 grid-cols-2 gap-1 rounded-xl border border-zinc-800 bg-[#050806] p-2 shadow-xl">
-        {(diamondValues ?? Array.from({ length: 8 }, (_, index) => ({ level: index + 1, usd: NaN }))).map((entry) => <button key={entry.level} type="button" onClick={() => { if (!Number.isFinite(entry.usd) || status === "preparing" || status === "approval" || status === "submitting") return; setLevel(entry.level); void prepare(entry.level) }} aria-pressed={level === entry.level} className={`rounded-lg border px-2 py-2 text-xs ${level === entry.level ? "border-[#8fd4a9] bg-[#285f40] text-white" : "border-zinc-800 text-zinc-300 hover:border-[#8fd4a9]"}`}><span className="block text-[11px] text-amber-300">{Number.isFinite(entry.usd) ? `${entry.usd < 0.01 ? entry.usd.toFixed(3) : entry.usd < 1 ? entry.usd.toFixed(2) : entry.usd.toLocaleString(undefined, { maximumFractionDigits: 2 })}` : "prijs laden…"}</span><span className="block">{entry.level} 💎</span></button>)}
+        {(diamondValues ?? Array.from({ length: 8 }, (_, index) => ({ level: index + 1, nanos: NaN }))).map((entry) => <button key={entry.level} type="button" onClick={() => { if (!Number.isFinite(entry.nanos) || status === "preparing" || status === "approval" || status === "submitting") return; setLevel(entry.level); void prepare(entry.level) }} aria-pressed={level === entry.level} className={`rounded-lg border px-2 py-2 text-xs ${level === entry.level ? "border-[#8fd4a9] bg-[#285f40] text-white" : "border-zinc-800 text-zinc-300 hover:border-[#8fd4a9]"}`}><span className="block text-[11px] text-amber-300">{Number.isFinite(entry.nanos) ? `${entry.nanos.toLocaleString()} nanos` : "prijs laden…"}</span><span className="block">{entry.level} 💎</span></button>)}
         <button type="button" onClick={(event) => { setConfirmValue(false); (event.currentTarget.closest("details") as HTMLDetailsElement | null)?.removeAttribute("open") }} className="col-span-2 rounded-lg border border-zinc-700 px-2 py-2 text-xs text-zinc-300 hover:border-[#8fd4a9]">Sluiten</button>
       </div>
     </details>
