@@ -220,12 +220,13 @@ export default function ProfilePage() {
   const [profile, setProfile] = useState<PublicProfile | null>(null)
   const [ownPosts, setOwnPosts] = useState<OwnPost[]>([])
   const [replyingToOwnPost, setReplyingToOwnPost] = useState<string | null>(null)
+  const [replyParent, setReplyParent] = useState<{ hash: string; name: string } | null>(null)
   const [replyComments, setReplyComments] = useState<ReplyComment[]>([])
   const [replyCommentsBusy, setReplyCommentsBusy] = useState(false)
   const [replyCommentsError, setReplyCommentsError] = useState(false)
   const [commentsRefresh, setCommentsRefresh] = useState(0)
   useEffect(() => {
-    if (!replyingToOwnPost) { setReplyComments([]); return }
+    if (!replyingToOwnPost) { setReplyComments([]); setReplyParent(null); return }
     const controller = new AbortController()
     setReplyCommentsBusy(true)
     setReplyCommentsError(false)
@@ -470,10 +471,10 @@ export default function ProfilePage() {
                         {replyCommentsError ? <div role="alert" className="flex flex-wrap items-center gap-2 text-xs text-amber-300"><span>DeSo replies could not be loaded.</span><button type="button" onClick={() => setCommentsRefresh((value) => value + 1)} className="rounded-lg border border-amber-500/40 px-2 py-1">Retry</button></div> : null}
                     {!replyCommentsBusy && !replyCommentsError && replyComments.length === 0 ? <p className="text-xs text-zinc-500">No replies returned by DeSo yet.</p> : null}
                     {!replyCommentsBusy ? <button type="button" onClick={() => setCommentsRefresh((value) => value + 1)} className="rounded-lg border border-zinc-700 px-2 py-1 text-xs text-zinc-300">Refresh replies</button> : null}
-                    {replyComments.map((comment) => <div key={comment.postHash} className="rounded-lg border border-zinc-800 p-2 text-sm"><p className="text-xs text-zinc-400">{comment.username ? `@${comment.username}` : comment.publicKey ? `${comment.publicKey.slice(0, 10)}…` : "DeSo member"}</p><p className="whitespace-pre-wrap break-words">{comment.body}</p>{comment.comments?.map((child) => <div key={child.postHash} className="ml-4 mt-2 border-l border-zinc-700 pl-3"><p className="text-xs text-zinc-400">{child.username ? `@${child.username}` : child.publicKey ? `${child.publicKey.slice(0, 10)}…` : "DeSo member"}</p><p className="whitespace-pre-wrap break-words">{child.body}</p></div>)}</div>)}
+                    {replyComments.map((comment) => <div key={comment.postHash} className="rounded-lg border border-zinc-800 p-2 text-sm"><p className="text-xs text-zinc-400">{comment.username ? `@${comment.username}` : comment.publicKey ? `${comment.publicKey.slice(0, 10)}…` : "DeSo member"}</p><p className="whitespace-pre-wrap break-words">{comment.body}</p><button type="button" className="mt-1 text-xs text-[#9adbb2]" onClick={() => setReplyParent({ hash: comment.postHash, name: comment.username ? `@${comment.username}` : "DeSo member" })}>Reply</button>{comment.comments?.map((child) => <div key={child.postHash} className="ml-4 mt-2 border-l border-zinc-700 pl-3"><p className="text-xs text-zinc-400">{child.username ? `@${child.username}` : child.publicKey ? `${child.publicKey.slice(0, 10)}…` : "DeSo member"}</p><p className="whitespace-pre-wrap break-words">{child.body}</p><button type="button" className="mt-1 text-xs text-[#9adbb2]" onClick={() => setReplyParent({ hash: child.postHash, name: child.username ? `@${child.username}` : "DeSo member" })}>Reply</button></div>)}</div>)}
                   </div>
-                  <p className="mt-4 text-sm text-zinc-400">Replying to your post</p>
-                  <PostComposer parentStakeID={post.postHash} compact onCancel={() => setReplyingToOwnPost(null)} onDone={() => { setCommentsRefresh((value) => value + 1); setPostsRefresh((value) => value + 1) }} />
+                  <p className="mt-4 text-sm text-zinc-400">Replying to {replyParent?.name ?? "your post"}</p>
+                  <PostComposer key={replyParent?.hash ?? post.postHash} parentStakeID={replyParent?.hash ?? post.postHash} compact onCancel={() => { setReplyParent(null); setReplyingToOwnPost(null) }} onDone={() => { setReplyParent(null); setCommentsRefresh((value) => value + 1); setPostsRefresh((value) => value + 1) }} />
                 </section>
               </div>
             ) : null}
