@@ -219,6 +219,19 @@ export default function ProfilePage() {
   const [profile, setProfile] = useState<PublicProfile | null>(null)
   const [ownPosts, setOwnPosts] = useState<OwnPost[]>([])
   const [replyingToOwnPost, setReplyingToOwnPost] = useState<string | null>(null)
+  const [replyComments, setReplyComments] = useState<OwnPost[]>([])
+  const [replyCommentsBusy, setReplyCommentsBusy] = useState(false)
+  useEffect(() => {
+    if (!replyingToOwnPost) { setReplyComments([]); return }
+    const controller = new AbortController()
+    setReplyCommentsBusy(true)
+    fetch(`/api/via/post?hash=${encodeURIComponent(replyingToOwnPost)}&comments=1`, { cache: "no-store", signal: controller.signal })
+      .then((response) => response.ok ? response.json() : null)
+      .then((data: { comments?: OwnPost[] } | null) => { if (!controller.signal.aborted) setReplyComments(Array.isArray(data?.comments) ? data.comments : []) })
+      .catch(() => { if (!controller.signal.aborted) setReplyComments([]) })
+      .finally(() => { if (!controller.signal.aborted) setReplyCommentsBusy(false) })
+    return () => controller.abort()
+  }, [replyingToOwnPost])
   const [ownPostsLoading, setOwnPostsLoading] = useState(false)
   const [ownPostsError, setOwnPostsError] = useState(false)
   const [postsRefresh, setPostsRefresh] = useState(0)
@@ -447,6 +460,10 @@ export default function ProfilePage() {
                     <p className="text-sm font-semibold text-zinc-100">Your DeSo post</p>
                     {post.body ? <p className="mt-3 max-h-40 overflow-auto whitespace-pre-wrap break-words text-sm text-zinc-300">{post.body}</p> : null}
                     {post.imageUrls[0] ? <img src={post.imageUrls[0]} alt="Original post attachment" className="mt-2 max-h-36 rounded-lg object-contain" /> : null}
+                  </div>
+                  <div className="mt-3 max-h-40 space-y-2 overflow-y-auto" aria-label="DeSo reactions">
+                    {replyCommentsBusy ? <p className="text-xs text-zinc-400">Loading DeSo replies…</p> : null}
+                    {replyComments.map((comment) => <div key={comment.postHash} className="rounded-lg border border-zinc-800 p-2 text-sm"><p className="whitespace-pre-wrap break-words">{comment.body}</p></div>)}
                   </div>
                   <p className="mt-4 text-sm text-zinc-400">Replying to your post</p>
                   <PostComposer parentStakeID={post.postHash} compact onCancel={() => setReplyingToOwnPost(null)} onDone={() => { setReplyingToOwnPost(null); setPostsRefresh((value) => value + 1) }} />
