@@ -3,6 +3,7 @@ import type { ViaPublicPost } from "./deso-post-read"
 
 type DeSoPost = {
   PostHashHex?: unknown
+  ParentStakeID?: unknown
   PosterPublicKeyBase58Check?: unknown
   ProfileEntryResponse?: { Username?: unknown } | null
   Body?: unknown
@@ -73,6 +74,7 @@ export async function readDiscoveryPosts(limit = 20, sortByNew = false, seenPost
     .slice(0, responseLimit)
     .map((post) => ({
       postHash: text(post.PostHashHex),
+      parentStakeID: text(post.ParentStakeID),
       publicKey: text(post.PosterPublicKeyBase58Check),
       username: text(post.ProfileEntryResponse?.Username),
       body: text(post.Body),
