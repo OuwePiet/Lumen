@@ -467,7 +467,7 @@ export default function ProfilePage() {
                   <div className="mt-3 max-h-40 space-y-2 overflow-y-auto" aria-label="DeSo reactions">
                     {replyCommentsBusy ? <p className="text-xs text-zinc-400">Loading DeSo replies…</p> : null}
                         {replyCommentsError ? <p role="alert" className="text-xs text-amber-300">DeSo replies could not be loaded. Try reopening this post.</p> : null}
-                    {replyComments.map((comment) => <div key={comment.postHash} className="rounded-lg border border-zinc-800 p-2 text-sm"><p className="whitespace-pre-wrap break-words">{comment.body}</p></div>)}
+                    {replyComments.map((comment) => <div key={comment.postHash} className="rounded-lg border border-zinc-800 p-2 text-sm"><p className="whitespace-pre-wrap break-words">{comment.body}</p>{comment.comments?.map((child) => <div key={child.postHash} className="ml-4 mt-2 border-l border-zinc-700 pl-3"><p className="whitespace-pre-wrap break-words">{child.body}</p></div>)}</div>)}
                   </div>
                   <p className="mt-4 text-sm text-zinc-400">Replying to your post</p>
                   <PostComposer parentStakeID={post.postHash} compact onCancel={() => setReplyingToOwnPost(null)} onDone={() => { setReplyingToOwnPost(null); setPostsRefresh((value) => value + 1) }} />
