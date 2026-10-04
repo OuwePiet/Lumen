@@ -269,7 +269,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
       })
       if (!submitResponse.ok || !submitted.ok) throw new Error(submitted.error || "DESO_SUBMIT_FAILED")
       setStatus("done")
-      setMessage(isReply ? "Reply posted." : "Post published.")
+      setMessage(isReply ? "DeSo accepted the reply submission; feed confirmation may take time." : "DeSo accepted the post submission; feed confirmation may take time.")
       setBody("")
       setImageInputs([""])
       setVideoInput("")
@@ -283,7 +283,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
       setVideoUploading(false)
       setMediaOpen(false)
       try { window.localStorage.removeItem(isReply ? `${SOCIAL_REPLY_DRAFT_PREFIX}${parentStakeID}` : SOCIAL_DRAFT_STORAGE_KEY) } catch {}
-      setDraftMessage(isReply ? "Reply sent; local safety copy cleared." : "Local draft cleared after publishing.")
+      setDraftMessage(isReply ? "Reply submission accepted by DeSo; local safety copy cleared." : "Post submission accepted by DeSo; local draft cleared.")
       if (!isReply) window.dispatchEvent(new Event("via:social:post-published"))
       onDone?.()
     } catch (error) {
