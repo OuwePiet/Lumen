@@ -150,14 +150,14 @@ export default function PublicPosts() {
   }, [showerTarget, showerPreview, showerAdditionalPreview, showerSkipHours, showerPosts])
   const [showerExisting, setShowerExisting] = useState<Record<string, number>>({})
   const showerEligiblePosts = useMemo(() => showerSelectedPosts.filter((post) => typeof showerExisting[post.postHash] === "number" && showerExisting[post.postHash] < showerLevel && (!session || post.publicKey !== session.publicKey)), [showerSelectedPosts, showerExisting, showerLevel, session])
+  const [showerExistingBusy, setShowerExistingBusy] = useState(false)
+  const [showerExistingError, setShowerExistingError] = useState(false)
   const showerValueNanos = showerEligiblePosts.reduce((sum, post) => {
     const selected = showerLevels?.[String(showerLevel)]
     const previous = showerExisting[post.postHash] === 0 ? 0 : showerLevels?.[String(showerExisting[post.postHash])]
     return typeof selected === "number" && typeof previous === "number" && selected > previous ? sum + selected - previous : sum
   }, 0)
   const showerValueVerified = Boolean(showerLevels && session && !showerExistingBusy && !showerExistingError && showerSelectedPosts.every((post) => typeof showerExisting[post.postHash] === "number") && showerEligiblePosts.every((post) => typeof showerLevels[String(showerExisting[post.postHash])] === "number" || showerExisting[post.postHash] === 0))
-  const [showerExistingBusy, setShowerExistingBusy] = useState(false)
-  const [showerExistingError, setShowerExistingError] = useState(false)
   useEffect(() => {
     if (!showerTarget || !session?.publicKey || !showerPreview) return
     const controller = new AbortController()
