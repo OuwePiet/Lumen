@@ -4,6 +4,7 @@ import { readPublicProfile } from "./deso-profile-read"
 
 type DeSoPost = {
   PostHashHex?: unknown
+  ParentStakeID?: unknown
   PosterPublicKeyBase58Check?: unknown
   ProfileEntryResponse?: { Username?: unknown } | null
   Body?: unknown
@@ -55,6 +56,7 @@ function normalizeFollowingPost(post: DeSoPost): ViaFollowingPost {
   const publicKey = text(post.PosterPublicKeyBase58Check)
   return {
     postHash: text(post.PostHashHex),
+    parentStakeID: text(post.ParentStakeID),
     publicKey,
     username: text(post.ProfileEntryResponse?.Username),
     body: text(post.Body),
