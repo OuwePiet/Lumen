@@ -12,6 +12,7 @@ type DiamondLevelsResponse = { ok?: boolean; diamondLevelMap?: Record<string, nu
 
 export default function DiamondButton({ postHash, receiverPublicKey, initialCount, variant = "default" }: Props) {
   const [level, setLevel] = useState(1)
+  const [, setBestowedLevel] = useState<number | null>(null)
   const [count, setCount] = useState(initialCount)
   useEffect(() => { setCount(initialCount) }, [initialCount])
   const [confirmValue, setConfirmValue] = useState(false)
@@ -65,6 +66,12 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
     setCelebrate(false); setStatus("preparing"); setMessage("Preparing the exact value-transfer transaction…"); setFeeNanos(null); setSpendNanos(null)
     let submissionAttempted = false
     try {
+      const readerResponse = await fetch("/api/via/social/diamond", { method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store", body: JSON.stringify({ action: "reader-level", postHash, readerPublicKey: session.publicKey }) })
+      const readerData = await readerResponse.json() as { ok?: boolean; diamondLevelBestowed?: number }
+      if (!readerResponse.ok || !readerData.ok || !Number.isInteger(readerData.diamondLevelBestowed)) throw new Error("DESO_READER_LEVEL_UNAVAILABLE")
+      const existingLevel = readerData.diamondLevelBestowed as number
+      setBestowedLevel(existingLevel)
+      if (chosenLevel <= existingLevel) { setStatus("error"); setMessage(`DeSo: level ${existingLevel} already given. Choose a higher level.`); return }
       const response = await fetch("/api/via/social/diamond", { method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store", body: JSON.stringify({ action: "prepare", senderPublicKey: session.publicKey, receiverPublicKey, diamondPostHashHex: postHash, diamondLevel: chosenLevel, confirmed: true }) })
       const data = await response.json() as PrepareResponse
       if (!response.ok || !data.ok || !data.transactionHex) throw new Error(data.error || "PREPARE_FAILED")
