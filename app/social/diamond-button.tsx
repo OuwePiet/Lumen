@@ -76,7 +76,18 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
       const submitResponse = await fetch("/api/via/social/diamond", { method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store", body: JSON.stringify({ action: "submit", signedTransactionHex }) })
       const submitData = await submitResponse.json() as { ok?: boolean; error?: string }
       if (!submitResponse.ok || !submitData.ok) throw new Error(submitData.error || "SUBMIT_FAILED")
-      setStatus("done"); setMessage("DeSo accepted submission; count awaits DeSo refresh."); setConfirmValue(false)
+      setStatus("done"); setMessage("DeSo accepted submission. Checking DeSo count…"); setConfirmValue(false)
+      for (let attempt = 0; attempt < 4; attempt++) {
+        await new Promise((resolve) => setTimeout(resolve, 4000 + attempt * 3000))
+        try {
+          const response = await fetch(`/api/via/post?hash=${encodeURIComponent(postHash)}&verify=${Date.now()}`, { cache: "no-store" })
+          const data = await response.json() as { ok?: boolean; post?: { diamondCount?: number } }
+          if (response.ok && data.ok && typeof data.post?.diamondCount === "number" && Number.isFinite(data.post.diamondCount)) {
+            setCount(data.post.diamondCount)
+          }
+        } catch { /* Never repeat a paid transaction on a failed read. */ }
+      }
+      setMessage("DeSo count checked. If the payment is not visible yet, verify the transaction on DeSo before trying again.")
     } catch { setStatus("error"); setMessage("Diamond transaction could not be prepared. Nothing was sent.") }
   }
 
