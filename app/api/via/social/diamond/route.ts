@@ -113,6 +113,23 @@ export async function POST(request: Request) {
     }
   }
 
+  if (body.action === "transaction-status") {
+    if (!validPostHash(body.txnHashHex)) return noStore({ ok: false, error: "INVALID_TRANSACTION_HASH" }, 400)
+    try {
+      const response = await fetchDeSo("get-txn", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ TxnHashHex: body.txnHashHex }),
+        cache: "no-store",
+      })
+      if (!response.ok) return noStore({ ok: false, error: "DESO_TRANSACTION_NOT_CONFIRMED" }, 502)
+      const transaction = await response.json()
+      return noStore({ ok: true, transaction })
+    } catch {
+      return noStore({ ok: false, error: "DESO_TRANSACTION_UNAVAILABLE" }, 503)
+    }
+  }
+
   if (body.action === "submit") {
     const signedTransactionHex = body.signedTransactionHex
     if (!validHex(signedTransactionHex)) return noStore({ ok: false, error: "INVALID_SIGNED_TRANSACTION" }, 400)
