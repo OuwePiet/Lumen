@@ -81,7 +81,12 @@ const languageCodes: Record<ViaLanguage | "Hindi", string> = {
   Dutch: "NL", English: "EN", French: "FR", Spanish: "ES", Chinese: "中文", Hindi: "हिं",
 }
 const languageFlags: Record<ViaLanguage | "Hindi", string> = {
-  Dutch: "🇳🇱", English: "🇬🇧", French: "🇫🇷", Spanish: "🇪🇸", Chinese: "🇨🇳", Hindi: "🇮🇳",
+  Dutch: "NL", English: "GB", French: "FR", Spanish: "ES", Chinese: "CN", Hindi: "IN",
+}
+
+function LanguageFlag({ language }: { language: ViaLanguage | "Hindi" }) {
+  const code = languageFlags[language].toLowerCase()
+  return <img src={`https://flagcdn.com/24x18/${code}.png`} width={24} height={18} alt="" aria-hidden="true" referrerPolicy="no-referrer" style={{ display: "block", width: "24px", height: "18px", objectFit: "cover", borderRadius: "2px" }} />
 }
 
 const pill = {
@@ -284,11 +289,11 @@ export default function ViaSiteHeader() {
           <div className="via-notifications-top-control"><Link href="/discover/voices" style={styles.search} className={`via-site-header-search ${pathname === "/notifications" || pathname === "/radio" || pathname === "/messages" || pathname === "/profile" ? "via-site-header-search-notifications" : ""}`} aria-label={t.search} title={t.search}><span className="via-notifications-members-icon" aria-hidden="true"><UsersRound className="h-4 w-4" /></span><span className="via-site-header-search-label">&nbsp;&nbsp; {t.search}</span></Link>{pathname === "/notifications" || pathname === "/radio" || pathname === "/messages" || pathname === "/profile" ? <span className="via-notifications-top-label">Members</span> : null}</div>
           <div className="via-site-header-language-wrap">
             <button type="button" onClick={() => setLanguageOpen((open) => !open)} style={styles.language} className={`via-site-header-language ${pathname === "/notifications" || pathname === "/radio" || pathname === "/messages" || pathname === "/profile" ? "via-site-header-language-notifications" : ""}`} aria-label="VIA language" aria-expanded={languageOpen}>
-              <span className="via-site-header-language-flag" aria-hidden="true">{languageFlags[language]}</span><span className="via-site-header-language-code">{languageCodes[language]}</span>
+              <span className="via-site-header-language-flag" aria-hidden="true"><LanguageFlag language={language} /></span><span className="via-site-header-language-code">{languageCodes[language]}</span>
             </button>
             {languageOpen ? <div className="via-site-header-language-menu" role="menu" aria-label="VIA language">
               {VIA_LANGUAGES.map((item) => <button key={item} type="button" role="menuitemradio" aria-checked={item === language} onClick={() => { changeLanguage(item); setLanguageOpen(false) }} className={item === language ? "is-active" : ""} data-via-language={item}>
-                <span aria-hidden="true">{languageFlags[item]}</span><span>{languageCodes[item]}</span>
+                <span aria-hidden="true"><LanguageFlag language={item} /></span><span>{languageCodes[item]}</span>
               </button>)}
             </div> : null}
           </div>
