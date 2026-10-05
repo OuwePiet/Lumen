@@ -19,6 +19,7 @@ type DeSoPost = {
   IsHidden?: unknown
   PostExtraData?: unknown
   RepostedPostEntryResponse?: unknown
+  RecloutedPostEntryResponse?: unknown
 }
 
 type HotFeedResponse = { HotFeedPage?: unknown }
@@ -98,9 +99,12 @@ export async function readDiscoveryPosts(limit = 20, sortByNew = false, seenPost
       quoteRepostCount: count(post.QuoteRepostCount),
       isNft: post.IsNFT === true,
       postExtraData: safePostExtraData(post.PostExtraData),
-      sourcePost: post.RepostedPostEntryResponse && typeof post.RepostedPostEntryResponse === "object"
-        ? normalizeDiscoveryPost(post.RepostedPostEntryResponse as DeSoPost)
-        : undefined,
+      sourcePost: (() => {
+        const source = post.RepostedPostEntryResponse ?? post.RecloutedPostEntryResponse
+        return source && typeof source === "object"
+          ? normalizeDiscoveryPost(source as DeSoPost)
+          : undefined
+      })(),
     }))
     .filter((post) => Boolean(post.postHash))
 }
