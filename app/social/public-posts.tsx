@@ -76,8 +76,7 @@ function pollOptions(extraData?: Record<string, string>) {
         .slice(0, 5)
     }
   } catch {}
-  return direct.split(/\r?
-|\|/).map((value) => value.trim()).filter(Boolean).slice(0, 5)
+  return direct.split(/\r?\n|\|/).map((value) => value.trim()).filter(Boolean).slice(0, 5)
 }
 
 function feedReadyMessage(choice: ChoiceId) {
