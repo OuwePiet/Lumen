@@ -17,6 +17,7 @@ export type ViaPublicPost = {
   isNft: boolean
   postExtraData: Record<string, string>
   comments?: ViaPublicPost[]
+  sourcePost?: ViaPublicPost
 }
 
 type DeSoPost = {
