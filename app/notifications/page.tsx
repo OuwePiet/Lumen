@@ -36,7 +36,7 @@ export default function NotificationsPage() {
 
   return (
     <main className="min-h-screen bg-black px-3 pb-8 pt-0 text-white sm:px-8 sm:py-8 lg:px-12">
-      <div className="mx-auto grid max-w-7xl gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
+      <div className="mx-auto grid w-full max-w-[1600px] gap-5 2xl:grid-cols-[minmax(0,1fr)_300px]">
         <div className="min-w-0">
         <header className="mb-0 flex flex-wrap items-center justify-between gap-1 border-b border-white/10 pb-0.5 sm:mb-6 sm:gap-4 sm:pb-5 max-sm:border-b-0">
           <div className="hidden sm:block">
@@ -48,7 +48,7 @@ export default function NotificationsPage() {
 
         <NotificationCenter language={language} />
         </div>
-        <aside className="hidden xl:block xl:sticky xl:top-6 xl:self-start">
+        <aside className="hidden 2xl:block 2xl:sticky 2xl:top-6 2xl:self-start">
           <ViaRightPanels />
         </aside>
       </div>
