@@ -8,6 +8,25 @@ import { signViaTransaction } from "../deso-identity-sign"
 type Props = { postHash: string; receiverPublicKey: string; initialCount: number; variant?: "default" | "icon" }
 type PrepareResponse = { ok?: boolean; transactionHex?: string; diamondLevel?: number; feeNanos?: number | null; error?: string }
 type DiamondLevelsResponse = { ok?: boolean; diamondLevelMap?: Record<string, number> }
+type DiamondValue = { level: number; nanos: number }
+
+let sharedDiamondValues: DiamondValue[] | null = null
+let sharedDiamondValuesRequest: Promise<DiamondValue[]> | null = null
+
+function loadDiamondValues() {
+  if (sharedDiamondValues) return Promise.resolve(sharedDiamondValues)
+  if (sharedDiamondValuesRequest) return sharedDiamondValuesRequest
+  sharedDiamondValuesRequest = fetch("/api/via/social/diamond", { method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store", body: JSON.stringify({ action: "levels" }) })
+    .then(async (response) => {
+      const data = await response.json() as DiamondLevelsResponse
+      if (!response.ok || !data.ok || !data.diamondLevelMap) throw new Error("DIAMOND_LEVELS_UNAVAILABLE")
+      const values = Object.entries(data.diamondLevelMap).map(([key, nanos]) => ({ level: Number(key), nanos })).filter((entry) => Number.isInteger(entry.level) && entry.level >= 1 && entry.level <= 8 && Number.isFinite(entry.nanos) && entry.nanos > 0).sort((a, b) => a.level - b.level)
+      if (!values.length) throw new Error("DIAMOND_LEVELS_UNAVAILABLE")
+      sharedDiamondValues = values
+      return values
+    }).finally(() => { sharedDiamondValuesRequest = null })
+  return sharedDiamondValuesRequest
+}
 
 export default function DiamondButton({ postHash, receiverPublicKey, initialCount, variant = "default" }: Props) {
   const [level, setLevel] = useState(1)
@@ -36,18 +55,9 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
 
   useEffect(() => {
     if (diamondValues) return
-    const controller = new AbortController()
-    fetch("/api/via/social/diamond", { method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store", body: JSON.stringify({ action: "levels" }), signal: controller.signal })
-      .then(async (response) => {
-        const data = await response.json() as DiamondLevelsResponse
-        if (!response.ok || !data.ok || !data.diamondLevelMap) throw new Error("DIAMOND_LEVELS_UNAVAILABLE")
-        const values = Object.entries(data.diamondLevelMap)
-          .map(([key, nanos]) => ({ level: Number(key), nanos }))
-          .filter((entry) => Number.isInteger(entry.level) && entry.level >= 1 && entry.level <= 8 && Number.isFinite(entry.nanos) && entry.nanos > 0)
-          .sort((a, b) => a.level - b.level)
-        if (values.length) setDiamondValues(values)
-      }).catch(() => setDiamondValues(null))
-    return () => controller.abort()
+    let cancelled = false
+    void loadDiamondValues().then((values) => { if (!cancelled) setDiamondValues(values) }).catch(() => { if (!cancelled) setDiamondValues(null) })
+    return () => { cancelled = true }
   }, [diamondValues])
 
   async function prepare(chosenLevel = level) {
