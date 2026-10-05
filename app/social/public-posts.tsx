@@ -119,6 +119,7 @@ export default function PublicPosts() {
   const [translationMessage, setTranslationMessage] = useState("")
   const [translationBusy, setTranslationBusy] = useState(false)
   const [creatorProfiles, setCreatorProfiles] = useState<Record<string, CompactProfile>>({})
+  const loadMoreSentinelRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
     const missing = Array.from(new Set(posts.map((post) => post.publicKey))).filter((key) => key && !creatorProfiles[key])
@@ -377,6 +378,16 @@ export default function PublicPosts() {
     }
   }
 
+  useEffect(() => {
+    const sentinel = loadMoreSentinelRef.current
+    if (!sentinel || sharedPostView || feedChoice === "following" || !hasMore || loading || posts.length === 0) return
+    const observer = new IntersectionObserver((entries) => {
+      if (entries.some((entry) => entry.isIntersecting)) void loadMorePosts()
+    }, { rootMargin: "600px 0px" })
+    observer.observe(sentinel)
+    return () => observer.disconnect()
+  }, [sharedPostView, feedChoice, hasMore, loading, posts.length])
+
   return (
     <section className="rounded-2xl border border-white/10 bg-black/35 p-4 sm:p-5" aria-labelledby="public-posts-heading">
       <div className="flex flex-wrap items-center justify-end gap-3">
@@ -486,7 +497,8 @@ export default function PublicPosts() {
                       <XShareButton href={`/social?post=${encodeURIComponent(post.postHash)}`} text={post.body ? post.body.slice(0, 180) : "VIA · DeSo post"} label="X" className="px-3 py-2 text-left text-zinc-300 hover:bg-white/[0.04]" />
                       {session ? <button type="button" onClick={() => {
                         const url = `${window.location.origin}/social?post=${encodeURIComponent(post.postHash)}`
-                        const text = `VIA · DeSo post\n${url}`
+                        const text = `VIA · DeSo post
+${url}`
                         window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank", "noopener,noreferrer")
                       }} className="px-3 py-2 text-left text-zinc-300 hover:bg-white/[0.04]">WhatsApp</button> : null}
                       {session ? <div className="[&_button]:w-full [&_button]:rounded-none [&_button]:border-0 [&_button]:px-3 [&_button]:py-2 [&_button]:text-left">
@@ -536,7 +548,7 @@ export default function PublicPosts() {
       ) : null}
 
       {posts.length > 0 && feedChoice !== "following" && !sharedPostView && hasMore ? (
-        <div className="mt-5 text-center">
+        <div ref={loadMoreSentinelRef} className="mt-5 text-center">
           <button type="button" onClick={() => void loadMorePosts()} disabled={loading} className="text-xs text-zinc-500 transition hover:text-[#9adbb2] disabled:cursor-wait disabled:opacity-50">
             {loading ? "Laden…" : "Meer laden"}
           </button>
