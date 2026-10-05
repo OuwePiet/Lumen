@@ -225,8 +225,10 @@ export default function ViaWorldClock({ iphoneInline = false }: { iphoneInline?:
           }
           .via-home-nasa-source { margin-bottom: 84px !important; }
         }
-        @media (max-width: 1366px) {
+        @media (min-width: 901px) and (max-width: 1366px) {
           .via-home-world-clock {
+            background: rgba(2,7,4,.16) !important;
+            backdrop-filter: blur(2px) !important;
             position: relative !important;
             left: auto !important;
             right: auto !important;
@@ -244,6 +246,8 @@ export default function ViaWorldClock({ iphoneInline = false }: { iphoneInline?:
           }
           .via-home-nasa-source-link {
             max-width: 100% !important;
+            background: rgba(2,7,4,.12) !important;
+            backdrop-filter: none !important;
             overflow: hidden !important;
             text-overflow: ellipsis !important;
           }
