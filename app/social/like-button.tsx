@@ -60,6 +60,7 @@ export default function LikeButton({ postHash, initialCount, variant = "default"
       setLiked(nextLiked)
       setCount((current) => Math.max(0, current + (nextLiked ? 1 : -1)))
       setMessage(nextLiked ? "Liked on DeSo." : "Like removed on DeSo.")
+      window.dispatchEvent(new Event("via:social:post-published"))
       setBusy(false)
     } catch {
       setMessage("Like transaction could not be prepared. Nothing changed.")
