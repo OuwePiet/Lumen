@@ -76,7 +76,8 @@ function pollOptions(extraData?: Record<string, string>) {
         .slice(0, 5)
     }
   } catch {}
-  return direct.split(/\r?\n|\|/).map((value) => value.trim()).filter(Boolean).slice(0, 5)
+  return direct.split(/\r?
+|\|/).map((value) => value.trim()).filter(Boolean).slice(0, 5)
 }
 
 function feedReadyMessage(choice: ChoiceId) {
@@ -497,7 +498,8 @@ export default function PublicPosts() {
                       <XShareButton href={`/social?post=${encodeURIComponent(post.postHash)}`} text={post.body ? post.body.slice(0, 180) : "VIA · DeSo post"} label="X" className="px-3 py-2 text-left text-zinc-300 hover:bg-white/[0.04]" />
                       {session ? <button type="button" onClick={() => {
                         const url = `${window.location.origin}/social?post=${encodeURIComponent(post.postHash)}`
-                        const text = `VIA · DeSo post\n${url}`
+                        const text = `VIA · DeSo post
+${url}`
                         window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank", "noopener,noreferrer")
                       }} className="px-3 py-2 text-left text-zinc-300 hover:bg-white/[0.04]">WhatsApp</button> : null}
                       {session ? <div className="[&_button]:w-full [&_button]:rounded-none [&_button]:border-0 [&_button]:px-3 [&_button]:py-2 [&_button]:text-left">
@@ -546,7 +548,8 @@ export default function PublicPosts() {
         </div>
       ) : null}
 
-      {posts.length > 0 && feedChoice !== "following" && !sharedPostView && hasMore ? (\n        <div ref={loadMoreSentinelRef} className="mt-5 text-center">
+      {posts.length > 0 && feedChoice !== "following" && !sharedPostView && hasMore ? (
+        <div ref={loadMoreSentinelRef} className="mt-5 text-center">
           <button type="button" onClick={() => void loadMorePosts()} disabled={loading} className="text-xs text-zinc-500 transition hover:text-[#9adbb2] disabled:cursor-wait disabled:opacity-50">
             {loading ? "Laden…" : "Meer laden"}
           </button>
