@@ -572,11 +572,5 @@ function CityCard({ item, copy }: { item: CityItem; copy: SponsorCopy }) {
     </article>
   )
 
-  if (!item.descriptionUrl) return content
-
-  return (
-    <a href={item.descriptionUrl} target="_blank" rel="noreferrer" aria-label={`${copy.source} ${item.city}`} style={{ color: "inherit", textDecoration: "none" }}>
-      {content}
-    </a>
-  )
+  return content
 }
