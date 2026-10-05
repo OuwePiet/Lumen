@@ -60,7 +60,10 @@ export default function LikeButton({ postHash, initialCount, variant = "default"
       setLiked(nextLiked)
       setCount((current) => Math.max(0, current + (nextLiked ? 1 : -1)))
       setMessage(nextLiked ? "Liked on DeSo." : "Like removed on DeSo.")
-      window.dispatchEvent(new Event("via:social:post-published"))
+      // Keep the optimistic heart/count visible while DeSo indexes the transaction.
+      // Refresh the feed only after a short indexing window instead of immediately
+      // replacing the local +1 with the node's still-stale count.
+      window.setTimeout(() => window.dispatchEvent(new Event("via:social:post-published")), 3500)
       setBusy(false)
     } catch {
       setMessage("Like transaction could not be prepared. Nothing changed.")
