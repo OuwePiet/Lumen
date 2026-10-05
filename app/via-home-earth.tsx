@@ -109,6 +109,13 @@ export default function ViaHomeEarth() {
         }
         .via-nasa-earth-video { z-index: 1; opacity: ${videoReady ? 1 : 0}; }
 
+        @media (min-width: 901px) and (max-width: 1366px) {
+          .via-nasa-earth-poster-shell,
+          .via-nasa-earth-video {
+            width: min(1060px, 84vw);
+          }
+        }
+
         @media (max-width: 900px) {
           .via-nasa-earth-poster-shell,
           .via-nasa-earth-video {
