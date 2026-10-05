@@ -34,6 +34,7 @@ type PublicPost = {
   postExtraData?: Record<string, string>
   sourcePublicKey?: string
   comments?: PublicPost[]
+  sourcePost?: PublicPost
 }
 
 type PostsResponse = { ok?: boolean; posts?: PublicPost[] }
@@ -494,7 +495,13 @@ export default function PublicPosts() {
                 {post.body ? <div className="mt-3 min-w-0">
                   <p className="whitespace-pre-wrap break-words [overflow-wrap:anywhere] text-sm leading-6 text-zinc-200">{post.body.length > 420 && !expandedPosts[post.postHash] ? `${post.body.slice(0, 420).trimEnd()}…` : post.body}</p>
                   {post.body.length > 420 ? <button type="button" onClick={() => setExpandedPosts((current) => ({ ...current, [post.postHash]: !current[post.postHash] }))} aria-expanded={Boolean(expandedPosts[post.postHash])} className="mt-1 text-sm font-semibold text-[#9adbb2] hover:underline">{expandedPosts[post.postHash] ? "Minder tonen" : "Lees verder …"}</button> : null}
-                </div> : <p className="mt-3 text-sm text-zinc-500">Media post</p>}
+                </div> : !post.sourcePost ? <p className="mt-3 text-sm text-zinc-500">Media post</p> : null}
+                {post.sourcePost ? <div className="mt-3 rounded-xl border border-zinc-800/80 bg-black/20 p-3">
+                  <p className="text-xs font-semibold text-zinc-300">DeSo · {post.sourcePost.username ? `@${post.sourcePost.username.replace(/^@/, "")}` : shortPublicKey(post.sourcePost.publicKey)}</p>
+                  {post.sourcePost.body ? <p className="mt-2 whitespace-pre-wrap break-words [overflow-wrap:anywhere] text-sm leading-6 text-zinc-200">{post.sourcePost.body}</p> : null}
+                  {post.sourcePost.imageUrls.map(safeHttps).filter((url): url is string => Boolean(url)).slice(0, 4).map((url, index) => <img key={`${post.postHash}-source-image-${index}`} src={url} alt="DeSo repost media" loading="lazy" className="mt-2 max-h-[32rem] w-full rounded-xl object-contain" />)}
+                  {post.sourcePost.videoUrls.map(safeHttps).filter((url): url is string => Boolean(url)).slice(0, 2).map((url, index) => <video key={`${post.postHash}-source-video-${index}`} src={url} controls preload="none" playsInline className="mt-2 max-h-[32rem] w-full rounded-xl" />)}
+                </div> : null}
                 {postedViaVIA ? <p className="mt-1 text-[11px] text-zinc-500">Gepost via VIA</p> : null}
 
                 {images.length ? (
