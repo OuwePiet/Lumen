@@ -17,6 +17,7 @@ type DeSoPost = {
   IsNFT?: unknown
   IsHidden?: unknown
   PostExtraData?: unknown
+  RepostedPostEntryResponse?: unknown
 }
 
 type HotFeedResponse = { HotFeedPage?: unknown }
@@ -49,6 +50,15 @@ function safePostExtraData(value: unknown) {
  * sortByNew switches DeSo's own get-hot-feed endpoint to newest-first order.
  * No wallet authority or write action is requested.
  */
+function normalizeDiscoveryPost(post: DeSoPost): ViaPublicPost {
+  return {
+    postHash: text(post.PostHashHex), publicKey: text(post.PosterPublicKeyBase58Check), username: text(post.ProfileEntryResponse?.Username),
+    body: text(post.Body), imageUrls: safeHttpsUrls(post.ImageURLs), videoUrls: safeHttpsUrls(post.VideoURLs), timestampNanos: count(post.TimestampNanos),
+    likeCount: count(post.LikeCount), diamondCount: count(post.DiamondCount), commentCount: count(post.CommentCount), repostCount: count(post.RepostCount), quoteRepostCount: count(post.QuoteRepostCount),
+    isNft: post.IsNFT === true, postExtraData: safePostExtraData(post.PostExtraData),
+  }
+}
+
 export async function readDiscoveryPosts(limit = 20, sortByNew = false, seenPosts: string[] = []): Promise<ViaPublicPost[]> {
   const responseLimit = Math.max(1, Math.min(30, Math.trunc(limit) || 20))
   const response = await fetchDeSo("get-hot-feed", {
@@ -86,6 +96,9 @@ export async function readDiscoveryPosts(limit = 20, sortByNew = false, seenPost
       quoteRepostCount: count(post.QuoteRepostCount),
       isNft: post.IsNFT === true,
       postExtraData: safePostExtraData(post.PostExtraData),
+      sourcePost: post.RepostedPostEntryResponse && typeof post.RepostedPostEntryResponse === "object"
+        ? normalizeDiscoveryPost(post.RepostedPostEntryResponse as DeSoPost)
+        : undefined,
     }))
     .filter((post) => Boolean(post.postHash))
 }
