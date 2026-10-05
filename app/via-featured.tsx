@@ -253,7 +253,6 @@ export default function ViaFeatured({ initialItems = fallbackCities }: { initial
   const [items, setItems] = useState<CityItem[]>(initialItems)
   const [sponsorOpen, setSponsorOpen] = useState(false)
   const [activeSponsors, setActiveSponsors] = useState<ActiveSponsor[]>([])
-  const [activeSponsorIndex, setActiveSponsorIndex] = useState(0)
   const [sponsorSlotsFull, setSponsorSlotsFull] = useState(false)
   const [saved, setSaved] = useState(false)
   const [materialName, setMaterialName] = useState("")
@@ -316,7 +315,6 @@ export default function ViaFeatured({ initialItems = fallbackCities }: { initial
         if (!mounted) return
         const nextSponsors = Array.isArray(data?.activeSponsors) ? data.activeSponsors : []
         setActiveSponsors(nextSponsors)
-        setActiveSponsorIndex((current) => nextSponsors.length ? current % nextSponsors.length : 0)
         setSponsorSlotsFull(Boolean(data?.full))
 
         const nextAt = data?.nextChangeAt ? Date.parse(data.nextChangeAt) : NaN
@@ -328,7 +326,6 @@ export default function ViaFeatured({ initialItems = fallbackCities }: { initial
       } catch {
         if (!mounted) return
         setActiveSponsors([])
-        setActiveSponsorIndex(0)
         if (timer !== null) window.clearTimeout(timer)
         timer = window.setTimeout(() => { void refreshSponsor() }, 60_000)
       }
@@ -341,15 +338,7 @@ export default function ViaFeatured({ initialItems = fallbackCities }: { initial
     }
   }, [])
 
-  useEffect(() => {
-    if (activeSponsors.length <= 1) return
-    const timer = window.setInterval(() => {
-      setActiveSponsorIndex((current) => (current + 1) % activeSponsors.length)
-    }, 20_000)
-    return () => window.clearInterval(timer)
-  }, [activeSponsors])
-
-  const activeSponsor = activeSponsors[activeSponsorIndex] ?? null
+  const sponsorBySlot = new Map(activeSponsors.map((sponsor) => [sponsor.slot, sponsor]))
 
   const t = sponsorCopy[language]
 
@@ -393,9 +382,9 @@ export default function ViaFeatured({ initialItems = fallbackCities }: { initial
           {t.featured}
         </h2>
 
-        {activeSponsor ? <SponsorDisplayCard sponsor={activeSponsor} copy={t} /> : items[0] ? <CityCard item={items[0]} copy={t} /> : null}
+        {sponsorBySlot.get(1) ? <SponsorDisplayCard sponsor={sponsorBySlot.get(1)!} copy={t} /> : items[0] ? <CityCard item={items[0]} copy={t} /> : null}
 
-        {items[1] ? <CityCard item={items[1]} copy={t} /> : null}
+        {sponsorBySlot.get(2) ? <SponsorDisplayCard sponsor={sponsorBySlot.get(2)!} copy={t} /> : items[1] ? <CityCard item={items[1]} copy={t} /> : null}
 
         <div style={{ minHeight: "150px", display: "grid", gridTemplateRows: "1.2fr 1fr", overflow: "hidden", border: "1px solid rgba(143,212,169,.17)", borderRadius: "15px", background: "rgba(3,10,6,.72)", backdropFilter: "blur(8px)" }}>
           <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", gap: "4px", padding: "13px 15px", borderBottom: "1px solid rgba(143,212,169,.12)" }}>
@@ -422,7 +411,12 @@ export default function ViaFeatured({ initialItems = fallbackCities }: { initial
           </div>
         </div>
 
-        {items.slice(2).map((item) => <CityCard key={`${item.city}-${item.country}`} item={item} copy={t} />)}
+        {items.slice(2).map((item, index) => {
+          const sponsor = sponsorBySlot.get(index + 3)
+          return sponsor
+            ? <SponsorDisplayCard key={`sponsor-${sponsor.slot}`} sponsor={sponsor} copy={t} />
+            : <CityCard key={`${item.city}-${item.country}`} item={item} copy={t} />
+        })}
       </section>
 
       {sponsorOpen ? (
@@ -572,11 +566,5 @@ function CityCard({ item, copy }: { item: CityItem; copy: SponsorCopy }) {
     </article>
   )
 
-  if (!item.descriptionUrl) return content
-
-  return (
-    <a href={item.descriptionUrl} target="_blank" rel="noreferrer" aria-label={`${copy.source} ${item.city}`} style={{ color: "inherit", textDecoration: "none" }}>
-      {content}
-    </a>
-  )
+  return content
 }
