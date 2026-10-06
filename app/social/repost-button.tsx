@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react"
 import { Repeat2 } from "lucide-react"
 import { restoreIdentitySession, VIA_IDENTITY_EVENT, type ViaIdentitySession } from "../deso-identity-session"
 import { signViaTransaction } from "../deso-identity-sign"
-import { requestIdentityJwt } from "./identity-jwt"
+import { viaModernIdentity } from "../deso-identity-modern"
 import VideoUploadControl from "./video-upload-control"
 
 const MAX_QUOTE_LENGTH = 5000
@@ -112,7 +112,7 @@ export default function RepostButton({ postHash, initialCount, variant = "defaul
     try {
       setImageUploadStatus("jwt")
       setImageUploadMessage("Authorizing this image upload with DeSo Identity…")
-      const jwt = await requestIdentityJwt(session.publicKey)
+      const jwt = await viaModernIdentity.jwt()
       setImageUploadStatus("uploading")
       setImageUploadMessage("Uploading image to the DeSo media endpoint…")
       const form = new FormData()
