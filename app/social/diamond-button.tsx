@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from "react"
 import { Gem } from "lucide-react"
-import { restoreIdentitySession } from "../deso-identity-session"
 import { viaModernIdentity } from "../deso-identity-modern"
 
 type Props = { postHash: string; receiverPublicKey: string; initialCount: number; variant?: "default" | "icon" }
@@ -51,7 +50,7 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
   }, [diamondValues])
 
   async function prepare(chosenLevel = level) {
-    const session = restoreIdentitySession()
+    const session = await viaModernIdentity.currentUser()
     if (!session || !diamondValues?.some((item) => item.level === chosenLevel) || status === "preparing" || status === "approval" || status === "submitting") return
     setCelebrate(false); setStatus("preparing"); setMessage("Preparing the exact value-transfer transaction…"); setFeeNanos(null)
     try {
