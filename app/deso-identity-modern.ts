@@ -17,13 +17,15 @@ export type ViaModernIdentityAdapter = {
   login(): Promise<ViaModernIdentityUser>
   logout(): Promise<void>
   alternateUsers(): Promise<ViaModernIdentityUser[]>
-  subscribe(listener: (user: ViaModernIdentityUser | null) => void): void
+  subscribe(listener: (user: ViaModernIdentityUser | null) => void): () => void
   setActiveUser(publicKey: string): Promise<void>
   signTx(transactionHex: string): Promise<string>
   jwt(): Promise<string>
 }
 
 let configured = false
+let subscribed = false
+const identityListeners = new Set<(user: ViaModernIdentityUser | null) => void>()
 
 function ensureConfigured() {
   if (configured || typeof window === "undefined") return
@@ -67,10 +69,20 @@ export const viaModernIdentity: ViaModernIdentityAdapter = {
 
   subscribe(listener) {
     ensureConfigured()
-    identity.subscribe((state) => {
-      const publicKey = state.currentUser?.publicKey
-      listener(publicKey ? { publicKey } : null)
-    })
+    identityListeners.add(listener)
+
+    if (!subscribed) {
+      identity.subscribe((state) => {
+        const publicKey = state.currentUser?.publicKey
+        const user = publicKey ? { publicKey } : null
+        identityListeners.forEach((currentListener) => currentListener(user))
+      })
+      subscribed = true
+    } else {
+      void currentUser().then(listener)
+    }
+
+    return () => identityListeners.delete(listener)
   },
 
   async setActiveUser(publicKey: string) {
