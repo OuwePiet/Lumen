@@ -1,8 +1,7 @@
 "use client"
 
 import { useEffect, useMemo, useRef, useState } from "react"
-import { restoreIdentitySession, VIA_IDENTITY_EVENT, type ViaIdentitySession } from "../deso-identity-session"
-import { viaModernIdentity } from "../deso-identity-modern"
+import { viaModernIdentity, type ViaModernIdentityUser } from "../deso-identity-modern"
 import VideoUploadControl from "./video-upload-control"
 import SponsorPlatform from "../sponsor-platform"
 
@@ -53,7 +52,7 @@ function httpsUrl(value: string) {
 }
 
 export default function PostComposer({ parentStakeID = "", compact = false, onDone, onCancel }: PostComposerProps) {
-  const [session, setSession] = useState<ViaIdentitySession | null>(null)
+  const [session, setSession] = useState<ViaModernIdentityUser | null>(null)
   const [body, setBody] = useState("")
   const [imageInputs, setImageInputs] = useState([""])
   const [imagePreviews, setImagePreviews] = useState<string[]>([])
@@ -75,10 +74,8 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
   const isReply = Boolean(parentStakeID)
 
   useEffect(() => {
-    setSession(restoreIdentitySession())
-    const onSession = (event: Event) => setSession((event as CustomEvent<ViaIdentitySession | null>).detail ?? restoreIdentitySession())
-    window.addEventListener(VIA_IDENTITY_EVENT, onSession)
-    return () => window.removeEventListener(VIA_IDENTITY_EVENT, onSession)
+    void viaModernIdentity.currentUser().then(setSession)
+    return viaModernIdentity.subscribe(setSession)
   }, [])
 
   useEffect(() => {
