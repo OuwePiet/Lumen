@@ -128,25 +128,22 @@ export default function NFTBidControl({ postHash, editions }: Props) {
       const data = await response.json() as PrepareResponse
       if (!response.ok || !data.ok || !data.transactionHex) throw new Error(data.error || "PREPARE_FAILED")
       setFeeNanos(typeof data.feeNanos === "number" ? data.feeNanos : null)
-      const popup = window.open(
-        `${DESO_IDENTITY_ORIGIN}/approve?tx=${encodeURIComponent(data.transactionHex)}`,
-        "via-deso-nft-bid-approve",
-        "popup=yes,width=800,height=900",
-      )
-      if (!popup) throw new Error("POPUP_BLOCKED")
-      popupRef.current = popup
-      if (popupWatch.current !== null) window.clearInterval(popupWatch.current)
-      popupWatch.current = window.setInterval(() => {
-        if (popupRef.current?.closed) {
-          popupRef.current = null
-          if (popupWatch.current !== null) window.clearInterval(popupWatch.current)
-          popupWatch.current = null
-          setStatus("idle")
-          setMessage("DeSo approval was closed. No bid was placed.")
-        }
-      }, 500)
       setStatus("approval")
-      setMessage(forBuyNow ? "Review the exact Buy Now purchase in DeSo Identity. DeSo executes Buy Now when the bid meets the listed Buy Now price." : "Review the exact NFT bid and spend in DeSo Identity. VIA will submit only after your approval.")
+      setMessage(forBuyNow ? "Signing the exact Buy Now purchase with DeSo Identity…" : "Signing the exact NFT bid with DeSo Identity…")
+      const signedTransactionHex = await viaModernIdentity.signTx(data.transactionHex)
+      setStatus("submitting")
+      setMessage("Submitting the approved NFT bid to DeSo…")
+      const submitResponse = await fetch("/api/via/nft/bid", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        cache: "no-store",
+        body: JSON.stringify({ action: "submit", signedTransactionHex }),
+      })
+      const submitData = await submitResponse.json() as { ok?: boolean; error?: string }
+      if (!submitResponse.ok || !submitData.ok) throw new Error(submitData.error || "SUBMIT_FAILED")
+      setStatus("done")
+      setMessage(forBuyNow ? "Buy Now purchase submitted to DeSo." : "NFT bid submitted to DeSo.")
+      setConfirmed(false)
     } catch (error) {
       setStatus("error")
       setMessage(error instanceof Error && error.message === "POPUP_BLOCKED"
