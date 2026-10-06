@@ -7,6 +7,7 @@ export const dynamic = "force-dynamic"
 
 const categories = new Set(["NFT", "Social", "Music", "VIA LIVE", "Games", "Discovery", "Safety", "Accessibility", "Other"])
 const PUBLIC_KEY_RE = /^[1-9A-HJ-NP-Za-km-z]{20,100}$/
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 async function resolveOwnerPublicKey() {
   try {
@@ -70,17 +71,23 @@ export async function POST(request: Request) {
 
   const record = body as Record<string, unknown>
   const category = typeof record.category === "string" && categories.has(record.category) ? record.category : "Other"
+  const name = typeof record.name === "string" ? record.name.trim().slice(0, 80) : ""
+  const email = typeof record.email === "string" ? record.email.trim().toLowerCase().slice(0, 254) : ""
   const idea = typeof record.idea === "string" ? record.idea.trim().slice(0, 2000) : ""
   const website = typeof record.website === "string" ? record.website.trim() : ""
 
   // Honeypot: legitimate clients leave this hidden field empty.
   if (website) return NextResponse.json({ ok: true, accepted: true }, { status: 202 })
+  if (!name) return NextResponse.json({ ok: false, error: "NAME_REQUIRED" }, { status: 400 })
+  if (!EMAIL_RE.test(email)) return NextResponse.json({ ok: false, error: "EMAIL_INVALID" }, { status: 400 })
   if (idea.length < 4) return NextResponse.json({ ok: false, error: "IDEA_TOO_SHORT" }, { status: 400 })
 
   const createdAt = new Date().toISOString()
   const fingerprint = anonymousFingerprint(request)
   const item = {
     category,
+    name,
+    email,
     idea,
     createdAt,
     status: "Received",
@@ -127,6 +134,8 @@ export async function GET(request: Request) {
     .filter((item): item is Record<string, unknown> => Boolean(item && typeof item === "object" && !Array.isArray(item)))
     .map((item) => ({
       category: typeof item.category === "string" ? item.category : "Other",
+      name: typeof item.name === "string" ? item.name : "",
+      email: typeof item.email === "string" ? item.email : "",
       idea: typeof item.idea === "string" ? item.idea : "",
       createdAt: typeof item.createdAt === "string" ? item.createdAt : "",
       status: typeof item.status === "string" ? item.status : "Received",

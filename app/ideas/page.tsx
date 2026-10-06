@@ -16,6 +16,8 @@ type IdeasCopy = {
   process: string
   safety: string
   category: string
+  name: string
+  email: string
   idea: string
   placeholder: string
   send: string
@@ -38,6 +40,8 @@ const COPY: Record<ViaLanguage | "Hindi", IdeasCopy> = {
     process: "We bekijken ideeën samen met behoeften van bezoekers en wat technisch veilig, praktisch en betaalbaar is. Een idee kan deze stappen doorlopen:",
     safety: "Deel nooit wachtwoorden, DeSo seed words, private keys of andere vertrouwelijke informatie. VIA probeert je idee eerst naar de beveiligde centrale inbox te sturen. Als centrale opslag tijdelijk niet beschikbaar is, wordt het idee alleen op dit apparaat opgeslagen.",
     category: "Categorie",
+    name: "Naam / bijnaam",
+    email: "E-mailadres voor antwoord",
     idea: "Jouw idee",
     placeholder: "Vertel ons wat VIA beter, nuttiger of leuker kan maken…",
     send: "Verstuur mijn idee",
@@ -58,6 +62,8 @@ const COPY: Record<ViaLanguage | "Hindi", IdeasCopy> = {
     process: "We review ideas alongside visitor needs and what is technically safe, practical and affordable. An idea can move through:",
     safety: "Never share passwords, DeSo seed words, private keys or other confidential information. VIA first tries to send your idea to the secure central inbox. If central storage is temporarily unavailable, the idea is saved only on this device instead.",
     category: "Category",
+    name: "Name / nickname",
+    email: "Email address for a reply",
     idea: "Your idea",
     placeholder: "Tell us what could make VIA better, more useful or more enjoyable…",
     send: "Send my idea",
@@ -78,6 +84,8 @@ const COPY: Record<ViaLanguage | "Hindi", IdeasCopy> = {
     process: "Nous examinons les idées selon les besoins des visiteurs et ce qui est techniquement sûr, pratique et abordable. Une idée peut passer par :",
     safety: "Ne partagez jamais de mots de passe, seed words DeSo, clés privées ou autres informations confidentielles. VIA essaie d'abord d'envoyer votre idée vers la boîte centrale sécurisée. Si le stockage central est temporairement indisponible, l'idée est enregistrée uniquement sur cet appareil.",
     category: "Catégorie",
+    name: "Nom / pseudonyme",
+    email: "Adresse e-mail pour une réponse",
     idea: "Votre idée",
     placeholder: "Dites-nous ce qui pourrait rendre VIA meilleur, plus utile ou plus agréable…",
     send: "Envoyer mon idée",
@@ -98,6 +106,8 @@ const COPY: Record<ViaLanguage | "Hindi", IdeasCopy> = {
     process: "Revisamos las ideas junto con las necesidades de los visitantes y lo que es técnicamente seguro, práctico y asequible. Una idea puede pasar por:",
     safety: "Nunca compartas contraseñas, seed words de DeSo, claves privadas u otra información confidencial. VIA intenta primero enviar tu idea al buzón central seguro. Si el almacenamiento central no está disponible temporalmente, la idea se guarda solo en este dispositivo.",
     category: "Categoría",
+    name: "Nombre / apodo",
+    email: "Correo electrónico para responder",
     idea: "Tu idea",
     placeholder: "Cuéntanos qué podría hacer VIA mejor, más útil o más agradable…",
     send: "Enviar mi idea",
@@ -118,6 +128,8 @@ const COPY: Record<ViaLanguage | "Hindi", IdeasCopy> = {
     process: "हम आइडिया को विज़िटर की ज़रूरतों और तकनीकी सुरक्षा, व्यावहारिकता तथा लागत के साथ देखते हैं। एक आइडिया इन चरणों से गुजर सकता है:",
     safety: "कभी भी पासवर्ड, DeSo seed words, private keys या अन्य गोपनीय जानकारी साझा न करें। VIA पहले आपके आइडिया को सुरक्षित केंद्रीय inbox में भेजने की कोशिश करता है। यदि केंद्रीय storage अस्थायी रूप से उपलब्ध न हो, तो आइडिया केवल इस डिवाइस पर सहेजा जाता है।",
     category: "श्रेणी",
+    name: "नाम / उपनाम",
+    email: "उत्तर के लिए ईमेल पता",
     idea: "आपका आइडिया",
     placeholder: "बताएं कि VIA को बेहतर, अधिक उपयोगी या अधिक आनंददायक क्या बना सकता है…",
     send: "मेरा आइडिया भेजें",
@@ -138,6 +150,8 @@ const COPY: Record<ViaLanguage | "Hindi", IdeasCopy> = {
     process: "我们会结合访客需求，以及技术上的安全性、实用性和可负担性来评估想法。一个想法可能经历：",
     safety: "请勿分享密码、DeSo seed words、私钥或其他机密信息。VIA 会先尝试将你的想法发送到安全的中央收件箱。如果中央存储暂时不可用，该想法只会保存在此设备上。",
     category: "类别",
+    name: "姓名 / 昵称",
+    email: "用于回复的电子邮箱",
     idea: "你的想法",
     placeholder: "告诉我们怎样让 VIA 更好、更实用或更有趣…",
     send: "发送我的想法",
@@ -152,10 +166,10 @@ const COPY: Record<ViaLanguage | "Hindi", IdeasCopy> = {
   },
 }
 
-function saveLocally(category: string, idea: string) {
+function saveLocally(category: string, name: string, email: string, idea: string) {
   const current = JSON.parse(localStorage.getItem("via:ideas:drafts:v1") || "[]")
   const items = Array.isArray(current) ? current : []
-  items.push({ category, idea: idea.slice(0, 2000), createdAt: new Date().toISOString(), status: "Received" })
+  items.push({ category, name: name.slice(0, 80), email: email.slice(0, 254), idea: idea.slice(0, 2000), createdAt: new Date().toISOString(), status: "Received" })
   localStorage.setItem("via:ideas:drafts:v1", JSON.stringify(items.slice(-20)))
 }
 
@@ -179,6 +193,8 @@ export default function IdeasPage() {
     const formElement = event.currentTarget
     const form = new FormData(formElement)
     const idea = String(form.get("idea") || "").trim()
+    const name = String(form.get("name") || "").trim()
+    const email = String(form.get("email") || "").trim()
     const category = String(form.get("category") || "Other")
     const website = String(form.get("website") || "")
     if (!idea) return
@@ -187,7 +203,7 @@ export default function IdeasPage() {
       const response = await fetch("/api/via/ideas", {
         method: "POST",
         headers: { "content-type": "application/json", Accept: "application/json" },
-        body: JSON.stringify({ category, idea, website }),
+        body: JSON.stringify({ category, name, email, idea, website }),
       })
       const data = await response.json().catch(() => null) as { ok?: boolean; error?: string } | null
       if (response.ok && data?.ok) {
@@ -200,7 +216,7 @@ export default function IdeasPage() {
         return
       }
       if (response.status === 503 && data?.error === "IDEAS_STORAGE_NOT_CONFIGURED") {
-        saveLocally(category, idea)
+        saveLocally(category, name, email, idea)
         setState("local")
         formElement.reset()
         return
@@ -208,7 +224,7 @@ export default function IdeasPage() {
       setState("error")
     } catch {
       try {
-        saveLocally(category, idea)
+        saveLocally(category, name, email, idea)
         setState("local")
         formElement.reset()
       } catch {
@@ -239,6 +255,12 @@ export default function IdeasPage() {
             <select name="category" defaultValue="Other" style={{ display: "block", width: "100%", marginTop: 7, padding: 12, borderRadius: 12, background: "#08100b", color: "#f4f7f5", border: "1px solid #285f40" }}>
               {categories.map((category) => <option key={category} value={category}>{t.categories[category]}</option>)}
             </select>
+          </label>
+          <label>{t.name}
+            <input name="name" required maxLength={80} autoComplete="name" style={{ display: "block", width: "100%", marginTop: 7, padding: 12, borderRadius: 12, background: "#08100b", color: "#f4f7f5", border: "1px solid #285f40" }} />
+          </label>
+          <label>{t.email}
+            <input name="email" type="email" required maxLength={254} autoComplete="email" style={{ display: "block", width: "100%", marginTop: 7, padding: 12, borderRadius: 12, background: "#08100b", color: "#f4f7f5", border: "1px solid #285f40" }} />
           </label>
           <label>{t.idea}
             <textarea name="idea" required maxLength={2000} rows={8} placeholder={t.placeholder} style={{ display: "block", width: "100%", marginTop: 7, padding: 12, borderRadius: 12, background: "#08100b", color: "#f4f7f5", border: "1px solid #285f40", resize: "vertical" }} />
