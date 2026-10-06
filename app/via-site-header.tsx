@@ -6,7 +6,6 @@ import { useEffect, useRef, useState } from "react"
 import { Radio, UsersRound } from "lucide-react"
 import {
   clearIdentitySession,
-  listIdentitySessions,
   persistIdentityLogin,
   VIA_IDENTITY_EVENT,
   type ViaIdentitySession,
@@ -160,7 +159,7 @@ export default function ViaSiteHeader() {
   const isHomepage = pathname === "/"
 
   function refreshKnownAccounts() {
-    setKnownAccounts(listIdentitySessions())
+    void viaModernIdentity.alternateUsers().then((users) => setKnownAccounts(users.map((user) => ({ ...user, accessLevel: 3, signedUp: false }))))
   }
 
   useEffect(() => {
