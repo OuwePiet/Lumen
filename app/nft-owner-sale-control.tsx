@@ -208,21 +208,16 @@ export default function NFTOwnerSaleControl({ postHash, editions, hasUnlockable 
       const data = await response.json() as PrepareResponse
       if (!response.ok || !data.ok || !data.transactionHex) throw new Error(data.error || "PREPARE_FAILED")
       setFeeNanos(typeof data.feeNanos === "number" ? data.feeNanos : null)
-      const popup = window.open(DESO_IDENTITY_ORIGIN + "/approve?tx=" + encodeURIComponent(data.transactionHex), "via-deso-nft-transfer-approve", "popup=yes,width=800,height=900")
-      if (!popup) throw new Error("POPUP_BLOCKED")
-      popupRef.current = popup
-      if (popupWatch.current !== null) window.clearInterval(popupWatch.current)
-      popupWatch.current = window.setInterval(() => {
-        if (popupRef.current?.closed) {
-          popupRef.current = null
-          if (popupWatch.current !== null) window.clearInterval(popupWatch.current)
-          popupWatch.current = null
-          pendingMode.current = null
-          setStatus("idle")
-          setMessage("DeSo approval was closed. VIA changed nothing.")
-        }
-      }, 500)
-      setStatus("approval"); setMessage("Review the NFT transfer in DeSo Identity. VIA submits only after your approval.")
+      setStatus("approval"); setMessage("Signing the NFT transfer with DeSo Identity…")
+      const signedTransactionHex = await viaModernIdentity.signTx(data.transactionHex)
+      setStatus("submitting"); setMessage("Submitting the approved NFT transfer to DeSo…")
+      const submitResponse = await fetch("/api/via/nft/transfer", { method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store", body: JSON.stringify({ action: "submit", signedTransactionHex }) })
+      const submitData = await submitResponse.json() as { ok?: boolean; error?: string }
+      if (!submitResponse.ok || !submitData.ok) throw new Error(submitData.error || "SUBMIT_FAILED")
+      setStatus("done")
+      setMessage("NFT transfer submitted to DeSo. The receiver must accept the transfer before ownership changes.")
+      setConfirmed(false)
+      pendingMode.current = null
     } catch (error) {
       pendingMode.current = null; setStatus("error"); setMessage(error instanceof Error && error.message === "POPUP_BLOCKED" ? "Approval window was blocked. VIA changed nothing." : "The NFT transfer could not be prepared. VIA changed nothing.")
     }
