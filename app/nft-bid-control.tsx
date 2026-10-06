@@ -77,6 +77,19 @@ export default function NFTBidControl({ postHash, editions }: Props) {
       const data = await response.json() as PrepareResponse
       if (!response.ok || !data.ok || !data.transactionHex) throw new Error(data.error || "PREPARE_FAILED")
       setFeeNanos(typeof data.feeNanos === "number" ? data.feeNanos : null)
+      const bidPermission = {
+        NFTOperationLimitMap: {
+          [postHash]: {
+            [edition.serialNumber]: {
+              nft_bid: 1,
+            },
+          },
+        },
+      }
+      if (!(await viaModernIdentity.hasPermissions(bidPermission))) {
+        setMessage("Requesting permission for this exact DeSo NFT edition…")
+        await viaModernIdentity.requestPermissions(bidPermission)
+      }
       setStatus("approval")
       setMessage(forBuyNow ? "Signing the exact Buy Now purchase with DeSo Identity…" : "Signing the exact NFT bid with DeSo Identity…")
       const signedTransactionHex = await viaModernIdentity.signTx(data.transactionHex)
