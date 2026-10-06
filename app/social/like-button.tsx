@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { Heart } from "lucide-react"
 import { restoreIdentitySession, VIA_IDENTITY_EVENT, type ViaIdentitySession } from "../deso-identity-session"
-import { signViaTransaction } from "../deso-identity-sign"
+import { viaModernIdentity } from "../deso-identity-modern"
 
 type Props = {
   postHash: string
@@ -47,7 +47,7 @@ export default function LikeButton({ postHash, initialCount, variant = "default"
       const data = await response.json() as PrepareResponse
       if (!response.ok || !data.ok || !data.transactionHex) throw new Error(data.error || "PREPARE_FAILED")
       setMessage("Signing this like with your DeSo Identity session…")
-      const signedTransactionHex = await signViaTransaction(session.publicKey, data.transactionHex)
+      const signedTransactionHex = await viaModernIdentity.signTx(data.transactionHex)
       const submitResponse = await fetch("/api/via/social/like", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
