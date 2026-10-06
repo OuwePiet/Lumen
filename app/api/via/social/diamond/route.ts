@@ -83,8 +83,15 @@ export async function POST(request: Request) {
       const data = await response.json() as Record<string, unknown>
       const transactionHex = data.TransactionHex
       const feeNanos = data.FeeNanos
+      const spendAmountNanos = data.SpendAmountNanos
       if (!validHex(transactionHex)) return noStore({ ok: false, error: "INVALID_PREPARED_TRANSACTION" }, 502)
-      return noStore({ ok: true, transactionHex, feeNanos: typeof feeNanos === "number" ? feeNanos : null, diamondLevel })
+      return noStore({
+        ok: true,
+        transactionHex,
+        feeNanos: typeof feeNanos === "number" ? feeNanos : null,
+        spendAmountNanos: typeof spendAmountNanos === "number" ? spendAmountNanos : null,
+        diamondLevel,
+      })
     } catch {
       return noStore({ ok: false, error: "DESO_PREPARE_UNAVAILABLE" }, 503)
     }
