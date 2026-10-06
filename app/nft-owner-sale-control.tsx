@@ -198,6 +198,19 @@ export default function NFTOwnerSaleControl({ postHash, editions, hasUnlockable 
       const data = await response.json() as PrepareResponse
       if (!response.ok || !data.ok || !data.transactionHex) throw new Error()
       setFeeNanos(typeof data.feeNanos === "number" ? data.feeNanos : null)
+      const burnPermission = {
+        NFTOperationLimitMap: {
+          [postHash]: {
+            [selected.serialNumber]: {
+              burn: 1,
+            },
+          },
+        },
+      }
+      if (!(await viaModernIdentity.hasPermissions(burnPermission))) {
+        setMessage("Requesting permission to burn this exact DeSo NFT edition…")
+        await viaModernIdentity.requestPermissions(burnPermission)
+      }
       setStatus("approval")
       setMessage("Signing the irreversible NFT burn with DeSo Identity…")
       const signedTransactionHex = await viaModernIdentity.signTx(data.transactionHex)
