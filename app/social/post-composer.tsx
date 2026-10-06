@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react"
 import { restoreIdentitySession, VIA_IDENTITY_EVENT, type ViaIdentitySession } from "../deso-identity-session"
-import { requestIdentityJwt } from "./identity-jwt"
+import { viaModernIdentity } from "../deso-identity-modern"
 import { signViaTransaction } from "../deso-identity-sign"
 import VideoUploadControl from "./video-upload-control"
 import SponsorPlatform from "../sponsor-platform"
@@ -206,7 +206,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
     try {
       setImageUploadStatus("jwt")
       setImageUploadMessage("Preparing image upload approval…")
-      const jwt = await requestIdentityJwt(session.publicKey)
+      const jwt = await viaModernIdentity.jwt()
 
       setImageUploadStatus("uploading")
       setImageUploadMessage("Uploading image…")
