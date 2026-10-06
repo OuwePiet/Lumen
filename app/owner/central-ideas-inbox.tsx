@@ -6,6 +6,8 @@ import { restoreIdentitySession } from "../deso-identity-session"
 
 type IdeaItem = {
   category?: string
+  name?: string
+  email?: string
   idea?: string
   createdAt?: string
   status?: string
@@ -112,6 +114,7 @@ export default function CentralIdeasInbox({ ownerPublicKey }: { ownerPublicKey: 
                 <strong style={{ color: "#b9ffd4", fontSize: 12 }}>{item.category || "Other"}</strong>
                 <span style={{ color: "#7f8b85", fontSize: 10 }}>{formatDate(item.createdAt)}</span>
               </div>
+              {(item.name || item.email) ? <p style={{ margin: "9px 0 0", color: "#9adbb2", fontSize: 12 }}><strong>{item.name || "Onbekend"}</strong>{item.email ? <> · <a href={`mailto:${item.email}`} style={{ color: "#b9ffd4" }}>{item.email}</a></> : null}</p> : null}
               <p style={{ margin: "9px 0 0", color: "#e5ebe7", lineHeight: 1.55, whiteSpace: "pre-wrap" }}>{item.idea || "—"}</p>
               <span style={{ display: "inline-flex", marginTop: 10, border: "1px solid #285f40", borderRadius: 999, padding: "5px 8px", color: "#9adbb2", fontSize: 9, fontWeight: 800 }}>{item.status || "Received"}</span>
             </article>
