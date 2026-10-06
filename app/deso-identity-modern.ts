@@ -27,6 +27,18 @@ export type ViaModernIdentityAdapter = {
   jwt(): Promise<string>
 }
 
+export const VIA_BASE_SPENDING_LIMITS: Parameters<typeof identity.hasPermissions>[0] = {
+  TransactionCountLimitMap: {
+    SUBMIT_POST: "UNLIMITED",
+    LIKE: "UNLIMITED",
+    FOLLOW: "UNLIMITED",
+    UPDATE_PROFILE: "UNLIMITED",
+    CREATE_POST_ASSOCIATION: "UNLIMITED",
+    NEW_MESSAGE: "UNLIMITED",
+    CREATE_NFT: "UNLIMITED",
+  },
+}
+
 let configured = false
 let subscribed = false
 const identityListeners = new Set<(user: ViaModernIdentityUser | null) => void>()
