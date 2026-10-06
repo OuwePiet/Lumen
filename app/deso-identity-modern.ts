@@ -20,6 +20,8 @@ export type ViaModernIdentityAdapter = {
   subscribe(listener: (user: ViaModernIdentityUser | null) => void): () => void
   setActiveUser(publicKey: string): Promise<void>
   signTx(transactionHex: string): Promise<string>
+  hasPermissions(permissions: Parameters<typeof identity.hasPermissions>[0]): boolean
+  requestPermissions(permissions: Parameters<typeof identity.requestPermissions>[0]): ReturnType<typeof identity.requestPermissions>
   encryptMessage(recipientPublicKey: string, message: string): Promise<string>
   decryptMessage(message: NewMessageEntryResponse, groups?: AccessGroupEntryResponse[]): Promise<string>
   jwt(): Promise<string>
@@ -95,6 +97,16 @@ export const viaModernIdentity: ViaModernIdentityAdapter = {
   async signTx(transactionHex: string) {
     ensureConfigured()
     return identity.signTx(transactionHex)
+  },
+
+  hasPermissions(permissions) {
+    ensureConfigured()
+    return identity.hasPermissions(permissions)
+  },
+
+  requestPermissions(permissions) {
+    ensureConfigured()
+    return identity.requestPermissions(permissions)
   },
 
   async encryptMessage(recipientPublicKey: string, message: string) {
