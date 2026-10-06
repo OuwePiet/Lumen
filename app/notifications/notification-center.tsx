@@ -6,7 +6,7 @@ import { ArrowUpRight, AtSign, Badge, Check, CheckCircle2, ChevronsRight, Circle
 
 const QUALITY_SHIELD_STORAGE_KEY = "via:notifications:quality-shield"
 import { viaModernIdentity, type ViaModernIdentityUser } from "../deso-identity-modern"
-import { signViaTransaction } from "../deso-identity-sign"
+import { viaModernIdentity } from "../deso-identity-modern"
 import { fetchViaRates, isViaRateStale } from "../via-live-rates"
 import type { ViaLanguage } from "../via-local-settings"
 import LikeButton from "../social/like-button"
@@ -471,7 +471,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
       const response = await fetch("/api/via/social/reward", { method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store", body: JSON.stringify({ action: "prepare", senderPublicKey: session.publicKey, recipientPublicKey: post.publicKey, amountNanos, confirmed: true }) })
       const result = await response.json() as { ok?: boolean; transactionHex?: string }
       if (!response.ok || !result.ok || !result.transactionHex) throw new Error("PREPARE")
-      const signedTransactionHex = await signViaTransaction(session.publicKey, result.transactionHex)
+      const signedTransactionHex = await viaModernIdentity.signTx(result.transactionHex)
       const submitResponse = await fetch("/api/via/social/reward", { method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store", body: JSON.stringify({ action: "submit", signedTransactionHex }) })
       const submitResult = await submitResponse.json() as { ok?: boolean }
       if (!submitResponse.ok || !submitResult.ok) throw new Error("SUBMIT")
