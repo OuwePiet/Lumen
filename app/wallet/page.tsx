@@ -2,7 +2,6 @@
 
 import Link from "next/link"
 import { useEffect, useState } from "react"
-import { VIA_IDENTITY_EVENT } from "../deso-identity-session"
 import { viaModernIdentity, type ViaModernIdentityUser } from "../deso-identity-modern"
 import ViaAuraCompact from "../via-aura-compact"
 import { fetchViaRates, isViaRateStale, VIA_RATE_REFRESH_MS } from "../via-live-rates"
@@ -266,14 +265,12 @@ export default function WalletPage() {
   const [language, setLanguage] = useState<ViaLanguage>("English")
 
   useEffect(() => {
-    const restore = () => void viaModernIdentity.currentUser().then(setSession)
     const syncLanguage = () => setLanguage(readViaLocalSettings().interfaceLanguage)
-    restore()
+    const unsubscribeIdentity = viaModernIdentity.subscribe(setSession)
     syncLanguage()
-    window.addEventListener(VIA_IDENTITY_EVENT, restore)
     window.addEventListener(VIA_SETTINGS_EVENT, syncLanguage)
     return () => {
-      window.removeEventListener(VIA_IDENTITY_EVENT, restore)
+      unsubscribeIdentity()
       window.removeEventListener(VIA_SETTINGS_EVENT, syncLanguage)
     }
   }, [])
