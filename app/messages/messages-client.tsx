@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { useEffect, useMemo, useState } from "react"
 import { ArrowLeft, Search, SquarePen } from "lucide-react"
-import { restoreIdentitySession, VIA_IDENTITY_EVENT } from "../deso-identity-session"
+import { viaModernIdentity } from "../deso-identity-modern"
 import ParticipationGate from "../participation-gate"
 import { fetchDeSo } from "../deso-api"
 import { decryptViaMessages, encryptViaMessage, signViaMessageTransaction } from "../deso-identity-messages"
@@ -245,16 +245,14 @@ export default function MessagesClient() {
 
   useEffect(() => {
     const syncLanguage = () => setLanguage(readViaLocalSettings().interfaceLanguage)
-    const syncIdentity = () => setPublicKey(restoreIdentitySession()?.publicKey ?? "")
     syncLanguage()
-    syncIdentity()
+    void viaModernIdentity.currentUser().then((user) => setPublicKey(user?.publicKey ?? ""))
+    const unsubscribeIdentity = viaModernIdentity.subscribe((user) => setPublicKey(user?.publicKey ?? ""))
     window.addEventListener(VIA_SETTINGS_EVENT, syncLanguage)
-    window.addEventListener(VIA_IDENTITY_EVENT, syncIdentity)
 
-
-  return () => {
+    return () => {
       window.removeEventListener(VIA_SETTINGS_EVENT, syncLanguage)
-      window.removeEventListener(VIA_IDENTITY_EVENT, syncIdentity)
+      unsubscribeIdentity()
     }
   }, [])
 
