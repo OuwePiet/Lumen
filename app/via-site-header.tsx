@@ -8,7 +8,6 @@ import {
   clearIdentitySession,
   listIdentitySessions,
   persistIdentityLogin,
-  restoreIdentitySession,
   VIA_IDENTITY_EVENT,
   type ViaIdentitySession,
 } from "./deso-identity-session"
