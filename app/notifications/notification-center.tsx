@@ -5,7 +5,6 @@ import { useEffect, useMemo, useRef, useState } from "react"
 import { ArrowUpRight, AtSign, Badge, Check, CheckCircle2, ChevronsRight, CircleDot, Gem, Heart, Link2, MessageSquare, RefreshCw, Repeat2, ShieldCheck, ShieldOff, Smile, UserPlus, UserRound, LayoutGrid } from "lucide-react"
 
 const QUALITY_SHIELD_STORAGE_KEY = "via:notifications:quality-shield"
-import { VIA_IDENTITY_EVENT } from "../deso-identity-session"
 import { viaModernIdentity, type ViaModernIdentityUser } from "../deso-identity-modern"
 import { signViaTransaction } from "../deso-identity-sign"
 import { fetchViaRates, isViaRateStale } from "../via-live-rates"
@@ -491,10 +490,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
   }, [])
 
   useEffect(() => {
-    void viaModernIdentity.currentUser().then(setSession)
-    const onSession = () => void viaModernIdentity.currentUser().then(setSession)
-    window.addEventListener(VIA_IDENTITY_EVENT, onSession)
-    return () => window.removeEventListener(VIA_IDENTITY_EVENT, onSession)
+    return viaModernIdentity.subscribe(setSession)
   }, [])
 
   useEffect(() => {
