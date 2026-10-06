@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react"
 import { viaModernIdentity } from "../deso-identity-modern"
-import { restoreIdentitySession } from "../deso-identity-session"
 
 type IdeaItem = {
   category?: string
@@ -44,7 +43,7 @@ export default function CentralIdeasInbox({ ownerPublicKey }: { ownerPublicKey: 
 
   async function openInbox() {
     if (!ownerPublicKey) return
-    const session = restoreIdentitySession()
+    const session = await viaModernIdentity.currentUser()
     if (!session || session.publicKey !== ownerPublicKey) {
       setMessage("Log in with the verified @OuwePiet DeSo account first.")
       return
