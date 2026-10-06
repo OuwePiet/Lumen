@@ -1,7 +1,6 @@
 "use client"
 
 import { useEffect } from "react"
-import { VIA_IDENTITY_EVENT } from "./deso-identity-session"
 import { viaModernIdentity } from "./deso-identity-modern"
 
 const HIDDEN_MARK = "viaGuardHidden"
@@ -114,18 +113,16 @@ export default function ViaPublicAccountGuard() {
       hideAccountEntrances()
     }
 
-    void apply()
+    const unsubscribeIdentity = viaModernIdentity.subscribe(() => { void apply() })
     observer = new MutationObserver(() => { void apply() })
     observer.observe(document.body, { childList: true, subtree: true })
 
-    const onIdentity = () => { void apply() }
     const onHistory = () => { void apply() }
-    window.addEventListener(VIA_IDENTITY_EVENT, onIdentity)
     window.addEventListener("popstate", onHistory)
 
     return () => {
       observer?.disconnect()
-      window.removeEventListener(VIA_IDENTITY_EVENT, onIdentity)
+      unsubscribeIdentity()
       window.removeEventListener("popstate", onHistory)
     }
   }, [])
