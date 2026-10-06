@@ -3,7 +3,8 @@
 import Link from "next/link"
 import { useEffect, useState } from "react"
 import { Copy, MoreVertical, UserRoundPen, WalletCards } from "lucide-react"
-import { restoreIdentitySession, VIA_IDENTITY_EVENT, type ViaIdentitySession } from "../deso-identity-session"
+import { VIA_IDENTITY_EVENT } from "../deso-identity-session"
+import { viaModernIdentity, type ViaModernIdentityUser } from "../deso-identity-modern"
 import { readViaLocalSettings, VIA_SETTINGS_EVENT, type ViaLanguage } from "../via-local-settings"
 import ViaIdentityStatusMarks from "../via-identity-status"
 import PostComposer from "../social/post-composer"
@@ -216,7 +217,7 @@ function formatCoins(value: number | null) {
 }
 
 export default function ProfilePage() {
-  const [session, setSession] = useState<ViaIdentitySession | null>(null)
+  const [session, setSession] = useState<ViaModernIdentityUser | null>(null)
   const [profile, setProfile] = useState<PublicProfile | null>(null)
   const [ownPosts, setOwnPosts] = useState<OwnPost[]>([])
   const [galleryPosts, setGalleryPosts] = useState<OwnPost[]>([])
@@ -259,7 +260,7 @@ export default function ProfilePage() {
   }, [])
 
   useEffect(() => {
-    const restore = () => setSession(restoreIdentitySession())
+    const restore = () => void viaModernIdentity.currentUser().then(setSession)
     restore()
     window.addEventListener(VIA_IDENTITY_EVENT, restore)
     return () => window.removeEventListener(VIA_IDENTITY_EVENT, restore)
