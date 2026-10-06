@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { requestViaIdentityJwt } from "../deso-identity-jwt"
+import { viaModernIdentity } from "../deso-identity-modern"
 import { restoreIdentitySession } from "../deso-identity-session"
 
 type IdeaItem = {
@@ -53,7 +53,7 @@ export default function CentralIdeasInbox({ ownerPublicKey }: { ownerPublicKey: 
     setBusy(true)
     setMessage("")
     try {
-      const jwt = await requestViaIdentityJwt(ownerPublicKey)
+      const jwt = await viaModernIdentity.jwt()
       const response = await fetch("/api/via/ideas", {
         cache: "no-store",
         headers: {
