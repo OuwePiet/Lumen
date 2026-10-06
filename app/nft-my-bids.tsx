@@ -1,7 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useRef, useState } from "react"
-import { DESO_IDENTITY_ORIGIN } from "./deso-identity-session"
+import { useEffect, useMemo, useState } from "react"
 import { viaModernIdentity, type ViaModernIdentityUser } from "./deso-identity-modern"
 
 type Bid = {
@@ -31,8 +30,6 @@ export default function NFTMyBids({ postHash, bids }: Props) {
   const [confirmedSerial, setConfirmedSerial] = useState<number | null>(null)
   const [status, setStatus] = useState<"idle"|"preparing"|"approval"|"submitting"|"done"|"error">("idle")
   const [message, setMessage] = useState("")
-  const popupRef = useRef<Window | null>(null)
-  const popupWatch = useRef<number | null>(null)
 
   useEffect(() => {
     void viaModernIdentity.currentUser().then(setSession)
@@ -45,52 +42,6 @@ export default function NFTMyBids({ postHash, bids }: Props) {
       .sort((a, b) => b.bidAmountNanos - a.bidAmountNanos),
     [bids, session],
   )
-
-  useEffect(() => {
-    const onMessage = async (event: MessageEvent) => {
-      if (event.origin !== DESO_IDENTITY_ORIGIN || event.source !== popupRef.current) return
-      if (!event.data || typeof event.data !== "object") return
-      const data = event.data as Record<string, unknown>
-      if (data.service !== "identity") return
-      const payload = data.payload
-      if (!payload || typeof payload !== "object" || Array.isArray(payload)) return
-      const signedTransactionHex = (payload as Record<string, unknown>).signedTransactionHex
-      if (typeof signedTransactionHex !== "string" || !signedTransactionHex) return
-
-      if (popupWatch.current !== null) window.clearInterval(popupWatch.current)
-      popupWatch.current = null
-      popupRef.current?.close()
-      popupRef.current = null
-      setStatus("submitting")
-      setMessage("Submitting bid withdrawal to DeSo…")
-
-      try {
-        const response = await fetch("/api/via/nft/withdraw-bid", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          cache: "no-store",
-          body: JSON.stringify({ action: "submit", signedTransactionHex }),
-        })
-        const result = await response.json() as { ok?: boolean; error?: string }
-        if (!response.ok || !result.ok) throw new Error(result.error || "SUBMIT_FAILED")
-        setStatus("done")
-        setMessage("Bid withdrawal submitted to DeSo.")
-        setConfirmedSerial(null)
-      } catch {
-        setStatus("error")
-        setMessage("The bid withdrawal could not be submitted. VIA changed nothing.")
-      }
-    }
-
-    window.addEventListener("message", onMessage)
-    return () => {
-      window.removeEventListener("message", onMessage)
-      if (popupWatch.current !== null) window.clearInterval(popupWatch.current)
-      popupWatch.current = null
-      popupRef.current?.close()
-      popupRef.current = null
-    }
-  }, [])
 
   async function withdrawBid(serialNumber: number) {
     if (!session || confirmedSerial !== serialNumber) return
