@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { Heart } from "lucide-react"
-import { restoreIdentitySession, VIA_IDENTITY_EVENT, type ViaIdentitySession } from "../deso-identity-session"
-import { viaModernIdentity } from "../deso-identity-modern"
+import { viaModernIdentity, type ViaModernIdentityUser } from "../deso-identity-modern"
 
 type Props = {
   postHash: string
@@ -15,20 +14,15 @@ type PrepareResponse = { ok?: boolean; transactionHex?: string; feeNanos?: numbe
 type SubmitResponse = { ok?: boolean; error?: string }
 
 export default function LikeButton({ postHash, initialCount, variant = "default" }: Props) {
-  const [session, setSession] = useState<ViaIdentitySession | null>(null)
+  const [session, setSession] = useState<ViaModernIdentityUser | null>(null)
   const [count, setCount] = useState(initialCount)
   const [liked, setLiked] = useState(false)
   const [busy, setBusy] = useState(false)
   const [message, setMessage] = useState("")
 
   useEffect(() => {
-    setSession(restoreIdentitySession())
-    const onIdentity = (event: Event) => {
-      const custom = event as CustomEvent<ViaIdentitySession | null>
-      setSession(custom.detail ?? restoreIdentitySession())
-    }
-    window.addEventListener(VIA_IDENTITY_EVENT, onIdentity)
-    return () => window.removeEventListener(VIA_IDENTITY_EVENT, onIdentity)
+    void viaModernIdentity.currentUser().then(setSession)
+    return viaModernIdentity.subscribe(setSession)
   }, [])
 
   useEffect(() => setCount(initialCount), [initialCount])
