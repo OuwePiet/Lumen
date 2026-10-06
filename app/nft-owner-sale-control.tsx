@@ -1,7 +1,6 @@
 "use client"
 
 import { useEffect, useMemo, useRef, useState } from "react"
-import { DESO_IDENTITY_ORIGIN } from "./deso-identity-session"
 import { viaModernIdentity, type ViaModernIdentityUser } from "./deso-identity-modern"
 
 type OwnerEdition = {
@@ -25,17 +24,6 @@ type PrepareResponse = {
   transactionHex?: string
   feeNanos?: number | null
   error?: string
-}
-
-function signedTransactionFromMessage(event: MessageEvent, source: Window | null) {
-  if (event.origin !== DESO_IDENTITY_ORIGIN || event.source !== source) return null
-  if (!event.data || typeof event.data !== "object") return null
-  const data = event.data as Record<string, unknown>
-  if (data.service !== "identity") return null
-  const payload = data.payload
-  if (!payload || typeof payload !== "object" || Array.isArray(payload)) return null
-  const signed = (payload as Record<string, unknown>).signedTransactionHex
-  return typeof signed === "string" && signed.length > 0 ? signed : null
 }
 
 function desoToSafeNanos(input: string) {
@@ -64,8 +52,6 @@ export default function NFTOwnerSaleControl({ postHash, editions, hasUnlockable 
   const [status, setStatus] = useState<"idle"|"preparing"|"approval"|"submitting"|"done"|"error">("idle")
   const [message, setMessage] = useState("")
   const [feeNanos, setFeeNanos] = useState<number | null>(null)
-  const popupRef = useRef<Window | null>(null)
-  const popupWatch = useRef<number | null>(null)
   const pendingMode = useRef<"list"|"update"|"remove"|"transfer"|"burn"|null>(null)
 
   const selected = owned.find((item) => item.serialNumber === serialNumber) ?? owned[0]
@@ -83,51 +69,6 @@ export default function NFTOwnerSaleControl({ postHash, editions, hasUnlockable 
     setBuyNowPrice(formatDeso(selected.buyNowPriceNanos))
     setConfirmed(false)
   }, [selected?.serialNumber, selected?.isForSale, selected?.minBidAmountNanos, selected?.isBuyNow, selected?.buyNowPriceNanos, hasUnlockable])
-
-  useEffect(() => {
-    const onMessage = async (event: MessageEvent) => {
-      const signedTransactionHex = signedTransactionFromMessage(event, popupRef.current)
-      if (!signedTransactionHex) return
-      popupRef.current?.close()
-      popupRef.current = null
-      if (popupWatch.current !== null) window.clearInterval(popupWatch.current)
-      popupWatch.current = null
-      setStatus("submitting")
-      setMessage("Submitting the approved NFT sale update to DeSo…")
-      try {
-        const response = await fetch("/api/via/nft/update-sale", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          cache: "no-store",
-          body: JSON.stringify({ action: "submit", signedTransactionHex }),
-        })
-        const data = await response.json() as { ok?: boolean; error?: string }
-        if (!response.ok || !data.ok) throw new Error(data.error || "SUBMIT_FAILED")
-        setStatus("done")
-        setMessage(
-          pendingMode.current === "remove" ? "NFT removed from sale on DeSo."
-            : pendingMode.current === "update" ? "NFT sale price updated on DeSo."
-              : pendingMode.current === "transfer" ? "NFT transfer submitted to DeSo. The receiver must accept the transfer before ownership changes."
-                : pendingMode.current === "burn" ? "NFT burn submitted to DeSo."
-                  : "NFT listed for sale on DeSo.",
-        )
-        setConfirmed(false)
-      } catch {
-        setStatus("error")
-        setMessage("The NFT sale update could not be submitted. VIA changed nothing.")
-      } finally {
-        pendingMode.current = null
-      }
-    }
-    window.addEventListener("message", onMessage)
-    return () => {
-      window.removeEventListener("message", onMessage)
-      if (popupWatch.current !== null) window.clearInterval(popupWatch.current)
-      popupWatch.current = null
-      popupRef.current?.close()
-      popupRef.current = null
-    }
-  }, [])
 
   async function prepare(mode: "list" | "update" | "remove") {
     if (!session || !selected || !confirmed || status === "preparing" || status === "approval" || status === "submitting") return
