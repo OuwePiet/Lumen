@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from "react"
 import { Repeat2 } from "lucide-react"
 import { restoreIdentitySession, VIA_IDENTITY_EVENT, type ViaIdentitySession } from "../deso-identity-session"
-import { signViaTransaction } from "../deso-identity-sign"
 import { viaModernIdentity } from "../deso-identity-modern"
 import VideoUploadControl from "./video-upload-control"
 
@@ -165,7 +164,7 @@ export default function RepostButton({ postHash, initialCount, variant = "defaul
       if (!response.ok || !data.ok || !data.transactionHex) throw new Error(data.error || "PREPARE_FAILED")
 
       setMessage(asQuote ? "Signing your Quote Repost with your DeSo Identity session…" : "Signing your repost with your DeSo Identity session…")
-      const signedTransactionHex = await signViaTransaction(session.publicKey, data.transactionHex)
+      const signedTransactionHex = await viaModernIdentity.signTx(data.transactionHex)
       const submitResponse = await fetch("/api/via/social/repost", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
