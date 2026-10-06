@@ -23,6 +23,7 @@ export type ViaModernIdentityAdapter = {
   hasPermissions(permissions: Parameters<typeof identity.hasPermissions>[0]): ReturnType<typeof identity.hasPermissions>
   requestPermissions(permissions: Parameters<typeof identity.requestPermissions>[0]): ReturnType<typeof identity.requestPermissions>
   spendingLimits(): Promise<NonNullable<Awaited<ReturnType<typeof identity.snapshot>>["currentUser"]>["primaryDerivedKey"]["transactionSpendingLimits"] | null>
+  refreshSpendingLimits(): Promise<void>
   encryptMessage(recipientPublicKey: string, message: string): Promise<string>
   decryptMessage(message: NewMessageEntryResponse, groups?: AccessGroupEntryResponse[]): Promise<string>
   jwt(): Promise<string>
@@ -127,6 +128,11 @@ export const viaModernIdentity: ViaModernIdentityAdapter = {
     ensureConfigured()
     const state = await identity.snapshot()
     return state.currentUser?.primaryDerivedKey?.transactionSpendingLimits ?? null
+  },
+
+  async refreshSpendingLimits() {
+    ensureConfigured()
+    await identity.refreshDerivedKeyPermissions()
   },
 
   async encryptMessage(recipientPublicKey: string, message: string) {
