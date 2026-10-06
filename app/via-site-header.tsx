@@ -5,7 +5,6 @@ import { usePathname, useRouter } from "next/navigation"
 import { useEffect, useRef, useState } from "react"
 import { Radio, UsersRound } from "lucide-react"
 import {
-  DESO_LOGIN_URL,
   clearIdentitySession,
   listIdentitySessions,
   persistIdentityLogin,
@@ -250,6 +249,13 @@ export default function ViaSiteHeader() {
     router.refresh()
   }
 
+  async function loginWithDeSo() {
+    const user = await viaModernIdentity.login()
+    setSession({ ...user, accessLevel: 3, signedUp: false })
+    setMenuOpen(false)
+    router.refresh()
+  }
+
   function enterPublicMode() {
     clearIdentitySession()
     setSession(null)
@@ -301,7 +307,7 @@ export default function ViaSiteHeader() {
           {pathname === "/notifications" || pathname === "/radio" || pathname === "/messages" || pathname === "/profile" ? <Link href="/" className="via-notifications-home-top" aria-label="Home" title="Home"><span className="via-notifications-home-label">Home</span></Link> : null}
           {pathname === "/messages" ? <Link href="/radio" className="via-notifications-radio-top" aria-label="World Radio" title="World Radio"><Radio className="h-4 w-4" aria-hidden="true" /><span className="via-radio-top-label">Radio</span></Link> : null}
           {!session && pathname !== "/messages" ? <button type="button" onClick={enterPublicMode} style={{ ...pill, cursor: "pointer" }}>{t.publicEntrance}</button> : null}
-          {!session && pathname !== "/messages" ? <a href={DESO_LOGIN_URL} target="via-deso-identity" style={styles.login}>{t.login}</a> : null}
+          {!session && pathname !== "/messages" ? <button type="button" onClick={() => void loginWithDeSo()} style={styles.login}>{t.login}</button> : null}
           {pathname !== "/messages" && pathname !== "/radio" && pathname !== "/profile" ? <Link href="/wallet" style={pill} className={`via-site-header-utility ${pathname === "/notifications" ? "via-site-header-wallet-notifications" : ""}`}>{t.wallet}</Link> : null}
           {pathname !== "/notifications" && pathname !== "/messages" && pathname !== "/radio" && pathname !== "/profile" ? <Link href="/notifications" style={pill} className="via-site-header-utility">{t.notifications}</Link> : null}
 
@@ -343,7 +349,7 @@ export default function ViaSiteHeader() {
                     })}
                   </> : null}
                   <div style={styles.divider} />
-                  <a href={DESO_LOGIN_URL} target="via-deso-identity" style={styles.menuLink} role="menuitem">{t.addAccount}</a>
+                  <button type="button" onClick={() => void loginWithDeSo()} style={{ ...styles.menuButton, ...styles.menuLink }} role="menuitem">{t.addAccount}</button>
                   <button type="button" style={styles.menuButton} onClick={logout} role="menuitem">{t.logout}</button>
                 </div>
               ) : null}
