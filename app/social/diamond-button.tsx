@@ -5,7 +5,7 @@ import { Gem } from "lucide-react"
 import { viaModernIdentity } from "../deso-identity-modern"
 
 type Props = { postHash: string; receiverPublicKey: string; initialCount: number; variant?: "default" | "icon" }
-type PrepareResponse = { ok?: boolean; transactionHex?: string; diamondLevel?: number; feeNanos?: number | null; error?: string }
+type PrepareResponse = { ok?: boolean; transactionHex?: string; diamondLevel?: number; feeNanos?: number | null; spendAmountNanos?: number | null; error?: string }
 type DiamondLevelsResponse = { ok?: boolean; diamondLevelMap?: Record<string, number> }
 
 export default function DiamondButton({ postHash, receiverPublicKey, initialCount, variant = "default" }: Props) {
@@ -58,7 +58,7 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
       const data = await response.json() as PrepareResponse
       if (!response.ok || !data.ok || !data.transactionHex) throw new Error(data.error || "PREPARE_FAILED")
       const selected = diamondValues?.find((item) => item.level === chosenLevel)
-      if (!selected || data.diamondLevel !== chosenLevel || typeof data.feeNanos !== "number" || !Number.isFinite(data.feeNanos) || data.feeNanos < 0) throw new Error("INVALID_DESO_TRANSACTION_DATA")
+      if (!selected || data.diamondLevel !== chosenLevel || typeof data.feeNanos !== "number" || !Number.isFinite(data.feeNanos) || data.feeNanos < 0 || typeof data.spendAmountNanos !== "number" || !Number.isFinite(data.spendAmountNanos) || data.spendAmountNanos < 0) throw new Error("INVALID_DESO_TRANSACTION_DATA")
       setFeeNanos(data.feeNanos)
       setStatus("approval"); setMessage("Signing the confirmed Diamond with your VIA DeSo session…")
       const signedTransactionHex = await viaModernIdentity.signTx(data.transactionHex)
