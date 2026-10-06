@@ -6,7 +6,6 @@ import { useEffect, useRef, useState } from "react"
 import { Radio, UsersRound } from "lucide-react"
 import {
   clearIdentitySession,
-  VIA_IDENTITY_EVENT,
   type ViaIdentitySession,
 } from "./deso-identity-session"
 import ViaIdentityStatusMarks from "./via-identity-status"
@@ -163,18 +162,15 @@ export default function ViaSiteHeader() {
 
   useEffect(() => {
     const syncSettings = () => setLanguage(readViaLocalSettings().interfaceLanguage)
-    void viaModernIdentity.currentUser().then((user) => setSession(user ? { ...user, accessLevel: 3, signedUp: false } : null))
-    refreshKnownAccounts()
     syncSettings()
-    const syncIdentity = () => {
-      void viaModernIdentity.currentUser().then((user) => setSession(user ? { ...user, accessLevel: 3, signedUp: false } : null))
+    const unsubscribeIdentity = viaModernIdentity.subscribe((user) => {
+      setSession(user ? { ...user, accessLevel: 3, signedUp: false } : null)
       refreshKnownAccounts()
-    }
+    })
     window.addEventListener(VIA_SETTINGS_EVENT, syncSettings)
-    window.addEventListener(VIA_IDENTITY_EVENT, syncIdentity)
     return () => {
+      unsubscribeIdentity()
       window.removeEventListener(VIA_SETTINGS_EVENT, syncSettings)
-      window.removeEventListener(VIA_IDENTITY_EVENT, syncIdentity)
     }
   }, [])
 
