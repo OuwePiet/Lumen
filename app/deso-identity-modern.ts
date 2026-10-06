@@ -51,6 +51,7 @@ function ensureConfigured() {
     network: "mainnet",
     nodeURI: "https://node.deso.org",
     identityURI: "https://identity.deso.org",
+    spendingLimitOptions: VIA_BASE_SPENDING_LIMITS,
   })
 
   configured = true
