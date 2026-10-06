@@ -111,6 +111,19 @@ export default function NFTOwnerSaleControl({ postHash, editions, hasUnlockable 
       const data = await response.json() as PrepareResponse
       if (!response.ok || !data.ok || !data.transactionHex) throw new Error(data.error || "PREPARE_FAILED")
       setFeeNanos(typeof data.feeNanos === "number" ? data.feeNanos : null)
+      const updatePermission = {
+        NFTOperationLimitMap: {
+          [postHash]: {
+            [selected.serialNumber]: {
+              update: 1,
+            },
+          },
+        },
+      }
+      if (!(await viaModernIdentity.hasPermissions(updatePermission))) {
+        setMessage("Requesting permission for this exact DeSo NFT sale change…")
+        await viaModernIdentity.requestPermissions(updatePermission)
+      }
       setStatus("approval")
       setMessage("Signing this NFT sale change with DeSo Identity…")
       const signedTransactionHex = await viaModernIdentity.signTx(data.transactionHex)
