@@ -1,7 +1,8 @@
 "use client"
 
 import { useEffect, useMemo, useRef, useState } from "react"
-import { DESO_IDENTITY_ORIGIN, restoreIdentitySession, VIA_IDENTITY_EVENT, type ViaIdentitySession } from "./deso-identity-session"
+import { DESO_IDENTITY_ORIGIN } from "./deso-identity-session"
+import { viaModernIdentity, type ViaModernIdentityUser } from "./deso-identity-modern"
 
 type OwnerEdition = {
   serialNumber: number
@@ -52,7 +53,7 @@ function formatDeso(nanos?: number) {
 }
 
 export default function NFTOwnerSaleControl({ postHash, editions, hasUnlockable }: Props) {
-  const [session, setSession] = useState<ViaIdentitySession | null>(null)
+  const [session, setSession] = useState<ViaModernIdentityUser | null>(null)
   const owned = useMemo(() => editions.filter((item) => session && item.ownerPublicKey === session.publicKey), [editions, session])
   const [serialNumber, setSerialNumber] = useState<number | null>(null)
   const [minBid, setMinBid] = useState("0")
@@ -70,10 +71,8 @@ export default function NFTOwnerSaleControl({ postHash, editions, hasUnlockable 
   const selected = owned.find((item) => item.serialNumber === serialNumber) ?? owned[0]
 
   useEffect(() => {
-    setSession(restoreIdentitySession())
-    const onSession = (event: Event) => setSession((event as CustomEvent<ViaIdentitySession | null>).detail ?? restoreIdentitySession())
-    window.addEventListener(VIA_IDENTITY_EVENT, onSession)
-    return () => window.removeEventListener(VIA_IDENTITY_EVENT, onSession)
+    void viaModernIdentity.currentUser().then(setSession)
+    return viaModernIdentity.subscribe(setSession)
   }, [])
 
   useEffect(() => {
