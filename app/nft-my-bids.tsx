@@ -1,7 +1,8 @@
 "use client"
 
 import { useEffect, useMemo, useRef, useState } from "react"
-import { DESO_IDENTITY_ORIGIN, restoreIdentitySession, VIA_IDENTITY_EVENT, type ViaIdentitySession } from "./deso-identity-session"
+import { DESO_IDENTITY_ORIGIN } from "./deso-identity-session"
+import { viaModernIdentity, type ViaModernIdentityUser } from "./deso-identity-modern"
 
 type Bid = {
   serialNumber: number
@@ -26,7 +27,7 @@ function formatDeso(nanos: number) {
 }
 
 export default function NFTMyBids({ postHash, bids }: Props) {
-  const [session, setSession] = useState<ViaIdentitySession | null>(null)
+  const [session, setSession] = useState<ViaModernIdentityUser | null>(null)
   const [confirmedSerial, setConfirmedSerial] = useState<number | null>(null)
   const [status, setStatus] = useState<"idle"|"preparing"|"approval"|"submitting"|"done"|"error">("idle")
   const [message, setMessage] = useState("")
@@ -34,10 +35,8 @@ export default function NFTMyBids({ postHash, bids }: Props) {
   const popupWatch = useRef<number | null>(null)
 
   useEffect(() => {
-    setSession(restoreIdentitySession())
-    const onSession = (event: Event) => setSession((event as CustomEvent<ViaIdentitySession | null>).detail ?? restoreIdentitySession())
-    window.addEventListener(VIA_IDENTITY_EVENT, onSession)
-    return () => window.removeEventListener(VIA_IDENTITY_EVENT, onSession)
+    void viaModernIdentity.currentUser().then(setSession)
+    return viaModernIdentity.subscribe(setSession)
   }, [])
 
   const myBids = useMemo(
