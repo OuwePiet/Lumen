@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useRef, useState } from "react"
 import { restoreIdentitySession, VIA_IDENTITY_EVENT, type ViaIdentitySession } from "../deso-identity-session"
 import { viaModernIdentity } from "../deso-identity-modern"
-import { signViaTransaction } from "../deso-identity-sign"
 import VideoUploadControl from "./video-upload-control"
 import SponsorPlatform from "../sponsor-platform"
 
@@ -260,7 +259,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
       setFeeNanos(typeof prepared.feeNanos === "number" ? prepared.feeNanos : null)
       setStatus("awaiting-approval")
       setMessage(isReply ? "Signing your reply with your DeSo Identity session…" : "Signing your post with your DeSo Identity session…")
-      const signedTransactionHex = await signViaTransaction(session.publicKey, prepared.transactionHex, (progress) => setMessage(progress))
+      const signedTransactionHex = await viaModernIdentity.signTx(prepared.transactionHex)
       setStatus("submitting")
       setMessage(isReply ? "Posting your signed reply…" : "Posting your signed post…")
       const { response: submitResponse, data: submitted } = await fetchJsonWithTimeout<SubmitResponse>("/api/via/social/post", {
