@@ -60,6 +60,19 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
       const selected = diamondValues?.find((item) => item.level === chosenLevel)
       if (!selected || data.diamondLevel !== chosenLevel || typeof data.feeNanos !== "number" || !Number.isFinite(data.feeNanos) || data.feeNanos < 0 || typeof data.spendAmountNanos !== "number" || !Number.isFinite(data.spendAmountNanos) || data.spendAmountNanos < 0) throw new Error("INVALID_DESO_TRANSACTION_DATA")
       setFeeNanos(data.feeNanos)
+      const diamondSpendLimit = data.spendAmountNanos + data.feeNanos
+      if (!Number.isSafeInteger(diamondSpendLimit) || diamondSpendLimit < 0) throw new Error("INVALID_DESO_SPEND_LIMIT")
+      const currentSpendingLimits = await viaModernIdentity.spendingLimits()
+      const currentGlobalDESOLimit = currentSpendingLimits?.GlobalDESOLimit ?? 0
+      if (!Number.isSafeInteger(currentGlobalDESOLimit) || currentGlobalDESOLimit < 0) throw new Error("INVALID_DESO_SPENDING_LIMITS")
+      const requiredPermissions = {
+        GlobalDESOLimit: currentGlobalDESOLimit + diamondSpendLimit,
+        TransactionCountLimitMap: { BASIC_TRANSFER: 1 },
+      }
+      if (!viaModernIdentity.hasPermissions(requiredPermissions)) {
+        setStatus("approval"); setMessage("Confirm this Diamond spending permission with DeSo Identity…")
+        await viaModernIdentity.requestPermissions(requiredPermissions)
+      }
       setStatus("approval"); setMessage("Signing the confirmed Diamond with your VIA DeSo session…")
       const signedTransactionHex = await viaModernIdentity.signTx(data.transactionHex)
       setStatus("submitting"); setMessage("Submitting your confirmed Diamond to DeSo…")
