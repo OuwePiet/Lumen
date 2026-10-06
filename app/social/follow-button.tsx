@@ -1,8 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { restoreIdentitySession, VIA_IDENTITY_EVENT, type ViaIdentitySession } from "../deso-identity-session"
-import { viaModernIdentity } from "../deso-identity-modern"
+import { viaModernIdentity, type ViaModernIdentityUser } from "../deso-identity-modern"
 
 type Props = {
   followedPublicKey: string
@@ -15,7 +14,7 @@ type SubmitResponse = { ok?: boolean; error?: string }
 type StatusResponse = { ok?: boolean; following?: boolean; self?: boolean; error?: string }
 
 export default function FollowButton({ followedPublicKey, variant = "default", followedUsername = "this user" }: Props) {
-  const [session, setSession] = useState<ViaIdentitySession | null>(null)
+  const [session, setSession] = useState<ViaModernIdentityUser | null>(null)
   const [following, setFollowing] = useState(false)
   const [followsYou, setFollowsYou] = useState(false)
   const [statusReady, setStatusReady] = useState(false)
@@ -24,13 +23,8 @@ export default function FollowButton({ followedPublicKey, variant = "default", f
   const [confirmUnfollow, setConfirmUnfollow] = useState(false)
 
   useEffect(() => {
-    setSession(restoreIdentitySession())
-    const onIdentity = (event: Event) => {
-      const custom = event as CustomEvent<ViaIdentitySession | null>
-      setSession(custom.detail ?? restoreIdentitySession())
-    }
-    window.addEventListener(VIA_IDENTITY_EVENT, onIdentity)
-    return () => window.removeEventListener(VIA_IDENTITY_EVENT, onIdentity)
+    void viaModernIdentity.currentUser().then(setSession)
+    return viaModernIdentity.subscribe(setSession)
   }, [])
 
   useEffect(() => {
