@@ -1,12 +1,12 @@
 "use client"
 
+import { identity } from "deso-protocol"
+
 /**
- * Modern DeSo Identity boundary for VIA.
+ * Central modern DeSo Identity boundary for VIA.
  *
- * This file intentionally contains no SDK import yet. It gives the migration a
- * single, typed boundary while the proven legacy Identity flow remains active.
- * The official deso-protocol dependency will be connected only together with a
- * reproducible pnpm lockfile.
+ * All VIA pages can use this adapter instead of opening their own Identity
+ * iframe/popup. Transaction permissions remain controlled by DeSo.
  */
 export type ViaModernIdentityUser = {
   publicKey: string
@@ -20,4 +20,55 @@ export type ViaModernIdentityAdapter = {
   jwt(): Promise<string>
 }
 
-export const VIA_MODERN_IDENTITY_READY = false as const
+let configured = false
+
+function ensureConfigured() {
+  if (configured || typeof window === "undefined") return
+
+  identity.configure({
+    appName: "VIA",
+    network: "mainnet",
+    nodeURI: "https://node.deso.org",
+    identityURI: "https://identity.deso.org",
+  })
+
+  configured = true
+}
+
+async function currentUser(): Promise<ViaModernIdentityUser | null> {
+  ensureConfigured()
+  const state = await identity.snapshot()
+  const publicKey = state.currentUser?.publicKey
+  return publicKey ? { publicKey } : null
+}
+
+export const viaModernIdentity: ViaModernIdentityAdapter = {
+  currentUser,
+
+  async login() {
+    ensureConfigured()
+    const payload = await identity.login()
+    return { publicKey: payload.publicKeyBase58Check }
+  },
+
+  async setActiveUser(publicKey: string) {
+    ensureConfigured()
+    await identity.setActiveUser(publicKey)
+  },
+
+  async signTx(transactionHex: string) {
+    ensureConfigured()
+    return identity.signTx(transactionHex)
+  },
+
+  async jwt() {
+    ensureConfigured()
+    return identity.jwt()
+  },
+}
+
+/**
+ * The SDK boundary itself is now live. Existing VIA action consumers are still
+ * migrated one by one before the legacy Identity files are removed.
+ */
+export const VIA_MODERN_IDENTITY_READY = true as const
