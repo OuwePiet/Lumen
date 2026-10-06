@@ -15,6 +15,7 @@ import {
   type ViaIdentitySession,
 } from "./deso-identity-session"
 import ViaIdentityStatusMarks from "./via-identity-status"
+import { viaModernIdentity } from "./deso-identity-modern"
 import {
   readViaLocalSettings,
   saveViaLocalSettings,
@@ -167,7 +168,7 @@ export default function ViaSiteHeader() {
 
   useEffect(() => {
     const syncSettings = () => setLanguage(readViaLocalSettings().interfaceLanguage)
-    setSession(restoreIdentitySession())
+    void viaModernIdentity.currentUser().then((user) => setSession(user ? { ...user, accessLevel: 3, signedUp: false } : null))
     refreshKnownAccounts()
     syncSettings()
     function handleIdentityMessage(event: MessageEvent) {
@@ -178,7 +179,7 @@ export default function ViaSiteHeader() {
       setMenuOpen(false)
     }
     const syncIdentity = () => {
-      setSession(restoreIdentitySession())
+      void viaModernIdentity.currentUser().then((user) => setSession(user ? { ...user, accessLevel: 3, signedUp: false } : null))
       refreshKnownAccounts()
     }
     window.addEventListener("message", handleIdentityMessage)
