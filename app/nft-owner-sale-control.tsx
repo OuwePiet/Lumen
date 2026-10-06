@@ -170,27 +170,27 @@ export default function NFTOwnerSaleControl({ postHash, editions, hasUnlockable 
       const data = await response.json() as PrepareResponse
       if (!response.ok || !data.ok || !data.transactionHex) throw new Error(data.error || "PREPARE_FAILED")
       setFeeNanos(typeof data.feeNanos === "number" ? data.feeNanos : null)
-      const popup = window.open(
-        `${DESO_IDENTITY_ORIGIN}/approve?tx=${encodeURIComponent(data.transactionHex)}`,
-        "via-deso-nft-sale-approve",
-        "popup=yes,width=800,height=900",
-      )
-      if (!popup) throw new Error("POPUP_BLOCKED")
-      popupRef.current = popup
-
-      if (popupWatch.current !== null) window.clearInterval(popupWatch.current)
-      popupWatch.current = window.setInterval(() => {
-        if (popupRef.current?.closed) {
-          popupRef.current = null
-          if (popupWatch.current !== null) window.clearInterval(popupWatch.current)
-          popupWatch.current = null
-          pendingMode.current = null
-          setStatus("idle")
-          setMessage("DeSo approval was closed. VIA changed nothing.")
-        }
-      }, 500)
       setStatus("approval")
-      setMessage("Review this NFT sale change in DeSo Identity. VIA submits only after your approval.")
+      setMessage("Signing this NFT sale change with DeSo Identity…")
+      const signedTransactionHex = await viaModernIdentity.signTx(data.transactionHex)
+      setStatus("submitting")
+      setMessage("Submitting the approved NFT sale update to DeSo…")
+      const submitResponse = await fetch("/api/via/nft/update-sale", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        cache: "no-store",
+        body: JSON.stringify({ action: "submit", signedTransactionHex }),
+      })
+      const submitData = await submitResponse.json() as { ok?: boolean; error?: string }
+      if (!submitResponse.ok || !submitData.ok) throw new Error(submitData.error || "SUBMIT_FAILED")
+      setStatus("done")
+      setMessage(
+        mode === "remove" ? "NFT removed from sale on DeSo."
+          : mode === "update" ? "NFT sale price updated on DeSo."
+            : "NFT listed for sale on DeSo.",
+      )
+      setConfirmed(false)
+      pendingMode.current = null
     } catch (error) {
       pendingMode.current = null
       setStatus("error")
