@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react"
 import { Gem } from "lucide-react"
 import { restoreIdentitySession } from "../deso-identity-session"
-import { signViaTransaction } from "../deso-identity-sign"
+import { viaModernIdentity } from "../deso-identity-modern"
 
 type Props = { postHash: string; receiverPublicKey: string; initialCount: number; variant?: "default" | "icon" }
 type PrepareResponse = { ok?: boolean; transactionHex?: string; diamondLevel?: number; feeNanos?: number | null; error?: string }
@@ -62,7 +62,7 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
       if (!selected || data.diamondLevel !== chosenLevel || typeof data.feeNanos !== "number" || !Number.isFinite(data.feeNanos) || data.feeNanos < 0) throw new Error("INVALID_DESO_TRANSACTION_DATA")
       setFeeNanos(data.feeNanos)
       setStatus("approval"); setMessage("Signing the confirmed Diamond with your VIA DeSo session…")
-      const signedTransactionHex = await signViaTransaction(session.publicKey, data.transactionHex)
+      const signedTransactionHex = await viaModernIdentity.signTx(data.transactionHex)
       setStatus("submitting"); setMessage("Submitting your confirmed Diamond to DeSo…")
       const submitResponse = await fetch("/api/via/social/diamond", { method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store", body: JSON.stringify({ action: "submit", signedTransactionHex }) })
       const submitData = await submitResponse.json() as { ok?: boolean; error?: string }
