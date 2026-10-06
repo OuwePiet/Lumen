@@ -6,7 +6,7 @@ import { ArrowLeft, Search, SquarePen } from "lucide-react"
 import { viaModernIdentity } from "../deso-identity-modern"
 import ParticipationGate from "../participation-gate"
 import { fetchDeSo } from "../deso-api"
-import { decryptViaMessages, encryptViaMessage } from "../deso-identity-messages"
+import { decryptViaMessages } from "../deso-identity-messages"
 import { constructViaDMTransaction, getViaDefaultDMGroups, submitViaSignedTransaction } from "./deso-dm-transaction"
 import { readViaLocalSettings, VIA_SETTINGS_EVENT, type ViaLanguage } from "../via-local-settings"
 
@@ -511,7 +511,7 @@ export default function MessagesClient() {
   setSending(true)
   setSendError("")
   try {
-    const encryptedMessage = await encryptViaMessage(publicKey, recipientGroup.AccessGroupPublicKeyBase58Check, message, senderGroup.AccessGroupKeyName)
+    const encryptedMessage = await viaModernIdentity.encryptMessage(recipientGroup.AccessGroupPublicKeyBase58Check, message)
     const transactionHex = await constructViaDMTransaction(senderGroup, recipientGroup, encryptedMessage)
     const signedTransactionHex = await viaModernIdentity.signTx(transactionHex)
     await submitViaSignedTransaction(signedTransactionHex)
