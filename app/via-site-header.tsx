@@ -261,8 +261,8 @@ export default function ViaSiteHeader() {
     router.push("/public")
   }
 
-  function logout() {
-    clearIdentitySession()
+  async function logout() {
+    await viaModernIdentity.logout()
     setSession(null)
     setProfile(null)
     setMenuOpen(false)
