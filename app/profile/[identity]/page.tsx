@@ -14,6 +14,8 @@ import { viaModernIdentity } from "../../deso-identity-modern"
 import FollowButton from "../../social/follow-button"
 import ProfileActionMenu from "../profile-action-menu"
 import ViaIdentityStatusMarks from "../../via-identity-status"
+import { translateViaTextLocally } from "../../via-local-translation"
+import { readViaLocalSettings } from "../../via-local-settings"
 
 type PublicProfile = {
   publicKey: string
@@ -90,6 +92,7 @@ export default function PublicProfilePage() {
   const [postsError, setPostsError] = useState("")
   const [hasSession, setHasSession] = useState(false)
   const [replyingTo, setReplyingTo] = useState<string | null>(null)
+  const [translation, setTranslation] = useState<{ hash: string; text: string; message: string } | null>(null)
 
   useEffect(() => viaModernIdentity.subscribe((user) => setHasSession(Boolean(user))), [])
 
@@ -295,7 +298,21 @@ export default function PublicProfilePage() {
                         <XShareButton href={`/social?post=${encodeURIComponent(post.postHash)}`} text={post.body.slice(0, 180)} label="Share on X" />
                         <LocalSaveButton postHash={post.postHash} body={post.body} publicKey={profile.publicKey} timestampNanos={post.timestampNanos} />
                         <Link href={`/social?post=${encodeURIComponent(post.postHash)}`} className="rounded-full border border-zinc-800 px-3 py-1 text-zinc-400 transition hover:border-[#8fd4a9]/45 hover:text-[#9adbb2]">Open post</Link>
+                        <details className="relative">
+                          <summary aria-label="Meer postacties" title="Meer postacties" className="cursor-pointer list-none rounded-full border border-zinc-800 px-3 py-1 text-zinc-400">•••</summary>
+                          <div className="absolute right-0 z-20 mt-1 min-w-44 overflow-hidden rounded-lg border border-zinc-800 bg-[#050806] text-left shadow-xl">
+                            <button type="button" onClick={async () => {
+                              const lang = readViaLocalSettings().interfaceLanguage
+                              const targetLanguage = ({ Dutch: "nl", English: "en", French: "fr", Spanish: "es", Chinese: "zh", Hindi: "hi" } as Record<string, string>)[lang] ?? "en"
+                              const result = await translateViaTextLocally(post.body, targetLanguage)
+                              setTranslation({ hash: post.postHash, ...result })
+                              ;(document.activeElement as HTMLElement | null)?.closest("details")?.removeAttribute("open")
+                            }} className="block w-full px-3 py-2 text-left text-zinc-300 hover:bg-white/[0.04]">🌐 Translate / Vertalen</button>
+                            <button type="button" onClick={() => void navigator.clipboard?.writeText(`${window.location.origin}/social?post=${encodeURIComponent(post.postHash)}`)} className="block w-full px-3 py-2 text-left text-zinc-300 hover:bg-white/[0.04]">Link to Post</button>
+                          </div>
+                        </details>
                       </div>
+                      {translation?.hash === post.postHash ? <div className="mt-3 rounded-xl border border-[#8fd4a9]/35 bg-black/40 p-3 text-sm text-zinc-300"><div className="flex justify-end"><button type="button" onClick={() => setTranslation(null)} className="rounded-md border border-zinc-700 px-2 py-1">Sluiten</button></div><p className="mt-2 whitespace-pre-wrap break-words">{translation.text || translation.message}</p></div> : null}
                       {hasSession && replyingTo === post.postHash ? <div className="mt-3"><PostComposer parentStakeID={post.postHash} compact onDone={() => setReplyingTo(null)} /></div> : null}
                     </article>
                   ))}
