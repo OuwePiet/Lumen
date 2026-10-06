@@ -6,7 +6,6 @@ import { ArrowUpRight, AtSign, Badge, Check, CheckCircle2, ChevronsRight, Circle
 
 const QUALITY_SHIELD_STORAGE_KEY = "via:notifications:quality-shield"
 import { viaModernIdentity, type ViaModernIdentityUser } from "../deso-identity-modern"
-import { viaModernIdentity } from "../deso-identity-modern"
 import { fetchViaRates, isViaRateStale } from "../via-live-rates"
 import type { ViaLanguage } from "../via-local-settings"
 import LikeButton from "../social/like-button"
