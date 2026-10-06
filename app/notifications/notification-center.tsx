@@ -5,7 +5,8 @@ import { useEffect, useMemo, useRef, useState } from "react"
 import { ArrowUpRight, AtSign, Badge, Check, CheckCircle2, ChevronsRight, CircleDot, Gem, Heart, Link2, MessageSquare, RefreshCw, Repeat2, ShieldCheck, ShieldOff, Smile, UserPlus, UserRound, LayoutGrid } from "lucide-react"
 
 const QUALITY_SHIELD_STORAGE_KEY = "via:notifications:quality-shield"
-import { restoreIdentitySession, VIA_IDENTITY_EVENT, type ViaIdentitySession } from "../deso-identity-session"
+import { VIA_IDENTITY_EVENT } from "../deso-identity-session"
+import { viaModernIdentity, type ViaModernIdentityUser } from "../deso-identity-modern"
 import { signViaTransaction } from "../deso-identity-sign"
 import { fetchViaRates, isViaRateStale } from "../via-live-rates"
 import type { ViaLanguage } from "../via-local-settings"
@@ -438,7 +439,7 @@ function notificationDestination(item: NotificationItem) {
 export default function NotificationCenter({ language }: { language: ViaLanguage }) {
   const copy = COPY[language]
   const categories = useMemo(() => (Object.keys(copy.categories) as Category[]).map((id) => ({ id, label: copy.categories[id] })), [copy])
-  const [session, setSession] = useState<ViaIdentitySession | null>(null)
+  const [session, setSession] = useState<ViaModernIdentityUser | null>(null)
   const [items, setItems] = useState<NotificationItem[]>([])
   const filterCategoryIds = useMemo(() => categories.map((option) => option.id).filter((id): id is Exclude<Category, "all"> => id !== "all"), [categories])
   const [activeCategories, setActiveCategories] = useState<Exclude<Category, "all">[]>(() => ["reaction", "diamond1", "diamondMany", "creatorCoin", "follow", "mention5", "mention6", "reply", "repost", "nft", "other"])
@@ -490,9 +491,8 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
   }, [])
 
   useEffect(() => {
-    const current = restoreIdentitySession()
-    setSession(current)
-    const onSession = (event: Event) => setSession((event as CustomEvent<ViaIdentitySession | null>).detail ?? restoreIdentitySession())
+    void viaModernIdentity.currentUser().then(setSession)
+    const onSession = () => void viaModernIdentity.currentUser().then(setSession)
     window.addEventListener(VIA_IDENTITY_EVENT, onSession)
     return () => window.removeEventListener(VIA_IDENTITY_EVENT, onSession)
   }, [])
