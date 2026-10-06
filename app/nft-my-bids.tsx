@@ -114,25 +114,22 @@ export default function NFTMyBids({ postHash, bids }: Props) {
       const result = await response.json() as PrepareResponse
       if (!response.ok || !result.ok || !result.transactionHex) throw new Error(result.error || "PREPARE_FAILED")
 
-      const popup = window.open(
-        DESO_IDENTITY_ORIGIN + "/approve?tx=" + encodeURIComponent(result.transactionHex),
-        "via-deso-withdraw-nft-bid",
-        "popup=yes,width=800,height=900",
-      )
-      if (!popup) throw new Error("POPUP_BLOCKED")
-      popupRef.current = popup
-      if (popupWatch.current !== null) window.clearInterval(popupWatch.current)
-      popupWatch.current = window.setInterval(() => {
-        if (popupRef.current?.closed) {
-          popupRef.current = null
-          if (popupWatch.current !== null) window.clearInterval(popupWatch.current)
-          popupWatch.current = null
-          setStatus("idle")
-          setMessage("DeSo approval was closed. VIA changed nothing.")
-        }
-      }, 500)
       setStatus("approval")
-      setMessage("Review the bid withdrawal in DeSo Identity. DeSo represents withdrawal as the same NFT bid transaction with amount 0.")
+      setMessage("Signing the exact bid withdrawal with DeSo Identity…")
+      const signedTransactionHex = await viaModernIdentity.signTx(result.transactionHex)
+      setStatus("submitting")
+      setMessage("Submitting the approved bid withdrawal to DeSo…")
+      const submitResponse = await fetch("/api/via/nft/withdraw-bid", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        cache: "no-store",
+        body: JSON.stringify({ action: "submit", signedTransactionHex }),
+      })
+      const submitResult = await submitResponse.json() as { ok?: boolean; error?: string }
+      if (!submitResponse.ok || !submitResult.ok) throw new Error(submitResult.error || "SUBMIT_FAILED")
+      setStatus("done")
+      setMessage("Bid withdrawal submitted to DeSo.")
+      setConfirmedSerial(null)
     } catch (error) {
       setStatus("error")
       setMessage(error instanceof Error && error.message === "POPUP_BLOCKED"
