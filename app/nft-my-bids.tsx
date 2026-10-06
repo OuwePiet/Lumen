@@ -65,6 +65,20 @@ export default function NFTMyBids({ postHash, bids }: Props) {
       const result = await response.json() as PrepareResponse
       if (!response.ok || !result.ok || !result.transactionHex) throw new Error(result.error || "PREPARE_FAILED")
 
+      const withdrawBidPermission = {
+        NFTOperationLimitMap: {
+          [postHash]: {
+            [serialNumber]: {
+              nft_bid: 1,
+            },
+          },
+        },
+      }
+      if (!(await viaModernIdentity.hasPermissions(withdrawBidPermission))) {
+        setMessage("Requesting permission to withdraw this exact DeSo NFT bid…")
+        await viaModernIdentity.requestPermissions(withdrawBidPermission)
+      }
+
       setStatus("approval")
       setMessage("Signing the exact bid withdrawal with DeSo Identity…")
       const signedTransactionHex = await viaModernIdentity.signTx(result.transactionHex)
