@@ -81,6 +81,19 @@ export default function NFTReceivedBids({ postHash, bids, editions, hasUnlockabl
       })
       const result = await response.json() as PrepareResponse
       if (!response.ok || !result.ok || !result.transactionHex) throw new Error(result.error || "PREPARE_FAILED")
+      const acceptBidPermission = {
+        NFTOperationLimitMap: {
+          [postHash]: {
+            [bid.serialNumber]: {
+              accept_nft_bid: 1,
+            },
+          },
+        },
+      }
+      if (!(await viaModernIdentity.hasPermissions(acceptBidPermission))) {
+        setMessage("Requesting permission to accept this exact DeSo NFT bid…")
+        await viaModernIdentity.requestPermissions(acceptBidPermission)
+      }
       setStatus("approval")
       setMessage("Signing the exact accepted NFT bid with DeSo Identity…")
       const signedTransactionHex = await viaModernIdentity.signTx(result.transactionHex)
