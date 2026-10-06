@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { MessageSquare } from "lucide-react"
 import { readViaLocalSettings } from "../via-local-settings"
+import { translateViaTextLocally } from "../via-local-translation"
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react"
 import { ChoiceId, defaultSocialFeedChoice, VIA_SOCIAL_FEED_EVENT, VIA_SOCIAL_FEED_STORAGE_KEY } from "./feed-choice"
 import PostComposer from "./post-composer"
@@ -257,41 +258,11 @@ export default function PublicPosts() {
     setTranslationLanguage(targetLanguage)
     setTranslatedText("")
     setTranslationMessage("")
-    if (!post.body.trim()) {
-      setTranslationMessage("This post has no text to translate.")
-      return
-    }
-    // Local browser translation only: never send DeSo post text to a paid API.
-    type LocalTranslator = {
-      translate: (text: string) => Promise<string>
-    }
-    type BrowserTranslator = {
-      create: (options: { sourceLanguage: string; targetLanguage: string }) => Promise<LocalTranslator>
-    }
-    const browser = globalThis as typeof globalThis & { Translator?: BrowserTranslator }
-    if (!browser.Translator) {
-      setTranslationMessage("Translation is not supported by this browser. Copy the original text to translate with your preferred app.")
-      return
-    }
     setTranslationBusy(true)
     try {
-      // Let the browser detect the source language if supported by its model.
-      const detector = globalThis as typeof globalThis & {
-        LanguageDetector?: { create: () => Promise<{ detect: (text: string) => Promise<Array<{ detectedLanguage: string; confidence: number }>> }> }
-      }
-      if (!detector.LanguageDetector) throw new Error("DETECTION_UNAVAILABLE")
-      const model = await detector.LanguageDetector.create()
-      const detected = await model.detect(post.body)
-      const sourceLanguage = detected[0]?.detectedLanguage
-      if (!sourceLanguage || sourceLanguage === "und") throw new Error("LANGUAGE_UNAVAILABLE")
-      if (sourceLanguage === targetLanguage) {
-        setTranslatedText(post.body)
-      } else {
-        const translator = await browser.Translator.create({ sourceLanguage, targetLanguage })
-        setTranslatedText(await translator.translate(post.body))
-      }
-    } catch {
-      setTranslationMessage("Local translation is unavailable for this language or browser. Copy the original text to use your preferred translator.")
+      const result = await translateViaTextLocally(post.body, targetLanguage)
+      setTranslatedText(result.text)
+      setTranslationMessage(result.message)
     } finally {
       setTranslationBusy(false)
     }
