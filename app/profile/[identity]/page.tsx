@@ -10,7 +10,7 @@ import DiamondButton from "../../social/diamond-button"
 import PostComposer from "../../social/post-composer"
 import LocalSaveButton from "../../social/local-save-button"
 import XShareButton from "../../x-share-button"
-import { restoreIdentitySession } from "../../deso-identity-session"
+import { viaModernIdentity } from "../../deso-identity-modern"
 import FollowButton from "../../social/follow-button"
 import ProfileActionMenu from "../profile-action-menu"
 import ViaIdentityStatusMarks from "../../via-identity-status"
@@ -91,7 +91,7 @@ export default function PublicProfilePage() {
   const [hasSession, setHasSession] = useState(false)
   const [replyingTo, setReplyingTo] = useState<string | null>(null)
 
-  useEffect(() => setHasSession(Boolean(restoreIdentitySession())), [])
+  useEffect(() => viaModernIdentity.subscribe((user) => setHasSession(Boolean(user))), [])
 
   useEffect(() => {
     if (!identity) {
