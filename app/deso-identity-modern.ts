@@ -17,6 +17,7 @@ export type ViaModernIdentityAdapter = {
   login(): Promise<ViaModernIdentityUser>
   logout(): Promise<void>
   alternateUsers(): Promise<ViaModernIdentityUser[]>
+  subscribe(listener: (user: ViaModernIdentityUser | null) => void): void
   setActiveUser(publicKey: string): Promise<void>
   signTx(transactionHex: string): Promise<string>
   jwt(): Promise<string>
@@ -62,6 +63,14 @@ export const viaModernIdentity: ViaModernIdentityAdapter = {
     ensureConfigured()
     const state = await identity.snapshot()
     return Object.keys(state.alternateUsers ?? {}).map((publicKey) => ({ publicKey }))
+  },
+
+  subscribe(listener) {
+    ensureConfigured()
+    identity.subscribe((state) => {
+      const publicKey = state.currentUser?.publicKey
+      listener(publicKey ? { publicKey } : null)
+    })
   },
 
   async setActiveUser(publicKey: string) {
