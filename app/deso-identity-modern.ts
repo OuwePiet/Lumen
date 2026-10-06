@@ -1,6 +1,6 @@
 "use client"
 
-import { identity } from "deso-protocol"
+import { identity, type AccessGroupEntryResponse, type NewMessageEntryResponse } from "deso-protocol"
 
 /**
  * Central modern DeSo Identity boundary for VIA.
@@ -20,6 +20,8 @@ export type ViaModernIdentityAdapter = {
   subscribe(listener: (user: ViaModernIdentityUser | null) => void): () => void
   setActiveUser(publicKey: string): Promise<void>
   signTx(transactionHex: string): Promise<string>
+  encryptMessage(recipientPublicKey: string, message: string): Promise<string>
+  decryptMessage(message: NewMessageEntryResponse, groups?: AccessGroupEntryResponse[]): Promise<string>
   jwt(): Promise<string>
 }
 
@@ -93,6 +95,17 @@ export const viaModernIdentity: ViaModernIdentityAdapter = {
   async signTx(transactionHex: string) {
     ensureConfigured()
     return identity.signTx(transactionHex)
+  },
+
+  async encryptMessage(recipientPublicKey: string, message: string) {
+    ensureConfigured()
+    return identity.encryptMessage(recipientPublicKey, message)
+  },
+
+  async decryptMessage(message: NewMessageEntryResponse, groups: AccessGroupEntryResponse[] = []) {
+    ensureConfigured()
+    const result = await identity.decryptMessage(message, groups)
+    return result.DecryptedMessage
   },
 
   async jwt() {
