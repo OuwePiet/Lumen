@@ -297,6 +297,33 @@ export default function PublicPosts() {
     }
   }
 
+  function ReplyExtraActions({ reply }: { reply: PublicPost }) {
+    const url = `${typeof window === "undefined" ? "" : window.location.origin}/social?post=${encodeURIComponent(reply.postHash)}`
+    return <>
+      <button type="button" onClick={() => {
+        if (navigator.share) void navigator.share({ title: "VIA · DeSo post", url }).catch(() => {})
+        else void navigator.clipboard?.writeText(url)
+      }}>Share</button>
+      {session ? <LocalSaveButton postHash={reply.postHash} body={reply.body} publicKey={reply.publicKey} timestampNanos={reply.timestampNanos} /> : null}
+      <details className="relative">
+        <summary aria-label="Meer reactieacties" title="Meer reactieacties" className="cursor-pointer list-none">•••</summary>
+        <div className="absolute right-0 z-20 mt-1 min-w-44 overflow-hidden rounded-lg border border-zinc-800 bg-[#050806] text-left shadow-xl">
+          <button type="button" onClick={() => {
+            const lang = readViaLocalSettings().interfaceLanguage
+            const target = ({ Dutch: "nl", English: "en", French: "fr", Spanish: "es", Chinese: "zh", Hindi: "hi" } as Record<string, string>)[lang] ?? "en"
+            setTranslationPost(reply.postHash)
+            setTranslationLanguage(target)
+            setTranslatedText("")
+            setTranslationMessage("")
+            void translatePost(reply, target)
+            ;(document.activeElement as HTMLElement | null)?.closest("details")?.removeAttribute("open")
+          }} className="block w-full px-3 py-2 text-left text-zinc-300 hover:bg-white/[0.04]">🌐 Translate / Vertalen</button>
+          <button type="button" onClick={() => void navigator.clipboard?.writeText(url)} className="block w-full px-3 py-2 text-left text-zinc-300 hover:bg-white/[0.04]">Link to Post</button>
+        </div>
+      </details>
+    </>
+  }
+
   async function loadPosts(event?: FormEvent) {
     event?.preventDefault()
     requestController.current?.abort()
@@ -537,7 +564,7 @@ ${url}`
                 {options.length >= 2 ? <PollVoteControl postHash={post.postHash} options={options} /> : null}
                 {isReplying ? <section className="mt-3 space-y-3 rounded-xl border border-zinc-700 p-3" aria-label="DeSo replies">
                   <div className="flex items-center justify-between"><strong className="text-sm">DeSo replies</strong><button type="button" onClick={() => { setReplyingTo(null); setReplyParent(null) }} aria-label="Close replies">×</button></div>
-                  {commentsBusy ? <p>Loading replies…</p> : commentsError ? <p role="alert">DeSo replies unavailable. <button type="button" onClick={() => setCommentsRefresh(n => n + 1)}>Retry</button></p> : commentPosts.length === 0 ? <p>No replies returned by DeSo.</p> : commentPosts.map(comment => <div key={comment.postHash} className="rounded-lg border border-zinc-800 p-2 text-sm"><p className="text-zinc-400">{comment.username ? `@${comment.username}` : shortPublicKey(comment.publicKey)}</p><p className="whitespace-pre-wrap break-words">{comment.body}</p>{comment.comments?.map(child => <div key={child.postHash} className="ml-4 mt-2 border-l border-zinc-700 pl-3"><p className="text-zinc-400">{child.username ? `@${child.username}` : shortPublicKey(child.publicKey)}</p><p className="whitespace-pre-wrap break-words">{child.body}</p><div className="mt-2 flex flex-wrap items-center gap-2"><button type="button" onClick={() => setReplyParent(child.postHash)}>Reply</button>{session ? <><LikeButton postHash={child.postHash} initialCount={child.likeCount} variant="icon" /><RepostButton postHash={child.postHash} initialCount={child.repostCount + child.quoteRepostCount} variant="icon" />{session.publicKey !== child.publicKey ? <DiamondButton postHash={child.postHash} receiverPublicKey={child.publicKey} initialCount={child.diamondCount} variant="icon" /> : <span>Diamonds · {child.diamondCount}</span>}</> : null}</div></div>)}<div className="flex flex-wrap gap-2"><button type="button" onClick={() => setReplyParent(comment.postHash)}>Reply</button>{session ? <><LikeButton postHash={comment.postHash} initialCount={comment.likeCount} variant="icon" /><RepostButton postHash={comment.postHash} initialCount={comment.repostCount + comment.quoteRepostCount} variant="icon" />{session.publicKey !== comment.publicKey ? <DiamondButton postHash={comment.postHash} receiverPublicKey={comment.publicKey} initialCount={comment.diamondCount} variant="icon" /> : <span>Diamonds · {comment.diamondCount}</span>}</> : null}</div></div>)}
+                  {commentsBusy ? <p>Loading replies…</p> : commentsError ? <p role="alert">DeSo replies unavailable. <button type="button" onClick={() => setCommentsRefresh(n => n + 1)}>Retry</button></p> : commentPosts.length === 0 ? <p>No replies returned by DeSo.</p> : commentPosts.map(comment => <div key={comment.postHash} className="rounded-lg border border-zinc-800 p-2 text-sm"><p className="text-zinc-400">{comment.username ? `@${comment.username}` : shortPublicKey(comment.publicKey)}</p><p className="whitespace-pre-wrap break-words">{comment.body}</p>{comment.comments?.map(child => <div key={child.postHash} className="ml-4 mt-2 border-l border-zinc-700 pl-3"><p className="text-zinc-400">{child.username ? `@${child.username}` : shortPublicKey(child.publicKey)}</p><p className="whitespace-pre-wrap break-words">{child.body}</p><div className="mt-2 flex flex-wrap items-center gap-2"><button type="button" onClick={() => setReplyParent(child.postHash)}>Reply</button>{session ? <><LikeButton postHash={child.postHash} initialCount={child.likeCount} variant="icon" /><RepostButton postHash={child.postHash} initialCount={child.repostCount + child.quoteRepostCount} variant="icon" />{session.publicKey !== child.publicKey ? <DiamondButton postHash={child.postHash} receiverPublicKey={child.publicKey} initialCount={child.diamondCount} variant="icon" /> : <span>Diamonds · {child.diamondCount}</span>}<ReplyExtraActions reply={child} /></> : <ReplyExtraActions reply={child} />}</div></div>)}<div className="flex flex-wrap gap-2"><button type="button" onClick={() => setReplyParent(comment.postHash)}>Reply</button>{session ? <><LikeButton postHash={comment.postHash} initialCount={comment.likeCount} variant="icon" /><RepostButton postHash={comment.postHash} initialCount={comment.repostCount + comment.quoteRepostCount} variant="icon" />{session.publicKey !== comment.publicKey ? <DiamondButton postHash={comment.postHash} receiverPublicKey={comment.publicKey} initialCount={comment.diamondCount} variant="icon" /> : <span>Diamonds · {comment.diamondCount}</span>}<ReplyExtraActions reply={comment} /></> : <ReplyExtraActions reply={comment} />}</div></div>)}
                   <button type="button" onClick={() => setCommentsRefresh(n => n + 1)} disabled={commentsBusy}>Refresh replies</button>
                   {session ? <PostComposer key={replyParent ?? post.postHash} parentStakeID={replyParent ?? post.postHash} compact onCancel={() => setReplyParent(null)} onDone={() => { setReplyParent(null); setCommentsRefresh(n => n + 1); void loadPosts() }} /> : <p>Sign in with DeSo to reply.</p>}
                 </section> : null}
