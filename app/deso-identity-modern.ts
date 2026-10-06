@@ -22,6 +22,7 @@ export type ViaModernIdentityAdapter = {
   signTx(transactionHex: string): Promise<string>
   hasPermissions(permissions: Parameters<typeof identity.hasPermissions>[0]): ReturnType<typeof identity.hasPermissions>
   requestPermissions(permissions: Parameters<typeof identity.requestPermissions>[0]): ReturnType<typeof identity.requestPermissions>
+  spendingLimits(): Promise<NonNullable<Awaited<ReturnType<typeof identity.snapshot>>["currentUser"]>["primaryDerivedKey"]["transactionSpendingLimits"] | null>
   encryptMessage(recipientPublicKey: string, message: string): Promise<string>
   decryptMessage(message: NewMessageEntryResponse, groups?: AccessGroupEntryResponse[]): Promise<string>
   jwt(): Promise<string>
@@ -120,6 +121,12 @@ export const viaModernIdentity: ViaModernIdentityAdapter = {
   requestPermissions(permissions) {
     ensureConfigured()
     return identity.requestPermissions(permissions)
+  },
+
+  async spendingLimits() {
+    ensureConfigured()
+    const state = await identity.snapshot()
+    return state.currentUser?.primaryDerivedKey?.transactionSpendingLimits ?? null
   },
 
   async encryptMessage(recipientPublicKey: string, message: string) {
