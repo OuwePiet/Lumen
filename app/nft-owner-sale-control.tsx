@@ -231,11 +231,18 @@ export default function NFTOwnerSaleControl({ postHash, editions, hasUnlockable 
       const data = await response.json() as PrepareResponse
       if (!response.ok || !data.ok || !data.transactionHex) throw new Error()
       setFeeNanos(typeof data.feeNanos === "number" ? data.feeNanos : null)
-      const popup = window.open(DESO_IDENTITY_ORIGIN + "/approve?tx=" + encodeURIComponent(data.transactionHex), "via-deso-nft-burn", "popup=yes,width=800,height=900")
-      if (!popup) throw new Error()
-      popupRef.current = popup
       setStatus("approval")
-      setMessage("Review the irreversible burn in DeSo Identity.")
+      setMessage("Signing the irreversible NFT burn with DeSo Identity…")
+      const signedTransactionHex = await viaModernIdentity.signTx(data.transactionHex)
+      setStatus("submitting")
+      setMessage("Submitting the approved NFT burn to DeSo…")
+      const submitResponse = await fetch("/api/via/nft/burn", { method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store", body: JSON.stringify({ action: "submit", signedTransactionHex }) })
+      const submitData = await submitResponse.json() as { ok?: boolean; error?: string }
+      if (!submitResponse.ok || !submitData.ok) throw new Error(submitData.error || "SUBMIT_FAILED")
+      setStatus("done")
+      setMessage("NFT burn submitted to DeSo.")
+      setConfirmed(false)
+      pendingMode.current = null
     } catch {
       pendingMode.current = null
       setStatus("error")
