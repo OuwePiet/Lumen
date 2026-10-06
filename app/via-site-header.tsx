@@ -6,7 +6,6 @@ import { useEffect, useRef, useState } from "react"
 import { Radio, UsersRound } from "lucide-react"
 import {
   clearIdentitySession,
-  persistIdentityLogin,
   VIA_IDENTITY_EVENT,
   type ViaIdentitySession,
 } from "./deso-identity-session"
@@ -167,22 +166,13 @@ export default function ViaSiteHeader() {
     void viaModernIdentity.currentUser().then((user) => setSession(user ? { ...user, accessLevel: 3, signedUp: false } : null))
     refreshKnownAccounts()
     syncSettings()
-    function handleIdentityMessage(event: MessageEvent) {
-      const nextSession = persistIdentityLogin(event)
-      if (!nextSession) return
-      setSession(nextSession)
-      refreshKnownAccounts()
-      setMenuOpen(false)
-    }
     const syncIdentity = () => {
       void viaModernIdentity.currentUser().then((user) => setSession(user ? { ...user, accessLevel: 3, signedUp: false } : null))
       refreshKnownAccounts()
     }
-    window.addEventListener("message", handleIdentityMessage)
     window.addEventListener(VIA_SETTINGS_EVENT, syncSettings)
     window.addEventListener(VIA_IDENTITY_EVENT, syncIdentity)
     return () => {
-      window.removeEventListener("message", handleIdentityMessage)
       window.removeEventListener(VIA_SETTINGS_EVENT, syncSettings)
       window.removeEventListener(VIA_IDENTITY_EVENT, syncIdentity)
     }
