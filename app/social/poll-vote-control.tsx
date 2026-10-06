@@ -1,7 +1,7 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
-import { DESO_IDENTITY_ORIGIN, restoreIdentitySession, VIA_IDENTITY_EVENT, type ViaIdentitySession } from "../deso-identity-session"
+import { useEffect, useState } from "react"
+import { viaModernIdentity, type ViaModernIdentityUser } from "../deso-identity-modern"
 import { readPollResponseStatus } from "./poll-response-status"
 
 type Props = {
@@ -20,17 +20,6 @@ type PrepareResponse = {
 
 type SubmitResponse = { ok?: boolean; error?: string }
 
-function signedTransactionFromMessage(event: MessageEvent, source: Window | null) {
-  if (event.origin !== DESO_IDENTITY_ORIGIN || event.source !== source) return null
-  if (!event.data || typeof event.data !== "object") return null
-  const data = event.data as Record<string, unknown>
-  if (data.service !== "identity") return null
-  const payload = data.payload
-  if (!payload || typeof payload !== "object" || Array.isArray(payload)) return null
-  const signed = (payload as Record<string, unknown>).signedTransactionHex
-  return typeof signed === "string" && signed.length > 0 ? signed : null
-}
-
 function safeOptions(options: string[]) {
   return options
     .map((value) => value.trim())
@@ -39,23 +28,16 @@ function safeOptions(options: string[]) {
 }
 
 export default function PollVoteControl({ postHash, options }: Props) {
-  const [session, setSession] = useState<ViaIdentitySession | null>(null)
+  const [session, setSession] = useState<ViaModernIdentityUser | null>(null)
   const [status, setStatus] = useState<"loading" | "ready" | "already-voted" | "blocked" | "preparing" | "approval" | "submitting" | "done" | "error">("loading")
   const [message, setMessage] = useState("Checking this poll against DeSo…")
   const [existingOption, setExistingOption] = useState<string | null>(null)
   const [pendingOption, setPendingOption] = useState<string | null>(null)
-  const popupRef = useRef<Window | null>(null)
-  const popupWatch = useRef<number | null>(null)
   const normalizedOptions = safeOptions(options)
 
   useEffect(() => {
-    setSession(restoreIdentitySession())
-    const onIdentity = (event: Event) => {
-      const custom = event as CustomEvent<ViaIdentitySession | null>
-      setSession(custom.detail ?? restoreIdentitySession())
-    }
-    window.addEventListener(VIA_IDENTITY_EVENT, onIdentity)
-    return () => window.removeEventListener(VIA_IDENTITY_EVENT, onIdentity)
+    void viaModernIdentity.currentUser().then(setSession)
+    return viaModernIdentity.subscribe(setSession)
   }, [])
 
   useEffect(() => {
@@ -110,50 +92,6 @@ export default function PollVoteControl({ postHash, options }: Props) {
     return () => { cancelled = true }
   }, [postHash, session?.publicKey, normalizedOptions.join("\u0001")])
 
-  useEffect(() => {
-    const onMessage = async (event: MessageEvent) => {
-      const signedTransactionHex = signedTransactionFromMessage(event, popupRef.current)
-      if (!signedTransactionHex) return
-      if (popupWatch.current !== null) window.clearInterval(popupWatch.current)
-      popupWatch.current = null
-      popupRef.current?.close()
-      popupRef.current = null
-      setStatus("submitting")
-      setMessage("Submitting your approved poll response to DeSo…")
-      try {
-        const response = await fetch("/api/via/social/poll-vote", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          cache: "no-store",
-          body: JSON.stringify({ action: "submit", signedTransactionHex }),
-        })
-        const data = await response.json() as SubmitResponse
-        if (!response.ok || !data.ok) throw new Error(data.error || "SUBMIT_FAILED")
-
-        if (!session) throw new Error("SESSION_LOST")
-        const reread = await readPollResponseStatus(postHash, session.publicKey)
-        const confirmed = reread.existingResponse?.option ?? pendingOption
-        setExistingOption(confirmed || null)
-        setStatus("done")
-        setMessage(confirmed ? `Vote confirmed from DeSo: ${confirmed}` : "Vote submitted to DeSo; refresh the poll to verify its response.")
-      } catch {
-        setStatus("error")
-        setMessage("The poll response could not be confirmed. VIA will not assume that a vote succeeded.")
-      } finally {
-        setPendingOption(null)
-      }
-    }
-
-    window.addEventListener("message", onMessage)
-    return () => {
-      window.removeEventListener("message", onMessage)
-      if (popupWatch.current !== null) window.clearInterval(popupWatch.current)
-      popupWatch.current = null
-      popupRef.current?.close()
-      popupRef.current = null
-    }
-  }, [pendingOption, postHash, session])
-
   async function vote(option: string) {
     if (!session || status !== "ready") return
     setPendingOption(option)
@@ -182,28 +120,28 @@ export default function PollVoteControl({ postHash, options }: Props) {
         throw new Error(data.error || "PREPARE_FAILED")
       }
 
-      const approveUrl = `${DESO_IDENTITY_ORIGIN}/approve?tx=${encodeURIComponent(data.transactionHex)}`
-      const popup = window.open(approveUrl, "via-deso-poll-approve", "popup=yes,width=800,height=900")
-      if (!popup) {
-        setStatus("error")
-        setMessage("The DeSo approval window was blocked. No vote was submitted.")
-        return
-      }
-      popupRef.current = popup
-      if (popupWatch.current !== null) window.clearInterval(popupWatch.current)
-      popupWatch.current = window.setInterval(() => {
-        if (popupRef.current?.closed) {
-          popupRef.current = null
-          if (popupWatch.current !== null) window.clearInterval(popupWatch.current)
-          popupWatch.current = null
-          setPendingOption(null)
-          setStatus("ready")
-          setMessage("DeSo approval was closed. No vote was submitted.")
-        }
-      }, 500)
       setStatus("approval")
       const fee = typeof data.feeNanos === "number" ? ` Network fee: ${data.feeNanos.toLocaleString()} nanos.` : ""
-      setMessage(`Review the exact POLL_RESPONSE transaction in DeSo Identity.${fee}`)
+      setMessage(`Signing the exact POLL_RESPONSE transaction with DeSo Identity.${fee}`)
+      const signedTransactionHex = await viaModernIdentity.signTx(data.transactionHex)
+
+      setStatus("submitting")
+      setMessage("Submitting your approved poll response to DeSo…")
+      const submitResponse = await fetch("/api/via/social/poll-vote", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        cache: "no-store",
+        body: JSON.stringify({ action: "submit", signedTransactionHex }),
+      })
+      const submitData = await submitResponse.json() as SubmitResponse
+      if (!submitResponse.ok || !submitData.ok) throw new Error(submitData.error || "SUBMIT_FAILED")
+
+      const reread = await readPollResponseStatus(postHash, session.publicKey)
+      const confirmed = reread.existingResponse?.option ?? option
+      setExistingOption(confirmed || null)
+      setStatus("done")
+      setMessage(confirmed ? `Vote confirmed from DeSo: ${confirmed}` : "Vote submitted to DeSo; refresh the poll to verify its response.")
+      setPendingOption(null)
     } catch {
       setStatus("error")
       setMessage("The DeSo poll response could not be prepared. Nothing was submitted.")
