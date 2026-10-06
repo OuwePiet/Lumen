@@ -9,7 +9,6 @@ import {
   listIdentitySessions,
   persistIdentityLogin,
   restoreIdentitySession,
-  switchIdentitySession,
   VIA_IDENTITY_EVENT,
   type ViaIdentitySession,
 } from "./deso-identity-session"
@@ -240,10 +239,10 @@ export default function ViaSiteHeader() {
     setLanguage(next)
   }
 
-  function chooseAccount(publicKey: string) {
-    const nextSession = switchIdentitySession(publicKey)
-    if (!nextSession) return
-    setSession(nextSession)
+  async function chooseAccount(publicKey: string) {
+    await viaModernIdentity.setActiveUser(publicKey)
+    const nextUser = await viaModernIdentity.currentUser()
+    setSession(nextUser ? { ...nextUser, accessLevel: 3, signedUp: false } : null)
     setProfile(profiles[publicKey] ?? null)
     setMenuOpen(false)
     router.refresh()
@@ -338,7 +337,7 @@ export default function ViaSiteHeader() {
                       const accountAvatar = safeProfileImage(accountProfile?.profilePic)
                       const accountName = accountProfile?.username ? `@${accountProfile.username}` : "DeSo account"
                       return (
-                        <button key={account.publicKey} type="button" style={styles.accountChoice} onClick={() => chooseAccount(account.publicKey)} role="menuitem">
+                        <button key={account.publicKey} type="button" style={styles.accountChoice} onClick={() => void chooseAccount(account.publicKey)} role="menuitem">
                           {accountAvatar ? <img src={accountAvatar} alt="" style={styles.avatar} referrerPolicy="no-referrer" /> : <span style={styles.avatarFallback} aria-hidden="true">{accountProfile?.username?.slice(0, 1).toUpperCase() ?? "V"}</span>}
                           <span style={styles.accountChoiceText}>
                             <span style={styles.accountChoiceName}>{accountName}</span>
