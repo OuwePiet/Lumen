@@ -2,8 +2,7 @@
 
 import { useEffect, useRef, useState } from "react"
 import { Repeat2 } from "lucide-react"
-import { restoreIdentitySession, VIA_IDENTITY_EVENT, type ViaIdentitySession } from "../deso-identity-session"
-import { viaModernIdentity } from "../deso-identity-modern"
+import { viaModernIdentity, type ViaModernIdentityUser } from "../deso-identity-modern"
 import VideoUploadControl from "./video-upload-control"
 
 const MAX_QUOTE_LENGTH = 5000
@@ -32,7 +31,7 @@ function httpsUrl(value: string) {
 }
 
 export default function RepostButton({ postHash, initialCount, variant = "default" }: Props) {
-  const [session, setSession] = useState<ViaIdentitySession | null>(null)
+  const [session, setSession] = useState<ViaModernIdentityUser | null>(null)
   const [count, setCount] = useState(initialCount)
   const [busy, setBusy] = useState(false)
   const [quoteOpen, setQuoteOpen] = useState(false)
@@ -49,13 +48,8 @@ export default function RepostButton({ postHash, initialCount, variant = "defaul
   const quoteRef = useRef<HTMLTextAreaElement | null>(null)
 
   useEffect(() => {
-    setSession(restoreIdentitySession())
-    const onIdentity = (event: Event) => {
-      const custom = event as CustomEvent<ViaIdentitySession | null>
-      setSession(custom.detail ?? restoreIdentitySession())
-    }
-    window.addEventListener(VIA_IDENTITY_EVENT, onIdentity)
-    return () => window.removeEventListener(VIA_IDENTITY_EVENT, onIdentity)
+    void viaModernIdentity.currentUser().then(setSession)
+    return viaModernIdentity.subscribe(setSession)
   }, [])
 
   useEffect(() => setCount(initialCount), [initialCount])
