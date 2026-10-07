@@ -486,6 +486,7 @@ export default function PublicPosts() {
                         setTranslationLanguage(target)
                         setTranslatedText("")
                         setTranslationMessage("")
+                        void translatePost(post, target)
                         ;(document.activeElement as HTMLElement | null)?.closest("details")?.removeAttribute("open")
                       }} className="px-3 py-2 text-left text-zinc-300 hover:bg-white/[0.04]">🌐 Translate / Vertalen</button>
                       <button type="button" onClick={() => void navigator.clipboard?.writeText(`${window.location.origin}/social?post=${encodeURIComponent(post.postHash)}`)} className="px-3 py-2 text-left text-zinc-300 hover:bg-white/[0.04]">Link to Post</button>
