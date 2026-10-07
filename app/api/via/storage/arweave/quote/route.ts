@@ -48,6 +48,8 @@ export async function GET(request: NextRequest) {
       },
       totalWinston: String(totalWinston),
       quotedAt: new Date().toISOString(),
+      paymentResponsibility: "creator-direct-to-provider",
+      viaAdvancesProviderCost: false,
       paymentStatus: "not-collected",
       uploadStatus: "not-started",
     }, { headers: { "Cache-Control": "no-store" } })
