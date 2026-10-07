@@ -50,6 +50,8 @@ function sumKnownNanos(...values: Array<number | null | undefined>) {
 
 export default function MintPreflight({ initialPostHash = "" }: { initialPostHash?: string }) {
   const [session, setSession] = useState<ViaModernIdentityUser | null>(null)
+  const [mintAccounts, setMintAccounts] = useState<ViaModernIdentityUser[]>([])
+  const [accountSwitchBusy, setAccountSwitchBusy] = useState(false)
   const [postHash, setPostHash] = useState(initialPostHash)
   const [copies, setCopies] = useState("1")
   const [forSale, setForSale] = useState(false)
@@ -76,10 +78,14 @@ export default function MintPreflight({ initialPostHash = "" }: { initialPostHas
   }, [initialPostHash])
 
   useEffect(() => {
-    void viaModernIdentity.currentUser().then(setSession)
+    void Promise.all([viaModernIdentity.currentUser(), viaModernIdentity.alternateUsers()]).then(([user, alternates]) => {
+      setSession(user)
+      setMintAccounts(user ? [user, ...alternates.filter((candidate) => candidate.publicKey !== user.publicKey)] : alternates)
+    })
     return viaModernIdentity.subscribe((user) => {
       requestSequence.current += 1
       setSession(user)
+      void viaModernIdentity.alternateUsers().then((alternates) => setMintAccounts(user ? [user, ...alternates.filter((candidate) => candidate.publicKey !== user.publicKey)] : alternates))
       setMintStatus("idle")
       setMintMessage("DeSo Identity changed. Request a fresh quote before minting.")
     })
@@ -125,6 +131,21 @@ export default function MintPreflight({ initialPostHash = "" }: { initialPostHas
     const ints = [copies, minBid, buyNowPrice, creatorRoyalty, coinRoyalty].map(Number)
     return Boolean(session && /^[0-9a-fA-F]{64}$/.test(postHash.trim()) && ints.every(Number.isSafeInteger) && ints.every((n) => n >= 0) && Number(copies) >= 1 && Number(copies) <= 10000 && Number(creatorRoyalty) + Number(coinRoyalty) <= 10000 && (!buyNow || (forSale && Number(buyNowPrice) > 0 && !unlockable)))
   }, [session, postHash, copies, minBid, buyNowPrice, creatorRoyalty, coinRoyalty, buyNow, forSale, unlockable])
+
+  async function switchMintAccount(publicKey: string) {
+    if (!session || publicKey === session.publicKey || accountSwitchBusy) return
+    setAccountSwitchBusy(true)
+    requestSequence.current += 1
+    setResult(null); setQuotedPublicKey(""); setPreflightFailed(false); setMintStatus("idle")
+    setMessage("Switching active DeSo account. A fresh mint quote will be required.")
+    try {
+      await viaModernIdentity.setActiveUser(publicKey)
+    } catch {
+      setMessage("The DeSo account could not be switched. Nothing was minted.")
+    } finally {
+      setAccountSwitchBusy(false)
+    }
+  }
 
   async function requestPreflight() {
     if (!valid || !session || requestInFlight.current) return
@@ -236,7 +257,7 @@ export default function MintPreflight({ initialPostHash = "" }: { initialPostHas
         <span className="rounded-[9px] border border-[#8fd4a9]/30 bg-[#0c1711]/40 px-3 py-2 text-xs font-semibold text-[#8fd4a9]">No blockchain write</span>
       </div>
 
-      {!session ? <p className="mt-5 rounded-[11px] border border-amber-900/50 bg-amber-950/15 px-4 py-3 text-sm text-amber-100/80">Log in with DeSo Identity first. VIA will use only the active public key for this preflight.</p> : <p className="mt-5 text-xs text-zinc-500">Active DeSo Identity: <span className="break-all text-zinc-300">{session.publicKey}</span></p>}
+      {!session ? <p className="mt-5 rounded-[11px] border border-amber-900/50 bg-amber-950/15 px-4 py-3 text-sm text-amber-100/80">Log in with DeSo Identity first. VIA will use only the active public key for this preflight.</p> : <div className="mt-5 rounded-[11px] border border-zinc-800/80 bg-black/20 p-4"><label className="grid gap-2"><span className="text-sm font-semibold text-zinc-200">Mint from DeSo account</span><select value={session.publicKey} disabled={accountSwitchBusy || mintStatus === "preparing" || mintStatus === "approval" || mintStatus === "submitting"} onChange={(e)=>void switchMintAccount(e.target.value)} className={field}>{mintAccounts.map((account)=><option key={account.publicKey} value={account.publicKey}>{account.publicKey}</option>)}</select></label><p className="mt-2 break-all text-xs text-zinc-500">Active signing public key: <span className="text-zinc-300">{session.publicKey}</span></p><p className="mt-2 text-xs leading-5 text-zinc-500">Changing account clears the current mint quote. VIA will request a fresh quote for the selected DeSo account before mint approval.</p></div>}
 
       <form onSubmit={runPreflight} className="mt-5 grid gap-4">
         <label className="grid gap-2"><span className="text-sm font-semibold text-zinc-200">NFT post hash</span><input className={field} value={postHash} onChange={(e)=>setPostHash(e.target.value)} maxLength={64} autoCapitalize="none" autoCorrect="off" placeholder="64-character DeSo post hash"/></label>
