@@ -125,13 +125,13 @@ export default function PublicPosts() {
     if (!replyingTo) { setCommentPosts([]); return }
     const controller = new AbortController()
     setCommentsBusy(true); setCommentsError(false)
-    fetch(`/api/via/post?hash=${encodeURIComponent(replyingTo)}&comments=1`, { cache: "no-store", signal: controller.signal })
+    fetch(`/api/via/post?hash=${encodeURIComponent(replyingTo)}&comments=1&reader=${encodeURIComponent(session?.publicKey ?? "")}`, { cache: "no-store", signal: controller.signal })
       .then(async response => { if (!response.ok) throw new Error("COMMENTS_UNAVAILABLE"); return response.json() })
       .then((data: { comments?: PublicPost[] }) => { if (!controller.signal.aborted) setCommentPosts(Array.isArray(data.comments) ? data.comments : []) })
       .catch(() => { if (!controller.signal.aborted) setCommentsError(true) })
       .finally(() => { if (!controller.signal.aborted) setCommentsBusy(false) })
     return () => controller.abort()
-  }, [replyingTo, commentsRefresh])
+  }, [replyingTo, commentsRefresh, session?.publicKey])
   const [actionLoginPost, setActionLoginPost] = useState<string | null>(null)
   const [sharedPostView, setSharedPostView] = useState(false)
   const [translationPost, setTranslationPost] = useState<string | null>(null)
@@ -175,7 +175,7 @@ export default function PublicPosts() {
         requestController.current = controller
         setLoading(true)
         setMessage("Loading shared post…")
-        void fetch(`/api/via/post?hash=${encodeURIComponent(sharedPost)}`, { signal: controller.signal })
+        void viaModernIdentity.currentUser().then((activeSession) => fetch(`/api/via/post?hash=${encodeURIComponent(sharedPost)}&reader=${encodeURIComponent(activeSession?.publicKey ?? "")}`, { signal: controller.signal }))
           .then(async (response) => {
             const data = (await response.json()) as SinglePostResponse
             if (!response.ok || !data.ok || !data.post) throw new Error("POST_UNAVAILABLE")
