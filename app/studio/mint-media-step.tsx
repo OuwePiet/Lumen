@@ -26,7 +26,7 @@ export default function MintMediaStep({ onPostHash }: { onPostHash?: (postHash: 
   const [externalMediaUrl,setExternalMediaUrl]=useState("")
   const [postBusy,setPostBusy]=useState(false)
   const [sourcePostReady,setSourcePostReady]=useState(false)
-  const [arweaveQuote,setArweaveQuote]=useState<{priceWinston:string; quotedAt:string} | null>(null)
+  const [arweaveQuote,setArweaveQuote]=useState<{priceWinston:string; viaStorageService:{percent:number;amountWinston:string;collectionStatus:string}; totalWinston:string; quotedAt:string} | null>(null)
   const [arweaveQuoteBusy,setArweaveQuoteBusy]=useState(false)
   const [arweaveQuoteError,setArweaveQuoteError]=useState("")
   useEffect(()=>{
@@ -39,9 +39,9 @@ export default function MintMediaStep({ onPostHash }: { onPostHash?: (postHash: 
     setArweaveQuote(null); setArweaveQuoteError(""); setArweaveQuoteBusy(true)
     void fetch(`/api/via/storage/arweave/quote?bytes=${file.size}`,{cache:"no-store",signal:controller.signal})
       .then(async (response)=>{
-        const data=await response.json() as {ok?:boolean;priceWinston?:string;quotedAt?:string}
-        if(!response.ok || !data.ok || !data.priceWinston || !data.quotedAt) throw new Error("QUOTE_UNAVAILABLE")
-        setArweaveQuote({priceWinston:data.priceWinston,quotedAt:data.quotedAt})
+        const data=await response.json() as {ok?:boolean;priceWinston?:string;viaStorageService?:{percent?:number;amountWinston?:string;collectionStatus?:string};totalWinston?:string;quotedAt?:string}
+        if(!response.ok || !data.ok || !data.priceWinston || data.viaStorageService?.percent!==5 || !data.viaStorageService.amountWinston || !data.totalWinston || !data.quotedAt) throw new Error("QUOTE_UNAVAILABLE")
+        setArweaveQuote({priceWinston:data.priceWinston,viaStorageService:{percent:data.viaStorageService.percent,amountWinston:data.viaStorageService.amountWinston,collectionStatus:data.viaStorageService.collectionStatus ?? "status-unavailable"},totalWinston:data.totalWinston,quotedAt:data.quotedAt})
       })
       .catch((error:unknown)=>{ if(!(error instanceof DOMException && error.name==="AbortError")) setArweaveQuoteError("Current Arweave storage quote is unavailable. Nothing was uploaded or charged.") })
       .finally(()=>{ if(!controller.signal.aborted) setArweaveQuoteBusy(false) })
@@ -120,7 +120,7 @@ export default function MintMediaStep({ onPostHash }: { onPostHash?: (postHash: 
         ))}
       </div>
 
-      {mode==="protected" ? <div className="mt-4 rounded-[11px] border border-[#8fd4a9]/35 bg-[#0c1711]/35 px-4 py-3 text-sm text-zinc-300"><p className="font-semibold text-zinc-100">Arweave permanent storage quote</p>{!file ? <p className="mt-2 text-xs text-zinc-400">Choose a local file above to calculate the current network storage quote.</p> : arweaveQuoteBusy ? <p className="mt-2 text-xs text-zinc-400">Getting the current Arweave network quote…</p> : arweaveQuote ? <><p className="mt-2 text-xs text-zinc-300">File: {file.name} · {file.size.toLocaleString()} bytes</p><p className="mt-1 text-xs text-zinc-300">Network quote: {arweaveQuote.priceWinston} Winston</p><p className="mt-1 text-xs text-zinc-500">Quoted {new Date(arweaveQuote.quotedAt).toLocaleString()} · quote only · nothing uploaded or charged.</p><p className="mt-2 text-xs text-zinc-400">The creator pays the storage provider directly. VIA does not advance or collect this storage cost.</p></> : arweaveQuoteError ? <p className="mt-2 text-xs text-zinc-400">{arweaveQuoteError}</p> : null}</div> : null}
+      {mode==="protected" ? <div className="mt-4 rounded-[11px] border border-[#8fd4a9]/35 bg-[#0c1711]/35 px-4 py-3 text-sm text-zinc-300"><p className="font-semibold text-zinc-100">Arweave permanent storage quote</p>{!file ? <p className="mt-2 text-xs text-zinc-400">Choose a local file above to calculate the current network storage quote.</p> : arweaveQuoteBusy ? <p className="mt-2 text-xs text-zinc-400">Getting the current Arweave network quote…</p> : arweaveQuote ? <><p className="mt-2 text-xs text-zinc-300">File: {file.name} · {file.size.toLocaleString()} bytes</p><p className="mt-1 text-xs text-zinc-300">Arweave storage: {arweaveQuote.priceWinston} Winston</p><p className="mt-1 text-xs text-zinc-300">VIA Storage Service ({arweaveQuote.viaStorageService.percent}%): {arweaveQuote.viaStorageService.amountWinston} Winston</p><p className="mt-1 text-xs font-semibold text-zinc-200">Total storage quote: {arweaveQuote.totalWinston} Winston</p><p className="mt-1 text-xs text-zinc-500">Quoted {new Date(arweaveQuote.quotedAt).toLocaleString()} · quote only · VIA fee {arweaveQuote.viaStorageService.collectionStatus === "not-collected" ? "not collected" : arweaveQuote.viaStorageService.collectionStatus} · nothing uploaded or charged.</p><p className="mt-2 text-xs text-zinc-400">The creator pays the storage provider directly. VIA does not advance or collect this storage cost.</p></> : arweaveQuoteError ? <p className="mt-2 text-xs text-zinc-400">{arweaveQuoteError}</p> : null}</div> : null}
 
       {mode==="advanced" ? <label className="mt-4 grid gap-2"><span className="text-sm font-semibold text-zinc-200">Existing media URL / own server</span><input type="url" value={externalMediaUrl} onChange={(e)=>{setExternalMediaUrl(e.target.value.trimStart()); setSourcePostReady(false); onPostHash?.("")}} placeholder="https://…" className="w-full rounded-[11px] border border-zinc-700/80 bg-[#050807] px-3 py-3 text-base text-zinc-100 outline-none focus:border-[#8fd4a9]/55"/></label> : null}
 
