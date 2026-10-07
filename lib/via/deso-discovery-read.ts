@@ -10,6 +10,7 @@ type DeSoPost = {
   VideoURLs?: unknown
   TimestampNanos?: unknown
   LikeCount?: unknown
+  IsLikedByReader?: unknown
   DiamondCount?: unknown
   CommentCount?: unknown
   RepostCount?: unknown
@@ -80,6 +81,8 @@ export async function readDiscoveryPosts(limit = 20, sortByNew = false, seenPost
       videoUrls: safeHttpsUrls(post.VideoURLs),
       timestampNanos: count(post.TimestampNanos),
       likeCount: count(post.LikeCount),
+    isLikedByReader: post.IsLikedByReader === true,
+      isLikedByReader: post.IsLikedByReader === true,
       diamondCount: count(post.DiamondCount),
       commentCount: count(post.CommentCount),
       repostCount: count(post.RepostCount),
