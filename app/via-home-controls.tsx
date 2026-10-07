@@ -2,9 +2,18 @@
 
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { CircleHelp, Music2, RadioTower, UsersRound } from "lucide-react"
-import { viaModernIdentity, type ViaModernIdentityUser } from "./deso-identity-modern"
+import {
+  DESO_LOGIN_URL,
+  VIA_IDENTITY_EVENT,
+  clearIdentitySession,
+  listIdentitySessions,
+  persistIdentityLogin,
+  restoreIdentitySession,
+  switchIdentitySession,
+  type ViaIdentitySession,
+} from "./deso-identity-session"
 import ViaIdentityStatusMarks from "./via-identity-status"
 import SponsorPlatform from "./sponsor-platform"
 import ViaWorldClock from "./via-world-clock"
@@ -198,8 +207,9 @@ function shortPublicKey(publicKey: string) {
 
 export default function ViaHomeControls() {
   const router = useRouter()
-  const [session, setSession] = useState<ViaModernIdentityUser | null>(null)
-  const [knownAccounts, setKnownAccounts] = useState<ViaModernIdentityUser[]>([])
+  const identityWindowRef = useRef<Window | null>(null)
+  const [session, setSession] = useState<ViaIdentitySession | null>(null)
+  const [knownAccounts, setKnownAccounts] = useState<ViaIdentitySession[]>([])
   const [profile, setProfile] = useState<PublicProfile | null>(null)
   const [profiles, setProfiles] = useState<Record<string, PublicProfile>>({})
   const [accountsOpen, setAccountsOpen] = useState(false)
@@ -207,25 +217,40 @@ export default function ViaHomeControls() {
   const [language, setLanguage] = useState<ViaLanguage>("English")
   const [languageOpen, setLanguageOpen] = useState(false)
 
-  async function refreshAccounts() {
-    setKnownAccounts(await viaModernIdentity.alternateUsers())
+  function refreshAccounts() {
+    setKnownAccounts(listIdentitySessions())
   }
 
   useEffect(() => {
-    void viaModernIdentity.currentUser().then(setSession)
-    void refreshAccounts()
+    setSession(restoreIdentitySession())
+    refreshAccounts()
     const syncLanguage = () => setLanguage(readViaLocalSettings().interfaceLanguage)
-    const unsubscribeIdentity = viaModernIdentity.subscribe((user) => {
-      setSession(user)
-      void refreshAccounts()
+    const syncIdentity = () => {
+      setSession(restoreIdentitySession())
+      refreshAccounts()
+    }
+    syncLanguage()
+
+    function handleIdentityMessage(event: MessageEvent) {
+      const identityWindow = identityWindowRef.current
+      if (identityWindow && event.source !== identityWindow) return
+      const nextSession = persistIdentityLogin(event)
+      if (!nextSession) return
+      setSession(nextSession)
+      refreshAccounts()
       setAccountsOpen(false)
       setStatus("idle")
-    })
-    syncLanguage()
+      identityWindowRef.current?.close()
+      identityWindowRef.current = null
+    }
+
+    window.addEventListener("message", handleIdentityMessage)
     window.addEventListener(VIA_SETTINGS_EVENT, syncLanguage)
+    window.addEventListener(VIA_IDENTITY_EVENT, syncIdentity)
     return () => {
-      unsubscribeIdentity()
+      window.removeEventListener("message", handleIdentityMessage)
       window.removeEventListener(VIA_SETTINGS_EVENT, syncLanguage)
+      window.removeEventListener(VIA_IDENTITY_EVENT, syncIdentity)
     }
   }, [])
 
@@ -276,41 +301,39 @@ export default function ViaHomeControls() {
     setLanguageOpen(false)
   }
 
-  async function openDeSoIdentity() {
-    setStatus("waiting")
-    try {
-      const user = await viaModernIdentity.login()
-      setSession(user)
-      await refreshAccounts()
-      setAccountsOpen(false)
-      setStatus("idle")
-      router.refresh()
-    } catch {
+  function openDeSoIdentity() {
+    const h = 1000
+    const w = 800
+    const y = window.outerHeight / 2 + window.screenY - h / 2
+    const x = window.outerWidth / 2 + window.screenX - w / 2
+    const identityWindow = window.open(DESO_LOGIN_URL, undefined, `toolbar=no, width=${w}, height=${h}, top=${y}, left=${x}`)
+    if (!identityWindow) {
       setStatus("blocked")
+      return
     }
+    identityWindowRef.current = identityWindow
+    setStatus("waiting")
   }
 
-  async function chooseAccount(publicKey: string) {
-    await viaModernIdentity.setActiveUser(publicKey)
-    const nextSession = await viaModernIdentity.currentUser()
+  function chooseAccount(publicKey: string) {
+    const nextSession = switchIdentitySession(publicKey)
     if (!nextSession) return
     setSession(nextSession)
     setProfile(profiles[publicKey] ?? null)
     setAccountsOpen(false)
-    await refreshAccounts()
     router.refresh()
   }
 
-  async function logout() {
-    await viaModernIdentity.logout()
+  function logout() {
+    clearIdentitySession()
     setSession(null)
     setProfile(null)
     setAccountsOpen(false)
     setStatus("idle")
   }
 
-  async function enterPublicMode() {
-    await viaModernIdentity.logout()
+  function enterPublicMode() {
+    clearIdentitySession()
     setSession(null)
     setProfile(null)
     setAccountsOpen(false)
