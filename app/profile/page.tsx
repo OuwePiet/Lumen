@@ -492,11 +492,16 @@ export default function ProfilePage() {
             <div className="mt-3 flex flex-wrap items-center gap-2" aria-label="DeSo post actions">
               <button type="button" onClick={() => setReplyingToOwnPost(replyingToOwnPost === post.postHash ? null : post.postHash)} className="rounded-full border border-zinc-800 px-3 py-2 text-xs">Reply · {post.commentCount}</button>
               <RepostButton postHash={post.postHash} initialCount={post.repostCount + post.quoteRepostCount} variant="icon" />
-              <LikeButton postHash={post.postHash} initialCount={post.likeCount} variant="icon" />
               <span className="rounded-full border border-zinc-800 px-3 py-2 text-xs text-zinc-400" title="DeSo does not allow sending Diamonds to yourself">Diamonds · {post.diamondCount}</span>
+              <LikeButton postHash={post.postHash} initialCount={post.likeCount} variant="icon" />
               <XShareButton href={`/social?post=${encodeURIComponent(post.postHash)}`} text={post.body.slice(0, 180)} label="Share on X" />
               <LocalSaveButton postHash={post.postHash} body={post.body} publicKey={session.publicKey} timestampNanos={post.timestampNanos} />
-              <Link href={`/social?post=${encodeURIComponent(post.postHash)}`} className="rounded-full border border-zinc-800 px-3 py-2 text-xs">Open post</Link>
+              <details className="relative">
+                <summary className="grid h-9 w-9 cursor-pointer list-none place-items-center rounded-full border border-zinc-800 text-zinc-300" aria-label="More actions">•••</summary>
+                <div className="absolute right-0 z-30 mt-2 min-w-40 rounded-xl border border-zinc-700 bg-[#080b09] p-2 shadow-2xl">
+                  <Link href={`/social?post=${encodeURIComponent(post.postHash)}`} className="block rounded-lg px-3 py-2 text-xs text-zinc-300 hover:bg-zinc-900 hover:text-white">Open post</Link>
+                </div>
+              </details>
             </div>
             {replyingToOwnPost === post.postHash ? (
               <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-2 sm:p-6" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setReplyingToOwnPost(null) }}>
