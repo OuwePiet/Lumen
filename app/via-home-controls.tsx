@@ -4,7 +4,7 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import { CircleHelp, Music2, RadioTower, UsersRound } from "lucide-react"
-import { viaModernIdentity, type ViaModernIdentityUser } from "./deso-identity-modern"import ViaIdentityStatusMarks from "./via-identity-status"
+import { viaModernIdentity, type ViaModernIdentityUser } from "./deso-identity-modern"\nimport ViaIdentityStatusMarks from "./via-identity-status"
 import SponsorPlatform from "./sponsor-platform"
 import ViaWorldClock from "./via-world-clock"
 import {
