@@ -95,6 +95,8 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
       if (!submitResponse.ok || !submitData.ok) throw new Error(submitData.error || "SUBMIT_FAILED")
       await viaModernIdentity.refreshSpendingLimits()
       setStatus("done"); setMessage(`Diamond level ${chosenLevel} submitted to DeSo. Awaiting the DeSo count.`)
+      setCelebrate(true)
+      window.setTimeout(() => setCelebrate(false), 3200)
       window.dispatchEvent(new Event("via:social:post-published"))
     } catch { setStatus("error"); setMessage("DeSo did not confirm completion. Check the transaction on DeSo before trying again.") }
   }
