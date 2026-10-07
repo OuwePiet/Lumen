@@ -14,7 +14,7 @@ import DiamondButton from "./diamond-button"
 import LocalSaveButton from "./local-save-button"
 import PollVoteControl from "./poll-vote-control"
 import XShareButton from "../x-share-button"
-import { restoreIdentitySession, VIA_IDENTITY_EVENT, type ViaIdentitySession } from "../deso-identity-session"
+import { viaModernIdentity, type ViaModernIdentityUser } from "../deso-identity-modern"
 
 type PublicPost = {
   postHash: string
@@ -94,7 +94,7 @@ export default function PublicPosts() {
   const [hasMore, setHasMore] = useState(true)
   const [message, setMessage] = useState("Choose a feed and load posts.")
   const [feedChoice, setFeedChoice] = useState<ChoiceId>("hot")
-  const [session, setSession] = useState<ViaIdentitySession | null>(null)
+  const [session, setSession] = useState<ViaModernIdentityUser | null>(null)
   const [replyingTo, setReplyingTo] = useState<string | null>(null)
   const [replyParent, setReplyParent] = useState<string | null>(null)
   const [commentPosts, setCommentPosts] = useState<PublicPost[]>([])
@@ -179,10 +179,8 @@ export default function PublicPosts() {
   }, [])
 
   useEffect(() => {
-    setSession(restoreIdentitySession())
-    const onIdentity = (event: Event) => {
-      const custom = event as CustomEvent<ViaIdentitySession | null>
-      const nextSession = custom.detail ?? restoreIdentitySession()
+    void viaModernIdentity.currentUser().then(setSession)
+    return viaModernIdentity.subscribe((nextSession) => {
       setSession(nextSession)
       if (!nextSession) setReplyingTo(null)
       if (feedChoice === "following") {
@@ -192,9 +190,7 @@ export default function PublicPosts() {
         setLoading(false)
         setMessage(nextSession ? "Following uses your active DeSo account." : "Log in with DeSo to open Following.")
       }
-    }
-    window.addEventListener(VIA_IDENTITY_EVENT, onIdentity)
-    return () => window.removeEventListener(VIA_IDENTITY_EVENT, onIdentity)
+    })
   }, [feedChoice])
 
   useEffect(() => {
@@ -205,12 +201,12 @@ export default function PublicPosts() {
         ? normalized
         : defaultSocialFeedChoice()
       setFeedChoice(initial)
-      if (initial === "following" && !restoreIdentitySession()) setMessage("Log in with DeSo to open Following.")
+      if (initial === "following" && !session) setMessage("Log in with DeSo to open Following.")
       else setMessage(feedReadyMessage(initial))
     } catch {
       const initial = defaultSocialFeedChoice()
       setFeedChoice(initial)
-      setMessage(initial === "following" && !restoreIdentitySession() ? "Log in with DeSo to open Following." : feedReadyMessage(initial))
+      setMessage(initial === "following" && !session ? "Log in with DeSo to open Following." : feedReadyMessage(initial))
     }
 
     function onFeedChoice(event: Event) {
@@ -225,7 +221,7 @@ export default function PublicPosts() {
       setMediaFilter("all")
       setLoading(false)
       setReplyingTo(null)
-      if (choice === "following" && !restoreIdentitySession()) setMessage("Log in with DeSo to open Following.")
+      if (choice === "following" && !session) setMessage("Log in with DeSo to open Following.")
       else setMessage(feedReadyMessage(choice))
     }
 
