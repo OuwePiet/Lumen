@@ -7,6 +7,7 @@ export default function ViaWatermark() {
       draggable={false}
       style={{
         position: "absolute",
+        zIndex: 10,
         right: "4%",
         bottom: "4%",
         width: "22%",
