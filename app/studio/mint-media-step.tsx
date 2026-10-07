@@ -8,7 +8,7 @@ type StorageMode = "deso" | "protected" | "advanced"
 
 const choices: Array<{id:StorageMode; title:string; text:string}> = [
   { id:"deso", title:"Standard · DeSo", text:"Use the normal DeSo media route. Recommended for a simple native DeSo NFT." },
-  { id:"protected", title:"Protected", text:"DeSo plus an additional decentralized backup. Provider and cost are confirmed before upload." },
+  { id:"protected", title:"Recommended · Arweave", text:"Permanent decentralized media storage. VIA shows the current network quote before upload; the creator pays the storage provider directly." },
   { id:"advanced", title:"Advanced", text:"Use a supported external/IPFS provider, your own server, or an existing durable media URL." },
 ]
 
@@ -26,14 +26,31 @@ export default function MintMediaStep({ onPostHash }: { onPostHash?: (postHash: 
   const [externalMediaUrl,setExternalMediaUrl]=useState("")
   const [postBusy,setPostBusy]=useState(false)
   const [sourcePostReady,setSourcePostReady]=useState(false)
+  const [arweaveQuote,setArweaveQuote]=useState<{priceWinston:string; quotedAt:string} | null>(null)
+  const [arweaveQuoteBusy,setArweaveQuoteBusy]=useState(false)
+  const [arweaveQuoteError,setArweaveQuoteError]=useState("")
   useEffect(()=>{
     void viaModernIdentity.currentUser().then(setSession)
     return viaModernIdentity.subscribe(setSession)
   },[])
+  useEffect(()=>{
+    if(mode!=="protected" || !file || file.size<=0){ setArweaveQuote(null); setArweaveQuoteError(""); setArweaveQuoteBusy(false); return }
+    const controller=new AbortController()
+    setArweaveQuote(null); setArweaveQuoteError(""); setArweaveQuoteBusy(true)
+    void fetch(`/api/via/storage/arweave/quote?bytes=${file.size}`,{cache:"no-store",signal:controller.signal})
+      .then(async (response)=>{
+        const data=await response.json() as {ok?:boolean;priceWinston?:string;quotedAt?:string}
+        if(!response.ok || !data.ok || !data.priceWinston || !data.quotedAt) throw new Error("QUOTE_UNAVAILABLE")
+        setArweaveQuote({priceWinston:data.priceWinston,quotedAt:data.quotedAt})
+      })
+      .catch((error:unknown)=>{ if(!(error instanceof DOMException && error.name==="AbortError")) setArweaveQuoteError("Current Arweave storage quote is unavailable. Nothing was uploaded or charged.") })
+      .finally(()=>{ if(!controller.signal.aborted) setArweaveQuoteBusy(false) })
+    return ()=>controller.abort()
+  },[mode,file])
 
   async function createSourcePost(){
     const sourceUrl=mode==="advanced" ? externalMediaUrl.trim() : (videoUrl || imageUrl)
-    if(mode==="protected"){ setMessage("Protected storage is not connected yet. Nothing was uploaded, posted or minted."); return }
+    if(mode==="protected"){ setMessage("Arweave storage upload and direct provider payment are not connected yet. Nothing was uploaded, posted or minted."); return }
     if(!session){ setMessage("Sign in with DeSo Identity before creating the source post. Nothing was posted or minted."); return }
     if(!sourceUrl){ setMessage("Choose or upload NFT media before creating the source post. Nothing was posted or minted."); return }
     if(postBusy) return
@@ -95,13 +112,15 @@ export default function MintMediaStep({ onPostHash }: { onPostHash?: (postHash: 
 
       <div className="mt-5 grid gap-3 sm:grid-cols-3">
         {choices.map((choice)=>(
-          <button key={choice.id} type="button" onClick={()=>{setMode(choice.id); setImageUrl(""); setExternalMediaUrl(""); setDescription(""); setSensitiveContent(false); setSourcePostReady(false); onPostHash?.(""); setMessage(choice.id==="protected" ? "Protected storage is not connected yet. Nothing will be uploaded until a provider and cost are confirmed." : "")}} aria-pressed={mode===choice.id}
+          <button key={choice.id} type="button" onClick={()=>{setMode(choice.id); setImageUrl(""); setExternalMediaUrl(""); setDescription(""); setSensitiveContent(false); setSourcePostReady(false); onPostHash?.(""); setMessage(choice.id==="protected" ? "Arweave quote mode selected. Nothing will be uploaded or charged until permanent storage upload and direct provider payment are connected." : "")}} aria-pressed={mode===choice.id}
             className={`min-h-32 rounded-[12px] border p-4 text-left transition ${mode===choice.id ? "border-[#8fd4a9]/60 bg-[#0c1711]/60" : "border-zinc-800 bg-black/20 hover:border-zinc-700"}`}>
             <span className="block text-sm font-semibold text-zinc-100">{choice.title}</span>
             <span className="mt-2 block text-xs leading-5 text-zinc-400">{choice.text}</span>
           </button>
         ))}
       </div>
+
+      {mode==="protected" ? <div className="mt-4 rounded-[11px] border border-[#8fd4a9]/35 bg-[#0c1711]/35 px-4 py-3 text-sm text-zinc-300"><p className="font-semibold text-zinc-100">Arweave permanent storage quote</p>{!file ? <p className="mt-2 text-xs text-zinc-400">Choose a local file above to calculate the current network storage quote.</p> : arweaveQuoteBusy ? <p className="mt-2 text-xs text-zinc-400">Getting the current Arweave network quote…</p> : arweaveQuote ? <><p className="mt-2 text-xs text-zinc-300">File: {file.name} · {file.size.toLocaleString()} bytes</p><p className="mt-1 text-xs text-zinc-300">Network quote: {arweaveQuote.priceWinston} Winston</p><p className="mt-1 text-xs text-zinc-500">Quoted {new Date(arweaveQuote.quotedAt).toLocaleString()} · quote only · nothing uploaded or charged.</p><p className="mt-2 text-xs text-zinc-400">The creator pays the storage provider directly. VIA does not advance or collect this storage cost.</p></> : arweaveQuoteError ? <p className="mt-2 text-xs text-zinc-400">{arweaveQuoteError}</p> : null}</div> : null}
 
       {mode==="advanced" ? <label className="mt-4 grid gap-2"><span className="text-sm font-semibold text-zinc-200">Existing media URL / own server</span><input type="url" value={externalMediaUrl} onChange={(e)=>{setExternalMediaUrl(e.target.value.trimStart()); setSourcePostReady(false); onPostHash?.("")}} placeholder="https://…" className="w-full rounded-[11px] border border-zinc-700/80 bg-[#050807] px-3 py-3 text-base text-zinc-100 outline-none focus:border-[#8fd4a9]/55"/></label> : null}
 
