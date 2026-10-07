@@ -445,6 +445,8 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
   const [messageKey, setMessageKey] = useState<"loading" | "loaded" | "empty" | "error" | "">("")
   const [lastSeenIndex, setLastSeenIndex] = useState<number | null>(null)
   const [refreshToken, setRefreshToken] = useState(0)
+  const [loadingOlder, setLoadingOlder] = useState(false)
+  const [hasOlder, setHasOlder] = useState(true)
   const [expandedView, setExpandedView] = useState(false)
   const [qualityShield, setQualityShield] = useState(false)
   const [profiles, setProfiles] = useState<Record<string, ActorProfile>>({})
@@ -517,6 +519,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
         if (!response.ok || !data.ok || !Array.isArray(data.notifications)) throw new Error(data.error || "NOTIFICATIONS_FAILED")
         const ordered = [...data.notifications].sort((a, b) => (b.Index ?? -1) - (a.Index ?? -1))
         setItems(ordered)
+        setHasOlder(ordered.length === 40)
         setLastSeenIndex(typeof data.lastSeenIndex === "number" ? data.lastSeenIndex : null)
         setStatus("ready")
         setMessageKey(ordered.length ? "loaded" : "empty")
@@ -562,6 +565,32 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
 
     return () => controller.abort()
   }, [items, profiles])
+
+  async function loadOlder() {
+    if (!session || loadingOlder || !hasOlder || items.length === 0) return
+    const indexes = items.map((item) => item.Index).filter((value): value is number => typeof value === "number" && Number.isInteger(value))
+    if (!indexes.length) { setHasOlder(false); return }
+    const fetchStartIndex = Math.min(...indexes)
+    setLoadingOlder(true)
+    try {
+      const response = await fetch("/api/via/social/notifications", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        cache: "no-store",
+        body: JSON.stringify({ publicKey: session.publicKey, fetchStartIndex, numToFetch: 40 }),
+      })
+      const data = await response.json() as NotificationResponse
+      if (!response.ok || !data.ok || !Array.isArray(data.notifications)) throw new Error(data.error || "NOTIFICATIONS_FAILED")
+      const existing = new Set(items.map((item) => item.Index).filter((value): value is number => typeof value === "number"))
+      const older = data.notifications.filter((item) => typeof item.Index !== "number" || !existing.has(item.Index))
+      setItems((current) => [...current, ...older].sort((a, b) => (b.Index ?? -1) - (a.Index ?? -1)))
+      setHasOlder(data.notifications.length === 40 && older.length > 0)
+    } catch {
+      setMessageKey("error")
+    } finally {
+      setLoadingOlder(false)
+    }
+  }
 
   function postHashFor(item: NotificationItem) {
     const href = notificationDestination(item)
@@ -824,6 +853,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
             {destination ? <button type="button" onClick={() => void toggleExpanded(item, rowKey)} className="hidden self-center rounded-full border border-zinc-700 px-3 py-1.5 text-xs text-zinc-300 transition hover:border-[#8fd4a9] hover:text-white sm:inline-flex">{expanded ? copy.close : copy.open}</button> : null}
           </article>
         })}
+        {status === "ready" && hasOlder && items.length > 0 ? <div className="px-4 py-4 text-center sm:px-5"><button type="button" onClick={() => void loadOlder()} disabled={loadingOlder} className="rounded-full border border-[#8fd4a9]/45 px-4 py-2 text-xs text-[#9adbb2] disabled:opacity-50">{loadingOlder ? copy.loading : (language === "Dutch" ? "Meer laden" : "Load more")}</button></div> : null}
       </div>
     </section>
   )
