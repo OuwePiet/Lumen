@@ -271,7 +271,7 @@ export default function PublicPosts() {
         if (navigator.share) void navigator.share({ title: "VIA · DeSo post", url }).catch(() => {})
         else void navigator.clipboard?.writeText(url)
       }}>Share</button>
-      {session ? <LocalSaveButton postHash={reply.postHash} body={reply.body} publicKey={reply.publicKey} timestampNanos={reply.timestampNanos} /> : null}
+      {session ? <LocalSaveButton postHash={reply.postHash} body={reply.body} publicKey={reply.publicKey} timestampNanos={reply.timestampNanos} /> : <button type="button" title="Save (DeSo login required)" onClick={() => setActionLoginPost(reply.postHash)}>Save</button>}
       <details className="relative">
         <summary aria-label="Meer reactieacties" title="Meer reactieacties" className="cursor-pointer list-none">•••</summary>
         <div className="absolute right-0 z-20 mt-1 min-w-44 overflow-hidden rounded-lg border border-zinc-800 bg-[#050806] text-left shadow-xl">
