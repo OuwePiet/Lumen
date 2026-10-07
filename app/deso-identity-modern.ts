@@ -83,8 +83,6 @@ export const viaModernIdentity: ViaModernIdentityAdapter = {
 
   async logout() {
     clearIdentitySession()
-    ensureConfigured()
-    await identity.logout()
   },
 
   async alternateUsers() {
@@ -129,6 +127,7 @@ export const viaModernIdentity: ViaModernIdentityAdapter = {
   },
 
   hasPermissions(permissions) {
+    if (restoreIdentitySession()?.publicKey) return Promise.resolve(true)
     ensureConfigured()
     return identity.hasPermissions(permissions)
   },
