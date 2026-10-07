@@ -60,7 +60,14 @@ export default function CollectionHub() {
           <a href="#collection-controls" style={hubLink}>{t.myNfts}</a>
           <Link href="/market" style={hubLink}>{t.creatorsMarket}</Link>
         </nav>
-        <style>{`\n          @media (max-width: 720px) {\n            .via-collection-hub-nav { flex-wrap: nowrap !important; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; -webkit-overflow-scrolling: touch; }\n            .via-collection-hub-nav::-webkit-scrollbar { display: none; }\n            .via-collection-hub-nav > a { flex: 0 0 auto; }\n          }\n        `}</style>\n      </div>
+        <style>{`
+          @media (max-width: 720px) {
+            .via-collection-hub-nav { flex-wrap: nowrap !important; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+            .via-collection-hub-nav::-webkit-scrollbar { display: none; }
+            .via-collection-hub-nav > a { flex: 0 0 auto; }
+          }
+        `}</style>
+      </div>
     </section>
   )
 }
