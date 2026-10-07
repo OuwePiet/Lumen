@@ -141,7 +141,6 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
       </div>
     </details>
     {leafRain}
-    {feeNanos !== null ? <span className="text-[11px] text-zinc-500">DeSo fee: {feeNanos.toLocaleString()} nanos</span> : null}
     {message ? <span className={`text-[11px] ${status === "error" ? "text-amber-300" : "text-zinc-500"}`}>{message}</span> : null}
   </div>
 }
