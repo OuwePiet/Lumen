@@ -7,16 +7,17 @@ import { viaModernIdentity, type ViaModernIdentityUser } from "../deso-identity-
 type Props = {
   postHash: string
   initialCount: number
+  initialLiked?: boolean
   variant?: "default" | "icon"
 }
 
 type PrepareResponse = { ok?: boolean; transactionHex?: string; feeNanos?: number | null; error?: string }
 type SubmitResponse = { ok?: boolean; error?: string }
 
-export default function LikeButton({ postHash, initialCount, variant = "default" }: Props) {
+export default function LikeButton({ postHash, initialCount, initialLiked = false, variant = "default" }: Props) {
   const [session, setSession] = useState<ViaModernIdentityUser | null>(null)
   const [count, setCount] = useState(initialCount)
-  const [liked, setLiked] = useState(false)
+  const [liked, setLiked] = useState(initialLiked)
   const [busy, setBusy] = useState(false)
   const [message, setMessage] = useState("")
 
@@ -26,6 +27,7 @@ export default function LikeButton({ postHash, initialCount, variant = "default"
   }, [])
 
   useEffect(() => setCount(initialCount), [initialCount])
+  useEffect(() => setLiked(initialLiked), [initialLiked])
 
   async function toggleLike() {
     if (!session || busy) return
