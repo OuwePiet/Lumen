@@ -1,8 +1,7 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
-import { DESO_IDENTITY_ORIGIN, restoreIdentitySession, VIA_IDENTITY_EVENT, type ViaIdentitySession } from "../deso-identity-session"
-import { requestIdentityJwt } from "../social/identity-jwt"
+import { useEffect, useState } from "react"
+import { viaModernIdentity, type ViaModernIdentityUser } from "../deso-identity-modern"
 import VideoUploadControl from "../social/video-upload-control"
 
 type StorageMode = "deso" | "protected" | "advanced"
@@ -17,7 +16,7 @@ export default function MintMediaStep({ onPostHash }: { onPostHash?: (postHash: 
   const [mode,setMode]=useState<StorageMode>("deso")
   const [fileName,setFileName]=useState("")
   const [file,setFile]=useState<File | null>(null)
-  const [session,setSession]=useState<ViaIdentitySession | null>(null)
+  const [session,setSession]=useState<ViaModernIdentityUser | null>(null)
   const [uploading,setUploading]=useState(false)
   const [imageUrl,setImageUrl]=useState("")
   const [videoUrl,setVideoUrl]=useState("")
@@ -27,39 +26,9 @@ export default function MintMediaStep({ onPostHash }: { onPostHash?: (postHash: 
   const [externalMediaUrl,setExternalMediaUrl]=useState("")
   const [postBusy,setPostBusy]=useState(false)
   const [sourcePostReady,setSourcePostReady]=useState(false)
-  const postPopupRef=useRef<Window | null>(null)
-  const postPopupWatchRef=useRef<number | null>(null)
-
   useEffect(()=>{
-    const onApproval=async(event:MessageEvent)=>{
-      if(event.origin!==DESO_IDENTITY_ORIGIN || event.source!==postPopupRef.current || !event.data || typeof event.data!=="object") return
-      const data=event.data as Record<string,unknown>
-      if(data.service!=="identity" || !data.payload || typeof data.payload!=="object" || Array.isArray(data.payload)) return
-      const signedTransactionHex=(data.payload as Record<string,unknown>).signedTransactionHex
-      if(typeof signedTransactionHex!=="string" || !signedTransactionHex) return
-      postPopupRef.current?.close(); postPopupRef.current=null
-      if(postPopupWatchRef.current!==null){ window.clearInterval(postPopupWatchRef.current); postPopupWatchRef.current=null }
-      setPostBusy(true); setMessage("Submitting approved DeSo source post…")
-      try {
-        const response=await fetch("/api/via/social/post",{method:"POST",headers:{"Content-Type":"application/json"},cache:"no-store",body:JSON.stringify({action:"submit",signedTransactionHex})})
-        const result=await response.json() as {ok?:boolean;postHashHex?:string|null;error?:string}
-        if(!response.ok || !result.ok || !result.postHashHex) throw new Error(result.error || "POST_HASH_MISSING")
-        if(!/^[0-9a-fA-F]{64}$/.test(result.postHashHex)) throw new Error("INVALID_POST_HASH")
-        onPostHash?.(result.postHashHex)
-        setSourcePostReady(true)
-        setMessage("Source post confirmed. Its DeSo PostHash is ready for the NFT mint terms below.")
-      } catch { setMessage("The approved source post could not be handed to the mint step. Minting did not start.") }
-      finally { setPostBusy(false) }
-    }
-    window.addEventListener("message",onApproval)
-    return ()=>{ window.removeEventListener("message",onApproval); if(postPopupWatchRef.current!==null) window.clearInterval(postPopupWatchRef.current) }
-  },[onPostHash])
-
-  useEffect(()=>{
-    setSession(restoreIdentitySession())
-    const onSession=(event:Event)=>setSession((event as CustomEvent<ViaIdentitySession | null>).detail ?? restoreIdentitySession())
-    window.addEventListener(VIA_IDENTITY_EVENT,onSession)
-    return ()=>window.removeEventListener(VIA_IDENTITY_EVENT,onSession)
+    void viaModernIdentity.currentUser().then(setSession)
+    return viaModernIdentity.subscribe(setSession)
   },[])
 
   async function createSourcePost(){
@@ -68,7 +37,6 @@ export default function MintMediaStep({ onPostHash }: { onPostHash?: (postHash: 
     if(!session){ setMessage("Sign in with DeSo Identity before creating the source post. Nothing was posted or minted."); return }
     if(!sourceUrl){ setMessage("Choose or upload NFT media before creating the source post. Nothing was posted or minted."); return }
     if(postBusy) return
-    if(postPopupRef.current && !postPopupRef.current.closed){ postPopupRef.current.focus(); setMessage("Finish or close the existing DeSo Identity approval first."); return }
     if(description.trim().length===0){ setMessage("Add a description before creating the DeSo source post. Nothing was posted or minted."); return }
     if(mode==="advanced"){ try { const parsed=new URL(sourceUrl); if(parsed.protocol!=="https:" || !parsed.hostname) throw new Error("HTTPS_REQUIRED") } catch { setMessage("Use a valid HTTPS media URL. Nothing was posted or minted."); return } }
     setSourcePostReady(false); onPostHash?.(""); setPostBusy(true); setMessage("Preparing the DeSo source post…")
@@ -76,14 +44,16 @@ export default function MintMediaStep({ onPostHash }: { onPostHash?: (postHash: 
       const response=await fetch("/api/via/social/post",{method:"POST",headers:{"Content-Type":"application/json"},cache:"no-store",body:JSON.stringify({action:"prepare",publicKey:session.publicKey,body:description,imageUrls:videoUrl && mode==="deso" ? [] : [sourceUrl],videoUrls:videoUrl && mode==="deso" ? [sourceUrl] : [],sensitiveContent})})
       const data=await response.json() as {ok?:boolean;transactionHex?:string;error?:string}
       if(!response.ok || !data.ok || !data.transactionHex) throw new Error(data.error || "PREPARE_FAILED")
-      const approveUrl=`${DESO_IDENTITY_ORIGIN}/approve?tx=${encodeURIComponent(data.transactionHex)}`
-      const popup=window.open(approveUrl,"via-nft-source-post","popup=yes,width=800,height=900")
-      if(!popup) throw new Error("POPUP_BLOCKED")
-      postPopupRef.current=popup
-      if(postPopupWatchRef.current!==null) window.clearInterval(postPopupWatchRef.current)
-      postPopupWatchRef.current=window.setInterval(()=>{ if(postPopupRef.current?.closed){ window.clearInterval(postPopupWatchRef.current!); postPopupWatchRef.current=null; postPopupRef.current=null; setPostBusy(false); setMessage("DeSo Identity approval was closed. Nothing was submitted or minted.") } },500)
-      setMessage("Review and approve the source post in DeSo Identity. Minting has not started yet.")
-      popup.focus()
+      setMessage("Signing the DeSo source post with the active Identity…")
+      const signedTransactionHex=await viaModernIdentity.signTx(data.transactionHex)
+      setMessage("Submitting approved DeSo source post…")
+      const submitResponse=await fetch("/api/via/social/post",{method:"POST",headers:{"Content-Type":"application/json"},cache:"no-store",body:JSON.stringify({action:"submit",signedTransactionHex})})
+      const submitResult=await submitResponse.json() as {ok?:boolean;postHashHex?:string|null;error?:string}
+      if(!submitResponse.ok || !submitResult.ok || !submitResult.postHashHex) throw new Error(submitResult.error || "POST_HASH_MISSING")
+      if(!/^[0-9a-fA-F]{64}$/.test(submitResult.postHashHex)) throw new Error("INVALID_POST_HASH")
+      onPostHash?.(submitResult.postHashHex)
+      setSourcePostReady(true)
+      setMessage("Source post confirmed. Its DeSo PostHash is ready for the NFT mint terms below.")
     } catch { setMessage("The source post could not be prepared. Nothing was posted or minted.") }
     finally { setPostBusy(false) }
   }
@@ -96,7 +66,7 @@ export default function MintMediaStep({ onPostHash }: { onPostHash?: (postHash: 
     if(file.size<=0){ setMessage("The selected image is empty. Nothing was uploaded."); return }
     setUploading(true); setMessage("Authorizing DeSo media upload…")
     try {
-      const jwt=await requestIdentityJwt(session.publicKey)
+      const jwt=await viaModernIdentity.jwt()
       const form=new FormData(); form.set("publicKey",session.publicKey); form.set("jwt",jwt); form.set("file",file,file.name)
       const response=await fetch("/api/via/social/image-upload",{method:"POST",body:form,cache:"no-store"})
       const data=await response.json() as {ok?:boolean;imageUrl?:string;error?:string}
