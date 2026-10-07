@@ -20,6 +20,8 @@ import {
 
 type PublicProfile = { username?: string; profilePic?: string | null; isVerified?: boolean; isInactive?: boolean; viaRecognized?: boolean }
 type ProfileResponse = { ok?: boolean; profile?: PublicProfile }
+type SearchProfile = { publicKey: string; username: string; profilePic?: string | null; isVerified?: boolean }
+type SearchResponse = { ok?: boolean; profiles?: SearchProfile[] }
 
 const nav = [
   ["home", "/"],
@@ -146,6 +148,7 @@ export default function ViaSiteHeader() {
   const pathname = usePathname()
   const router = useRouter()
   const accountWrapRef = useRef<HTMLDivElement | null>(null)
+  const searchWrapRef = useRef<HTMLDivElement | null>(null)
   const [session, setSession] = useState<ViaIdentitySession | null>(null)
   const [knownAccounts, setKnownAccounts] = useState<ViaIdentitySession[]>([])
   const [profile, setProfile] = useState<PublicProfile | null>(null)
@@ -154,6 +157,9 @@ export default function ViaSiteHeader() {
   const [language, setLanguage] = useState<ViaLanguage>("Dutch")
   const [languageOpen, setLanguageOpen] = useState(false)
   const [notificationStatusOpen, setNotificationStatusOpen] = useState(false)
+  const [searchOpen, setSearchOpen] = useState(false)
+  const [searchQuery, setSearchQuery] = useState("")
+  const [searchResults, setSearchResults] = useState<SearchProfile[]>([])
   const isHomepage = pathname === "/"
 
   function refreshKnownAccounts() {
@@ -177,8 +183,9 @@ export default function ViaSiteHeader() {
   useEffect(() => {
     function closeOnOutsideClick(event: MouseEvent) {
       if (!accountWrapRef.current?.contains(event.target as Node)) setMenuOpen(false)
+      if (!searchWrapRef.current?.contains(event.target as Node)) setSearchOpen(false)
     }
-    function closeOnEscape(event: KeyboardEvent) { if (event.key === "Escape") setMenuOpen(false) }
+    function closeOnEscape(event: KeyboardEvent) { if (event.key === "Escape") { setMenuOpen(false); setSearchOpen(false) } }
     document.addEventListener("mousedown", closeOnOutsideClick)
     document.addEventListener("keydown", closeOnEscape)
     return () => {
@@ -187,7 +194,20 @@ export default function ViaSiteHeader() {
     }
   }, [])
 
-  useEffect(() => { setMenuOpen(false); setNotificationStatusOpen(false) }, [pathname])
+  useEffect(() => { setMenuOpen(false); setSearchOpen(false); setNotificationStatusOpen(false) }, [pathname])
+
+  useEffect(() => {
+    const prefix = searchQuery.trim().replace(/^@/, "")
+    if (!searchOpen || !prefix) { setSearchResults([]); return }
+    const controller = new AbortController()
+    const timer = window.setTimeout(() => {
+      void fetch(`/api/via/profile-search?prefix=${encodeURIComponent(prefix)}`, { signal: controller.signal, headers: { Accept: "application/json" } })
+        .then(async (response) => response.ok ? (await response.json()) as SearchResponse : null)
+        .then((data) => { if (!controller.signal.aborted) setSearchResults(data?.ok && Array.isArray(data.profiles) ? data.profiles : []) })
+        .catch((error) => { if (!(error instanceof DOMException && error.name === "AbortError")) setSearchResults([]) })
+    }, 180)
+    return () => { window.clearTimeout(timer); controller.abort() }
+  }, [searchOpen, searchQuery])
 
   useEffect(() => {
     if (isHomepage) { setProfile(null); return }
@@ -276,7 +296,7 @@ export default function ViaSiteHeader() {
         </div>
 
         <div style={styles.toolsRow} className={`via-site-header-tools ${pathname === "/notifications" || pathname === "/radio" || pathname === "/messages" || pathname === "/profile" ? "via-site-header-tools-notifications" : ""} ${pathname === "/messages" ? "via-site-header-tools-messages" : ""} ${pathname === "/radio" ? "via-site-header-tools-radio" : ""}`} aria-label="VIA utility controls">
-          <div className="via-notifications-top-control"><Link href="/discover/voices" style={styles.search} className={`via-site-header-search ${pathname === "/notifications" || pathname === "/radio" || pathname === "/messages" || pathname === "/profile" ? "via-site-header-search-notifications" : ""}`} aria-label={t.search} title={t.search}><span className="via-notifications-members-icon" aria-hidden="true"><UsersRound className="h-4 w-4" /></span><span className="via-site-header-search-label">&nbsp;&nbsp; {t.search}</span></Link>{pathname === "/notifications" || pathname === "/radio" || pathname === "/messages" || pathname === "/profile" ? <span className="via-notifications-top-label">Members</span> : null}</div>
+          <div className="via-notifications-top-control" ref={searchWrapRef} style={{ position: "relative" }}><button type="button" style={{ ...styles.search, cursor: "pointer" }} className={`via-site-header-search ${pathname === "/notifications" || pathname === "/radio" || pathname === "/messages" || pathname === "/profile" ? "via-site-header-search-notifications" : ""}`} aria-label={t.search} title={t.search} aria-expanded={searchOpen} onClick={() => setSearchOpen((open) => !open)}><span className="via-notifications-members-icon" aria-hidden="true"><UsersRound className="h-4 w-4" /></span><span className="via-site-header-search-label">&nbsp;&nbsp; {t.search}</span></button>{searchOpen ? <div style={{ ...styles.menu, left: 0, right: "auto", top: "44px", width: "300px" }} role="search"><input autoFocus value={searchQuery} onChange={(event) => setSearchQuery(event.target.value)} placeholder={t.search} aria-label={t.search} autoComplete="off" style={{ width: "100%", minHeight: "38px", padding: "8px 10px", borderRadius: "9px", border: "1px solid rgba(143,212,169,.18)", background: "rgba(2,7,4,.96)", color: "#e3ebe6", outline: "none" }} />{searchResults.map((item) => { const resultAvatar = safeProfileImage(item.profilePic); return <Link key={item.publicKey} href={`/collection?account=${encodeURIComponent(item.username)}`} onClick={() => setSearchOpen(false)} style={{ ...styles.accountChoice, textDecoration: "none" }}>{resultAvatar ? <img src={resultAvatar} alt="" style={styles.avatar} referrerPolicy="no-referrer" /> : <span style={styles.avatarFallback} aria-hidden="true">{item.username.slice(0, 1).toUpperCase()}</span>}<span style={styles.accountChoiceText}><span style={styles.accountChoiceName}>@{item.username}{item.isVerified ? " ✓" : ""}</span><span style={styles.accountChoiceKey}>{shortPublicKey(item.publicKey)}</span></span></Link> })}</div> : null}{pathname === "/notifications" || pathname === "/radio" || pathname === "/messages" || pathname === "/profile" ? <span className="via-notifications-top-label">Members</span> : null}</div>
           <div className="via-site-header-language-wrap">
             <button type="button" onClick={() => setLanguageOpen((open) => !open)} style={styles.language} className={`via-site-header-language ${pathname === "/notifications" || pathname === "/radio" || pathname === "/messages" || pathname === "/profile" ? "via-site-header-language-notifications" : ""}`} aria-label="VIA language" aria-expanded={languageOpen}>
               <span className="via-site-header-language-flag" aria-hidden="true"><LanguageFlag language={language} /></span><span className="via-site-header-language-code">{languageCodes[language]}</span>
