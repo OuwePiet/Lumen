@@ -289,11 +289,11 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
     }
   }
 
-  if (!session) return <div className={`${compact ? "mt-3" : "mt-4"} rounded-xl border border-zinc-800 bg-black/30 p-4 text-sm text-zinc-500`}>Sign in before {isReply ? "replying" : "creating a post"}.</div>
 
   return (
     <div className={`${compact ? "mt-3" : "mt-2"} bg-transparent p-0`}>
       <label htmlFor={isReply ? `via-reply-${parentStakeID}` : "via-post-body"} className="sr-only">{isReply ? "Reply" : "Post"}</label>
+      {!session ? <p className="mb-2 text-sm text-zinc-500">DeSo login is required to publish. You can prepare your post first.</p> : null}
       <div className="relative mt-2">
         {!isReply ? <span className="pointer-events-none absolute left-3 top-2 z-10 text-[10px] tracking-[0.08em] text-zinc-600">Gepost via VIA</span> : null}
         <textarea ref={textareaRef} id={isReply ? `via-reply-${parentStakeID}` : "via-post-body"} value={body} onChange={(event) => { setBody(event.target.value); setDraftMessage(""); if (status === "done" || status === "error") { setStatus("idle"); setMessage("") } }} maxLength={MAX_POST_LENGTH} rows={compact ? 3 : 5} placeholder={isReply ? "Write a reply…" : "What do you want to share?"} className={`min-h-[8rem] w-full border border-zinc-800 bg-zinc-950 px-3 pb-7 pt-7 text-sm text-zinc-100 outline-none transition-[min-height] focus:min-h-[16rem] focus:border-[#8fd4a9]/55 sm:min-h-0 sm:focus:min-h-0 ${imagePreviews.length || imageUrls.length ? "rounded-t-xl rounded-b-none border-b-0" : "rounded-xl"}`} />
