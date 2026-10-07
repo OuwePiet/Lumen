@@ -168,6 +168,7 @@ export default function RepostButton({ postHash, initialCount, variant = "defaul
       const submitData = await submitResponse.json() as SubmitResponse
       if (!submitResponse.ok || !submitData.ok) throw new Error(submitData.error || "SUBMIT_FAILED")
       setCount((current) => current + 1)
+      window.dispatchEvent(new Event("via:social:post-published"))
       setMessage(asQuote ? "Quote Repost submitted to DeSo." : "Reposted on DeSo.")
       setQuote("")
       setEmojiOpen(false)
