@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { restoreIdentitySession, VIA_IDENTITY_EVENT, type ViaIdentitySession } from "../deso-identity-session"
+import { viaModernIdentity, type ViaModernIdentityUser } from "../deso-identity-modern"
 import { uploadVideoToDeSo, waitForDeSoVideoReady } from "./deso-video-upload"
 
 const MAX_VIDEO_BYTES = 250 * 1024 * 1024
@@ -17,7 +17,7 @@ type PendingVideo = {
 }
 
 export default function VideoUploadControl({ onReady, onBusyChange }: VideoUploadControlProps) {
-  const [session, setSession] = useState<ViaIdentitySession | null>(null)
+  const [session, setSession] = useState<ViaModernIdentityUser | null>(null)
   const [status, setStatus] = useState<"idle" | "uploading" | "processing" | "pending" | "ready" | "error">("idle")
   const [message, setMessage] = useState("")
   const [progress, setProgress] = useState(0)
@@ -26,10 +26,8 @@ export default function VideoUploadControl({ onReady, onBusyChange }: VideoUploa
   const [pendingVideo, setPendingVideo] = useState<PendingVideo | null>(null)
 
   useEffect(() => {
-    setSession(restoreIdentitySession())
-    const onSession = (event: Event) => setSession((event as CustomEvent<ViaIdentitySession | null>).detail ?? restoreIdentitySession())
-    window.addEventListener(VIA_IDENTITY_EVENT, onSession)
-    return () => window.removeEventListener(VIA_IDENTITY_EVENT, onSession)
+    void viaModernIdentity.currentUser().then(setSession)
+    return viaModernIdentity.subscribe(setSession)
   }, [])
 
   useEffect(() => {
