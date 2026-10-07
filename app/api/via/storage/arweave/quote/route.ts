@@ -3,6 +3,8 @@ import { NextRequest, NextResponse } from "next/server"
 export const dynamic = "force-dynamic"
 
 const ARWEAVE_PRICE_URL = "https://arweave.net/price"
+const VIA_STORAGE_SERVICE_BASIS_POINTS = 500
+const BASIS_POINTS_DENOMINATOR = 10_000n
 
 export async function GET(request: NextRequest) {
   const rawBytes = request.nextUrl.searchParams.get("bytes")
@@ -26,11 +28,22 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ ok: false, error: "INVALID_ARWEAVE_PRICE" }, { status: 502 })
     }
 
+    const providerPriceWinston = BigInt(raw)
+    const viaStorageServiceWinston = (providerPriceWinston * BigInt(VIA_STORAGE_SERVICE_BASIS_POINTS) + BASIS_POINTS_DENOMINATOR - 1n) / BASIS_POINTS_DENOMINATOR
+    const totalWinston = providerPriceWinston + viaStorageServiceWinston
+
     return NextResponse.json({
       ok: true,
       provider: "Arweave",
       bytes,
       priceWinston: raw,
+      viaStorageService: {
+        basisPoints: VIA_STORAGE_SERVICE_BASIS_POINTS,
+        percent: 5,
+        amountWinston: viaStorageServiceWinston.toString(),
+        collectionStatus: "not-collected",
+      },
+      totalWinston: totalWinston.toString(),
       quotedAt: new Date().toISOString(),
       paymentStatus: "not-collected",
       uploadStatus: "not-started",
