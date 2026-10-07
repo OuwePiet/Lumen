@@ -4,7 +4,7 @@ export const dynamic = "force-dynamic"
 
 const ARWEAVE_PRICE_URL = "https://arweave.net/price"
 const VIA_STORAGE_SERVICE_BASIS_POINTS = 500
-const BASIS_POINTS_DENOMINATOR = 10_000n
+const BASIS_POINTS_DENOMINATOR = 10_000
 
 export async function GET(request: NextRequest) {
   const rawBytes = request.nextUrl.searchParams.get("bytes")
@@ -28,8 +28,11 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ ok: false, error: "INVALID_ARWEAVE_PRICE" }, { status: 502 })
     }
 
-    const providerPriceWinston = BigInt(raw)
-    const viaStorageServiceWinston = (providerPriceWinston * BigInt(VIA_STORAGE_SERVICE_BASIS_POINTS) + BASIS_POINTS_DENOMINATOR - 1n) / BASIS_POINTS_DENOMINATOR
+    const providerPriceWinston = Number(raw)
+    if (!Number.isSafeInteger(providerPriceWinston)) {
+      return NextResponse.json({ ok: false, error: "INVALID_ARWEAVE_PRICE" }, { status: 502 })
+    }
+    const viaStorageServiceWinston = Math.ceil((providerPriceWinston * VIA_STORAGE_SERVICE_BASIS_POINTS) / BASIS_POINTS_DENOMINATOR)
     const totalWinston = providerPriceWinston + viaStorageServiceWinston
 
     return NextResponse.json({
@@ -40,10 +43,10 @@ export async function GET(request: NextRequest) {
       viaStorageService: {
         basisPoints: VIA_STORAGE_SERVICE_BASIS_POINTS,
         percent: 5,
-        amountWinston: viaStorageServiceWinston.toString(),
+        amountWinston: String(viaStorageServiceWinston),
         collectionStatus: "not-collected",
       },
-      totalWinston: totalWinston.toString(),
+      totalWinston: String(totalWinston),
       quotedAt: new Date().toISOString(),
       paymentStatus: "not-collected",
       uploadStatus: "not-started",
