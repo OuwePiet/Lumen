@@ -25,6 +25,7 @@ type PublicPost = {
   videoUrls: string[]
   timestampNanos: number
   likeCount: number
+  isLikedByReader: boolean
   diamondCount: number
   commentCount: number
   repostCount: number
