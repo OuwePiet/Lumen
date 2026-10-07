@@ -306,7 +306,10 @@ export default function ViaHomeControls() {
     const w = 800
     const y = window.outerHeight / 2 + window.screenY - h / 2
     const x = window.outerWidth / 2 + window.screenX - w / 2
-    const identityWindow = window.open(DESO_LOGIN_URL, undefined, `toolbar=no, width=${w}, height=${h}, top=${y}, left=${x}`)
+    const touchDevice = window.matchMedia("(pointer: coarse)").matches
+    const identityWindow = touchDevice
+      ? window.open(DESO_LOGIN_URL, "_blank")
+      : window.open(DESO_LOGIN_URL, undefined, `toolbar=no, width=${w}, height=${h}, top=${y}, left=${x}`)
     if (!identityWindow) {
       setStatus("blocked")
       return
