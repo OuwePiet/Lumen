@@ -145,7 +145,7 @@ export async function readPublicPosts(
     .filter((post) => Boolean(post.postHash))
 }
 
-export async function readPublicPostByHash(postHash: string): Promise<ViaPublicPost | null> {
+export async function readPublicPostByHash(postHash: string, readerPublicKey = ""): Promise<ViaPublicPost | null> {
   const hash = postHash.trim().toLowerCase()
   if (!/^[0-9a-f]{64}$/.test(hash)) return null
 
@@ -157,7 +157,7 @@ export async function readPublicPostByHash(postHash: string): Promise<ViaPublicP
       FetchParents: false,
       CommentOffset: 0,
       CommentLimit: 0,
-      ReaderPublicKeyBase58Check: "",
+      ReaderPublicKeyBase58Check: readerPublicKey.trim(),
       AddGlobalFeedBool: false,
     }),
   })
@@ -175,7 +175,7 @@ export async function readPublicPostByHash(postHash: string): Promise<ViaPublicP
 }
 
 /** Read DeSo-native comments, never a VIA-only reply store. */
-export async function readPublicPostComments(postHash: string, offset = 0, limit = 20): Promise<ViaPublicPost[] | null> {
+export async function readPublicPostComments(postHash: string, offset = 0, limit = 20, readerPublicKey = ""): Promise<ViaPublicPost[] | null> {
   const hash = postHash.trim().toLowerCase()
   if (!/^[0-9a-f]{64}$/.test(hash)) return null
   const response = await fetchDeSo("get-single-post", {
@@ -188,7 +188,7 @@ export async function readPublicPostComments(postHash: string, offset = 0, limit
       CommentLimit: Math.max(1, Math.min(30, Math.trunc(limit) || 20)),
       ThreadLevelLimit: 2,
       ThreadLeafLimit: 10,
-      ReaderPublicKeyBase58Check: "",
+      ReaderPublicKeyBase58Check: readerPublicKey.trim(),
       AddGlobalFeedBool: false,
     }),
   })
