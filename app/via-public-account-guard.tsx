@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect } from "react"
-import { restoreIdentitySession, VIA_IDENTITY_EVENT } from "./deso-identity-session"
+import { viaModernIdentity } from "./deso-identity-modern"
 
 const HIDDEN_MARK = "viaGuardHidden"
 const SAVED_HREF = "viaGuardHref"
@@ -97,8 +97,8 @@ export default function ViaPublicAccountGuard() {
   useEffect(() => {
     let observer: MutationObserver | null = null
 
-    const apply = () => {
-      const hasSession = Boolean(restoreIdentitySession())
+    const apply = async () => {
+      const hasSession = Boolean(await viaModernIdentity.currentUser())
       document.body.classList.toggle("via-deso-session", hasSession)
       document.body.classList.toggle("via-no-deso-session", !hasSession)
       document.body.classList.remove("via-session-pending")
@@ -113,18 +113,16 @@ export default function ViaPublicAccountGuard() {
       hideAccountEntrances()
     }
 
-    apply()
-    observer = new MutationObserver(() => apply())
+    const unsubscribeIdentity = viaModernIdentity.subscribe(() => { void apply() })
+    observer = new MutationObserver(() => { void apply() })
     observer.observe(document.body, { childList: true, subtree: true })
 
-    const onIdentity = () => apply()
-    const onHistory = () => apply()
-    window.addEventListener(VIA_IDENTITY_EVENT, onIdentity)
+    const onHistory = () => { void apply() }
     window.addEventListener("popstate", onHistory)
 
     return () => {
       observer?.disconnect()
-      window.removeEventListener(VIA_IDENTITY_EVENT, onIdentity)
+      unsubscribeIdentity()
       window.removeEventListener("popstate", onHistory)
     }
   }, [])

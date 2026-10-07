@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useMemo, useRef, useState } from "react"
-import { DESO_IDENTITY_ORIGIN, restoreIdentitySession, VIA_IDENTITY_EVENT, type ViaIdentitySession } from "./deso-identity-session"
+import { viaModernIdentity, type ViaModernIdentityUser } from "./deso-identity-modern"
 
 type OwnerEdition = {
   serialNumber: number
@@ -26,17 +26,6 @@ type PrepareResponse = {
   error?: string
 }
 
-function signedTransactionFromMessage(event: MessageEvent, source: Window | null) {
-  if (event.origin !== DESO_IDENTITY_ORIGIN || event.source !== source) return null
-  if (!event.data || typeof event.data !== "object") return null
-  const data = event.data as Record<string, unknown>
-  if (data.service !== "identity") return null
-  const payload = data.payload
-  if (!payload || typeof payload !== "object" || Array.isArray(payload)) return null
-  const signed = (payload as Record<string, unknown>).signedTransactionHex
-  return typeof signed === "string" && signed.length > 0 ? signed : null
-}
-
 function desoToSafeNanos(input: string) {
   const trimmed = input.trim()
   if (!/^\d+(?:\.\d{0,9})?$/.test(trimmed)) return null
@@ -52,7 +41,7 @@ function formatDeso(nanos?: number) {
 }
 
 export default function NFTOwnerSaleControl({ postHash, editions, hasUnlockable }: Props) {
-  const [session, setSession] = useState<ViaIdentitySession | null>(null)
+  const [session, setSession] = useState<ViaModernIdentityUser | null>(null)
   const owned = useMemo(() => editions.filter((item) => session && item.ownerPublicKey === session.publicKey), [editions, session])
   const [serialNumber, setSerialNumber] = useState<number | null>(null)
   const [minBid, setMinBid] = useState("0")
@@ -63,17 +52,13 @@ export default function NFTOwnerSaleControl({ postHash, editions, hasUnlockable 
   const [status, setStatus] = useState<"idle"|"preparing"|"approval"|"submitting"|"done"|"error">("idle")
   const [message, setMessage] = useState("")
   const [feeNanos, setFeeNanos] = useState<number | null>(null)
-  const popupRef = useRef<Window | null>(null)
-  const popupWatch = useRef<number | null>(null)
   const pendingMode = useRef<"list"|"update"|"remove"|"transfer"|"burn"|null>(null)
 
   const selected = owned.find((item) => item.serialNumber === serialNumber) ?? owned[0]
 
   useEffect(() => {
-    setSession(restoreIdentitySession())
-    const onSession = (event: Event) => setSession((event as CustomEvent<ViaIdentitySession | null>).detail ?? restoreIdentitySession())
-    window.addEventListener(VIA_IDENTITY_EVENT, onSession)
-    return () => window.removeEventListener(VIA_IDENTITY_EVENT, onSession)
+    void viaModernIdentity.currentUser().then(setSession)
+    return viaModernIdentity.subscribe(setSession)
   }, [])
 
   useEffect(() => {
@@ -84,51 +69,6 @@ export default function NFTOwnerSaleControl({ postHash, editions, hasUnlockable 
     setBuyNowPrice(formatDeso(selected.buyNowPriceNanos))
     setConfirmed(false)
   }, [selected?.serialNumber, selected?.isForSale, selected?.minBidAmountNanos, selected?.isBuyNow, selected?.buyNowPriceNanos, hasUnlockable])
-
-  useEffect(() => {
-    const onMessage = async (event: MessageEvent) => {
-      const signedTransactionHex = signedTransactionFromMessage(event, popupRef.current)
-      if (!signedTransactionHex) return
-      popupRef.current?.close()
-      popupRef.current = null
-      if (popupWatch.current !== null) window.clearInterval(popupWatch.current)
-      popupWatch.current = null
-      setStatus("submitting")
-      setMessage("Submitting the approved NFT sale update to DeSo…")
-      try {
-        const response = await fetch("/api/via/nft/update-sale", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          cache: "no-store",
-          body: JSON.stringify({ action: "submit", signedTransactionHex }),
-        })
-        const data = await response.json() as { ok?: boolean; error?: string }
-        if (!response.ok || !data.ok) throw new Error(data.error || "SUBMIT_FAILED")
-        setStatus("done")
-        setMessage(
-          pendingMode.current === "remove" ? "NFT removed from sale on DeSo."
-            : pendingMode.current === "update" ? "NFT sale price updated on DeSo."
-              : pendingMode.current === "transfer" ? "NFT transfer submitted to DeSo. The receiver must accept the transfer before ownership changes."
-                : pendingMode.current === "burn" ? "NFT burn submitted to DeSo."
-                  : "NFT listed for sale on DeSo.",
-        )
-        setConfirmed(false)
-      } catch {
-        setStatus("error")
-        setMessage("The NFT sale update could not be submitted. VIA changed nothing.")
-      } finally {
-        pendingMode.current = null
-      }
-    }
-    window.addEventListener("message", onMessage)
-    return () => {
-      window.removeEventListener("message", onMessage)
-      if (popupWatch.current !== null) window.clearInterval(popupWatch.current)
-      popupWatch.current = null
-      popupRef.current?.close()
-      popupRef.current = null
-    }
-  }, [])
 
   async function prepare(mode: "list" | "update" | "remove") {
     if (!session || !selected || !confirmed || status === "preparing" || status === "approval" || status === "submitting") return
@@ -171,27 +111,40 @@ export default function NFTOwnerSaleControl({ postHash, editions, hasUnlockable 
       const data = await response.json() as PrepareResponse
       if (!response.ok || !data.ok || !data.transactionHex) throw new Error(data.error || "PREPARE_FAILED")
       setFeeNanos(typeof data.feeNanos === "number" ? data.feeNanos : null)
-      const popup = window.open(
-        `${DESO_IDENTITY_ORIGIN}/approve?tx=${encodeURIComponent(data.transactionHex)}`,
-        "via-deso-nft-sale-approve",
-        "popup=yes,width=800,height=900",
-      )
-      if (!popup) throw new Error("POPUP_BLOCKED")
-      popupRef.current = popup
-
-      if (popupWatch.current !== null) window.clearInterval(popupWatch.current)
-      popupWatch.current = window.setInterval(() => {
-        if (popupRef.current?.closed) {
-          popupRef.current = null
-          if (popupWatch.current !== null) window.clearInterval(popupWatch.current)
-          popupWatch.current = null
-          pendingMode.current = null
-          setStatus("idle")
-          setMessage("DeSo approval was closed. VIA changed nothing.")
-        }
-      }, 500)
+      const updatePermission = {
+        NFTOperationLimitMap: {
+          [postHash]: {
+            [selected.serialNumber]: {
+              update: 1,
+            },
+          },
+        },
+      }
+      if (!(await viaModernIdentity.hasPermissions(updatePermission))) {
+        setMessage("Requesting permission for this exact DeSo NFT sale change…")
+        await viaModernIdentity.requestPermissions(updatePermission)
+      }
       setStatus("approval")
-      setMessage("Review this NFT sale change in DeSo Identity. VIA submits only after your approval.")
+      setMessage("Signing this NFT sale change with DeSo Identity…")
+      const signedTransactionHex = await viaModernIdentity.signTx(data.transactionHex)
+      setStatus("submitting")
+      setMessage("Submitting the approved NFT sale update to DeSo…")
+      const submitResponse = await fetch("/api/via/nft/update-sale", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        cache: "no-store",
+        body: JSON.stringify({ action: "submit", signedTransactionHex }),
+      })
+      const submitData = await submitResponse.json() as { ok?: boolean; error?: string }
+      if (!submitResponse.ok || !submitData.ok) throw new Error(submitData.error || "SUBMIT_FAILED")
+      setStatus("done")
+      setMessage(
+        mode === "remove" ? "NFT removed from sale on DeSo."
+          : mode === "update" ? "NFT sale price updated on DeSo."
+            : "NFT listed for sale on DeSo.",
+      )
+      setConfirmed(false)
+      pendingMode.current = null
     } catch (error) {
       pendingMode.current = null
       setStatus("error")
@@ -209,21 +162,29 @@ export default function NFTOwnerSaleControl({ postHash, editions, hasUnlockable 
       const data = await response.json() as PrepareResponse
       if (!response.ok || !data.ok || !data.transactionHex) throw new Error(data.error || "PREPARE_FAILED")
       setFeeNanos(typeof data.feeNanos === "number" ? data.feeNanos : null)
-      const popup = window.open(DESO_IDENTITY_ORIGIN + "/approve?tx=" + encodeURIComponent(data.transactionHex), "via-deso-nft-transfer-approve", "popup=yes,width=800,height=900")
-      if (!popup) throw new Error("POPUP_BLOCKED")
-      popupRef.current = popup
-      if (popupWatch.current !== null) window.clearInterval(popupWatch.current)
-      popupWatch.current = window.setInterval(() => {
-        if (popupRef.current?.closed) {
-          popupRef.current = null
-          if (popupWatch.current !== null) window.clearInterval(popupWatch.current)
-          popupWatch.current = null
-          pendingMode.current = null
-          setStatus("idle")
-          setMessage("DeSo approval was closed. VIA changed nothing.")
-        }
-      }, 500)
-      setStatus("approval"); setMessage("Review the NFT transfer in DeSo Identity. VIA submits only after your approval.")
+      const transferPermission = {
+        NFTOperationLimitMap: {
+          [postHash]: {
+            [selected.serialNumber]: {
+              transfer: 1,
+            },
+          },
+        },
+      }
+      if (!(await viaModernIdentity.hasPermissions(transferPermission))) {
+        setMessage("Requesting permission to transfer this exact DeSo NFT edition…")
+        await viaModernIdentity.requestPermissions(transferPermission)
+      }
+      setStatus("approval"); setMessage("Signing the NFT transfer with DeSo Identity…")
+      const signedTransactionHex = await viaModernIdentity.signTx(data.transactionHex)
+      setStatus("submitting"); setMessage("Submitting the approved NFT transfer to DeSo…")
+      const submitResponse = await fetch("/api/via/nft/transfer", { method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store", body: JSON.stringify({ action: "submit", signedTransactionHex }) })
+      const submitData = await submitResponse.json() as { ok?: boolean; error?: string }
+      if (!submitResponse.ok || !submitData.ok) throw new Error(submitData.error || "SUBMIT_FAILED")
+      setStatus("done")
+      setMessage("NFT transfer submitted to DeSo. The receiver must accept the transfer before ownership changes.")
+      setConfirmed(false)
+      pendingMode.current = null
     } catch (error) {
       pendingMode.current = null; setStatus("error"); setMessage(error instanceof Error && error.message === "POPUP_BLOCKED" ? "Approval window was blocked. VIA changed nothing." : "The NFT transfer could not be prepared. VIA changed nothing.")
     }
@@ -237,11 +198,31 @@ export default function NFTOwnerSaleControl({ postHash, editions, hasUnlockable 
       const data = await response.json() as PrepareResponse
       if (!response.ok || !data.ok || !data.transactionHex) throw new Error()
       setFeeNanos(typeof data.feeNanos === "number" ? data.feeNanos : null)
-      const popup = window.open(DESO_IDENTITY_ORIGIN + "/approve?tx=" + encodeURIComponent(data.transactionHex), "via-deso-nft-burn", "popup=yes,width=800,height=900")
-      if (!popup) throw new Error()
-      popupRef.current = popup
+      const burnPermission = {
+        NFTOperationLimitMap: {
+          [postHash]: {
+            [selected.serialNumber]: {
+              burn: 1,
+            },
+          },
+        },
+      }
+      if (!(await viaModernIdentity.hasPermissions(burnPermission))) {
+        setMessage("Requesting permission to burn this exact DeSo NFT edition…")
+        await viaModernIdentity.requestPermissions(burnPermission)
+      }
       setStatus("approval")
-      setMessage("Review the irreversible burn in DeSo Identity.")
+      setMessage("Signing the irreversible NFT burn with DeSo Identity…")
+      const signedTransactionHex = await viaModernIdentity.signTx(data.transactionHex)
+      setStatus("submitting")
+      setMessage("Submitting the approved NFT burn to DeSo…")
+      const submitResponse = await fetch("/api/via/nft/burn", { method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store", body: JSON.stringify({ action: "submit", signedTransactionHex }) })
+      const submitData = await submitResponse.json() as { ok?: boolean; error?: string }
+      if (!submitResponse.ok || !submitData.ok) throw new Error(submitData.error || "SUBMIT_FAILED")
+      setStatus("done")
+      setMessage("NFT burn submitted to DeSo.")
+      setConfirmed(false)
+      pendingMode.current = null
     } catch {
       pendingMode.current = null
       setStatus("error")

@@ -221,6 +221,43 @@ async function readLatestPublicActivity(publicKey: string) {
  * fallback for older node responses. VIA does not issue this verification.
  */
 
+export async function searchPublicProfilesByPrefix(prefix: string, limit = 8) {
+  const usernamePrefix = prefix.trim().replace(/^@/, "")
+  if (!usernamePrefix || usernamePrefix.length > 64) return []
+
+  const numToFetch = Math.max(1, Math.min(20, Math.trunc(limit)))
+  const response = await fetchDeSo("get-profiles", {
+    method: "POST",
+    headers: { "content-type": "application/json", accept: "application/json" },
+    body: JSON.stringify({
+      PublicKeyBase58Check: "",
+      UsernamePrefix: usernamePrefix,
+      Description: "",
+      OrderBy: "influencer_coin_price",
+      NumToFetch: numToFetch,
+      ReaderPublicKeyBase58Check: "",
+      ModerationType: "",
+      FetchUsersThatHODL: false,
+      AddGlobalFeedBool: false,
+    }),
+  })
+
+  if (!response.ok) return []
+  const data = await response.json() as { ProfilesFound?: DeSoProfileResponse["Profile"][] }
+  return (data.ProfilesFound ?? []).flatMap((profile) => {
+    if (!profile) return []
+    const publicKey = text(profile.PublicKeyBase58Check)
+    const username = text(profile.Username)
+    if (!publicKey || !username) return []
+    return [{
+      publicKey,
+      username,
+      profilePic: profilePictureUrl(publicKey, text(profile.ProfilePic)),
+      isVerified: verificationFromProfile(profile),
+    }]
+  })
+}
+
 export async function readPublicProfileIdentity(usernameOrPublicKey: string) {
   const identity = usernameOrPublicKey.trim().replace(/^@/, "")
   if (!identity || identity.length > 128) return null

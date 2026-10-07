@@ -1,15 +1,14 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
-import { DESO_IDENTITY_ORIGIN, restoreIdentitySession, VIA_IDENTITY_EVENT, type ViaIdentitySession } from "../deso-identity-session"
-import { requestIdentityJwt } from "../social/identity-jwt"
+import { useEffect, useState } from "react"
+import { viaModernIdentity, type ViaModernIdentityUser } from "../deso-identity-modern"
 import VideoUploadControl from "../social/video-upload-control"
 
 type StorageMode = "deso" | "protected" | "advanced"
 
 const choices: Array<{id:StorageMode; title:string; text:string}> = [
   { id:"deso", title:"Standard · DeSo", text:"Use the normal DeSo media route. Recommended for a simple native DeSo NFT." },
-  { id:"protected", title:"Protected", text:"DeSo plus an additional decentralized backup. Provider and cost are confirmed before upload." },
+  { id:"protected", title:"Recommended · Arweave", text:"Permanent decentralized media storage. VIA shows the current network quote before upload; the creator pays the storage provider directly." },
   { id:"advanced", title:"Advanced", text:"Use a supported external/IPFS provider, your own server, or an existing durable media URL." },
 ]
 
@@ -17,7 +16,7 @@ export default function MintMediaStep({ onPostHash }: { onPostHash?: (postHash: 
   const [mode,setMode]=useState<StorageMode>("deso")
   const [fileName,setFileName]=useState("")
   const [file,setFile]=useState<File | null>(null)
-  const [session,setSession]=useState<ViaIdentitySession | null>(null)
+  const [session,setSession]=useState<ViaModernIdentityUser | null>(null)
   const [uploading,setUploading]=useState(false)
   const [imageUrl,setImageUrl]=useState("")
   const [videoUrl,setVideoUrl]=useState("")
@@ -27,48 +26,34 @@ export default function MintMediaStep({ onPostHash }: { onPostHash?: (postHash: 
   const [externalMediaUrl,setExternalMediaUrl]=useState("")
   const [postBusy,setPostBusy]=useState(false)
   const [sourcePostReady,setSourcePostReady]=useState(false)
-  const postPopupRef=useRef<Window | null>(null)
-  const postPopupWatchRef=useRef<number | null>(null)
-
+  const [arweaveQuote,setArweaveQuote]=useState<{priceWinston:string; viaStorageService:{percent:number;amountWinston:string;collectionStatus:string}; totalWinston:string; quotedAt:string} | null>(null)
+  const [arweaveQuoteBusy,setArweaveQuoteBusy]=useState(false)
+  const [arweaveQuoteError,setArweaveQuoteError]=useState("")
   useEffect(()=>{
-    const onApproval=async(event:MessageEvent)=>{
-      if(event.origin!==DESO_IDENTITY_ORIGIN || event.source!==postPopupRef.current || !event.data || typeof event.data!=="object") return
-      const data=event.data as Record<string,unknown>
-      if(data.service!=="identity" || !data.payload || typeof data.payload!=="object" || Array.isArray(data.payload)) return
-      const signedTransactionHex=(data.payload as Record<string,unknown>).signedTransactionHex
-      if(typeof signedTransactionHex!=="string" || !signedTransactionHex) return
-      postPopupRef.current?.close(); postPopupRef.current=null
-      if(postPopupWatchRef.current!==null){ window.clearInterval(postPopupWatchRef.current); postPopupWatchRef.current=null }
-      setPostBusy(true); setMessage("Submitting approved DeSo source post…")
-      try {
-        const response=await fetch("/api/via/social/post",{method:"POST",headers:{"Content-Type":"application/json"},cache:"no-store",body:JSON.stringify({action:"submit",signedTransactionHex})})
-        const result=await response.json() as {ok?:boolean;postHashHex?:string|null;error?:string}
-        if(!response.ok || !result.ok || !result.postHashHex) throw new Error(result.error || "POST_HASH_MISSING")
-        if(!/^[0-9a-fA-F]{64}$/.test(result.postHashHex)) throw new Error("INVALID_POST_HASH")
-        onPostHash?.(result.postHashHex)
-        setSourcePostReady(true)
-        setMessage("Source post confirmed. Its DeSo PostHash is ready for the NFT mint terms below.")
-      } catch { setMessage("The approved source post could not be handed to the mint step. Minting did not start.") }
-      finally { setPostBusy(false) }
-    }
-    window.addEventListener("message",onApproval)
-    return ()=>{ window.removeEventListener("message",onApproval); if(postPopupWatchRef.current!==null) window.clearInterval(postPopupWatchRef.current) }
-  },[onPostHash])
-
-  useEffect(()=>{
-    setSession(restoreIdentitySession())
-    const onSession=(event:Event)=>setSession((event as CustomEvent<ViaIdentitySession | null>).detail ?? restoreIdentitySession())
-    window.addEventListener(VIA_IDENTITY_EVENT,onSession)
-    return ()=>window.removeEventListener(VIA_IDENTITY_EVENT,onSession)
+    void viaModernIdentity.currentUser().then(setSession)
+    return viaModernIdentity.subscribe(setSession)
   },[])
+  useEffect(()=>{
+    if(mode!=="protected" || !file || file.size<=0){ setArweaveQuote(null); setArweaveQuoteError(""); setArweaveQuoteBusy(false); return }
+    const controller=new AbortController()
+    setArweaveQuote(null); setArweaveQuoteError(""); setArweaveQuoteBusy(true)
+    void fetch(`/api/via/storage/arweave/quote?bytes=${file.size}`,{cache:"no-store",signal:controller.signal})
+      .then(async (response)=>{
+        const data=await response.json() as {ok?:boolean;priceWinston?:string;viaStorageService?:{percent?:number;amountWinston?:string;collectionStatus?:string};totalWinston?:string;quotedAt?:string}
+        if(!response.ok || !data.ok || !data.priceWinston || data.viaStorageService?.percent!==5 || !data.viaStorageService.amountWinston || !data.totalWinston || !data.quotedAt) throw new Error("QUOTE_UNAVAILABLE")
+        setArweaveQuote({priceWinston:data.priceWinston,viaStorageService:{percent:data.viaStorageService.percent,amountWinston:data.viaStorageService.amountWinston,collectionStatus:data.viaStorageService.collectionStatus ?? "status-unavailable"},totalWinston:data.totalWinston,quotedAt:data.quotedAt})
+      })
+      .catch((error:unknown)=>{ if(!(error instanceof DOMException && error.name==="AbortError")) setArweaveQuoteError("Current Arweave storage quote is unavailable. Nothing was uploaded or charged.") })
+      .finally(()=>{ if(!controller.signal.aborted) setArweaveQuoteBusy(false) })
+    return ()=>controller.abort()
+  },[mode,file])
 
   async function createSourcePost(){
     const sourceUrl=mode==="advanced" ? externalMediaUrl.trim() : (videoUrl || imageUrl)
-    if(mode==="protected"){ setMessage("Protected storage is not connected yet. Nothing was uploaded, posted or minted."); return }
+    if(mode==="protected"){ setMessage("Arweave storage upload and direct provider payment are not connected yet. Nothing was uploaded, posted or minted."); return }
     if(!session){ setMessage("Sign in with DeSo Identity before creating the source post. Nothing was posted or minted."); return }
     if(!sourceUrl){ setMessage("Choose or upload NFT media before creating the source post. Nothing was posted or minted."); return }
     if(postBusy) return
-    if(postPopupRef.current && !postPopupRef.current.closed){ postPopupRef.current.focus(); setMessage("Finish or close the existing DeSo Identity approval first."); return }
     if(description.trim().length===0){ setMessage("Add a description before creating the DeSo source post. Nothing was posted or minted."); return }
     if(mode==="advanced"){ try { const parsed=new URL(sourceUrl); if(parsed.protocol!=="https:" || !parsed.hostname) throw new Error("HTTPS_REQUIRED") } catch { setMessage("Use a valid HTTPS media URL. Nothing was posted or minted."); return } }
     setSourcePostReady(false); onPostHash?.(""); setPostBusy(true); setMessage("Preparing the DeSo source post…")
@@ -76,14 +61,16 @@ export default function MintMediaStep({ onPostHash }: { onPostHash?: (postHash: 
       const response=await fetch("/api/via/social/post",{method:"POST",headers:{"Content-Type":"application/json"},cache:"no-store",body:JSON.stringify({action:"prepare",publicKey:session.publicKey,body:description,imageUrls:videoUrl && mode==="deso" ? [] : [sourceUrl],videoUrls:videoUrl && mode==="deso" ? [sourceUrl] : [],sensitiveContent})})
       const data=await response.json() as {ok?:boolean;transactionHex?:string;error?:string}
       if(!response.ok || !data.ok || !data.transactionHex) throw new Error(data.error || "PREPARE_FAILED")
-      const approveUrl=`${DESO_IDENTITY_ORIGIN}/approve?tx=${encodeURIComponent(data.transactionHex)}`
-      const popup=window.open(approveUrl,"via-nft-source-post","popup=yes,width=800,height=900")
-      if(!popup) throw new Error("POPUP_BLOCKED")
-      postPopupRef.current=popup
-      if(postPopupWatchRef.current!==null) window.clearInterval(postPopupWatchRef.current)
-      postPopupWatchRef.current=window.setInterval(()=>{ if(postPopupRef.current?.closed){ window.clearInterval(postPopupWatchRef.current!); postPopupWatchRef.current=null; postPopupRef.current=null; setPostBusy(false); setMessage("DeSo Identity approval was closed. Nothing was submitted or minted.") } },500)
-      setMessage("Review and approve the source post in DeSo Identity. Minting has not started yet.")
-      popup.focus()
+      setMessage("Signing the DeSo source post with the active Identity…")
+      const signedTransactionHex=await viaModernIdentity.signTx(data.transactionHex)
+      setMessage("Submitting approved DeSo source post…")
+      const submitResponse=await fetch("/api/via/social/post",{method:"POST",headers:{"Content-Type":"application/json"},cache:"no-store",body:JSON.stringify({action:"submit",signedTransactionHex})})
+      const submitResult=await submitResponse.json() as {ok?:boolean;postHashHex?:string|null;error?:string}
+      if(!submitResponse.ok || !submitResult.ok || !submitResult.postHashHex) throw new Error(submitResult.error || "POST_HASH_MISSING")
+      if(!/^[0-9a-fA-F]{64}$/.test(submitResult.postHashHex)) throw new Error("INVALID_POST_HASH")
+      onPostHash?.(submitResult.postHashHex)
+      setSourcePostReady(true)
+      setMessage("Source post confirmed. Its DeSo PostHash is ready for the NFT mint terms below.")
     } catch { setMessage("The source post could not be prepared. Nothing was posted or minted.") }
     finally { setPostBusy(false) }
   }
@@ -96,7 +83,7 @@ export default function MintMediaStep({ onPostHash }: { onPostHash?: (postHash: 
     if(file.size<=0){ setMessage("The selected image is empty. Nothing was uploaded."); return }
     setUploading(true); setMessage("Authorizing DeSo media upload…")
     try {
-      const jwt=await requestIdentityJwt(session.publicKey)
+      const jwt=await viaModernIdentity.jwt()
       const form=new FormData(); form.set("publicKey",session.publicKey); form.set("jwt",jwt); form.set("file",file,file.name)
       const response=await fetch("/api/via/social/image-upload",{method:"POST",body:form,cache:"no-store"})
       const data=await response.json() as {ok?:boolean;imageUrl?:string;error?:string}
@@ -125,13 +112,15 @@ export default function MintMediaStep({ onPostHash }: { onPostHash?: (postHash: 
 
       <div className="mt-5 grid gap-3 sm:grid-cols-3">
         {choices.map((choice)=>(
-          <button key={choice.id} type="button" onClick={()=>{setMode(choice.id); setImageUrl(""); setExternalMediaUrl(""); setDescription(""); setSensitiveContent(false); setSourcePostReady(false); onPostHash?.(""); setMessage(choice.id==="protected" ? "Protected storage is not connected yet. Nothing will be uploaded until a provider and cost are confirmed." : "")}} aria-pressed={mode===choice.id}
+          <button key={choice.id} type="button" onClick={()=>{setMode(choice.id); setImageUrl(""); setExternalMediaUrl(""); setDescription(""); setSensitiveContent(false); setSourcePostReady(false); onPostHash?.(""); setMessage(choice.id==="protected" ? "Arweave quote mode selected. Nothing will be uploaded or charged until permanent storage upload and direct provider payment are connected." : "")}} aria-pressed={mode===choice.id}
             className={`min-h-32 rounded-[12px] border p-4 text-left transition ${mode===choice.id ? "border-[#8fd4a9]/60 bg-[#0c1711]/60" : "border-zinc-800 bg-black/20 hover:border-zinc-700"}`}>
             <span className="block text-sm font-semibold text-zinc-100">{choice.title}</span>
             <span className="mt-2 block text-xs leading-5 text-zinc-400">{choice.text}</span>
           </button>
         ))}
       </div>
+
+      {mode==="protected" ? <div className="mt-4 rounded-[11px] border border-[#8fd4a9]/35 bg-[#0c1711]/35 px-4 py-3 text-sm text-zinc-300"><p className="font-semibold text-zinc-100">Arweave permanent storage quote</p>{!file ? <p className="mt-2 text-xs text-zinc-400">Choose a local file above to calculate the current network storage quote.</p> : arweaveQuoteBusy ? <p className="mt-2 text-xs text-zinc-400">Getting the current Arweave network quote…</p> : arweaveQuote ? <><p className="mt-2 text-xs text-zinc-300">File: {file.name} · {file.size.toLocaleString()} bytes</p><p className="mt-1 text-xs text-zinc-300">Arweave storage: {arweaveQuote.priceWinston} Winston</p><p className="mt-1 text-xs text-zinc-300">VIA Storage Service ({arweaveQuote.viaStorageService.percent}%): {arweaveQuote.viaStorageService.amountWinston} Winston</p><p className="mt-1 text-xs font-semibold text-zinc-200">Total storage quote: {arweaveQuote.totalWinston} Winston</p><p className="mt-1 text-xs text-zinc-500">Quoted {new Date(arweaveQuote.quotedAt).toLocaleString()} · quote only · VIA fee {arweaveQuote.viaStorageService.collectionStatus === "not-collected" ? "not collected" : arweaveQuote.viaStorageService.collectionStatus} · nothing uploaded or charged.</p><p className="mt-2 text-xs text-zinc-400">The creator pays the storage provider directly. VIA does not advance or collect this storage cost.</p></> : arweaveQuoteError ? <p className="mt-2 text-xs text-zinc-400">{arweaveQuoteError}</p> : null}</div> : null}
 
       {mode==="advanced" ? <label className="mt-4 grid gap-2"><span className="text-sm font-semibold text-zinc-200">Existing media URL / own server</span><input type="url" value={externalMediaUrl} onChange={(e)=>{setExternalMediaUrl(e.target.value.trimStart()); setSourcePostReady(false); onPostHash?.("")}} placeholder="https://…" className="w-full rounded-[11px] border border-zinc-700/80 bg-[#050807] px-3 py-3 text-base text-zinc-100 outline-none focus:border-[#8fd4a9]/55"/></label> : null}
 

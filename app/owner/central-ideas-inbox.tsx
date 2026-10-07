@@ -1,8 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { requestViaIdentityJwt } from "../deso-identity-jwt"
-import { restoreIdentitySession } from "../deso-identity-session"
+import { viaModernIdentity } from "../deso-identity-modern"
 
 type IdeaItem = {
   category?: string
@@ -46,7 +45,7 @@ export default function CentralIdeasInbox({ ownerPublicKey }: { ownerPublicKey: 
 
   async function openInbox() {
     if (!ownerPublicKey) return
-    const session = restoreIdentitySession()
+    const session = await viaModernIdentity.currentUser()
     if (!session || session.publicKey !== ownerPublicKey) {
       setMessage("Log in with the verified @OuwePiet DeSo account first.")
       return
@@ -55,7 +54,7 @@ export default function CentralIdeasInbox({ ownerPublicKey }: { ownerPublicKey: 
     setBusy(true)
     setMessage("")
     try {
-      const jwt = await requestViaIdentityJwt(ownerPublicKey)
+      const jwt = await viaModernIdentity.jwt()
       const response = await fetch("/api/via/ideas", {
         cache: "no-store",
         headers: {

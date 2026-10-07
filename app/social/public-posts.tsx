@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { MessageSquare } from "lucide-react"
 import { readViaLocalSettings } from "../via-local-settings"
+import { translateViaTextLocally } from "../via-local-translation"
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react"
 import { ChoiceId, defaultSocialFeedChoice, VIA_SOCIAL_FEED_EVENT, VIA_SOCIAL_FEED_STORAGE_KEY } from "./feed-choice"
 import PostComposer from "./post-composer"
@@ -13,7 +14,7 @@ import DiamondButton from "./diamond-button"
 import LocalSaveButton from "./local-save-button"
 import PollVoteControl from "./poll-vote-control"
 import XShareButton from "../x-share-button"
-import { restoreIdentitySession, VIA_IDENTITY_EVENT, type ViaIdentitySession } from "../deso-identity-session"
+import { viaModernIdentity, type ViaModernIdentityUser } from "../deso-identity-modern"
 
 type PublicPost = {
   postHash: string
@@ -24,6 +25,7 @@ type PublicPost = {
   videoUrls: string[]
   timestampNanos: number
   likeCount: number
+  isLikedByReader: boolean
   diamondCount: number
   commentCount: number
   repostCount: number
@@ -43,6 +45,25 @@ function safeHttps(url: string) {
   try {
     const parsed = new URL(url)
     return parsed.protocol === "https:" ? parsed.toString() : null
+  } catch {
+    return null
+  }
+}
+
+function youtubeEmbedUrl(value: string) {
+  try {
+    const url = new URL(value)
+    const host = url.hostname.toLowerCase().replace(/^www\./, "")
+    let videoId = ""
+    if (host === "youtu.be") videoId = url.pathname.split("/").filter(Boolean)[0] ?? ""
+    else if (host === "youtube.com" || host === "m.youtube.com") {
+      if (url.pathname === "/watch") videoId = url.searchParams.get("v") ?? ""
+      else {
+        const parts = url.pathname.split("/").filter(Boolean)
+        if (["embed", "shorts", "live"].includes(parts[0] ?? "")) videoId = parts[1] ?? ""
+      }
+    }
+    return /^[A-Za-z0-9_-]{6,20}$/.test(videoId) ? `https://www.youtube-nocookie.com/embed/${videoId}` : null
   } catch {
     return null
   }
@@ -93,7 +114,7 @@ export default function PublicPosts() {
   const [hasMore, setHasMore] = useState(true)
   const [message, setMessage] = useState("Choose a feed and load posts.")
   const [feedChoice, setFeedChoice] = useState<ChoiceId>("hot")
-  const [session, setSession] = useState<ViaIdentitySession | null>(null)
+  const [session, setSession] = useState<ViaModernIdentityUser | null>(null)
   const [replyingTo, setReplyingTo] = useState<string | null>(null)
   const [replyParent, setReplyParent] = useState<string | null>(null)
   const [commentPosts, setCommentPosts] = useState<PublicPost[]>([])
@@ -104,13 +125,13 @@ export default function PublicPosts() {
     if (!replyingTo) { setCommentPosts([]); return }
     const controller = new AbortController()
     setCommentsBusy(true); setCommentsError(false)
-    fetch(`/api/via/post?hash=${encodeURIComponent(replyingTo)}&comments=1`, { cache: "no-store", signal: controller.signal })
+    fetch(`/api/via/post?hash=${encodeURIComponent(replyingTo)}&comments=1&reader=${encodeURIComponent(session?.publicKey ?? "")}`, { cache: "no-store", signal: controller.signal })
       .then(async response => { if (!response.ok) throw new Error("COMMENTS_UNAVAILABLE"); return response.json() })
       .then((data: { comments?: PublicPost[] }) => { if (!controller.signal.aborted) setCommentPosts(Array.isArray(data.comments) ? data.comments : []) })
       .catch(() => { if (!controller.signal.aborted) setCommentsError(true) })
       .finally(() => { if (!controller.signal.aborted) setCommentsBusy(false) })
     return () => controller.abort()
-  }, [replyingTo, commentsRefresh])
+  }, [replyingTo, commentsRefresh, session?.publicKey])
   const [actionLoginPost, setActionLoginPost] = useState<string | null>(null)
   const [sharedPostView, setSharedPostView] = useState(false)
   const [translationPost, setTranslationPost] = useState<string | null>(null)
@@ -154,7 +175,7 @@ export default function PublicPosts() {
         requestController.current = controller
         setLoading(true)
         setMessage("Loading shared post…")
-        void fetch(`/api/via/post?hash=${encodeURIComponent(sharedPost)}`, { signal: controller.signal })
+        void viaModernIdentity.currentUser().then((activeSession) => fetch(`/api/via/post?hash=${encodeURIComponent(sharedPost)}&reader=${encodeURIComponent(activeSession?.publicKey ?? "")}`, { signal: controller.signal }))
           .then(async (response) => {
             const data = (await response.json()) as SinglePostResponse
             if (!response.ok || !data.ok || !data.post) throw new Error("POST_UNAVAILABLE")
@@ -178,10 +199,8 @@ export default function PublicPosts() {
   }, [])
 
   useEffect(() => {
-    setSession(restoreIdentitySession())
-    const onIdentity = (event: Event) => {
-      const custom = event as CustomEvent<ViaIdentitySession | null>
-      const nextSession = custom.detail ?? restoreIdentitySession()
+    void viaModernIdentity.currentUser().then(setSession)
+    return viaModernIdentity.subscribe((nextSession) => {
       setSession(nextSession)
       if (!nextSession) setReplyingTo(null)
       if (feedChoice === "following") {
@@ -191,9 +210,7 @@ export default function PublicPosts() {
         setLoading(false)
         setMessage(nextSession ? "Following uses your active DeSo account." : "Log in with DeSo to open Following.")
       }
-    }
-    window.addEventListener(VIA_IDENTITY_EVENT, onIdentity)
-    return () => window.removeEventListener(VIA_IDENTITY_EVENT, onIdentity)
+    })
   }, [feedChoice])
 
   useEffect(() => {
@@ -204,12 +221,12 @@ export default function PublicPosts() {
         ? normalized
         : defaultSocialFeedChoice()
       setFeedChoice(initial)
-      if (initial === "following" && !restoreIdentitySession()) setMessage("Log in with DeSo to open Following.")
+      if (initial === "following" && !session) setMessage("Log in with DeSo to open Following.")
       else setMessage(feedReadyMessage(initial))
     } catch {
       const initial = defaultSocialFeedChoice()
       setFeedChoice(initial)
-      setMessage(initial === "following" && !restoreIdentitySession() ? "Log in with DeSo to open Following." : feedReadyMessage(initial))
+      setMessage(initial === "following" && !session ? "Log in with DeSo to open Following." : feedReadyMessage(initial))
     }
 
     function onFeedChoice(event: Event) {
@@ -224,7 +241,7 @@ export default function PublicPosts() {
       setMediaFilter("all")
       setLoading(false)
       setReplyingTo(null)
-      if (choice === "following" && !restoreIdentitySession()) setMessage("Log in with DeSo to open Following.")
+      if (choice === "following" && !session) setMessage("Log in with DeSo to open Following.")
       else setMessage(feedReadyMessage(choice))
     }
 
@@ -257,44 +274,61 @@ export default function PublicPosts() {
     setTranslationLanguage(targetLanguage)
     setTranslatedText("")
     setTranslationMessage("")
-    if (!post.body.trim()) {
-      setTranslationMessage("This post has no text to translate.")
-      return
-    }
-    // Local browser translation only: never send DeSo post text to a paid API.
-    type LocalTranslator = {
-      translate: (text: string) => Promise<string>
-    }
-    type BrowserTranslator = {
-      create: (options: { sourceLanguage: string; targetLanguage: string }) => Promise<LocalTranslator>
-    }
-    const browser = globalThis as typeof globalThis & { Translator?: BrowserTranslator }
-    if (!browser.Translator) {
-      setTranslationMessage("Translation is not supported by this browser. Copy the original text to translate with your preferred app.")
-      return
-    }
     setTranslationBusy(true)
     try {
-      // Let the browser detect the source language if supported by its model.
-      const detector = globalThis as typeof globalThis & {
-        LanguageDetector?: { create: () => Promise<{ detect: (text: string) => Promise<Array<{ detectedLanguage: string; confidence: number }>> }> }
-      }
-      if (!detector.LanguageDetector) throw new Error("DETECTION_UNAVAILABLE")
-      const model = await detector.LanguageDetector.create()
-      const detected = await model.detect(post.body)
-      const sourceLanguage = detected[0]?.detectedLanguage
-      if (!sourceLanguage || sourceLanguage === "und") throw new Error("LANGUAGE_UNAVAILABLE")
-      if (sourceLanguage === targetLanguage) {
-        setTranslatedText(post.body)
-      } else {
-        const translator = await browser.Translator.create({ sourceLanguage, targetLanguage })
-        setTranslatedText(await translator.translate(post.body))
-      }
-    } catch {
-      setTranslationMessage("Local translation is unavailable for this language or browser. Copy the original text to use your preferred translator.")
+      const result = await translateViaTextLocally(post.body, targetLanguage)
+      setTranslatedText(result.text)
+      setTranslationMessage(result.message)
     } finally {
       setTranslationBusy(false)
     }
+  }
+
+  function ReplyExtraActions({ reply }: { reply: PublicPost }) {
+    const url = `${typeof window === "undefined" ? "" : window.location.origin}/social?post=${encodeURIComponent(reply.postHash)}`
+    return <>
+      <button type="button" onClick={() => {
+        if (navigator.share) void navigator.share({ title: "VIA · DeSo post", url }).catch(() => {})
+        else void navigator.clipboard?.writeText(url)
+      }}>Share</button>
+      {session ? <LocalSaveButton postHash={reply.postHash} body={reply.body} publicKey={reply.publicKey} timestampNanos={reply.timestampNanos} /> : <button type="button" title="Save (DeSo login required)" onClick={() => setActionLoginPost(reply.postHash)}>Save</button>}
+      <details className="relative">
+        <summary aria-label="Meer reactieacties" title="Meer reactieacties" className="cursor-pointer list-none">•••</summary>
+        <div className="absolute right-0 z-20 mt-1 min-w-44 overflow-hidden rounded-lg border border-zinc-800 bg-[#050806] text-left shadow-xl">
+          <button type="button" onClick={() => {
+            const lang = readViaLocalSettings().interfaceLanguage
+            const target = ({ Dutch: "nl", English: "en", French: "fr", Spanish: "es", Chinese: "zh", Hindi: "hi" } as Record<string, string>)[lang] ?? "en"
+            setTranslationPost(reply.postHash)
+            setTranslationLanguage(target)
+            setTranslatedText("")
+            setTranslationMessage("")
+            void translatePost(reply, target)
+            ;(document.activeElement as HTMLElement | null)?.closest("details")?.removeAttribute("open")
+          }} className="block w-full px-3 py-2 text-left text-zinc-300 hover:bg-white/[0.04]">🌐 Translate / Vertalen</button>
+          <button type="button" onClick={() => void navigator.clipboard?.writeText(url)} className="block w-full px-3 py-2 text-left text-zinc-300 hover:bg-white/[0.04]">Link to Post</button>
+        </div>
+      </details>
+    </>
+  }
+
+  function ReplyTranslation({ reply }: { reply: PublicPost }) {
+    if (translationPost !== reply.postHash) return null
+    return <div id={`via-translation-${reply.postHash}`} role="region" aria-label="Reply translation" className="mt-2 rounded-lg border border-[#8fd4a9]/35 bg-black/40 p-2 text-sm text-zinc-300">
+      <div className="flex flex-wrap items-center gap-2">
+        <span>Translate:</span>
+        {([["🇳🇱","nl"],["🇬🇧","en"],["🇫🇷","fr"],["🇪🇸","es"],["🇨🇳","zh"],["🇮🇳","hi"]] as const).map(([flag, code]) => <button key={code} type="button" aria-label={code} aria-pressed={translationLanguage === code} disabled={translationBusy} onClick={() => void translatePost(reply, code)} className="rounded-md border border-zinc-700 px-2 py-1 disabled:opacity-50">{flag}</button>)}
+        <button type="button" onClick={() => { setTranslationPost(null); setTranslatedText(""); setTranslationMessage("") }} className="ml-auto rounded-md border border-zinc-700 px-2 py-1">Sluiten</button>
+      </div>
+      {translationBusy ? <p className="mt-2">Translating locally…</p> : null}
+      {translatedText ? <p className="mt-2 whitespace-pre-wrap break-words">{translatedText}</p> : null}
+      {translationMessage ? <p className="mt-2 text-zinc-400">{translationMessage}</p> : null}
+      <button type="button" onClick={() => void navigator.clipboard?.writeText(reply.body)} className="mt-2 rounded-md border border-zinc-700 px-2 py-1">Copy original text</button>
+    </div>
+  }
+
+  function ReplyLoginNotice({ replyHash }: { replyHash: string }) {
+    if (session || actionLoginPost !== replyHash) return null
+    return <p className="mt-2 text-xs text-amber-300" role="status">Connect your DeSo account through VIA before reposting, liking, saving or sending Diamonds. No transaction was sent.</p>
   }
 
   async function loadPosts(event?: FormEvent) {
@@ -317,8 +351,8 @@ export default function PublicPosts() {
       const endpoint = feedChoice === "following"
         ? `/api/via/following?identity=${encodeURIComponent(session?.publicKey ?? "")}`
         : feedChoice === "hot"
-          ? "/api/via/discovery?limit=20"
-          : "/api/via/discovery?limit=20&sort=new"
+          ? `/api/via/discovery?limit=20&reader=${encodeURIComponent(session?.publicKey ?? "")}`
+          : `/api/via/discovery?limit=20&sort=new&reader=${encodeURIComponent(session?.publicKey ?? "")}`
       const response = await fetch(endpoint, { signal: controller.signal })
       const data = (await response.json()) as PostsResponse
       const nextPosts = response.ok && data.ok && Array.isArray(data.posts) ? data.posts : []
@@ -357,8 +391,8 @@ export default function PublicPosts() {
     try {
       const seen = posts.map((post) => post.postHash).filter(Boolean).slice(-100).join(",")
       const endpoint = feedChoice === "hot"
-        ? `/api/via/discovery?limit=20&seen=${encodeURIComponent(seen)}`
-        : `/api/via/discovery?limit=20&sort=new&seen=${encodeURIComponent(seen)}`
+        ? `/api/via/discovery?limit=20&seen=${encodeURIComponent(seen)}&reader=${encodeURIComponent(session?.publicKey ?? "")}`
+        : `/api/via/discovery?limit=20&sort=new&seen=${encodeURIComponent(seen)}&reader=${encodeURIComponent(session?.publicKey ?? "")}`
       const response = await fetch(endpoint, { signal: controller.signal })
       const data = (await response.json()) as PostsResponse
       const nextPosts = response.ok && data.ok && Array.isArray(data.posts) ? data.posts : []
@@ -467,15 +501,26 @@ export default function PublicPosts() {
 
                 {videos.length ? (
                   <div className="mt-4 space-y-2">
-                    {videos.map((url, index) => <video key={`${post.postHash}-video-${index}`} src={url} controls preload="none" playsInline className="max-h-[32rem] w-full rounded-xl" />)}
+                    {videos.map((url, index) => {
+                      const youtube = youtubeEmbedUrl(url)
+                      return youtube
+                        ? <iframe key={`${post.postHash}-video-${index}`} src={youtube} title="YouTube video" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen className="aspect-video w-full rounded-xl border-0" />
+                        : <video key={`${post.postHash}-video-${index}`} src={url} controls preload="none" playsInline className="max-h-[32rem] w-full rounded-xl" />
+                    })}
                   </div>
                 ) : null}
 
                 <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-white/[0.06] pt-3 text-xs text-zinc-500">
                   <button type="button" onClick={() => (setReplyParent(null), setReplyingTo(isReplying ? null : post.postHash))} title="Reply" aria-label={`Reply · ${post.commentCount}`} className="inline-flex h-9 min-w-9 items-center justify-center gap-1 rounded-full border border-zinc-800 px-2 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2]"><MessageSquare aria-hidden="true" className="h-4 w-4" /><span>{post.commentCount}</span></button>
                   {session ? <RepostButton postHash={post.postHash} initialCount={totalReposts} variant="icon" /> : <button type="button" title="Repost (DeSo login required)" onClick={() => setActionLoginPost(post.postHash)} className="inline-flex h-9 min-w-9 items-center justify-center gap-1 rounded-full border border-zinc-800 px-2 text-xs text-zinc-300">Repost · {totalReposts}</button>}
-                  {session ? <LikeButton postHash={post.postHash} initialCount={post.likeCount} variant="icon" /> : <button type="button" title="Like (DeSo login required)" onClick={() => setActionLoginPost(post.postHash)} className="inline-flex h-9 min-w-9 items-center justify-center gap-1 rounded-full border border-zinc-800 px-2 text-xs text-zinc-300">Like · {post.likeCount}</button>}
                   {session ? <DiamondButton postHash={post.postHash} receiverPublicKey={post.publicKey} initialCount={post.diamondCount} variant="icon" /> : <button type="button" title="Diamond (DeSo login required)" onClick={() => setActionLoginPost(post.postHash)} className="inline-flex h-9 min-w-9 items-center justify-center gap-1 rounded-full border border-zinc-800 px-2 text-xs text-zinc-300">Diamond · {post.diamondCount}</button>}
+                  {session ? <LikeButton postHash={post.postHash} initialCount={post.likeCount} initialLiked={post.isLikedByReader} variant="icon" /> : <button type="button" title="Like (DeSo login required)" onClick={() => setActionLoginPost(post.postHash)} className="inline-flex h-9 min-w-9 items-center justify-center gap-1 rounded-full border border-zinc-800 px-2 text-xs text-zinc-300">Like · {post.likeCount}</button>}
+                  <button type="button" onClick={() => {
+                    const url = `${window.location.origin}/social?post=${encodeURIComponent(post.postHash)}`
+                    if (navigator.share) void navigator.share({ title: "VIA · DeSo post", url }).catch(() => {})
+                    else void navigator.clipboard?.writeText(url)
+                  }} className="inline-flex h-9 min-w-9 items-center justify-center rounded-full border border-zinc-800 px-3 text-xs text-zinc-300">Share</button>
+                  {session ? <LocalSaveButton postHash={post.postHash} body={post.body} publicKey={post.publicKey} timestampNanos={post.timestampNanos} /> : <button type="button" title="Save (DeSo login required)" onClick={() => setActionLoginPost(post.postHash)} className="inline-flex h-9 min-w-9 items-center justify-center rounded-full border border-zinc-800 px-3 text-xs text-zinc-300">Save</button>}
                   <details className="relative">
                     <summary aria-label="Meer postacties" title="Meer postacties" className="cursor-pointer list-none rounded-full border border-zinc-800 px-3 py-1 text-zinc-400">•••</summary>
                     <div className="mt-2 flex flex-col overflow-hidden rounded-xl border border-zinc-800 bg-[#050806] text-left">
@@ -486,14 +531,10 @@ export default function PublicPosts() {
                         setTranslationLanguage(target)
                         setTranslatedText("")
                         setTranslationMessage("")
+                        void translatePost(post, target)
                         ;(document.activeElement as HTMLElement | null)?.closest("details")?.removeAttribute("open")
                       }} className="px-3 py-2 text-left text-zinc-300 hover:bg-white/[0.04]">🌐 Translate / Vertalen</button>
                       <button type="button" onClick={() => void navigator.clipboard?.writeText(`${window.location.origin}/social?post=${encodeURIComponent(post.postHash)}`)} className="px-3 py-2 text-left text-zinc-300 hover:bg-white/[0.04]">Link to Post</button>
-                      {session ? <button type="button" onClick={() => {
-                        const url = `${window.location.origin}/social?post=${encodeURIComponent(post.postHash)}`
-                        if (navigator.share) void navigator.share({ title: "VIA · DeSo post", url }).catch(() => {})
-                        else void navigator.clipboard?.writeText(url)
-                      }} className="px-3 py-2 text-left text-zinc-300 hover:bg-white/[0.04]">Share Post</button> : null}
                       <XShareButton href={`/social?post=${encodeURIComponent(post.postHash)}`} text={post.body ? post.body.slice(0, 180) : "VIA · DeSo post"} label="X" className="px-3 py-2 text-left text-zinc-300 hover:bg-white/[0.04]" />
                       {session ? <button type="button" onClick={() => {
                         const url = `${window.location.origin}/social?post=${encodeURIComponent(post.postHash)}`
@@ -501,11 +542,7 @@ export default function PublicPosts() {
 ${url}`
                         window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank", "noopener,noreferrer")
                       }} className="px-3 py-2 text-left text-zinc-300 hover:bg-white/[0.04]">WhatsApp</button> : null}
-                      {session ? <div className="[&_button]:w-full [&_button]:rounded-none [&_button]:border-0 [&_button]:px-3 [&_button]:py-2 [&_button]:text-left">
-                        <LocalSaveButton postHash={post.postHash} body={post.body} publicKey={post.publicKey} timestampNanos={post.timestampNanos} />
-                      </div> : null}
                       {session ? <div className="[&_button]:w-full [&_button]:rounded-none [&_button]:border-0 [&_button]:px-3 [&_button]:py-2 [&_button]:text-left"><FollowButton followedPublicKey={post.publicKey} /></div> : null}
-                      {session ? <Link href={`/?account=${encodeURIComponent(post.publicKey)}#collection-controls`} className="px-3 py-2 text-zinc-300 hover:bg-white/[0.04]">NFTs</Link> : null}
                       <button type="button" onClick={(event) => (event.currentTarget.closest("details") as HTMLDetailsElement | null)?.removeAttribute("open")} className="border-t border-zinc-800 px-3 py-2 text-left text-zinc-400 hover:bg-white/[0.04]">Sluiten</button>
                     </div>
                   </details>
@@ -537,9 +574,9 @@ ${url}`
                 {options.length >= 2 ? <PollVoteControl postHash={post.postHash} options={options} /> : null}
                 {isReplying ? <section className="mt-3 space-y-3 rounded-xl border border-zinc-700 p-3" aria-label="DeSo replies">
                   <div className="flex items-center justify-between"><strong className="text-sm">DeSo replies</strong><button type="button" onClick={() => { setReplyingTo(null); setReplyParent(null) }} aria-label="Close replies">×</button></div>
-                  {commentsBusy ? <p>Loading replies…</p> : commentsError ? <p role="alert">DeSo replies unavailable. <button type="button" onClick={() => setCommentsRefresh(n => n + 1)}>Retry</button></p> : commentPosts.length === 0 ? <p>No replies returned by DeSo.</p> : commentPosts.map(comment => <div key={comment.postHash} className="rounded-lg border border-zinc-800 p-2 text-sm"><p className="text-zinc-400">{comment.username ? `@${comment.username}` : shortPublicKey(comment.publicKey)}</p><p className="whitespace-pre-wrap break-words">{comment.body}</p>{comment.comments?.map(child => <div key={child.postHash} className="ml-4 mt-2 border-l border-zinc-700 pl-3"><p className="text-zinc-400">{child.username ? `@${child.username}` : shortPublicKey(child.publicKey)}</p><p className="whitespace-pre-wrap break-words">{child.body}</p><div className="mt-2 flex flex-wrap items-center gap-2"><button type="button" onClick={() => setReplyParent(child.postHash)}>Reply</button>{session ? <><LikeButton postHash={child.postHash} initialCount={child.likeCount} variant="icon" /><RepostButton postHash={child.postHash} initialCount={child.repostCount + child.quoteRepostCount} variant="icon" />{session.publicKey !== child.publicKey ? <DiamondButton postHash={child.postHash} receiverPublicKey={child.publicKey} initialCount={child.diamondCount} variant="icon" /> : <span>Diamonds · {child.diamondCount}</span>}</> : null}</div></div>)}<div className="flex flex-wrap gap-2"><button type="button" onClick={() => setReplyParent(comment.postHash)}>Reply</button>{session ? <><LikeButton postHash={comment.postHash} initialCount={comment.likeCount} variant="icon" /><RepostButton postHash={comment.postHash} initialCount={comment.repostCount + comment.quoteRepostCount} variant="icon" />{session.publicKey !== comment.publicKey ? <DiamondButton postHash={comment.postHash} receiverPublicKey={comment.publicKey} initialCount={comment.diamondCount} variant="icon" /> : <span>Diamonds · {comment.diamondCount}</span>}</> : null}</div></div>)}
+                  {commentsBusy ? <p>Loading replies…</p> : commentsError ? <p role="alert">DeSo replies unavailable. <button type="button" onClick={() => setCommentsRefresh(n => n + 1)}>Retry</button></p> : commentPosts.length === 0 ? <p>No replies returned by DeSo.</p> : commentPosts.map(comment => <div key={comment.postHash} className="rounded-lg border border-zinc-800 p-2 text-sm"><p className="text-zinc-400">{comment.username ? `@${comment.username}` : shortPublicKey(comment.publicKey)}</p><p className="whitespace-pre-wrap break-words">{comment.body}</p>{comment.comments?.map(child => <div key={child.postHash} className="ml-4 mt-2 border-l border-zinc-700 pl-3"><p className="text-zinc-400">{child.username ? `@${child.username}` : shortPublicKey(child.publicKey)}</p><p className="whitespace-pre-wrap break-words">{child.body}</p><div className="mt-2 flex flex-wrap items-center gap-2"><button type="button" onClick={() => setReplyParent(child.postHash)}>Reply</button>{session ? <><RepostButton postHash={child.postHash} initialCount={child.repostCount + child.quoteRepostCount} variant="icon" />{session.publicKey !== child.publicKey ? <DiamondButton postHash={child.postHash} receiverPublicKey={child.publicKey} initialCount={child.diamondCount} variant="icon" /> : <span>Diamonds · {child.diamondCount}</span>}<LikeButton postHash={child.postHash} initialCount={child.likeCount} initialLiked={child.isLikedByReader} variant="icon" /><ReplyExtraActions reply={child} /></> : <><button type="button" title="Repost (DeSo login required)" onClick={() => setActionLoginPost(child.postHash)}>Repost · {child.repostCount + child.quoteRepostCount}</button><button type="button" title="Diamond (DeSo login required)" onClick={() => setActionLoginPost(child.postHash)}>Diamond · {child.diamondCount}</button><button type="button" title="Like (DeSo login required)" onClick={() => setActionLoginPost(child.postHash)}>Like · {child.likeCount}</button><ReplyExtraActions reply={child} /></>}<ReplyLoginNotice replyHash={child.postHash} /><ReplyTranslation reply={child} /></div></div>)}<div className="flex flex-wrap gap-2"><button type="button" onClick={() => setReplyParent(comment.postHash)}>Reply</button>{session ? <><RepostButton postHash={comment.postHash} initialCount={comment.repostCount + comment.quoteRepostCount} variant="icon" />{session.publicKey !== comment.publicKey ? <DiamondButton postHash={comment.postHash} receiverPublicKey={comment.publicKey} initialCount={comment.diamondCount} variant="icon" /> : <span>Diamonds · {comment.diamondCount}</span>}<LikeButton postHash={comment.postHash} initialCount={comment.likeCount} initialLiked={comment.isLikedByReader} variant="icon" /><ReplyExtraActions reply={comment} /></> : <><button type="button" title="Repost (DeSo login required)" onClick={() => setActionLoginPost(comment.postHash)}>Repost · {comment.repostCount + comment.quoteRepostCount}</button><button type="button" title="Diamond (DeSo login required)" onClick={() => setActionLoginPost(comment.postHash)}>Diamond · {comment.diamondCount}</button><button type="button" title="Like (DeSo login required)" onClick={() => setActionLoginPost(comment.postHash)}>Like · {comment.likeCount}</button><ReplyExtraActions reply={comment} /></>}<ReplyLoginNotice replyHash={comment.postHash} /><ReplyTranslation reply={comment} /></div></div>)}
                   <button type="button" onClick={() => setCommentsRefresh(n => n + 1)} disabled={commentsBusy}>Refresh replies</button>
-                  {session ? <PostComposer key={replyParent ?? post.postHash} parentStakeID={replyParent ?? post.postHash} compact onCancel={() => setReplyParent(null)} onDone={() => { setReplyParent(null); setCommentsRefresh(n => n + 1); void loadPosts() }} /> : <p>Sign in with DeSo to reply.</p>}
+                  {session ? <PostComposer key={replyParent ?? post.postHash} parentStakeID={replyParent ?? post.postHash} compact onCancel={() => setReplyParent(null)} onDone={() => setReplyParent(null)} /> : <p>Sign in with DeSo to reply.</p>}
                 </section> : null}
               </article>
             )

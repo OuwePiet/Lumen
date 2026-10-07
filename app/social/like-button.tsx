@@ -2,36 +2,32 @@
 
 import { useEffect, useState } from "react"
 import { Heart } from "lucide-react"
-import { restoreIdentitySession, VIA_IDENTITY_EVENT, type ViaIdentitySession } from "../deso-identity-session"
-import { signViaTransaction } from "../deso-identity-sign"
+import { viaModernIdentity, type ViaModernIdentityUser } from "../deso-identity-modern"
 
 type Props = {
   postHash: string
   initialCount: number
+  initialLiked?: boolean
   variant?: "default" | "icon"
 }
 
 type PrepareResponse = { ok?: boolean; transactionHex?: string; feeNanos?: number | null; error?: string }
 type SubmitResponse = { ok?: boolean; error?: string }
 
-export default function LikeButton({ postHash, initialCount, variant = "default" }: Props) {
-  const [session, setSession] = useState<ViaIdentitySession | null>(null)
+export default function LikeButton({ postHash, initialCount, initialLiked = false, variant = "default" }: Props) {
+  const [session, setSession] = useState<ViaModernIdentityUser | null>(null)
   const [count, setCount] = useState(initialCount)
-  const [liked, setLiked] = useState(false)
+  const [liked, setLiked] = useState(initialLiked)
   const [busy, setBusy] = useState(false)
   const [message, setMessage] = useState("")
 
   useEffect(() => {
-    setSession(restoreIdentitySession())
-    const onIdentity = (event: Event) => {
-      const custom = event as CustomEvent<ViaIdentitySession | null>
-      setSession(custom.detail ?? restoreIdentitySession())
-    }
-    window.addEventListener(VIA_IDENTITY_EVENT, onIdentity)
-    return () => window.removeEventListener(VIA_IDENTITY_EVENT, onIdentity)
+    void viaModernIdentity.currentUser().then(setSession)
+    return viaModernIdentity.subscribe(setSession)
   }, [])
 
   useEffect(() => setCount(initialCount), [initialCount])
+  useEffect(() => setLiked(initialLiked), [initialLiked])
 
   async function toggleLike() {
     if (!session || busy) return
@@ -47,7 +43,7 @@ export default function LikeButton({ postHash, initialCount, variant = "default"
       const data = await response.json() as PrepareResponse
       if (!response.ok || !data.ok || !data.transactionHex) throw new Error(data.error || "PREPARE_FAILED")
       setMessage("Signing this like with your DeSo Identity session…")
-      const signedTransactionHex = await signViaTransaction(session.publicKey, data.transactionHex)
+      const signedTransactionHex = await viaModernIdentity.signTx(data.transactionHex)
       const submitResponse = await fetch("/api/via/social/like", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

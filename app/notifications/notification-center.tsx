@@ -5,8 +5,7 @@ import { useEffect, useMemo, useRef, useState } from "react"
 import { ArrowUpRight, AtSign, Badge, Check, CheckCircle2, ChevronsRight, CircleDot, Gem, Heart, Link2, MessageSquare, RefreshCw, Repeat2, ShieldCheck, ShieldOff, Smile, UserPlus, UserRound, LayoutGrid } from "lucide-react"
 
 const QUALITY_SHIELD_STORAGE_KEY = "via:notifications:quality-shield"
-import { restoreIdentitySession, VIA_IDENTITY_EVENT, type ViaIdentitySession } from "../deso-identity-session"
-import { signViaTransaction } from "../deso-identity-sign"
+import { viaModernIdentity, type ViaModernIdentityUser } from "../deso-identity-modern"
 import { fetchViaRates, isViaRateStale } from "../via-live-rates"
 import type { ViaLanguage } from "../via-local-settings"
 import LikeButton from "../social/like-button"
@@ -438,7 +437,7 @@ function notificationDestination(item: NotificationItem) {
 export default function NotificationCenter({ language }: { language: ViaLanguage }) {
   const copy = COPY[language]
   const categories = useMemo(() => (Object.keys(copy.categories) as Category[]).map((id) => ({ id, label: copy.categories[id] })), [copy])
-  const [session, setSession] = useState<ViaIdentitySession | null>(null)
+  const [session, setSession] = useState<ViaModernIdentityUser | null>(null)
   const [items, setItems] = useState<NotificationItem[]>([])
   const filterCategoryIds = useMemo(() => categories.map((option) => option.id).filter((id): id is Exclude<Category, "all"> => id !== "all"), [categories])
   const [activeCategories, setActiveCategories] = useState<Exclude<Category, "all">[]>(() => ["reaction", "diamond1", "diamondMany", "creatorCoin", "follow", "mention5", "mention6", "reply", "repost", "nft", "other"])
@@ -446,6 +445,8 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
   const [messageKey, setMessageKey] = useState<"loading" | "loaded" | "empty" | "error" | "">("")
   const [lastSeenIndex, setLastSeenIndex] = useState<number | null>(null)
   const [refreshToken, setRefreshToken] = useState(0)
+  const [loadingOlder, setLoadingOlder] = useState(false)
+  const [hasOlder, setHasOlder] = useState(true)
   const [expandedView, setExpandedView] = useState(false)
   const [qualityShield, setQualityShield] = useState(false)
   const [profiles, setProfiles] = useState<Record<string, ActorProfile>>({})
@@ -471,7 +472,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
       const response = await fetch("/api/via/social/reward", { method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store", body: JSON.stringify({ action: "prepare", senderPublicKey: session.publicKey, recipientPublicKey: post.publicKey, amountNanos, confirmed: true }) })
       const result = await response.json() as { ok?: boolean; transactionHex?: string }
       if (!response.ok || !result.ok || !result.transactionHex) throw new Error("PREPARE")
-      const signedTransactionHex = await signViaTransaction(session.publicKey, result.transactionHex)
+      const signedTransactionHex = await viaModernIdentity.signTx(result.transactionHex)
       const submitResponse = await fetch("/api/via/social/reward", { method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store", body: JSON.stringify({ action: "submit", signedTransactionHex }) })
       const submitResult = await submitResponse.json() as { ok?: boolean }
       if (!submitResponse.ok || !submitResult.ok) throw new Error("SUBMIT")
@@ -490,11 +491,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
   }, [])
 
   useEffect(() => {
-    const current = restoreIdentitySession()
-    setSession(current)
-    const onSession = (event: Event) => setSession((event as CustomEvent<ViaIdentitySession | null>).detail ?? restoreIdentitySession())
-    window.addEventListener(VIA_IDENTITY_EVENT, onSession)
-    return () => window.removeEventListener(VIA_IDENTITY_EVENT, onSession)
+    return viaModernIdentity.subscribe(setSession)
   }, [])
 
   useEffect(() => {
@@ -522,6 +519,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
         if (!response.ok || !data.ok || !Array.isArray(data.notifications)) throw new Error(data.error || "NOTIFICATIONS_FAILED")
         const ordered = [...data.notifications].sort((a, b) => (b.Index ?? -1) - (a.Index ?? -1))
         setItems(ordered)
+        setHasOlder(ordered.length === 40)
         setLastSeenIndex(typeof data.lastSeenIndex === "number" ? data.lastSeenIndex : null)
         setStatus("ready")
         setMessageKey(ordered.length ? "loaded" : "empty")
@@ -567,6 +565,32 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
 
     return () => controller.abort()
   }, [items, profiles])
+
+  async function loadOlder() {
+    if (!session || loadingOlder || !hasOlder || items.length === 0) return
+    const indexes = items.map((item) => item.Index).filter((value): value is number => typeof value === "number" && Number.isInteger(value))
+    if (!indexes.length) { setHasOlder(false); return }
+    const fetchStartIndex = Math.min(...indexes)
+    setLoadingOlder(true)
+    try {
+      const response = await fetch("/api/via/social/notifications", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        cache: "no-store",
+        body: JSON.stringify({ publicKey: session.publicKey, fetchStartIndex, numToFetch: 40 }),
+      })
+      const data = await response.json() as NotificationResponse
+      if (!response.ok || !data.ok || !Array.isArray(data.notifications)) throw new Error(data.error || "NOTIFICATIONS_FAILED")
+      const existing = new Set(items.map((item) => item.Index).filter((value): value is number => typeof value === "number"))
+      const older = data.notifications.filter((item) => typeof item.Index !== "number" || !existing.has(item.Index))
+      setItems((current) => [...current, ...older].sort((a, b) => (b.Index ?? -1) - (a.Index ?? -1)))
+      setHasOlder(data.notifications.length === 40 && older.length > 0)
+    } catch {
+      setMessageKey("error")
+    } finally {
+      setLoadingOlder(false)
+    }
+  }
 
   function postHashFor(item: NotificationItem) {
     const href = notificationDestination(item)
@@ -829,6 +853,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
             {destination ? <button type="button" onClick={() => void toggleExpanded(item, rowKey)} className="hidden self-center rounded-full border border-zinc-700 px-3 py-1.5 text-xs text-zinc-300 transition hover:border-[#8fd4a9] hover:text-white sm:inline-flex">{expanded ? copy.close : copy.open}</button> : null}
           </article>
         })}
+        {status === "ready" && hasOlder && items.length > 0 ? <div className="px-4 py-4 text-center sm:px-5"><button type="button" onClick={() => void loadOlder()} disabled={loadingOlder} className="rounded-full border border-[#8fd4a9]/45 px-4 py-2 text-xs text-[#9adbb2] disabled:opacity-50">{loadingOlder ? copy.loading : (language === "Dutch" ? "Meer laden" : "Load more")}</button></div> : null}
       </div>
     </section>
   )

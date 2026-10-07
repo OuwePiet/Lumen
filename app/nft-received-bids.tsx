@@ -1,7 +1,7 @@
 "use client"
 
-import { useEffect, useMemo, useRef, useState } from "react"
-import { DESO_IDENTITY_ORIGIN, restoreIdentitySession, VIA_IDENTITY_EVENT, type ViaIdentitySession } from "./deso-identity-session"
+import { useEffect, useMemo, useState } from "react"
+import { viaModernIdentity, type ViaModernIdentityUser } from "./deso-identity-modern"
 
 type Bid = {
   serialNumber: number
@@ -37,18 +37,14 @@ function shortKey(key: string) {
 }
 
 export default function NFTReceivedBids({ postHash, bids, editions, hasUnlockable }: Props) {
-  const [session, setSession] = useState<ViaIdentitySession | null>(null)
+  const [session, setSession] = useState<ViaModernIdentityUser | null>(null)
   const [confirmedKey, setConfirmedKey] = useState<string | null>(null)
   const [status, setStatus] = useState<"idle"|"preparing"|"approval"|"submitting"|"done"|"error">("idle")
   const [message, setMessage] = useState("")
-  const popupRef = useRef<Window | null>(null)
-  const popupWatch = useRef<number | null>(null)
 
   useEffect(() => {
-    setSession(restoreIdentitySession())
-    const onSession = (event: Event) => setSession((event as CustomEvent<ViaIdentitySession | null>).detail ?? restoreIdentitySession())
-    window.addEventListener(VIA_IDENTITY_EVENT, onSession)
-    return () => window.removeEventListener(VIA_IDENTITY_EVENT, onSession)
+    void viaModernIdentity.currentUser().then(setSession)
+    return viaModernIdentity.subscribe(setSession)
   }, [])
 
   const ownedSerials = useMemo(
@@ -60,51 +56,6 @@ export default function NFTReceivedBids({ postHash, bids, editions, hasUnlockabl
     () => bids.filter((bid) => ownedSerials.has(bid.serialNumber)).sort((a, b) => b.bidAmountNanos - a.bidAmountNanos),
     [bids, ownedSerials],
   )
-
-  useEffect(() => {
-    const onMessage = async (event: MessageEvent) => {
-      if (event.origin !== DESO_IDENTITY_ORIGIN || event.source !== popupRef.current) return
-      if (!event.data || typeof event.data !== "object") return
-      const data = event.data as Record<string, unknown>
-      if (data.service !== "identity") return
-      const payload = data.payload
-      if (!payload || typeof payload !== "object" || Array.isArray(payload)) return
-      const signedTransactionHex = (payload as Record<string, unknown>).signedTransactionHex
-      if (typeof signedTransactionHex !== "string" || !signedTransactionHex) return
-
-      if (popupWatch.current !== null) window.clearInterval(popupWatch.current)
-      popupWatch.current = null
-      popupRef.current?.close()
-      popupRef.current = null
-      setStatus("submitting")
-      setMessage("Submitting accepted bid to DeSo…")
-      try {
-        const response = await fetch("/api/via/nft/accept-bid", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          cache: "no-store",
-          body: JSON.stringify({ action: "submit", signedTransactionHex }),
-        })
-        const result = await response.json() as { ok?: boolean; error?: string }
-        if (!response.ok || !result.ok) throw new Error(result.error || "SUBMIT_FAILED")
-        setStatus("done")
-        setMessage("Bid accepted on DeSo.")
-        setConfirmedKey(null)
-      } catch {
-        setStatus("error")
-        setMessage("The accepted bid could not be submitted. VIA changed nothing.")
-      }
-    }
-
-    window.addEventListener("message", onMessage)
-    return () => {
-      window.removeEventListener("message", onMessage)
-      if (popupWatch.current !== null) window.clearInterval(popupWatch.current)
-      popupWatch.current = null
-      popupRef.current?.close()
-      popupRef.current = null
-    }
-  }, [])
 
   async function acceptBid(bid: Bid) {
     if (!session || hasUnlockable) return
@@ -130,25 +81,35 @@ export default function NFTReceivedBids({ postHash, bids, editions, hasUnlockabl
       })
       const result = await response.json() as PrepareResponse
       if (!response.ok || !result.ok || !result.transactionHex) throw new Error(result.error || "PREPARE_FAILED")
-      const popup = window.open(
-        DESO_IDENTITY_ORIGIN + "/approve?tx=" + encodeURIComponent(result.transactionHex),
-        "via-deso-accept-nft-bid",
-        "popup=yes,width=800,height=900",
-      )
-      if (!popup) throw new Error("POPUP_BLOCKED")
-      popupRef.current = popup
-      if (popupWatch.current !== null) window.clearInterval(popupWatch.current)
-      popupWatch.current = window.setInterval(() => {
-        if (popupRef.current?.closed) {
-          popupRef.current = null
-          if (popupWatch.current !== null) window.clearInterval(popupWatch.current)
-          popupWatch.current = null
-          setStatus("idle")
-          setMessage("DeSo approval was closed. VIA changed nothing.")
-        }
-      }, 500)
+      const acceptBidPermission = {
+        NFTOperationLimitMap: {
+          [postHash]: {
+            [bid.serialNumber]: {
+              accept_nft_bid: 1,
+            },
+          },
+        },
+      }
+      if (!(await viaModernIdentity.hasPermissions(acceptBidPermission))) {
+        setMessage("Requesting permission to accept this exact DeSo NFT bid…")
+        await viaModernIdentity.requestPermissions(acceptBidPermission)
+      }
       setStatus("approval")
-      setMessage("Review the exact sale in DeSo Identity. Accepting a bid transfers the NFT and settles DeSo royalties.")
+      setMessage("Signing the exact accepted NFT bid with DeSo Identity…")
+      const signedTransactionHex = await viaModernIdentity.signTx(result.transactionHex)
+      setStatus("submitting")
+      setMessage("Submitting the accepted NFT bid to DeSo…")
+      const submitResponse = await fetch("/api/via/nft/accept-bid", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        cache: "no-store",
+        body: JSON.stringify({ action: "submit", signedTransactionHex }),
+      })
+      const submitResult = await submitResponse.json() as { ok?: boolean; error?: string }
+      if (!submitResponse.ok || !submitResult.ok) throw new Error(submitResult.error || "SUBMIT_FAILED")
+      setStatus("done")
+      setMessage("Accepted NFT bid submitted to DeSo.")
+      setConfirmedKey(null)
     } catch (error) {
       setStatus("error")
       setMessage(error instanceof Error && error.message === "POPUP_BLOCKED"

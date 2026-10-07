@@ -2,19 +2,19 @@
 
 import { useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { restoreIdentitySession, VIA_IDENTITY_EVENT } from "../../deso-identity-session"
+import { viaModernIdentity } from "../../deso-identity-modern"
 
 export default function MyBidsIdentityRedirect() {
   const router = useRouter()
 
   useEffect(() => {
-    const openActiveAccount = () => {
-      const publicKey = restoreIdentitySession()?.publicKey
+    const openActiveAccount = (publicKey?: string) => {
       if (publicKey) router.replace("/market/my-bids?publicKey=" + encodeURIComponent(publicKey))
     }
-    openActiveAccount()
-    window.addEventListener(VIA_IDENTITY_EVENT, openActiveAccount)
-    return () => window.removeEventListener(VIA_IDENTITY_EVENT, openActiveAccount)
+
+    void viaModernIdentity.currentUser().then((user) => openActiveAccount(user?.publicKey))
+    const unsubscribe = viaModernIdentity.subscribe((user) => openActiveAccount(user?.publicKey))
+    return unsubscribe
   }, [router])
 
   return null

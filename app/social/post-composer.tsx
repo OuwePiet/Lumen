@@ -1,9 +1,7 @@
 "use client"
 
 import { useEffect, useMemo, useRef, useState } from "react"
-import { restoreIdentitySession, VIA_IDENTITY_EVENT, type ViaIdentitySession } from "../deso-identity-session"
-import { requestIdentityJwt } from "./identity-jwt"
-import { signViaTransaction } from "../deso-identity-sign"
+import { viaModernIdentity, type ViaModernIdentityUser } from "../deso-identity-modern"
 import VideoUploadControl from "./video-upload-control"
 import SponsorPlatform from "../sponsor-platform"
 
@@ -54,7 +52,7 @@ function httpsUrl(value: string) {
 }
 
 export default function PostComposer({ parentStakeID = "", compact = false, onDone, onCancel }: PostComposerProps) {
-  const [session, setSession] = useState<ViaIdentitySession | null>(null)
+  const [session, setSession] = useState<ViaModernIdentityUser | null>(null)
   const [body, setBody] = useState("")
   const [imageInputs, setImageInputs] = useState([""])
   const [imagePreviews, setImagePreviews] = useState<string[]>([])
@@ -76,10 +74,8 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
   const isReply = Boolean(parentStakeID)
 
   useEffect(() => {
-    setSession(restoreIdentitySession())
-    const onSession = (event: Event) => setSession((event as CustomEvent<ViaIdentitySession | null>).detail ?? restoreIdentitySession())
-    window.addEventListener(VIA_IDENTITY_EVENT, onSession)
-    return () => window.removeEventListener(VIA_IDENTITY_EVENT, onSession)
+    void viaModernIdentity.currentUser().then(setSession)
+    return viaModernIdentity.subscribe(setSession)
   }, [])
 
   useEffect(() => {
@@ -206,7 +202,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
     try {
       setImageUploadStatus("jwt")
       setImageUploadMessage("Preparing image upload approval…")
-      const jwt = await requestIdentityJwt(session.publicKey)
+      const jwt = await viaModernIdentity.jwt()
 
       setImageUploadStatus("uploading")
       setImageUploadMessage("Uploading image…")
@@ -260,7 +256,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
       setFeeNanos(typeof prepared.feeNanos === "number" ? prepared.feeNanos : null)
       setStatus("awaiting-approval")
       setMessage(isReply ? "Signing your reply with your DeSo Identity session…" : "Signing your post with your DeSo Identity session…")
-      const signedTransactionHex = await signViaTransaction(session.publicKey, prepared.transactionHex, (progress) => setMessage(progress))
+      const signedTransactionHex = await viaModernIdentity.signTx(prepared.transactionHex)
       setStatus("submitting")
       setMessage(isReply ? "Posting your signed reply…" : "Posting your signed post…")
       const { response: submitResponse, data: submitted } = await fetchJsonWithTimeout<SubmitResponse>("/api/via/social/post", {
@@ -289,7 +285,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
     } catch (error) {
       setStatus("error")
       const code = error instanceof Error ? error.message : "PREPARE_FAILED"
-      setMessage(`The post could not be prepared (${code}). Nothing was posted.`)
+      setMessage(`${isReply ? "The reply" : "The post"} could not be published (${code}). Nothing was posted.`)
     }
   }
 
@@ -338,7 +334,10 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
 
       {!isReply ? <label className="mt-2 inline-flex items-center gap-1.5 text-[11px] text-zinc-600"><input type="checkbox" checked={sensitiveContent} onChange={(event)=>setSensitiveContent(event.target.checked)} className="h-3.5 w-3.5 accent-[#8fd4a9]" /><span>Sensitive content</span></label> : null}
 
-      {isReply ? <button type="button" onClick={() => setMediaOpen((open) => !open)} className="mt-3 rounded-lg border border-zinc-800 px-3 py-1.5 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2]"><span onClick={(event) => { event.stopPropagation(); setMediaChoice("photo"); setMediaOpen(true) }}>Photo</span><span className="mx-2 text-zinc-700">|</span><span onClick={(event) => { event.stopPropagation(); setMediaChoice("video"); setMediaOpen(true) }}>Video</span></button> : null}
+      {isReply ? <div className="mt-3 flex flex-wrap gap-2">
+        <button type="button" onClick={() => { setMediaChoice("photo"); setMediaOpen(true) }} disabled={busy || imageUploading} className="min-h-10 rounded-lg border border-zinc-800 px-3 py-1.5 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2] disabled:opacity-50">{imageUploading ? "Uploading…" : "Photo"}</button>
+        <button type="button" onClick={() => { setMediaChoice("video"); setMediaOpen(true) }} disabled={busy} className="min-h-10 rounded-lg border border-zinc-800 px-3 py-1.5 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2] disabled:opacity-50">Video</button>
+      </div> : null}
 
       {mediaOpen && (isReply || mediaChoice === "video") ? <div className="mt-4 rounded-xl border border-zinc-800 bg-zinc-950/70 p-3"><div className="flex justify-end"><button type="button" onClick={() => setMediaOpen(false)} className="text-xs text-zinc-500 hover:text-zinc-300">Sluiten</button></div>
         {mediaChoice === "photo" ? <>
@@ -358,7 +357,11 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
           <p className="text-sm font-medium text-zinc-200">Video</p>
           <p className="mt-1 text-xs leading-5 text-zinc-500">Choose one video.</p>
           <VideoUploadControl onReady={setVideoInput} onBusyChange={setVideoUploading} />
-          <p className="mt-1 text-xs text-zinc-600">Your video is attached here. You approve the post before it is published.</p>
+          <div className="mt-3">
+            <label htmlFor={isReply ? `via-reply-youtube-${parentStakeID}` : "via-post-youtube"} className="text-xs text-zinc-400">Or paste a YouTube link</label>
+            <input id={isReply ? `via-reply-youtube-${parentStakeID}` : "via-post-youtube"} type="url" inputMode="url" value={videoUploading ? "" : videoInput} onChange={(event) => setVideoInput(event.target.value)} disabled={videoUploading} placeholder="https://www.youtube.com/watch?v=…" className="mt-2 w-full rounded-lg border border-zinc-800 bg-black/40 px-3 py-2 text-sm text-zinc-200 outline-none focus:border-[#8fd4a9]/55 disabled:opacity-50" />
+          </div>
+          <p className="mt-1 text-xs text-zinc-600">DeSo video uploads may be up to 250 MB. External YouTube links are not uploaded by VIA.</p>
         </div>}
         {mediaInvalid ? <p className="mt-2 text-xs text-amber-300">One of the attached media items is not valid.</p> : null}
       </div> : null}

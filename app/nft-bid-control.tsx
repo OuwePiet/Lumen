@@ -1,7 +1,7 @@
 "use client"
 
-import { useEffect, useMemo, useRef, useState } from "react"
-import { DESO_IDENTITY_ORIGIN, restoreIdentitySession, VIA_IDENTITY_EVENT, type ViaIdentitySession } from "./deso-identity-session"
+import { useEffect, useMemo, useState } from "react"
+import { viaModernIdentity, type ViaModernIdentityUser } from "./deso-identity-modern"
 
 type SaleEdition = {
   serialNumber: number
@@ -18,17 +18,6 @@ type Props = {
 
 type PrepareResponse = { ok?: boolean; transactionHex?: string; feeNanos?: number | null; spendAmountNanos?: number | null; error?: string }
 
-function signedTransactionFromMessage(event: MessageEvent, source: Window | null) {
-  if (event.origin !== DESO_IDENTITY_ORIGIN || event.source !== source) return null
-  if (!event.data || typeof event.data !== "object") return null
-  const data = event.data as Record<string, unknown>
-  if (data.service !== "identity") return null
-  const payload = data.payload
-  if (!payload || typeof payload !== "object" || Array.isArray(payload)) return null
-  const signed = (payload as Record<string, unknown>).signedTransactionHex
-  return typeof signed === "string" && signed.length > 0 ? signed : null
-}
-
 function desoToSafeNanos(input: string) {
   const trimmed = input.trim()
   if (!/^\d+(?:\.\d{0,9})?$/.test(trimmed)) return null
@@ -44,15 +33,13 @@ function formatDeso(nanos?: number) {
 }
 
 export default function NFTBidControl({ postHash, editions }: Props) {
-  const [session, setSession] = useState<ViaIdentitySession | null>(null)
+  const [session, setSession] = useState<ViaModernIdentityUser | null>(null)
   const [serialNumber, setSerialNumber] = useState(editions[0]?.serialNumber ?? 1)
   const [amount, setAmount] = useState("")
   const [confirmed, setConfirmed] = useState(false)
   const [status, setStatus] = useState<"idle"|"preparing"|"approval"|"submitting"|"done"|"error">("idle")
   const [message, setMessage] = useState("")
   const [feeNanos, setFeeNanos] = useState<number | null>(null)
-  const popupRef = useRef<Window | null>(null)
-  const popupWatch = useRef<number | null>(null)
 
   const edition = useMemo(() => editions.find((item) => item.serialNumber === serialNumber) ?? editions[0], [editions, serialNumber])
   const bidNanos = desoToSafeNanos(amount)
@@ -63,47 +50,8 @@ export default function NFTBidControl({ postHash, editions }: Props) {
   const busy = status === "preparing" || status === "approval" || status === "submitting"
 
   useEffect(() => {
-    setSession(restoreIdentitySession())
-    const onSession = (event: Event) => setSession((event as CustomEvent<ViaIdentitySession | null>).detail ?? restoreIdentitySession())
-    window.addEventListener(VIA_IDENTITY_EVENT, onSession)
-    return () => window.removeEventListener(VIA_IDENTITY_EVENT, onSession)
-  }, [])
-
-  useEffect(() => {
-    const onMessage = async (event: MessageEvent) => {
-      const signedTransactionHex = signedTransactionFromMessage(event, popupRef.current)
-      if (!signedTransactionHex) return
-      popupRef.current?.close()
-      popupRef.current = null
-      if (popupWatch.current !== null) window.clearInterval(popupWatch.current)
-      popupWatch.current = null
-      setStatus("submitting")
-      setMessage("Submitting the approved NFT bid to DeSo…")
-      try {
-        const response = await fetch("/api/via/nft/bid", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          cache: "no-store",
-          body: JSON.stringify({ action: "submit", signedTransactionHex }),
-        })
-        const data = await response.json() as { ok?: boolean; error?: string }
-        if (!response.ok || !data.ok) throw new Error(data.error || "SUBMIT_FAILED")
-        setStatus("done")
-        setMessage("NFT bid submitted to DeSo.")
-        setConfirmed(false)
-      } catch {
-        setStatus("error")
-        setMessage("The approved NFT bid could not be submitted. VIA did not place a bid.")
-      }
-    }
-    window.addEventListener("message", onMessage)
-    return () => {
-      window.removeEventListener("message", onMessage)
-      if (popupWatch.current !== null) window.clearInterval(popupWatch.current)
-      popupWatch.current = null
-      popupRef.current?.close()
-      popupRef.current = null
-    }
+    void viaModernIdentity.currentUser().then(setSession)
+    return viaModernIdentity.subscribe(setSession)
   }, [])
 
   async function prepare(forBuyNow = false) {
@@ -129,25 +77,35 @@ export default function NFTBidControl({ postHash, editions }: Props) {
       const data = await response.json() as PrepareResponse
       if (!response.ok || !data.ok || !data.transactionHex) throw new Error(data.error || "PREPARE_FAILED")
       setFeeNanos(typeof data.feeNanos === "number" ? data.feeNanos : null)
-      const popup = window.open(
-        `${DESO_IDENTITY_ORIGIN}/approve?tx=${encodeURIComponent(data.transactionHex)}`,
-        "via-deso-nft-bid-approve",
-        "popup=yes,width=800,height=900",
-      )
-      if (!popup) throw new Error("POPUP_BLOCKED")
-      popupRef.current = popup
-      if (popupWatch.current !== null) window.clearInterval(popupWatch.current)
-      popupWatch.current = window.setInterval(() => {
-        if (popupRef.current?.closed) {
-          popupRef.current = null
-          if (popupWatch.current !== null) window.clearInterval(popupWatch.current)
-          popupWatch.current = null
-          setStatus("idle")
-          setMessage("DeSo approval was closed. No bid was placed.")
-        }
-      }, 500)
+      const bidPermission = {
+        NFTOperationLimitMap: {
+          [postHash]: {
+            [edition.serialNumber]: {
+              nft_bid: 1,
+            },
+          },
+        },
+      }
+      if (!(await viaModernIdentity.hasPermissions(bidPermission))) {
+        setMessage("Requesting permission for this exact DeSo NFT edition…")
+        await viaModernIdentity.requestPermissions(bidPermission)
+      }
       setStatus("approval")
-      setMessage(forBuyNow ? "Review the exact Buy Now purchase in DeSo Identity. DeSo executes Buy Now when the bid meets the listed Buy Now price." : "Review the exact NFT bid and spend in DeSo Identity. VIA will submit only after your approval.")
+      setMessage(forBuyNow ? "Signing the exact Buy Now purchase with DeSo Identity…" : "Signing the exact NFT bid with DeSo Identity…")
+      const signedTransactionHex = await viaModernIdentity.signTx(data.transactionHex)
+      setStatus("submitting")
+      setMessage("Submitting the approved NFT bid to DeSo…")
+      const submitResponse = await fetch("/api/via/nft/bid", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        cache: "no-store",
+        body: JSON.stringify({ action: "submit", signedTransactionHex }),
+      })
+      const submitData = await submitResponse.json() as { ok?: boolean; error?: string }
+      if (!submitResponse.ok || !submitData.ok) throw new Error(submitData.error || "SUBMIT_FAILED")
+      setStatus("done")
+      setMessage(forBuyNow ? "Buy Now purchase submitted to DeSo." : "NFT bid submitted to DeSo.")
+      setConfirmed(false)
     } catch (error) {
       setStatus("error")
       setMessage(error instanceof Error && error.message === "POPUP_BLOCKED"

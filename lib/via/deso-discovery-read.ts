@@ -10,6 +10,7 @@ type DeSoPost = {
   VideoURLs?: unknown
   TimestampNanos?: unknown
   LikeCount?: unknown
+  PostEntryReaderState?: { LikedByReader?: unknown } | null
   DiamondCount?: unknown
   CommentCount?: unknown
   RepostCount?: unknown
@@ -49,13 +50,13 @@ function safePostExtraData(value: unknown) {
  * sortByNew switches DeSo's own get-hot-feed endpoint to newest-first order.
  * No wallet authority or write action is requested.
  */
-export async function readDiscoveryPosts(limit = 20, sortByNew = false, seenPosts: string[] = []): Promise<ViaPublicPost[]> {
+export async function readDiscoveryPosts(limit = 20, sortByNew = false, seenPosts: string[] = [], readerPublicKey = ""): Promise<ViaPublicPost[]> {
   const responseLimit = Math.max(1, Math.min(30, Math.trunc(limit) || 20))
   const response = await fetchDeSo("get-hot-feed", {
     method: "POST",
     headers: { "content-type": "application/json", accept: "application/json" },
     body: JSON.stringify({
-      ReaderPublicKeyBase58Check: "",
+      ReaderPublicKeyBase58Check: readerPublicKey,
       SeenPosts: seenPosts.filter((hash) => /^[0-9a-f]{64}$/i.test(hash)).slice(0, 100),
       ResponseLimit: responseLimit,
       Tag: "",
@@ -80,6 +81,7 @@ export async function readDiscoveryPosts(limit = 20, sortByNew = false, seenPost
       videoUrls: safeHttpsUrls(post.VideoURLs),
       timestampNanos: count(post.TimestampNanos),
       likeCount: count(post.LikeCount),
+      isLikedByReader: post.PostEntryReaderState?.LikedByReader === true,
       diamondCount: count(post.DiamondCount),
       commentCount: count(post.CommentCount),
       repostCount: count(post.RepostCount),

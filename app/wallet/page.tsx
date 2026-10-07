@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { useEffect, useState } from "react"
-import { restoreIdentitySession, VIA_IDENTITY_EVENT, type ViaIdentitySession } from "../deso-identity-session"
+import { viaModernIdentity, type ViaModernIdentityUser } from "../deso-identity-modern"
 import ViaAuraCompact from "../via-aura-compact"
 import { fetchViaRates, isViaRateStale, VIA_RATE_REFRESH_MS } from "../via-live-rates"
 import { readViaLocalSettings, VIA_SETTINGS_EVENT, type ViaLanguage } from "../via-local-settings"
@@ -254,7 +254,7 @@ function CoinList({ title, holdings, emptyText, coinLabel }: { title: string; ho
 }
 
 export default function WalletPage() {
-  const [session, setSession] = useState<ViaIdentitySession | null>(null)
+  const [session, setSession] = useState<ViaModernIdentityUser | null>(null)
   const [wallet, setWallet] = useState<WalletData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
@@ -265,14 +265,12 @@ export default function WalletPage() {
   const [language, setLanguage] = useState<ViaLanguage>("English")
 
   useEffect(() => {
-    const restore = () => setSession(restoreIdentitySession())
     const syncLanguage = () => setLanguage(readViaLocalSettings().interfaceLanguage)
-    restore()
+    const unsubscribeIdentity = viaModernIdentity.subscribe(setSession)
     syncLanguage()
-    window.addEventListener(VIA_IDENTITY_EVENT, restore)
     window.addEventListener(VIA_SETTINGS_EVENT, syncLanguage)
     return () => {
-      window.removeEventListener(VIA_IDENTITY_EVENT, restore)
+      unsubscribeIdentity()
       window.removeEventListener(VIA_SETTINGS_EVENT, syncLanguage)
     }
   }, [])

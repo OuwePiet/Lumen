@@ -1,8 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { restoreIdentitySession, VIA_IDENTITY_EVENT, type ViaIdentitySession } from "../deso-identity-session"
-import { signViaTransaction } from "../deso-identity-sign"
+import { viaModernIdentity, type ViaModernIdentityUser } from "../deso-identity-modern"
 
 type Props = {
   followedPublicKey: string
@@ -15,7 +14,7 @@ type SubmitResponse = { ok?: boolean; error?: string }
 type StatusResponse = { ok?: boolean; following?: boolean; self?: boolean; error?: string }
 
 export default function FollowButton({ followedPublicKey, variant = "default", followedUsername = "this user" }: Props) {
-  const [session, setSession] = useState<ViaIdentitySession | null>(null)
+  const [session, setSession] = useState<ViaModernIdentityUser | null>(null)
   const [following, setFollowing] = useState(false)
   const [followsYou, setFollowsYou] = useState(false)
   const [statusReady, setStatusReady] = useState(false)
@@ -24,13 +23,8 @@ export default function FollowButton({ followedPublicKey, variant = "default", f
   const [confirmUnfollow, setConfirmUnfollow] = useState(false)
 
   useEffect(() => {
-    setSession(restoreIdentitySession())
-    const onIdentity = (event: Event) => {
-      const custom = event as CustomEvent<ViaIdentitySession | null>
-      setSession(custom.detail ?? restoreIdentitySession())
-    }
-    window.addEventListener(VIA_IDENTITY_EVENT, onIdentity)
-    return () => window.removeEventListener(VIA_IDENTITY_EVENT, onIdentity)
+    void viaModernIdentity.currentUser().then(setSession)
+    return viaModernIdentity.subscribe(setSession)
   }, [])
 
   useEffect(() => {
@@ -86,7 +80,7 @@ export default function FollowButton({ followedPublicKey, variant = "default", f
       })
       const data = await response.json() as PrepareResponse
       if (!response.ok || !data.ok || !data.transactionHex) throw new Error(data.error || "PREPARE_FAILED")
-      const signedTransactionHex = await signViaTransaction(session.publicKey, data.transactionHex)
+      const signedTransactionHex = await viaModernIdentity.signTx(data.transactionHex)
       const submitResponse = await fetch("/api/via/social/follow", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

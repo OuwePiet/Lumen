@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import CreatorQuickMenu from "./creator-quick-menu";
 import { readViaLocalSettings, VIA_SETTINGS_EVENT, type ViaLanguage } from "../via-local-settings";
-import { restoreIdentitySession, VIA_IDENTITY_EVENT } from "../deso-identity-session";
+import { viaModernIdentity } from "../deso-identity-modern";
 
 type Copy = {
   kicker: string;
@@ -144,7 +144,7 @@ export default function MyViaPage() {
     let controller: AbortController | null = null;
 
     const verifyOwner = async () => {
-      const session = restoreIdentitySession();
+      const session = await viaModernIdentity.currentUser();
       if (!session?.publicKey) {
         if (active) {
           setIsOwner(false);
@@ -175,13 +175,11 @@ export default function MyViaPage() {
       }
     };
 
-    void verifyOwner();
-    const refreshIdentity = () => void verifyOwner();
-    window.addEventListener(VIA_IDENTITY_EVENT, refreshIdentity);
+    const unsubscribeIdentity = viaModernIdentity.subscribe(() => void verifyOwner());
     return () => {
       active = false;
       controller?.abort();
-      window.removeEventListener(VIA_IDENTITY_EVENT, refreshIdentity);
+      unsubscribeIdentity();
     };
   }, []);
 

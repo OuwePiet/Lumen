@@ -3,10 +3,9 @@
 import Link from "next/link"
 import { useEffect, useMemo, useState } from "react"
 import { ArrowLeft, Search, SquarePen } from "lucide-react"
-import { restoreIdentitySession, VIA_IDENTITY_EVENT } from "../deso-identity-session"
+import { viaModernIdentity } from "../deso-identity-modern"
 import ParticipationGate from "../participation-gate"
 import { fetchDeSo } from "../deso-api"
-import { decryptViaMessages, encryptViaMessage, signViaMessageTransaction } from "../deso-identity-messages"
 import { constructViaDMTransaction, getViaDefaultDMGroups, submitViaSignedTransaction } from "./deso-dm-transaction"
 import { readViaLocalSettings, VIA_SETTINGS_EVENT, type ViaLanguage } from "../via-local-settings"
 
@@ -245,16 +244,14 @@ export default function MessagesClient() {
 
   useEffect(() => {
     const syncLanguage = () => setLanguage(readViaLocalSettings().interfaceLanguage)
-    const syncIdentity = () => setPublicKey(restoreIdentitySession()?.publicKey ?? "")
     syncLanguage()
-    syncIdentity()
+    void viaModernIdentity.currentUser().then((user) => setPublicKey(user?.publicKey ?? ""))
+    const unsubscribeIdentity = viaModernIdentity.subscribe((user) => setPublicKey(user?.publicKey ?? ""))
     window.addEventListener(VIA_SETTINGS_EVENT, syncLanguage)
-    window.addEventListener(VIA_IDENTITY_EVENT, syncIdentity)
 
-
-  return () => {
+    return () => {
       window.removeEventListener(VIA_SETTINGS_EVENT, syncLanguage)
-      window.removeEventListener(VIA_IDENTITY_EVENT, syncIdentity)
+      unsubscribeIdentity()
     }
   }, [])
 
@@ -365,40 +362,17 @@ export default function MessagesClient() {
       return
     }
 
-    const encryptedMessages = threadMessages.flatMap((message) => {
-      const encryptedHex = message.MessageInfo?.EncryptedText ?? message.EncryptedText
-      if (!encryptedHex) return []
-      const senderOwner = message.SenderInfo?.OwnerPublicKeyBase58Check ?? message.SenderPublicKeyBase58Check ?? ""
-      const recipientOwner = message.RecipientInfo?.OwnerPublicKeyBase58Check ?? message.RecipientPublicKeyBase58Check ?? ""
-      const isSender = senderOwner === publicKey
-      const publicKeyForDecrypt = isSender
-        ? message.RecipientInfo?.AccessGroupPublicKeyBase58Check ?? recipientOwner
-        : message.SenderInfo?.AccessGroupPublicKeyBase58Check ?? senderOwner
-      if (!publicKeyForDecrypt) return []
-      return [{
-        EncryptedHex: encryptedHex,
-        PublicKey: publicKeyForDecrypt,
-        IsSender: isSender,
-        Legacy: false,
-        Version: 3,
-        SenderMessagingPublicKey: message.SenderInfo?.AccessGroupPublicKeyBase58Check,
-        SenderMessagingGroupKeyName: message.SenderInfo?.AccessGroupKeyName,
-        RecipientMessagingPublicKey: message.RecipientInfo?.AccessGroupPublicKeyBase58Check,
-        RecipientMessagingGroupKeyName: message.RecipientInfo?.AccessGroupKeyName,
-      }]
-    })
-
-    if (encryptedMessages.length === 0) {
-      setDecryptedMessages({})
-      return
-    }
-
     let cancelled = false
-    void decryptViaMessages(publicKey, encryptedMessages)
-      .then((result) => {
+    void Promise.all(threadMessages.map(async (message) => {
+      const encryptedHex = message.MessageInfo?.EncryptedText ?? message.EncryptedText
+      if (!encryptedHex || !message.MessageInfo || !message.SenderInfo || !message.RecipientInfo || !message.ChatType) return null
+
+      const decrypted = await viaModernIdentity.decryptMessage(message as Parameters<typeof viaModernIdentity.decryptMessage>[0])
+      return [encryptedHex, decrypted] as const
+    }))
+      .then((entries) => {
         if (cancelled) return
-        const readable = Object.fromEntries(Object.entries(result).filter((entry): entry is [string, string] => typeof entry[1] === "string"))
-        setDecryptedMessages(readable)
+        setDecryptedMessages(Object.fromEntries(entries.filter((entry): entry is readonly [string, string] => entry !== null)))
       })
       .catch(() => {
         if (!cancelled) setDecryptedMessages({})
@@ -513,9 +487,9 @@ export default function MessagesClient() {
   setSending(true)
   setSendError("")
   try {
-    const encryptedMessage = await encryptViaMessage(publicKey, recipientGroup.AccessGroupPublicKeyBase58Check, message, senderGroup.AccessGroupKeyName)
+    const encryptedMessage = await viaModernIdentity.encryptMessage(recipientGroup.AccessGroupPublicKeyBase58Check, message)
     const transactionHex = await constructViaDMTransaction(senderGroup, recipientGroup, encryptedMessage)
-    const signedTransactionHex = await signViaMessageTransaction(publicKey, transactionHex)
+    const signedTransactionHex = await viaModernIdentity.signTx(transactionHex)
     await submitViaSignedTransaction(signedTransactionHex)
     setDraft("")
     const response = await fetchDeSo("get-paginated-messages-for-dm-thread", {

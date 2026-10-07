@@ -2,9 +2,7 @@
 
 import { useEffect, useRef, useState } from "react"
 import { Repeat2 } from "lucide-react"
-import { restoreIdentitySession, VIA_IDENTITY_EVENT, type ViaIdentitySession } from "../deso-identity-session"
-import { signViaTransaction } from "../deso-identity-sign"
-import { requestIdentityJwt } from "./identity-jwt"
+import { viaModernIdentity, type ViaModernIdentityUser } from "../deso-identity-modern"
 import VideoUploadControl from "./video-upload-control"
 
 const MAX_QUOTE_LENGTH = 5000
@@ -33,7 +31,7 @@ function httpsUrl(value: string) {
 }
 
 export default function RepostButton({ postHash, initialCount, variant = "default" }: Props) {
-  const [session, setSession] = useState<ViaIdentitySession | null>(null)
+  const [session, setSession] = useState<ViaModernIdentityUser | null>(null)
   const [count, setCount] = useState(initialCount)
   const [busy, setBusy] = useState(false)
   const [quoteOpen, setQuoteOpen] = useState(false)
@@ -50,13 +48,8 @@ export default function RepostButton({ postHash, initialCount, variant = "defaul
   const quoteRef = useRef<HTMLTextAreaElement | null>(null)
 
   useEffect(() => {
-    setSession(restoreIdentitySession())
-    const onIdentity = (event: Event) => {
-      const custom = event as CustomEvent<ViaIdentitySession | null>
-      setSession(custom.detail ?? restoreIdentitySession())
-    }
-    window.addEventListener(VIA_IDENTITY_EVENT, onIdentity)
-    return () => window.removeEventListener(VIA_IDENTITY_EVENT, onIdentity)
+    void viaModernIdentity.currentUser().then(setSession)
+    return viaModernIdentity.subscribe(setSession)
   }, [])
 
   useEffect(() => setCount(initialCount), [initialCount])
@@ -112,7 +105,7 @@ export default function RepostButton({ postHash, initialCount, variant = "defaul
     try {
       setImageUploadStatus("jwt")
       setImageUploadMessage("Authorizing this image upload with DeSo Identity…")
-      const jwt = await requestIdentityJwt(session.publicKey)
+      const jwt = await viaModernIdentity.jwt()
       setImageUploadStatus("uploading")
       setImageUploadMessage("Uploading image to the DeSo media endpoint…")
       const form = new FormData()
@@ -165,7 +158,7 @@ export default function RepostButton({ postHash, initialCount, variant = "defaul
       if (!response.ok || !data.ok || !data.transactionHex) throw new Error(data.error || "PREPARE_FAILED")
 
       setMessage(asQuote ? "Signing your Quote Repost with your DeSo Identity session…" : "Signing your repost with your DeSo Identity session…")
-      const signedTransactionHex = await signViaTransaction(session.publicKey, data.transactionHex)
+      const signedTransactionHex = await viaModernIdentity.signTx(data.transactionHex)
       const submitResponse = await fetch("/api/via/social/repost", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -175,6 +168,7 @@ export default function RepostButton({ postHash, initialCount, variant = "defaul
       const submitData = await submitResponse.json() as SubmitResponse
       if (!submitResponse.ok || !submitData.ok) throw new Error(submitData.error || "SUBMIT_FAILED")
       setCount((current) => current + 1)
+      window.dispatchEvent(new Event("via:social:post-published"))
       setMessage(asQuote ? "Quote Repost submitted to DeSo." : "Reposted on DeSo.")
       setQuote("")
       setEmojiOpen(false)
@@ -244,7 +238,9 @@ export default function RepostButton({ postHash, initialCount, variant = "defaul
         <div className="mt-3 rounded-xl border border-zinc-800 bg-zinc-950/70 p-3">
           <p className="text-xs font-medium text-zinc-300">Video</p>
           <VideoUploadControl onReady={setVideoInput} onBusyChange={setVideoUploading} />
-          <input value={videoInput} onChange={(event) => setVideoInput(event.target.value)} placeholder="Ready DeSo video HTTPS URL (optional)" className="mt-3 w-full rounded-lg border border-zinc-800 bg-black/40 px-3 py-2 text-xs text-zinc-300 outline-none focus:border-[#8fd4a9]/55" />
+          <label htmlFor={`via-quote-youtube-${postHash}`} className="mt-3 block text-xs text-zinc-400">Or paste a YouTube link</label>
+          <input id={`via-quote-youtube-${postHash}`} type="url" inputMode="url" value={videoUploading ? "" : videoInput} onChange={(event) => setVideoInput(event.target.value)} disabled={videoUploading} placeholder="https://www.youtube.com/watch?v=…" className="mt-2 w-full rounded-lg border border-zinc-800 bg-black/40 px-3 py-2 text-xs text-zinc-300 outline-none focus:border-[#8fd4a9]/55 disabled:opacity-50" />
+          <p className="mt-1 text-[11px] text-zinc-600">DeSo video uploads may be up to 250 MB. External YouTube links are not uploaded by VIA.</p>
         </div>
 
         {mediaInvalid ? <p className="mt-2 text-xs text-amber-300">Use valid HTTPS media URLs only.</p> : null}
