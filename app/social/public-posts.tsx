@@ -350,8 +350,8 @@ export default function PublicPosts() {
       const endpoint = feedChoice === "following"
         ? `/api/via/following?identity=${encodeURIComponent(session?.publicKey ?? "")}`
         : feedChoice === "hot"
-          ? "/api/via/discovery?limit=20"
-          : "/api/via/discovery?limit=20&sort=new"
+          ? `/api/via/discovery?limit=20&reader=${encodeURIComponent(session?.publicKey ?? "")}`
+          : `/api/via/discovery?limit=20&sort=new&reader=${encodeURIComponent(session?.publicKey ?? "")}`
       const response = await fetch(endpoint, { signal: controller.signal })
       const data = (await response.json()) as PostsResponse
       const nextPosts = response.ok && data.ok && Array.isArray(data.posts) ? data.posts : []
@@ -390,8 +390,8 @@ export default function PublicPosts() {
     try {
       const seen = posts.map((post) => post.postHash).filter(Boolean).slice(-100).join(",")
       const endpoint = feedChoice === "hot"
-        ? `/api/via/discovery?limit=20&seen=${encodeURIComponent(seen)}`
-        : `/api/via/discovery?limit=20&sort=new&seen=${encodeURIComponent(seen)}`
+        ? `/api/via/discovery?limit=20&seen=${encodeURIComponent(seen)}&reader=${encodeURIComponent(session?.publicKey ?? "")}`
+        : `/api/via/discovery?limit=20&sort=new&seen=${encodeURIComponent(seen)}&reader=${encodeURIComponent(session?.publicKey ?? "")}`
       const response = await fetch(endpoint, { signal: controller.signal })
       const data = (await response.json()) as PostsResponse
       const nextPosts = response.ok && data.ok && Array.isArray(data.posts) ? data.posts : []
