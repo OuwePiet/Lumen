@@ -30,7 +30,7 @@ type DeSoPost = {
   VideoURLs?: unknown
   TimestampNanos?: unknown
   LikeCount?: unknown
-  IsLikedByReader?: unknown
+  PostEntryReaderState?: { LikedByReader?: unknown } | null
   DiamondCount?: unknown
   CommentCount?: unknown
   RepostCount?: unknown
@@ -92,7 +92,7 @@ function normalizePublicPost(post: DeSoPost): ViaPublicPost {
     videoUrls: safeHttpsUrls(post.VideoURLs),
     timestampNanos: count(post.TimestampNanos),
     likeCount: count(post.LikeCount),
-    isLikedByReader: post.IsLikedByReader === true,
+    isLikedByReader: post.PostEntryReaderState?.LikedByReader === true,
     diamondCount: count(post.DiamondCount),
     commentCount: count(post.CommentCount),
     repostCount: count(post.RepostCount),
