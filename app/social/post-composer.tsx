@@ -285,7 +285,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
     } catch (error) {
       setStatus("error")
       const code = error instanceof Error ? error.message : "PREPARE_FAILED"
-      setMessage(`The post could not be prepared (${code}). Nothing was posted.`)
+      setMessage(`${isReply ? "The reply" : "The post"} could not be published (${code}). Nothing was posted.`)
     }
   }
 
