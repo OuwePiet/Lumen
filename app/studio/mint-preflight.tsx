@@ -1,7 +1,7 @@
 "use client"
 
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react"
-import { DESO_IDENTITY_ORIGIN, restoreIdentitySession, VIA_IDENTITY_EVENT, type ViaIdentitySession } from "../deso-identity-session"
+import { viaModernIdentity, type ViaModernIdentityUser } from "../deso-identity-modern"
 
 type MintQuote = {
   resolved?: boolean
@@ -49,7 +49,7 @@ function sumKnownNanos(...values: Array<number | null | undefined>) {
 }
 
 export default function MintPreflight({ initialPostHash = "" }: { initialPostHash?: string }) {
-  const [session, setSession] = useState<ViaIdentitySession | null>(null)
+  const [session, setSession] = useState<ViaModernIdentityUser | null>(null)
   const [postHash, setPostHash] = useState(initialPostHash)
   const [copies, setCopies] = useState("1")
   const [forSale, setForSale] = useState(false)
@@ -70,86 +70,22 @@ export default function MintPreflight({ initialPostHash = "" }: { initialPostHas
   const [preflightFailed, setPreflightFailed] = useState(false)
   const [mintStatus, setMintStatus] = useState<"idle"|"preparing"|"approval"|"submitting"|"done"|"error">("idle")
   const [mintMessage, setMintMessage] = useState("")
-  const mintPopupRef = useRef<Window | null>(null)
-  const mintPopupWatch = useRef<number | null>(null)
 
   useEffect(() => {
     if (initialPostHash && /^[0-9a-fA-F]{64}$/.test(initialPostHash)) setPostHash(initialPostHash)
   }, [initialPostHash])
 
   useEffect(() => {
-    setSession(restoreIdentitySession())
-    const onSession = (event: Event) => {
+    void viaModernIdentity.currentUser().then(setSession)
+    return viaModernIdentity.subscribe((user) => {
       requestSequence.current += 1
-      if (mintPopupRef.current) {
-        if (mintPopupWatch.current !== null) window.clearInterval(mintPopupWatch.current)
-        mintPopupWatch.current = null
-        mintPopupRef.current.close()
-        mintPopupRef.current = null
-        setMintStatus("idle")
-        setMintMessage("DeSo Identity changed. The previous mint approval was closed; request a fresh quote and approval.")
-      }
-      setSession((event as CustomEvent<ViaIdentitySession | null>).detail ?? restoreIdentitySession())
-    }
-    window.addEventListener(VIA_IDENTITY_EVENT, onSession)
-    return () => {
-      requestSequence.current += 1
-      window.removeEventListener(VIA_IDENTITY_EVENT, onSession)
-    }
-  }, [])
-
-  useEffect(() => {
-    const onMessage = async (event: MessageEvent) => {
-      if (event.origin !== DESO_IDENTITY_ORIGIN || event.source !== mintPopupRef.current) return
-      if (!event.data || typeof event.data !== "object") return
-      const data = event.data as Record<string, unknown>
-      if (data.service !== "identity") return
-      const payload = data.payload
-      if (!payload || typeof payload !== "object" || Array.isArray(payload)) return
-      const signedTransactionHex = (payload as Record<string, unknown>).signedTransactionHex
-      if (typeof signedTransactionHex !== "string" || !signedTransactionHex) return
-      if (mintPopupWatch.current !== null) window.clearInterval(mintPopupWatch.current)
-      mintPopupWatch.current = null
-      mintPopupRef.current?.close()
-      mintPopupRef.current = null
-      setMintStatus("submitting")
-      setMintMessage("Submitting approved mint to DeSo…")
-      try {
-        const response = await fetch("/api/via/mint/execute", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          cache: "no-store",
-          body: JSON.stringify({ action: "submit", signedTransactionHex }),
-        })
-        const data = await response.json() as { ok?: boolean; error?: string }
-        if (!response.ok || !data.ok) throw new Error(data.error || "SUBMIT_FAILED")
-        setMintStatus("done")
-        setMintMessage("NFT mint submitted to DeSo.")
-        setResult(null)
-      } catch {
-        setMintStatus("error")
-        setMintMessage("The approved NFT mint could not be submitted. VIA changed nothing.")
-      }
-    }
-    window.addEventListener("message", onMessage)
-    return () => {
-      window.removeEventListener("message", onMessage)
-      if (mintPopupWatch.current !== null) window.clearInterval(mintPopupWatch.current)
-      mintPopupWatch.current = null
-      mintPopupRef.current?.close()
-      mintPopupRef.current = null
-    }
-  }, [])
-
-  useEffect(() => {
-    if (mintPopupRef.current) {
-      if (mintPopupWatch.current !== null) window.clearInterval(mintPopupWatch.current)
-      mintPopupWatch.current = null
-      mintPopupRef.current.close()
-      mintPopupRef.current = null
+      setSession(user)
       setMintStatus("idle")
-      setMintMessage("Mint terms changed. The previous DeSo approval was closed; request a fresh quote and approval.")
-    }
+      setMintMessage("DeSo Identity changed. Request a fresh quote before minting.")
+    })
+  }, [])
+
+  useEffect(() => {
     setResult(null)
     setQuotedPublicKey("")
     setServerClockOffset(0)
@@ -258,30 +194,25 @@ export default function MintPreflight({ initialPostHash = "" }: { initialPostHas
       })
       const data = await response.json() as { ok?: boolean; transactionHex?: string; feeNanos?: number | null; spendAmountNanos?: number | null; error?: string }
       if (!response.ok || !data.ok || !data.transactionHex) throw new Error(data.error || "PREPARE_FAILED")
-      const popup = window.open(
-        DESO_IDENTITY_ORIGIN + "/approve?tx=" + encodeURIComponent(data.transactionHex),
-        "via-deso-mint-approve",
-        "popup=yes,width=800,height=900",
-      )
-      if (!popup) throw new Error("POPUP_BLOCKED")
-      mintPopupRef.current = popup
-      if (mintPopupWatch.current !== null) window.clearInterval(mintPopupWatch.current)
-      mintPopupWatch.current = window.setInterval(() => {
-        if (mintPopupRef.current?.closed) {
-          mintPopupRef.current = null
-          if (mintPopupWatch.current !== null) window.clearInterval(mintPopupWatch.current)
-          mintPopupWatch.current = null
-          setMintStatus("idle")
-          setMintMessage("DeSo approval was closed. Nothing was minted.")
-        }
-      }, 500)
       setMintStatus("approval")
-      setMintMessage("Review the freshly prepared NFT mint in DeSo Identity. VIA submits only after your approval.")
-    } catch (error) {
+      setMintMessage("Approve the freshly prepared NFT mint with DeSo Identity…")
+      const signedTransactionHex = await viaModernIdentity.signTx(data.transactionHex)
+      setMintStatus("submitting")
+      setMintMessage("Submitting approved mint to DeSo…")
+      const submitResponse = await fetch("/api/via/mint/execute", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        cache: "no-store",
+        body: JSON.stringify({ action: "submit", signedTransactionHex }),
+      })
+      const submitData = await submitResponse.json() as { ok?: boolean; error?: string }
+      if (!submitResponse.ok || !submitData.ok) throw new Error(submitData.error || "SUBMIT_FAILED")
+      setMintStatus("done")
+      setMintMessage("NFT mint submitted to DeSo.")
+      setResult(null)
+    } catch {
       setMintStatus("error")
-      setMintMessage(error instanceof Error && error.message === "POPUP_BLOCKED"
-        ? "Approval window was blocked. Nothing was minted."
-        : "The NFT mint could not be prepared. Nothing was minted.")
+      setMintMessage("The NFT mint could not be approved or submitted. VIA changed nothing.")
     }
   }
 
