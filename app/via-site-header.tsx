@@ -5,7 +5,9 @@ import { usePathname, useRouter } from "next/navigation"
 import { useEffect, useRef, useState } from "react"
 import { Radio, UsersRound } from "lucide-react"
 import {
+  DESO_LOGIN_URL,
   clearIdentitySession,
+  persistIdentityLogin,
   type ViaIdentitySession,
 } from "./deso-identity-session"
 import ViaIdentityStatusMarks from "./via-identity-status"
@@ -148,6 +150,7 @@ export default function ViaSiteHeader() {
   const pathname = usePathname()
   const router = useRouter()
   const accountWrapRef = useRef<HTMLDivElement | null>(null)
+  const identityWindowRef = useRef<Window | null>(null)
   const searchWrapRef = useRef<HTMLDivElement | null>(null)
   const [session, setSession] = useState<ViaIdentitySession | null>(null)
   const [knownAccounts, setKnownAccounts] = useState<ViaIdentitySession[]>([])
@@ -173,8 +176,22 @@ export default function ViaSiteHeader() {
       setSession(user ? { ...user, accessLevel: 3, signedUp: false } : null)
       refreshKnownAccounts()
     })
+    function handleIdentityMessage(event: MessageEvent) {
+      const identityWindow = identityWindowRef.current
+      if (identityWindow && event.source !== identityWindow) return
+      const nextSession = persistIdentityLogin(event)
+      if (!nextSession) return
+      setSession(nextSession)
+      refreshKnownAccounts()
+      setMenuOpen(false)
+      identityWindowRef.current?.close()
+      identityWindowRef.current = null
+      router.refresh()
+    }
+    window.addEventListener("message", handleIdentityMessage)
     window.addEventListener(VIA_SETTINGS_EVENT, syncSettings)
     return () => {
+      window.removeEventListener("message", handleIdentityMessage)
       unsubscribeIdentity()
       window.removeEventListener(VIA_SETTINGS_EVENT, syncSettings)
     }
@@ -252,11 +269,17 @@ export default function ViaSiteHeader() {
     router.refresh()
   }
 
-  async function loginWithDeSo() {
-    const user = await viaModernIdentity.login()
-    setSession({ ...user, accessLevel: 3, signedUp: false })
-    setMenuOpen(false)
-    router.refresh()
+  function loginWithDeSo() {
+    const h = 1000
+    const w = 800
+    const y = window.outerHeight / 2 + window.screenY - h / 2
+    const x = window.outerWidth / 2 + window.screenX - w / 2
+    const touchDevice = window.matchMedia("(pointer: coarse)").matches
+    const identityWindow = touchDevice
+      ? window.open(DESO_LOGIN_URL, "_blank")
+      : window.open(DESO_LOGIN_URL, undefined, `toolbar=no, width=${w}, height=${h}, top=${y}, left=${x}`)
+    if (!identityWindow) return
+    identityWindowRef.current = identityWindow
   }
 
   function enterPublicMode() {
