@@ -354,7 +354,11 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
           <p className="text-sm font-medium text-zinc-200">Video</p>
           <p className="mt-1 text-xs leading-5 text-zinc-500">Choose one video.</p>
           <VideoUploadControl onReady={setVideoInput} onBusyChange={setVideoUploading} />
-          <p className="mt-1 text-xs text-zinc-600">Your video is attached here. You approve the post before it is published.</p>
+          <div className="mt-3">
+            <label htmlFor={isReply ? `via-reply-youtube-${parentStakeID}` : "via-post-youtube"} className="text-xs text-zinc-400">Or paste a YouTube link</label>
+            <input id={isReply ? `via-reply-youtube-${parentStakeID}` : "via-post-youtube"} type="url" inputMode="url" value={videoUploading ? "" : videoInput} onChange={(event) => setVideoInput(event.target.value)} disabled={videoUploading} placeholder="https://www.youtube.com/watch?v=…" className="mt-2 w-full rounded-lg border border-zinc-800 bg-black/40 px-3 py-2 text-sm text-zinc-200 outline-none focus:border-[#8fd4a9]/55 disabled:opacity-50" />
+          </div>
+          <p className="mt-1 text-xs text-zinc-600">DeSo video uploads may be up to 250 MB. External YouTube links are not uploaded by VIA.</p>
         </div>}
         {mediaInvalid ? <p className="mt-2 text-xs text-amber-300">One of the attached media items is not valid.</p> : null}
       </div> : null}
