@@ -1,6 +1,9 @@
 "use client"
 
 import { identity, type AccessGroupEntryResponse, type NewMessageEntryResponse } from "deso-protocol"
+import { clearIdentitySession, listIdentitySessions, restoreIdentitySession, switchIdentitySession, VIA_IDENTITY_EVENT } from "./deso-identity-session"
+import { signViaTransaction } from "./deso-identity-sign"
+import { requestViaIdentityJwt } from "./deso-identity-jwt"
 
 /**
  * Central modern DeSo Identity boundary for VIA.
@@ -60,6 +63,9 @@ function ensureConfigured() {
 }
 
 async function currentUser(): Promise<ViaModernIdentityUser | null> {
+  const viaSession = restoreIdentitySession()
+  if (viaSession?.publicKey) return { publicKey: viaSession.publicKey }
+
   ensureConfigured()
   const state = await identity.snapshot()
   const publicKey = state.currentUser?.publicKey
@@ -76,14 +82,18 @@ export const viaModernIdentity: ViaModernIdentityAdapter = {
   },
 
   async logout() {
+    clearIdentitySession()
     ensureConfigured()
     await identity.logout()
   },
 
   async alternateUsers() {
+    const users = new Set(listIdentitySessions().map((session) => session.publicKey))
     ensureConfigured()
     const state = await identity.snapshot()
-    return Object.keys(state.alternateUsers ?? {}).map((publicKey) => ({ publicKey }))
+    Object.keys(state.alternateUsers ?? {}).forEach((publicKey) => users.add(publicKey))
+    if (state.currentUser?.publicKey) users.add(state.currentUser.publicKey)
+    return [...users].map((publicKey) => ({ publicKey }))
   },
 
   subscribe(listener) {
@@ -91,11 +101,11 @@ export const viaModernIdentity: ViaModernIdentityAdapter = {
     identityListeners.add(listener)
 
     if (!subscribed) {
-      identity.subscribe((state) => {
-        const publicKey = state.currentUser?.publicKey
-        const user = publicKey ? { publicKey } : null
-        identityListeners.forEach((currentListener) => currentListener(user))
-      })
+      const notify = () => {
+        void currentUser().then((user) => identityListeners.forEach((currentListener) => currentListener(user)))
+      }
+      identity.subscribe(() => notify())
+      window.addEventListener(VIA_IDENTITY_EVENT, notify)
       subscribed = true
     } else {
       void currentUser().then(listener)
@@ -105,11 +115,15 @@ export const viaModernIdentity: ViaModernIdentityAdapter = {
   },
 
   async setActiveUser(publicKey: string) {
+    const viaSession = switchIdentitySession(publicKey)
+    if (viaSession) return
     ensureConfigured()
     await identity.setActiveUser(publicKey)
   },
 
   async signTx(transactionHex: string) {
+    const viaSession = restoreIdentitySession()
+    if (viaSession?.publicKey) return signViaTransaction(viaSession.publicKey, transactionHex)
     ensureConfigured()
     return identity.signTx(transactionHex)
   },
@@ -147,6 +161,8 @@ export const viaModernIdentity: ViaModernIdentityAdapter = {
   },
 
   async jwt() {
+    const viaSession = restoreIdentitySession()
+    if (viaSession?.publicKey) return requestViaIdentityJwt(viaSession.publicKey)
     ensureConfigured()
     return identity.jwt()
   },
