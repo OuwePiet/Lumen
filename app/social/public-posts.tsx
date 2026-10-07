@@ -468,8 +468,14 @@ export default function PublicPosts() {
                 <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-white/[0.06] pt-3 text-xs text-zinc-500">
                   <button type="button" onClick={() => (setReplyParent(null), setReplyingTo(isReplying ? null : post.postHash))} title="Reply" aria-label={`Reply · ${post.commentCount}`} className="inline-flex h-9 min-w-9 items-center justify-center gap-1 rounded-full border border-zinc-800 px-2 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2]"><MessageSquare aria-hidden="true" className="h-4 w-4" /><span>{post.commentCount}</span></button>
                   {session ? <RepostButton postHash={post.postHash} initialCount={totalReposts} variant="icon" /> : <button type="button" title="Repost (DeSo login required)" onClick={() => setActionLoginPost(post.postHash)} className="inline-flex h-9 min-w-9 items-center justify-center gap-1 rounded-full border border-zinc-800 px-2 text-xs text-zinc-300">Repost · {totalReposts}</button>}
-                  {session ? <LikeButton postHash={post.postHash} initialCount={post.likeCount} variant="icon" /> : <button type="button" title="Like (DeSo login required)" onClick={() => setActionLoginPost(post.postHash)} className="inline-flex h-9 min-w-9 items-center justify-center gap-1 rounded-full border border-zinc-800 px-2 text-xs text-zinc-300">Like · {post.likeCount}</button>}
                   {session ? <DiamondButton postHash={post.postHash} receiverPublicKey={post.publicKey} initialCount={post.diamondCount} variant="icon" /> : <button type="button" title="Diamond (DeSo login required)" onClick={() => setActionLoginPost(post.postHash)} className="inline-flex h-9 min-w-9 items-center justify-center gap-1 rounded-full border border-zinc-800 px-2 text-xs text-zinc-300">Diamond · {post.diamondCount}</button>}
+                  {session ? <LikeButton postHash={post.postHash} initialCount={post.likeCount} variant="icon" /> : <button type="button" title="Like (DeSo login required)" onClick={() => setActionLoginPost(post.postHash)} className="inline-flex h-9 min-w-9 items-center justify-center gap-1 rounded-full border border-zinc-800 px-2 text-xs text-zinc-300">Like · {post.likeCount}</button>}
+                  <button type="button" onClick={() => {
+                    const url = `${window.location.origin}/social?post=${encodeURIComponent(post.postHash)}`
+                    if (navigator.share) void navigator.share({ title: "VIA · DeSo post", url }).catch(() => {})
+                    else void navigator.clipboard?.writeText(url)
+                  }} className="inline-flex h-9 min-w-9 items-center justify-center rounded-full border border-zinc-800 px-3 text-xs text-zinc-300">Share</button>
+                  {session ? <LocalSaveButton postHash={post.postHash} body={post.body} publicKey={post.publicKey} timestampNanos={post.timestampNanos} /> : <button type="button" title="Save (DeSo login required)" onClick={() => setActionLoginPost(post.postHash)} className="inline-flex h-9 min-w-9 items-center justify-center rounded-full border border-zinc-800 px-3 text-xs text-zinc-300">Save</button>}
                   <details className="relative">
                     <summary aria-label="Meer postacties" title="Meer postacties" className="cursor-pointer list-none rounded-full border border-zinc-800 px-3 py-1 text-zinc-400">•••</summary>
                     <div className="mt-2 flex flex-col overflow-hidden rounded-xl border border-zinc-800 bg-[#050806] text-left">
@@ -483,11 +489,6 @@ export default function PublicPosts() {
                         ;(document.activeElement as HTMLElement | null)?.closest("details")?.removeAttribute("open")
                       }} className="px-3 py-2 text-left text-zinc-300 hover:bg-white/[0.04]">🌐 Translate / Vertalen</button>
                       <button type="button" onClick={() => void navigator.clipboard?.writeText(`${window.location.origin}/social?post=${encodeURIComponent(post.postHash)}`)} className="px-3 py-2 text-left text-zinc-300 hover:bg-white/[0.04]">Link to Post</button>
-                      {session ? <button type="button" onClick={() => {
-                        const url = `${window.location.origin}/social?post=${encodeURIComponent(post.postHash)}`
-                        if (navigator.share) void navigator.share({ title: "VIA · DeSo post", url }).catch(() => {})
-                        else void navigator.clipboard?.writeText(url)
-                      }} className="px-3 py-2 text-left text-zinc-300 hover:bg-white/[0.04]">Share Post</button> : null}
                       <XShareButton href={`/social?post=${encodeURIComponent(post.postHash)}`} text={post.body ? post.body.slice(0, 180) : "VIA · DeSo post"} label="X" className="px-3 py-2 text-left text-zinc-300 hover:bg-white/[0.04]" />
                       {session ? <button type="button" onClick={() => {
                         const url = `${window.location.origin}/social?post=${encodeURIComponent(post.postHash)}`
@@ -495,11 +496,7 @@ export default function PublicPosts() {
 ${url}`
                         window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank", "noopener,noreferrer")
                       }} className="px-3 py-2 text-left text-zinc-300 hover:bg-white/[0.04]">WhatsApp</button> : null}
-                      {session ? <div className="[&_button]:w-full [&_button]:rounded-none [&_button]:border-0 [&_button]:px-3 [&_button]:py-2 [&_button]:text-left">
-                        <LocalSaveButton postHash={post.postHash} body={post.body} publicKey={post.publicKey} timestampNanos={post.timestampNanos} />
-                      </div> : null}
                       {session ? <div className="[&_button]:w-full [&_button]:rounded-none [&_button]:border-0 [&_button]:px-3 [&_button]:py-2 [&_button]:text-left"><FollowButton followedPublicKey={post.publicKey} /></div> : null}
-                      {session ? <Link href={`/?account=${encodeURIComponent(post.publicKey)}#collection-controls`} className="px-3 py-2 text-zinc-300 hover:bg-white/[0.04]">NFTs</Link> : null}
                       <button type="button" onClick={(event) => (event.currentTarget.closest("details") as HTMLDetailsElement | null)?.removeAttribute("open")} className="border-t border-zinc-800 px-3 py-2 text-left text-zinc-400 hover:bg-white/[0.04]">Sluiten</button>
                     </div>
                   </details>
