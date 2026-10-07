@@ -49,6 +49,25 @@ function safeHttps(url: string) {
   }
 }
 
+function youtubeEmbedUrl(value: string) {
+  try {
+    const url = new URL(value)
+    const host = url.hostname.toLowerCase().replace(/^www\./, "")
+    let videoId = ""
+    if (host === "youtu.be") videoId = url.pathname.split("/").filter(Boolean)[0] ?? ""
+    else if (host === "youtube.com" || host === "m.youtube.com") {
+      if (url.pathname === "/watch") videoId = url.searchParams.get("v") ?? ""
+      else {
+        const parts = url.pathname.split("/").filter(Boolean)
+        if (["embed", "shorts", "live"].includes(parts[0] ?? "")) videoId = parts[1] ?? ""
+      }
+    }
+    return /^[A-Za-z0-9_-]{6,20}$/.test(videoId) ? `https://www.youtube-nocookie.com/embed/${videoId}` : null
+  } catch {
+    return null
+  }
+}
+
 function postTime(timestampNanos: number) {
   if (!Number.isFinite(timestampNanos) || timestampNanos <= 0) return ""
   const date = new Date(timestampNanos / 1_000_000)
@@ -481,7 +500,12 @@ export default function PublicPosts() {
 
                 {videos.length ? (
                   <div className="mt-4 space-y-2">
-                    {videos.map((url, index) => <video key={`${post.postHash}-video-${index}`} src={url} controls preload="none" playsInline className="max-h-[32rem] w-full rounded-xl" />)}
+                    {videos.map((url, index) => {
+                      const youtube = youtubeEmbedUrl(url)
+                      return youtube
+                        ? <iframe key={`${post.postHash}-video-${index}`} src={youtube} title="YouTube video" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen className="aspect-video w-full rounded-xl border-0" />
+                        : <video key={`${post.postHash}-video-${index}`} src={url} controls preload="none" playsInline className="max-h-[32rem] w-full rounded-xl" />
+                    })}
                   </div>
                 ) : null}
 
