@@ -439,7 +439,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
   const categories = useMemo(() => (Object.keys(copy.categories) as Category[]).map((id) => ({ id, label: copy.categories[id] })), [copy])
   const [session, setSession] = useState<ViaModernIdentityUser | null>(null)
   const [items, setItems] = useState<NotificationItem[]>([])
-  const filterCategoryIds = useMemo(() => categories.map((option) => option.id).filter((id): id is Exclude<Category, "all"> => id !== "all" && id !== "nft"), [categories])
+  const filterCategoryIds = useMemo(() => categories.map((option) => option.id).filter((id): id is Exclude<Category, "all"> => id !== "all" && id !== "nft" && id !== "other"), [categories])
   const [activeCategories, setActiveCategories] = useState<Exclude<Category, "all">[]>(() => ["reaction", "diamond1", "diamondMany", "creatorCoin", "follow", "mention5", "mention6", "reply", "repost", "other"])
   const [status, setStatus] = useState<"idle" | "loading" | "ready" | "error">("idle")
   const [messageKey, setMessageKey] = useState<"loading" | "loaded" | "empty" | "error" | "">("")
@@ -703,7 +703,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
 
   function toggleCategory(id: Category) {
     if (id === "all") {
-      setActiveCategories(allCategoriesActive ? [] : filterCategoryIds)
+      setActiveCategories((current) => allCategoriesActive ? current.filter((id) => !filterCategoryIds.includes(id)) : Array.from(new Set([...current, ...filterCategoryIds])))
       return
     }
     if (id === "diamond1" || id === "diamondMany") {
