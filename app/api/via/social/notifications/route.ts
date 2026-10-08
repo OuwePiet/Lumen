@@ -11,6 +11,10 @@ type NotificationRequest = {
   fetchStartIndex?: unknown
   numToFetch?: unknown
   action?: unknown
+  jwt?: unknown
+  lastSeenIndex?: unknown
+  lastUnreadNotificationIndex?: unknown
+  unreadNotifications?: unknown
 }
 
 function parseInteger(value: unknown, fallback: number, min: number, max: number) {
@@ -56,6 +60,34 @@ export async function POST(request: Request) {
       }, { headers: { "Cache-Control": "no-store" } })
     } catch {
       return NextResponse.json({ ok: false, error: "DESO_UNREAD_COUNT_UNAVAILABLE" }, { status: 503 })
+    }
+  }
+
+  if (body.action === "mark-read") {
+    const jwt = typeof body.jwt === "string" ? body.jwt.trim() : ""
+    const indices = [body.lastSeenIndex, body.lastUnreadNotificationIndex, body.unreadNotifications]
+    if (jwt.length < 20 || jwt.length > 8192 || indices.some((value) =>
+      typeof value !== "number" || !Number.isSafeInteger(value) || value < 0
+    )) {
+      return NextResponse.json({ ok: false, error: "INVALID_NOTIFICATION_METADATA" }, { status: 400 })
+    }
+    try {
+      const response = await fetchDeSo("set-notification-metadata", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          PublicKeyBase58Check: publicKey,
+          LastSeenIndex: body.lastSeenIndex,
+          LastUnreadNotificationIndex: body.lastUnreadNotificationIndex,
+          UnreadNotifications: body.unreadNotifications,
+          JWT: jwt,
+        }),
+        cache: "no-store",
+      })
+      if (!response.ok) return NextResponse.json({ ok: false, error: "DESO_NOTIFICATION_METADATA_REJECTED" }, { status: 502 })
+      return NextResponse.json({ ok: true, source: "deso-set-notification-metadata" }, { headers: { "Cache-Control": "no-store" } })
+    } catch {
+      return NextResponse.json({ ok: false, error: "DESO_NOTIFICATION_METADATA_UNAVAILABLE" }, { status: 503 })
     }
   }
 
