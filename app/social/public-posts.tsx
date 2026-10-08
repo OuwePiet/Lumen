@@ -479,7 +479,7 @@ export default function PublicPosts() {
               <article key={post.postHash} className="rounded-2xl border border-zinc-800/80 bg-[#050806]/80 p-4 sm:p-5">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="flex min-w-0 items-center gap-2.5">
-                    {creatorPic ? <img src={creatorPic} alt="" loading="lazy" className="h-9 w-9 shrink-0 rounded-full object-cover" /> : <div aria-hidden="true" className="h-9 w-9 shrink-0 rounded-full border border-zinc-800 bg-black/30" />}
+                    <Link href={`/profile/${encodeURIComponent(post.publicKey)}`} aria-label={`Open creator profile ${creatorUsername ? `@${creatorUsername}` : shortPublicKey(post.publicKey)}`} className="block h-9 w-9 shrink-0 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#8fd4a9]">{creatorPic ? <img src={creatorPic} alt="" loading="lazy" className="h-9 w-9 rounded-full object-cover" /> : <span aria-hidden="true" className="block h-9 w-9 rounded-full border border-zinc-800 bg-black/30" />}</Link>
                     <div className="min-w-0">
                     <p className="text-xs font-semibold text-zinc-300">
                       DeSo · <Link href={`/profile/${encodeURIComponent(post.publicKey)}`} className="text-zinc-200 transition hover:text-[#9adbb2]">{creatorUsername ? `@${creatorUsername}` : shortPublicKey(post.publicKey)}{creator?.isVerified ? " ✓" : ""}</Link>
