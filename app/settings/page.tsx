@@ -66,6 +66,27 @@ export function ViaSettingsContent({ embedded = false }: { embedded?: boolean })
     }
   }
 
+  if (embedded) return (
+    <div className="grid gap-3 text-sm text-zinc-100">
+      <label className="grid gap-2 font-semibold">
+        VIA taal
+        <select value={interfaceLanguage} onChange={(event) => {
+          const next = event.target.value as ViaLanguage
+          setInterfaceLanguage(next)
+          saveViaLocalSettings({ interfaceLanguage: next })
+          setStatus("Taal opgeslagen op dit apparaat.")
+        }} className={selectClass}>
+          {VIA_LANGUAGES.map((item) => <option key={item} value={item}>{item}</option>)}
+        </select>
+      </label>
+      <button type="button" className={quietAction} onClick={(event) => {
+        const panel = event.currentTarget.closest("details")
+        if (panel) panel.open = false
+      }}>Terug naar Postkantoor</button>
+      <p className="text-xs text-zinc-400" role="status" aria-live="polite">{status}</p>
+    </div>
+  )
+
   return (
     <main className={embedded ? "text-zinc-100" : "min-h-screen bg-[#050807] px-5 py-8 text-zinc-100 sm:px-8 lg:px-12"}>
       <div className="mx-auto max-w-4xl">
