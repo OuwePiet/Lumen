@@ -10,6 +10,7 @@ type NotificationRequest = {
   publicKey?: unknown
   fetchStartIndex?: unknown
   numToFetch?: unknown
+  action?: unknown
 }
 
 function parseInteger(value: unknown, fallback: number, min: number, max: number) {
@@ -28,6 +29,34 @@ export async function POST(request: Request) {
   const publicKey = typeof body.publicKey === "string" ? body.publicKey.trim() : ""
   if (!PUBLIC_KEY_RE.test(publicKey)) {
     return NextResponse.json({ ok: false, error: "INVALID_PUBLIC_KEY" }, { status: 400 })
+  }
+
+  if (body.action === "unread") {
+    try {
+      const response = await fetchDeSo("get-unread-notifications-count", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ PublicKeyBase58Check: publicKey }),
+        cache: "no-store",
+      })
+      if (!response.ok) {
+        return NextResponse.json({ ok: false, error: "DESO_UNREAD_COUNT_UNAVAILABLE" }, { status: 502 })
+      }
+      const data = await response.json() as Record<string, unknown>
+      const count = data.NotificationsCount
+      if (typeof count !== "number" || !Number.isSafeInteger(count) || count < 0) {
+        return NextResponse.json({ ok: false, error: "INVALID_DESO_UNREAD_COUNT" }, { status: 502 })
+      }
+      return NextResponse.json({
+        ok: true,
+        source: "deso-get-unread-notifications-count",
+        unreadCount: count,
+        lastUnreadNotificationIndex: typeof data.LastUnreadNotificationIndex === "number" ? data.LastUnreadNotificationIndex : null,
+        updateMetadata: data.UpdateMetadata === true,
+      }, { headers: { "Cache-Control": "no-store" } })
+    } catch {
+      return NextResponse.json({ ok: false, error: "DESO_UNREAD_COUNT_UNAVAILABLE" }, { status: 503 })
+    }
   }
 
   const fetchStartIndex = parseInteger(body.fetchStartIndex, -1, -1, Number.MAX_SAFE_INTEGER)
