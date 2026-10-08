@@ -707,7 +707,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
   }
 
   return (
-    <section className={`${expandedView ? "max-h-[calc(100vh-6rem)]" : "max-h-[88vh]"} overflow-y-auto rounded-2xl border border-zinc-800 bg-zinc-950/60`} aria-labelledby="notification-center-heading">
+    <section className={`${expandedView ? "max-h-[calc(100vh-6rem)]" : "max-h-[88vh]"} min-w-0 w-full max-w-full overflow-x-hidden overflow-y-auto rounded-2xl border border-zinc-800 bg-zinc-950/60`} aria-labelledby="notification-center-heading">
       <div className="sticky top-0 z-20 flex flex-nowrap items-center justify-between gap-1 border-b border-zinc-800 bg-zinc-950/95 px-2 py-1 backdrop-blur max-sm:flex-col-reverse max-sm:items-stretch sm:flex-wrap sm:gap-3 sm:px-5 sm:py-4">
         <div className="hidden sm:block">
           <h2 id="notification-center-heading" className="whitespace-nowrap text-xl font-semibold text-white">{copy.heading}</h2>
@@ -756,7 +756,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
       </div>
 
       <div className="sticky top-[36px] z-20 border-b border-zinc-800 bg-zinc-950/95 px-1 py-1 backdrop-blur sm:top-[73px] sm:px-4 sm:py-3" aria-label={copy.filters}>
-        <div className="flex justify-between gap-0.5 overflow-visible px-0 pb-3 pt-0.5 sm:flex-wrap sm:justify-start sm:gap-2 sm:px-0 sm:pt-0 sm:pb-0">
+        <div className="flex min-w-0 justify-between gap-0.5 overflow-x-auto overflow-y-hidden px-0 pb-3 pt-0.5 sm:flex-wrap sm:justify-start sm:gap-2 sm:px-0 sm:pt-0 sm:pb-0">
           {([
             { id: "all", label: copy.categories.all, symbol: "●", ids: filterCategoryIds },
             { id: "likes", symbol: "♥", label: language === "Dutch" ? "Likes" : language === "French" ? "J’aime" : language === "Spanish" ? "Me gusta" : language === "Chinese" ? "点赞" : language === "Hindi" ? "लाइक्स" : "Likes", ids: ["reaction"] },
