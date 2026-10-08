@@ -44,7 +44,7 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
   function diamondUsd(nanos: number) {
     if (!Number.isFinite(nanos) || !desoUsd) return null
     const usd = (nanos / 1_000_000_000) * desoUsd
-    return usd < 1 ? `${Math.max(usd, 0.01).toFixed(2)}` : `${usd.toLocaleString(undefined, { maximumFractionDigits: 0 })}`
+    return usd < 0.01 ? `<$0.01` : usd < 1 ? `${usd.toFixed(2)}` : `${usd.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
   }
 
   useEffect(() => {
