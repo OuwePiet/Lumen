@@ -575,6 +575,25 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
               latestIndex,
               lastSeenIndex: typeof data.lastSeenIndex === "number" ? data.lastSeenIndex : null,
             }
+            // Save only the boundary observed on this visit, scoped to this account.
+            // No JWT, read update or DeSo metadata mutation occurs here.
+            try {
+              const key = `via:notifications:visit:${publicKey}`
+              const previous = window.localStorage.getItem(key)
+              if (previous) {
+                const parsed: unknown = JSON.parse(previous)
+                if (parsed && typeof parsed === "object" && "latestIndex" in parsed) {
+                  const priorIndex = (parsed as { latestIndex?: unknown }).latestIndex
+                  if (typeof priorIndex === "number" && Number.isSafeInteger(priorIndex) && priorIndex >= 0) {
+                    // Preserve the earlier boundary for a future guarded DeSo update.
+                    window.sessionStorage.setItem(`via:notifications:previous-visit:${publicKey}`, String(priorIndex))
+                  }
+                }
+              }
+              window.localStorage.setItem(key, JSON.stringify({ latestIndex }))
+            } catch {
+              // Browser storage can be unavailable in private browsing.
+            }
           }
         }
         setItems(ordered)
