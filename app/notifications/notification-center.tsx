@@ -441,6 +441,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
   const [items, setItems] = useState<NotificationItem[]>([])
   const filterCategoryIds = useMemo(() => categories.map((option) => option.id).filter((id): id is Exclude<Category, "all"> => id !== "all" && id !== "nft" && id !== "other"), [categories])
   const [activeCategories, setActiveCategories] = useState<Exclude<Category, "all">[]>(() => ["reaction", "diamond1", "diamondMany", "creatorCoin", "follow", "mention5", "mention6", "reply", "repost", "other"])
+  const [preferencesHydratedFor, setPreferencesHydratedFor] = useState<string | null>(null)
   const [status, setStatus] = useState<"idle" | "loading" | "ready" | "error">("idle")
   const [messageKey, setMessageKey] = useState<"loading" | "loaded" | "empty" | "error" | "">("")
   const [lastSeenIndex, setLastSeenIndex] = useState<number | null>(null)
@@ -496,6 +497,37 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
   useEffect(() => {
     return viaModernIdentity.subscribe(setSession)
   }, [])
+
+  // Notification filters are display preferences only. Keep them local and
+  // separate for each DeSo public key; never send them to the blockchain.
+  useEffect(() => {
+    const publicKey = session?.publicKey
+    if (!publicKey) {
+      setPreferencesHydratedFor(null)
+      return
+    }
+    const defaults: Exclude<Category, "all">[] = ["reaction", "diamond1", "diamondMany", "creatorCoin", "follow", "mention5", "mention6", "reply", "repost", "other"]
+    let selected = defaults
+    try {
+      const stored = window.localStorage.getItem(`via:notifications:filters:${publicKey}`)
+      if (stored !== null) {
+        const parsed: unknown = JSON.parse(stored)
+        if (Array.isArray(parsed)) {
+          selected = defaults.filter((id) => parsed.includes(id))
+        }
+      }
+    } catch {}
+    setActiveCategories(selected)
+    setPreferencesHydratedFor(publicKey)
+  }, [session?.publicKey])
+
+  useEffect(() => {
+    const publicKey = session?.publicKey
+    if (!publicKey || preferencesHydratedFor !== publicKey) return
+    try {
+      window.localStorage.setItem(`via:notifications:filters:${publicKey}`, JSON.stringify(activeCategories))
+    } catch {}
+  }, [session?.publicKey, preferencesHydratedFor, activeCategories])
 
   useEffect(() => {
     if (!session) {
