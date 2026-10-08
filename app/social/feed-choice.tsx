@@ -34,11 +34,9 @@ export default function FeedChoice() {
         ? normalized as ChoiceId
         : defaultSocialFeedChoice()
       setSelected(initial)
-      window.setTimeout(() => window.dispatchEvent(new CustomEvent<ChoiceId>(VIA_SOCIAL_FEED_EVENT, { detail: initial })), 0)
     } catch {
       const initial = defaultSocialFeedChoice()
       setSelected(initial)
-      window.setTimeout(() => window.dispatchEvent(new CustomEvent<ChoiceId>(VIA_SOCIAL_FEED_EVENT, { detail: initial })), 0)
       setStatus("Feed preference could not be read from this browser.")
     }
   }, [])
