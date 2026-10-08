@@ -756,7 +756,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
       </div>
 
       <div className="sticky top-[36px] z-20 border-b border-zinc-800 bg-zinc-950/95 px-1 py-1 backdrop-blur sm:top-[73px] sm:px-4 sm:py-3" aria-label={copy.filters}>
-        <div className="flex min-w-0 justify-between gap-0.5 overflow-x-auto overflow-y-hidden px-0 pb-3 pt-0.5 sm:flex-wrap sm:justify-start sm:gap-2 sm:px-0 sm:pt-0 sm:pb-0">
+        <div className="grid min-w-0 grid-cols-7 items-center justify-items-center gap-0.5 overflow-hidden px-0 pb-3 pt-0.5 sm:flex sm:flex-wrap sm:justify-start sm:justify-items-stretch sm:gap-2 sm:px-0 sm:pt-0 sm:pb-0">
           {([
             { id: "all", label: copy.categories.all, symbol: "●", ids: filterCategoryIds },
             { id: "likes", symbol: "♥", label: language === "Dutch" ? "Likes" : language === "French" ? "J’aime" : language === "Spanish" ? "Me gusta" : language === "Chinese" ? "点赞" : language === "Hindi" ? "लाइक्स" : "Likes", ids: ["reaction"] },
