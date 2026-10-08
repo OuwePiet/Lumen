@@ -5,6 +5,7 @@ import PublicPosts from "./public-posts"
 import ParticipationGate from "../participation-gate"
 import PostComposer from "./post-composer"
 import SocialLocalizer from "./social-localizer"
+import { ViaSettingsContent } from "../settings/page"
 export const metadata: Metadata = {
   title: "VIA Post Office",
   description: "Write, publish and follow native DeSo posts in the VIA way.",
@@ -29,18 +30,23 @@ export default function SocialPage() {
             <summary className="w-fit cursor-pointer list-none rounded-full border border-white/10 bg-white/[0.02] px-4 py-2 text-sm text-zinc-300">Snelkeuzes ▾</summary>
             <nav className="mt-2 flex gap-2 overflow-x-auto pb-1" aria-label="VIA Post Office shortcuts">
               <Link href="/saved" className="shrink-0 rounded-full border border-white/10 bg-white/[0.02] px-4 py-2 text-center text-sm text-zinc-300">Saved</Link>
-              <Link href="/settings" className="shrink-0 rounded-full border border-white/10 bg-white/[0.02] px-4 py-2 text-center text-sm text-zinc-300">Settings</Link>
+              
               <Link href="/help" className="shrink-0 rounded-full border border-white/10 bg-white/[0.02] px-4 py-2 text-center text-sm text-zinc-300">Handboek VIA</Link>
               <Link href="/music" className="shrink-0 rounded-full border border-white/10 bg-white/[0.02] px-4 py-2 text-center text-sm text-zinc-300">VIA Muziek</Link>
             </nav>
           </details>
           <nav className="hidden w-auto flex-wrap gap-2 sm:flex" aria-label="VIA Post Office shortcuts">
             <Link href="/saved" className="rounded-full border border-white/10 bg-white/[0.02] px-4 py-2 text-center text-sm text-zinc-300 transition hover:border-[#8fd4a9]/40 hover:text-[#9adbb2]">Saved</Link>
-            <Link href="/settings" className="rounded-full border border-white/10 bg-white/[0.02] px-4 py-2 text-center text-sm text-zinc-300 transition hover:border-[#8fd4a9]/40 hover:text-[#9adbb2]">Settings</Link>
+            
             <Link href="/help" className="rounded-full border border-white/10 bg-white/[0.02] px-4 py-2 text-center text-sm text-zinc-300 transition hover:border-[#8fd4a9]/40 hover:text-[#9adbb2]">Handboek VIA</Link>
             <Link href="/music" className="rounded-full border border-white/10 bg-white/[0.02] px-4 py-2 text-center text-sm text-zinc-300 transition hover:border-[#8fd4a9]/40 hover:text-[#9adbb2]">VIA Muziek</Link>
           </nav>
         </header>
+
+        <details className="mb-3 rounded-2xl border border-white/10 bg-black/35 p-3 sm:mb-5 sm:p-4" id="via-post-office-language">
+          <summary className="cursor-pointer text-sm font-semibold text-[#9adbb2]">Taal ▾</summary>
+          <div className="mt-4"><ViaSettingsContent embedded /></div>
+        </details>
 
         <section id="via-post-composer" className="scroll-mt-24 rounded-2xl border border-white/10 bg-black/35 p-3 sm:p-4" aria-labelledby="composer-heading">
           <div className="flex flex-wrap items-center justify-between gap-3 sm:mb-2">
