@@ -59,20 +59,18 @@ export default function LikeButton({ postHash, initialCount, initialLiked = fals
       window.dispatchEvent(new Event("via:social:post-published"))
       setBusy(false)
     } catch {
-      setMessage("Like transaction could not be prepared. Nothing changed.")
+      setMessage("Like niet verzonden. Controleer DeSo-toestemming of probeer opnieuw.")
       setBusy(false)
     }
   }
-
-  if (!session) return <span>{count} likes</span>
 
   return (
     <span className="inline-flex items-center gap-2">
       <button
         type="button"
         onClick={toggleLike}
-        disabled={busy}
-        title={liked ? "Unlike" : "Like"}
+        disabled={busy || !session}
+        title={!session ? "Log in via VIA to like" : liked ? "Unlike" : "Like"}
         aria-label={liked ? `Unlike · ${count}` : `Like · ${count}`}
         className={variant === "icon"
           ? `inline-flex h-9 min-w-9 items-center justify-center gap-1 rounded-full border px-2 text-xs transition disabled:cursor-wait disabled:opacity-60 ${liked ? "border-[#8fd4a9] bg-[#285f40] text-white" : "border-zinc-800 text-zinc-300 hover:border-[#8fd4a9] hover:text-white"}`
@@ -80,7 +78,7 @@ export default function LikeButton({ postHash, initialCount, initialLiked = fals
       >
         {variant === "icon" ? <><Heart className={`h-4 w-4 ${liked ? "fill-current" : ""}`} aria-hidden="true" /><span>{count}</span></> : (busy ? "Waiting…" : liked ? `Unlike · ${count}` : `Like · ${count}`)}
       </button>
-      {message ? <span className="sr-only" role="status" aria-live="polite">{message}</span> : null}
+      {message ? <span className="text-xs text-zinc-400" role="status" aria-live="polite">{message}</span> : null}
     </span>
   )
 }
