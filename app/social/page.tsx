@@ -43,8 +43,8 @@ export default function SocialPage() {
           </nav>
         </header>
 
-        <details className="mb-3 rounded-2xl border border-white/10 bg-black/35 p-3 sm:mb-5 sm:p-4" id="via-post-office-settings">
-          <summary className="cursor-pointer text-sm font-semibold text-[#9adbb2]">Settings ▾</summary>
+        <details className="mb-3 rounded-2xl border border-white/10 bg-black/35 p-3 sm:mb-5 sm:p-4" id="via-post-office-language">
+          <summary className="cursor-pointer text-sm font-semibold text-[#9adbb2]">Taal ▾</summary>
           <div className="mt-4"><ViaSettingsContent embedded /></div>
         </details>
 
