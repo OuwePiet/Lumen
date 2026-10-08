@@ -767,7 +767,8 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
             { id: "follows", symbol: "+", label: copy.categories.follow, ids: ["follow"] },
           ] as { id: string; label: string; symbol: string; ids: Exclude<Category, "all">[] }[]).map((option) => {
             const active = option.ids.every((id) => activeCategories.includes(id))
-            const count = option.id === "all" ? items.length : items.filter((item) => option.ids.includes(categoryOf(item))).length
+            const unreadItems = lastSeenIndex === null ? [] : items.filter((item) => typeof item.Index === "number" && item.Index > lastSeenIndex)
+            const count = option.id === "all" ? unreadItems.length : unreadItems.filter((item) => option.ids.includes(categoryOf(item))).length
             return <button key={option.id} type="button" aria-pressed={active} onClick={() => {
               setActiveCategories((current) => {
                 if (option.id === "all") return allCategoriesActive ? [] : filterCategoryIds
