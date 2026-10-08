@@ -531,6 +531,10 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
 
   useEffect(() => {
     if (!session) {
+      visitSnapshotRef.current = null
+      setLastSeenIndex(null)
+      setHasOlder(false)
+      setExpandedKey(null)
       setItems([])
       setStatus("idle")
       setMessageKey("")
@@ -558,6 +562,9 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
           body: JSON.stringify({ publicKey, fetchStartIndex: -1, numToFetch: 40 }),
         })
         const data = await response.json() as NotificationResponse
+        // An account switch can abort a request after its response has arrived.
+        // Never let that obsolete response update the visible account or snapshot.
+        if (controller.signal.aborted) return
         if (!response.ok || !data.ok || !Array.isArray(data.notifications)) throw new Error(data.error || "NOTIFICATIONS_FAILED")
         const ordered = [...data.notifications].sort((a, b) => (b.Index ?? -1) - (a.Index ?? -1))
         if (!visitSnapshotRef.current && ordered.length > 0) {
