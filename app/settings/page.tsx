@@ -17,6 +17,8 @@ const action = "inline-flex min-h-11 items-center justify-center rounded-[11px] 
 const quietAction = "inline-flex min-h-10 items-center rounded-[10px] border border-zinc-700/80 bg-transparent px-3 py-2 text-sm text-zinc-300 transition-colors hover:border-[#8fd4a9]/50 hover:text-[#9adbb2] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8fd4a9]/15"
 const QUALITY_SHIELD_STORAGE_KEY = "via:notifications:quality-shield"
 
+const VIA_LANGUAGE_FLAGS: Record<ViaLanguage, string> = { Dutch: "🇳🇱", English: "🇬🇧", French: "🇫🇷", Spanish: "🇪🇸", Chinese: "🇨🇳", Hindi: "🇮🇳" }
+
 const selectClass = "min-h-11 w-full rounded-[10px] border border-zinc-700/80 bg-[#050807] px-3 py-2 text-sm text-zinc-100 outline-none focus:border-[#8fd4a9]/55 focus:ring-2 focus:ring-[#8fd4a9]/10"
 
 export function ViaSettingsContent({ embedded = false }: { embedded?: boolean }) {
@@ -76,7 +78,7 @@ export function ViaSettingsContent({ embedded = false }: { embedded?: boolean })
           saveViaLocalSettings({ interfaceLanguage: next })
           setStatus("Taal opgeslagen op dit apparaat.")
         }} className={selectClass}>
-          {VIA_LANGUAGES.map((item) => <option key={item} value={item}>{item}</option>)}
+          {VIA_LANGUAGES.map((item) => <option key={item} value={item}>{VIA_LANGUAGE_FLAGS[item]} {item}</option>)}
         </select>
       </label>
       <button type="button" className={quietAction} onClick={(event) => {
@@ -107,12 +109,12 @@ export function ViaSettingsContent({ embedded = false }: { embedded?: boolean })
           <div className="mt-5 grid gap-4 sm:grid-cols-2">
             <label className="grid gap-2 text-sm font-semibold text-zinc-200">VIA interface language
               <select value={interfaceLanguage} onChange={(event) => setInterfaceLanguage(event.target.value as ViaLanguage)} className={selectClass}>
-                {VIA_LANGUAGES.map((item) => <option key={item} value={item}>{item}</option>)}
+                {VIA_LANGUAGES.map((item) => <option key={item} value={item}>{VIA_LANGUAGE_FLAGS[item]} {item}</option>)}
               </select>
             </label>
             <label className="grid gap-2 text-sm font-semibold text-zinc-200">Default post language
               <select value={language} onChange={(event) => setLanguage(event.target.value as ViaLanguage)} className={selectClass}>
-                {VIA_LANGUAGES.map((item) => <option key={item} value={item}>{item}</option>)}
+                {VIA_LANGUAGES.map((item) => <option key={item} value={item}>{VIA_LANGUAGE_FLAGS[item]} {item}</option>)}
               </select>
             </label>
             <label className="grid gap-2 text-sm font-semibold text-zinc-200">Default feed
