@@ -781,17 +781,14 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
             { id: "follows", symbol: "+", label: copy.categories.follow, ids: ["follow"] },
           ] as { id: string; label: string; symbol: string; ids: Exclude<Category, "all">[] }[]).map((option) => {
             const active = option.ids.every((id) => activeCategories.includes(id))
-            const unreadItems = lastSeenIndex === null ? [] : items.filter((item) => typeof item.Index === "number" && item.Index > lastSeenIndex)
-            const count = option.id === "all" ? unreadItems.length : unreadItems.filter((item) => option.ids.includes(categoryOf(item))).length
             return <button key={option.id} type="button" aria-pressed={active} onClick={() => {
               setActiveCategories((current) => {
                 if (option.id === "all") return allCategoriesActive ? [] : filterCategoryIds
                 const allActive = option.ids.every((id) => current.includes(id))
                 return allActive ? current.filter((id) => !option.ids.includes(id)) : Array.from(new Set([...current, ...option.ids]))
               })
-            }} title={option.label} aria-label={`${option.label} · ${count}`} className={`relative inline-flex h-8 w-8 min-w-0 items-center justify-center rounded-full border p-0 text-[11px] font-semibold transition sm:h-auto sm:w-auto sm:min-h-9 sm:gap-2 sm:rounded-xl sm:px-3 sm:py-1.5 sm:text-xs ${active ? "border-[#8fd4a9]/70 bg-[#10251a] text-white" : "border-zinc-800 bg-[#111214] text-zinc-300 hover:border-[#8fd4a9]/45"}`}>
+            }} title={option.label} aria-label={option.label} className={`relative inline-flex h-8 w-8 min-w-0 items-center justify-center rounded-full border p-0 text-[11px] font-semibold transition sm:h-auto sm:w-auto sm:min-h-9 sm:gap-2 sm:rounded-xl sm:px-3 sm:py-1.5 sm:text-xs ${active ? "border-[#8fd4a9]/70 bg-[#10251a] text-white" : "border-zinc-800 bg-[#111214] text-zinc-300 hover:border-[#8fd4a9]/45"}`}>
               <span className="sm:hidden" aria-hidden="true">{option.id === "likes" ? <Heart className="h-3 w-3" /> : option.id === "diamonds" ? <Gem className="h-3 w-3" /> : option.id === "mentions" ? <AtSign className="h-3 w-3" /> : option.id === "replies" ? <MessageSquare className="h-3 w-3" /> : option.id === "reposts" ? <Repeat2 className="h-3 w-3" /> : option.id === "follows" ? <UserPlus className="h-3 w-3" /> : option.id === "all" ? <LayoutGrid className="h-3 w-3" /> : option.symbol}</span><span className="pointer-events-none absolute left-1/2 top-full mt-0.5 -translate-x-1/2 whitespace-nowrap text-[7px] font-normal leading-[9px] text-zinc-500 sm:hidden">{option.label}</span><span className="hidden sm:inline">{option.label}</span>
-              {count > 0 ? <span aria-hidden="true" className="absolute right-0 top-0 grid min-h-3 min-w-3 place-items-center rounded-full bg-[#39d98a] px-0.5 text-[7px] font-bold leading-none text-[#041009] sm:right-0 sm:top-0 sm:min-h-4 sm:min-w-4 sm:text-[9px]">{count}</span> : null}
             </button>
           })}
         </div>
