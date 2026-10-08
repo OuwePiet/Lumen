@@ -506,7 +506,13 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
     }
 
     const publicKey = session.publicKey
-    if (visitSnapshotRef.current?.publicKey !== publicKey) visitSnapshotRef.current = null
+    if (visitSnapshotRef.current?.publicKey !== publicKey) {
+      visitSnapshotRef.current = null
+      setItems([])
+      setLastSeenIndex(null)
+      setHasOlder(false)
+      setExpandedKey(null)
+    }
     const controller = new AbortController()
     async function load() {
       setStatus("loading")
@@ -785,7 +791,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
             const active = option.ids.every((id) => activeCategories.includes(id))
             return <button key={option.id} type="button" aria-pressed={active} onClick={() => {
               setActiveCategories((current) => {
-                                const allActive = option.ids.every((id) => current.includes(id))
+                const allActive = option.ids.every((id) => current.includes(id))
                 return allActive ? current.filter((id) => !option.ids.includes(id)) : Array.from(new Set([...current, ...option.ids]))
               })
             }} title={option.label} aria-label={option.label} className={`relative inline-flex h-8 w-8 min-w-0 items-center justify-center rounded-full border p-0 text-[11px] font-semibold transition sm:h-auto sm:w-auto sm:min-h-9 sm:gap-2 sm:rounded-xl sm:px-3 sm:py-1.5 sm:text-xs ${active ? "border-[#8fd4a9]/70 bg-[#10251a] text-white" : "border-zinc-800 bg-[#111214] text-zinc-300 hover:border-[#8fd4a9]/45"}`}>
