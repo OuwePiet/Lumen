@@ -216,6 +216,41 @@ export default function ViaHomeControls() {
   const [status, setStatus] = useState<"idle" | "waiting" | "blocked">("idle")
   const [language, setLanguage] = useState<ViaLanguage>("English")
   const [languageOpen, setLanguageOpen] = useState(false)
+  const [hasUnreadNotifications, setHasUnreadNotifications] = useState(false)
+
+  useEffect(() => {
+    if (!session?.publicKey) {
+      setHasUnreadNotifications(false)
+      return
+    }
+    const publicKey = session.publicKey
+    const controller = new AbortController()
+    const loadUnread = async () => {
+      try {
+        const response = await fetch("/api/via/social/notifications", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "unread", publicKey }),
+          cache: "no-store",
+          signal: controller.signal,
+        })
+        if (!response.ok) { setHasUnreadNotifications(false); return }
+        const data = await response.json() as { ok?: boolean; unreadCount?: number }
+        if (!controller.signal.aborted) {
+          setHasUnreadNotifications(data.ok === true && typeof data.unreadCount === "number" && data.unreadCount > 0)
+        }
+      } catch {
+        if (!controller.signal.aborted) setHasUnreadNotifications(false)
+      }
+    }
+    void loadUnread()
+    window.addEventListener("focus", loadUnread)
+    return () => {
+      controller.abort()
+      window.removeEventListener("focus", loadUnread)
+    }
+  }, [session?.publicKey])
+
 
   function refreshAccounts() {
     setKnownAccounts(listIdentitySessions())
@@ -433,7 +468,7 @@ export default function ViaHomeControls() {
               ) : null}
             </div>
           ) : href ? (
-            <Link prefetch={href === "/notifications"} key={key} href={href} style={{ ...buttonStyle, width: "100%", justifyContent: "center", paddingInline: "9px" }}>{key === "social" ? <span aria-hidden="true" style={{ color: "#3f7654", marginRight: "5px", fontSize: "13px" }}>✎</span> : null}{t[key]}</Link>
+            <Link prefetch={href === "/notifications"} key={key} href={href} style={{ ...buttonStyle, width: "100%", justifyContent: "center", paddingInline: "9px" }}>{key === "social" ? <span aria-hidden="true" style={{ color: "#3f7654", marginRight: "5px", fontSize: "13px" }}>✎</span> : null}{t[key]}{key === "notifications" && hasUnreadNotifications ? <span aria-label="Ongelezen meldingen" title="Ongelezen meldingen" style={{ display: "inline-block", width: "8px", height: "8px", flexShrink: 0, marginLeft: "6px", borderRadius: "50%", background: "#39d98a", boxShadow: "0 0 0 2px rgba(57,217,138,.16)" }} /> : null}</Link>
           ) : (
             <span key={key} aria-disabled="true" title="Wordt op de eigen Berichten-pagina aangesloten" style={{ ...disabledButtonStyle, width: "100%", justifyContent: "center", paddingInline: "9px" }}>{t[key]}</span>
           ))}
