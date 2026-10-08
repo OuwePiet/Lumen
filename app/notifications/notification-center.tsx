@@ -799,8 +799,9 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
           const username = profile.username?.trim().replace(/^@/, "")
           const actor = username ? `@${username}` : shortKey(actorPublicKey || metadata.TransactorPublicKeyBase58Check, copy.actor)
           const rowKey = `${item.Index ?? "n"}-${index}`
-          const expanded = expandedKey === rowKey || (index < 8 && Boolean(postHashFor(item)))
           const postHash = postHashFor(item)
+          const autoPreview = Boolean(postHash && items.slice(0, 8).includes(item))
+          const expanded = expandedKey === rowKey || autoPreview
           const post = postHash ? postCache[postHash] : undefined
           return <article key={rowKey} className={`mx-1 mb-1 grid grid-cols-[34px_minmax(0,1fr)] gap-2 rounded-xl border px-2 py-1.5 transition sm:mx-0 sm:mb-0 sm:rounded-none sm:border-x-0 sm:border-b-0 sm:grid-cols-[46px_minmax(0,1fr)_auto] sm:gap-3 sm:px-5 sm:py-4 ${unread ? "border-[#285f40]/70 bg-[#0b1510]/70" : "border-zinc-800 bg-black/10"}`}>
             <div className="relative h-8 w-8 sm:h-11 sm:w-11">
@@ -814,7 +815,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
                 {unread ? <span className="rounded-full border border-[#285f40] px-2 py-0.5 text-[10px] text-[#9adbb2]">{copy.fresh}</span> : null}
               </div>
               <p className="mt-0 text-[12px] leading-4 text-zinc-400 sm:mt-1 sm:text-sm sm:leading-5">{copy.descriptions[itemCategory](actor)}</p>
-              {destination && index >= 8 ? <button type="button" onClick={() => void toggleExpanded(item, rowKey)} className="mt-1 inline-flex rounded-full border border-zinc-700 px-1.5 py-0.5 text-[9px] leading-none text-zinc-300 transition hover:border-[#8fd4a9] hover:text-white sm:mt-2 sm:px-2.5 sm:py-1 sm:text-[11px] sm:leading-normal">{expanded ? copy.close : copy.open}</button> : null}
+              {destination && !autoPreview ? <button type="button" onClick={() => void toggleExpanded(item, rowKey)} className="mt-1 inline-flex rounded-full border border-zinc-700 px-1.5 py-0.5 text-[9px] leading-none text-zinc-300 transition hover:border-[#8fd4a9] hover:text-white sm:mt-2 sm:px-2.5 sm:py-1 sm:text-[11px] sm:leading-normal">{expanded ? copy.close : copy.open}</button> : null}
               {expanded && postHash ? <div className="mt-3 rounded-xl border border-zinc-800 bg-black/25 p-3">
                 {post === undefined ? <p className="text-xs text-zinc-500">{copy.loading}</p> : post ? <>
                   <p className="text-xs font-semibold text-zinc-300">@{post.username?.replace(/^@/, "") || shortKey(post.publicKey, copy.actor)}</p>
