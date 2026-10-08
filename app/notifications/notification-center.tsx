@@ -708,12 +708,12 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
 
   return (
     <section className={`${expandedView ? "max-h-[calc(100vh-6rem)]" : "max-h-[88vh]"} min-w-0 w-full max-w-full overflow-x-hidden overflow-y-auto rounded-2xl border border-zinc-800 bg-zinc-950/60`} aria-labelledby="notification-center-heading">
-      <div className="sticky top-0 z-20 flex flex-nowrap items-center justify-between gap-1 border-b border-zinc-800 bg-zinc-950/95 px-2 py-1 backdrop-blur max-sm:flex-col-reverse max-sm:items-stretch sm:flex-wrap sm:gap-3 sm:px-5 sm:py-4">
+      <div className="sticky top-0 z-20 flex flex-nowrap items-center justify-between gap-1 border-b border-zinc-800 bg-zinc-950/95 px-2 py-1 backdrop-blur max-sm:items-stretch sm:flex-wrap sm:gap-3 sm:px-5 sm:py-4">
         <div className="hidden sm:block">
           <h2 id="notification-center-heading" className="whitespace-nowrap text-xl font-semibold text-white">{copy.heading}</h2>
           <p className="mt-1 text-xs text-zinc-500">{copy.active}: {shortKey(session.publicKey, copy.actor)}</p>
         </div>
-        <div className="flex w-full shrink-0 flex-nowrap items-start justify-between sm:w-auto sm:flex-wrap sm:items-center sm:justify-start sm:gap-2">
+        <div className="flex w-full min-w-0 flex-nowrap items-center justify-between gap-1 sm:w-auto sm:flex-wrap sm:justify-start sm:gap-2">
           <button
             type="button"
             onClick={() => setQualityShield((value) => {
@@ -726,15 +726,15 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
             title={qualityShield ? `Quality Shield on · ${shieldHiddenCount} hidden` : "Quality Shield off"}
             aria-label={qualityShield ? `Quality Shield on · ${shieldHiddenCount} hidden` : "Quality Shield off"}
             aria-pressed={qualityShield}
-            className={`relative grid h-7 w-7 place-items-center rounded-full border sm:h-9 sm:w-9 text-white transition ${qualityShield ? "border-[#8fd4a9] bg-[#285f40]" : "border-[#9b9b9b] bg-[#9b9b9b]"}`}
+            className={`relative grid h-9 w-9 place-items-center rounded-full border sm:h-9 sm:w-9 text-white transition ${qualityShield ? "border-[#8fd4a9] bg-[#285f40]" : "border-[#9b9b9b] bg-[#9b9b9b]"}`}
           >
             {qualityShield ? <ShieldCheck className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> : <ShieldOff className="h-3.5 w-3.5 sm:h-4 sm:w-4" />}
             {qualityShield && shieldHiddenCount > 0 ? <span aria-hidden="true" className="absolute -right-1 -top-1 grid min-h-4 min-w-4 place-items-center rounded-full border border-black bg-[#8fd4a9] px-1 text-[9px] font-bold leading-none text-black">{shieldHiddenCount}</span> : null}
           </button>
-          <button type="button" onClick={() => setActiveCategories(allCategoriesActive ? [] : filterCategoryIds)} title={copy.selectAll} aria-label={copy.selectAll} aria-pressed={allCategoriesActive} className={`grid h-7 w-7 place-items-center rounded-full border sm:h-9 sm:w-9 text-white transition ${allCategoriesActive ? "border-[#8fd4a9] bg-[#285f40]" : "border-[#9b9b9b] bg-[#9b9b9b]"}`}>
+          <button type="button" onClick={() => setActiveCategories(allCategoriesActive ? [] : filterCategoryIds)} title={copy.selectAll} aria-label={copy.selectAll} aria-pressed={allCategoriesActive} className={`grid h-9 w-9 place-items-center rounded-full border sm:h-9 sm:w-9 text-white transition ${allCategoriesActive ? "border-[#8fd4a9] bg-[#285f40]" : "border-[#9b9b9b] bg-[#9b9b9b]"}`}>
             <CheckCircle2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
           </button>
-          <button type="button" onClick={() => setRefreshToken((value) => value + 1)} disabled={status === "loading"} title={copy.refresh} aria-label={copy.refresh} className="grid h-7 w-7 place-items-center rounded-full border sm:h-9 sm:w-9 border-[#8fd4a9] bg-[#285f40] text-white transition disabled:cursor-wait disabled:opacity-60">
+          <button type="button" onClick={() => setRefreshToken((value) => value + 1)} disabled={status === "loading"} title={copy.refresh} aria-label={copy.refresh} className="grid h-9 w-9 place-items-center rounded-full border sm:h-9 sm:w-9 border-[#8fd4a9] bg-[#285f40] text-white transition disabled:cursor-wait disabled:opacity-60">
             <RefreshCw className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${status === "loading" ? "animate-spin" : ""}`} />
           </button>
           <button type="button" onClick={() => setExpandedView((value) => !value)} title={copy.expandView} aria-label={copy.expandView} aria-pressed={expandedView} className={`grid h-7 w-7 place-items-center rounded-full border sm:h-9 sm:w-9 text-white transition ${expandedView ? "border-[#8fd4a9] bg-[#285f40]" : "border-[#8fd4a9]/35 bg-[#050b08]/80"}`}>
