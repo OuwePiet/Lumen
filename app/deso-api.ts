@@ -123,11 +123,16 @@ async function performDeSoRequest(
   let lastError: unknown
 
   const method = (requestInit.method ?? "GET").toUpperCase()
-  const retrySafe = method === "GET" || method === "HEAD" || (method === "POST" && SAFE_POST_RETRY_ENDPOINTS.has(safeEndpoint))
+  // Notification metadata is node-local global state. Keep reads and writes on
+  // the same canonical node instead of falling back across different nodes.
+  const notificationMetadataEndpoint = safeEndpoint === "get-notifications" ||
+    safeEndpoint === "get-unread-notifications-count" ||
+    safeEndpoint === "set-notification-metadata"
+  const retrySafe = !notificationMetadataEndpoint && (method === "GET" || method === "HEAD" || (method === "POST" && SAFE_POST_RETRY_ENDPOINTS.has(safeEndpoint)))
   const maxAttempts = retrySafe ? Math.max(MIN_ATTEMPTS, DESO_NODES.length) : 1
 
   for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
-    const node = DESO_NODES[attempt % DESO_NODES.length] ?? DEFAULT_DESO_NODE
+    const node = notificationMetadataEndpoint ? DEFAULT_DESO_NODE : (DESO_NODES[attempt % DESO_NODES.length] ?? DEFAULT_DESO_NODE)
     const controller = new AbortController()
     const upstreamSignal = requestInit.signal
     const abortFromUpstream = () => controller.abort(upstreamSignal?.reason)
