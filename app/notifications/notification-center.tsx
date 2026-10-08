@@ -444,6 +444,9 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
   const [status, setStatus] = useState<"idle" | "loading" | "ready" | "error">("idle")
   const [messageKey, setMessageKey] = useState<"loading" | "loaded" | "empty" | "error" | "">("")
   const [lastSeenIndex, setLastSeenIndex] = useState<number | null>(null)
+  // Capture the notification boundary once per account visit, before any refresh
+  // or filter interaction. This is observation only: never mark notifications read here.
+  const visitSnapshotRef = useRef<{ publicKey: string; latestIndex: number; lastSeenIndex: number | null } | null>(null)
   const [refreshToken, setRefreshToken] = useState(0)
   const [loadingOlder, setLoadingOlder] = useState(false)
   const [hasOlder, setHasOlder] = useState(true)
@@ -503,6 +506,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
     }
 
     const publicKey = session.publicKey
+    if (visitSnapshotRef.current?.publicKey !== publicKey) visitSnapshotRef.current = null
     const controller = new AbortController()
     async function load() {
       setStatus("loading")
@@ -518,6 +522,16 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
         const data = await response.json() as NotificationResponse
         if (!response.ok || !data.ok || !Array.isArray(data.notifications)) throw new Error(data.error || "NOTIFICATIONS_FAILED")
         const ordered = [...data.notifications].sort((a, b) => (b.Index ?? -1) - (a.Index ?? -1))
+        if (!visitSnapshotRef.current && ordered.length > 0) {
+          const latestIndex = ordered.find((item) => typeof item.Index === "number" && Number.isSafeInteger(item.Index) && item.Index >= 0)?.Index
+          if (typeof latestIndex === "number") {
+            visitSnapshotRef.current = {
+              publicKey,
+              latestIndex,
+              lastSeenIndex: typeof data.lastSeenIndex === "number" ? data.lastSeenIndex : null,
+            }
+          }
+        }
         setItems(ordered)
         setHasOlder(ordered.length === 40)
         setLastSeenIndex(typeof data.lastSeenIndex === "number" ? data.lastSeenIndex : null)
