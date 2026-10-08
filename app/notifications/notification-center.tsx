@@ -566,6 +566,29 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
     return () => controller.abort()
   }, [items, profiles])
 
+  // Read-only DeSo post previews: preload a bounded set of recent notifications.
+  // The existing post endpoint remains the single source of post content.
+  useEffect(() => {
+    if (!session || !items.length) return
+    const hashes = Array.from(new Set(items.slice(0, 8).map((item) => {
+      const href = notificationDestination(item)
+      return href?.startsWith("/social?post=") ? new URL(href, "https://viadeso.online").searchParams.get("post") : null
+    }).filter((hash): hash is string => Boolean(hash))))
+    const missing = hashes.filter((hash) => !Object.prototype.hasOwnProperty.call(postCache, hash))
+    if (!missing.length) return
+    const controller = new AbortController()
+    void Promise.all(missing.map(async (hash) => {
+      try {
+        const response = await fetch(`/api/via/post?hash=${encodeURIComponent(hash)}`, { cache: "no-store", signal: controller.signal })
+        const data = response.ok ? await response.json() as PostResponse : null
+        return [hash, data?.ok && data.post ? data.post : null] as const
+      } catch { return [hash, null] as const }
+    })).then((entries) => {
+      if (!controller.signal.aborted) setPostCache((current) => ({ ...current, ...Object.fromEntries(entries) }))
+    })
+    return () => controller.abort()
+  }, [session, items, postCache])
+
   async function loadOlder() {
     if (!session || loadingOlder || !hasOlder || items.length === 0) return
     const indexes = items.map((item) => item.Index).filter((value): value is number => typeof value === "number" && Number.isInteger(value))
@@ -776,7 +799,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
           const username = profile.username?.trim().replace(/^@/, "")
           const actor = username ? `@${username}` : shortKey(actorPublicKey || metadata.TransactorPublicKeyBase58Check, copy.actor)
           const rowKey = `${item.Index ?? "n"}-${index}`
-          const expanded = expandedKey === rowKey
+          const expanded = expandedKey === rowKey || (index < 8 && Boolean(postHashFor(item)))
           const postHash = postHashFor(item)
           const post = postHash ? postCache[postHash] : undefined
           return <article key={rowKey} className={`mx-1 mb-1 grid grid-cols-[34px_minmax(0,1fr)] gap-2 rounded-xl border px-2 py-1.5 transition sm:mx-0 sm:mb-0 sm:rounded-none sm:border-x-0 sm:border-b-0 sm:grid-cols-[46px_minmax(0,1fr)_auto] sm:gap-3 sm:px-5 sm:py-4 ${unread ? "border-[#285f40]/70 bg-[#0b1510]/70" : "border-zinc-800 bg-black/10"}`}>
@@ -791,7 +814,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
                 {unread ? <span className="rounded-full border border-[#285f40] px-2 py-0.5 text-[10px] text-[#9adbb2]">{copy.fresh}</span> : null}
               </div>
               <p className="mt-0 text-[12px] leading-4 text-zinc-400 sm:mt-1 sm:text-sm sm:leading-5">{copy.descriptions[itemCategory](actor)}</p>
-              {destination ? <button type="button" onClick={() => void toggleExpanded(item, rowKey)} className="mt-1 inline-flex rounded-full border border-zinc-700 px-1.5 py-0.5 text-[9px] leading-none text-zinc-300 transition hover:border-[#8fd4a9] hover:text-white sm:mt-2 sm:px-2.5 sm:py-1 sm:text-[11px] sm:leading-normal">{expanded ? copy.close : copy.open}</button> : null}
+              {destination && index >= 8 ? <button type="button" onClick={() => void toggleExpanded(item, rowKey)} className="mt-1 inline-flex rounded-full border border-zinc-700 px-1.5 py-0.5 text-[9px] leading-none text-zinc-300 transition hover:border-[#8fd4a9] hover:text-white sm:mt-2 sm:px-2.5 sm:py-1 sm:text-[11px] sm:leading-normal">{expanded ? copy.close : copy.open}</button> : null}
               {expanded && postHash ? <div className="mt-3 rounded-xl border border-zinc-800 bg-black/25 p-3">
                 {post === undefined ? <p className="text-xs text-zinc-500">{copy.loading}</p> : post ? <>
                   <p className="text-xs font-semibold text-zinc-300">@{post.username?.replace(/^@/, "") || shortKey(post.publicKey, copy.actor)}</p>
