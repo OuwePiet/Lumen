@@ -584,7 +584,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
                 const parsed: unknown = JSON.parse(previous)
                 if (parsed && typeof parsed === "object" && "latestIndex" in parsed) {
                   const priorIndex = (parsed as { latestIndex?: unknown }).latestIndex
-                  if (typeof priorIndex === "number" && Number.isSafeInteger(priorIndex) && priorIndex >= 0) {
+                  if (typeof priorIndex === "number" && Number.isSafeInteger(priorIndex) && priorIndex >= 0 && priorIndex <= latestIndex) {
                     // Preserve the earlier boundary for a future guarded DeSo update.
                     window.sessionStorage.setItem(`via:notifications:previous-visit:${publicKey}`, String(priorIndex))
                   }
