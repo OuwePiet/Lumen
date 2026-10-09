@@ -28,7 +28,7 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
     return () => document.removeEventListener("pointerdown", dismissOnOutsidePointer)
   }, [])
 
-  const leafRain = celebrate ? <div aria-hidden="true" className="pointer-events-none fixed inset-0 z-[90] overflow-hidden">{Array.from({ length: 28 }, (_, i) => <span key={i} className="absolute top-[-12%] animate-[viaLeafFall_3s_ease-in_forwards]" style={{ left: `${(i * 37) % 100}%`, animationDelay: `${(i % 10) * 0.12}s`, transform: `rotate(${i * 41}deg)` }}><img src="/via-leaf.svg" alt="" width="36" height="34" className="h-9 w-9 object-contain" /></span>)}<style>{`@keyframes viaLeafFall { from { translate: 0 -10vh; opacity: 1 } to { translate: 8vw 115vh; opacity: 0 } }`}</style></div> : null
+  const leafRain = celebrate ? <div aria-hidden="true" className="pointer-events-none fixed inset-0 z-[90] overflow-hidden">{Array.from({ length: 28 }, (_, i) => <span key={i} className="absolute top-[-12%] animate-[viaLeafFall_5s_ease-in_forwards]" style={{ left: `${(i * 37) % 100}%`, animationDelay: `${(i % 10) * 0.25}s`, transform: `rotate(${i * 41}deg)` }}><img src="/via-leaf.svg" alt="" width="36" height="34" className="h-9 w-9 object-contain" /></span>)}<style>{`@keyframes viaLeafFall { from { translate: 0 -10vh; opacity: 1 } to { translate: 8vw 115vh; opacity: 0 } }`}</style></div> : null
   const [status, setStatus] = useState<"idle" | "preparing" | "approval" | "submitting" | "done" | "error">("idle")
   const [message, setMessage] = useState("")
   const [feeNanos, setFeeNanos] = useState<number | null>(null)
@@ -96,7 +96,7 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
       await viaModernIdentity.refreshSpendingLimits()
       setStatus("done"); setMessage(`Diamond level ${chosenLevel} submitted to DeSo. Awaiting the DeSo count.`)
       setCelebrate(true)
-      window.setTimeout(() => setCelebrate(false), 3200)
+      window.setTimeout(() => setCelebrate(false), 7500)
       window.dispatchEvent(new Event("via:social:post-published"))
       // Refresh the displayed total from the official DeSo post; never infer a count from the chosen level.
       try {
