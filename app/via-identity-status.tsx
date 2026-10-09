@@ -201,7 +201,7 @@ function CheckMark({ inactive, compact }: { inactive: boolean; compact: boolean 
   )
 }
 
-function ViaLeaf({ compact }: { compact: boolean }) {
+function ViaLeaf({ compact, muted = false }: { compact: boolean; muted?: boolean }) {
   const size = compact ? 18 : 22
   return (
     <span
@@ -221,7 +221,7 @@ function ViaLeaf({ compact }: { compact: boolean }) {
         src="/via-leaf.svg"
         alt=""
         aria-hidden="true"
-        style={{ width: compact ? "15px" : "19px", height: compact ? "14px" : "18px", objectFit: "contain", display: "block" }}
+        style={{ width: compact ? "15px" : "19px", height: compact ? "14px" : "18px", objectFit: "contain", display: "block", filter: muted ? "grayscale(1)" : undefined, opacity: muted ? 0.72 : 1 }}
       />
     </span>
   )
@@ -245,7 +245,7 @@ export default function ViaIdentityStatusMarks({
       ) : null}
       {inactive ? (
         <MarkShell kind="inactive" compact={compact} language={language}>
-          <CheckMark inactive compact={compact} />
+          <ViaLeaf compact={compact} muted />
         </MarkShell>
       ) : null}
       {showLeaf && canShowViaRecognition(viaRecognized) ? (
