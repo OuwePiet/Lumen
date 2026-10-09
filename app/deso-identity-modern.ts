@@ -127,7 +127,9 @@ export const viaModernIdentity: ViaModernIdentityAdapter = {
   },
 
   hasPermissions(permissions) {
-    if (restoreIdentitySession()?.publicKey) return Promise.resolve(true)
+    // Legacy level-3/4 credentials are not evidence of SDK spending permissions.
+    // Fail closed until the active signing route and permission owner are unified.
+    if (restoreIdentitySession()?.publicKey) return Promise.resolve(false)
     ensureConfigured()
     return identity.hasPermissions(permissions)
   },
