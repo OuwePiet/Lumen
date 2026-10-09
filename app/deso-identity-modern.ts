@@ -2,7 +2,6 @@
 
 import { identity, type AccessGroupEntryResponse, type NewMessageEntryResponse } from "deso-protocol"
 import { clearIdentitySession, listIdentitySessions, restoreIdentitySession, switchIdentitySession, VIA_IDENTITY_EVENT } from "./deso-identity-session"
-import { signViaTransaction } from "./deso-identity-sign"
 import { requestViaIdentityJwt } from "./deso-identity-jwt"
 
 /**
@@ -120,9 +119,14 @@ export const viaModernIdentity: ViaModernIdentityAdapter = {
   },
 
   async signTx(transactionHex: string) {
-    const viaSession = restoreIdentitySession()
-    if (viaSession?.publicKey) return signViaTransaction(viaSession.publicKey, transactionHex)
     ensureConfigured()
+    const state = await identity.snapshot()
+    const sdkPublicKey = state.currentUser?.publicKey
+    const legacyPublicKey = restoreIdentitySession()?.publicKey
+    // Never sign through a different account than the one exposed to callers.
+    // Legacy sessions must be migrated before they can authorize SDK transactions.
+    if (legacyPublicKey) throw new Error("DESO_LEGACY_SESSION_RECONNECT_REQUIRED")
+    if (!sdkPublicKey) throw new Error("DESO_IDENTITY_LOGIN_REQUIRED")
     return identity.signTx(transactionHex)
   },
 
