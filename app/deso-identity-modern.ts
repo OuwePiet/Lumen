@@ -63,13 +63,14 @@ function ensureConfigured() {
 }
 
 async function currentUser(): Promise<ViaModernIdentityUser | null> {
-  const viaSession = restoreIdentitySession()
-  if (viaSession?.publicKey) return { publicKey: viaSession.publicKey }
-
   ensureConfigured()
   const state = await identity.snapshot()
   const publicKey = state.currentUser?.publicKey
-  return publicKey ? { publicKey } : null
+  if (publicKey) return { publicKey }
+
+  // Compatibility for routes not yet migrated; never override a logged-in SDK user.
+  const viaSession = restoreIdentitySession()
+  return viaSession?.publicKey ? { publicKey: viaSession.publicKey } : null
 }
 
 export const viaModernIdentity: ViaModernIdentityAdapter = {
