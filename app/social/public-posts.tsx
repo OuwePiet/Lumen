@@ -116,6 +116,7 @@ export default function PublicPosts() {
   const [feedChoice, setFeedChoice] = useState<ChoiceId>("hot")
   const [session, setSession] = useState<ViaModernIdentityUser | null>(null)
   const [replyingTo, setReplyingTo] = useState<string | null>(null)
+  const [expandedPosts, setExpandedPosts] = useState<Record<string, boolean>>({})
   const [replyParent, setReplyParent] = useState<string | null>(null)
   const [commentPosts, setCommentPosts] = useState<PublicPost[]>([])
   const [commentsBusy, setCommentsBusy] = useState(false)
@@ -490,7 +491,10 @@ export default function PublicPosts() {
                   {post.isNft ? <span className="rounded-full border border-[#8fd4a9]/35 px-2.5 py-1 text-[11px] text-[#9adbb2]">NFT</span> : null}
                 </div>
 
-                {post.body ? <p className="mt-3 whitespace-pre-wrap break-words [overflow-wrap:anywhere] text-sm leading-6 text-zinc-200">{post.body}</p> : <p className="mt-3 text-sm text-zinc-500">Media post</p>}
+                {post.body ? <div className="mt-3 min-w-0">
+                  <p className="whitespace-pre-wrap break-words [overflow-wrap:anywhere] text-sm leading-6 text-zinc-200">{post.body.length > 420 && !expandedPosts[post.postHash] ? `${post.body.slice(0, 420).trimEnd()}…` : post.body}</p>
+                  {post.body.length > 420 ? <button type="button" onClick={() => setExpandedPosts((current) => ({ ...current, [post.postHash]: !current[post.postHash] }))} aria-expanded={Boolean(expandedPosts[post.postHash])} className="mt-1 text-sm font-semibold text-[#9adbb2] hover:underline">{expandedPosts[post.postHash] ? "Minder tonen" : "Lees verder …"}</button> : null}
+                </div> : <p className="mt-3 text-sm text-zinc-500">Media post</p>}
                 {postedViaVIA ? <p className="mt-1 text-[11px] text-zinc-500">Gepost via VIA</p> : null}
 
                 {images.length ? (
