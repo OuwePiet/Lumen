@@ -98,6 +98,17 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
       setCelebrate(true)
       window.setTimeout(() => setCelebrate(false), 3200)
       window.dispatchEvent(new Event("via:social:post-published"))
+      // Refresh the displayed total from the official DeSo post; never infer a count from the chosen level.
+      try {
+        const postResponse = await fetch(`/api/via/post?hash=${encodeURIComponent(postHash)}&reader=${encodeURIComponent(session.publicKey)}`, { cache: "no-store" })
+        const postData = await postResponse.json() as { ok?: boolean; post?: { diamondCount?: number } }
+        const officialCount = postData.post?.diamondCount
+        if (postResponse.ok && postData.ok && typeof officialCount === "number" && Number.isSafeInteger(officialCount) && officialCount >= 0) {
+          setCount(officialCount)
+        }
+      } catch {
+        // A read failure must never trigger a second financial transaction.
+      }
     } catch { setStatus("error"); setMessage("DeSo did not confirm completion. Check the transaction on DeSo before trying again.") }
   }
 
