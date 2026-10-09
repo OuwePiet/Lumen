@@ -80,6 +80,8 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
       if ((await viaModernIdentity.currentUser())?.publicKey !== session.publicKey) throw new Error("DESO_ACCOUNT_CHANGED_RETRY")
       // Fail closed before reading modern SDK limits if the active signer is legacy.
       if (restoreIdentitySession()?.publicKey) throw new Error("LEGACY_DIAMOND_AUTHORIZATION_REQUIRES_REVIEW")
+      // Verify the modern SDK owns the same account before checking financial permissions.
+      if ((await viaModernIdentity.currentUser())?.publicKey !== session.publicKey) throw new Error("DESO_ACCOUNT_CHANGED_RETRY")
       const currentSpendingLimits = await viaModernIdentity.spendingLimits()
       const currentGlobalDESOLimit = currentSpendingLimits?.GlobalDESOLimit ?? 0
       if (!Number.isSafeInteger(currentGlobalDESOLimit) || currentGlobalDESOLimit < 0) throw new Error("INVALID_DESO_SPENDING_LIMITS")
