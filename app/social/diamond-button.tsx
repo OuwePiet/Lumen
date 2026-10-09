@@ -84,7 +84,10 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
         GlobalDESOLimit: currentGlobalDESOLimit + diamondSpendLimit,
         TransactionCountLimitMap: { BASIC_TRANSFER: 1 },
       }
-      if (!viaModernIdentity.hasPermissions(requiredPermissions)) {
+      // A restored legacy VIA session signs through the legacy Identity iframe, not the modern SDK.
+      // Never authorize its spending against an unrelated modern SDK account.
+      if (typeof window !== "undefined" && window.localStorage.getItem("viaActivePublicKey") === session.publicKey) throw new Error("LEGACY_DIAMOND_AUTHORIZATION_REQUIRES_REVIEW")
+      if (!(await viaModernIdentity.hasPermissions(requiredPermissions))) {
         setStatus("approval"); setMessage("Confirm this Diamond spending permission with DeSo Identity…")
         await viaModernIdentity.requestPermissions(requiredPermissions)
       }
