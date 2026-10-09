@@ -488,7 +488,7 @@ export default function PublicPosts() {
                     {time ? <p className="mt-1 text-[11px] text-zinc-600">{time}</p> : null}
                     </div>
                   </div>
-                  {post.isNft ? <span className="rounded-full border border-[#8fd4a9]/35 px-2.5 py-1 text-[11px] text-[#9adbb2]">NFT</span> : null}
+                  {post.isNft ? <Link href={`/nft/${encodeURIComponent(post.postHash)}`} aria-label="Bekijk NFT-details en beschikbare DeSo-handelsacties" className="rounded-full border border-[#8fd4a9]/35 px-2.5 py-1 text-[11px] text-[#9adbb2] hover:border-[#8fd4a9] hover:text-white">NFT · Bekijk details →</Link> : null}
                 </div>
 
                 {post.body ? <div className="mt-3 min-w-0">
