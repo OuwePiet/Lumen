@@ -127,7 +127,9 @@ export const viaModernIdentity: ViaModernIdentityAdapter = {
   },
 
   hasPermissions(permissions) {
-    if (restoreIdentitySession()?.publicKey) return Promise.resolve(true)
+    // A legacy session cannot prove permissions granted to the modern DeSo SDK.
+    // Fail closed until the account has migrated through the official SDK.
+    if (restoreIdentitySession()?.publicKey) return Promise.resolve(false)
     ensureConfigured()
     return identity.hasPermissions(permissions)
   },
