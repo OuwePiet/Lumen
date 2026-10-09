@@ -76,6 +76,7 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
       setFeeNanos(data.feeNanos)
       const diamondSpendLimit = data.spendAmountNanos + data.feeNanos
       if (!Number.isSafeInteger(diamondSpendLimit) || diamondSpendLimit < 0) throw new Error("INVALID_DESO_SPEND_LIMIT")
+      if ((await viaModernIdentity.currentUser())?.publicKey !== session.publicKey) throw new Error("DESO_ACCOUNT_CHANGED_RETRY")
       const currentSpendingLimits = await viaModernIdentity.spendingLimits()
       const currentGlobalDESOLimit = currentSpendingLimits?.GlobalDESOLimit ?? 0
       if (!Number.isSafeInteger(currentGlobalDESOLimit) || currentGlobalDESOLimit < 0) throw new Error("INVALID_DESO_SPENDING_LIMITS")
