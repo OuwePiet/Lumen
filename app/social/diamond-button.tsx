@@ -88,7 +88,10 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
         await viaModernIdentity.requestPermissions(requiredPermissions)
       }
       setStatus("approval"); setMessage("Signing the confirmed Diamond with your VIA DeSo session…")
+      // Never submit a paid transaction after the user changes the active DeSo account.
+      if ((await viaModernIdentity.currentUser())?.publicKey !== session.publicKey) throw new Error("DESO_ACCOUNT_CHANGED_RETRY")
       const signedTransactionHex = await viaModernIdentity.signTx(data.transactionHex)
+      if ((await viaModernIdentity.currentUser())?.publicKey !== session.publicKey) throw new Error("DESO_ACCOUNT_CHANGED_RETRY")
       setStatus("submitting"); setMessage("Submitting your confirmed Diamond to DeSo…")
       const submitResponse = await fetch("/api/via/social/diamond", { method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store", body: JSON.stringify({ action: "submit", signedTransactionHex }) })
       const submitData = await submitResponse.json() as { ok?: boolean; error?: string }
