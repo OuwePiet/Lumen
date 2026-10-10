@@ -105,6 +105,8 @@ export default function RepostButton({ postHash, initialCount, variant = "defaul
     try {
       setImageUploadStatus("jwt")
       setImageUploadMessage("Authorizing this image upload with DeSo Identity…")
+      const uploadUser = await viaModernIdentity.currentUser()
+      if (uploadUser?.publicKey !== session.publicKey) throw new Error("DESO_ACCOUNT_CHANGED_RECONNECT")
       const jwt = await viaModernIdentity.jwt()
       setImageUploadStatus("uploading")
       setImageUploadMessage("Uploading image to the DeSo media endpoint…")
