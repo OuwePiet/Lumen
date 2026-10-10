@@ -202,6 +202,8 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
     try {
       setImageUploadStatus("jwt")
       setImageUploadMessage("Preparing image upload approval…")
+      const uploadUser = await viaModernIdentity.currentUser()
+      if (uploadUser?.publicKey !== session.publicKey) throw new Error("DESO_ACCOUNT_CHANGED_RECONNECT")
       const jwt = await viaModernIdentity.jwt()
 
       setImageUploadStatus("uploading")
