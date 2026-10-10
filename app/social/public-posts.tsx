@@ -7,6 +7,7 @@ import { translateViaTextLocally } from "../via-local-translation"
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react"
 import { ChoiceId, defaultSocialFeedChoice, VIA_SOCIAL_FEED_EVENT, VIA_SOCIAL_FEED_STORAGE_KEY } from "./feed-choice"
 import PostComposer from "./post-composer"
+import ViaIdentityStatusMarks from "../via-identity-status"
 import LikeButton from "./like-button"
 import FollowButton from "./follow-button"
 import RepostButton from "./repost-button"
@@ -483,7 +484,7 @@ export default function PublicPosts() {
                     <Link href={`/profile/${encodeURIComponent(post.publicKey)}`} aria-label={`Open creator profile ${creatorUsername ? `@${creatorUsername}` : shortPublicKey(post.publicKey)}`} className="block h-9 w-9 shrink-0 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#8fd4a9]">{creatorPic ? <img src={creatorPic} alt="" loading="lazy" className="h-9 w-9 rounded-full object-cover" /> : <span aria-hidden="true" className="block h-9 w-9 rounded-full border border-zinc-800 bg-black/30" />}</Link>
                     <div className="min-w-0">
                     <p className="text-xs font-semibold text-zinc-300">
-                      DeSo · <Link href={`/profile/${encodeURIComponent(post.publicKey)}`} className="text-zinc-200 transition hover:text-[#9adbb2]">{creatorUsername ? `@${creatorUsername}` : shortPublicKey(post.publicKey)}{creator?.isVerified ? " ✓" : ""}</Link>
+                      DeSo · <Link href={`/profile/${encodeURIComponent(post.publicKey)}`} className="text-zinc-200 transition hover:text-[#9adbb2]">{creatorUsername ? `@${creatorUsername}` : shortPublicKey(post.publicKey)}</Link>{creator?.isVerified ? <ViaIdentityStatusMarks verified compact showLeaf={false} language="Dutch" className="ml-1 align-middle" /> : null}
                     </p>
                     {time ? <p className="mt-1 text-[11px] text-zinc-600">{time}</p> : null}
                     </div>
