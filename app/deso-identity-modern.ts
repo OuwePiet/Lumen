@@ -1,7 +1,7 @@
 "use client"
 
 import { identity, type AccessGroupEntryResponse, type NewMessageEntryResponse } from "deso-protocol"
-import { clearIdentitySession, restoreIdentitySession, VIA_IDENTITY_EVENT } from "./deso-identity-session"
+import { clearIdentitySession, VIA_IDENTITY_EVENT } from "./deso-identity-session"
 
 /**
  * Central modern DeSo Identity boundary for VIA.
@@ -120,10 +120,7 @@ export const viaModernIdentity: ViaModernIdentityAdapter = {
     ensureConfigured()
     const state = await identity.snapshot()
     const sdkPublicKey = state.currentUser?.publicKey
-    const legacyPublicKey = restoreIdentitySession()?.publicKey
-    // Never sign through a different account than the one exposed to callers.
-    // Legacy sessions must be migrated before they can authorize SDK transactions.
-    if (legacyPublicKey && legacyPublicKey !== sdkPublicKey) throw new Error("DESO_LEGACY_SESSION_RECONNECT_REQUIRED")
+    // The SDK snapshot is authoritative; stale legacy sessions cannot select the signer.
     if (!sdkPublicKey) throw new Error("DESO_IDENTITY_LOGIN_REQUIRED")
     return identity.signTx(transactionHex)
   },
