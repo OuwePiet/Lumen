@@ -103,9 +103,9 @@ export const viaModernIdentity: ViaModernIdentityAdapter = {
       identity.subscribe(() => notify())
       window.addEventListener(VIA_IDENTITY_EVENT, notify)
       subscribed = true
-    } else {
-      void currentUser().then(listener)
     }
+    // Also initialize the first subscriber from the restored SDK session.
+    void currentUser().then(listener).catch(() => listener(null))
 
     return () => identityListeners.delete(listener)
   },
