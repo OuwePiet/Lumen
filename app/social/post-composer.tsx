@@ -237,6 +237,8 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
     setMessage(isReply ? "Preparing your reply…" : "Preparing your post…")
     setFeeNanos(null)
     try {
+      const activeBeforePrepare = await viaModernIdentity.currentUser()
+      if (!activeBeforePrepare || activeBeforePrepare.publicKey !== session.publicKey) throw new Error("DESO_ACCOUNT_CHANGED_RECONNECT")
       const { response, data: prepared } = await fetchJsonWithTimeout<PrepareResponse>("/api/via/social/post", {
         method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store",
         body: JSON.stringify({
@@ -256,7 +258,11 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
       setFeeNanos(typeof prepared.feeNanos === "number" ? prepared.feeNanos : null)
       setStatus("awaiting-approval")
       setMessage(isReply ? "Signing your reply with your DeSo Identity session…" : "Signing your post with your DeSo Identity session…")
+      const activeBeforeSigning = await viaModernIdentity.currentUser()
+      if (!activeBeforeSigning || activeBeforeSigning.publicKey !== session.publicKey) throw new Error("DESO_ACCOUNT_CHANGED_RECONNECT")
       const signedTransactionHex = await viaModernIdentity.signTx(prepared.transactionHex)
+      const activeBeforeSubmit = await viaModernIdentity.currentUser()
+      if (!activeBeforeSubmit || activeBeforeSubmit.publicKey !== session.publicKey) throw new Error("DESO_ACCOUNT_CHANGED_RECONNECT")
       setStatus("submitting")
       setMessage(isReply ? "Posting your signed reply…" : "Posting your signed post…")
       const { response: submitResponse, data: submitted } = await fetchJsonWithTimeout<SubmitResponse>("/api/via/social/post", {
@@ -285,7 +291,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
     } catch (error) {
       setStatus("error")
       const code = error instanceof Error ? error.message : "PREPARE_FAILED"
-      setMessage(`${isReply ? "The reply" : "The post"} could not be published (${code}). Nothing was posted.`)
+      setMessage(`${isReply ? "Reply" : "Post"} not confirmed (${code}). Check DeSo before retrying; do not send twice.`)
     }
   }
 
