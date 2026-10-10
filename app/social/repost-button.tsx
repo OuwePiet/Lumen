@@ -105,6 +105,8 @@ export default function RepostButton({ postHash, initialCount, variant = "defaul
     try {
       setImageUploadStatus("jwt")
       setImageUploadMessage("Authorizing this image upload with DeSo Identity…")
+      const uploadUser = await viaModernIdentity.currentUser()
+      if (uploadUser?.publicKey !== session.publicKey) throw new Error("DESO_ACCOUNT_CHANGED_RECONNECT")
       const jwt = await viaModernIdentity.jwt()
       setImageUploadStatus("uploading")
       setImageUploadMessage("Uploading image to the DeSo media endpoint…")
@@ -158,7 +160,11 @@ export default function RepostButton({ postHash, initialCount, variant = "defaul
       if (!response.ok || !data.ok || !data.transactionHex) throw new Error(data.error || "PREPARE_FAILED")
 
       setMessage(asQuote ? "Signing your Quote Repost with your DeSo Identity session…" : "Signing your repost with your DeSo Identity session…")
+      const activeBeforeSigning = await viaModernIdentity.currentUser()
+      if (!activeBeforeSigning || activeBeforeSigning.publicKey !== session.publicKey) throw new Error("DESO_ACCOUNT_CHANGED_RECONNECT")
       const signedTransactionHex = await viaModernIdentity.signTx(data.transactionHex)
+      const activeBeforeSubmit = await viaModernIdentity.currentUser()
+      if (!activeBeforeSubmit || activeBeforeSubmit.publicKey !== session.publicKey) throw new Error("DESO_ACCOUNT_CHANGED_RECONNECT")
       const submitResponse = await fetch("/api/via/social/repost", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

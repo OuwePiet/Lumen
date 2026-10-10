@@ -1,9 +1,7 @@
 "use client"
 
 import { identity, type AccessGroupEntryResponse, type NewMessageEntryResponse } from "deso-protocol"
-import { clearIdentitySession, listIdentitySessions, restoreIdentitySession, switchIdentitySession, VIA_IDENTITY_EVENT } from "./deso-identity-session"
-import { signViaTransaction } from "./deso-identity-sign"
-import { requestViaIdentityJwt } from "./deso-identity-jwt"
+import { clearIdentitySession, VIA_IDENTITY_EVENT } from "./deso-identity-session"
 
 /**
  * Central modern DeSo Identity boundary for VIA.
@@ -63,9 +61,6 @@ function ensureConfigured() {
 }
 
 async function currentUser(): Promise<ViaModernIdentityUser | null> {
-  const viaSession = restoreIdentitySession()
-  if (viaSession?.publicKey) return { publicKey: viaSession.publicKey }
-
   ensureConfigured()
   const state = await identity.snapshot()
   const publicKey = state.currentUser?.publicKey
@@ -78,15 +73,18 @@ export const viaModernIdentity: ViaModernIdentityAdapter = {
   async login() {
     ensureConfigured()
     const payload = await identity.login()
+    clearIdentitySession()
     return { publicKey: payload.publicKeyBase58Check }
   },
 
   async logout() {
+    ensureConfigured()
+    await identity.logout()
     clearIdentitySession()
   },
 
   async alternateUsers() {
-    const users = new Set(listIdentitySessions().map((session) => session.publicKey))
+    const users = new Set<string>()
     ensureConfigured()
     const state = await identity.snapshot()
     Object.keys(state.alternateUsers ?? {}).forEach((publicKey) => users.add(publicKey))
@@ -113,21 +111,21 @@ export const viaModernIdentity: ViaModernIdentityAdapter = {
   },
 
   async setActiveUser(publicKey: string) {
-    const viaSession = switchIdentitySession(publicKey)
-    if (viaSession) return
     ensureConfigured()
     await identity.setActiveUser(publicKey)
+    clearIdentitySession()
   },
 
   async signTx(transactionHex: string) {
-    const viaSession = restoreIdentitySession()
-    if (viaSession?.publicKey) return signViaTransaction(viaSession.publicKey, transactionHex)
     ensureConfigured()
+    const state = await identity.snapshot()
+    const sdkPublicKey = state.currentUser?.publicKey
+    // The SDK snapshot is authoritative; stale legacy sessions cannot select the signer.
+    if (!sdkPublicKey) throw new Error("DESO_IDENTITY_LOGIN_REQUIRED")
     return identity.signTx(transactionHex)
   },
 
   hasPermissions(permissions) {
-    if (restoreIdentitySession()?.publicKey) return Promise.resolve(true)
     ensureConfigured()
     return identity.hasPermissions(permissions)
   },
@@ -160,8 +158,6 @@ export const viaModernIdentity: ViaModernIdentityAdapter = {
   },
 
   async jwt() {
-    const viaSession = restoreIdentitySession()
-    if (viaSession?.publicKey) return requestViaIdentityJwt(viaSession.publicKey)
     ensureConfigured()
     return identity.jwt()
   },
