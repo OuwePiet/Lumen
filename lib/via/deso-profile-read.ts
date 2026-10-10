@@ -281,7 +281,7 @@ export async function readPublicProfileIdentity(usernameOrPublicKey: string) {
     publicKey,
     username,
     profilePic: profilePictureUrl(publicKey, text(profile.ProfilePic)),
-    isVerified: verificationFromProfile(profile),
+    isVerified: publicKey ? (await readTrustedVerificationSources(publicKey, verificationFromProfile(profile))).length > 0 : verificationFromProfile(profile),
   }
 }
 

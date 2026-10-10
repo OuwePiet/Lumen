@@ -201,7 +201,7 @@ function CheckMark({ inactive, compact }: { inactive: boolean; compact: boolean 
   )
 }
 
-function ViaLeaf({ compact }: { compact: boolean }) {
+function ViaLeaf({ compact, muted = false }: { compact: boolean; muted?: boolean }) {
   const size = compact ? 18 : 22
   return (
     <span
@@ -211,9 +211,9 @@ function ViaLeaf({ compact }: { compact: boolean }) {
         display: "inline-grid",
         placeItems: "center",
         borderRadius: "50%",
-        border: "1px solid rgba(143,212,169,.28)",
-        background: "rgba(8,18,12,.72)",
-        boxShadow: "0 0 12px rgba(143,212,169,.10), inset 0 1px 0 rgba(255,255,255,.05)",
+        border: muted ? "1px solid rgba(177,185,180,.36)" : "1px solid rgba(143,212,169,.28)",
+        background: muted ? "rgba(50,55,53,.82)" : "rgba(8,18,12,.72)",
+        boxShadow: muted ? "0 0 0 1px rgba(177,185,180,.12), inset 0 1px 0 rgba(255,255,255,.08)" : "0 0 12px rgba(143,212,169,.10), inset 0 1px 0 rgba(255,255,255,.05)",
         overflow: "hidden",
       }}
     >
@@ -221,7 +221,7 @@ function ViaLeaf({ compact }: { compact: boolean }) {
         src="/via-leaf.svg"
         alt=""
         aria-hidden="true"
-        style={{ width: compact ? "15px" : "19px", height: compact ? "14px" : "18px", objectFit: "contain", display: "block" }}
+        style={{ width: compact ? "15px" : "19px", height: compact ? "14px" : "18px", objectFit: "contain", display: "block", filter: muted ? "grayscale(1)" : undefined, opacity: muted ? 0.72 : 1 }}
       />
     </span>
   )
@@ -245,7 +245,7 @@ export default function ViaIdentityStatusMarks({
       ) : null}
       {inactive ? (
         <MarkShell kind="inactive" compact={compact} language={language}>
-          <CheckMark inactive compact={compact} />
+          <ViaLeaf compact={compact} muted />
         </MarkShell>
       ) : null}
       {showLeaf && canShowViaRecognition(viaRecognized) ? (
