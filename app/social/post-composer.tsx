@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useMemo, useRef, useState } from "react"
-import { viaModernIdentity, VIA_BASE_SPENDING_LIMITS, type ViaModernIdentityUser } from "../deso-identity-modern"
+import { viaModernIdentity, type ViaModernIdentityUser } from "../deso-identity-modern"
 import VideoUploadControl from "./video-upload-control"
 import SponsorPlatform from "../sponsor-platform"
 
@@ -15,6 +15,7 @@ const SOCIAL_REPLY_DRAFT_PREFIX = "via:social:reply-draft:v1:"
 const COMPOSER_EMOJI = ["😀", "😄", "😂", "😍", "😎", "🤔", "👏", "👍", "❤️", "🔥", "🎉", "🚀", "🌍", "🎨", "🎵", "✨"] as const
 const ALLOWED_IMAGE_TYPES = new Set(["image/gif", "image/jpeg", "image/png", "image/webp"])
 const POST_REQUEST_TIMEOUT_MS = 20_000
+const POST_PERMISSIONS = { TransactionCountLimitMap: { SUBMIT_POST: "UNLIMITED" as const } }
 const DESO_NODE = "https://node.deso.org"
 
 async function fetchJsonWithTimeout<T>(input: RequestInfo | URL, init: RequestInit = {}) {
@@ -262,9 +263,9 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
       setMessage(isReply ? "Signing your reply with your DeSo Identity session…" : "Signing your post with your DeSo Identity session…")
       const activeBeforeSigning = await viaModernIdentity.currentUser()
       if (!activeBeforeSigning || activeBeforeSigning.publicKey !== session.publicKey) throw new Error("DESO_ACCOUNT_CHANGED_RECONNECT")
-      if (!(await viaModernIdentity.hasPermissions(VIA_BASE_SPENDING_LIMITS))) {
+      if (!(await viaModernIdentity.hasPermissions(POST_PERMISSIONS))) {
         setMessage("DeSo Identity permission required for posting…")
-        await viaModernIdentity.requestPermissions(VIA_BASE_SPENDING_LIMITS)
+        await viaModernIdentity.requestPermissions(POST_PERMISSIONS)
         const afterApproval = await viaModernIdentity.currentUser()
         if (afterApproval?.publicKey !== session.publicKey) throw new Error("DESO_ACCOUNT_CHANGED_RECONNECT")
       }
