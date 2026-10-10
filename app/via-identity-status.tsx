@@ -211,9 +211,9 @@ function ViaLeaf({ compact, muted = false }: { compact: boolean; muted?: boolean
         display: "inline-grid",
         placeItems: "center",
         borderRadius: "50%",
-        border: "1px solid rgba(143,212,169,.28)",
-        background: "rgba(8,18,12,.72)",
-        boxShadow: "0 0 12px rgba(143,212,169,.10), inset 0 1px 0 rgba(255,255,255,.05)",
+        border: muted ? "1px solid rgba(177,185,180,.36)" : "1px solid rgba(143,212,169,.28)",
+        background: muted ? "rgba(50,55,53,.82)" : "rgba(8,18,12,.72)",
+        boxShadow: muted ? "0 0 0 1px rgba(177,185,180,.12), inset 0 1px 0 rgba(255,255,255,.08)" : "0 0 12px rgba(143,212,169,.10), inset 0 1px 0 rgba(255,255,255,.05)",
         overflow: "hidden",
       }}
     >
