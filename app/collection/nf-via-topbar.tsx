@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { useEffect, useState } from "react"
-import { restoreIdentitySession } from "../deso-identity-session"
+import { restoreIdentitySession, VIA_IDENTITY_EVENT } from "../deso-identity-session"
 import { fetchViaRates, type ViaRates } from "../via-live-rates"
 import {
   readViaLocalSettings,
@@ -28,8 +28,12 @@ export default function NfViaTopbar() {
     }
     sync()
     window.addEventListener(VIA_SETTINGS_EVENT, sync)
+    window.addEventListener(VIA_IDENTITY_EVENT, sync)
     void fetchViaRates().then(setRates).catch(() => setRates(null))
-    return () => window.removeEventListener(VIA_SETTINGS_EVENT, sync)
+    return () => {
+      window.removeEventListener(VIA_SETTINGS_EVENT, sync)
+      window.removeEventListener(VIA_IDENTITY_EVENT, sync)
+    }
   }, [])
 
   const usd = rates?.rates?.USD
