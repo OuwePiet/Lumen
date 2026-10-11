@@ -38,7 +38,7 @@ async function fetchJsonWithTimeout<T>(input: RequestInfo | URL, init: RequestIn
 }
 
 type PrepareResponse = { ok?: boolean; transactionHex?: string; feeNanos?: number | null; error?: string }
-type SubmitResponse = { ok?: boolean; transaction?: Record<string, unknown>; error?: string }
+type SubmitResponse = { ok?: boolean; transaction?: Record<string, unknown>; postHashHex?: string | null; error?: string }
 type UploadResponse = { ok?: boolean; imageUrl?: string; error?: string }
 type PostComposerProps = { parentStakeID?: string; compact?: boolean; onDone?: () => void; onCancel?: () => void }
 
@@ -70,6 +70,8 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
   const [mediaOpen, setMediaOpen] = useState(false)
   const [mediaChoice, setMediaChoice] = useState<"photo" | "video">("photo")
   const [draftMessage, setDraftMessage] = useState("")
+  const [submissionUncertain, setSubmissionUncertain] = useState(false)
+  const sendLock = useRef(false)
   const textareaRef = useRef<HTMLTextAreaElement | null>(null)
   const isReply = Boolean(parentStakeID)
 
@@ -83,8 +85,21 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
       const key = isReply ? `${SOCIAL_REPLY_DRAFT_PREFIX}${parentStakeID}` : SOCIAL_DRAFT_STORAGE_KEY
       const stored = window.localStorage.getItem(key)
       if (stored) {
-        setBody(stored.slice(0, MAX_POST_LENGTH))
+        try {
+          const draft = JSON.parse(stored)
+          if (typeof draft.body !== "string") throw new Error("OLD_DRAFT")
+          setBody(draft.body.slice(0, MAX_POST_LENGTH))
+          if (Array.isArray(draft.imageInputs)) setImageInputs(draft.imageInputs.filter((value: unknown) => typeof value === "string").slice(0, MAX_IMAGES))
+          if (typeof draft.videoInput === "string") setVideoInput(draft.videoInput)
+          if (Array.isArray(draft.pollOptions)) setPollOptions(draft.pollOptions.filter((value: unknown) => typeof value === "string").slice(0, MAX_POLL_OPTIONS))
+          setPollOpen(draft.pollOpen === true)
+          setSensitiveContent(draft.sensitiveContent === true)
+        } catch { setBody(stored.slice(0, MAX_POST_LENGTH)) }
         setDraftMessage(isReply ? "Unsent reply restored on this device." : "Local draft restored from this device.")
+      }
+      if (window.localStorage.getItem(`${key}:pending`)) {
+        setSubmissionUncertain(true)
+        setMessage("A previous submission is not confirmed. Check your DeSo profile before sending another copy.")
       }
     } catch {
       setDraftMessage("Local drafts are unavailable in this browser.")
@@ -102,7 +117,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
   const hasContent = Boolean(body.trim() || imageUrls.length || videoUrls.length)
   const busy = status === "preparing" || status === "awaiting-approval" || status === "submitting"
   const imageUploading = imageUploadStatus === "jwt" || imageUploadStatus === "uploading"
-  const canPrepare = Boolean(session && hasContent && body.length <= MAX_POST_LENGTH && !mediaInvalid && pollValid && !busy && !imageUploading && !videoUploading)
+  const canPrepare = Boolean(session && hasContent && body.length <= MAX_POST_LENGTH && !mediaInvalid && pollValid && !busy && !submissionUncertain && !imageUploading && !videoUploading)
   const sendBlockedReason = canPrepare ? "" : !session ? "DeSo session unavailable." : !hasContent ? "Add text, a photo or video." : mediaInvalid ? "One media link is invalid." : !pollValid ? "Complete or remove the poll." : imageUploading ? "Photo upload is still running." : videoUploading ? "Video upload is still running." : busy ? "Publishing is already in progress." : "Send is waiting for valid post content."
   const remaining = MAX_POST_LENGTH - body.length
   const feeLabel = useMemo(() => feeNanos === null ? null : `${feeNanos.toLocaleString()} nanos network fee in the prepared transaction`, [feeNanos])
@@ -125,8 +140,8 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
   function saveDraft() {
     try {
       const key = isReply ? `${SOCIAL_REPLY_DRAFT_PREFIX}${parentStakeID}` : SOCIAL_DRAFT_STORAGE_KEY
-      if (body.trim()) {
-        window.localStorage.setItem(key, body.slice(0, MAX_POST_LENGTH))
+      if (body.trim() || imageUrls.length || videoUrls.length) {
+        window.localStorage.setItem(key, JSON.stringify({ body: body.slice(0, MAX_POST_LENGTH), imageInputs, videoInput, pollOptions, pollOpen, sensitiveContent }))
         setDraftMessage(isReply ? "Reply kept safely on this device until DeSo confirms it." : "Draft saved on this device.")
       } else {
         window.localStorage.removeItem(key)
@@ -238,9 +253,15 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
   }
 
   async function preparePost() {
-    if (!session || !canPrepare) return
+    const draftKey = isReply ? `${SOCIAL_REPLY_DRAFT_PREFIX}${parentStakeID}` : SOCIAL_DRAFT_STORAGE_KEY
+    if (!session || !canPrepare || sendLock.current) return
+    try { if (window.localStorage.getItem(`${draftKey}:pending`)) return } catch {
+      setMessage("Browser storage is unavailable. Sending is paused to preserve your draft and prevent duplicate posts.")
+      return
+    }
+    sendLock.current = true
     // Do not open an empty Safari tab on every Send; DeSo opens approval only if required.
-    if (isReply) saveDraft()
+    saveDraft()
     setStatus("preparing")
     setMessage(isReply ? "Preparing your reply…" : "Preparing your post…")
     setFeeNanos(null)
@@ -269,17 +290,36 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
       setMessage(isReply ? "Signing your reply with your DeSo Identity session…" : "Signing your post with your DeSo Identity session…")
       const activeBeforeSigning = await viaModernIdentity.currentUser()
       if (activeBeforeSigning?.publicKey !== session.publicKey) throw new Error("DESO_ACCOUNT_CHANGED_RECONNECT")
+      await viaModernIdentity.ensurePostPermissions(prepared.feeNanos)
+      const activeAfterPermissions = await viaModernIdentity.currentUser()
+      if (activeAfterPermissions?.publicKey !== session.publicKey) throw new Error("DESO_ACCOUNT_CHANGED_RECONNECT")
       const signedTransactionHex = await viaModernIdentity.signTx(prepared.transactionHex)
       const activeBeforeSubmit = await viaModernIdentity.currentUser()
       if (activeBeforeSubmit?.publicKey !== session.publicKey) throw new Error("DESO_ACCOUNT_CHANGED_RECONNECT")
       setStatus("submitting")
       setMessage(isReply ? "Posting your signed reply…" : "Posting your signed post…")
+      // Persist the uncertainty before broadcasting: a timeout or reload must
+      // never silently turn this signed transaction into a new Send attempt.
+      window.localStorage.setItem(`${draftKey}:pending`, JSON.stringify({ publicKey: session.publicKey, startedAt: Date.now() }))
       submissionStarted = true
       const { response: submitResponse, data: submitted } = await fetchJsonWithTimeout<SubmitResponse>("/api/via/social/post", {
         method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store",
         body: JSON.stringify({ action: "submit", signedTransactionHex }),
       })
       if (!submitResponse.ok || !submitted.ok) throw new Error(submitted.error || "DESO_SUBMIT_FAILED")
+      if (!submitted.postHashHex || !/^[0-9a-fA-F]{64}$/.test(submitted.postHashHex)) throw new Error("DESO_POST_HASH_MISSING")
+      setMessage("Checking the published post on DeSo…")
+      const { response: checkResponse, data: checked } = await fetchJsonWithTimeout<{ PostFound?: { PostHashHex?: string; PosterPublicKeyBase58Check?: string; Body?: string; ImageURLs?: string[]; VideoURLs?: string[]; ParentStakeID?: string } }>(`${DESO_NODE}/api/v0/get-single-post`, {
+        method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store",
+        body: JSON.stringify({ PostHashHex: submitted.postHashHex, FetchParents: false, CommentLimit: 0 }),
+      })
+      const found = checked.PostFound
+      if (!checkResponse.ok || !found || found.PostHashHex !== submitted.postHashHex ||
+        found.PosterPublicKeyBase58Check !== session.publicKey || found.Body !== body.trim() ||
+        (found.ParentStakeID ?? "") !== parentStakeID ||
+        JSON.stringify(found.ImageURLs ?? []) !== JSON.stringify(imageUrls) ||
+        JSON.stringify(found.VideoURLs ?? []) !== JSON.stringify(videoUrls)) throw new Error("DESO_POST_READBACK_UNCONFIRMED")
+      window.localStorage.removeItem(`${draftKey}:pending`)
       setStatus("done")
       setMessage(isReply ? "Reply posted." : "Post published.")
       setBody("")
@@ -306,12 +346,25 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
         : code === "DESO_ACCOUNT_CHANGED_RECONNECT"
         ? "DeSo account changed. Select your account and review your draft before sending. Nothing was submitted."
         : `${isReply ? "The reply" : "The post"} could not be published (${code}). Nothing was submitted.`)
+      if (submissionStarted) setSubmissionUncertain(true)
+    } finally {
+      sendLock.current = false
     }
   }
 
 
   return (
     <div className={`${compact ? "mt-3" : "mt-2"} bg-transparent p-0`}>
+      {submissionUncertain ? <div role="alert" className="mb-3 text-sm text-amber-200">
+        <p>Sending is paused until you check your DeSo profile for the previous post.</p>
+        <a href={`/profile?identity=${encodeURIComponent(session?.publicKey ?? "")}`} target="_blank" rel="noopener noreferrer" className="underline">Check DeSo profile</a>
+        <button type="button" className="ml-3 underline" onClick={() => {
+          const key = isReply ? `${SOCIAL_REPLY_DRAFT_PREFIX}${parentStakeID}` : SOCIAL_DRAFT_STORAGE_KEY
+          window.localStorage.removeItem(`${key}:pending`)
+          setSubmissionUncertain(false)
+          setMessage("You confirmed the previous post is absent. Review your draft before sending again.")
+        }}>I checked: the previous post was not published</button>
+      </div> : null}
       <label htmlFor={isReply ? `via-reply-${parentStakeID}` : "via-post-body"} className="sr-only">{isReply ? "Reply" : "Post"}</label>
       {!session ? <p className="mb-2 text-sm text-zinc-500">DeSo login is required to publish. You can prepare your post first.</p> : null}
       <div className="relative mt-2">

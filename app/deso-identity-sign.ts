@@ -1,6 +1,8 @@
 "use client"
 
-import { DESO_IDENTITY_ORIGIN, getIdentityCredentials } from "./deso-identity-session"
+import { DESO_IDENTITY_ORIGIN, getIdentityCredentials, restoreLegacyIdentitySession } from "./deso-identity-session"
+import { identity } from "deso-protocol"
+import { ensureIdentityConfigured } from "./deso-identity-config"
 
 type IdentityMessage = { id?: unknown; service?: unknown; method?: unknown; payload?: unknown }
 type PendingSign = { resolve: (signed: string) => void; reject: (error: Error) => void; timeout: number; transactionHex: string; approvalWindow?: Window | null }
@@ -167,6 +169,12 @@ async function ensureStorageAccess() {
 }
 
 export async function signViaTransaction(publicKey: string, transactionHex: string, onProgress?: (message: string) => void, reservedApprovalWindow?: Window | null): Promise<string> {
+  ensureIdentityConfigured()
+  if (restoreLegacyIdentitySession()?.publicKey !== publicKey) {
+    const state = await identity.snapshot()
+    if (state.currentUser?.publicKey !== publicKey) throw new Error("DESO_ACCOUNT_CHANGED_RECONNECT")
+    return identity.signTx(transactionHex)
+  }
   if (typeof window === "undefined" || typeof document === "undefined") return Promise.reject(new Error("DeSo Identity is only available in the browser."))
   const credentials = getIdentityCredentials(publicKey)
   if (!credentials) return Promise.reject(new Error("No usable DeSo Identity credentials are available."))

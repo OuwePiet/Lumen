@@ -1,11 +1,13 @@
+import { identity } from "deso-protocol"
+import { ensureIdentityConfigured, VIA_ACTIVE_PUBLIC_KEY, VIA_IDENTITY_EVENT } from "./deso-identity-config"
+export { VIA_IDENTITY_EVENT } from "./deso-identity-config"
+
 export const DESO_IDENTITY_ORIGIN = "https://identity.deso.org"
 export const DESO_LOGIN_URL = `${DESO_IDENTITY_ORIGIN}/log-in?accessLevelRequest=3`
 export const DESO_LOGOUT_URL = `${DESO_IDENTITY_ORIGIN}/logout`
 
 const IDENTITY_USERS_KEY = "identityUsersV2"
-const VIA_ACTIVE_PUBLIC_KEY = "viaActivePublicKey"
 const PUBLIC_KEY_RE = /^[1-9A-HJ-NP-Za-km-z]{20,100}$/
-export const VIA_IDENTITY_EVENT = "via:identity-session"
 
 type DeSoIdentityCredentials = {
   encryptedSeedHex?: unknown
@@ -184,7 +186,7 @@ export function switchIdentitySession(publicKey: string): ViaIdentitySession | n
   return session
 }
 
-export function restoreIdentitySession(): ViaIdentitySession | null {
+export function restoreLegacyIdentitySession(): ViaIdentitySession | null {
   try {
     const publicKey = localStorage.getItem(VIA_ACTIVE_PUBLIC_KEY)
     return publicKey ? sessionForPublicKey(publicKey) : null
@@ -193,12 +195,55 @@ export function restoreIdentitySession(): ViaIdentitySession | null {
   }
 }
 
+export function restoreIdentitySession(): ViaIdentitySession | null {
+  if (typeof window === "undefined") return null
+  ensureIdentityConfigured()
+  const legacy = restoreLegacyIdentitySession()
+  if (legacy) return legacy
+  // Browser SDK storage is synchronous. A SDK account is not assigned a
+  // fictitious legacy access level or encrypted owner credentials.
+  const state = identity.snapshot()
+  if ("then" in state) return null
+  const publicKey = state.currentUser?.publicKey
+  return publicKey ? { publicKey, accessLevel: 0, signedUp: false } : null
+}
+
 export function clearIdentitySession(publicKey?: string) {
   localStorage.removeItem(VIA_ACTIVE_PUBLIC_KEY)
+  localStorage.removeItem("desoActivePublicKey")
   if (publicKey) {
     const users = readIdentityUsers()
     delete users[publicKey]
     localStorage.setItem(IDENTITY_USERS_KEY, JSON.stringify(users))
   }
   window.dispatchEvent(new CustomEvent(VIA_IDENTITY_EVENT, { detail: null }))
+}
+
+/** Official Window API logout for an account authorized before SDK login. */
+export function logoutLegacyIdentity(publicKey: string): Promise<void> {
+  const popup = window.open(`${DESO_LOGOUT_URL}?publicKey=${encodeURIComponent(publicKey)}`, "via-identity-logout", "popup=yes,width=800,height=900")
+  if (!popup) return Promise.reject(new Error("DeSo logout window was blocked. Your session was retained."))
+  return new Promise((resolve, reject) => {
+    const cleanup = () => {
+      window.removeEventListener("message", onMessage)
+      window.clearInterval(watch)
+      window.clearTimeout(timeout)
+      popup.close()
+    }
+    const fail = () => { cleanup(); reject(new Error("DeSo logout was not confirmed. Your session was retained.")) }
+    const onMessage = (event: MessageEvent) => {
+      if (event.source !== popup || event.origin !== DESO_IDENTITY_ORIGIN || !isRecord(event.data)) return
+      if (acknowledgeIdentityInitialize(event)) return
+      const message = event.data as LoginMessage
+      if (message.service !== "identity" || message.method !== "login" || !isRecord(message.payload) ||
+        message.payload.publicKeyAdded || !isRecord(message.payload.users)) return
+      // Logout response must revoke/remove this particular account.
+      if (isUsableCredentials(message.payload.users[publicKey])) return
+      cleanup()
+      resolve()
+    }
+    const watch = window.setInterval(() => { if (popup.closed) fail() }, 500)
+    const timeout = window.setTimeout(fail, 90_000)
+    window.addEventListener("message", onMessage)
+  })
 }

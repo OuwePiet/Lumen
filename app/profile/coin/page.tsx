@@ -1,15 +1,26 @@
 "use client"
+import { useViaIdentitySession } from "../../use-via-identity-session"
+
 import Link from "next/link"
 import { useEffect,useState } from "react"
 import { ArrowLeftRight,Send,ShoppingCart } from "lucide-react"
-import { restoreIdentitySession,type ViaIdentitySession } from "../../deso-identity-session"
 type Mode="buy"|"sell"|"transfer"
 type CoinData={username:string;coinPriceDeSoNanos:number|null;numberOfHolders:number|null;coinsInCirculationNanos:number|null}
 type WalletData={balanceDeSo:number;creatorCoinHoldings:Array<{creatorPublicKey:string;balanceCoins:number}>}
 const n=(v:number|null,d=4)=>v===null?"—":new Intl.NumberFormat("en-US",{maximumFractionDigits:d}).format(v)
 export default function CreatorCoinPage(){
- const [session,setSession]=useState<ViaIdentitySession|null>(null),[mode,setMode]=useState<Mode>("buy"),[coin,setCoin]=useState<CoinData|null>(null),[wallet,setWallet]=useState<WalletData|null>(null)
- useEffect(()=>{const s=restoreIdentitySession();setSession(s);if(!s)return;Promise.all([fetch("/api/via/profile?identity="+encodeURIComponent(s.publicKey),{cache:"no-store"}).then(r=>r.json()),fetch("/api/via/wallet?publicKey="+encodeURIComponent(s.publicKey),{cache:"no-store"}).then(r=>r.json())]).then(([p,w])=>{if(p?.profile)setCoin(p.profile);if(w?.wallet)setWallet(w.wallet)}).catch(()=>{})},[])
+ const session=useViaIdentitySession(); const [mode,setMode]=useState<Mode>("buy"),[coin,setCoin]=useState<CoinData|null>(null),[wallet,setWallet]=useState<WalletData|null>(null)
+ const publicKey=session?.publicKey
+ useEffect(()=>{
+  setCoin(null);setWallet(null)
+  if(!publicKey)return
+  const controller=new AbortController()
+  Promise.all([
+   fetch("/api/via/profile?identity="+encodeURIComponent(publicKey),{cache:"no-store",signal:controller.signal}).then(r=>r.json()),
+   fetch("/api/via/wallet?publicKey="+encodeURIComponent(publicKey),{cache:"no-store",signal:controller.signal}).then(r=>r.json()),
+  ]).then(([p,w])=>{if(controller.signal.aborted)return;if(p?.profile)setCoin(p.profile);if(w?.wallet)setWallet(w.wallet)}).catch(()=>{})
+  return()=>controller.abort()
+ },[publicKey])
  const tabs:[Mode,string,typeof ShoppingCart][]=[["buy","Buy",ShoppingCart],["sell","Sell",ArrowLeftRight],["transfer","Transfer",Send]]
  const ownHolding=wallet&&session?wallet.creatorCoinHoldings.find(h=>h.creatorPublicKey===session.publicKey)?.balanceCoins??0:0
  return <main className="min-h-screen bg-[#050807] p-4 text-zinc-100"><section className="mx-auto max-w-md rounded-2xl border border-[#8fd4a9]/25 bg-[#0b1710] p-4">

@@ -1,6 +1,8 @@
 "use client"
 
-import { DESO_IDENTITY_ORIGIN, getIdentityCredentials } from "./deso-identity-session"
+import { DESO_IDENTITY_ORIGIN, getIdentityCredentials, restoreLegacyIdentitySession } from "./deso-identity-session"
+import { identity } from "deso-protocol"
+import { ensureIdentityConfigured } from "./deso-identity-config"
 
 type IdentityMessage = {
   id?: unknown
@@ -39,6 +41,13 @@ export function requestViaIdentityJwt(publicKey: string): Promise<string> {
   }
 
   const credentials = getIdentityCredentials(publicKey)
+  ensureIdentityConfigured()
+  if (restoreLegacyIdentitySession()?.publicKey !== publicKey) {
+    return Promise.resolve(identity.snapshot()).then((state) => {
+      if (state.currentUser?.publicKey !== publicKey) throw new Error("DESO_ACCOUNT_CHANGED_RECONNECT")
+      return identity.jwt()
+    })
+  }
   if (!credentials) {
     return Promise.reject(new Error("No usable DeSo Identity credentials are available for this account."))
   }
