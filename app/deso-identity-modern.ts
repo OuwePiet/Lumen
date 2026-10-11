@@ -78,6 +78,9 @@ export const viaModernIdentity: ViaModernIdentityAdapter = {
   async login() {
     ensureConfigured()
     const payload = await identity.login()
+    // A completed SDK login selects the SDK account. Keep legacy credentials
+    // for account switching, but stop a previous legacy selection masking it.
+    clearIdentitySession()
     return { publicKey: payload.publicKeyBase58Check }
   },
 
@@ -117,6 +120,7 @@ export const viaModernIdentity: ViaModernIdentityAdapter = {
     if (viaSession) return
     ensureConfigured()
     await identity.setActiveUser(publicKey)
+    clearIdentitySession()
   },
 
   async signTx(transactionHex: string) {
