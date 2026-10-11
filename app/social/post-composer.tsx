@@ -202,7 +202,11 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
     try {
       setImageUploadStatus("jwt")
       setImageUploadMessage("Preparing image upload approval…")
+      const uploadUser = await viaModernIdentity.currentUser()
+      if (uploadUser?.publicKey !== session.publicKey) throw new Error("DESO_ACCOUNT_CHANGED_RECONNECT")
       const jwt = await viaModernIdentity.jwt()
+      const userAfterJwt = await viaModernIdentity.currentUser()
+      if (userAfterJwt?.publicKey !== session.publicKey) throw new Error("DESO_ACCOUNT_CHANGED_RECONNECT")
 
       setImageUploadStatus("uploading")
       setImageUploadMessage("Uploading image…")
@@ -214,6 +218,8 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
       const response = await fetch("/api/via/social/image-upload", { method: "POST", body: form, cache: "no-store" })
       const data = await response.json() as UploadResponse
       if (!response.ok || !data.ok || !data.imageUrl) throw new Error(data.error || "IMAGE_UPLOAD_FAILED")
+      const userAfterUpload = await viaModernIdentity.currentUser()
+      if (userAfterUpload?.publicKey !== session.publicKey) throw new Error("DESO_ACCOUNT_CHANGED_RECONNECT")
 
       addUploadedImage(data.imageUrl)
       setMediaOpen(false)
@@ -225,6 +231,8 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
       const code = error instanceof Error ? error.message : "IMAGE_UPLOAD_FAILED"
       setImageUploadMessage(code === "IDENTITY_REAUTHORIZE_REQUIRED"
         ? "Image upload approval expired. Reconnect and try again."
+        : code === "DESO_ACCOUNT_CHANGED_RECONNECT"
+        ? "DeSo account changed. Select your account and attach the photo again."
         : "The image was not attached. No post was published.")
     }
   }
@@ -236,7 +244,10 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
     setStatus("preparing")
     setMessage(isReply ? "Preparing your reply…" : "Preparing your post…")
     setFeeNanos(null)
+    let submissionStarted = false
     try {
+      const activeBeforePrepare = await viaModernIdentity.currentUser()
+      if (activeBeforePrepare?.publicKey !== session.publicKey) throw new Error("DESO_ACCOUNT_CHANGED_RECONNECT")
       const { response, data: prepared } = await fetchJsonWithTimeout<PrepareResponse>("/api/via/social/post", {
         method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store",
         body: JSON.stringify({
@@ -256,9 +267,14 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
       setFeeNanos(typeof prepared.feeNanos === "number" ? prepared.feeNanos : null)
       setStatus("awaiting-approval")
       setMessage(isReply ? "Signing your reply with your DeSo Identity session…" : "Signing your post with your DeSo Identity session…")
+      const activeBeforeSigning = await viaModernIdentity.currentUser()
+      if (activeBeforeSigning?.publicKey !== session.publicKey) throw new Error("DESO_ACCOUNT_CHANGED_RECONNECT")
       const signedTransactionHex = await viaModernIdentity.signTx(prepared.transactionHex)
+      const activeBeforeSubmit = await viaModernIdentity.currentUser()
+      if (activeBeforeSubmit?.publicKey !== session.publicKey) throw new Error("DESO_ACCOUNT_CHANGED_RECONNECT")
       setStatus("submitting")
       setMessage(isReply ? "Posting your signed reply…" : "Posting your signed post…")
+      submissionStarted = true
       const { response: submitResponse, data: submitted } = await fetchJsonWithTimeout<SubmitResponse>("/api/via/social/post", {
         method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store",
         body: JSON.stringify({ action: "submit", signedTransactionHex }),
@@ -285,7 +301,11 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
     } catch (error) {
       setStatus("error")
       const code = error instanceof Error ? error.message : "PREPARE_FAILED"
-      setMessage(`${isReply ? "The reply" : "The post"} could not be published (${code}). Nothing was posted.`)
+      setMessage(submissionStarted
+        ? `${isReply ? "Reply" : "Post"} not confirmed (${code}). Check DeSo before retrying; do not send twice.`
+        : code === "DESO_ACCOUNT_CHANGED_RECONNECT"
+        ? "DeSo account changed. Select your account and review your draft before sending. Nothing was submitted."
+        : `${isReply ? "The reply" : "The post"} could not be published (${code}). Nothing was submitted.`)
     }
   }
 
