@@ -49,7 +49,8 @@ function formatLocalDate(date: Date, locale: string) {
 }
 
 export default function ViaWorldClock({ iphoneInline = false }: { iphoneInline?: boolean }) {
-  const [now, setNow] = useState(() => new Date())
+  // Build-time HTML and the first browser render must contain identical text.
+  const [now, setNow] = useState<Date | null>(null)
   const [rates, setRates] = useState<ViaRates | null>(null)
   const [rateUnavailable, setRateUnavailable] = useState(false)
   const [language, setLanguage] = useState<ViaLanguage>("English")
@@ -62,6 +63,7 @@ export default function ViaWorldClock({ iphoneInline = false }: { iphoneInline?:
   }, [])
 
   useEffect(() => {
+    setNow(new Date())
     const timer = window.setInterval(() => setNow(new Date()), 30_000)
     return () => window.clearInterval(timer)
   }, [])
@@ -95,9 +97,9 @@ export default function ViaWorldClock({ iphoneInline = false }: { iphoneInline?:
 
   const locale = localeByLanguage[language]
   const t = labels[language]
-  const clocks = useMemo(() => zones.map((zone) => ({ ...zone, time: formatTime(now, zone.timeZone, locale) })), [now, locale])
-  const localDate = useMemo(() => formatLocalDate(now, locale), [now, locale])
-  const stale = rates ? isViaRateStale(rates.checkedAt, now.getTime()) : false
+  const clocks = useMemo(() => zones.map((zone) => ({ ...zone, time: now ? formatTime(now, zone.timeZone, locale) : "—" })), [now, locale])
+  const localDate = useMemo(() => now ? formatLocalDate(now, locale) : "—", [now, locale])
+  const stale = rates && now ? isViaRateStale(rates.checkedAt, now.getTime()) : false
   const usd = rates?.rates && !stale && !rateUnavailable ? rates.rates.USD : null
 
   const frame = { left: "250px", right: "330px" } as const
