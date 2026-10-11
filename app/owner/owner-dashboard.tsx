@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useMemo, useState } from "react"
-import { restoreIdentitySession } from "../deso-identity-session"
+import { useViaIdentitySession } from "../use-via-identity-session"
 
 type IdeaItem = {
   category?: string
@@ -80,13 +80,11 @@ function statusLabel(value: string) {
 }
 
 export default function OwnerDashboard({ ownerPublicKey }: { ownerPublicKey: string | null }) {
-  const [sessionKey, setSessionKey] = useState<string | null>(null)
+  const sessionKey = useViaIdentitySession()?.publicKey ?? null
   const [ideas, setIdeas] = useState<IdeaItem[]>([])
   const [live, setLive] = useState<LiveStatus>(initialLiveStatus)
 
   useEffect(() => {
-    const session = restoreIdentitySession()
-    setSessionKey(session?.publicKey ?? null)
     setIdeas(readLocalIdeas())
   }, [])
 

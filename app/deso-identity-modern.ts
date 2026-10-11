@@ -1,7 +1,10 @@
 "use client"
 
 import { identity, type AccessGroupEntryResponse, type NewMessageEntryResponse } from "deso-protocol"
-import { clearIdentitySession, listIdentitySessions, restoreIdentitySession, switchIdentitySession, VIA_IDENTITY_EVENT } from "./deso-identity-session"
+import { clearIdentitySession, listIdentitySessions, restoreIdentitySession, restoreLegacyIdentitySession, switchIdentitySession, VIA_IDENTITY_EVENT, logoutLegacyIdentity } from "./deso-identity-session"
+import { ensureIdentityConfigured as ensureConfigured } from "./deso-identity-config"
+import { guardTxPermission } from "deso-protocol/src/transactions/utils.js"
+export { VIA_BASE_SPENDING_LIMITS } from "./deso-identity-config"
 import { signViaTransaction } from "./deso-identity-sign"
 import { requestViaIdentityJwt } from "./deso-identity-jwt"
 
@@ -23,6 +26,7 @@ export type ViaModernIdentityAdapter = {
   subscribe(listener: (user: ViaModernIdentityUser | null) => void): () => void
   setActiveUser(publicKey: string): Promise<void>
   signTx(transactionHex: string): Promise<string>
+  ensurePostPermissions(feeNanos: number | null | undefined): Promise<void>
   hasPermissions(permissions: Parameters<typeof identity.hasPermissions>[0]): ReturnType<typeof identity.hasPermissions>
   requestPermissions(permissions: Parameters<typeof identity.requestPermissions>[0]): ReturnType<typeof identity.requestPermissions>
   spendingLimits(): Promise<NonNullable<Awaited<ReturnType<typeof identity.snapshot>>["currentUser"]>["primaryDerivedKey"]["transactionSpendingLimits"] | null>
@@ -32,35 +36,8 @@ export type ViaModernIdentityAdapter = {
   jwt(): Promise<string>
 }
 
-export const VIA_BASE_SPENDING_LIMITS: Parameters<typeof identity.hasPermissions>[0] = {
-  TransactionCountLimitMap: {
-    SUBMIT_POST: "UNLIMITED",
-    LIKE: "UNLIMITED",
-    FOLLOW: "UNLIMITED",
-    UPDATE_PROFILE: "UNLIMITED",
-    CREATE_POST_ASSOCIATION: "UNLIMITED",
-    NEW_MESSAGE: "UNLIMITED",
-    CREATE_NFT: "UNLIMITED",
-  },
-}
-
-let configured = false
 let subscribed = false
 const identityListeners = new Set<(user: ViaModernIdentityUser | null) => void>()
-
-function ensureConfigured() {
-  if (configured || typeof window === "undefined") return
-
-  identity.configure({
-    appName: "VIA",
-    network: "mainnet",
-    nodeURI: "https://node.deso.org",
-    identityURI: "https://identity.deso.org",
-    spendingLimitOptions: VIA_BASE_SPENDING_LIMITS,
-  })
-
-  configured = true
-}
 
 async function currentUser(): Promise<ViaModernIdentityUser | null> {
   const viaSession = restoreIdentitySession()
@@ -78,14 +55,19 @@ export const viaModernIdentity: ViaModernIdentityAdapter = {
   async login() {
     ensureConfigured()
     const payload = await identity.login()
-    // A completed SDK login selects the SDK account. Keep legacy credentials
-    // for account switching, but stop a previous legacy selection masking it.
-    clearIdentitySession()
     return { publicKey: payload.publicKeyBase58Check }
   },
 
   async logout() {
-    clearIdentitySession()
+    ensureConfigured()
+    const user = await currentUser()
+    if (!user) { clearIdentitySession(); return }
+    const state = await identity.snapshot()
+    if (state.currentUser?.publicKey === user.publicKey) await identity.logout()
+    else await logoutLegacyIdentity(user.publicKey)
+    // Remove the active user's credentials in both formats. Other authorized
+    // accounts remain available for explicit switching; none becomes active.
+    clearIdentitySession(user.publicKey)
   },
 
   async alternateUsers() {
@@ -120,18 +102,26 @@ export const viaModernIdentity: ViaModernIdentityAdapter = {
     if (viaSession) return
     ensureConfigured()
     await identity.setActiveUser(publicKey)
-    clearIdentitySession()
   },
 
   async signTx(transactionHex: string) {
-    const viaSession = restoreIdentitySession()
+    const viaSession = restoreLegacyIdentitySession()
     if (viaSession?.publicKey) return signViaTransaction(viaSession.publicKey, transactionHex)
     ensureConfigured()
     return identity.signTx(transactionHex)
   },
 
+  async ensurePostPermissions(feeNanos) {
+    if (restoreLegacyIdentitySession()) return
+    ensureConfigured()
+    if (typeof feeNanos !== "number" || !Number.isSafeInteger(feeNanos) || feeNanos < 0) throw new Error("DESO_POST_FEE_UNAVAILABLE")
+    // Use the SDK's own guard and the actual node-provided fee. No spending
+    // price or permission budget is calculated by VIA.
+    await guardTxPermission({ GlobalDESOLimit: feeNanos, TransactionCountLimitMap: { SUBMIT_POST: "UNLIMITED" } })
+  },
+
   hasPermissions(permissions) {
-    if (restoreIdentitySession()?.publicKey) return Promise.resolve(true)
+    if (restoreLegacyIdentitySession()?.publicKey) return Promise.resolve(true)
     ensureConfigured()
     return identity.hasPermissions(permissions)
   },
@@ -164,7 +154,7 @@ export const viaModernIdentity: ViaModernIdentityAdapter = {
   },
 
   async jwt() {
-    const viaSession = restoreIdentitySession()
+    const viaSession = restoreLegacyIdentitySession()
     if (viaSession?.publicKey) return requestViaIdentityJwt(viaSession.publicKey)
     ensureConfigured()
     return identity.jwt()

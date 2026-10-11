@@ -150,6 +150,7 @@ export default function ViaSiteHeader() {
   const accountWrapRef = useRef<HTMLDivElement | null>(null)
   const searchWrapRef = useRef<HTMLDivElement | null>(null)
   const [session, setSession] = useState<ViaIdentitySession | null>(null)
+  const [identityError, setIdentityError] = useState("")
   const [knownAccounts, setKnownAccounts] = useState<ViaIdentitySession[]>([])
   const [profile, setProfile] = useState<PublicProfile | null>(null)
   const [profiles, setProfiles] = useState<Record<string, PublicProfile>>({})
@@ -268,7 +269,11 @@ export default function ViaSiteHeader() {
   }
 
   async function logout() {
-    await viaModernIdentity.logout()
+    try { await viaModernIdentity.logout() } catch (error) {
+      setIdentityError(error instanceof Error ? error.message : "DeSo logout was not confirmed.")
+      return
+    }
+    setIdentityError("")
     setSession(null)
     setProfile(null)
     setMenuOpen(false)
@@ -281,6 +286,7 @@ export default function ViaSiteHeader() {
 
   return (
     <header style={styles.header} className="via-site-header">
+      {identityError ? <p role="alert" style={{ margin: 0, padding: "8px 16px", color: "#f4c7a1" }}>{identityError}</p> : null}
       <div style={styles.shell} className="via-site-header-shell">
         <Link href="/" style={styles.brand} className="via-site-header-brand" aria-label="VIA home">
           <img src="/via-logo-original.jpg?v=1" alt="VIA" style={styles.logo} className="via-site-header-logo" />

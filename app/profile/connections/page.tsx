@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { useEffect, useMemo, useState } from "react"
-import { restoreIdentitySession } from "../../deso-identity-session"
+import { restoreIdentitySession, VIA_IDENTITY_EVENT } from "../../deso-identity-session"
 
 type Connection = {
   publicKey: string
@@ -48,9 +48,11 @@ export default function ProfileConnectionsPage() {
     const params = new URLSearchParams(window.location.search)
     const requestedMode = params.get("mode") === "following" ? "following" : "followers"
     const requestedIdentity = (params.get("identity") ?? "").trim()
-    const session = restoreIdentitySession()
     setMode(requestedMode)
-    setIdentity(requestedIdentity || session?.publicKey || "")
+    const sync = () => setIdentity(requestedIdentity || restoreIdentitySession()?.publicKey || "")
+    sync()
+    window.addEventListener(VIA_IDENTITY_EVENT, sync)
+    return () => window.removeEventListener(VIA_IDENTITY_EVENT, sync)
   }, [])
 
   useEffect(() => {

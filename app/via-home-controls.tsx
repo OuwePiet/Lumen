@@ -8,13 +8,12 @@ import {
   DESO_LOGIN_URL,
   VIA_IDENTITY_EVENT,
   clearIdentitySession,
-  listIdentitySessions,
   persistIdentityLogin,
   restoreIdentitySession,
-  switchIdentitySession,
   type ViaIdentitySession,
 } from "./deso-identity-session"
 import ViaIdentityStatusMarks from "./via-identity-status"
+import { viaModernIdentity } from "./deso-identity-modern"
 import SponsorPlatform from "./sponsor-platform"
 import ViaWorldClock from "./via-world-clock"
 import {
@@ -253,7 +252,8 @@ export default function ViaHomeControls() {
 
 
   function refreshAccounts() {
-    setKnownAccounts(listIdentitySessions())
+    void viaModernIdentity.alternateUsers().then((users) =>
+      setKnownAccounts(users.map((user) => ({ ...user, accessLevel: 0, signedUp: false }))))
   }
 
   useEffect(() => {
@@ -268,7 +268,7 @@ export default function ViaHomeControls() {
 
     function handleIdentityMessage(event: MessageEvent) {
       const identityWindow = identityWindowRef.current
-      if (identityWindow && event.source !== identityWindow) return
+      if (!identityWindow || event.source !== identityWindow) return
       const nextSession = persistIdentityLogin(event)
       if (!nextSession) return
       setSession(nextSession)
@@ -353,8 +353,9 @@ export default function ViaHomeControls() {
     setStatus("waiting")
   }
 
-  function chooseAccount(publicKey: string) {
-    const nextSession = switchIdentitySession(publicKey)
+  async function chooseAccount(publicKey: string) {
+    await viaModernIdentity.setActiveUser(publicKey)
+    const nextSession = restoreIdentitySession()
     if (!nextSession) return
     setSession(nextSession)
     setProfile(profiles[publicKey] ?? null)
@@ -362,8 +363,8 @@ export default function ViaHomeControls() {
     router.refresh()
   }
 
-  function logout() {
-    clearIdentitySession()
+  async function logout() {
+    try { await viaModernIdentity.logout() } catch { setStatus("blocked"); return }
     setSession(null)
     setProfile(null)
     setAccountsOpen(false)
