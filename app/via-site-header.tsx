@@ -605,6 +605,11 @@ export default function ViaSiteHeader() {
             justify-self: auto !important;
           }
         }
+        @media (min-width: 721px) and (max-width: 1100px) {
+          .via-site-header-shell { grid-template-columns: 150px minmax(0,1fr) !important; grid-template-rows: 72px auto !important; }
+          .via-site-header-logo { max-width: 150px !important; height: auto !important; }
+          .via-site-header-tools { flex-wrap: wrap !important; justify-content: flex-start !important; }
+        }
         @media (min-width: 721px) {
           .via-site-header-account-menu-icon { display: none !important; }
         }
