@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react"
 import { Gem } from "lucide-react"
 import { viaModernIdentity } from "../deso-identity-modern"
+import { restoreIdentitySession } from "../deso-identity-session"
 import { fetchViaRates } from "../via-live-rates"
 
 type Props = { postHash: string; receiverPublicKey: string; initialCount: number; variant?: "default" | "icon" }
@@ -76,6 +77,11 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
       setFeeNanos(data.feeNanos)
       const diamondSpendLimit = data.spendAmountNanos + data.feeNanos
       if (!Number.isSafeInteger(diamondSpendLimit) || diamondSpendLimit < 0) throw new Error("INVALID_DESO_SPEND_LIMIT")
+      if ((await viaModernIdentity.currentUser())?.publicKey !== session.publicKey) throw new Error("DESO_ACCOUNT_CHANGED_RETRY")
+      // Fail closed before reading modern SDK limits if the active signer is legacy.
+      if (restoreIdentitySession()?.publicKey) throw new Error("LEGACY_DIAMOND_AUTHORIZATION_REQUIRES_REVIEW")
+      // Verify the modern SDK owns the same account before checking financial permissions.
+      if ((await viaModernIdentity.currentUser())?.publicKey !== session.publicKey) throw new Error("DESO_ACCOUNT_CHANGED_RETRY")
       const currentSpendingLimits = await viaModernIdentity.spendingLimits()
       const currentGlobalDESOLimit = currentSpendingLimits?.GlobalDESOLimit ?? 0
       if (!Number.isSafeInteger(currentGlobalDESOLimit) || currentGlobalDESOLimit < 0) throw new Error("INVALID_DESO_SPENDING_LIMITS")
@@ -83,12 +89,18 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
         GlobalDESOLimit: currentGlobalDESOLimit + diamondSpendLimit,
         TransactionCountLimitMap: { BASIC_TRANSFER: 1 },
       }
-      if (!viaModernIdentity.hasPermissions(requiredPermissions)) {
+      // A restored legacy VIA session signs through the legacy Identity iframe, not the modern SDK.
+      // Never authorize its spending against an unrelated modern SDK account.
+      if (!(await viaModernIdentity.hasPermissions(requiredPermissions))) {
         setStatus("approval"); setMessage("Confirm this Diamond spending permission with DeSo Identity…")
         await viaModernIdentity.requestPermissions(requiredPermissions)
+        if (!(await viaModernIdentity.hasPermissions(requiredPermissions))) throw new Error("DESO_DIAMOND_PERMISSION_NOT_CONFIRMED")
       }
       setStatus("approval"); setMessage("Signing the confirmed Diamond with your VIA DeSo session…")
+      // Never submit a paid transaction after the user changes the active DeSo account.
+      if ((await viaModernIdentity.currentUser())?.publicKey !== session.publicKey || restoreIdentitySession()?.publicKey) throw new Error("DESO_ACCOUNT_CHANGED_RETRY")
       const signedTransactionHex = await viaModernIdentity.signTx(data.transactionHex)
+      if ((await viaModernIdentity.currentUser())?.publicKey !== session.publicKey || restoreIdentitySession()?.publicKey) throw new Error("DESO_ACCOUNT_CHANGED_RETRY")
       setStatus("submitting"); setMessage("Submitting your confirmed Diamond to DeSo…")
       const submitResponse = await fetch("/api/via/social/diamond", { method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store", body: JSON.stringify({ action: "submit", signedTransactionHex }) })
       const submitData = await submitResponse.json() as { ok?: boolean; error?: string }
