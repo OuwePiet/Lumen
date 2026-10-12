@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react"
 import { Gem } from "lucide-react"
 import { viaModernIdentity } from "../deso-identity-modern"
-import { restoreIdentitySession } from "../deso-identity-session"
+import { restoreLegacyIdentitySession } from "../deso-identity-session"
 import { fetchViaRates } from "../via-live-rates"
 
 type Props = { postHash: string; receiverPublicKey: string; initialCount: number; variant?: "default" | "icon" }
@@ -79,7 +79,7 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
       if (!Number.isSafeInteger(diamondSpendLimit) || diamondSpendLimit < 0) throw new Error("INVALID_DESO_SPEND_LIMIT")
       if ((await viaModernIdentity.currentUser())?.publicKey !== session.publicKey) throw new Error("DESO_ACCOUNT_CHANGED_RETRY")
       // Fail closed before reading modern SDK limits if the active signer is legacy.
-      if (restoreIdentitySession()?.publicKey) throw new Error("LEGACY_DIAMOND_AUTHORIZATION_REQUIRES_REVIEW")
+      if (restoreLegacyIdentitySession()?.publicKey) throw new Error("LEGACY_DIAMOND_AUTHORIZATION_REQUIRES_REVIEW")
       // Verify the modern SDK owns the same account before checking financial permissions.
       if ((await viaModernIdentity.currentUser())?.publicKey !== session.publicKey) throw new Error("DESO_ACCOUNT_CHANGED_RETRY")
       const currentSpendingLimits = await viaModernIdentity.spendingLimits()
@@ -98,9 +98,9 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
       }
       setStatus("approval"); setMessage("Signing the confirmed Diamond with your VIA DeSo session…")
       // Never submit a paid transaction after the user changes the active DeSo account.
-      if ((await viaModernIdentity.currentUser())?.publicKey !== session.publicKey || restoreIdentitySession()?.publicKey) throw new Error("DESO_ACCOUNT_CHANGED_RETRY")
+      if ((await viaModernIdentity.currentUser())?.publicKey !== session.publicKey || restoreLegacyIdentitySession()?.publicKey) throw new Error("DESO_ACCOUNT_CHANGED_RETRY")
       const signedTransactionHex = await viaModernIdentity.signTx(data.transactionHex)
-      if ((await viaModernIdentity.currentUser())?.publicKey !== session.publicKey || restoreIdentitySession()?.publicKey) throw new Error("DESO_ACCOUNT_CHANGED_RETRY")
+      if ((await viaModernIdentity.currentUser())?.publicKey !== session.publicKey || restoreLegacyIdentitySession()?.publicKey) throw new Error("DESO_ACCOUNT_CHANGED_RETRY")
       setStatus("submitting"); setMessage("Submitting your confirmed Diamond to DeSo…")
       const submitResponse = await fetch("/api/via/social/diamond", { method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store", body: JSON.stringify({ action: "submit", signedTransactionHex }) })
       const submitData = await submitResponse.json() as { ok?: boolean; error?: string }
