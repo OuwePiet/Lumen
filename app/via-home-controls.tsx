@@ -469,7 +469,7 @@ export default function ViaHomeControls() {
               ) : null}
             </div>
           ) : href ? (
-            <Link prefetch={href === "/notifications"} key={key} href={href} style={{ ...buttonStyle, width: "100%", justifyContent: "center", paddingInline: "9px" }}>{key === "social" ? <span aria-hidden="true" style={{ color: "#3f7654", marginRight: "5px", fontSize: "13px" }}>✎</span> : null}{t[key]}{key === "notifications" && hasUnreadNotifications ? <span aria-label="Ongelezen meldingen" title="Ongelezen meldingen" style={{ display: "inline-block", width: "8px", height: "8px", flexShrink: 0, marginLeft: "6px", borderRadius: "50%", background: "#39d98a", boxShadow: "0 0 0 2px rgba(57,217,138,.16)" }} /> : null}</Link>
+            <Link prefetch={href === "/notifications"} key={key} href={href} style={{ ...buttonStyle, width: "100%", justifyContent: "center", paddingInline: "9px" }}>{key === "social" ? <img src="/92D560F9-D984-4958-93C6-00C657796928.png" alt="" aria-hidden="true" width={20} height={14} style={{ width: "20px", height: "14px", objectFit: "contain", marginRight: "5px", opacity: 0.78, flexShrink: 0 }} /> : null}{t[key]}{key === "notifications" && hasUnreadNotifications ? <span aria-label="Ongelezen meldingen" title="Ongelezen meldingen" style={{ display: "inline-block", width: "8px", height: "8px", flexShrink: 0, marginLeft: "6px", borderRadius: "50%", background: "#39d98a", boxShadow: "0 0 0 2px rgba(57,217,138,.16)" }} /> : null}</Link>
           ) : (
             <span key={key} aria-disabled="true" title="Wordt op de eigen Berichten-pagina aangesloten" style={{ ...disabledButtonStyle, width: "100%", justifyContent: "center", paddingInline: "9px" }}>{t[key]}</span>
           ))}
