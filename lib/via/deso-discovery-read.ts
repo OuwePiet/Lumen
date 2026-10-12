@@ -56,7 +56,8 @@ function normalizeDiscoveryPost(post: DeSoPost): ViaPublicPost {
   return {
     postHash: text(post.PostHashHex), publicKey: text(post.PosterPublicKeyBase58Check), username: text(post.ProfileEntryResponse?.Username),
     body: text(post.Body), imageUrls: safeHttpsUrls(post.ImageURLs), videoUrls: safeHttpsUrls(post.VideoURLs), timestampNanos: count(post.TimestampNanos),
-    likeCount: count(post.LikeCount), diamondCount: count(post.DiamondCount), commentCount: count(post.CommentCount), repostCount: count(post.RepostCount), quoteRepostCount: count(post.QuoteRepostCount),
+    likeCount: count(post.LikeCount), isLikedByReader: post.PostEntryReaderState?.LikedByReader === true,
+    diamondCount: count(post.DiamondCount), commentCount: count(post.CommentCount), repostCount: count(post.RepostCount), quoteRepostCount: count(post.QuoteRepostCount),
     isNft: post.IsNFT === true, postExtraData: safePostExtraData(post.PostExtraData),
   }
 }
