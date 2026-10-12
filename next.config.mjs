@@ -13,6 +13,14 @@ const securityHeaders = [
     value: "off",
   },
   {
+    key: "X-Frame-Options",
+    value: "DENY",
+  },
+  {
+    key: "Content-Security-Policy",
+    value: "frame-ancestors 'none'",
+  },
+  {
     key: "Strict-Transport-Security",
     value: "max-age=31536000",
   },
