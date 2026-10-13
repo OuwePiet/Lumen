@@ -28,7 +28,7 @@ function fixture({ switchAt = '', timeout = false, badJson = false, refreshFails
     hasPermissions: async p => { permissionInputs.push(p); if (switchAt === 'permission') switchAccount(); return compareLimits(p, actual) },
     requestPermissions: async p => { grants.push(p); if (switchAt === 'grant') switchAccount(); if (confirmedGrant) actual = p },
     signTx: async hex => { signed.push({ hex, account: active }); if (switchAt === 'sign') switchAccount(); return signedHex },
-    refreshSpendingLimits: async () => { if (refreshFails) throw new Error('REFRESH_FAILED') },
+    refreshSpendingLimits: async () => { if (refreshFails && requests.some(x => x.body?.action === 'submit')) throw new Error('REFRESH_FAILED') },
   }
   const context = {
     exports: {}, Event, Date, Error,
