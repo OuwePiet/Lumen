@@ -3,12 +3,16 @@
 import { useEffect, useRef, useState } from "react"
 import { createPortal } from "react-dom"
 import { HandCoins } from "lucide-react"
-import { DESO_IDENTITY_ORIGIN, restoreIdentitySession } from "./deso-identity-session"
+import { DESO_IDENTITY_ORIGIN, restoreIdentitySession, VIA_IDENTITY_EVENT } from "./deso-identity-session"
+import { viaModernIdentity } from "./deso-identity-modern"
+import { financialReceipt, financialSubmissionBlock, markFinancialPending, markFinancialSubmitted, readFinancialReceipt, withFinancialAccountLock, FINANCIAL_SUBMISSION_EVENT } from "./financial-submission"
 import DiamondButton from "./social/diamond-button"
 import { readViaLocalSettings, VIA_SETTINGS_EVENT, type ViaLanguage } from "./via-local-settings"
 
 type Target = { ok?: boolean; publicKey?: string; postHash?: string | null }
-type PrepareResponse = { ok?: boolean; transactionHex?: string; feeNanos?: number | null; amountNanos?: number; error?: string }
+type PrepareResponse = { ok?: boolean; transactionHex?: string; feeNanos?: number; amountNanos?: number; senderPublicKey?: string; preparedAt?: number; error?: string }
+
+type SponsorOperation = { publicKey: string; intent: string; amountNanos: number; invalidated: boolean; allowNewAction: boolean }
 
 type SponsorCopy = {
   trigger: string
@@ -142,7 +146,7 @@ const COPY: Record<ViaLanguage | "Hindi", SponsorCopy> = {
 }
 
 function signedTransactionFromMessage(event: MessageEvent, source: Window | null) {
-  if (event.origin !== DESO_IDENTITY_ORIGIN || event.source !== source) return null
+  if (!source || event.origin !== DESO_IDENTITY_ORIGIN || event.source !== source) return null
   if (!event.data || typeof event.data !== "object") return null
   const data = event.data as Record<string, unknown>
   if (data.service !== "identity") return null
@@ -173,6 +177,64 @@ export default function SponsorPlatform({ compact = false, showIcon = true }: { 
   const [feeNanos, setFeeNanos] = useState<number | null>(null)
   const popupRef = useRef<Window | null>(null)
   const popupWatch = useRef<number | null>(null)
+  const sendLock = useRef(false)
+  const activeOperation = useRef<SponsorOperation | null>(null)
+  const approval = useRef<{ source: Window; resolve: (hex: string) => void; reject: (error: Error) => void } | null>(null)
+  const allowNewAction = useRef<{ publicKey: string; intent: string } | null>(null)
+  const [submissionBlock, setSubmissionBlock] = useState("")
+  const [hasReceipt, setHasReceipt] = useState(false)
+  const selectedAccount = useRef<string | null>(null)
+  // The recipient is deliberately unchanged. Its historical approval scope is
+  // unresolved; this key labels the existing OuwePiet Basic Transfer only.
+  const currentNanos = parseDesoToNanos(amountMode === "USD" && usdPerDeso ? (Number(amount) / usdPerDeso).toFixed(9) : amountMode === "DESO" ? amount : "")
+  const currentIntent = `sponsor-deso:OuwePiet:${currentNanos ?? 0}`
+
+  function cancelApproval(reason: string) {
+    const waiting = approval.current
+    approval.current = null
+    if (popupWatch.current !== null) window.clearInterval(popupWatch.current)
+    popupWatch.current = null
+    popupRef.current?.close()
+    popupRef.current = null
+    waiting?.reject(new Error(reason))
+  }
+
+  function invalidateSelection() {
+    if (activeOperation.current) activeOperation.current.invalidated = true
+    allowNewAction.current = null
+    cancelApproval("SPONSOR_SELECTION_CHANGED")
+  }
+
+  useEffect(() => {
+    const sync = (event?: Event) => {
+      const operation = activeOperation.current
+      if (operation && event?.type === "storage") {
+        const change = event as StorageEvent
+        if ((change.key === "viaActivePublicKey" || change.key === "desoActivePublicKey") && change.newValue !== operation.publicKey) operation.invalidated = true
+      }
+      const session = restoreIdentitySession()
+      if (selectedAccount.current !== null && selectedAccount.current !== session?.publicKey) setConfirmed(false)
+      selectedAccount.current = session?.publicKey ?? null
+      if (allowNewAction.current && (allowNewAction.current.publicKey !== session?.publicKey || allowNewAction.current.intent !== currentIntent)) allowNewAction.current = null
+      if (operation && session?.publicKey !== operation.publicKey) operation.invalidated = true
+      if (operation?.invalidated) cancelApproval("DESO_ACCOUNT_CHANGED")
+      try {
+        setSubmissionBlock(session ? financialSubmissionBlock(session.publicKey, currentIntent, Boolean(allowNewAction.current)) : "")
+        setHasReceipt(Boolean(session && financialReceipt(session.publicKey, currentIntent)))
+      } catch { setSubmissionBlock("Herstelregistratie niet beschikbaar. Niet verzenden."); setHasReceipt(false) }
+    }
+    sync()
+    window.addEventListener(VIA_IDENTITY_EVENT, sync)
+    window.addEventListener("storage", sync)
+    window.addEventListener(FINANCIAL_SUBMISSION_EVENT, sync)
+    return () => {
+      window.removeEventListener(VIA_IDENTITY_EVENT, sync)
+      window.removeEventListener("storage", sync)
+      window.removeEventListener(FINANCIAL_SUBMISSION_EVENT, sync)
+      if (activeOperation.current) activeOperation.current.invalidated = true
+      cancelApproval("SPONSOR_OPERATION_CANCELLED")
+    }
+  }, [currentIntent])
 
   useEffect(() => {
     const sync = () => setLanguage(readViaLocalSettings().interfaceLanguage)
@@ -207,41 +269,30 @@ export default function SponsorPlatform({ compact = false, showIcon = true }: { 
   }, [open, target])
 
   useEffect(() => {
-    const onMessage = async (event: MessageEvent) => {
-      const signedTransactionHex = signedTransactionFromMessage(event, popupRef.current)
+    const onMessage = (event: MessageEvent) => {
+      const waiting = approval.current
+      if (!waiting) return
+      const signedTransactionHex = signedTransactionFromMessage(event, waiting.source)
       if (!signedTransactionHex) return
+      // Consume synchronously before any await; duplicate popup messages cannot
+      // start another submit. Broadcasting stays in the captured operation.
+      approval.current = null
       if (popupWatch.current !== null) window.clearInterval(popupWatch.current)
       popupWatch.current = null
       popupRef.current?.close()
       popupRef.current = null
-      setStatus("submitting")
-      setMessage(copy.submitting)
-      try {
-        const response = await fetch("/api/via/sponsor/contribute", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          cache: "no-store",
-          body: JSON.stringify({ action: "submit", signedTransactionHex }),
-        })
-        const data = await response.json() as { ok?: boolean; error?: string }
-        if (!response.ok || !data.ok) throw new Error(data.error || "SUBMIT_FAILED")
-        setStatus("done")
-        setMessage(copy.sent)
-        setConfirmed(false)
-      } catch {
-        setStatus("error")
-        setMessage(copy.failed)
-      }
+      waiting.resolve(signedTransactionHex)
     }
     window.addEventListener("message", onMessage)
     return () => {
       window.removeEventListener("message", onMessage)
-      if (popupWatch.current !== null) window.clearInterval(popupWatch.current)
-      popupRef.current?.close()
+      if (activeOperation.current) activeOperation.current.invalidated = true
+      cancelApproval("SPONSOR_OPERATION_CANCELLED")
     }
-  }, [copy])
+  }, [])
 
   async function prepareDeso() {
+    if (sendLock.current) return
     const session = restoreIdentitySession()
     const entered = Number(amount)
     const desoAmount = amountMode === "USD"
@@ -251,11 +302,28 @@ export default function SponsorPlatform({ compact = false, showIcon = true }: { 
     if (!session) { setStatus("error"); setMessage(copy.loginFirst); return }
     if (!amountNanos) { setStatus("error"); setMessage(copy.invalidAmount); return }
     if (!confirmed || status === "preparing" || status === "approval" || status === "submitting") return
-
-    setStatus("preparing")
-    setMessage(copy.prepareExact)
-    setFeeNanos(null)
+    sendLock.current = true
+    const intent = `sponsor-deso:OuwePiet:${amountNanos}`
+    const permit = allowNewAction.current
+    const operation: SponsorOperation = { publicKey: session.publicKey, intent, amountNanos, invalidated: false, allowNewAction: permit?.publicKey === session.publicKey && permit.intent === intent }
+    activeOperation.current = operation
+    let submissionStarted = false
+    let accepted = false
     try {
+      const assertAccount = async () => {
+        const check = () => { if (operation.invalidated || restoreIdentitySession()?.publicKey !== operation.publicKey) throw new Error("DESO_ACCOUNT_CHANGED") }
+        check()
+        const current = await viaModernIdentity.currentUser()
+        check()
+        if (current?.publicKey !== operation.publicKey) throw new Error("DESO_ACCOUNT_CHANGED")
+      }
+      await withFinancialAccountLock(operation.publicKey, async () => {
+      await assertAccount()
+      const blocked = financialSubmissionBlock(operation.publicKey, intent, operation.allowNewAction)
+      if (blocked) { setSubmissionBlock(blocked); setMessage(blocked); return }
+      setStatus("preparing")
+      setMessage(copy.prepareExact)
+      setFeeNanos(null)
       const response = await fetch("/api/via/sponsor/contribute", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -263,8 +331,13 @@ export default function SponsorPlatform({ compact = false, showIcon = true }: { 
         body: JSON.stringify({ action: "prepare", senderPublicKey: session.publicKey, amountNanos, confirmed: true }),
       })
       const data = await response.json() as PrepareResponse
+      await assertAccount()
       if (!response.ok || !data.ok || !data.transactionHex) throw new Error(data.error || "PREPARE_FAILED")
-      setFeeNanos(typeof data.feeNanos === "number" ? data.feeNanos : null)
+      if (data.senderPublicKey !== operation.publicKey || data.amountNanos !== amountNanos || typeof data.feeNanos !== "number" || !Number.isSafeInteger(data.feeNanos) || data.feeNanos < 0 ||
+        !Number.isSafeInteger(amountNanos + data.feeNanos) || typeof data.preparedAt !== "number" || !Number.isSafeInteger(data.preparedAt)) throw new Error("INVALID_PREPARED_COST")
+      const assertFresh = () => { if (Date.now() < data.preparedAt! || Date.now() - data.preparedAt! > 120_000) throw new Error("SPONSOR_QUOTE_EXPIRED") }
+      assertFresh()
+      setFeeNanos(data.feeNanos)
       const popup = window.open(
         `${DESO_IDENTITY_ORIGIN}/approve?tx=${encodeURIComponent(data.transactionHex)}`,
         "via-sponsor-deso-approve",
@@ -272,21 +345,68 @@ export default function SponsorPlatform({ compact = false, showIcon = true }: { 
       )
       if (!popup) throw new Error("POPUP_BLOCKED")
       popupRef.current = popup
-      popupWatch.current = window.setInterval(() => {
-        if (popupRef.current?.closed) {
-          popupRef.current = null
-          if (popupWatch.current !== null) window.clearInterval(popupWatch.current)
-          popupWatch.current = null
-          setStatus("idle")
-          setMessage(copy.approvalClosed)
-        }
-      }, 500)
       setStatus("approval")
       setMessage(copy.checkApproval)
+      const signedTransactionHex = await new Promise<string>((resolve, reject) => {
+        approval.current = { source: popup, resolve, reject }
+        popupWatch.current = window.setInterval(() => {
+          if (popup.closed) cancelApproval("SPONSOR_APPROVAL_CLOSED")
+          else if (operation.invalidated || Date.now() - data.preparedAt! > 120_000) cancelApproval("SPONSOR_APPROVAL_EXPIRED_OR_CHANGED")
+        }, 500)
+      })
+      await assertAccount()
+      assertFresh()
+      if (signedTransactionHex.length > 500_000 || !/^(?:[0-9a-f]{2})+$/i.test(signedTransactionHex)) throw new Error("INVALID_SIGNED_TRANSACTION")
+      const submission = { publicKey: operation.publicKey, intent, amountNanos, startedAt: Date.now() }
+      markFinancialPending(submission)
+      if (operation.invalidated || restoreIdentitySession()?.publicKey !== operation.publicKey) throw new Error("DESO_ACCOUNT_CHANGED")
+      setStatus("submitting")
+      setMessage(copy.submitting)
+      submissionStarted = true
+      const submitResponse = await fetch("/api/via/sponsor/contribute", {
+        method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store",
+        body: JSON.stringify({ action: "submit", signedTransactionHex }),
+      })
+      const submitData = await submitResponse.json() as { ok?: boolean; error?: string; transaction?: { TxnHashHex?: unknown } }
+      if (!submitResponse.ok || !submitData.ok) throw new Error(submitData.error || "SUBMIT_FAILED")
+      accepted = true
+      allowNewAction.current = null
+      markFinancialSubmitted(submission, submitData.transaction?.TxnHashHex)
+      setStatus("done")
+      setMessage(copy.sent)
+      setConfirmed(false)
+      setHasReceipt(true)
+      setSubmissionBlock(financialSubmissionBlock(operation.publicKey, intent))
+      try { setMessage(await readFinancialReceipt(operation.publicKey, intent)) } catch { setMessage("DeSo heeft de bijdrage ontvangen; readback niet beschikbaar. Niet opnieuw verzenden.") }
+      })
     } catch (error) {
       setStatus("error")
-      setMessage(error instanceof Error && error.message === "POPUP_BLOCKED" ? copy.popupBlocked : copy.prepareFailed)
+      setMessage(accepted ? "DeSo heeft de bijdrage ontvangen, maar herstelregistratie is onzeker. Niet opnieuw verzenden."
+        : submissionStarted ? "Verzendstatus onzeker. Controleer DeSo; niet opnieuw verzenden."
+        : error instanceof Error && error.message === "POPUP_BLOCKED" ? copy.popupBlocked
+        : `Niet uitgezonden door VIA. Controleer account en herstelstatus. ${error instanceof Error ? error.message : ""}`)
+    } finally {
+      cancelApproval("SPONSOR_OPERATION_FINISHED")
+      activeOperation.current = null
+      allowNewAction.current = null
+      sendLock.current = false
     }
+  }
+
+  function startNewContribution() {
+    if (sendLock.current) return
+    const session = restoreIdentitySession()
+    if (!session) return
+    try {
+      // Only a known accepted receipt permits a deliberate new contribution.
+      // This never clears an uncertain pending marker or authorizes a retry.
+      if (financialSubmissionBlock(session.publicKey, "new-confirmation") || !financialReceipt(session.publicKey, currentIntent)) return
+      allowNewAction.current = { publicKey: session.publicKey, intent: currentIntent }
+      setConfirmed(false)
+      setSubmissionBlock("")
+      setStatus("idle")
+      setMessage("Nieuwe bijdrage. Controleer bedrag en bevestig opnieuw; de vorige verzending wordt niet herhaald.")
+    } catch { setMessage("Herstelregistratie niet beschikbaar. Niet verzenden.") }
   }
 
   const triggerClass = compact
@@ -297,7 +417,7 @@ export default function SponsorPlatform({ compact = false, showIcon = true }: { 
     <>
       <button type="button" onClick={() => setOpen(true)} className={triggerClass}>{showIcon ? <HandCoins className="h-4 w-4 shrink-0" aria-hidden="true" /> : null}<span>{copy.trigger}</span></button>
       {open && typeof document !== "undefined" ? createPortal(
-        <div role="dialog" aria-modal="true" aria-label={copy.dialogLabel} onMouseDown={(event) => { if (event.currentTarget === event.target) setOpen(false) }} style={{ position:"fixed", inset:0, zIndex:160, display:"grid", placeItems:"center", padding:20, background:"rgba(0,0,0,.78)", backdropFilter:"blur(8px)" }}>
+        <div role="dialog" aria-modal="true" aria-label={copy.dialogLabel} onMouseDown={(event) => { if (event.currentTarget === event.target) { invalidateSelection(); setOpen(false) } }} style={{ position:"fixed", inset:0, zIndex:160, display:"grid", placeItems:"center", padding:20, background:"rgba(0,0,0,.78)", backdropFilter:"blur(8px)" }}>
           <section style={{ width:"min(580px,100%)", maxHeight:"88vh", overflowY:"auto", border:"1px solid rgba(143,212,169,.32)", borderRadius:18, padding:20, background:"#06100b", color:"#edf4ef", boxShadow:"0 24px 80px rgba(0,0,0,.55)" }}>
             <div style={{ display:"flex", justifyContent:"space-between", gap:16 }}>
               <div>
@@ -305,7 +425,7 @@ export default function SponsorPlatform({ compact = false, showIcon = true }: { 
                 <h2 style={{ margin:"6px 0 0", fontSize:24 }}>{copy.title}</h2>
                 <p style={{ margin:"8px 0 0", color:"#9aa79f", fontSize:13, lineHeight:1.55 }}>{copy.intro}</p>
               </div>
-              <button type="button" onClick={() => setOpen(false)} aria-label={copy.close} style={{ border:0, background:"transparent", color:"#aab5ae", fontSize:24, cursor:"pointer" }}>×</button>
+              <button type="button" onClick={() => { invalidateSelection(); setOpen(false) }} aria-label={copy.close} style={{ border:0, background:"transparent", color:"#aab5ae", fontSize:24, cursor:"pointer" }}>×</button>
             </div>
 
             <div style={{ marginTop:18, display:"grid", gap:14 }}>
@@ -313,15 +433,20 @@ export default function SponsorPlatform({ compact = false, showIcon = true }: { 
                 <strong>{copy.desoTitle}</strong>
                 <p style={{ margin:"5px 0 10px", color:"#87958d", fontSize:12 }}>{copy.desoIntro}</p>
                 <div style={{ display:"flex", gap:8, alignItems:"center", flexWrap:"wrap" }}>
-                  <input value={amount} onChange={(e)=>{setAmount(e.target.value);setConfirmed(false)}} inputMode="decimal" aria-label={amountMode === "DESO" ? copy.amountAria : "USD amount"} style={{ minHeight:40, width:160, border:"1px solid rgba(143,212,169,.22)", borderRadius:10, padding:"8px 10px", background:"#050807", color:"#eef5f0" }} />
+                  <input value={amount} onChange={(e)=>{invalidateSelection();setAmount(e.target.value);setConfirmed(false)}} inputMode="decimal" aria-label={amountMode === "DESO" ? copy.amountAria : "USD amount"} style={{ minHeight:40, width:160, border:"1px solid rgba(143,212,169,.22)", borderRadius:10, padding:"8px 10px", background:"#050807", color:"#eef5f0" }} />
                   <div role="group" aria-label="DESO or USD" style={{ display:"inline-flex", padding:2, border:"1px solid rgba(143,212,169,.28)", borderRadius:999, background:"#050807" }}>
-                    {(["DESO","USD"] as const).map((mode) => <button key={mode} type="button" onClick={()=>{ if (mode !== amountMode) { setAmount(mode === "USD" ? "1.00" : "0.01"); setAmountMode(mode); setConfirmed(false) } }} aria-pressed={amountMode===mode} style={{ minHeight:30, border:0, borderRadius:999, padding:"5px 10px", background:amountMode===mode?"rgba(40,95,64,.9)":"transparent", color:amountMode===mode?"#c9ffdc":"#8d978f", fontSize:11, fontWeight:750, cursor:"pointer" }}>{mode === "USD" ? "$" : "DESO"}</button>)}
+                    {(["DESO","USD"] as const).map((mode) => <button key={mode} type="button" onClick={()=>{ if (mode !== amountMode) { invalidateSelection(); setAmount(mode === "USD" ? "1.00" : "0.01"); setAmountMode(mode); setConfirmed(false) } }} aria-pressed={amountMode===mode} style={{ minHeight:30, border:0, borderRadius:999, padding:"5px 10px", background:amountMode===mode?"rgba(40,95,64,.9)":"transparent", color:amountMode===mode?"#c9ffdc":"#8d978f", fontSize:11, fontWeight:750, cursor:"pointer" }}>{mode === "USD" ? "$" : "DESO"}</button>)}
                   </div>
                 </div>
                 {amountMode === "USD" ? <p style={{ margin:"7px 0 0", color:"#75847b", fontSize:11 }}>{usdPerDeso ? `$1 = ${(1/usdPerDeso).toFixed(6)} DESO · 1 DESO = ${usdPerDeso.toFixed(2)}` : "Live DESO / $ rate wordt geladen…"}</p> : null}
-                <label style={{ marginTop:10, display:"flex", gap:7, alignItems:"flex-start", color:"#d8bf82", fontSize:11, lineHeight:1.4 }}><input type="checkbox" checked={confirmed} onChange={(e)=>setConfirmed(e.target.checked)} />{copy.confirm}</label>
+                <label style={{ marginTop:10, display:"flex", gap:7, alignItems:"flex-start", color:"#d8bf82", fontSize:11, lineHeight:1.4 }}><input type="checkbox" checked={confirmed} onChange={(e)=>{ if (activeOperation.current) { activeOperation.current.invalidated = true; cancelApproval("SPONSOR_CONFIRMATION_CHANGED") } setConfirmed(e.target.checked) }} />{copy.confirm}</label>
                 <button type="button" onClick={()=>void prepareDeso()} disabled={!confirmed || status==="preparing" || status==="approval" || status==="submitting"} style={{ marginTop:10, minHeight:38, border:"1px solid rgba(143,212,169,.42)", borderRadius:999, padding:"7px 13px", background:"rgba(18,53,34,.58)", color: confirmed ? "#b9ffd4" : "#65746b", fontWeight:750, cursor: confirmed ? "pointer" : "default" }}>{status==="preparing"?copy.preparing:status==="approval"?copy.approval:status==="submitting"?copy.submitting:copy.sendDeso}</button>
                 {feeNanos !== null ? <p style={{ margin:"8px 0 0", color:"#75847b", fontSize:11 }}>{copy.fee}: {feeNanos.toLocaleString()} nanos.</p> : null}
+                {submissionBlock ? <p role="status" style={{ color:"#e2bd7e", fontSize:12 }}>{submissionBlock}</p> : null}
+                {hasReceipt ? <div style={{ marginTop:8, display:"flex", gap:10 }}>
+                  <button type="button" disabled={sendLock.current} onClick={() => { const session = restoreIdentitySession(); if (session) void readFinancialReceipt(session.publicKey, currentIntent).then(setMessage).catch(() => setMessage("Readback niet beschikbaar. Niet opnieuw verzenden.")) }}>Controleer eerdere verzending</button>
+                  <button type="button" disabled={sendLock.current} onClick={startNewContribution}>Nieuwe bijdrage</button>
+                </div> : null}
               </section>
 
               <section style={{ border:"1px solid rgba(143,212,169,.18)", borderRadius:14, padding:14, background:"rgba(0,0,0,.22)" }}>
