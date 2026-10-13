@@ -11,7 +11,7 @@ const compile = source => ts.transpileModule(source, { compilerOptions: { module
 
 // Actual component/ledger with isolated React, Identity and HTTP. No real
 // construction, signatures, popups or financial broadcasts in these tests.
-function fixture({ switchAt = '', timeout = false, badJson = false, refreshFails = false, legacy = false, remaining = 50_000_000, permitted = true, confirmedGrant = true, fee = 1000, spend = 10_000_000, balance = 50_000_000, preparedAt = Date.now(), locksAvailable = true, storageFails = '', holdAt = '', browser = { storage: new Map(), locks: new Set() } } = {}) {
+function fixture({ switchAt = '', timeout = false, badJson = false, refreshFails = false, legacy = false, remaining = 50_000_000, permitted = true, confirmedGrant = true, fee = 1000, spend = 10_000_000, balance = 50_000_000, preparedAt = Date.now(), transactionHex = '00aa', signedHex = '00bb', locksAvailable = true, storageFails = '', holdAt = '', browser = { storage: new Map(), locks: new Set() } } = {}) {
   let active = A, stateIndex = 0, refIndex = 0, release
   const states = [], refs = [], effects = [], listeners = new Map(), requests = [], signed = [], grants = [], permissionInputs = []
   const barrier = new Promise(resolve => { release = resolve })
@@ -27,7 +27,7 @@ function fixture({ switchAt = '', timeout = false, badJson = false, refreshFails
     spendingLimits: async () => { if (holdAt === 'spending') await barrier; if (switchAt === 'spending') switchAccount(); return actual },
     hasPermissions: async p => { permissionInputs.push(p); if (switchAt === 'permission') switchAccount(); return compareLimits(p, actual) },
     requestPermissions: async p => { grants.push(p); if (switchAt === 'grant') switchAccount(); if (confirmedGrant) actual = p },
-    signTx: async hex => { signed.push({ hex, account: active }); if (switchAt === 'sign') switchAccount(); return '00bb' },
+    signTx: async hex => { signed.push({ hex, account: active }); if (switchAt === 'sign') switchAccount(); return signedHex },
     refreshSpendingLimits: async () => { if (refreshFails) throw new Error('REFRESH_FAILED') },
   }
   const context = {
@@ -39,7 +39,7 @@ function fixture({ switchAt = '', timeout = false, badJson = false, refreshFails
     navigator: { locks: locksAvailable ? { async request(name,options,fn) { if (browser.locks.has(name)) return fn(null); browser.locks.add(name); try { await fn({ name }) } finally { browser.locks.delete(name) } } } : undefined },
     fetch: async (url, options = {}) => {
       const body = options.body ? JSON.parse(options.body) : null; requests.push({ url, body })
-      if (body?.action === 'prepare') { if (holdAt === 'prepare') await barrier; if (switchAt === 'prepare') switchAccount(); return { ok: true, json: async () => ({ ok: true, transactionHex: '00aa', publicKey: A, postHash: HASH, serialNumber: 1, bidAmountNanos: 10_000_000, feeNanos: fee, spendAmountNanos: spend, balanceNanos: balance, preparedAt }) } }
+      if (body?.action === 'prepare') { if (holdAt === 'prepare') await barrier; if (switchAt === 'prepare') switchAccount(); return { ok: true, json: async () => ({ ok: true, transactionHex, publicKey: A, postHash: HASH, serialNumber: 1, bidAmountNanos: 10_000_000, feeNanos: fee, spendAmountNanos: spend, balanceNanos: balance, preparedAt }) } }
       if (body?.action === 'submit') { assert.ok([...browser.storage.keys()].some(k => k.endsWith(':pending')), 'pending persisted before broadcast'); if (timeout) throw new Error('TIMEOUT'); return { ok: true, json: async () => { if (badJson) throw new Error('BAD_JSON'); return { ok: true, transaction: { TxnHashHex: TXHASH } } } } }
       if (String(url).startsWith('/api/via/financial-status?')) return { ok: true, json: async () => ({ ok: true, found: true }) }
       throw new Error('Unexpected fetch '+url)
@@ -80,6 +80,8 @@ for(const options of [{timeout:true},{badJson:true}])test('uncertain submit surv
 test('successful submit plus failed refresh remains receipted after reload',async()=>{const f=fixture({refreshFails:true});await f.run();assert.equal(submits(f),1);const reload=fixture({browser:f.browser});await reload.run();assert.equal(reload.requests.length,0)})
 for(const options of [{locksAvailable:false},{storageFails:'read'},{storageFails:'write'}])test('missing lock/storage fails closed '+JSON.stringify(options),async()=>{const f=fixture(options);await f.run();assert.equal(submits(f),0)})
 test('receipt-write failure after acceptance retains pending and honest status',async()=>{const f=fixture({storageFails:'receipt'});await f.run();assert.equal(submits(f),1);assert.match(f.states[5],/ontvangen/);assert.ok([...f.browser.storage.keys()].some(k=>k.endsWith(':pending')))})
+test('malformed unsigned hex fails before permissions/signing',async()=>{const f=fixture({transactionHex:'not-hex'});await f.run();assert.equal(f.permissionInputs.length,0);assert.equal(f.signed.length,0);assert.equal(submits(f),0)})
+test('malformed signature fails before pending and broadcast',async()=>{const f=fixture({signedHex:'not-hex'});await f.run();assert.equal(submits(f),0);assert.equal([...f.browser.storage.keys()].some(k=>k.endsWith(':pending')),false)})
 
 // Actual server preflight route, all node calls isolated.
 function routeFixture({ price=10_000_000, owner=B, forSale=true, pending=false, balance=50_000_000, fee=1000, spend=0 }={}) {
