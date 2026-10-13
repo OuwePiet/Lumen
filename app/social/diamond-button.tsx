@@ -86,14 +86,18 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
       const currentGlobalDESOLimit = currentSpendingLimits?.GlobalDESOLimit ?? 0
       if (!Number.isSafeInteger(currentGlobalDESOLimit) || currentGlobalDESOLimit < 0) throw new Error("INVALID_DESO_SPENDING_LIMITS")
       const requiredPermissions = {
-        GlobalDESOLimit: currentGlobalDESOLimit + diamondSpendLimit,
+        // Check the cost of this action against the remaining budget. Adding
+        // the remaining budget here would force approval on every Diamond.
+        GlobalDESOLimit: diamondSpendLimit,
         TransactionCountLimitMap: { BASIC_TRANSFER: 1 },
       }
       // A restored legacy VIA session signs through the legacy Identity iframe, not the modern SDK.
       // Never authorize its spending against an unrelated modern SDK account.
       if (!(await viaModernIdentity.hasPermissions(requiredPermissions))) {
         setStatus("approval"); setMessage("Confirm this Diamond spending permission with DeSo Identity…")
-        await viaModernIdentity.requestPermissions(requiredPermissions)
+        const requestedLimit = currentGlobalDESOLimit + diamondSpendLimit
+        if (!Number.isSafeInteger(requestedLimit)) throw new Error("INVALID_DESO_SPEND_LIMIT")
+        await viaModernIdentity.requestPermissions({ ...requiredPermissions, GlobalDESOLimit: requestedLimit })
         if (!(await viaModernIdentity.hasPermissions(requiredPermissions))) throw new Error("DESO_DIAMOND_PERMISSION_NOT_CONFIRMED")
       }
       setStatus("approval"); setMessage("Signing the confirmed Diamond with your VIA DeSo session…")
