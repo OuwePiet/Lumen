@@ -173,6 +173,7 @@ export default function SponsorPlatform({ compact = false, showIcon = true }: { 
   const [usdPerDeso, setUsdPerDeso] = useState<number | null>(null)
   const [confirmed, setConfirmed] = useState(false)
   const [status, setStatus] = useState<"idle"|"preparing"|"approval"|"submitting"|"done"|"error">("idle")
+  const busy = status === "preparing" || status === "approval" || status === "submitting"
   const [message, setMessage] = useState("")
   const [feeNanos, setFeeNanos] = useState<number | null>(null)
   const popupRef = useRef<Window | null>(null)
@@ -444,8 +445,8 @@ export default function SponsorPlatform({ compact = false, showIcon = true }: { 
                 {feeNanos !== null ? <p style={{ margin:"8px 0 0", color:"#75847b", fontSize:11 }}>{copy.fee}: {feeNanos.toLocaleString()} nanos.</p> : null}
                 {submissionBlock ? <p role="status" style={{ color:"#e2bd7e", fontSize:12 }}>{submissionBlock}</p> : null}
                 {hasReceipt ? <div style={{ marginTop:8, display:"flex", gap:10 }}>
-                  <button type="button" disabled={sendLock.current} onClick={() => { const session = restoreIdentitySession(); if (session) void readFinancialReceipt(session.publicKey, currentIntent).then(setMessage).catch(() => setMessage("Readback niet beschikbaar. Niet opnieuw verzenden.")) }}>Controleer eerdere verzending</button>
-                  <button type="button" disabled={sendLock.current} onClick={startNewContribution}>Nieuwe bijdrage</button>
+                  <button type="button" disabled={busy} onClick={() => { const session = restoreIdentitySession(); if (session) void readFinancialReceipt(session.publicKey, currentIntent).then(setMessage).catch(() => setMessage("Readback niet beschikbaar. Niet opnieuw verzenden.")) }}>Controleer eerdere verzending</button>
+                  <button type="button" disabled={busy} onClick={startNewContribution}>Nieuwe bijdrage</button>
                 </div> : null}
               </section>
 
