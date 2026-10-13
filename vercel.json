@@ -3,7 +3,9 @@
   "git": {
     "deploymentEnabled": {
       "codex/via-diamond-budget-20261013": false,
-      "codex/via-diamond-single-flight-20261013": false
+      "codex/via-diamond-single-flight-20261013": false,
+      "codex/via-nft-bid-safety-20261013": false,
+      "codex/via-sponsor-safety-20261013": false
     }
   }
 }
