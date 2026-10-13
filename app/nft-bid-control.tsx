@@ -148,6 +148,8 @@ export default function NFTBidControl({ postHash, editions }: Props) {
       const assertFresh = () => { if (Date.now() < data.preparedAt! || Date.now() - data.preparedAt! > 120_000) throw new Error("NFT_QUOTE_EXPIRED") }
       assertFresh()
       setFeeNanos(data.feeNanos)
+      await viaModernIdentity.refreshSpendingLimits()
+      await assertAccount()
       const limits = await viaModernIdentity.spendingLimits()
       await assertAccount()
       const remaining = limits?.GlobalDESOLimit ?? 0
