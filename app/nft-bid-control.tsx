@@ -45,6 +45,7 @@ export default function NFTBidControl({ postHash, editions }: Props) {
   const sendLock = useRef(false)
   const activeOperation = useRef<{ publicKey: string; invalidated: boolean } | null>(null)
   const [submissionBlock, setSubmissionBlock] = useState("")
+  const selectedAccount = useRef<string | null>(null)
 
   const edition = useMemo(() => editions.find((item) => item.serialNumber === serialNumber) ?? editions[0], [editions, serialNumber])
   const bidNanos = desoToSafeNanos(amount)
@@ -63,6 +64,8 @@ export default function NFTBidControl({ postHash, editions }: Props) {
         if ((change.key === "viaActivePublicKey" || change.key === "desoActivePublicKey") && change.newValue !== operation.publicKey) operation.invalidated = true
       }
       const current = restoreIdentitySession()
+      if (selectedAccount.current !== null && selectedAccount.current !== current?.publicKey) setConfirmed(false)
+      selectedAccount.current = current?.publicKey ?? null
       if (operation && (current?.publicKey !== operation.publicKey || restoreLegacyIdentitySession())) operation.invalidated = true
       try { setSubmissionBlock(current ? financialSubmissionBlock(current.publicKey, intent(bidNanos ?? edition?.buyNowPriceNanos ?? 0)) : "") }
       catch { setSubmissionBlock("Herstelregistratie is niet beschikbaar. Niet verzenden.") }
@@ -134,7 +137,7 @@ export default function NFTBidControl({ postHash, editions }: Props) {
       })
       const data = await response.json() as PrepareResponse
       await assertAccount()
-      if (!response.ok || !data.ok || !data.transactionHex) throw new Error(data.error || "PREPARE_FAILED")
+      if (!response.ok || !data.ok || typeof data.transactionHex !== "string" || data.transactionHex.length > 500_000 || !/^(?:[0-9a-f]{2})+$/i.test(data.transactionHex)) throw new Error(data.error || "PREPARE_FAILED")
       if (data.publicKey !== account.publicKey || data.postHash !== postHash.toLowerCase() || data.serialNumber !== edition.serialNumber || data.bidAmountNanos !== effectiveBidNanos ||
         typeof data.feeNanos !== "number" || !Number.isSafeInteger(data.feeNanos) || data.feeNanos < 0 ||
         typeof data.spendAmountNanos !== "number" || !Number.isSafeInteger(data.spendAmountNanos) || data.spendAmountNanos < 0 ||
@@ -177,6 +180,7 @@ export default function NFTBidControl({ postHash, editions }: Props) {
       const signedTransactionHex = await viaModernIdentity.signTx(data.transactionHex)
       await assertAccount()
       assertFresh()
+      if (typeof signedTransactionHex !== "string" || signedTransactionHex.length > 500_000 || !/^(?:[0-9a-f]{2})+$/i.test(signedTransactionHex)) throw new Error("INVALID_SIGNED_TRANSACTION")
       const submission = { publicKey: account.publicKey, intent: actionIntent, amountNanos: effectiveBidNanos, startedAt: Date.now() }
       markFinancialPending(submission)
       if (operation.invalidated || restoreIdentitySession()?.publicKey !== account.publicKey || restoreLegacyIdentitySession()) throw new Error("DESO_ACCOUNT_CHANGED")
