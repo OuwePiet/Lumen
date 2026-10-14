@@ -3,6 +3,7 @@ import ViaHomeCenterActions from "./via-home-center-actions"
 import ViaHomeControls from "./via-home-controls"
 import ViaHomeEarth from "./via-home-earth"
 import ViaSeasonal from "./via-seasonal"
+import ViaNewYear from "./via-new-year"
 import ViaWorldClock from "./via-world-clock"
 import { getFeaturedCities } from "./api/via/featured-cities/route"
 
@@ -26,6 +27,7 @@ export default async function Home() {
       >
         <ViaHomeEarth />
         <ViaSeasonal />
+        <ViaNewYear />
         <ViaHomeControls />
         <ViaHomeCenterActions />
         <ViaFeatured initialItems={featured.items} />
