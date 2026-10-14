@@ -471,7 +471,7 @@ export default function ViaHomeControls() {
           <button type="button" onClick={() => { refreshAccounts(); setAccountsOpen((open) => !open) }} aria-label={t.switchAccount} title={t.switchAccount} className="via-home-iphone-utility-account" aria-expanded={accountsOpen} aria-haspopup="menu">
             {avatar ? <img src={avatar} alt="" referrerPolicy="no-referrer" /> : <UsersRound aria-hidden="true" />}
           </button>
-          {hasNewIdeas ? <Link prefetch={false} href="/owner" aria-label="Nieuw idee: open Ideeënbus" title="Open nieuwe ideeën" className="via-home-idea-shortcut">💡</Link> : null}
+          {hasNewIdeas ? <Link prefetch={false} href="/owner#centrale-ideeenbus" aria-label="Nieuw idee: open Ideeënbus" title="Open nieuwe ideeën" className="via-home-idea-shortcut">💡</Link> : null}
           {accountsOpen ? (
             <div className="via-home-account-menu" role="menu" aria-label={t.switchAccount}>
               <Link prefetch={false} href="/profile" role="menuitem">{t.profile}</Link>
@@ -506,7 +506,7 @@ export default function ViaHomeControls() {
                 {avatar ? <img src={avatar} alt="" referrerPolicy="no-referrer" style={{ width: 24, height: 24, borderRadius: "50%", objectFit: "cover" }} /> : <UsersRound aria-hidden="true" size={18} />}
                 <span>{accountName}</span>
               </button>
-              {hasNewIdeas ? <Link prefetch={false} href="/owner" aria-label="Nieuw idee: open Ideeënbus" title="Open nieuwe ideeën" style={{ position: "absolute", right: 3, top: "50%", transform: "translateY(-50%)", zIndex: 2, fontSize: 18, textDecoration: "none", lineHeight: 1 }}>💡</Link> : null}
+              {hasNewIdeas ? <Link prefetch={false} href="/owner#centrale-ideeenbus" aria-label="Nieuw idee: open Ideeënbus" title="Open nieuwe ideeën" style={{ position: "absolute", right: 3, top: "50%", transform: "translateY(-50%)", zIndex: 2, fontSize: 18, textDecoration: "none", lineHeight: 1 }}>💡</Link> : null}
               {accountsOpen ? (
                 <div className="via-home-account-menu via-home-grid-account-menu" role="menu" aria-label={t.switchAccount}>
                   <Link prefetch={false} href="/profile" role="menuitem" onClick={() => setAccountsOpen(false)}>{t.profile}</Link>
