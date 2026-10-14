@@ -225,7 +225,7 @@ export default function ViaWorldClock({ iphoneInline = false }: { iphoneInline?:
           }
           .via-home-nasa-source { margin-bottom: 84px !important; }
         }
-        @media (min-width: 901px) and (max-width: 1366px) {
+        @media (min-width: 768px) and (max-width: 1366px) {
           .via-home-world-clock {
             background: rgba(2,7,4,.16) !important;
             backdrop-filter: blur(2px) !important;
