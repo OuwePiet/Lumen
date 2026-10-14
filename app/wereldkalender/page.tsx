@@ -72,7 +72,28 @@ export default function WereldkalenderPage() {
     {id:"fathers-day",nameNl:"Vaderdag (derde zondag juni; onder meer Nederland en VS)",month:6,day:nthWeekday(6,0,3)},
     {id:"thanksgiving-us",nameNl:"Thanksgiving (Verenigde Staten)",month:11,day:nthWeekday(11,4,4)},
   ].filter(d=>d.month===month+1)
-  const monthEvents=[...days,...calculatedHolidays.map(d=>({...d,scope:"cultural" as const,status:"scheduled" as const}))]
+  // Landgebonden vaste dagen: alleen tonen voor het geselecteerde land.
+  // Niet elke nationale viering is automatisch een wettelijke vrije dag.
+  const countryDays = [
+    {id:"nl-kings-day",nameNl:"Koningsdag (Nederland)",country:"NL",month:4,day:year>=2014 && new Date(year,3,27).getDay()===0?26:27},
+    {id:"nl-liberation",nameNl:"Bevrijdingsdag (Nederland)",country:"NL",month:5,day:5},
+    {id:"be-national",nameNl:"Nationale feestdag (België)",country:"BE",month:7,day:21},
+    {id:"fr-bastille",nameNl:"Nationale feestdag (Frankrijk)",country:"FR",month:7,day:14},
+    {id:"de-unity",nameNl:"Dag van de Duitse Eenheid",country:"DE",month:10,day:3},
+    {id:"es-national",nameNl:"Nationale feestdag (Spanje)",country:"ES",month:10,day:12},
+    {id:"pt-national",nameNl:"Dag van Portugal",country:"PT",month:6,day:10},
+    {id:"us-independence",nameNl:"Independence Day (Verenigde Staten)",country:"US",month:7,day:4},
+    {id:"ca-canada",nameNl:"Canada Day",country:"CA",month:7,day:1},
+    {id:"mx-independence",nameNl:"Onafhankelijkheidsdag (Mexico)",country:"MX",month:9,day:16},
+    {id:"br-independence",nameNl:"Onafhankelijkheidsdag (Brazilië)",country:"BR",month:9,day:7},
+    {id:"in-republic",nameNl:"Dag van de Republiek (India)",country:"IN",month:1,day:26},
+    {id:"cn-national",nameNl:"Nationale feestdag (China)",country:"CN",month:10,day:1},
+    {id:"jp-foundation",nameNl:"Dag van de Stichting van Japan",country:"JP",month:2,day:11},
+    {id:"za-freedom",nameNl:"Freedom Day (Zuid-Afrika)",country:"ZA",month:4,day:27},
+    {id:"au-day",nameNl:"Australia Day",country:"AU",month:1,day:26},
+    {id:"nz-waitangi",nameNl:"Waitangi Day (Nieuw-Zeeland)",country:"NZ",month:2,day:6},
+  ].filter(d=>selectedRegion===d.country && d.month===month+1)
+  const monthEvents=[...days,...calculatedHolidays.map(d=>({...d,scope:"cultural" as const,status:"scheduled" as const})),...countryDays.map(d=>({...d,scope:"regional" as const,status:"scheduled" as const}))]
   const offset=(new Date(year,month,1).getDay()+6)%7
   const length=new Date(year,month+1,0).getDate()
   const move=(direction:number)=>{
