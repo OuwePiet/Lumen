@@ -888,7 +888,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
               <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                 {actorPublicKey ? <Link href={`/profile/${encodeURIComponent(actorPublicKey)}`} className="truncate text-[13px] font-semibold text-zinc-100 hover:text-[#9adbb2] sm:text-sm">{actor}</Link> : <strong className="truncate text-[13px] font-semibold text-zinc-100 sm:text-sm">{actor}</strong>}
                 <span className="text-[10px] font-semibold uppercase tracking-[0.06em] text-[#7dbb93] sm:text-[11px] sm:tracking-[0.08em]">{copy.categories[itemCategory]}</span>
-                {unread ? <span className="rounded-full border border-[#285f40] px-2 py-0.5 text-[10px] text-[#9adbb2]">{copy.fresh}</span> : null}
+                {unread ? <span className="inline-flex items-center gap-1 rounded-full border border-[#285f40] px-2 py-0.5 text-[10px] text-[#9adbb2]"><span aria-hidden="true" className="h-2 w-2 shrink-0 rounded-full bg-emerald-400" />{copy.fresh}</span> : null}
               </div>
               <p className="mt-0 text-[12px] leading-4 text-zinc-400 sm:mt-1 sm:text-sm sm:leading-5">{copy.descriptions[itemCategory](actor)}</p>
               {destination && index >= 8 ? <button type="button" onClick={() => void toggleExpanded(item, rowKey)} className="mt-1 inline-flex rounded-full border border-zinc-700 px-1.5 py-0.5 text-[9px] leading-none text-zinc-300 transition hover:border-[#8fd4a9] hover:text-white sm:mt-2 sm:px-2.5 sm:py-1 sm:text-[11px] sm:leading-normal">{expanded ? copy.close : copy.open}</button> : null}
