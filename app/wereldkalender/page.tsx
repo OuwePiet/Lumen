@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react"
 import { VIA_INTERNATIONAL_DAYS } from "../via-international-calendar"
 import { VIA_CALENDAR_REGIONS, viaCalendarLocalDate, type ViaCalendarRegion } from "../via-calendar-regions"
-import { readViaLocalSettings, VIA_SETTINGS_EVENT, type ViaLanguage } from "../via-local-settings"
+import { readViaLocalSettings, saveViaLocalSettings, VIA_LANGUAGES, VIA_SETTINGS_EVENT, type ViaLanguage } from "../via-local-settings"
 
 const monthNames = ["januari","februari","maart","april","mei","juni","juli","augustus","september","oktober","november","december"]
 const weekdays = ["ma","di","wo","do","vr","za","zo"]
@@ -59,7 +59,12 @@ export default function WereldkalenderPage() {
       <a href="/" style={{display:"inline-block",marginBottom:16}}>← VIA Home</a>
       <h1 style={{fontSize:"clamp(25px,5vw,38px)",fontWeight:700}}>🌍 VIA Wereldkalender</h1>
       <p>Internationale dagen, vieringen en herdenkingen. Vaste datums keren ieder jaar automatisch terug.</p>
-      <p style={{fontSize:13}}>VIA-taalinstelling: {language}. De vertaling van de kalenderinhoud naar alle VIA-talen volgt nog.</p>
+      <label style={{display:"flex",alignItems:"center",gap:12,flexWrap:"wrap",marginTop:16}}>VIA-taal
+        <select value={language} onChange={event=>saveViaLocalSettings({interfaceLanguage:event.target.value as ViaLanguage,defaultLanguage:event.target.value as ViaLanguage})} style={{padding:10,border:"1px solid #777",borderRadius:8,background:"#18241e",color:"white"}}>
+          {VIA_LANGUAGES.map(item=><option key={item} value={item}>{item}</option>)}
+        </select>
+      </label>
+      <p style={{fontSize:13}}>De gekozen taal wordt voor heel VIA bewaard. De vertaling van alle kalenderteksten volgt nog.</p>
       <label style={{display:"flex",alignItems:"center",gap:12,flexWrap:"wrap",marginTop:20}}>Werelddeel
         <select value={continent} onChange={event=>{setContinent(event.target.value);setRegion("world")}} style={{padding:10,border:"1px solid #777",borderRadius:8,background:"#18241e",color:"white"}}>
           {[["world","Wereldwijd"],["europe","Europa"],["asia","Azië"],["africa","Afrika"],["north-america","Noord-Amerika"],["south-america","Zuid-Amerika"],["oceania","Oceanië"]].map(([value,label])=><option key={value} value={value}>{label}</option>)}
