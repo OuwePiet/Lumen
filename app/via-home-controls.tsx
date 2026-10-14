@@ -217,6 +217,7 @@ export default function ViaHomeControls() {
   const [language, setLanguage] = useState<ViaLanguage>("English")
   const [languageOpen, setLanguageOpen] = useState(false)
   const [hasUnreadNotifications, setHasUnreadNotifications] = useState(false)
+  const [hasNewIdeas, setHasNewIdeas] = useState(false)
 
   useEffect(() => {
     if (!session?.publicKey) {
@@ -257,6 +258,39 @@ export default function ViaHomeControls() {
     }
   }, [session?.publicKey])
 
+
+
+  useEffect(() => {
+    // Only the verified owner can retrieve private ideas. Never expose them to visitors.
+    if (!session?.publicKey || profile?.username?.toLowerCase() !== "ouwepiet") {
+      setHasNewIdeas(false)
+      return
+    }
+    const publicKey = session.publicKey
+    let active = true
+    const checkIdeas = async () => {
+      try {
+        const { viaModernIdentity } = await import("./deso-identity-modern")
+        const current = await viaModernIdentity.currentUser()
+        if (!current || current.publicKey !== publicKey) return
+        const jwt = await viaModernIdentity.jwt()
+        const response = await fetch("/api/via/ideas", {
+          cache: "no-store",
+          headers: { Authorization: `Bearer ${jwt}`, "x-via-owner-public-key": publicKey },
+        })
+        if (!response.ok) return
+        const data = await response.json() as { ok?: boolean; items?: Array<{ createdAt?: string }> }
+        if (!active || data.ok !== true || !Array.isArray(data.items)) return
+        const newest = data.items.map((item) => item.createdAt || "").sort().at(-1) || ""
+        const acknowledged = window.localStorage.getItem(`via:ideas:last-seen:${publicKey}`) || ""
+        setHasNewIdeas(Boolean(newest && newest > acknowledged))
+      } catch { /* owner-only indicator is optional when identity/storage is unavailable */ }
+    }
+    void checkIdeas()
+    window.addEventListener("focus", checkIdeas)
+    const interval = window.setInterval(checkIdeas, 60_000)
+    return () => { active = false; window.removeEventListener("focus", checkIdeas); window.clearInterval(interval) }
+  }, [session?.publicKey, profile?.username])
 
   function refreshAccounts() {
     setKnownAccounts(listIdentitySessions())
@@ -419,7 +453,7 @@ export default function ViaHomeControls() {
         <Link prefetch={false} href="/radio" aria-label="World Radio" title="World Radio"><RadioTower aria-hidden="true" /></Link>
         <div className="via-home-iphone-account-wrap">
           <button type="button" onClick={() => { refreshAccounts(); setAccountsOpen((open) => !open) }} aria-label={t.switchAccount} title={t.switchAccount} className="via-home-iphone-utility-account" aria-expanded={accountsOpen} aria-haspopup="menu">
-            {avatar ? <img src={avatar} alt="" referrerPolicy="no-referrer" /> : <UsersRound aria-hidden="true" />}
+            {avatar ? <img src={avatar} alt="" referrerPolicy="no-referrer" /> : <UsersRound aria-hidden="true" />}{hasNewIdeas ? <span aria-label="Nieuw idee ontvangen" title="Nieuw idee ontvangen">💡</span> : null}
           </button>
           {accountsOpen ? (
             <div className="via-home-account-menu" role="menu" aria-label={t.switchAccount}>
@@ -453,7 +487,7 @@ export default function ViaHomeControls() {
             <div key={key} className="via-home-grid-account-wrap" style={{ position: "relative", width: "100%" }}>
               <button type="button" onClick={() => { refreshAccounts(); setAccountsOpen((open) => !open) }} aria-label={t.switchAccount} title={t.switchAccount} aria-expanded={accountsOpen} aria-haspopup="menu" style={{ ...buttonStyle, width: "100%", justifyContent: "center", paddingInline: "9px", cursor: "pointer" }}>
                 {avatar ? <img src={avatar} alt="" referrerPolicy="no-referrer" style={{ width: 24, height: 24, borderRadius: "50%", objectFit: "cover" }} /> : <UsersRound aria-hidden="true" size={18} />}
-                <span>{accountName}</span>
+                <span>{accountName}</span>{hasNewIdeas ? <span aria-label="Nieuw idee ontvangen" title="Nieuw idee ontvangen" style={{ fontSize: 17, lineHeight: 1 }}>💡</span> : null}
               </button>
               {accountsOpen ? (
                 <div className="via-home-account-menu via-home-grid-account-menu" role="menu" aria-label={t.switchAccount}>
