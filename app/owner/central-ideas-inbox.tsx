@@ -82,9 +82,22 @@ export default function CentralIdeasInbox({ ownerPublicKey }: { ownerPublicKey: 
       if (latest) {
         // Acknowledge only after the verified owner has successfully loaded the inbox.
         // The receipt is stored centrally so other devices see the same read state.
+        const authHeaders = { Authorization: `Bearer ${jwt}`, "x-via-owner-public-key": ownerPublicKey }
+        const currentSeenResponse = await fetch("/api/via/ideas/seen", { cache: "no-store", headers: authHeaders }).catch(() => null)
+        const currentSeen = currentSeenResponse?.ok
+          ? await currentSeenResponse.json().catch(() => null) as { seenAt?: string } | null
+          : null
+        if (!currentSeenResponse?.ok) {
+          setMessage("Ideeën geladen, maar de centrale gelezen-status is niet bereikbaar.")
+          return
+        }
+        if (currentSeen?.seenAt && currentSeen.seenAt >= latest) {
+          setMessage("Centrale inbox bijgewerkt. Geen nieuwe ideeën om als gelezen te markeren.")
+          return
+        }
         const receipt = await fetch("/api/via/ideas/seen", {
           method: "POST",
-          headers: { "Content-Type": "application/json", Authorization: `Bearer ${jwt}`, "x-via-owner-public-key": ownerPublicKey },
+          headers: { "Content-Type": "application/json", ...authHeaders },
           body: JSON.stringify({ seenAt: latest }),
         }).catch(() => null)
         if (!receipt?.ok) {
