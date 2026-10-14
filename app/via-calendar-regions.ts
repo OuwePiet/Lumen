@@ -12,6 +12,22 @@ export const VIA_CALENDAR_REGIONS = [
   { code:"ES", label:"Spanje", zone:"Europe/Madrid" },
   { code:"CN", label:"China", zone:"Asia/Shanghai" },
   { code:"IN", label:"India", zone:"Asia/Kolkata" },
+  { code:"BE", label:"België", zone:"Europe/Brussels" },
+  { code:"DE", label:"Duitsland", zone:"Europe/Berlin" },
+  { code:"IT", label:"Italië", zone:"Europe/Rome" },
+  { code:"PT", label:"Portugal", zone:"Europe/Lisbon" },
+  { code:"JP", label:"Japan", zone:"Asia/Tokyo" },
+  { code:"KR", label:"Zuid-Korea", zone:"Asia/Seoul" },
+  { code:"ID", label:"Indonesië (Jakarta)", zone:"Asia/Jakarta" },
+  { code:"ZA", label:"Zuid-Afrika", zone:"Africa/Johannesburg" },
+  { code:"EG", label:"Egypte", zone:"Africa/Cairo" },
+  { code:"NG", label:"Nigeria", zone:"Africa/Lagos" },
+  { code:"CA", label:"Canada (Toronto)", zone:"America/Toronto" },
+  { code:"MX", label:"Mexico (Mexico-Stad)", zone:"America/Mexico_City" },
+  { code:"BR", label:"Brazilië (São Paulo)", zone:"America/Sao_Paulo" },
+  { code:"AR", label:"Argentinië", zone:"America/Argentina/Buenos_Aires" },
+  { code:"AU", label:"Australië (Sydney)", zone:"Australia/Sydney" },
+  { code:"NZ", label:"Nieuw-Zeeland", zone:"Pacific/Auckland" },
 ] as const
 
 export type ViaCalendarRegion = typeof VIA_CALENDAR_REGIONS[number]["code"]
