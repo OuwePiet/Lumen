@@ -513,6 +513,8 @@ export default function ViaHomeControls() {
       <style>{`
         .via-home-language-control { position: relative; width: 100%; }
         .via-home-grid-account-menu { left: 0; right: auto; top: calc(100% + 6px); width: 252px !important; padding: 7px !important; border-radius: 12px !important; background: rgba(10,22,15,.96) !important; backdrop-filter: blur(12px) !important; border: 1px solid rgba(143,212,169,.32) !important; box-shadow: 0 18px 44px rgba(0,0,0,.42) !important; }
+        .via-home-account-menu > button img, .via-home-account-menu > button svg { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; flex: 0 0 auto; }
+        .via-home-account-menu > button span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .via-home-grid-account-menu > a, .via-home-grid-account-menu > button { min-height: 36px !important; padding: 7px 9px !important; border-bottom: 1px solid rgba(143,212,169,.10) !important; }
         .via-home-grid-account-menu > :last-child { border-bottom: 0 !important; }
         .via-home-language-menu { position: absolute; right: 0; top: calc(100% + 6px); z-index: 90; min-width: 112px; padding: 6px; border: 1px solid rgba(143,212,169,.22); border-radius: 12px; background: rgba(5,10,7,.98); box-shadow: 0 16px 36px rgba(0,0,0,.42); }
