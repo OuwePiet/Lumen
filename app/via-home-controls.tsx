@@ -77,6 +77,7 @@ type HomeText = {
   communities: string
   games: string
   world: string
+  calendar: string
   profile: string
   myVia: string
   bookmarks: string
@@ -104,7 +105,7 @@ const copy: Record<ViaLanguage | "Hindi", HomeText> = {
   Dutch: {
     standard: "", viaExtra: "", account: "Taal", home: "Home",
     social: "Postkantoor", discover: "Ontdekken", nfts: "NFT's", live: "Live",
-    communities: "Community's", games: "Spellen", world: "Wereld", profile: "Mijn profiel", myVia: "Mijn VIA",
+    communities: "Community's", games: "Spellen", world: "Wereld", calendar: "Wereldkalender", profile: "Mijn profiel", myVia: "Mijn VIA",
     bookmarks: "Bookmarks", messages: "Berichten", more: "Meer",
     search: "Zoek leden", publicEntrance: "Publieke ingang", wallet: "Mijn Wallet", notifications: "Meldingen",
     login: "DeSo Login", connecting: "Verbinden…", logout: "Uitloggen", blocked: "Safari heeft het DeSo Identity-venster geblokkeerd.",
@@ -113,7 +114,7 @@ const copy: Record<ViaLanguage | "Hindi", HomeText> = {
   English: {
     standard: "", viaExtra: "", account: "Language", home: "Home",
     social: "Post Office", discover: "Discover", nfts: "NFTs", live: "Live",
-    communities: "Communities", games: "Games", world: "World", profile: "My Profile", myVia: "My VIA",
+    communities: "Communities", games: "Games", world: "World", calendar: "World Calendar", profile: "My Profile", myVia: "My VIA",
     bookmarks: "Bookmarks", messages: "Messages", more: "More",
     search: "Search members", publicEntrance: "Public Entrance", wallet: "My Wallet", notifications: "Notifications",
     login: "DeSo Login", connecting: "Connecting…", logout: "Logout", blocked: "Safari blocked the DeSo Identity window.",
@@ -122,7 +123,7 @@ const copy: Record<ViaLanguage | "Hindi", HomeText> = {
   French: {
     standard: "", viaExtra: "", account: "Langue", home: "Accueil",
     social: "Bureau de poste", discover: "Découvrir", nfts: "NFT", live: "Live",
-    communities: "Communautés", games: "Jeux", world: "Monde", profile: "Mon profil", myVia: "Mon VIA",
+    communities: "Communautés", games: "Jeux", world: "Monde", calendar: "Calendrier mondial", profile: "Mon profil", myVia: "Mon VIA",
     bookmarks: "Favoris", messages: "Messages", more: "Plus",
     search: "Rechercher des membres", publicEntrance: "Entrée publique", wallet: "Mon Wallet", notifications: "Notifications",
     login: "Connexion DeSo", connecting: "Connexion…", logout: "Déconnexion", blocked: "Safari a bloqué la fenêtre DeSo Identity.",
@@ -131,7 +132,7 @@ const copy: Record<ViaLanguage | "Hindi", HomeText> = {
   Spanish: {
     standard: "", viaExtra: "", account: "Idioma", home: "Inicio",
     social: "Oficina de correos", discover: "Descubrir", nfts: "NFT", live: "Live",
-    communities: "Comunidades", games: "Juegos", world: "Mundo", profile: "Mi perfil", myVia: "Mi VIA",
+    communities: "Comunidades", games: "Juegos", world: "Mundo", calendar: "Calendario mundial", profile: "Mi perfil", myVia: "Mi VIA",
     bookmarks: "Guardados", messages: "Mensajes", more: "Más",
     search: "Buscar miembros", publicEntrance: "Entrada pública", wallet: "Mi Wallet", notifications: "Notificaciones",
     login: "Acceso DeSo", connecting: "Conectando…", logout: "Cerrar sesión", blocked: "Safari bloqueó la ventana de DeSo Identity.",
@@ -140,7 +141,7 @@ const copy: Record<ViaLanguage | "Hindi", HomeText> = {
   Chinese: {
     standard: "", viaExtra: "", account: "语言", home: "首页",
     social: "邮局", discover: "发现", nfts: "NFT", live: "直播",
-    communities: "社区", games: "游戏", world: "世界", profile: "我的资料", myVia: "我的 VIA",
+    communities: "社区", games: "游戏", world: "世界", calendar: "世界日历", profile: "我的资料", myVia: "我的 VIA",
     bookmarks: "书签", messages: "消息", more: "更多",
     search: "搜索成员", publicEntrance: "公开入口", wallet: "我的钱包", notifications: "通知",
     login: "DeSo 登录", connecting: "连接中…", logout: "退出", blocked: "Safari 阻止了 DeSo Identity 窗口。",
@@ -148,7 +149,7 @@ const copy: Record<ViaLanguage | "Hindi", HomeText> = {
   },
   Hindi: {
     standard: "", viaExtra: "", account: "भाषा", home: "होम",
-    social: "डाकघर", discover: "खोजें", nfts: "NFT", live: "लाइव", communities: "समुदाय", games: "गेम्स", world: "दुनिया",
+    social: "डाकघर", discover: "खोजें", nfts: "NFT", live: "लाइव", communities: "समुदाय", games: "गेम्स", world: "दुनिया", calendar: "विश्व कैलेंडर",
     profile: "मेरी प्रोफ़ाइल", myVia: "मेरा VIA", bookmarks: "बुकमार्क", messages: "संदेश", more: "और",
     search: "सदस्य खोजें", publicEntrance: "सार्वजनिक प्रवेश", wallet: "मेरा वॉलेट", notifications: "सूचनाएँ",
     login: "DeSo लॉगिन", connecting: "कनेक्ट हो रहा है…", logout: "लॉग आउट", blocked: "Safari ने DeSo Identity विंडो को ब्लॉक कर दिया।",
@@ -552,9 +553,23 @@ export default function ViaHomeControls() {
             <Link prefetch={false} key={href} href={href} className={key === "music" ? "via-home-music-grid-button" : undefined} style={{ ...buttonStyle, width: "100%", justifyContent: "center", paddingInline: "9px" }}>{t[key]}</Link>
           ))}
         </nav>
-        <div className="via-home-handbook-row" style={{ display: "flex", justifyContent: "center" }}>
-          <Link prefetch={false} href="/help" style={{ ...buttonStyle, width: "calc(50% - 3.5px)", justifyContent: "center", paddingInline: "9px" }}>Handboek VIA</Link>
-        </div>
+        <nav className="via-home-handbook-row" aria-label="VIA handboek en kalender" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "7px" }}>
+          <Link prefetch={false} href="/help" style={{ ...buttonStyle, width: "100%", justifyContent: "center", paddingInline: "9px" }}>Handboek VIA</Link>
+          <Link prefetch={false} href="/wereldkalender" style={{ ...buttonStyle, width: "100%", justifyContent: "center", paddingInline: "9px" }}>{t.calendar}</Link>
+        </nav>
+        <nav aria-label="VIA toekomstige pagina's" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "7px" }}>
+          {[
+            ["Wereldkrant", "World Newspaper", "Journal mondial", "Periódico mundial", "世界报纸"],
+            ["Luisterbibliotheek", "Audio Library", "Bibliothèque audio", "Biblioteca de audio", "有声图书馆"],
+            ["VIA Auto", "VIA Auto", "VIA Auto", "VIA Auto", "VIA 汽车"],
+            ["VIA Archief", "VIA Archive", "Archives VIA", "Archivo VIA", "VIA 档案"],
+          ].map((labels, index) => {
+            const languageIndex = ({ Dutch: 0, English: 1, French: 2, Spanish: 3, Chinese: 4 } as Record<ViaLanguage, number>)[language]
+            return <span key={index} aria-disabled="true" title="Binnenkort" style={{ ...disabledButtonStyle, width: "100%", justifyContent: "center", paddingInline: "9px", gap: 5 }}>
+              {labels[languageIndex]} <span style={{ fontSize: 8, opacity: .85 }}>· Binnenkort</span>
+            </span>
+          })}
+        </nav>
       </section>
 
       <section className="via-home-language-section" style={{ display: "grid", gap: "6px" }}>
