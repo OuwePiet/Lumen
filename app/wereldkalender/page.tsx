@@ -17,6 +17,15 @@ const calendarUi = {
   Hindi: {home:"VIA होम",title:"VIA विश्व कैलेंडर",intro:"अंतरराष्ट्रीय दिवस, उत्सव और स्मरण दिवस।",language:"VIA भाषा",continent:"महाद्वीप",country:"देश / समय क्षेत्र",today:"इस समय क्षेत्र में आज",month:"इस महीने के आयोजन",day:"इस तारीख के आयोजन",empty:"इस चयन के लिए कोई आयोजन सूचीबद्ध नहीं है।"},
 } satisfies Record<ViaLanguage,Record<string,string>>
 
+const continentLabels: Record<ViaLanguage,Record<string,string>> = {
+  Dutch: {world:"Wereldwijd",europe:"Europa",asia:"Azië",africa:"Afrika","north-america":"Noord-Amerika","south-america":"Zuid-Amerika",oceania:"Oceanië"},
+  English: {world:"Worldwide",europe:"Europe",asia:"Asia",africa:"Africa","north-america":"North America","south-america":"South America",oceania:"Oceania"},
+  French: {world:"Monde",europe:"Europe",asia:"Asie",africa:"Afrique","north-america":"Amérique du Nord","south-america":"Amérique du Sud",oceania:"Océanie"},
+  Spanish: {world:"Mundial",europe:"Europa",asia:"Asia",africa:"África","north-america":"América del Norte","south-america":"América del Sur",oceania:"Oceanía"},
+  Chinese: {world:"全球",europe:"欧洲",asia:"亚洲",africa:"非洲","north-america":"北美洲","south-america":"南美洲",oceania:"大洋洲"},
+  Hindi: {world:"विश्वभर",europe:"यूरोप",asia:"एशिया",africa:"अफ़्रीका","north-america":"उत्तरी अमेरिका","south-america":"दक्षिणी अमेरिका",oceania:"ओशिनिया"},
+}
+
 function easterSunday(year: number) {
   const a=year%19,b=Math.floor(year/100),c=year%100,d=Math.floor(b/4),e=b%4
   const f=Math.floor((b+8)/25),g=Math.floor((b-f+1)/3),h=(19*a+b-d-g+15)%30
@@ -124,7 +133,7 @@ export default function WereldkalenderPage() {
       <p style={{fontSize:13}}>De gekozen taal wordt voor heel VIA bewaard. De vertaling van alle kalenderteksten volgt nog.</p>
       <label style={{display:"flex",alignItems:"center",gap:12,flexWrap:"wrap",marginTop:20}}>{ui.continent}
         <select value={continent} onChange={event=>{const next=event.target.value;setContinent(next);setRegion(next==="world"?"world":(VIA_CALENDAR_REGIONS.find(item=>continentByRegion[item.code]===next)?.code??"world"))}} style={{padding:10,border:"1px solid #777",borderRadius:8,background:"#18241e",color:"white"}}>
-          {[["world","Wereldwijd"],["europe","Europa"],["asia","Azië"],["africa","Afrika"],["north-america","Noord-Amerika"],["south-america","Zuid-Amerika"],["oceania","Oceanië"]].map(([value,label])=><option key={value} value={value}>{label}</option>)}
+          {Object.entries(continentLabels[language]).map(([value,label])=><option key={value} value={value}>{label}</option>)}
         </select>
       </label>
       <label style={{display:"flex",alignItems:"center",gap:12,flexWrap:"wrap",marginTop:12}}>{ui.country}
