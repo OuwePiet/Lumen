@@ -7,11 +7,11 @@ export const VIA_CALENDAR_REGIONS = [
   { code:"world", label:"Wereldwijd", zone:"UTC" },
   { code:"NL", label:"Nederland", zone:"Europe/Amsterdam" },
   { code:"GB", label:"Verenigd Koninkrijk", zone:"Europe/London" },
-  { code:"US", label:"Verenigde Staten", zone:"America/New_York" },
+  { code:"US", label:"Verenigde Staten (New York)", zone:"America/New_York" },
   { code:"FR", label:"Frankrijk", zone:"Europe/Paris" },
   { code:"ES", label:"Spanje", zone:"Europe/Madrid" },
-  { code:"CN", label:"China", zone:"Asia/Shanghai" },
-  { code:"IN", label:"India", zone:"Asia/Kolkata" },
+  { code:"CN", label:"China (Shanghai)", zone:"Asia/Shanghai" },
+  { code:"IN", label:"India (Kolkata)", zone:"Asia/Kolkata" },
   { code:"BE", label:"België", zone:"Europe/Brussels" },
   { code:"DE", label:"Duitsland", zone:"Europe/Berlin" },
   { code:"IT", label:"Italië", zone:"Europe/Rome" },
@@ -25,9 +25,9 @@ export const VIA_CALENDAR_REGIONS = [
   { code:"CA", label:"Canada (Toronto)", zone:"America/Toronto" },
   { code:"MX", label:"Mexico (Mexico-Stad)", zone:"America/Mexico_City" },
   { code:"BR", label:"Brazilië (São Paulo)", zone:"America/Sao_Paulo" },
-  { code:"AR", label:"Argentinië", zone:"America/Argentina/Buenos_Aires" },
+  { code:"AR", label:"Argentinië (Buenos Aires)", zone:"America/Argentina/Buenos_Aires" },
   { code:"AU", label:"Australië (Sydney)", zone:"Australia/Sydney" },
-  { code:"NZ", label:"Nieuw-Zeeland", zone:"Pacific/Auckland" },
+  { code:"NZ", label:"Nieuw-Zeeland (Auckland)", zone:"Pacific/Auckland" },
 ] as const
 
 export type ViaCalendarRegion = typeof VIA_CALENDAR_REGIONS[number]["code"]
