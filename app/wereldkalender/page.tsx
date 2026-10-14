@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { VIA_INTERNATIONAL_DAYS } from "../via-international-calendar"
 import { VIA_CALENDAR_REGIONS, viaCalendarLocalDate, type ViaCalendarRegion } from "../via-calendar-regions"
 
@@ -16,7 +16,13 @@ function easterSunday(year: number) {
 }
 
 export default function WereldkalenderPage() {
-  const [today] = useState(() => new Date())
+  const [today,setToday] = useState(() => new Date())
+  useEffect(() => {
+    const refresh = () => setToday(new Date())
+    const interval = window.setInterval(refresh, 60_000)
+    document.addEventListener("visibilitychange", refresh)
+    return () => { window.clearInterval(interval); document.removeEventListener("visibilitychange", refresh) }
+  }, [])
   const [year,setYear] = useState(today.getFullYear())
   const [month,setMonth] = useState(today.getMonth())
   const [selected,setSelected] = useState<number|null>(null)
@@ -47,6 +53,7 @@ export default function WereldkalenderPage() {
         </select>
       </label>
       <p style={{fontSize:13}}>Lokale datum: {local.day}-{local.month}-{local.year} ({local.zone}). Landenkeuze past de tijdzone aan; de kalender blijft inclusief en toont internationale dagen.</p>
+      <button type="button" onClick={()=>{setYear(local.year);setMonth(local.month-1);setSelected(local.day)}} style={{marginTop:8,padding:"8px 12px",border:"1px solid currentColor",borderRadius:8}}>Vandaag in deze tijdzone</button>
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,margin:"24px 0 16px"}}>
         <button type="button" onClick={()=>move(-1)} aria-label="Vorige maand" style={{padding:"10px 16px",border:"1px solid currentColor",borderRadius:10}}>‹</button>
         <h2 style={{fontSize:22,fontWeight:600,textTransform:"capitalize"}}>{monthNames[month]} {year}</h2>
