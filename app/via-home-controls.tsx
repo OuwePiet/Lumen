@@ -553,11 +553,11 @@ export default function ViaHomeControls() {
             <Link prefetch={false} key={href} href={href} className={key === "music" ? "via-home-music-grid-button" : undefined} style={{ ...buttonStyle, width: "100%", justifyContent: "center", paddingInline: "9px" }}>{t[key]}</Link>
           ))}
         </nav>
-        <div className="via-home-handbook-row" style={{ display: "flex", justifyContent: "center" }}>
-          <Link prefetch={false} href="/help" style={{ ...buttonStyle, width: "calc(50% - 3.5px)", justifyContent: "center", paddingInline: "9px" }}>Handboek VIA</Link>
-        </div>
-        <nav aria-label="VIA toekomstige pagina's" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "7px" }}>
+        <nav className="via-home-handbook-row" aria-label="VIA handboek en kalender" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "7px" }}>
+          <Link prefetch={false} href="/help" style={{ ...buttonStyle, width: "100%", justifyContent: "center", paddingInline: "9px" }}>Handboek VIA</Link>
           <Link prefetch={false} href="/wereldkalender" style={{ ...buttonStyle, width: "100%", justifyContent: "center", paddingInline: "9px" }}>{t.calendar}</Link>
+        </nav>
+        <nav aria-label="VIA toekomstige pagina's" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "7px" }}>
           {[
             ["Wereldkrant", "World Newspaper", "Journal mondial", "Periódico mundial", "世界报纸"],
             ["Luisterbibliotheek", "Audio Library", "Bibliothèque audio", "Biblioteca de audio", "有声图书馆"],
