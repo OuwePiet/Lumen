@@ -58,12 +58,19 @@ export default function WereldkalenderPage() {
     const date=new Date(easterDate.getTime()+daysFromEaster*86_400_000)
     return {month:date.getUTCMonth()+1,day:date.getUTCDate()}
   }
+  const nthWeekday=(targetMonth:number,weekday:number,ordinal:number)=>{
+    const first=new Date(Date.UTC(year,targetMonth-1,1)).getUTCDay()
+    return 1+(weekday-first+7)%7+(ordinal-1)*7
+  }
   const calculatedHolidays=[
     {id:"good-friday",nameNl:"Goede Vrijdag",...relativeDate(-2)},
     {id:"easter-monday",nameNl:"Tweede paasdag",...relativeDate(1)},
     {id:"ascension",nameNl:"Hemelvaartsdag",...relativeDate(39)},
     {id:"pentecost",nameNl:"Pinksteren",...relativeDate(49)},
     {id:"pentecost-monday",nameNl:"Tweede pinksterdag",...relativeDate(50)},
+    {id:"mothers-day",nameNl:"Moederdag (tweede zondag mei; onder meer Nederland en VS)",month:5,day:nthWeekday(5,0,2)},
+    {id:"fathers-day",nameNl:"Vaderdag (derde zondag juni; onder meer Nederland en VS)",month:6,day:nthWeekday(6,0,3)},
+    {id:"thanksgiving-us",nameNl:"Thanksgiving (Verenigde Staten)",month:11,day:nthWeekday(11,4,4)},
   ].filter(d=>d.month===month+1)
   const monthEvents=[...days,...calculatedHolidays.map(d=>({...d,scope:"cultural" as const,status:"scheduled" as const}))]
   const offset=(new Date(year,month,1).getDay()+6)%7
