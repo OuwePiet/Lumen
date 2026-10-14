@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react"
 import { VIA_INTERNATIONAL_DAYS } from "../via-international-calendar"
 import { VIA_CALENDAR_REGIONS, viaCalendarLocalDate, type ViaCalendarRegion } from "../via-calendar-regions"
+import { readViaLocalSettings, VIA_SETTINGS_EVENT, type ViaLanguage } from "../via-local-settings"
 
 const monthNames = ["januari","februari","maart","april","mei","juni","juli","augustus","september","oktober","november","december"]
 const weekdays = ["ma","di","wo","do","vr","za","zo"]
@@ -27,6 +28,17 @@ export default function WereldkalenderPage() {
   const [month,setMonth] = useState(today.getMonth())
   const [selected,setSelected] = useState<number|null>(null)
   const [region,setRegion] = useState<ViaCalendarRegion>("world")
+  const [language,setLanguage] = useState<ViaLanguage>("English")
+  useEffect(() => {
+    const sync = () => setLanguage(readViaLocalSettings().interfaceLanguage)
+    sync()
+    window.addEventListener(VIA_SETTINGS_EVENT,sync)
+    window.addEventListener("storage",sync)
+    return () => { window.removeEventListener(VIA_SETTINGS_EVENT,sync);window.removeEventListener("storage",sync) }
+  }, [])
+  const continentByRegion: Record<ViaCalendarRegion,string> = {world:"world",NL:"europe",GB:"europe",FR:"europe",ES:"europe",US:"north-america",CN:"asia",IN:"asia"}
+  const [continent,setContinent] = useState("world")
+  const regionOptions = VIA_CALENDAR_REGIONS.filter(item => item.code==="world" || continent==="world" || continentByRegion[item.code]===continent)
   const local = viaCalendarLocalDate(today,region)
   const days = useMemo(() => {
     const easter=easterSunday(year)
@@ -47,9 +59,15 @@ export default function WereldkalenderPage() {
       <a href="/" style={{display:"inline-block",marginBottom:16}}>← VIA Home</a>
       <h1 style={{fontSize:"clamp(25px,5vw,38px)",fontWeight:700}}>🌍 VIA Wereldkalender</h1>
       <p>Internationale dagen, vieringen en herdenkingen. Vaste datums keren ieder jaar automatisch terug.</p>
-      <label style={{display:"flex",alignItems:"center",gap:12,flexWrap:"wrap",marginTop:20}}>Land / tijdzone
+      <p style={{fontSize:13}}>VIA-taalinstelling: {language}. De vertaling van de kalenderinhoud naar alle VIA-talen volgt nog.</p>
+      <label style={{display:"flex",alignItems:"center",gap:12,flexWrap:"wrap",marginTop:20}}>Werelddeel
+        <select value={continent} onChange={event=>{setContinent(event.target.value);setRegion("world")}} style={{padding:10,border:"1px solid #777",borderRadius:8,background:"#18241e",color:"white"}}>
+          {[["world","Wereldwijd"],["europe","Europa"],["asia","Azië"],["africa","Afrika"],["north-america","Noord-Amerika"],["south-america","Zuid-Amerika"],["oceania","Oceanië"]].map(([value,label])=><option key={value} value={value}>{label}</option>)}
+        </select>
+      </label>
+      <label style={{display:"flex",alignItems:"center",gap:12,flexWrap:"wrap",marginTop:12}}>Land / tijdzone
         <select value={region} onChange={event=>setRegion(event.target.value as ViaCalendarRegion)} style={{padding:10,border:"1px solid #777",borderRadius:8,background:"#18241e",color:"white"}}>
-          {VIA_CALENDAR_REGIONS.map(item=><option key={item.code} value={item.code}>{item.label}</option>)}
+          {regionOptions.map(item=><option key={item.code} value={item.code}>{item.label}</option>)}
         </select>
       </label>
       <p style={{fontSize:13}}>Lokale datum: {local.day}-{local.month}-{local.year} ({local.zone}). Landenkeuze past de tijdzone aan; de kalender blijft inclusief en toont internationale dagen.</p>
