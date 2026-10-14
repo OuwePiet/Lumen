@@ -282,7 +282,14 @@ export default function ViaHomeControls() {
         const data = await response.json() as { ok?: boolean; items?: Array<{ createdAt?: string }> }
         if (!active || data.ok !== true || !Array.isArray(data.items)) return
         const newest = data.items.map((item) => item.createdAt || "").sort().at(-1) || ""
-        const acknowledged = window.localStorage.getItem(`via:ideas:last-seen:${publicKey}`) || ""
+        const seenResponse = await fetch("/api/via/ideas/seen", {
+          cache: "no-store",
+          headers: { Authorization: `Bearer ${jwt}`, "x-via-owner-public-key": publicKey },
+        })
+        if (!seenResponse.ok) return
+        const seenData = await seenResponse.json() as { ok?: boolean; seenAt?: string }
+        if (seenData.ok !== true || !active) return
+        const acknowledged = seenData.seenAt || ""
         setHasNewIdeas(Boolean(newest && newest > acknowledged))
       } catch { /* owner-only indicator is optional when identity/storage is unavailable */ }
     }
