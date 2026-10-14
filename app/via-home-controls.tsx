@@ -287,9 +287,23 @@ export default function ViaHomeControls() {
       } catch { /* owner-only indicator is optional when identity/storage is unavailable */ }
     }
     void checkIdeas()
+    const onVisibility = () => { if (document.visibilityState === "visible") void checkIdeas() }
+    const onStorage = (event: StorageEvent) => {
+      if (event.key === `via:ideas:last-seen:${publicKey}`) void checkIdeas()
+    }
     window.addEventListener("focus", checkIdeas)
+    window.addEventListener("pageshow", checkIdeas)
+    document.addEventListener("visibilitychange", onVisibility)
+    window.addEventListener("storage", onStorage)
     const interval = window.setInterval(checkIdeas, 60_000)
-    return () => { active = false; window.removeEventListener("focus", checkIdeas); window.clearInterval(interval) }
+    return () => {
+      active = false
+      window.removeEventListener("focus", checkIdeas)
+      window.removeEventListener("pageshow", checkIdeas)
+      document.removeEventListener("visibilitychange", onVisibility)
+      window.removeEventListener("storage", onStorage)
+      window.clearInterval(interval)
+    }
   }, [session?.publicKey, profile?.username])
 
   function refreshAccounts() {
