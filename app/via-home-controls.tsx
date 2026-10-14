@@ -241,7 +241,7 @@ export default function ViaHomeControls() {
           let acknowledgedCount = -1
           try {
             const stored = window.sessionStorage.getItem(`via:notifications:home-ack:${publicKey}`)
-            if (stored !== null && /^\\d+$/.test(stored)) acknowledgedCount = Number(stored)
+            if (stored !== null && stored.trim() !== "" && Number.isSafeInteger(Number(stored)) && Number(stored) >= 0) acknowledgedCount = Number(stored)
           } catch { /* storage unavailable */ }
           setHasUnreadNotifications(count > 0 && (acknowledgedCount < 0 || count > acknowledgedCount))
         }
