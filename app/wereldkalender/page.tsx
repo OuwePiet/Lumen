@@ -157,7 +157,7 @@ export default function WereldkalenderPage() {
         </select>
       </label>
       <label style={{display:"flex",alignItems:"center",gap:12,flexWrap:"wrap",marginTop:12}}>{ui.country}
-        <select value={selectedRegion} onChange={event=>setRegion(event.target.value as ViaCalendarRegion)} style={{padding:10,border:"1px solid #777",borderRadius:8,background:"#18241e",color:"white"}}>
+        <select value={selectedRegion} onChange={event=>{const next=event.target.value as ViaCalendarRegion;setRegion(next);const date=viaCalendarLocalDate(new Date(),next);setYear(date.year);setMonth(date.month-1);setSelected(date.day)}} style={{padding:10,border:"1px solid #777",borderRadius:8,background:"#18241e",color:"white"}}>
           {availableRegions.map(item=><option key={item.code} value={item.code}>{item.label}</option>)}
         </select>
       </label>
