@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react"
 import { VIA_INTERNATIONAL_DAYS } from "../via-international-calendar"
+import { VIA_CALENDAR_REGIONS, viaCalendarLocalDate, type ViaCalendarRegion } from "../via-calendar-regions"
 
 const monthNames = ["januari","februari","maart","april","mei","juni","juli","augustus","september","oktober","november","december"]
 const weekdays = ["ma","di","wo","do","vr","za","zo"]
@@ -19,6 +20,8 @@ export default function WereldkalenderPage() {
   const [year,setYear] = useState(today.getFullYear())
   const [month,setMonth] = useState(today.getMonth())
   const [selected,setSelected] = useState<number|null>(null)
+  const [region,setRegion] = useState<ViaCalendarRegion>("world")
+  const local = viaCalendarLocalDate(today,region)
   const days = useMemo(() => {
     const easter=easterSunday(year)
     return VIA_INTERNATIONAL_DAYS.filter(d => d.status==="scheduled" && d.month===month+1)
@@ -38,6 +41,12 @@ export default function WereldkalenderPage() {
       <a href="/" style={{display:"inline-block",marginBottom:16}}>← VIA Home</a>
       <h1 style={{fontSize:"clamp(25px,5vw,38px)",fontWeight:700}}>🌍 VIA Wereldkalender</h1>
       <p>Internationale dagen, vieringen en herdenkingen. Vaste datums keren ieder jaar automatisch terug.</p>
+      <label style={{display:"flex",alignItems:"center",gap:12,flexWrap:"wrap",marginTop:20}}>Land / tijdzone
+        <select value={region} onChange={event=>setRegion(event.target.value as ViaCalendarRegion)} style={{padding:10,border:"1px solid #777",borderRadius:8,background:"#18241e",color:"white"}}>
+          {VIA_CALENDAR_REGIONS.map(item=><option key={item.code} value={item.code}>{item.label}</option>)}
+        </select>
+      </label>
+      <p style={{fontSize:13}}>Lokale datum: {local.day}-{local.month}-{local.year} ({local.zone}). Landenkeuze past de tijdzone aan; de kalender blijft inclusief en toont internationale dagen.</p>
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,margin:"24px 0 16px"}}>
         <button type="button" onClick={()=>move(-1)} aria-label="Vorige maand" style={{padding:"10px 16px",border:"1px solid currentColor",borderRadius:10}}>‹</button>
         <h2 style={{fontSize:22,fontWeight:600,textTransform:"capitalize"}}>{monthNames[month]} {year}</h2>
@@ -60,7 +69,7 @@ export default function WereldkalenderPage() {
       <h2 style={{fontSize:21,fontWeight:600,marginTop:28}}>Wisselende datums — nog te bevestigen</h2>
       <p>Voor deze vieringen worden geen onbetrouwbare datums verzonnen. Landelijke en religieuze bevestigingen kunnen verschillen.</p>
       <ul style={{paddingLeft:22}}>{unresolved.map(d=><li key={d.id}>{d.nameNl}: datum nog niet gekoppeld</li>)}</ul>
-      <p style={{marginTop:24,fontSize:13,opacity:.8}}>Dit is de eerste kalenderweergave. Landenfilters, lokale tijdzones en automatische bevestigingsbronnen zijn nog in ontwikkeling.</p>
+      <p style={{marginTop:24,fontSize:13,opacity:.8}}>Dit is de eerste kalenderweergave. Een eerste landen- en tijdzonekeuze is beschikbaar. Regionale feestdagenfilters, juridische controles en automatische bevestigingsbronnen zijn nog in ontwikkeling.</p>
     </main>
   )
 }
