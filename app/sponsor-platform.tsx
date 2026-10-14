@@ -305,7 +305,7 @@ export default function SponsorPlatform({ compact = false, showIcon = true }: { 
                 <h2 style={{ margin:"6px 0 0", fontSize:24 }}>{copy.title}</h2>
                 <p style={{ margin:"8px 0 0", color:"#9aa79f", fontSize:13, lineHeight:1.55 }}>{copy.intro}</p>
               </div>
-              <button type="button" onClick={() => setOpen(false)} aria-label={copy.close} style={{ border:0, background:"transparent", color:"#aab5ae", fontSize:24, cursor:"pointer" }}>×</button>
+              <button type="button" onClick={() => setOpen(false)} aria-label={copy.close} style={{ width:40, height:40, flexShrink:0, border:"1px solid rgba(248,113,113,.42)", borderRadius:10, background:"rgba(127,29,29,.15)", color:"#fca5a5", fontSize:30, lineHeight:1, cursor:"pointer", display:"grid", placeItems:"center" }}>×</button>
             </div>
 
             <div style={{ marginTop:18, display:"grid", gap:14 }}>
