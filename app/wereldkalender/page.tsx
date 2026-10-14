@@ -27,7 +27,7 @@ const extraUi: Record<ViaLanguage,{localDate:string,monthAll:string,internationa
 }
 
 const guidanceUi: Record<ViaLanguage,{pendingTitle:string,pendingInfo:string,pendingDate:string,languageNote:string}> = {
-  Dutch:{pendingTitle:"Wisselende datums — nog te bevestigen",pendingInfo:"Voor deze vieringen worden geen onbetrouwbare datums verzonnen. Landelijke en religieuze bevestigingen kunnen verschillen.",pendingDate:"datum nog niet gekoppeld",languageNote:"{guidance.languageNote}"},
+  Dutch:{pendingTitle:"Wisselende datums — nog te bevestigen",pendingInfo:"Voor deze vieringen worden geen onbetrouwbare datums verzonnen. Landelijke en religieuze bevestigingen kunnen verschillen.",pendingDate:"datum nog niet gekoppeld",languageNote:"De gekozen taal wordt voor heel VIA bewaard. De vertaling van alle kalenderteksten volgt nog."},
   English:{pendingTitle:"Variable dates — awaiting confirmation",pendingInfo:"Unverified dates are not invented. National and religious confirmations may differ.",pendingDate:"date not yet linked",languageNote:"Your language choice is saved across VIA. Some calendar content still awaits translation."},
   French:{pendingTitle:"Dates variables — à confirmer",pendingInfo:"Aucune date non vérifiée n'est inventée. Les confirmations nationales et religieuses peuvent varier.",pendingDate:"date non encore renseignée",languageNote:"La langue choisie est enregistrée pour VIA. Certains contenus restent à traduire."},
   Spanish:{pendingTitle:"Fechas variables — pendientes de confirmar",pendingInfo:"No se inventan fechas sin verificar. Las confirmaciones nacionales y religiosas pueden variar.",pendingDate:"fecha aún no vinculada",languageNote:"El idioma elegido se guarda en VIA. Quedan algunos textos por traducir."},
@@ -150,7 +150,7 @@ export default function WereldkalenderPage() {
           {VIA_LANGUAGES.map(item=><option key={item} value={item}>{item}</option>)}
         </select>
       </label>
-      <p style={{fontSize:13}}>De gekozen taal wordt voor heel VIA bewaard. De vertaling van alle kalenderteksten volgt nog.</p>
+      <p style={{fontSize:13}}>{guidance.languageNote}</p>
       <label style={{display:"flex",alignItems:"center",gap:12,flexWrap:"wrap",marginTop:20}}>{ui.continent}
         <select value={continent} onChange={event=>{const next=event.target.value;setContinent(next);setRegion(next==="world"?"world":(VIA_CALENDAR_REGIONS.find(item=>continentByRegion[item.code]===next)?.code??"world"))}} style={{padding:10,border:"1px solid #777",borderRadius:8,background:"#18241e",color:"white"}}>
           {Object.entries(continentLabels[language]).map(([value,label])=><option key={value} value={value}>{label}</option>)}
