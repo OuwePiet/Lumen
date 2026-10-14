@@ -66,7 +66,7 @@ function readLocalIdeas(): IdeaItem[] {
 }
 
 function statusTone(value: string) {
-  if (value === "OK" || value === "done") return { border: "#285f40", color: "#9adbb2", background: "rgba(12,35,22,.6)" }
+  if (value === "OK" || value === "done" || value === "configured") return { border: "#285f40", color: "#9adbb2", background: "rgba(12,35,22,.6)" }
   if (value === "attention" || value === "DEGRADED") return { border: "#735f2d", color: "#e1c879", background: "rgba(48,39,12,.45)" }
   if (value === "FAILED") return { border: "#773838", color: "#e6a6a6", background: "rgba(54,16,16,.45)" }
   return { border: "#343b37", color: "#8f9a94", background: "rgba(12,16,14,.55)" }
@@ -74,6 +74,7 @@ function statusTone(value: string) {
 
 function statusLabel(value: string) {
   if (value === "done") return "Afgerond"
+  if (value === "configured") return "Opslag ingesteld"
   if (value === "attention") return "Aandacht"
   if (value === "deferred") return "Bewust later"
   return value
@@ -157,7 +158,7 @@ export default function OwnerDashboard({ ownerPublicKey }: { ownerPublicKey: str
 
   const isOwner = Boolean(ownerPublicKey && sessionKey && ownerPublicKey === sessionKey)
   const displayRoundItems = roundItems.map((item) => item.label.startsWith("Centrale Ideeënbus-ontvangst")
-    ? { ...item, state: centralIdeasConfigured === true ? "done" as const : centralIdeasConfigured === false ? "attention" as const : "unknown" as const }
+    ? { ...item, state: centralIdeasConfigured === true ? "configured" as const : centralIdeasConfigured === false ? "attention" as const : "unknown" as const }
     : item)
   const sortedIdeas = useMemo(() => [...ideas].sort((a, b) => String(b.createdAt ?? "").localeCompare(String(a.createdAt ?? ""))), [ideas])
 
