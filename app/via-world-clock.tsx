@@ -225,7 +225,7 @@ export default function ViaWorldClock({ iphoneInline = false }: { iphoneInline?:
           }
           .via-home-nasa-source { margin-bottom: 84px !important; }
         }
-        @media (min-width: 901px) and (max-width: 1366px) {
+        @media (min-width: 768px) and (max-width: 1366px) {
           .via-home-world-clock {
             background: rgba(2,7,4,.16) !important;
             backdrop-filter: blur(2px) !important;
@@ -236,6 +236,10 @@ export default function ViaWorldClock({ iphoneInline = false }: { iphoneInline?:
             margin: 10px !important;
             border-radius: 18px !important;
             justify-content: flex-start !important;
+          }
+          /* iPad: raise only the clock bar and NASA credit, never the Earth visual. */
+          .via-home-world-clock, .via-home-nasa-source {
+            transform: translateY(-38px);
           }
           .via-home-nasa-source {
             position: relative !important;

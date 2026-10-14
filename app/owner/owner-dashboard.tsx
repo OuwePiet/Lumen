@@ -66,7 +66,7 @@ function readLocalIdeas(): IdeaItem[] {
 }
 
 function statusTone(value: string) {
-  if (value === "OK" || value === "done") return { border: "#285f40", color: "#9adbb2", background: "rgba(12,35,22,.6)" }
+  if (value === "OK" || value === "done" || value === "configured") return { border: "#285f40", color: "#9adbb2", background: "rgba(12,35,22,.6)" }
   if (value === "attention" || value === "DEGRADED") return { border: "#735f2d", color: "#e1c879", background: "rgba(48,39,12,.45)" }
   if (value === "FAILED") return { border: "#773838", color: "#e6a6a6", background: "rgba(54,16,16,.45)" }
   return { border: "#343b37", color: "#8f9a94", background: "rgba(12,16,14,.55)" }
@@ -74,6 +74,7 @@ function statusTone(value: string) {
 
 function statusLabel(value: string) {
   if (value === "done") return "Afgerond"
+  if (value === "configured") return "Opslag ingesteld"
   if (value === "attention") return "Aandacht"
   if (value === "deferred") return "Bewust later"
   return value
@@ -83,6 +84,7 @@ export default function OwnerDashboard({ ownerPublicKey }: { ownerPublicKey: str
   const [sessionKey, setSessionKey] = useState<string | null>(null)
   const [ideas, setIdeas] = useState<IdeaItem[]>([])
   const [live, setLive] = useState<LiveStatus>(initialLiveStatus)
+  const [centralIdeasConfigured, setCentralIdeasConfigured] = useState<boolean | null>(null)
 
   useEffect(() => {
     const session = restoreIdentitySession()
@@ -129,7 +131,23 @@ export default function OwnerDashboard({ ownerPublicKey }: { ownerPublicKey: str
       }
     }
 
+    // The public endpoint reports configuration without exposing private ideas.
+    // A 401 response means storage is configured but owner authentication is required.
+    async function refreshIdeasStorage() {
+      try {
+        const response = await fetch("/api/via/ideas", { cache: "no-store", signal: controller.signal })
+        if (!active) return
+        if (response.status === 401) { setCentralIdeasConfigured(true); return }
+        if (!response.ok) { setCentralIdeasConfigured(null); return }
+        const data = await response.json() as { configured?: boolean }
+        if (active) setCentralIdeasConfigured(typeof data.configured === "boolean" ? data.configured : null)
+      } catch {
+        if (active && !controller.signal.aborted) setCentralIdeasConfigured(null)
+      }
+    }
+
     void refreshHealth()
+    void refreshIdeasStorage()
     const timer = window.setInterval(refreshHealth, 60_000)
     return () => {
       active = false
@@ -139,6 +157,9 @@ export default function OwnerDashboard({ ownerPublicKey }: { ownerPublicKey: str
   }, [])
 
   const isOwner = Boolean(ownerPublicKey && sessionKey && ownerPublicKey === sessionKey)
+  const displayRoundItems = roundItems.map((item) => item.label.startsWith("Centrale Ideeënbus-ontvangst")
+    ? { ...item, state: centralIdeasConfigured === true ? "configured" as const : centralIdeasConfigured === false ? "attention" as const : "unknown" as const }
+    : item)
   const sortedIdeas = useMemo(() => [...ideas].sort((a, b) => String(b.createdAt ?? "").localeCompare(String(a.createdAt ?? ""))), [ideas])
 
   if (!ownerPublicKey) {
@@ -206,7 +227,7 @@ export default function OwnerDashboard({ ownerPublicKey }: { ownerPublicKey: str
         </div>
 
         <p style={{ color: "#aebbb4", lineHeight: 1.6, marginBottom: 18 }}>
-          Op dit moment zie je hier alleen ideeën die in deze browser zijn opgeslagen. Centrale ontvangst van ideeën van andere bezoekers/apparaten is nog niet aangesloten en staat hierboven daarom bewust op Aandacht.
+          Op dit moment zie je hier alleen ideeën die in deze browser zijn opgeslagen. De centrale ontvangst heeft een eigen beveiligde inbox. De status hierboven wordt gecontroleerd via de bestaande VIA Ideas API; lokale concepten blijven alleen op dit apparaat.
         </p>
 
         {sortedIdeas.length === 0 ? (

@@ -43,7 +43,12 @@ export default function NotificationsPage() {
         if (!response.ok) throw new Error("UNREAD_FAILED")
         const data = await response.json() as { ok?: boolean; unreadCount?: number }
         if (!controller.signal.aborted) {
-          setUnreadCount(data.ok && typeof data.unreadCount === "number" && Number.isSafeInteger(data.unreadCount) && data.unreadCount > 0 ? data.unreadCount : null)
+          const count = data.ok && typeof data.unreadCount === "number" && Number.isSafeInteger(data.unreadCount) && data.unreadCount >= 0 ? data.unreadCount : null
+          setUnreadCount(count !== null && count > 0 ? count : null)
+          // Visiting Notifications acknowledges the homepage lamp locally; it does not alter DeSo read metadata.
+          if (count !== null) {
+            try { window.sessionStorage.setItem(`via:notifications:home-ack:${publicKey}`, String(count)) } catch { /* storage unavailable */ }
+          }
         }
       } catch {
         if (!controller.signal.aborted) setUnreadCount(null)

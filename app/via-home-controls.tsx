@@ -217,6 +217,7 @@ export default function ViaHomeControls() {
   const [language, setLanguage] = useState<ViaLanguage>("English")
   const [languageOpen, setLanguageOpen] = useState(false)
   const [hasUnreadNotifications, setHasUnreadNotifications] = useState(false)
+  const [hasNewIdeas, setHasNewIdeas] = useState(false)
 
   useEffect(() => {
     if (!session?.publicKey) {
@@ -237,7 +238,13 @@ export default function ViaHomeControls() {
         if (!response.ok) { setHasUnreadNotifications(false); return }
         const data = await response.json() as { ok?: boolean; unreadCount?: number }
         if (!controller.signal.aborted) {
-          setHasUnreadNotifications(data.ok === true && typeof data.unreadCount === "number" && data.unreadCount > 0)
+          const count = data.ok === true && typeof data.unreadCount === "number" && Number.isSafeInteger(data.unreadCount) && data.unreadCount >= 0 ? data.unreadCount : 0
+          let acknowledgedCount = -1
+          try {
+            const stored = window.sessionStorage.getItem(`via:notifications:home-ack:${publicKey}`)
+            if (stored !== null && stored.trim() !== "" && Number.isSafeInteger(Number(stored)) && Number(stored) >= 0) acknowledgedCount = Number(stored)
+          } catch { /* storage unavailable */ }
+          setHasUnreadNotifications(count > 0 && (acknowledgedCount < 0 || count > acknowledgedCount))
         }
       } catch {
         if (!controller.signal.aborted) setHasUnreadNotifications(false)
@@ -251,6 +258,55 @@ export default function ViaHomeControls() {
     }
   }, [session?.publicKey])
 
+
+
+  useEffect(() => {
+    // Only the verified owner can retrieve private ideas. Never expose them to visitors.
+    if (!session?.publicKey || profile?.username?.toLowerCase() !== "ouwepiet") {
+      setHasNewIdeas(false)
+      return
+    }
+    const publicKey = session.publicKey
+    let active = true
+    const checkIdeas = async () => {
+      try {
+        const { viaModernIdentity } = await import("./deso-identity-modern")
+        const current = await viaModernIdentity.currentUser()
+        if (!current || current.publicKey !== publicKey) return
+        const jwt = await viaModernIdentity.jwt()
+        const response = await fetch("/api/via/ideas", {
+          cache: "no-store",
+          headers: { Authorization: `Bearer ${jwt}`, "x-via-owner-public-key": publicKey },
+        })
+        if (!response.ok) return
+        const data = await response.json() as { ok?: boolean; items?: Array<{ createdAt?: string }> }
+        if (!active || data.ok !== true || !Array.isArray(data.items)) return
+        const newest = data.items.map((item) => item.createdAt || "").sort().at(-1) || ""
+        const seenResponse = await fetch("/api/via/ideas/seen", {
+          cache: "no-store",
+          headers: { Authorization: `Bearer ${jwt}`, "x-via-owner-public-key": publicKey },
+        })
+        if (!seenResponse.ok) return
+        const seenData = await seenResponse.json() as { ok?: boolean; seenAt?: string }
+        if (seenData.ok !== true || !active) return
+        const acknowledged = seenData.seenAt || ""
+        setHasNewIdeas(Boolean(newest && newest > acknowledged))
+      } catch { /* owner-only indicator is optional when identity/storage is unavailable */ }
+    }
+    void checkIdeas()
+    const onVisibility = () => { if (document.visibilityState === "visible") void checkIdeas() }
+    window.addEventListener("focus", checkIdeas)
+    window.addEventListener("pageshow", checkIdeas)
+    document.addEventListener("visibilitychange", onVisibility)
+    const interval = window.setInterval(checkIdeas, 60_000)
+    return () => {
+      active = false
+      window.removeEventListener("focus", checkIdeas)
+      window.removeEventListener("pageshow", checkIdeas)
+      document.removeEventListener("visibilitychange", onVisibility)
+      window.clearInterval(interval)
+    }
+  }, [session?.publicKey, profile?.username])
 
   function refreshAccounts() {
     setKnownAccounts(listIdentitySessions())
@@ -415,10 +471,11 @@ export default function ViaHomeControls() {
           <button type="button" onClick={() => { refreshAccounts(); setAccountsOpen((open) => !open) }} aria-label={t.switchAccount} title={t.switchAccount} className="via-home-iphone-utility-account" aria-expanded={accountsOpen} aria-haspopup="menu">
             {avatar ? <img src={avatar} alt="" referrerPolicy="no-referrer" /> : <UsersRound aria-hidden="true" />}
           </button>
+          {hasNewIdeas ? <Link prefetch={false} href="/owner#centrale-ideeenbus" aria-label="Nieuw idee: open Ideeënbus" title="Open nieuwe ideeën" className="via-home-idea-shortcut">💡</Link> : null}
           {accountsOpen ? (
             <div className="via-home-account-menu" role="menu" aria-label={t.switchAccount}>
               <Link prefetch={false} href="/profile" role="menuitem">{t.profile}</Link>
-              <Link prefetch={false} href="/my-via" role="menuitem">{t.myVia}</Link>
+
               {otherAccounts.map((account) => {
                 const accountProfile = profiles[account.publicKey]
                 const accountAvatar = safeProfileImage(accountProfile?.profilePic)
@@ -429,7 +486,7 @@ export default function ViaHomeControls() {
               })}
               <button type="button" onClick={openDeSoIdentity} role="menuitem">{t.addAccount}</button>
               <button type="button" onClick={logout} role="menuitem">{t.logout}</button>
-              <button type="button" onClick={() => setAccountsOpen(false)} role="menuitem">Sluiten</button>
+
             </div>
           ) : null}
         </div>
@@ -449,10 +506,11 @@ export default function ViaHomeControls() {
                 {avatar ? <img src={avatar} alt="" referrerPolicy="no-referrer" style={{ width: 24, height: 24, borderRadius: "50%", objectFit: "cover" }} /> : <UsersRound aria-hidden="true" size={18} />}
                 <span>{accountName}</span>
               </button>
+              {hasNewIdeas ? <Link prefetch={false} href="/owner#centrale-ideeenbus" aria-label="Nieuw idee: open Ideeënbus" title="Open nieuwe ideeën" style={{ position: "absolute", right: 3, top: "50%", transform: "translateY(-50%)", zIndex: 2, fontSize: 18, textDecoration: "none", lineHeight: 1 }}>💡</Link> : null}
               {accountsOpen ? (
                 <div className="via-home-account-menu via-home-grid-account-menu" role="menu" aria-label={t.switchAccount}>
                   <Link prefetch={false} href="/profile" role="menuitem" onClick={() => setAccountsOpen(false)}>{t.profile}</Link>
-                  <Link prefetch={false} href="/my-via" role="menuitem" onClick={() => setAccountsOpen(false)}>{t.myVia}</Link>
+
                   {otherAccounts.map((account) => {
                     const accountProfile = profiles[account.publicKey]
                     const accountAvatar = safeProfileImage(accountProfile?.profilePic)
@@ -463,7 +521,7 @@ export default function ViaHomeControls() {
                   })}
                   <button type="button" onClick={openDeSoIdentity} role="menuitem">{t.addAccount}</button>
                   <button type="button" onClick={logout} role="menuitem">{t.logout}</button>
-                  <button type="button" onClick={() => setAccountsOpen(false)} role="menuitem">Sluiten</button>
+
                 </div>
               ) : null}
             </div>
@@ -512,7 +570,9 @@ export default function ViaHomeControls() {
       {status === "blocked" ? <span style={{ color: "#c6a97b", fontSize: "9px", lineHeight: 1.45 }}>{t.blocked}</span> : null}
       <style>{`
         .via-home-language-control { position: relative; width: 100%; }
-        .via-home-grid-account-menu { left: 0; right: auto; top: calc(100% + 6px); width: 252px !important; padding: 7px !important; border-radius: 12px !important; }
+        .via-home-grid-account-menu { left: 0; right: auto; top: calc(100% + 6px); width: 252px !important; padding: 7px !important; border-radius: 12px !important; background: rgba(10,22,15,.96) !important; backdrop-filter: blur(12px) !important; border: 1px solid rgba(143,212,169,.32) !important; box-shadow: 0 18px 44px rgba(0,0,0,.42) !important; }
+        .via-home-account-menu > button img, .via-home-account-menu > button svg { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; flex: 0 0 auto; }
+        .via-home-account-menu > button span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .via-home-grid-account-menu > a, .via-home-grid-account-menu > button { min-height: 36px !important; padding: 7px 9px !important; border-bottom: 1px solid rgba(143,212,169,.10) !important; }
         .via-home-grid-account-menu > :last-child { border-bottom: 0 !important; }
         .via-home-language-menu { position: absolute; right: 0; top: calc(100% + 6px); z-index: 90; min-width: 112px; padding: 6px; border: 1px solid rgba(143,212,169,.22); border-radius: 12px; background: rgba(5,10,7,.98); box-shadow: 0 16px 36px rgba(0,0,0,.42); }
@@ -598,7 +658,7 @@ export default function ViaHomeControls() {
             border-radius: 50%;
             object-fit: cover;
           }
-          .via-home-account-menu { position: absolute; right: 0; top: 50px; z-index: 120; width: min(270px, calc(100vw - 28px)); max-height: 70vh; overflow-y: auto; padding: 7px; border: 1px solid rgba(143,212,169,.22); border-radius: 14px; background: rgba(5,10,7,.99); box-shadow: 0 18px 44px rgba(0,0,0,.42); }
+          .via-home-account-menu { position: absolute; right: 0; top: 50px; z-index: 120; width: min(270px, calc(100vw - 28px)); max-height: 70vh; overflow-y: auto; padding: 7px; border: 1px solid rgba(143,212,169,.22); border-radius: 14px; background: rgba(10,22,15,.96); backdrop-filter: blur(12px); box-shadow: 0 18px 44px rgba(0,0,0,.42); }
           .via-home-account-menu > a, .via-home-account-menu > button { width: 100%; min-height: 38px; display: flex; align-items: center; gap: 8px; padding: 8px 9px; border: 0; border-radius: 9px; background: transparent; color: #d3ddd7; text-decoration: none; font: inherit; font-size: 11px; text-align: left; cursor: pointer; box-sizing: border-box; }
           .via-home-account-menu > button img, .via-home-account-menu > button svg { width: 26px; height: 26px; border-radius: 50%; object-fit: cover; flex: 0 0 auto; }
           .via-home-account-menu > a:hover, .via-home-account-menu > button:hover { background: rgba(143,212,169,.10); }

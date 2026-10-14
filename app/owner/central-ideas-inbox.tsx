@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { viaModernIdentity } from "../deso-identity-modern"
 
 type IdeaItem = {
@@ -24,6 +24,7 @@ export default function CentralIdeasInbox({ ownerPublicKey }: { ownerPublicKey: 
   const [items, setItems] = useState<IdeaItem[]>([])
   const [busy, setBusy] = useState(false)
   const [message, setMessage] = useState("")
+  const openingRef = useRef(false)
 
   useEffect(() => {
     let active = true
@@ -34,20 +35,26 @@ export default function CentralIdeasInbox({ ownerPublicKey }: { ownerPublicKey: 
           setConfigured(true)
           return
         }
+        if (!response.ok) {
+          setConfigured(null)
+          return
+        }
         const data = await response.json().catch(() => null) as IdeasResponse | null
-        setConfigured(data?.configured === true)
+        setConfigured(data?.configured === true ? true : data?.configured === false ? false : null)
       })
       .catch(() => {
-        if (active) setConfigured(false)
+        if (active) setConfigured(null)
       })
     return () => { active = false }
   }, [])
 
   async function openInbox() {
-    if (!ownerPublicKey) return
+    if (!ownerPublicKey || openingRef.current) return
+    openingRef.current = true
     const session = await viaModernIdentity.currentUser()
     if (!session || session.publicKey !== ownerPublicKey) {
       setMessage("Log in with the verified @OuwePiet DeSo account first.")
+      openingRef.current = false
       return
     }
 
@@ -69,24 +76,62 @@ export default function CentralIdeasInbox({ ownerPublicKey }: { ownerPublicKey: 
         return
       }
       setConfigured(data.configured === true)
-      setItems(Array.isArray(data.items) ? data.items : [])
+      const received = Array.isArray(data.items) ? data.items : []
+      setItems(received)
+      const latest = received.map((item) => item.createdAt || "").sort().at(-1) || ""
+      if (latest) {
+        // Acknowledge only after the verified owner has successfully loaded the inbox.
+        // The receipt is stored centrally so other devices see the same read state.
+        const authHeaders = { Authorization: `Bearer ${jwt}`, "x-via-owner-public-key": ownerPublicKey }
+        const currentSeenResponse = await fetch("/api/via/ideas/seen", { cache: "no-store", headers: authHeaders }).catch(() => null)
+        const currentSeen = currentSeenResponse?.ok
+          ? await currentSeenResponse.json().catch(() => null) as { seenAt?: string } | null
+          : null
+        if (!currentSeenResponse?.ok) {
+          setMessage("Ideeën geladen, maar de centrale gelezen-status is niet bereikbaar.")
+          return
+        }
+        if (currentSeen?.seenAt && currentSeen.seenAt >= latest) {
+          setMessage("Centrale inbox bijgewerkt. Geen nieuwe ideeën om als gelezen te markeren.")
+          return
+        }
+        const receipt = await fetch("/api/via/ideas/seen", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", ...authHeaders },
+          body: JSON.stringify({ seenAt: latest }),
+        }).catch(() => null)
+        if (!receipt?.ok) {
+          setMessage("Ideeën geladen, maar de gelezen-status kon niet centraal worden opgeslagen. Probeer later opnieuw.")
+          return
+        }
+      }
       setMessage(data.configured ? "Central inbox updated." : "Central storage is not connected yet.")
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Could not verify the Owner session.")
     } finally {
+      openingRef.current = false
       setBusy(false)
     }
   }
 
+  useEffect(() => {
+    // The owner explicitly selected the new-idea lamp on the homepage.
+    // Open the secured inbox only for that navigation, not on ordinary page visits.
+    if (!ownerPublicKey || window.location.hash !== "#centrale-ideeenbus") return
+    void openInbox()
+    // Deliberately run once for this owner navigation; manual refresh remains available.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ownerPublicKey])
+
   return (
-    <section style={{ marginTop: 18, border: "1px solid rgba(143,212,169,.24)", borderRadius: 20, background: "linear-gradient(145deg, rgba(7,17,11,.92), rgba(3,8,5,.96))", padding: 20, boxShadow: "0 18px 50px rgba(0,0,0,.22)" }}>
+    <section id="centrale-ideeenbus" style={{ scrollMarginTop: 20, marginTop: 18, border: "1px solid rgba(143,212,169,.24)", borderRadius: 20, background: "linear-gradient(145deg, rgba(7,17,11,.92), rgba(3,8,5,.96))", padding: 20, boxShadow: "0 18px 50px rgba(0,0,0,.22)" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
         <div>
           <p style={{ margin: 0, color: "#8fd4a9", fontSize: 10, fontWeight: 800, letterSpacing: ".14em", textTransform: "uppercase" }}>Secure Ideas Inbox</p>
           <h2 style={{ margin: "5px 0 0", fontSize: 24 }}>Centrale Ideeënbus</h2>
         </div>
         <span style={{ border: `1px solid ${configured ? "#285f40" : "#735f2d"}`, borderRadius: 999, padding: "7px 10px", color: configured ? "#9adbb2" : "#e1c879", fontSize: 10, fontWeight: 700 }}>
-          {configured === null ? "Controleren…" : configured ? "Opslag gekoppeld" : "Opslag nog niet gekoppeld"}
+          {configured === null ? "Opslagstatus onbekend" : configured ? "Opslag ingesteld" : "Opslag nog niet gekoppeld"}
         </span>
       </div>
 
