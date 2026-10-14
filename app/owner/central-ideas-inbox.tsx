@@ -75,11 +75,15 @@ export default function CentralIdeasInbox({ ownerPublicKey }: { ownerPublicKey: 
       if (latest) {
         // Acknowledge only after the verified owner has successfully loaded the inbox.
         // The receipt is stored centrally so other devices see the same read state.
-        await fetch("/api/via/ideas/seen", {
+        const receipt = await fetch("/api/via/ideas/seen", {
           method: "POST",
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${jwt}`, "x-via-owner-public-key": ownerPublicKey },
           body: JSON.stringify({ seenAt: latest }),
-        })
+        }).catch(() => null)
+        if (!receipt?.ok) {
+          setMessage("Ideeën geladen, maar de gelezen-status kon niet centraal worden opgeslagen. Probeer later opnieuw.")
+          return
+        }
       }
       setMessage(data.configured ? "Central inbox updated." : "Central storage is not connected yet.")
     } catch (error) {
