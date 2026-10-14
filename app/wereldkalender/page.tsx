@@ -26,6 +26,15 @@ const extraUi: Record<ViaLanguage,{localDate:string,monthAll:string,internationa
   Hindi:{localDate:"स्थानीय तारीख",monthAll:"पूरा महीना",international:"अंतरराष्ट्रीय दिवस",regional:"देश-विशेष आयोजन",cultural:"सांस्कृतिक उत्सव"},
 }
 
+const guidanceUi: Record<ViaLanguage,{pendingTitle:string,pendingInfo:string,pendingDate:string,languageNote:string}> = {
+  Dutch:{pendingTitle:"Wisselende datums — nog te bevestigen",pendingInfo:"Voor deze vieringen worden geen onbetrouwbare datums verzonnen. Landelijke en religieuze bevestigingen kunnen verschillen.",pendingDate:"datum nog niet gekoppeld",languageNote:"{guidance.languageNote}"},
+  English:{pendingTitle:"Variable dates — awaiting confirmation",pendingInfo:"Unverified dates are not invented. National and religious confirmations may differ.",pendingDate:"date not yet linked",languageNote:"Your language choice is saved across VIA. Some calendar content still awaits translation."},
+  French:{pendingTitle:"Dates variables — à confirmer",pendingInfo:"Aucune date non vérifiée n'est inventée. Les confirmations nationales et religieuses peuvent varier.",pendingDate:"date non encore renseignée",languageNote:"La langue choisie est enregistrée pour VIA. Certains contenus restent à traduire."},
+  Spanish:{pendingTitle:"Fechas variables — pendientes de confirmar",pendingInfo:"No se inventan fechas sin verificar. Las confirmaciones nacionales y religiosas pueden variar.",pendingDate:"fecha aún no vinculada",languageNote:"El idioma elegido se guarda en VIA. Quedan algunos textos por traducir."},
+  Chinese:{pendingTitle:"浮动日期——有待确认",pendingInfo:"不会编造未经核实的日期。各国及宗教机构的确认日期可能不同。",pendingDate:"日期尚未确定",languageNote:"语言选择将在 VIA 中保存。部分日历内容尚待翻译。"},
+  Hindi:{pendingTitle:"बदलती तारीखें — पुष्टि बाकी",pendingInfo:"बिना पुष्टि के तारीखें नहीं दी जातीं। देश और धार्मिक परंपरा के अनुसार तारीखें अलग हो सकती हैं।",pendingDate:"तारीख अभी तय नहीं",languageNote:"चुनी गई भाषा VIA में सहेजी जाती है। कुछ कैलेंडर सामग्री का अनुवाद बाकी है।"},
+}
+
 const continentLabels: Record<ViaLanguage,Record<string,string>> = {
   Dutch: {world:"Wereldwijd",europe:"Europa",asia:"Azië",africa:"Afrika","north-america":"Noord-Amerika","south-america":"Zuid-Amerika",oceania:"Oceanië"},
   English: {world:"Worldwide",europe:"Europe",asia:"Asia",africa:"Africa","north-america":"North America","south-america":"South America",oceania:"Oceania"},
@@ -72,6 +81,7 @@ export default function WereldkalenderPage() {
   const locale = calendarLocales[language]
   const ui = calendarUi[language]
   const labels = extraUi[language]
+  const guidance = guidanceUi[language]
   const localizedMonth = new Intl.DateTimeFormat(locale,{month:"long",year:"numeric"}).format(new Date(year,month,1))
   const localizedWeekdays = Array.from({length:7},(_,index)=>new Intl.DateTimeFormat(locale,{weekday:"short"}).format(new Date(2024,0,1+index)))
   const days = useMemo(() => {
@@ -173,9 +183,9 @@ export default function WereldkalenderPage() {
       </div>
       <h2 style={{fontSize:21,fontWeight:600,marginTop:28}}>{selected===null?ui.month:ui.day+" "+selected+" "+localizedMonth}</h2>
       {shown.length===0?<p>{ui.empty}</p>:<ul style={{paddingLeft:22}}>{shown.map(d=><li key={d.id} style={{margin:"8px 0"}}>{d.day??labels.monthAll} — {d.nameNl} <span style={{fontSize:12,opacity:.75}}>({d.scope==="international"?labels.international:d.scope==="regional"?labels.regional:labels.cultural})</span></li>)}</ul>}
-      <h2 style={{fontSize:21,fontWeight:600,marginTop:28}}>Wisselende datums — nog te bevestigen</h2>
-      <p>Voor deze vieringen worden geen onbetrouwbare datums verzonnen. Landelijke en religieuze bevestigingen kunnen verschillen.</p>
-      <ul style={{paddingLeft:22}}>{unresolved.map(d=><li key={d.id}>{d.nameNl}: datum nog niet gekoppeld</li>)}</ul>
+      <h2 style={{fontSize:21,fontWeight:600,marginTop:28}}>{guidance.pendingTitle}</h2>
+      <p>{guidance.pendingInfo}</p>
+      <ul style={{paddingLeft:22}}>{unresolved.map(d=><li key={d.id}>{d.nameNl}: {guidance.pendingDate}</li>)}</ul>
       <p style={{marginTop:24,fontSize:13,opacity:.8}}>Maandlange vieringen worden in de lijst vermeld, maar niet als losse dagmeldingen geteld. Een eerste landen- en tijdzonekeuze is beschikbaar. Regionale feestdagenfilters, juridische controles en automatische bevestigingsbronnen zijn nog in ontwikkeling.</p>
     </main>
   )
