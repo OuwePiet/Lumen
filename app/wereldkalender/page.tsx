@@ -143,7 +143,7 @@ export default function WereldkalenderPage() {
         })}
       </div>
       <h2 style={{fontSize:21,fontWeight:600,marginTop:28}}>{selected===null?"Vieringen deze maand":"Vieringen op "+selected+" "+monthNames[month]}</h2>
-      {shown.length===0?<p>Geen geregistreerde vieringen voor deze selectie.</p>:<ul style={{paddingLeft:22}}>{shown.map(d=><li key={d.id} style={{margin:"8px 0"}}>{d.day??"Hele maand"} — {d.nameNl}</li>)}</ul>}
+      {shown.length===0?<p>Geen geregistreerde vieringen voor deze selectie.</p>:<ul style={{paddingLeft:22}}>{shown.map(d=><li key={d.id} style={{margin:"8px 0"}}>{d.day??"Hele maand"} — {d.nameNl} <span style={{fontSize:12,opacity:.75}}>({d.scope==="international"?"internationale dag":d.scope==="regional"?"landgebonden viering":"culturele viering"})</span></li>)}</ul>}
       <h2 style={{fontSize:21,fontWeight:600,marginTop:28}}>Wisselende datums — nog te bevestigen</h2>
       <p>Voor deze vieringen worden geen onbetrouwbare datums verzonnen. Landelijke en religieuze bevestigingen kunnen verschillen.</p>
       <ul style={{paddingLeft:22}}>{unresolved.map(d=><li key={d.id}>{d.nameNl}: datum nog niet gekoppeld</li>)}</ul>
