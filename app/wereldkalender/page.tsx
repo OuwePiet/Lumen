@@ -162,7 +162,8 @@ export default function WereldkalenderPage() {
         </select>
       </label>
       {regionOptions.length===0 && <p style={{fontSize:13}}>Voor dit werelddeel worden landen en tijdzones nog toegevoegd. De wereldwijde kalender blijft beschikbaar.</p>}
-      <p style={{fontSize:13}}>{labels.localDate}: {local.day}-{local.month}-{local.year} ({local.zone}). Landenkeuze past de tijdzone aan; de kalender blijft inclusief en toont internationale dagen.</p>
+      <p style={{fontSize:13}}>{labels.localDate}: {local.day}-{local.month}-{local.year} ({local.zone})</p>
+      <p role="timer" aria-live="off" style={{fontSize:"clamp(22px,5vw,30px)",fontWeight:700,fontVariantNumeric:"tabular-nums",margin:"8px 0"}}>{new Intl.DateTimeFormat(locale,{timeZone:local.zone,hour:"2-digit",minute:"2-digit",hourCycle:"h23"}).format(today)} <span style={{fontSize:13,fontWeight:400}}>{local.zone}</span></p>
       <button type="button" onClick={()=>{setYear(local.year);setMonth(local.month-1);setSelected(local.day)}} style={{marginTop:8,padding:"8px 12px",border:"1px solid currentColor",borderRadius:8}}>{ui.today}</button>
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,margin:"24px 0 16px"}}>
         <button type="button" onClick={()=>move(-1)} aria-label="Vorige maand" style={{padding:"10px 16px",border:"1px solid currentColor",borderRadius:10}}>‹</button>
