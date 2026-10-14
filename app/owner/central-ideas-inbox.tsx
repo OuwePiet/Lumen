@@ -93,6 +93,15 @@ export default function CentralIdeasInbox({ ownerPublicKey }: { ownerPublicKey: 
     }
   }
 
+  useEffect(() => {
+    // The owner explicitly selected the new-idea lamp on the homepage.
+    // Open the secured inbox only for that navigation, not on ordinary page visits.
+    if (!ownerPublicKey || window.location.hash !== "#centrale-ideeenbus") return
+    void openInbox()
+    // Deliberately run once for this owner navigation; manual refresh remains available.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ownerPublicKey])
+
   return (
     <section id="centrale-ideeenbus" style={{ scrollMarginTop: 20, marginTop: 18, border: "1px solid rgba(143,212,169,.24)", borderRadius: 20, background: "linear-gradient(145deg, rgba(7,17,11,.92), rgba(3,8,5,.96))", padding: 20, boxShadow: "0 18px 50px rgba(0,0,0,.22)" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
