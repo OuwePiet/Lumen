@@ -237,7 +237,13 @@ export default function ViaHomeControls() {
         if (!response.ok) { setHasUnreadNotifications(false); return }
         const data = await response.json() as { ok?: boolean; unreadCount?: number }
         if (!controller.signal.aborted) {
-          setHasUnreadNotifications(data.ok === true && typeof data.unreadCount === "number" && data.unreadCount > 0)
+          const count = data.ok === true && typeof data.unreadCount === "number" && Number.isSafeInteger(data.unreadCount) && data.unreadCount >= 0 ? data.unreadCount : 0
+          let acknowledgedCount = -1
+          try {
+            const stored = window.sessionStorage.getItem(`via:notifications:home-ack:${publicKey}`)
+            if (stored !== null && /^\\d+$/.test(stored)) acknowledgedCount = Number(stored)
+          } catch { /* storage unavailable */ }
+          setHasUnreadNotifications(count > 0 && (acknowledgedCount < 0 || count > acknowledgedCount))
         }
       } catch {
         if (!controller.signal.aborted) setHasUnreadNotifications(false)
