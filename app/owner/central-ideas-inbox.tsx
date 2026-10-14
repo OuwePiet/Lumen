@@ -73,7 +73,13 @@ export default function CentralIdeasInbox({ ownerPublicKey }: { ownerPublicKey: 
       setItems(received)
       const latest = received.map((item) => item.createdAt || "").sort().at(-1) || ""
       if (latest) {
-        try { window.localStorage.setItem(`via:ideas:last-seen:${ownerPublicKey}`, latest) } catch { /* storage unavailable */ }
+        // Acknowledge only after the verified owner has successfully loaded the inbox.
+        // The receipt is stored centrally so other devices see the same read state.
+        await fetch("/api/via/ideas/seen", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${jwt}`, "x-via-owner-public-key": ownerPublicKey },
+          body: JSON.stringify({ seenAt: latest }),
+        })
       }
       setMessage(data.configured ? "Central inbox updated." : "Central storage is not connected yet.")
     } catch (error) {
