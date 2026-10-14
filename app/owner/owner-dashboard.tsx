@@ -83,6 +83,7 @@ export default function OwnerDashboard({ ownerPublicKey }: { ownerPublicKey: str
   const [sessionKey, setSessionKey] = useState<string | null>(null)
   const [ideas, setIdeas] = useState<IdeaItem[]>([])
   const [live, setLive] = useState<LiveStatus>(initialLiveStatus)
+  const [centralIdeasConfigured, setCentralIdeasConfigured] = useState<boolean | null>(null)
 
   useEffect(() => {
     const session = restoreIdentitySession()
@@ -129,7 +130,23 @@ export default function OwnerDashboard({ ownerPublicKey }: { ownerPublicKey: str
       }
     }
 
+    // The public endpoint reports configuration without exposing private ideas.
+    // A 401 response means storage is configured but owner authentication is required.
+    async function refreshIdeasStorage() {
+      try {
+        const response = await fetch("/api/via/ideas", { cache: "no-store", signal: controller.signal })
+        if (!active) return
+        if (response.status === 401) { setCentralIdeasConfigured(true); return }
+        if (!response.ok) { setCentralIdeasConfigured(null); return }
+        const data = await response.json() as { configured?: boolean }
+        if (active) setCentralIdeasConfigured(typeof data.configured === "boolean" ? data.configured : null)
+      } catch {
+        if (active && !controller.signal.aborted) setCentralIdeasConfigured(null)
+      }
+    }
+
     void refreshHealth()
+    void refreshIdeasStorage()
     const timer = window.setInterval(refreshHealth, 60_000)
     return () => {
       active = false
@@ -139,6 +156,9 @@ export default function OwnerDashboard({ ownerPublicKey }: { ownerPublicKey: str
   }, [])
 
   const isOwner = Boolean(ownerPublicKey && sessionKey && ownerPublicKey === sessionKey)
+  const displayRoundItems = displayRoundItems.map((item) => item.label.startsWith("Centrale Ideeënbus-ontvangst")
+    ? { ...item, state: centralIdeasConfigured === true ? "done" as const : centralIdeasConfigured === false ? "attention" as const : "unknown" as const }
+    : item)
   const sortedIdeas = useMemo(() => [...ideas].sort((a, b) => String(b.createdAt ?? "").localeCompare(String(a.createdAt ?? ""))), [ideas])
 
   if (!ownerPublicKey) {
@@ -206,7 +226,7 @@ export default function OwnerDashboard({ ownerPublicKey }: { ownerPublicKey: str
         </div>
 
         <p style={{ color: "#aebbb4", lineHeight: 1.6, marginBottom: 18 }}>
-          Op dit moment zie je hier alleen ideeën die in deze browser zijn opgeslagen. Centrale ontvangst van ideeën van andere bezoekers/apparaten is nog niet aangesloten en staat hierboven daarom bewust op Aandacht.
+          Op dit moment zie je hier alleen ideeën die in deze browser zijn opgeslagen. De centrale ontvangst heeft een eigen beveiligde inbox. De status hierboven wordt gecontroleerd via de bestaande VIA Ideas API; lokale concepten blijven alleen op dit apparaat.
         </p>
 
         {sortedIdeas.length === 0 ? (
