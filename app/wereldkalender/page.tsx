@@ -141,7 +141,7 @@ export default function WereldkalenderPage() {
   }
   const shown=selected===null ? monthEvents : monthEvents.filter(d=>d.day===selected || d.day===null)
   return (
-    <main style={{maxWidth:920,margin:"0 auto",padding:"24px 16px",color:"inherit"}}>
+    <main style={{maxWidth:920,width:"100%",minWidth:0,boxSizing:"border-box",margin:"0 auto",padding:"24px 12px",color:"inherit",overflowWrap:"anywhere"}}>
       <a href="/" style={{display:"inline-block",marginBottom:16}}>← {ui.home}</a>
       <h1 style={{fontSize:"clamp(25px,5vw,38px)",fontWeight:700}}>🌍 {ui.title}</h1>
       <p>{ui.intro}</p>
@@ -169,15 +169,15 @@ export default function WereldkalenderPage() {
         <h2 style={{fontSize:22,fontWeight:600,textTransform:"capitalize"}}>{localizedMonth}</h2>
         <button type="button" onClick={()=>move(1)} aria-label="Volgende maand" style={{padding:"10px 16px",border:"1px solid currentColor",borderRadius:10}}>›</button>
       </div>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(7,minmax(0,1fr))",gap:5}}>
+      <div style={{display:"grid",width:"100%",minWidth:0,gridTemplateColumns:"repeat(7,minmax(0,1fr))",gap:"clamp(2px,0.7vw,5px)"}}>
         {localizedWeekdays.map((w,index)=><div key={index} style={{textAlign:"center",fontWeight:700,padding:6}}>{w}</div>)}
         {Array.from({length:offset},(_,i)=><div key={"blank"+i}/>)}
         {Array.from({length},(_,i)=>{
           const day=i+1, events=monthEvents.filter(d=>d.day===day)
           return <button key={day} type="button" onClick={()=>setSelected(selected===day?null:day)}
             aria-pressed={selected===day} aria-label={day+" "+monthNames[month]+", "+events.length+" vieringen"}
-            style={{minHeight:64,padding:6,border:"1px solid",borderColor:selected===day?"#4d9f77":"#7775",borderRadius:9,background:selected===day?"#4d9f7725":"transparent",textAlign:"left",color:"inherit"}}>
-            <span style={{fontWeight:600}}>{day}</span>{events.length>0&&<span style={{display:"block",fontSize:12}}>● {events.length}</span>}
+            style={{minWidth:0,minHeight:"clamp(44px,9vw,64px)",padding:"clamp(2px,0.8vw,6px)",overflow:"hidden",border:"1px solid",borderColor:selected===day?"#4d9f77":"#7775",borderRadius:9,background:selected===day?"#4d9f7725":"transparent",textAlign:"left",color:"inherit"}}>
+            <span style={{fontWeight:600}}>{day}</span>{events.length>0&&<span style={{display:"block",fontSize:"clamp(9px,2.4vw,12px)"}}>● {events.length}</span>}
           </button>
         })}
       </div>
