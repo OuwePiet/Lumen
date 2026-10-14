@@ -156,7 +156,7 @@ export default function OwnerDashboard({ ownerPublicKey }: { ownerPublicKey: str
   }, [])
 
   const isOwner = Boolean(ownerPublicKey && sessionKey && ownerPublicKey === sessionKey)
-  const displayRoundItems = displayRoundItems.map((item) => item.label.startsWith("Centrale Ideeënbus-ontvangst")
+  const displayRoundItems = roundItems.map((item) => item.label.startsWith("Centrale Ideeënbus-ontvangst")
     ? { ...item, state: centralIdeasConfigured === true ? "done" as const : centralIdeasConfigured === false ? "attention" as const : "unknown" as const }
     : item)
   const sortedIdeas = useMemo(() => [...ideas].sort((a, b) => String(b.createdAt ?? "").localeCompare(String(a.createdAt ?? ""))), [ideas])
