@@ -34,11 +34,15 @@ export default function CentralIdeasInbox({ ownerPublicKey }: { ownerPublicKey: 
           setConfigured(true)
           return
         }
+        if (!response.ok) {
+          setConfigured(null)
+          return
+        }
         const data = await response.json().catch(() => null) as IdeasResponse | null
-        setConfigured(data?.configured === true)
+        setConfigured(data?.configured === true ? true : data?.configured === false ? false : null)
       })
       .catch(() => {
-        if (active) setConfigured(false)
+        if (active) setConfigured(null)
       })
     return () => { active = false }
   }, [])
@@ -110,7 +114,7 @@ export default function CentralIdeasInbox({ ownerPublicKey }: { ownerPublicKey: 
           <h2 style={{ margin: "5px 0 0", fontSize: 24 }}>Centrale Ideeënbus</h2>
         </div>
         <span style={{ border: `1px solid ${configured ? "#285f40" : "#735f2d"}`, borderRadius: 999, padding: "7px 10px", color: configured ? "#9adbb2" : "#e1c879", fontSize: 10, fontWeight: 700 }}>
-          {configured === null ? "Controleren…" : configured ? "Opslag gekoppeld" : "Opslag nog niet gekoppeld"}
+          {configured === null ? "Opslagstatus onbekend" : configured ? "Opslag ingesteld" : "Opslag nog niet gekoppeld"}
         </span>
       </div>
 
