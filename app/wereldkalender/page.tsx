@@ -36,7 +36,7 @@ export default function WereldkalenderPage() {
     window.addEventListener("storage",sync)
     return () => { window.removeEventListener(VIA_SETTINGS_EVENT,sync);window.removeEventListener("storage",sync) }
   }, [])
-  const continentByRegion: Record<ViaCalendarRegion,string> = {world:"world",NL:"europe",GB:"europe",FR:"europe",ES:"europe",US:"north-america",CN:"asia",IN:"asia"}
+  const continentByRegion: Record<ViaCalendarRegion,string> = {world:"world",NL:"europe",GB:"europe",FR:"europe",ES:"europe",US:"north-america",CN:"asia",IN:"asia",BE:"europe",DE:"europe",IT:"europe",PT:"europe",JP:"asia",KR:"asia",ID:"asia",ZA:"africa",EG:"africa",NG:"africa",CA:"north-america",MX:"north-america",BR:"south-america",AR:"south-america",AU:"oceania",NZ:"oceania"}
   const [continent,setContinent] = useState("world")
   const regionOptions = VIA_CALENDAR_REGIONS.filter(item => continent==="world" ? item.code==="world" : continentByRegion[item.code]===continent)
   const availableRegions = regionOptions.length > 0 ? regionOptions : VIA_CALENDAR_REGIONS.filter(item=>item.code==="world")
