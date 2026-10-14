@@ -175,8 +175,8 @@ export default function WereldkalenderPage() {
         {Array.from({length},(_,i)=>{
           const day=i+1, events=monthEvents.filter(d=>d.day===day)
           return <button key={day} type="button" onClick={()=>setSelected(selected===day?null:day)}
-            aria-pressed={selected===day} aria-label={day+" "+monthNames[month]+", "+events.length+" vieringen"}
-            style={{minWidth:0,minHeight:"clamp(44px,9vw,64px)",padding:"clamp(2px,0.8vw,6px)",overflow:"hidden",border:"1px solid",borderColor:selected===day?"#4d9f77":"#7775",borderRadius:9,background:selected===day?"#4d9f7725":"transparent",textAlign:"left",color:"inherit"}}>
+            aria-pressed={selected===day} aria-current={year===local.year && month+1===local.month && day===local.day?"date":undefined} aria-label={day+" "+monthNames[month]+", "+events.length+" vieringen"}
+            style={{minWidth:0,minHeight:"clamp(44px,9vw,64px)",padding:"clamp(2px,0.8vw,6px)",overflow:"hidden",border:"1px solid",borderColor:selected===day?"#4d9f77":year===local.year && month+1===local.month && day===local.day?"#cba34c":"#7775",borderRadius:9,background:selected===day?"#4d9f7725":"transparent",textAlign:"left",color:"inherit"}}>
             <span style={{fontWeight:600}}>{day}</span>{events.length>0&&<span style={{display:"block",fontSize:"clamp(9px,2.4vw,12px)"}}>● {events.length}</span>}
           </button>
         })}
