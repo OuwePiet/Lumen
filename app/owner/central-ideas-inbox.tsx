@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { viaModernIdentity } from "../deso-identity-modern"
 
 type IdeaItem = {
@@ -24,6 +24,7 @@ export default function CentralIdeasInbox({ ownerPublicKey }: { ownerPublicKey: 
   const [items, setItems] = useState<IdeaItem[]>([])
   const [busy, setBusy] = useState(false)
   const [message, setMessage] = useState("")
+  const openingRef = useRef(false)
 
   useEffect(() => {
     let active = true
@@ -48,10 +49,12 @@ export default function CentralIdeasInbox({ ownerPublicKey }: { ownerPublicKey: 
   }, [])
 
   async function openInbox() {
-    if (!ownerPublicKey) return
+    if (!ownerPublicKey || openingRef.current) return
+    openingRef.current = true
     const session = await viaModernIdentity.currentUser()
     if (!session || session.publicKey !== ownerPublicKey) {
       setMessage("Log in with the verified @OuwePiet DeSo account first.")
+      openingRef.current = false
       return
     }
 
@@ -93,6 +96,7 @@ export default function CentralIdeasInbox({ ownerPublicKey }: { ownerPublicKey: 
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Could not verify the Owner session.")
     } finally {
+      openingRef.current = false
       setBusy(false)
     }
   }
