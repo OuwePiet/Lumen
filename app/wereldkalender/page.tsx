@@ -8,6 +8,15 @@ import { readViaLocalSettings, saveViaLocalSettings, VIA_LANGUAGES, VIA_SETTINGS
 const monthNames = ["januari","februari","maart","april","mei","juni","juli","augustus","september","oktober","november","december"]
 const calendarLocales: Record<ViaLanguage,string> = {Dutch:"nl-NL",English:"en-GB",French:"fr-FR",Spanish:"es-ES",Chinese:"zh-CN",Hindi:"hi-IN"}
 
+const calendarUi = {
+  Dutch: {home:"VIA Home",title:"VIA Wereldkalender",intro:"Internationale dagen, vieringen en herdenkingen.",language:"VIA-taal",continent:"Werelddeel",country:"Land / tijdzone",today:"Vandaag in deze tijdzone",month:"Vieringen deze maand",day:"Vieringen op",empty:"Geen geregistreerde vieringen voor deze selectie."},
+  English: {home:"VIA Home",title:"VIA World Calendar",intro:"International observances, celebrations and commemorations.",language:"VIA language",continent:"Continent",country:"Country / time zone",today:"Today in this time zone",month:"Observances this month",day:"Observances on",empty:"No listed observances for this selection."},
+  French: {home:"Accueil VIA",title:"Calendrier mondial VIA",intro:"Journées internationales, célébrations et commémorations.",language:"Langue VIA",continent:"Continent",country:"Pays / fuseau horaire",today:"Aujourd'hui dans ce fuseau horaire",month:"Événements de ce mois",day:"Événements du",empty:"Aucun événement répertorié pour cette sélection."},
+  Spanish: {home:"Inicio VIA",title:"Calendario mundial VIA",intro:"Días internacionales, celebraciones y conmemoraciones.",language:"Idioma VIA",continent:"Continente",country:"País / zona horaria",today:"Hoy en esta zona horaria",month:"Celebraciones de este mes",day:"Celebraciones del",empty:"No hay celebraciones registradas para esta selección."},
+  Chinese: {home:"VIA 首页",title:"VIA 世界日历",intro:"国际纪念日、庆祝活动和纪念事项。",language:"VIA 语言",continent:"大洲",country:"国家／时区",today:"此时区的今天",month:"本月纪念活动",day:"纪念活动日期",empty:"该选项暂无记录的活动。"},
+  Hindi: {home:"VIA होम",title:"VIA विश्व कैलेंडर",intro:"अंतरराष्ट्रीय दिवस, उत्सव और स्मरण दिवस।",language:"VIA भाषा",continent:"महाद्वीप",country:"देश / समय क्षेत्र",today:"इस समय क्षेत्र में आज",month:"इस महीने के आयोजन",day:"इस तारीख के आयोजन",empty:"इस चयन के लिए कोई आयोजन सूचीबद्ध नहीं है।"},
+} satisfies Record<ViaLanguage,Record<string,string>>
+
 function easterSunday(year: number) {
   const a=year%19,b=Math.floor(year/100),c=year%100,d=Math.floor(b/4),e=b%4
   const f=Math.floor((b+8)/25),g=Math.floor((b-f+1)/3),h=(19*a+b-d-g+15)%30
@@ -43,6 +52,7 @@ export default function WereldkalenderPage() {
   const selectedRegion = availableRegions.some(item=>item.code===region) ? region : availableRegions[0].code
   const local = viaCalendarLocalDate(today,selectedRegion)
   const locale = calendarLocales[language]
+  const ui = calendarUi[language]
   const localizedMonth = new Intl.DateTimeFormat(locale,{month:"long",year:"numeric"}).format(new Date(year,month,1))
   const localizedWeekdays = Array.from({length:7},(_,index)=>new Intl.DateTimeFormat(locale,{weekday:"short"}).format(new Date(2024,0,1+index)))
   const days = useMemo(() => {
@@ -103,28 +113,28 @@ export default function WereldkalenderPage() {
   const shown=selected===null ? monthEvents : monthEvents.filter(d=>d.day===selected || d.day===null)
   return (
     <main style={{maxWidth:920,margin:"0 auto",padding:"24px 16px",color:"inherit"}}>
-      <a href="/" style={{display:"inline-block",marginBottom:16}}>← VIA Home</a>
-      <h1 style={{fontSize:"clamp(25px,5vw,38px)",fontWeight:700}}>🌍 VIA Wereldkalender</h1>
-      <p>Internationale dagen, vieringen en herdenkingen. Vaste datums keren ieder jaar automatisch terug.</p>
-      <label style={{display:"flex",alignItems:"center",gap:12,flexWrap:"wrap",marginTop:16}}>VIA-taal
+      <a href="/" style={{display:"inline-block",marginBottom:16}}>← {ui.home}</a>
+      <h1 style={{fontSize:"clamp(25px,5vw,38px)",fontWeight:700}}>🌍 {ui.title}</h1>
+      <p>{ui.intro}</p>
+      <label style={{display:"flex",alignItems:"center",gap:12,flexWrap:"wrap",marginTop:16}}>{ui.language}
         <select value={language} onChange={event=>saveViaLocalSettings({interfaceLanguage:event.target.value as ViaLanguage})} style={{padding:10,border:"1px solid #777",borderRadius:8,background:"#18241e",color:"white"}}>
           {VIA_LANGUAGES.map(item=><option key={item} value={item}>{item}</option>)}
         </select>
       </label>
       <p style={{fontSize:13}}>De gekozen taal wordt voor heel VIA bewaard. De vertaling van alle kalenderteksten volgt nog.</p>
-      <label style={{display:"flex",alignItems:"center",gap:12,flexWrap:"wrap",marginTop:20}}>Werelddeel
+      <label style={{display:"flex",alignItems:"center",gap:12,flexWrap:"wrap",marginTop:20}}>{ui.continent}
         <select value={continent} onChange={event=>{const next=event.target.value;setContinent(next);setRegion(next==="world"?"world":(VIA_CALENDAR_REGIONS.find(item=>continentByRegion[item.code]===next)?.code??"world"))}} style={{padding:10,border:"1px solid #777",borderRadius:8,background:"#18241e",color:"white"}}>
           {[["world","Wereldwijd"],["europe","Europa"],["asia","Azië"],["africa","Afrika"],["north-america","Noord-Amerika"],["south-america","Zuid-Amerika"],["oceania","Oceanië"]].map(([value,label])=><option key={value} value={value}>{label}</option>)}
         </select>
       </label>
-      <label style={{display:"flex",alignItems:"center",gap:12,flexWrap:"wrap",marginTop:12}}>Land / tijdzone
+      <label style={{display:"flex",alignItems:"center",gap:12,flexWrap:"wrap",marginTop:12}}>{ui.country}
         <select value={selectedRegion} onChange={event=>setRegion(event.target.value as ViaCalendarRegion)} style={{padding:10,border:"1px solid #777",borderRadius:8,background:"#18241e",color:"white"}}>
           {availableRegions.map(item=><option key={item.code} value={item.code}>{item.label}</option>)}
         </select>
       </label>
       {regionOptions.length===0 && <p style={{fontSize:13}}>Voor dit werelddeel worden landen en tijdzones nog toegevoegd. De wereldwijde kalender blijft beschikbaar.</p>}
       <p style={{fontSize:13}}>Lokale datum: {local.day}-{local.month}-{local.year} ({local.zone}). Landenkeuze past de tijdzone aan; de kalender blijft inclusief en toont internationale dagen.</p>
-      <button type="button" onClick={()=>{setYear(local.year);setMonth(local.month-1);setSelected(local.day)}} style={{marginTop:8,padding:"8px 12px",border:"1px solid currentColor",borderRadius:8}}>Vandaag in deze tijdzone</button>
+      <button type="button" onClick={()=>{setYear(local.year);setMonth(local.month-1);setSelected(local.day)}} style={{marginTop:8,padding:"8px 12px",border:"1px solid currentColor",borderRadius:8}}>{ui.today}</button>
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,margin:"24px 0 16px"}}>
         <button type="button" onClick={()=>move(-1)} aria-label="Vorige maand" style={{padding:"10px 16px",border:"1px solid currentColor",borderRadius:10}}>‹</button>
         <h2 style={{fontSize:22,fontWeight:600,textTransform:"capitalize"}}>{localizedMonth}</h2>
@@ -142,8 +152,8 @@ export default function WereldkalenderPage() {
           </button>
         })}
       </div>
-      <h2 style={{fontSize:21,fontWeight:600,marginTop:28}}>{selected===null?"Vieringen deze maand":"Vieringen op "+selected+" "+monthNames[month]}</h2>
-      {shown.length===0?<p>Geen geregistreerde vieringen voor deze selectie.</p>:<ul style={{paddingLeft:22}}>{shown.map(d=><li key={d.id} style={{margin:"8px 0"}}>{d.day??"Hele maand"} — {d.nameNl} <span style={{fontSize:12,opacity:.75}}>({d.scope==="international"?"internationale dag":d.scope==="regional"?"landgebonden viering":"culturele viering"})</span></li>)}</ul>}
+      <h2 style={{fontSize:21,fontWeight:600,marginTop:28}}>{selected===null?ui.month:ui.day+" "+selected+" "+localizedMonth}</h2>
+      {shown.length===0?<p>{ui.empty}</p>:<ul style={{paddingLeft:22}}>{shown.map(d=><li key={d.id} style={{margin:"8px 0"}}>{d.day??"Hele maand"} — {d.nameNl} <span style={{fontSize:12,opacity:.75}}>({d.scope==="international"?"internationale dag":d.scope==="regional"?"landgebonden viering":"culturele viering"})</span></li>)}</ul>}
       <h2 style={{fontSize:21,fontWeight:600,marginTop:28}}>Wisselende datums — nog te bevestigen</h2>
       <p>Voor deze vieringen worden geen onbetrouwbare datums verzonnen. Landelijke en religieuze bevestigingen kunnen verschillen.</p>
       <ul style={{paddingLeft:22}}>{unresolved.map(d=><li key={d.id}>{d.nameNl}: datum nog niet gekoppeld</li>)}</ul>
