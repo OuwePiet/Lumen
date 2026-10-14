@@ -453,8 +453,9 @@ export default function ViaHomeControls() {
         <Link prefetch={false} href="/radio" aria-label="World Radio" title="World Radio"><RadioTower aria-hidden="true" /></Link>
         <div className="via-home-iphone-account-wrap">
           <button type="button" onClick={() => { refreshAccounts(); setAccountsOpen((open) => !open) }} aria-label={t.switchAccount} title={t.switchAccount} className="via-home-iphone-utility-account" aria-expanded={accountsOpen} aria-haspopup="menu">
-            {avatar ? <img src={avatar} alt="" referrerPolicy="no-referrer" /> : <UsersRound aria-hidden="true" />}{hasNewIdeas ? <span aria-label="Nieuw idee ontvangen" title="Nieuw idee ontvangen">💡</span> : null}
+            {avatar ? <img src={avatar} alt="" referrerPolicy="no-referrer" /> : <UsersRound aria-hidden="true" />}
           </button>
+          {hasNewIdeas ? <Link prefetch={false} href="/owner" aria-label="Nieuw idee: open Ideeënbus" title="Open nieuwe ideeën" className="via-home-idea-shortcut">💡</Link> : null}
           {accountsOpen ? (
             <div className="via-home-account-menu" role="menu" aria-label={t.switchAccount}>
               <Link prefetch={false} href="/profile" role="menuitem">{t.profile}</Link>
@@ -487,8 +488,9 @@ export default function ViaHomeControls() {
             <div key={key} className="via-home-grid-account-wrap" style={{ position: "relative", width: "100%" }}>
               <button type="button" onClick={() => { refreshAccounts(); setAccountsOpen((open) => !open) }} aria-label={t.switchAccount} title={t.switchAccount} aria-expanded={accountsOpen} aria-haspopup="menu" style={{ ...buttonStyle, width: "100%", justifyContent: "center", paddingInline: "9px", cursor: "pointer" }}>
                 {avatar ? <img src={avatar} alt="" referrerPolicy="no-referrer" style={{ width: 24, height: 24, borderRadius: "50%", objectFit: "cover" }} /> : <UsersRound aria-hidden="true" size={18} />}
-                <span>{accountName}</span>{hasNewIdeas ? <span aria-label="Nieuw idee ontvangen" title="Nieuw idee ontvangen" style={{ fontSize: 17, lineHeight: 1 }}>💡</span> : null}
+                <span>{accountName}</span>
               </button>
+              {hasNewIdeas ? <Link prefetch={false} href="/owner" aria-label="Nieuw idee: open Ideeënbus" title="Open nieuwe ideeën" style={{ position: "absolute", right: 3, top: "50%", transform: "translateY(-50%)", zIndex: 2, fontSize: 18, textDecoration: "none", lineHeight: 1 }}>💡</Link> : null}
               {accountsOpen ? (
                 <div className="via-home-account-menu via-home-grid-account-menu" role="menu" aria-label={t.switchAccount}>
                   <Link prefetch={false} href="/profile" role="menuitem" onClick={() => setAccountsOpen(false)}>{t.profile}</Link>
