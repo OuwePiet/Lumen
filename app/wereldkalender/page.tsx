@@ -7,6 +7,7 @@ import { readViaLocalSettings, saveViaLocalSettings, VIA_LANGUAGES, VIA_SETTINGS
 
 const monthNames = ["januari","februari","maart","april","mei","juni","juli","augustus","september","oktober","november","december"]
 const weekdays = ["ma","di","wo","do","vr","za","zo"]
+const calendarLocales: Record<ViaLanguage,string> = {Dutch:"nl-NL",English:"en-GB",French:"fr-FR",Spanish:"es-ES",Chinese:"zh-CN",Hindi:"hi-IN"}
 
 function easterSunday(year: number) {
   const a=year%19,b=Math.floor(year/100),c=year%100,d=Math.floor(b/4),e=b%4
@@ -40,6 +41,9 @@ export default function WereldkalenderPage() {
   const [continent,setContinent] = useState("world")
   const regionOptions = VIA_CALENDAR_REGIONS.filter(item => item.code==="world" || continent==="world" || continentByRegion[item.code]===continent)
   const local = viaCalendarLocalDate(today,region)
+  const locale = calendarLocales[language]
+  const localizedMonth = new Intl.DateTimeFormat(locale,{month:"long",year:"numeric"}).format(new Date(year,month,1))
+  const localizedWeekdays = Array.from({length:7},(_,index)=>new Intl.DateTimeFormat(locale,{weekday:"short"}).format(new Date(2024,0,1+index)))
   const days = useMemo(() => {
     const easter=easterSunday(year)
     return VIA_INTERNATIONAL_DAYS.filter(d => d.status==="scheduled" && d.month===month+1)
@@ -60,7 +64,7 @@ export default function WereldkalenderPage() {
       <h1 style={{fontSize:"clamp(25px,5vw,38px)",fontWeight:700}}>🌍 VIA Wereldkalender</h1>
       <p>Internationale dagen, vieringen en herdenkingen. Vaste datums keren ieder jaar automatisch terug.</p>
       <label style={{display:"flex",alignItems:"center",gap:12,flexWrap:"wrap",marginTop:16}}>VIA-taal
-        <select value={language} onChange={event=>saveViaLocalSettings({interfaceLanguage:event.target.value as ViaLanguage,defaultLanguage:event.target.value as ViaLanguage})} style={{padding:10,border:"1px solid #777",borderRadius:8,background:"#18241e",color:"white"}}>
+        <select value={language} onChange={event=>saveViaLocalSettings({interfaceLanguage:event.target.value as ViaLanguage})} style={{padding:10,border:"1px solid #777",borderRadius:8,background:"#18241e",color:"white"}}>
           {VIA_LANGUAGES.map(item=><option key={item} value={item}>{item}</option>)}
         </select>
       </label>
@@ -79,11 +83,11 @@ export default function WereldkalenderPage() {
       <button type="button" onClick={()=>{setYear(local.year);setMonth(local.month-1);setSelected(local.day)}} style={{marginTop:8,padding:"8px 12px",border:"1px solid currentColor",borderRadius:8}}>Vandaag in deze tijdzone</button>
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,margin:"24px 0 16px"}}>
         <button type="button" onClick={()=>move(-1)} aria-label="Vorige maand" style={{padding:"10px 16px",border:"1px solid currentColor",borderRadius:10}}>‹</button>
-        <h2 style={{fontSize:22,fontWeight:600,textTransform:"capitalize"}}>{monthNames[month]} {year}</h2>
+        <h2 style={{fontSize:22,fontWeight:600,textTransform:"capitalize"}}>{localizedMonth}</h2>
         <button type="button" onClick={()=>move(1)} aria-label="Volgende maand" style={{padding:"10px 16px",border:"1px solid currentColor",borderRadius:10}}>›</button>
       </div>
       <div style={{display:"grid",gridTemplateColumns:"repeat(7,minmax(0,1fr))",gap:5}}>
-        {weekdays.map(w=><div key={w} style={{textAlign:"center",fontWeight:700,padding:6}}>{w}</div>)}
+        {localizedWeekdays.map((w,index)=><div key={index} style={{textAlign:"center",fontWeight:700,padding:6}}>{w}</div>)}
         {Array.from({length:offset},(_,i)=><div key={"blank"+i}/>)}
         {Array.from({length},(_,i)=>{
           const day=i+1, events=days.filter(d=>d.day===day)
