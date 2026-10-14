@@ -6,7 +6,6 @@ import { VIA_CALENDAR_REGIONS, viaCalendarLocalDate, type ViaCalendarRegion } fr
 import { readViaLocalSettings, saveViaLocalSettings, VIA_LANGUAGES, VIA_SETTINGS_EVENT, type ViaLanguage } from "../via-local-settings"
 
 const monthNames = ["januari","februari","maart","april","mei","juni","juli","augustus","september","oktober","november","december"]
-const weekdays = ["ma","di","wo","do","vr","za","zo"]
 const calendarLocales: Record<ViaLanguage,string> = {Dutch:"nl-NL",English:"en-GB",French:"fr-FR",Spanish:"es-ES",Chinese:"zh-CN",Hindi:"hi-IN"}
 
 function easterSunday(year: number) {
@@ -39,8 +38,10 @@ export default function WereldkalenderPage() {
   }, [])
   const continentByRegion: Record<ViaCalendarRegion,string> = {world:"world",NL:"europe",GB:"europe",FR:"europe",ES:"europe",US:"north-america",CN:"asia",IN:"asia"}
   const [continent,setContinent] = useState("world")
-  const regionOptions = VIA_CALENDAR_REGIONS.filter(item => item.code==="world" || continent==="world" || continentByRegion[item.code]===continent)
-  const local = viaCalendarLocalDate(today,region)
+  const regionOptions = VIA_CALENDAR_REGIONS.filter(item => continent==="world" ? item.code==="world" : continentByRegion[item.code]===continent)
+  const availableRegions = regionOptions.length > 0 ? regionOptions : VIA_CALENDAR_REGIONS.filter(item=>item.code==="world")
+  const selectedRegion = availableRegions.some(item=>item.code===region) ? region : availableRegions[0].code
+  const local = viaCalendarLocalDate(today,selectedRegion)
   const locale = calendarLocales[language]
   const localizedMonth = new Intl.DateTimeFormat(locale,{month:"long",year:"numeric"}).format(new Date(year,month,1))
   const localizedWeekdays = Array.from({length:7},(_,index)=>new Intl.DateTimeFormat(locale,{weekday:"short"}).format(new Date(2024,0,1+index)))
@@ -70,15 +71,16 @@ export default function WereldkalenderPage() {
       </label>
       <p style={{fontSize:13}}>De gekozen taal wordt voor heel VIA bewaard. De vertaling van alle kalenderteksten volgt nog.</p>
       <label style={{display:"flex",alignItems:"center",gap:12,flexWrap:"wrap",marginTop:20}}>Werelddeel
-        <select value={continent} onChange={event=>{setContinent(event.target.value);setRegion("world")}} style={{padding:10,border:"1px solid #777",borderRadius:8,background:"#18241e",color:"white"}}>
+        <select value={continent} onChange={event=>{const next=event.target.value;setContinent(next);setRegion(next==="world"?"world":(VIA_CALENDAR_REGIONS.find(item=>continentByRegion[item.code]===next)?.code??"world"))}} style={{padding:10,border:"1px solid #777",borderRadius:8,background:"#18241e",color:"white"}}>
           {[["world","Wereldwijd"],["europe","Europa"],["asia","Azië"],["africa","Afrika"],["north-america","Noord-Amerika"],["south-america","Zuid-Amerika"],["oceania","Oceanië"]].map(([value,label])=><option key={value} value={value}>{label}</option>)}
         </select>
       </label>
       <label style={{display:"flex",alignItems:"center",gap:12,flexWrap:"wrap",marginTop:12}}>Land / tijdzone
-        <select value={region} onChange={event=>setRegion(event.target.value as ViaCalendarRegion)} style={{padding:10,border:"1px solid #777",borderRadius:8,background:"#18241e",color:"white"}}>
-          {regionOptions.map(item=><option key={item.code} value={item.code}>{item.label}</option>)}
+        <select value={selectedRegion} onChange={event=>setRegion(event.target.value as ViaCalendarRegion)} style={{padding:10,border:"1px solid #777",borderRadius:8,background:"#18241e",color:"white"}}>
+          {availableRegions.map(item=><option key={item.code} value={item.code}>{item.label}</option>)}
         </select>
       </label>
+      {regionOptions.length===0 && <p style={{fontSize:13}}>Voor dit werelddeel worden landen en tijdzones nog toegevoegd. De wereldwijde kalender blijft beschikbaar.</p>}
       <p style={{fontSize:13}}>Lokale datum: {local.day}-{local.month}-{local.year} ({local.zone}). Landenkeuze past de tijdzone aan; de kalender blijft inclusief en toont internationale dagen.</p>
       <button type="button" onClick={()=>{setYear(local.year);setMonth(local.month-1);setSelected(local.day)}} style={{marginTop:8,padding:"8px 12px",border:"1px solid currentColor",borderRadius:8}}>Vandaag in deze tijdzone</button>
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,margin:"24px 0 16px"}}>
