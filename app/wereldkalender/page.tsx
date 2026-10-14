@@ -52,13 +52,27 @@ export default function WereldkalenderPage() {
       .concat(easter.month===month+1 ? [{id:"easter",nameNl:"Pasen",month:easter.month,day:easter.day,scope:"cultural" as const,status:"scheduled" as const}]:[])
   },[year,month])
   const unresolved = VIA_INTERNATIONAL_DAYS.filter(d=>d.status==="date-required" && d.id!=="easter")
+  const easter=easterSunday(year)
+  const easterDate=new Date(Date.UTC(year,easter.month-1,easter.day))
+  const relativeDate=(daysFromEaster:number)=>{
+    const date=new Date(easterDate.getTime()+daysFromEaster*86_400_000)
+    return {month:date.getUTCMonth()+1,day:date.getUTCDate()}
+  }
+  const calculatedHolidays=[
+    {id:"good-friday",nameNl:"Goede Vrijdag",...relativeDate(-2)},
+    {id:"easter-monday",nameNl:"Tweede paasdag",...relativeDate(1)},
+    {id:"ascension",nameNl:"Hemelvaartsdag",...relativeDate(39)},
+    {id:"pentecost",nameNl:"Pinksteren",...relativeDate(49)},
+    {id:"pentecost-monday",nameNl:"Tweede pinksterdag",...relativeDate(50)},
+  ].filter(d=>d.month===month+1)
+  const monthEvents=[...days,...calculatedHolidays.map(d=>({...d,scope:"cultural" as const,status:"scheduled" as const}))]
   const offset=(new Date(year,month,1).getDay()+6)%7
   const length=new Date(year,month+1,0).getDate()
   const move=(direction:number)=>{
     const next=new Date(year,month+direction,1)
     setYear(next.getFullYear());setMonth(next.getMonth());setSelected(null)
   }
-  const shown=selected===null ? days : days.filter(d=>d.day===selected || d.day===null)
+  const shown=selected===null ? monthEvents : monthEvents.filter(d=>d.day===selected || d.day===null)
   return (
     <main style={{maxWidth:920,margin:"0 auto",padding:"24px 16px",color:"inherit"}}>
       <a href="/" style={{display:"inline-block",marginBottom:16}}>← VIA Home</a>
@@ -92,7 +106,7 @@ export default function WereldkalenderPage() {
         {localizedWeekdays.map((w,index)=><div key={index} style={{textAlign:"center",fontWeight:700,padding:6}}>{w}</div>)}
         {Array.from({length:offset},(_,i)=><div key={"blank"+i}/>)}
         {Array.from({length},(_,i)=>{
-          const day=i+1, events=days.filter(d=>d.day===day)
+          const day=i+1, events=monthEvents.filter(d=>d.day===day)
           return <button key={day} type="button" onClick={()=>setSelected(selected===day?null:day)}
             aria-pressed={selected===day} aria-label={day+" "+monthNames[month]+", "+events.length+" vieringen"}
             style={{minHeight:64,padding:6,border:"1px solid",borderColor:selected===day?"#4d9f77":"#7775",borderRadius:9,background:selected===day?"#4d9f7725":"transparent",textAlign:"left",color:"inherit"}}>
