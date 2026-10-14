@@ -237,6 +237,10 @@ export default function ViaWorldClock({ iphoneInline = false }: { iphoneInline?:
             border-radius: 18px !important;
             justify-content: flex-start !important;
           }
+          /* iPad: raise only the clock bar and NASA credit, never the Earth visual. */
+          .via-home-world-clock, .via-home-nasa-source {
+            transform: translateY(-38px);
+          }
           .via-home-nasa-source {
             position: relative !important;
             left: auto !important;
