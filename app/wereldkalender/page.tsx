@@ -71,7 +71,7 @@ export default function WereldkalenderPage() {
     {id:"mothers-day",nameNl:"Moederdag (tweede zondag mei; onder meer Nederland en VS)",month:5,day:nthWeekday(5,0,2)},
     {id:"fathers-day",nameNl:"Vaderdag (derde zondag juni; onder meer Nederland en VS)",month:6,day:nthWeekday(6,0,3)},
     {id:"thanksgiving-us",nameNl:"Thanksgiving (Verenigde Staten)",month:11,day:nthWeekday(11,4,4)},
-  ].filter(d=>d.month===month+1)
+  ].filter(d=>d.month===month+1 && (d.id==="thanksgiving-us" ? selectedRegion==="US" : d.id==="mothers-day" || d.id==="fathers-day" ? ["NL","US"].includes(selectedRegion) : ["NL","BE","DE","FR","GB","ES","IT","PT"].includes(selectedRegion)))
   // Landgebonden vaste dagen: alleen tonen voor het geselecteerde land.
   // Niet elke nationale viering is automatisch een wettelijke vrije dag.
   const countryDays = [
