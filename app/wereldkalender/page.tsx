@@ -56,7 +56,7 @@ export default function WereldkalenderPage() {
         {weekdays.map(w=><div key={w} style={{textAlign:"center",fontWeight:700,padding:6}}>{w}</div>)}
         {Array.from({length:offset},(_,i)=><div key={"blank"+i}/>)}
         {Array.from({length},(_,i)=>{
-          const day=i+1, events=days.filter(d=>d.day===day || d.day===null)
+          const day=i+1, events=days.filter(d=>d.day===day)
           return <button key={day} type="button" onClick={()=>setSelected(selected===day?null:day)}
             aria-pressed={selected===day} aria-label={day+" "+monthNames[month]+", "+events.length+" vieringen"}
             style={{minHeight:64,padding:6,border:"1px solid",borderColor:selected===day?"#4d9f77":"#7775",borderRadius:9,background:selected===day?"#4d9f7725":"transparent",textAlign:"left",color:"inherit"}}>
@@ -69,7 +69,7 @@ export default function WereldkalenderPage() {
       <h2 style={{fontSize:21,fontWeight:600,marginTop:28}}>Wisselende datums — nog te bevestigen</h2>
       <p>Voor deze vieringen worden geen onbetrouwbare datums verzonnen. Landelijke en religieuze bevestigingen kunnen verschillen.</p>
       <ul style={{paddingLeft:22}}>{unresolved.map(d=><li key={d.id}>{d.nameNl}: datum nog niet gekoppeld</li>)}</ul>
-      <p style={{marginTop:24,fontSize:13,opacity:.8}}>Dit is de eerste kalenderweergave. Een eerste landen- en tijdzonekeuze is beschikbaar. Regionale feestdagenfilters, juridische controles en automatische bevestigingsbronnen zijn nog in ontwikkeling.</p>
+      <p style={{marginTop:24,fontSize:13,opacity:.8}}>Maandlange vieringen worden in de lijst vermeld, maar niet als losse dagmeldingen geteld. Een eerste landen- en tijdzonekeuze is beschikbaar. Regionale feestdagenfilters, juridische controles en automatische bevestigingsbronnen zijn nog in ontwikkeling.</p>
     </main>
   )
 }
