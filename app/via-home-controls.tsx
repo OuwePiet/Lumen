@@ -46,7 +46,6 @@ const viaExtraNav = [
   ["communities", "/communities"],
   ["games", "/quest"],
   ["world", "/world"],
-  ["calendar", "/wereldkalender"],
   ["myVia", "/my-via"],
   ["advertising", "/advertising"],
   ["music", "/music"],
@@ -557,6 +556,20 @@ export default function ViaHomeControls() {
         <div className="via-home-handbook-row" style={{ display: "flex", justifyContent: "center" }}>
           <Link prefetch={false} href="/help" style={{ ...buttonStyle, width: "calc(50% - 3.5px)", justifyContent: "center", paddingInline: "9px" }}>Handboek VIA</Link>
         </div>
+        <nav aria-label="VIA toekomstige pagina's" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "7px" }}>
+          <Link prefetch={false} href="/wereldkalender" style={{ ...buttonStyle, width: "100%", justifyContent: "center", paddingInline: "9px" }}>{t.calendar}</Link>
+          {[
+            ["Wereldkrant", "World Newspaper", "Journal mondial", "Periódico mundial", "世界报纸"],
+            ["Luisterbibliotheek", "Audio Library", "Bibliothèque audio", "Biblioteca de audio", "有声图书馆"],
+            ["VIA Auto", "VIA Auto", "VIA Auto", "VIA Auto", "VIA 汽车"],
+            ["VIA Archief", "VIA Archive", "Archives VIA", "Archivo VIA", "VIA 档案"],
+          ].map((labels, index) => {
+            const languageIndex = ({ Dutch: 0, English: 1, French: 2, Spanish: 3, Chinese: 4 } as Record<ViaLanguage, number>)[language]
+            return <span key={index} aria-disabled="true" title="Binnenkort" style={{ ...disabledButtonStyle, width: "100%", justifyContent: "center", paddingInline: "9px", gap: 5 }}>
+              {labels[languageIndex]} <span style={{ fontSize: 8, opacity: .85 }}>· Binnenkort</span>
+            </span>
+          })}
+        </nav>
       </section>
 
       <section className="via-home-language-section" style={{ display: "grid", gap: "6px" }}>
