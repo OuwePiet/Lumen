@@ -60,8 +60,8 @@ export default function WereldkalenderPage() {
     document.addEventListener("visibilitychange", refresh)
     return () => { window.clearInterval(interval); document.removeEventListener("visibilitychange", refresh) }
   }, [])
-  const [year,setYear] = useState(today.getFullYear())
-  const [month,setMonth] = useState(today.getMonth())
+  const [year,setYear] = useState(() => viaCalendarLocalDate(today,"world").year)
+  const [month,setMonth] = useState(() => viaCalendarLocalDate(today,"world").month-1)
   const [selected,setSelected] = useState<number|null>(null)
   const [region,setRegion] = useState<ViaCalendarRegion>("world")
   const [language,setLanguage] = useState<ViaLanguage>("English")
