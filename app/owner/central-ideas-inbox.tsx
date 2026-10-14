@@ -69,7 +69,12 @@ export default function CentralIdeasInbox({ ownerPublicKey }: { ownerPublicKey: 
         return
       }
       setConfigured(data.configured === true)
-      setItems(Array.isArray(data.items) ? data.items : [])
+      const received = Array.isArray(data.items) ? data.items : []
+      setItems(received)
+      const latest = received.map((item) => item.createdAt || "").sort().at(-1) || ""
+      if (latest) {
+        try { window.localStorage.setItem(`via:ideas:last-seen:${ownerPublicKey}`, latest) } catch { /* storage unavailable */ }
+      }
       setMessage(data.configured ? "Central inbox updated." : "Central storage is not connected yet.")
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Could not verify the Owner session.")
