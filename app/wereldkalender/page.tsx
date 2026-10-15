@@ -169,7 +169,11 @@ export default function WereldkalenderPage() {
     {id:"za-freedom",nameNl:"Freedom Day (Zuid-Afrika)",country:"ZA",month:4,day:27},
     {id:"au-day",nameNl:"Australia Day",country:"AU",month:1,day:26},
     {id:"nz-waitangi",nameNl:"Waitangi Day (Nieuw-Zeeland)",country:"NZ",month:2,day:6},
-  ].filter(d=>selectedRegion===d.country && d.month===month+1)
+  ].filter(d=>(selectedRegion===d.country || selectedRegion==="world") && d.month===month+1)
+  // Compact, explicitly verified language hints; no assumption that country selects the VIA interface language.
+  const countryLanguages:Record<string,string> = {
+    NL:"Nederlands",BE:"Nederlands · français · Deutsch",DE:"Deutsch",FR:"Français",ES:"Español",PT:"Português",IT:"Italiano",GB:"English",US:"English",CA:"English · français",MX:"Español",BR:"Português",IN:"हिन्दी · English (en andere)",CN:"中文",JP:"日本語",ZA:"isiZulu · isiXhosa · Afrikaans · English (+ andere)",AU:"English",NZ:"English · te reo Māori · NZSL"
+  }
   const monthEvents=[...days,...offlineLunar.filter(d=>d.month===month+1),...calculatedHolidays.map(d=>({...d,scope:"cultural" as const,status:"scheduled" as const})),...countryDays.map(d=>({...d,scope:"regional" as const,status:"scheduled" as const}))].sort((a,b)=>(a.day??0)-(b.day??0) || a.nameNl.localeCompare(b.nameNl,locale))
   const offset=(new Date(year,month,1).getDay()+6)%7
   const length=new Date(year,month+1,0).getDate()
@@ -272,7 +276,7 @@ export default function WereldkalenderPage() {
         })}
       </div>
       <h2 style={{fontSize:21,fontWeight:600,marginTop:28}}>{selected===null?ui.month:ui.day+" "+selected+" "+localizedMonth}</h2>
-      {shown.length===0?<p>{ui.empty}</p>:<ul style={{paddingLeft:22}}>{shown.map(d=><li key={d.id} style={{margin:"8px 0"}}>{d.day??labels.monthAll} — {holidayName(d.id,d.nameNl)} <span style={{fontSize:12,opacity:.75}}>({d.scope==="international"?labels.international:d.scope==="regional"?labels.regional:labels.cultural})</span></li>)}</ul>}
+      {shown.length===0?<p>{ui.empty}</p>:<ul style={{paddingLeft:22}}>{shown.map(d=><li key={d.id} style={{margin:"8px 0"}}>{d.day??labels.monthAll} — {holidayName(d.id,d.nameNl)} {"country" in d && typeof d.country==="string" ? " · "+(new Intl.DisplayNames([locale],{type:"region"}).of(d.country)??d.country) : ""} <span style={{fontSize:12,opacity:.75}}>({d.scope==="international"?labels.international:d.scope==="regional"?labels.regional:labels.cultural})</span></li>)}</ul>}
       <details style={{marginTop:18,padding:"10px 14px",border:"1px solid rgba(168,164,108,.3)",borderRadius:12,background:"rgba(17,37,26,.23)"}}><summary style={{cursor:"pointer",fontWeight:600,color:"#c5d8b8"}}>{({Dutch:"ⓘ Toelichting bij feestdagen",English:"ⓘ About these observances",French:"ⓘ À propos des célébrations",Spanish:"ⓘ Sobre estas celebraciones",Chinese:"ⓘ 节日说明",Hindi:"ⓘ त्योहारों की जानकारी"} as Record<ViaLanguage,string>)[language]}</summary><div style={{paddingTop:8}}>
       <p style={{fontSize:13,opacity:.85}}>{({Dutch:"Berekende maanfeestdagen zijn indicatief; officiële datums kunnen per land of maanwaarneming verschillen. Geen betaalde dienst.",English:"Calculated lunar dates are estimates; official dates may vary by country or moon sighting. No paid service.",French:"Les dates lunaires calculées sont indicatives ; les dates officielles varient selon les pays et l’observation lunaire. Aucun service payant.",Spanish:"Las fechas lunares calculadas son orientativas; las fechas oficiales pueden variar según el país y la observación lunar. Sin servicios de pago.",Chinese:"农历日期仅为估算；各国官方日期可能因月相观测而不同。不使用付费服务。",Hindi:"गणना की गई चंद्र तिथियाँ अनुमानित हैं; देश और चंद्र-दर्शन के अनुसार आधिकारिक तिथियाँ बदल सकती हैं। कोई सशुल्क सेवा नहीं।"} as Record<ViaLanguage,string>)[language]}</p>
       {unresolved.length>0 && <h2 style={{fontSize:21,fontWeight:600,marginTop:28}}>{guidance.pendingTitle}</h2>}
