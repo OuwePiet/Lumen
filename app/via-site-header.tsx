@@ -279,6 +279,29 @@ export default function ViaSiteHeader() {
   const accountLabel = profile?.username ? `@${profile.username}` : t.connected
   const otherAccounts = knownAccounts.filter((account) => account.publicKey !== session?.publicKey)
 
+  if (pathname === "/wereldkalender") {
+    const calendarLinks = [
+      [t.home, "/"], ["Handboek VIA", "/help"], ["VIA Muziek", "/music"],
+    ] as const
+    return (
+      <header className="via-site-header via-calendar-header" style={{ ...styles.header, padding: "7px 10px",background:"linear-gradient(90deg,rgba(8,22,15,.97),rgba(19,42,29,.97) 50%,rgba(31,35,19,.97))",borderBottom:"1px solid rgba(181,157,91,.30)",boxShadow:"0 6px 22px rgba(0,0,0,.22)" }}>
+        <nav aria-label="Wereldkalender navigatie" style={{ display: "flex", justifyContent: "center", alignItems: "center", flexWrap: "wrap", gap: 5 }}>
+          {calendarLinks.map(([label, href]) => <Link key={href} href={href} style={{ ...pill, minHeight: 30,padding:"5px 10px",fontSize:12,fontWeight:600,letterSpacing:".01em",border:"1px solid rgba(153,188,143,.30)",background:"linear-gradient(155deg,rgba(57,101,70,.24),rgba(154,124,57,.09))",boxShadow:"inset 0 1px rgba(255,255,255,.08),0 2px 7px rgba(0,0,0,.13)" }}>{label}</Link>)}
+          <div style={{ position: "relative" }}>
+            <button type="button" style={{...styles.language,minHeight:30,padding:"4px 8px",border:"1px solid rgba(181,157,91,.4)",background:"linear-gradient(145deg,rgba(55,104,70,.3),rgba(151,119,54,.16))"}} aria-label="VIA taal en kalender vertalen" aria-expanded={languageOpen} onClick={() => setLanguageOpen(open => !open)}>
+              <LanguageFlag language={language} /><span>{languageCodes[language]}</span>
+            </button>
+            {languageOpen ? <div role="menu" aria-label="VIA taal" style={{ ...styles.menu, top: "42px", width: 140, zIndex: 220 }}>
+              {VIA_LANGUAGES.map(item => <button key={item} type="button" role="menuitemradio" aria-checked={item === language} onClick={() => { changeLanguage(item); setLanguageOpen(false) }} style={{ ...styles.menuButton, display: "flex", alignItems: "center", gap: 8 }}>
+                <LanguageFlag language={item} />{languageCodes[item]}
+              </button>)}
+            </div> : null}
+          </div>
+        </nav>
+      </header>
+    )
+  }
+
   return (
     <header style={styles.header} className="via-site-header">
       <div style={styles.shell} className="via-site-header-shell">
