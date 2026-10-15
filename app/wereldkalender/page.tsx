@@ -207,7 +207,7 @@ export default function WereldkalenderPage() {
     month:month+1,day:Number(d.date.slice(8,10)),country:d.country,
     scope:"regional" as const,status:"scheduled" as const,
   }))
-  const monthEventsRaw=[...days,...offlineLunar.filter(d=>d.month===month+1),...calculatedHolidays.map(d=>({...d,scope:"cultural" as const,status:"scheduled" as const})),...(holidayDataAvailable!==true ? countryDays.map(d=>({...d,scope:"regional" as const,status:"scheduled" as const})) : []),...sourceHolidays]
+  const monthEventsRaw=[...days,...offlineLunar.filter(d=>d.month===month+1),...calculatedHolidays.map(d=>({...d,scope:"cultural" as const,status:"scheduled" as const})),...countryDays.filter(d=>holidayDataAvailable!==true || holidayCoverage?.unavailableCountries.includes(d.country)).map(d=>({...d,scope:"regional" as const,status:"scheduled" as const})),...sourceHolidays]
   const monthEvents=Array.from(new Map(monthEventsRaw.map(d=>[`${d.month}|${d.day}|${"country" in d ? d.country : ""}|${d.nameNl.trim().toLowerCase()}`,d])).values()).sort((a,b)=>(a.day??0)-(b.day??0) || a.nameNl.localeCompare(b.nameNl,locale))
   const offset=(new Date(year,month,1).getDay()+6)%7
   const length=new Date(year,month+1,0).getDate()
