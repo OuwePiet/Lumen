@@ -11,9 +11,11 @@ export async function GET(request: NextRequest) {
   if (!Number.isInteger(year) || year < 1900 || year > 2100 || (!world && !/^[A-Z]{2}$/.test(country))) {
     return NextResponse.json({ error: "Invalid year or country" }, { status: 400 })
   }
+  // World mode queries are distributed across multiple parallel batches.
+  // Each country is independently cached for 24 hours by Next.js.
   const results: Array<{code:string;available:boolean;holidays:Array<{date:string;name:string;localName:string;country:string;regions:string[];types:string[]}>}> = []
-  for (let index=0;index<selectedCountries.length;index+=8) {
-    const batch=await Promise.all(selectedCountries.slice(index,index+8).map(async code => {
+  const batches = Array.from({length:Math.ceil(selectedCountries.length/8)},(_,index)=>selectedCountries.slice(index*8,index*8+8))
+  const batchResults = await Promise.all(batches.map(batch=>Promise.all(batch.map(async code => {
     try {
       const response = await fetch(`https://date.nager.at/api/v3/PublicHolidays/${year}/${code}`, {
         next: { revalidate: 86400 },
@@ -34,9 +36,8 @@ export async function GET(request: NextRequest) {
       }))
       return { code, available:true, holidays }
     } catch { return { code, available:false, holidays:[] } }
-    }))
-    results.push(...batch)
-  }
+    }))))
+  results.push(...batchResults.flat())
   const availableCountries = results.filter(result=>result.available).map(result=>result.code)
   const unavailableCountries = results.filter(result=>!result.available).map(result=>result.code)
   return NextResponse.json({
