@@ -24,12 +24,20 @@ export function viaOfflineLunarDates(year: number): ViaCalculatedDate[] {
     { id:"ramadan", calendar:"islamic-umalqura", month:"9" },
     { id:"eid-al-fitr", calendar:"islamic-umalqura", month:"10" },
   ]
-  const formatters = new Map(targets.map(target => [target.id, new Intl.DateTimeFormat("en-US-u-ca-" + target.calendar, { year:"numeric", month:"numeric", day:"numeric", timeZone:"UTC" })]))
+  const formatters = new Map<string,Intl.DateTimeFormat>()
+  for (const target of targets) {
+    try {
+      const formatter = new Intl.DateTimeFormat("en-US-u-ca-" + target.calendar, { year:"numeric", month:"numeric", day:"numeric", timeZone:"UTC" })
+      if (formatter.resolvedOptions().calendar === target.calendar) formatters.set(target.id,formatter)
+    } catch { /* Unsupported browser calendar: omit estimate instead of showing a false date. */ }
+  }
   const seen = new Set<string>()
   for (let day = Date.UTC(year,0,1); day < Date.UTC(year+1,0,1); day += 86400000) {
     const date = new Date(day)
     for (const target of targets) {
-      const parts = calendarParts(date,formatters.get(target.id)!)
+      const formatter = formatters.get(target.id)
+      if (!formatter) continue
+      const parts = calendarParts(date,formatter)
       if (!parts || parts.month !== target.month || parts.day !== 1) continue
       const key = target.id + ":" + day
       if (seen.has(key)) continue
