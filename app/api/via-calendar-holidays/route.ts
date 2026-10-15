@@ -11,10 +11,30 @@ export async function GET(request: NextRequest) {
   if (!Number.isInteger(year) || year < 1900 || year > 2100 || (!world && !/^[A-Z]{2}$/.test(country))) {
     return NextResponse.json({ error: "Invalid year or country" }, { status: 400 })
   }
+  // The provider publishes its actual country coverage. Never confuse a
+  // country shown in VIA's selector with a country supported by the source.
+  let supportedCountries: Set<string> | null = null
+  try {
+    const coverageResponse = await fetch("https://date.nager.at/api/v3/AvailableCountries", {
+      next: { revalidate: 86400 },
+      headers: { Accept: "application/json" },
+      signal: AbortSignal.timeout(9000),
+    })
+    if (coverageResponse.ok) {
+      const coverage: unknown = await coverageResponse.json()
+      if (Array.isArray(coverage)) {
+        supportedCountries = new Set(coverage.filter((entry):entry is {countryCode:string} =>
+          entry!==null && typeof entry==="object" && typeof (entry as {countryCode?:unknown}).countryCode==="string"
+        ).map(entry=>entry.countryCode.toUpperCase()))
+      }
+    }
+  } catch { /* Coverage endpoint may be temporarily unavailable. */ }
+  const queryCountries = supportedCountries ? selectedCountries.filter(code=>supportedCountries!.has(code)) : selectedCountries
+  const unsupportedCountries = supportedCountries ? selectedCountries.filter(code=>!supportedCountries!.has(code)) : []
   // World mode queries are distributed across multiple parallel batches.
   // Each country is independently cached for 24 hours by Next.js.
   const results: Array<{code:string;available:boolean;holidays:Array<{date:string;name:string;localName:string;country:string;regions:string[];types:string[]}>}> = []
-  const batches = Array.from({length:Math.ceil(selectedCountries.length/8)},(_,index)=>selectedCountries.slice(index*8,index*8+8))
+  const batches = Array.from({length:Math.ceil(queryCountries.length/8)},(_,index)=>queryCountries.slice(index*8,index*8+8))
   const batchResults = await Promise.all(batches.map(batch=>Promise.all(batch.map(async code => {
     try {
       const response = await fetch(`https://date.nager.at/api/v3/PublicHolidays/${year}/${code}`, {
@@ -39,12 +59,12 @@ export async function GET(request: NextRequest) {
     }))))
   results.push(...batchResults.flat())
   const availableCountries = results.filter(result=>result.available).map(result=>result.code)
-  const unavailableCountries = results.filter(result=>!result.available).map(result=>result.code)
+  const unavailableCountries = [...unsupportedCountries,...results.filter(result=>!result.available).map(result=>result.code)]
   return NextResponse.json({
     holidays:results.flatMap(result=>result.holidays),
     available:availableCountries.length>0,
     complete:unavailableCountries.length===0,
-    availableCountries,unavailableCountries,
+    availableCountries,unavailableCountries,unsupportedCountries,
     source:"Nager.Date",updatedAt:new Date().toISOString(),
   },{headers:{"Cache-Control":"public, s-maxage=86400, stale-while-revalidate=604800"}})
 }
