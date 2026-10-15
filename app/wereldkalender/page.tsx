@@ -132,7 +132,7 @@ export default function WereldkalenderPage() {
     {id:"au-day",nameNl:"Australia Day",country:"AU",month:1,day:26},
     {id:"nz-waitangi",nameNl:"Waitangi Day (Nieuw-Zeeland)",country:"NZ",month:2,day:6},
   ].filter(d=>selectedRegion===d.country && d.month===month+1)
-  const monthEvents=[...days,...calculatedHolidays.map(d=>({...d,scope:"cultural" as const,status:"scheduled" as const})),...countryDays.map(d=>({...d,scope:"regional" as const,status:"scheduled" as const}))]
+  const monthEvents=[...days,...calculatedHolidays.map(d=>({...d,scope:"cultural" as const,status:"scheduled" as const})),...countryDays.map(d=>({...d,scope:"regional" as const,status:"scheduled" as const}))].sort((a,b)=>(a.day??0)-(b.day??0) || a.nameNl.localeCompare(b.nameNl,locale))
   const offset=(new Date(year,month,1).getDay()+6)%7
   const length=new Date(year,month+1,0).getDate()
   const move=(direction:number)=>{
@@ -166,9 +166,9 @@ export default function WereldkalenderPage() {
       <p role="timer" aria-live="off" style={{fontSize:"clamp(22px,5vw,30px)",fontWeight:700,fontVariantNumeric:"tabular-nums",margin:"8px 0"}}>{new Intl.DateTimeFormat(locale,{timeZone:local.zone,hour:"2-digit",minute:"2-digit",hourCycle:"h23"}).format(today)} <span style={{fontSize:13,fontWeight:400}}>{local.zone}</span></p>
       <button type="button" onClick={()=>{setYear(local.year);setMonth(local.month-1);setSelected(local.day)}} style={{marginTop:8,padding:"8px 12px",border:"1px solid currentColor",borderRadius:8}}>{ui.today}</button>
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,margin:"24px 0 16px"}}>
-        <button type="button" onClick={()=>move(-1)} aria-label="Vorige maand" style={{padding:"10px 16px",border:"1px solid currentColor",borderRadius:10}}>‹</button>
+        <button type="button" onClick={()=>move(-1)} aria-label={language==="Dutch"?"Vorige maand":language==="French"?"Mois précédent":language==="Spanish"?"Mes anterior":language==="Chinese"?"上个月":language==="Hindi"?"पिछला महीना":"Previous month"} style={{padding:"10px 16px",border:"1px solid currentColor",borderRadius:10}}>‹</button>
         <h2 style={{fontSize:22,fontWeight:600,textTransform:"capitalize"}}>{localizedMonth}</h2>
-        <button type="button" onClick={()=>move(1)} aria-label="Volgende maand" style={{padding:"10px 16px",border:"1px solid currentColor",borderRadius:10}}>›</button>
+        <button type="button" onClick={()=>move(1)} aria-label={language==="Dutch"?"Volgende maand":language==="French"?"Mois suivant":language==="Spanish"?"Mes siguiente":language==="Chinese"?"下个月":language==="Hindi"?"अगला महीना":"Next month"} style={{padding:"10px 16px",border:"1px solid currentColor",borderRadius:10}}>›</button>
       </div>
       <div style={{display:"grid",width:"100%",minWidth:0,gridTemplateColumns:"repeat(7,minmax(0,1fr))",gap:"clamp(2px,0.7vw,5px)"}}>
         {localizedWeekdays.map((w,index)=><div key={index} style={{textAlign:"center",fontWeight:700,padding:6}}>{w}</div>)}
@@ -176,7 +176,7 @@ export default function WereldkalenderPage() {
         {Array.from({length},(_,i)=>{
           const day=i+1, events=monthEvents.filter(d=>d.day===day)
           return <button key={day} type="button" onClick={()=>setSelected(selected===day?null:day)}
-            aria-pressed={selected===day} aria-current={year===local.year && month+1===local.month && day===local.day?"date":undefined} aria-label={day+" "+monthNames[month]+", "+events.length+" vieringen"}
+            aria-pressed={selected===day} aria-current={year===local.year && month+1===local.month && day===local.day?"date":undefined} aria-label={day+" "+localizedMonth+", "+events.length+" "+(language==="Dutch"?"vieringen":language==="French"?"événements":language==="Spanish"?"celebraciones":language==="Chinese"?"项活动":language==="Hindi"?"आयोजन":"observances")}
             style={{minWidth:0,minHeight:"clamp(44px,9vw,64px)",padding:"clamp(2px,0.8vw,6px)",overflow:"hidden",border:"1px solid",borderColor:selected===day?"#4d9f77":year===local.year && month+1===local.month && day===local.day?"#cba34c":"#7775",borderRadius:9,background:selected===day?"#4d9f7725":"transparent",textAlign:"left",color:"inherit"}}>
             <span style={{fontWeight:600}}>{day}</span>{events.length>0&&<span style={{display:"block",fontSize:"clamp(9px,2.4vw,12px)"}}>● {events.length}</span>}
           </button>
