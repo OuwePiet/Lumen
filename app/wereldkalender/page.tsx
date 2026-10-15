@@ -102,6 +102,7 @@ export default function WereldkalenderPage() {
   const [year,setYear] = useState(() => viaCalendarLocalDate(today,"world").year)
   const [month,setMonth] = useState(() => viaCalendarLocalDate(today,"world").month-1)
   const [selected,setSelected] = useState<number|null>(null)
+  const [eventPage,setEventPage] = useState(0)
   const [region,setRegion] = useState<ViaCalendarRegion>("world")
   const [language,setLanguage] = useState<ViaLanguage>("English")
   useEffect(() => {
@@ -211,6 +212,11 @@ export default function WereldkalenderPage() {
     setYear(next.getFullYear());setMonth(next.getMonth());setSelected(null)
   }
   const shown=selected===null ? monthEvents : monthEvents.filter(d=>d.day===selected || d.day===null)
+  const pageSize=16
+  const pageCount=Math.max(1,Math.ceil(shown.length/pageSize))
+  const currentEventPage=Math.min(eventPage,pageCount-1)
+  const pagedEvents=shown.slice(currentEventPage*pageSize,(currentEventPage+1)*pageSize)
+  useEffect(()=>{setEventPage(0)},[month,year,selected,selectedRegion])
   const holidayNames: Record<string,Partial<Record<ViaLanguage,string>>> = {
     "es-national":{English:"National Day of Spain",French:"Fête nationale de l’Espagne",Spanish:"Fiesta Nacional de España",Chinese:"西班牙国庆日",Hindi:"स्पेन का राष्ट्रीय दिवस"},
     "nl-kings-day":{English:"King’s Day (The Netherlands)",French:"Fête du Roi (Pays-Bas)",Spanish:"Día del Rey (Países Bajos)",Chinese:"荷兰国王节",Hindi:"नीदरलैंड का राजा दिवस"},
@@ -310,7 +316,12 @@ export default function WereldkalenderPage() {
       {holidayCoverage && holidayCoverage.unavailableCountries.length>0 && <p role="status" style={{fontSize:12,opacity:.8}}>Feestdagenbron niet beschikbaar voor: {holidayCoverage.unavailableCountries.join(", ")}. Andere gegevens blijven zichtbaar.</p>}
       {selectedRegion!=="world" && holidayDataAvailable===false && <p role="status" style={{fontSize:12,opacity:.8}}>{language==="Dutch"?"Geen feestdagengegevens beschikbaar voor dit land; de internationale kalender blijft zichtbaar.":"Country holiday data unavailable; international observances remain visible."}</p>}
       <h2 style={{fontSize:21,fontWeight:600,marginTop:28}}>{selected===null?ui.month:ui.day+" "+selected+" "+localizedMonth}</h2>
-      {shown.length===0?<p>{ui.empty}</p>:<ul style={{paddingLeft:22}}>{shown.map(d=><li key={d.id} style={{margin:"8px 0"}}>{d.day??labels.monthAll} — {"country" in d && typeof d.country==="string" ? flagForCountry(d.country)+" " : ""}{holidayName(d.id,d.nameNl)} {"country" in d && typeof d.country==="string" ? " · "+(new Intl.DisplayNames([locale],{type:"region"}).of(d.country)??d.country) : ""} <span style={{fontSize:12,opacity:.75}}>({d.scope==="international"?labels.international:d.scope==="regional"?labels.regional:labels.cultural})</span></li>)}</ul>}
+      {shown.length===0?<p>{ui.empty}</p>:<ul style={{paddingLeft:22}}>{pagedEvents.map(d=><li key={d.id} style={{margin:"8px 0"}}>{d.day??labels.monthAll} — {"country" in d && typeof d.country==="string" ? flagForCountry(d.country)+" " : ""}{holidayName(d.id,d.nameNl)} {"country" in d && typeof d.country==="string" ? " · "+(new Intl.DisplayNames([locale],{type:"region"}).of(d.country)??d.country) : ""} <span style={{fontSize:12,opacity:.75}}>({d.scope==="international"?labels.international:d.scope==="regional"?labels.regional:labels.cultural})</span></li>)}</ul>}
+      {pageCount>1 && <nav aria-label="Calendar event pages" style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:10,flexWrap:"wrap",marginTop:18,padding:"12px 0",borderTop:"1px solid rgba(168,164,108,.3)"}}>
+        <button type="button" disabled={currentEventPage===0} onClick={()=>setEventPage(p=>Math.max(0,p-1))} style={{padding:"10px 14px",borderRadius:9,border:"1px solid currentColor",opacity:currentEventPage===0?.4:1}}>← {language==="Dutch"?"Vorige":language==="French"?"Précédent":language==="Spanish"?"Anterior":"Previous"}</button>
+        <span role="status" style={{fontSize:13}}>{language==="Dutch"?"Pagina":language==="French"?"Page":language==="Spanish"?"Página":"Page"} {currentEventPage+1} / {pageCount} · {shown.length} {language==="Dutch"?"vieringen":"events"}</span>
+        <button type="button" disabled={currentEventPage>=pageCount-1} onClick={()=>setEventPage(p=>Math.min(pageCount-1,p+1))} style={{padding:"10px 14px",borderRadius:9,border:"1px solid currentColor",opacity:currentEventPage>=pageCount-1?.4:1}}>{language==="Dutch"?"Volgende":language==="French"?"Suivant":language==="Spanish"?"Siguiente":"Next"} →</button>
+      </nav>}
       <details style={{marginTop:18,padding:"10px 14px",border:"1px solid rgba(168,164,108,.3)",borderRadius:12,background:"rgba(17,37,26,.23)"}}><summary style={{cursor:"pointer",fontWeight:600,color:"#c5d8b8"}}>{({Dutch:"ⓘ Toelichting bij feestdagen",English:"ⓘ About these observances",French:"ⓘ À propos des célébrations",Spanish:"ⓘ Sobre estas celebraciones",Chinese:"ⓘ 节日说明",Hindi:"ⓘ त्योहारों की जानकारी"} as Record<ViaLanguage,string>)[language]}</summary><div style={{paddingTop:8}}>
       <p style={{fontSize:13,opacity:.85}}>{({Dutch:"Berekende maanfeestdagen zijn indicatief; officiële datums kunnen per land of maanwaarneming verschillen. Geen betaalde dienst.",English:"Calculated lunar dates are estimates; official dates may vary by country or moon sighting. No paid service.",French:"Les dates lunaires calculées sont indicatives ; les dates officielles varient selon les pays et l’observation lunaire. Aucun service payant.",Spanish:"Las fechas lunares calculadas son orientativas; las fechas oficiales pueden variar según el país y la observación lunar. Sin servicios de pago.",Chinese:"农历日期仅为估算；各国官方日期可能因月相观测而不同。不使用付费服务。",Hindi:"गणना की गई चंद्र तिथियाँ अनुमानित हैं; देश और चंद्र-दर्शन के अनुसार आधिकारिक तिथियाँ बदल सकती हैं। कोई सशुल्क सेवा नहीं।"} as Record<ViaLanguage,string>)[language]}</p>
       {unresolved.length>0 && <h2 style={{fontSize:21,fontWeight:600,marginTop:28}}>{guidance.pendingTitle}</h2>}
