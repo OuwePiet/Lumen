@@ -113,7 +113,7 @@ export default function WereldkalenderPage() {
   }, [])
   const continentByRegion: Record<ViaCalendarRegion,string> = {world:"world",NL:"europe",GB:"europe",FR:"europe",ES:"europe",US:"north-america",CN:"asia",IN:"asia",BE:"europe",DE:"europe",IT:"europe",PT:"europe",JP:"asia",KR:"asia",ID:"asia",ZA:"africa",EG:"africa",NG:"africa",CA:"north-america",MX:"north-america",BR:"south-america",AR:"south-america",AU:"oceania",NZ:"oceania"}
   const [continent,setContinent] = useState("world")
-  const regionOptions = VIA_CALENDAR_REGIONS.filter(item => continent==="world" ? item.code==="world" : continentByRegion[item.code]===continent)
+  const regionOptions = VIA_CALENDAR_REGIONS.filter(item => continent==="world" ? true : continentByRegion[item.code]===continent)
   const availableRegions = regionOptions.length > 0 ? regionOptions : VIA_CALENDAR_REGIONS.filter(item=>item.code==="world")
   const selectedRegion = availableRegions.some(item=>item.code===region) ? region : availableRegions[0].code
   const local = viaCalendarLocalDate(today,selectedRegion)
