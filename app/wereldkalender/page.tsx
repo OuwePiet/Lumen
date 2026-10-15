@@ -203,7 +203,7 @@ export default function WereldkalenderPage() {
   }
   const sourceHolidays = publicHolidays.filter(d=>Number(d.date.slice(5,7))===month+1).map((d,i)=>({
     id:`public-${d.country}-${d.date}-${i}`,
-    nameNl: language==="Dutch" ? d.localName : d.name,
+    nameNl: `${language==="Dutch" ? d.localName : d.name}${d.regions?.length ? ` (${d.regions.join(", ")})` : ""}`,
     month:month+1,day:Number(d.date.slice(8,10)),country:d.country,
     scope:"regional" as const,status:"scheduled" as const,
   }))
