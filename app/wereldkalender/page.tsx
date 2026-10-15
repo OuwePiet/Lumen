@@ -173,20 +173,26 @@ export default function WereldkalenderPage() {
       <div style={{display:"flex",alignItems:"center",gap:16,flexWrap:"wrap",marginBottom:14}}><span aria-hidden="true" style={{fontSize:"clamp(36px,7vw,56px)",display:"inline-flex",alignItems:"center",justifyContent:"center",width:78,height:78,borderRadius:22,background:"linear-gradient(145deg,rgba(53,146,93,.40),rgba(212,173,85,.28))",border:"1px solid rgba(199,184,110,.5)",boxShadow:"0 10px 24px rgba(0,0,0,.2),inset 0 1px rgba(255,255,255,.2)"}}>🌍</span><div><div style={{fontSize:11,fontWeight:800,letterSpacing:".2em",color:"#b8d6a9",textTransform:"uppercase"}}>VIA · WORLD</div><h1 style={{fontSize:"clamp(25px,5vw,38px)",fontWeight:750,letterSpacing:"-.025em",margin:"2px 0",textShadow:"0 3px 16px rgba(57,135,94,.25)"}}>{ui.title}</h1></div></div>
       <p>{ui.intro}</p>
       {visualTestReady && <p style={{fontSize:12,opacity:.78,marginTop:8}}>{({Dutch:"VIA kalender · voorbeeldweergave: controleer de opmaak en navigatie. Niet alle variabele feestdagen zijn officieel bevestigd.",English:"VIA calendar · preview: check layout and navigation. Not all variable holiday dates are officially confirmed.",French:"Calendrier VIA · aperçu : vérifiez la mise en page et la navigation. Certaines dates restent à confirmer.",Spanish:"Calendario VIA · vista previa: compruebe el diseño y la navegación. Algunas fechas aún requieren confirmación.",Chinese:"VIA 日历 · 预览：请检查布局与导航。部分节日日期尚未正式确认。",Hindi:"VIA कैलेंडर · पूर्वावलोकन: लेआउट और नेविगेशन जाँचें। कुछ त्योहारों की तिथियाँ अभी अपुष्ट हैं।"} as Record<ViaLanguage,string>)[language]}</p>}
-      <label style={{display:"flex",alignItems:"center",gap:12,flexWrap:"wrap",marginTop:12}}>{ui.continent}
-        <select value={continent} onChange={event=>{const next=event.target.value;setContinent(next);setRegion(next==="world"?"world":(VIA_CALENDAR_REGIONS.find(item=>continentByRegion[item.code]===next)?.code??"world"))}} style={{padding:10,border:"1px solid #777",borderRadius:8,background:"#21392f",color:"#f5f8f4",boxShadow:"0 3px 9px rgba(0,0,0,.12)"}}>
+      <div style={{display:"flex",flexWrap:"wrap",alignItems:"center",gap:"12px 24px",padding:"12px 16px",marginTop:14,borderRadius:16,background:"linear-gradient(115deg,rgba(42,98,68,.27),rgba(151,120,54,.11))",border:"1px solid rgba(178,170,103,.30)",boxShadow:"inset 0 1px rgba(255,255,255,.08)"}}>
+        <div style={{display:"flex",flexWrap:"wrap",alignItems:"center",gap:"8px 18px"}}>
+      <label style={{display:"flex",alignItems:"center",gap:12,flexWrap:"wrap",marginTop:0}}>{ui.continent}
+        <select value={continent} onChange={event=>{const next=event.target.value;setContinent(next);setRegion(next==="world"?"world":(VIA_CALENDAR_REGIONS.find(item=>continentByRegion[item.code]===next)?.code??"world"))}} style={{padding:"7px 10px",border:"1px solid #777",borderRadius:8,background:"#21392f",color:"#f5f8f4",boxShadow:"0 3px 9px rgba(0,0,0,.12)"}}>
           {Object.entries(continentLabels[language]).map(([value,label])=><option key={value} value={value}>{label}</option>)}
         </select>
       </label>
-      <label style={{display:"flex",alignItems:"center",gap:12,flexWrap:"wrap",marginTop:8}}>{ui.country}
-        <select value={selectedRegion} onChange={event=>{const next=event.target.value as ViaCalendarRegion;setRegion(next);const date=viaCalendarLocalDate(new Date(),next);setYear(date.year);setMonth(date.month-1);setSelected(date.day)}} style={{padding:10,border:"1px solid #777",borderRadius:8,background:"#18241e",color:"white"}}>
+      <label style={{display:"flex",alignItems:"center",gap:12,flexWrap:"wrap",marginTop:0}}>{ui.country}
+        <select value={selectedRegion} onChange={event=>{const next=event.target.value as ViaCalendarRegion;setRegion(next);const date=viaCalendarLocalDate(new Date(),next);setYear(date.year);setMonth(date.month-1);setSelected(date.day)}} style={{padding:"7px 10px",border:"1px solid #777",borderRadius:8,background:"#18241e",color:"white"}}>
           {availableRegions.map(item=><option key={item.code} value={item.code}>{item.label}</option>)}
         </select>
       </label>
+        </div>
+        <div style={{display:"flex",flexDirection:"column",gap:3,marginLeft:"auto"}}>
       {regionOptions.length===0 && <p style={{fontSize:13}}>Voor dit werelddeel worden landen en tijdzones nog toegevoegd. De wereldwijde kalender blijft beschikbaar.</p>}
-      <p style={{fontSize:13}}>{labels.localDate}: {local.day}-{local.month}-{local.year} ({local.zone})</p>
-      <p role="timer" aria-live="off" style={{fontSize:"clamp(22px,5vw,30px)",fontWeight:700,fontVariantNumeric:"tabular-nums",margin:"4px 0"}}>{new Intl.DateTimeFormat(locale,{timeZone:local.zone,hour:"2-digit",minute:"2-digit",hourCycle:"h23"}).format(today)} <span style={{fontSize:13,fontWeight:400}}>{local.zone}</span></p>
-      <button type="button" onClick={()=>{setYear(local.year);setMonth(local.month-1);setSelected(local.day)}} style={{marginTop:8,padding:"8px 12px",border:"1px solid currentColor",borderRadius:8}}>{ui.today}</button>
+      <p style={{fontSize:12,opacity:.8,margin:"2px 0"}}>{labels.localDate}: {local.day}-{local.month}-{local.year} ({local.zone})</p>
+      <p role="timer" aria-live="off" style={{fontSize:"clamp(22px,5vw,30px)",fontWeight:700,fontVariantNumeric:"tabular-nums",margin:"2px 0"}}>{new Intl.DateTimeFormat(locale,{timeZone:local.zone,hour:"2-digit",minute:"2-digit",hourCycle:"h23"}).format(today)} <span style={{fontSize:13,fontWeight:400}}>{local.zone}</span></p>
+      <button type="button" onClick={()=>{setYear(local.year);setMonth(local.month-1);setSelected(local.day)}} style={{marginTop:3,padding:"6px 10px",border:"1px solid currentColor",borderRadius:8}}>{ui.today}</button>
+        </div>
+      </div>
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,margin:"14px 0 12px"}}>
         <button type="button" onClick={()=>move(-1)} aria-label={language==="Dutch"?"Vorige maand":language==="French"?"Mois précédent":language==="Spanish"?"Mes anterior":language==="Chinese"?"上个月":language==="Hindi"?"पिछला महीना":"Previous month"} style={{padding:"10px 16px",border:"1px solid currentColor",borderRadius:10}}>‹</button>
         <h2 style={{fontSize:22,fontWeight:600,textTransform:"capitalize"}}>{localizedMonth}</h2>
