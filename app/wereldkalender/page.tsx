@@ -240,11 +240,9 @@ export default function WereldkalenderPage() {
         </select>
       </label>
         </div>
-        <div style={{display:"flex",flexDirection:"column",gap:3,marginLeft:"auto"}}>
-      {regionOptions.length===0 && <p style={{fontSize:13}}>Voor dit werelddeel worden landen en tijdzones nog toegevoegd. De wereldwijde kalender blijft beschikbaar.</p>}
-      <p style={{fontSize:12,opacity:.8,margin:"2px 0"}}>{labels.localDate}: {local.day}-{local.month}-{local.year} ({local.zone})</p>
-      <p role="timer" aria-live="off" style={{fontSize:"clamp(22px,5vw,30px)",fontWeight:700,fontVariantNumeric:"tabular-nums",margin:"2px 0"}}>{new Intl.DateTimeFormat(locale,{timeZone:local.zone,hour:"2-digit",minute:"2-digit",hourCycle:"h23"}).format(today)} <span style={{fontSize:13,fontWeight:400}}>{local.zone}</span></p>
-      <button type="button" onClick={()=>{setYear(local.year);setMonth(local.month-1);setSelected(local.day)}} style={{marginTop:3,padding:"6px 10px",border:"1px solid currentColor",borderRadius:8}}>{ui.today}</button>
+        <div style={{display:"flex",alignItems:"center",gap:10,marginLeft:"auto",flexWrap:"wrap"}}>
+          <span role="timer" aria-live="off" style={{fontSize:"clamp(19px,3vw,26px)",fontWeight:700,fontVariantNumeric:"tabular-nums",whiteSpace:"nowrap"}}>{new Intl.DateTimeFormat(locale,{timeZone:local.zone,hour:"2-digit",minute:"2-digit",hourCycle:"h23"}).format(today)}</span>
+          <button type="button" title={ui.today} aria-label={ui.today} onClick={()=>{setYear(local.year);setMonth(local.month-1);setSelected(local.day)}} style={{padding:"6px 10px",border:"1px solid rgba(201,211,176,.65)",borderRadius:9,fontSize:17}}>⌖</button>
         </div>
       </div>
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,margin:"14px 0 12px"}}>
