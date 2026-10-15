@@ -119,15 +119,17 @@ export default function WereldkalenderPage() {
   const local = viaCalendarLocalDate(today,selectedRegion)
   const [publicHolidays,setPublicHolidays] = useState<Array<{date:string;name:string;localName:string;country:string;regions:string[]}>>([])
   const [holidayDataAvailable,setHolidayDataAvailable] = useState<boolean|null>(null)
+  const [holidayCoverage,setHolidayCoverage] = useState<{availableCountries:string[];unavailableCountries:string[]}|null>(null)
   useEffect(() => {
-    if (selectedRegion==="world") { setPublicHolidays([]); setHolidayDataAvailable(null); return }
+    
     const controller = new AbortController()
     setPublicHolidays([])
     setHolidayDataAvailable(null)
+    setHolidayCoverage(null)
     fetch(`/api/via-calendar-holidays?year=${year}&country=${selectedRegion}`,{signal:controller.signal})
       .then(response=>response.ok?response.json():Promise.reject(new Error("holiday lookup")))
-      .then((data:{holidays?:Array<{date:string;name:string;localName:string;country:string;regions:string[]}>;available?:boolean})=>{
-        if (!controller.signal.aborted) { setPublicHolidays(Array.isArray(data.holidays)?data.holidays:[]); setHolidayDataAvailable(data.available===true) }
+      .then((data:{holidays?:Array<{date:string;name:string;localName:string;country:string;regions:string[]}>;available?:boolean;availableCountries?:string[];unavailableCountries?:string[]})=>{
+        if (!controller.signal.aborted) { setPublicHolidays(Array.isArray(data.holidays)?data.holidays:[]); setHolidayDataAvailable(data.available===true); setHolidayCoverage({availableCountries:data.availableCountries??[],unavailableCountries:data.unavailableCountries??[]}) }
       })
       .catch(()=>{ if (!controller.signal.aborted) {setPublicHolidays([]);setHolidayDataAvailable(false)} })
     return ()=>controller.abort()
@@ -193,11 +195,11 @@ export default function WereldkalenderPage() {
   }
   const sourceHolidays = publicHolidays.filter(d=>Number(d.date.slice(5,7))===month+1).map((d,i)=>({
     id:`public-${d.country}-${d.date}-${i}`,
-    nameNl: language==="Dutch" ? d.localName : d.name,
+    nameNl: language==="nl" ? d.localName : d.name,
     month:month+1,day:Number(d.date.slice(8,10)),country:d.country,
     scope:"regional" as const,status:"scheduled" as const,
   }))
-  const monthEvents=[...days,...offlineLunar.filter(d=>d.month===month+1),...calculatedHolidays.map(d=>({...d,scope:"cultural" as const,status:"scheduled" as const})),...(selectedRegion==="world" || holidayDataAvailable!==true ? countryDays.map(d=>({...d,scope:"regional" as const,status:"scheduled" as const})) : []),...sourceHolidays].sort((a,b)=>(a.day??0)-(b.day??0) || a.nameNl.localeCompare(b.nameNl,locale))
+  const monthEvents=[...days,...offlineLunar.filter(d=>d.month===month+1),...calculatedHolidays.map(d=>({...d,scope:"cultural" as const,status:"scheduled" as const})),...(holidayDataAvailable!==true ? countryDays.map(d=>({...d,scope:"regional" as const,status:"scheduled" as const})) : []),...sourceHolidays].sort((a,b)=>(a.day??0)-(b.day??0) || a.nameNl.localeCompare(b.nameNl,locale))
   const offset=(new Date(year,month,1).getDay()+6)%7
   const length=new Date(year,month+1,0).getDate()
   const move=(direction:number)=>{
@@ -299,6 +301,7 @@ export default function WereldkalenderPage() {
           </button>
         })}
       </div>
+      {holidayCoverage && holidayCoverage.unavailableCountries.length>0 && <p role="status" style={{fontSize:12,opacity:.8}}>Feestdagenbron niet beschikbaar voor: {holidayCoverage.unavailableCountries.join(", ")}. Andere gegevens blijven zichtbaar.</p>}
       {selectedRegion!=="world" && holidayDataAvailable===false && <p role="status" style={{fontSize:12,opacity:.8}}>{language==="Dutch"?"Geen feestdagengegevens beschikbaar voor dit land; de internationale kalender blijft zichtbaar.":"Country holiday data unavailable; international observances remain visible."}</p>}
       <h2 style={{fontSize:21,fontWeight:600,marginTop:28}}>{selected===null?ui.month:ui.day+" "+selected+" "+localizedMonth}</h2>
       {shown.length===0?<p>{ui.empty}</p>:<ul style={{paddingLeft:22}}>{shown.map(d=><li key={d.id} style={{margin:"8px 0"}}>{d.day??labels.monthAll} — {"country" in d && typeof d.country==="string" ? flagForCountry(d.country)+" " : ""}{holidayName(d.id,d.nameNl)} {"country" in d && typeof d.country==="string" ? " · "+(new Intl.DisplayNames([locale],{type:"region"}).of(d.country)??d.country) : ""} <span style={{fontSize:12,opacity:.75}}>({d.scope==="international"?labels.international:d.scope==="regional"?labels.regional:labels.cultural})</span></li>)}</ul>}
