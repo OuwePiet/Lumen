@@ -26,6 +26,8 @@ const HolidayIcon = ({id,name}:{id:string;name:string}) => {
 
 const holidayEmoji = (id:string,name:string):string => {
   const text=(id+" "+name).toLowerCase()
+  const nationalFlag: Record<string,string> = {"es-national":"🇪🇸","nl-kings-day":"🇳🇱","nl-liberation":"🇳🇱","be-national":"🇧🇪","fr-bastille":"🇫🇷","de-unity":"🇩🇪","pt-national":"🇵🇹","us-independence":"🇺🇸","ca-canada":"🇨🇦","mx-independence":"🇲🇽","br-independence":"🇧🇷","in-republic":"🇮🇳","cn-national":"🇨🇳","jp-foundation":"🇯🇵","za-freedom":"🇿🇦","au-day":"🇦🇺","nz-waitangi":"🇳🇿"}
+  if (nationalFlag[id]) return nationalFlag[id]
   if (/halloween/.test(text)) return "🎃"
   if (/christmas|kerst/.test(text)) return "🎄"
   if (/new.year|nieuwjaar/.test(text)) return "🎆"
@@ -177,6 +179,13 @@ export default function WereldkalenderPage() {
   }
   const shown=selected===null ? monthEvents : monthEvents.filter(d=>d.day===selected || d.day===null)
   const holidayNames: Record<string,Partial<Record<ViaLanguage,string>>> = {
+    "es-national":{English:"National Day of Spain",French:"Fête nationale de l’Espagne",Spanish:"Fiesta Nacional de España",Chinese:"西班牙国庆日",Hindi:"स्पेन का राष्ट्रीय दिवस"},
+    "nl-kings-day":{English:"King’s Day (The Netherlands)",French:"Fête du Roi (Pays-Bas)",Spanish:"Día del Rey (Países Bajos)",Chinese:"荷兰国王节",Hindi:"नीदरलैंड का राजा दिवस"},
+    "nl-liberation":{English:"Liberation Day (The Netherlands)",French:"Jour de la Libération (Pays-Bas)",Spanish:"Día de la Liberación (Países Bajos)",Chinese:"荷兰解放日",Hindi:"नीदरलैंड मुक्ति दिवस"},
+    "fr-bastille":{English:"National Day of France",French:"Fête nationale française",Spanish:"Fiesta Nacional de Francia",Chinese:"法国国庆日",Hindi:"फ्रांस का राष्ट्रीय दिवस"},
+    "de-unity":{English:"German Unity Day",French:"Jour de l’Unité allemande",Spanish:"Día de la Unidad Alemana",Chinese:"德国统一日",Hindi:"जर्मन एकता दिवस"},
+    "pt-national":{English:"Portugal Day",French:"Jour du Portugal",Spanish:"Día de Portugal",Chinese:"葡萄牙日",Hindi:"पुर्तगाल दिवस"},
+
     "teachers":{English:"World Teachers’ Day",French:"Journée mondiale des enseignants",Spanish:"Día Mundial de los Docentes",Chinese:"世界教师日",Hindi:"विश्व शिक्षक दिवस"},
     "food":{English:"World Food Day",French:"Journée mondiale de l’alimentation",Spanish:"Día Mundial de la Alimentación",Chinese:"世界粮食日",Hindi:"विश्व खाद्य दिवस"},
     "mental-health":{English:"World Mental Health Day",French:"Journée mondiale de la santé mentale",Spanish:"Día Mundial de la Salud Mental",Chinese:"世界精神卫生日",Hindi:"विश्व मानसिक स्वास्थ्य दिवस"},
