@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react"
 import { VIA_INTERNATIONAL_DAYS } from "../via-international-calendar"
+import { viaOfflineLunarDates } from "../via-calendar-offline-dates"
 import { VIA_CALENDAR_REGIONS, viaCalendarLocalDate, type ViaCalendarRegion } from "../via-calendar-regions"
 import { readViaLocalSettings, saveViaLocalSettings, VIA_LANGUAGES, VIA_SETTINGS_EVENT, type ViaLanguage } from "../via-local-settings"
 
@@ -90,7 +91,8 @@ export default function WereldkalenderPage() {
       .map(d=>({ ...d, day:d.day??null }))
       .concat(easter.month===month+1 ? [{id:"easter",nameNl:"Pasen",month:easter.month,day:easter.day,scope:"cultural" as const,status:"scheduled" as const}]:[])
   },[year,month])
-  const unresolved = VIA_INTERNATIONAL_DAYS.filter(d=>d.status==="date-required" && d.id!=="easter")
+  const offlineLunar = useMemo(() => viaOfflineLunarDates(year), [year])
+  const unresolved = VIA_INTERNATIONAL_DAYS.filter(d=>d.status==="date-required" && d.id!=="easter" && !offlineLunar.some(known=>known.id===d.id))
   const easter=easterSunday(year)
   const easterDate=new Date(Date.UTC(year,easter.month-1,easter.day))
   const relativeDate=(daysFromEaster:number)=>{
@@ -132,7 +134,7 @@ export default function WereldkalenderPage() {
     {id:"au-day",nameNl:"Australia Day",country:"AU",month:1,day:26},
     {id:"nz-waitangi",nameNl:"Waitangi Day (Nieuw-Zeeland)",country:"NZ",month:2,day:6},
   ].filter(d=>selectedRegion===d.country && d.month===month+1)
-  const monthEvents=[...days,...calculatedHolidays.map(d=>({...d,scope:"cultural" as const,status:"scheduled" as const})),...countryDays.map(d=>({...d,scope:"regional" as const,status:"scheduled" as const}))]
+  const monthEvents=[...days,...offlineLunar.filter(d=>d.month===month+1),...calculatedHolidays.map(d=>({...d,scope:"cultural" as const,status:"scheduled" as const})),...countryDays.map(d=>({...d,scope:"regional" as const,status:"scheduled" as const}))]
   const offset=(new Date(year,month,1).getDay()+6)%7
   const length=new Date(year,month+1,0).getDate()
   const move=(direction:number)=>{
@@ -184,9 +186,10 @@ export default function WereldkalenderPage() {
       </div>
       <h2 style={{fontSize:21,fontWeight:600,marginTop:28}}>{selected===null?ui.month:ui.day+" "+selected+" "+localizedMonth}</h2>
       {shown.length===0?<p>{ui.empty}</p>:<ul style={{paddingLeft:22}}>{shown.map(d=><li key={d.id} style={{margin:"8px 0"}}>{d.day??labels.monthAll} — {d.nameNl} <span style={{fontSize:12,opacity:.75}}>({d.scope==="international"?labels.international:d.scope==="regional"?labels.regional:labels.cultural})</span></li>)}</ul>}
-      <h2 style={{fontSize:21,fontWeight:600,marginTop:28}}>{guidance.pendingTitle}</h2>
-      <p>{guidance.pendingInfo}</p>
-      <ul style={{paddingLeft:22}}>{unresolved.map(d=><li key={d.id}>{d.nameNl}: {guidance.pendingDate}</li>)}</ul>
+      <p style={{fontSize:13,opacity:.85}}>Berekende maanfeestdagen zijn indicatief. Officiële datums kunnen per land of maanwaarneming verschillen; VIA gebruikt hiervoor geen betaalde dienst.</p>
+      {unresolved.length>0 && <h2 style={{fontSize:21,fontWeight:600,marginTop:28}}>{guidance.pendingTitle}</h2>}
+      {unresolved.length>0 && <p>{guidance.pendingInfo}</p>}
+      {unresolved.length>0 && <ul style={{paddingLeft:22}}>{unresolved.map(d=><li key={d.id}>{d.nameNl}: {guidance.pendingDate}</li>)}</ul>}
       <p style={{marginTop:24,fontSize:13,opacity:.8}}>Maandlange vieringen worden in de lijst vermeld, maar niet als losse dagmeldingen geteld. Een eerste landen- en tijdzonekeuze is beschikbaar. Regionale feestdagenfilters, juridische controles en automatische bevestigingsbronnen zijn nog in ontwikkeling.</p>
     </main>
   )
