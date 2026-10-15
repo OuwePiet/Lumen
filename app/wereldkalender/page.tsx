@@ -111,7 +111,11 @@ export default function WereldkalenderPage() {
     window.addEventListener("storage",sync)
     return () => { window.removeEventListener(VIA_SETTINGS_EVENT,sync);window.removeEventListener("storage",sync) }
   }, [])
-  const continentByRegion: Partial<Record<ViaCalendarRegion,string>> = {world:"world",NL:"europe",GB:"europe",FR:"europe",ES:"europe",US:"north-america",CN:"asia",IN:"asia",BE:"europe",DE:"europe",IT:"europe",PT:"europe",JP:"asia",KR:"asia",ID:"asia",ZA:"africa",EG:"africa",NG:"africa",CA:"north-america",MX:"north-america",BR:"south-america",AR:"south-america",AU:"oceania",NZ:"oceania"}
+  const continentByRegion = Object.fromEntries(VIA_CALENDAR_REGIONS.map(item => {
+    const zone=item.zone
+    const continent=item.code==="world"?"world":zone.startsWith("Europe/")?"europe":zone.startsWith("Africa/")?"africa":zone.startsWith("Asia/")?"asia":zone.startsWith("Australia/")||zone.startsWith("Pacific/")?"oceania":zone.startsWith("America/")?(["US","CA","MX","CR","PA","CU","DO","GT","HN","SV","NI","JM"].includes(item.code)?"north-america":"south-america"):"world"
+    return [item.code,continent]
+  })) as Record<ViaCalendarRegion,string>
   const [continent,setContinent] = useState("world")
   const regionOptions = VIA_CALENDAR_REGIONS.filter(item => continent==="world" ? true : continentByRegion[item.code]===continent)
   const availableRegions = regionOptions.length > 0 ? regionOptions : VIA_CALENDAR_REGIONS.filter(item=>item.code==="world")
@@ -195,7 +199,7 @@ export default function WereldkalenderPage() {
   }
   const sourceHolidays = publicHolidays.filter(d=>Number(d.date.slice(5,7))===month+1).map((d,i)=>({
     id:`public-${d.country}-${d.date}-${i}`,
-    nameNl: language==="nl" ? d.localName : d.name,
+    nameNl: language==="Dutch" ? d.localName : d.name,
     month:month+1,day:Number(d.date.slice(8,10)),country:d.country,
     scope:"regional" as const,status:"scheduled" as const,
   }))
