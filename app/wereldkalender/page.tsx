@@ -305,6 +305,7 @@ export default function WereldkalenderPage() {
           </button>
         })}
       </div>
+      {holidayCoverage && <p role="status" style={{fontSize:12,opacity:.8}}>Feestdagenbron: {holidayCoverage.availableCountries.length} landen beschikbaar; {holidayCoverage.unavailableCountries.length} niet beschikbaar. Gegevens worden dagelijks opnieuw gecontroleerd wanneer de kalender wordt geopend.</p>}
       {holidayCoverage && holidayCoverage.unavailableCountries.length>0 && <p role="status" style={{fontSize:12,opacity:.8}}>Feestdagenbron niet beschikbaar voor: {holidayCoverage.unavailableCountries.join(", ")}. Andere gegevens blijven zichtbaar.</p>}
       {selectedRegion!=="world" && holidayDataAvailable===false && <p role="status" style={{fontSize:12,opacity:.8}}>{language==="Dutch"?"Geen feestdagengegevens beschikbaar voor dit land; de internationale kalender blijft zichtbaar.":"Country holiday data unavailable; international observances remain visible."}</p>}
       <h2 style={{fontSize:21,fontWeight:600,marginTop:28}}>{selected===null?ui.month:ui.day+" "+selected+" "+localizedMonth}</h2>
