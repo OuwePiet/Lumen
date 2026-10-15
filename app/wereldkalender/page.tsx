@@ -168,7 +168,7 @@ export default function WereldkalenderPage() {
   }
   const holidayName=(id:string,fallback:string)=>language==="Dutch"?fallback:(holidayNames[id]?.[language]??fallback)
   return (
-    <main style={{maxWidth:980,width:"100%",minWidth:0,boxSizing:"border-box",margin:"0 auto",padding:"clamp(16px,3vw,32px)",color:"inherit",overflowWrap:"anywhere",borderRadius:24,background:"linear-gradient(155deg,rgba(61,118,88,.17),rgba(19,39,32,.08) 38%,rgba(187,151,76,.09) 100%)",boxShadow:"0 14px 45px rgba(0,0,0,.11),inset 0 1px rgba(255,255,255,.14)",border:"1px solid rgba(113,156,123,.23)"}}>
+    <main data-via-provenance="@OuwePiet-2026" style={{maxWidth:980,width:"100%",minWidth:0,boxSizing:"border-box",margin:"0 auto",padding:"clamp(16px,3vw,32px)",color:"inherit",overflowWrap:"anywhere",borderRadius:24,background:"linear-gradient(155deg,rgba(61,118,88,.17),rgba(19,39,32,.08) 38%,rgba(187,151,76,.09) 100%)",boxShadow:"0 14px 45px rgba(0,0,0,.11),inset 0 1px rgba(255,255,255,.14)",border:"1px solid rgba(113,156,123,.23)"}}>
       <h1 style={{fontSize:"clamp(25px,5vw,38px)",fontWeight:700,letterSpacing:"-.025em",textShadow:"0 2px 12px rgba(57,135,94,.13)"}}>🌍 {ui.title}</h1>
       <p>{ui.intro}</p>
       <label style={{display:"flex",alignItems:"center",gap:12,flexWrap:"wrap",marginTop:20}}>{ui.continent}
@@ -208,7 +208,8 @@ export default function WereldkalenderPage() {
       {unresolved.length>0 && <h2 style={{fontSize:21,fontWeight:600,marginTop:28}}>{guidance.pendingTitle}</h2>}
       {unresolved.length>0 && <p>{guidance.pendingInfo}</p>}
       {unresolved.length>0 && <ul style={{paddingLeft:22}}>{unresolved.map(d=><li key={d.id}>{holidayName(d.id,d.nameNl)}: {guidance.pendingDate}</li>)}</ul>}
-      <p style={{marginTop:24,fontSize:13,opacity:.8}}>Maandlange vieringen worden in de lijst vermeld, maar niet als losse dagmeldingen geteld. Een eerste landen- en tijdzonekeuze is beschikbaar. Regionale feestdagenfilters, juridische controles en automatische bevestigingsbronnen zijn nog in ontwikkeling.</p>
+      <p style={{marginTop:24,fontSize:13,opacity:.8}}>{({Dutch:"Maandlange vieringen tellen niet als losse dagmeldingen. Nationale en religieuze datums zijn informatief; controleer officiële bronnen voor lokale feestdagen en wettelijke vrije dagen.",English:"Month-long observances are not counted as daily events. National and religious dates are informational; check official sources for local public holidays.",French:"Les célébrations mensuelles ne sont pas comptées comme événements quotidiens. Vérifiez les sources officielles pour les jours fériés locaux.",Spanish:"Las celebraciones de todo el mes no cuentan como eventos diarios. Consulte fuentes oficiales para los festivos locales.",Chinese:"整月纪念活动不计入每日活动。当地法定节假日请以官方资料为准。",Hindi:"पूरे महीने के आयोजन दैनिक कार्यक्रमों में नहीं गिने जाते। स्थानीय सार्वजनिक छुट्टियों के लिए आधिकारिक स्रोत देखें।"} as Record<ViaLanguage,string>)[language]}</p>
+      <footer style={{marginTop:30,padding:"16px 14px",borderTop:"1px solid rgba(112,151,119,.3)",borderRadius:12,background:"linear-gradient(100deg,rgba(51,105,75,.10),rgba(190,154,78,.06))",display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,flexWrap:"wrap",fontSize:12,opacity:.85}}><span><strong>VIA</strong> · viadeso.online · © @OuwePiet 2026</span><span>{({Dutch:"VIA Wereldkalender · informatieve uitgave",English:"VIA World Calendar · informational edition",French:"Calendrier mondial VIA · édition informative",Spanish:"Calendario mundial VIA · edición informativa",Chinese:"VIA 世界日历 · 信息版",Hindi:"VIA विश्व कैलेंडर · सूचनात्मक संस्करण"} as Record<ViaLanguage,string>)[language]}</span></footer>
     </main>
   )
 }
