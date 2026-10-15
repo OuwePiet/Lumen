@@ -500,7 +500,7 @@ export default function ViaHomeControls() {
 
       <section style={{ display: "grid", gap: "6px" }}>
         {t.standard ? <span className="via-home-standard-label" style={sectionLabel}>{t.standard}</span> : null}
-        <nav aria-label="VIA standard navigation" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "7px" }}>
+        <nav aria-label="VIA standard navigation" style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "7px" }}>
           {standardNav.map(([key, href]) => key === "home" ? (
             <div key={key} className="via-home-grid-account-wrap" style={{ position: "relative", width: "100%" }}>
               <button type="button" onClick={() => { refreshAccounts(); setAccountsOpen((open) => !open) }} aria-label={t.switchAccount} title={t.switchAccount} aria-expanded={accountsOpen} aria-haspopup="menu" style={{ ...buttonStyle, width: "100%", justifyContent: "center", paddingInline: "9px", cursor: "pointer" }}>
@@ -548,25 +548,25 @@ export default function ViaHomeControls() {
 
       <section style={{ display: "grid", gap: "6px" }}>
         {t.viaExtra ? <span style={sectionLabel}>{t.viaExtra}</span> : null}
-        <nav aria-label="VIA extra navigation" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "7px" }}>
+        <nav aria-label="VIA extra navigation" style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "7px" }}>
           {viaExtraNav.map(([key, href]) => (
             <Link prefetch={false} key={href} href={href} className={key === "music" ? "via-home-music-grid-button" : undefined} style={{ ...buttonStyle, width: "100%", justifyContent: "center", paddingInline: "9px" }}>{t[key]}</Link>
           ))}
         </nav>
-        <nav className="via-home-handbook-row" aria-label="VIA handboek en kalender" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "7px" }}>
+        <nav className="via-home-handbook-row" aria-label="VIA handboek en kalender" style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "7px" }}>
           <Link prefetch={false} href="/help" style={{ ...buttonStyle, width: "100%", justifyContent: "center", paddingInline: "9px" }}>Handboek VIA</Link>
           <Link prefetch={false} href="/wereldkalender" style={{ ...buttonStyle, width: "100%", justifyContent: "center", paddingInline: "9px" }}>{t.calendar}</Link>
         </nav>
-        <nav aria-label="VIA toekomstige pagina's" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "7px" }}>
+        <nav aria-label="VIA toekomstige pagina's" style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "7px" }}>
           {[
             ["Wereldkrant", "World Newspaper", "Journal mondial", "Periódico mundial", "世界报纸"],
-            ["Luisterbibliotheek", "Audio Library", "Bibliothèque audio", "Biblioteca de audio", "有声图书馆"],
+            ["LuisterHoek", "Listening Corner", "Coin écoute", "Rincón de escucha", "聆听角"],
             ["VIA Auto", "VIA Auto", "VIA Auto", "VIA Auto", "VIA 汽车"],
             ["VIA Archief", "VIA Archive", "Archives VIA", "Archivo VIA", "VIA 档案"],
           ].map((labels, index) => {
             const languageIndex = ({ Dutch: 0, English: 1, French: 2, Spanish: 3, Chinese: 4 } as Record<ViaLanguage, number>)[language]
-            return <span key={index} aria-disabled="true" title="Binnenkort" style={{ ...disabledButtonStyle, width: "100%", justifyContent: "center", paddingInline: "9px", gap: 5 }}>
-              {labels[languageIndex]} <span style={{ fontSize: 8, opacity: .85 }}>· Binnenkort</span>
+            return <span key={index} aria-disabled="true" title="Binnenkort" style={{ ...disabledButtonStyle, width: "100%", minWidth: 0, boxSizing: "border-box", flexDirection: "column", justifyContent: "center", padding: "5px 4px", gap: 1, overflow: "hidden", textAlign: "center", lineHeight: 1.2 }}>
+              <span style={{ display: "block", maxWidth: "100%", fontSize: 10, overflowWrap: "anywhere" }}>{labels[languageIndex]}</span><span style={{ display: "block", fontSize: 8, opacity: .85 }}>Binnenkort</span>
             </span>
           })}
         </nav>
