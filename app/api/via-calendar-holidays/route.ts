@@ -58,16 +58,46 @@ export async function GET(request: NextRequest) {
     } catch { return { code, available:false, holidays:[] } }
     }))))
   results.push(...batchResults.flat())
+  // Independent, key-free fallback. OpenHolidays currently covers a smaller
+  // set of countries; only ask it when Nager.Date has no usable response.
+  const fallbackCodes = new Set(["AT","BE","BG","CH","CZ","DE","DK","EE","ES","FI","FR","GB","HR","HU","IE","IT","LT","LU","LV","NL","NO","PL","PT","RO","SE","SI","SK"])
+  const missing = selectedCountries.filter(code=>!results.some(result=>result.code===code && result.available) && fallbackCodes.has(code))
+  const fallbackResults = await Promise.all(missing.map(async code => {
+    try {
+      const url = new URL("https://openholidaysapi.org/PublicHolidays")
+      url.searchParams.set("countryIsoCode",code)
+      url.searchParams.set("validFrom",`${year}-01-01`)
+      url.searchParams.set("validTo",`${year}-12-31`)
+      url.searchParams.set("languageIsoCode","EN")
+      const response = await fetch(url.toString(),{next:{revalidate:86400},headers:{Accept:"application/json"},signal:AbortSignal.timeout(9000)})
+      if (!response.ok) return {code,available:false,holidays:[] as typeof results[number]["holidays"]}
+      const data:unknown = await response.json()
+      if (!Array.isArray(data)) return {code,available:false,holidays:[] as typeof results[number]["holidays"]}
+      const holidays = data.flatMap((entry:unknown)=>{
+        if (!entry || typeof entry!=="object") return []
+        const item=entry as Record<string,unknown>
+        if (typeof item.startDate!=="string" || !/^\d{4}-\d{2}-\d{2}$/.test(item.startDate)) return []
+        const names=Array.isArray(item.name)?item.name:[]
+        const nameItem=names.find((name:unknown)=>name!==null && typeof name==="object" && typeof (name as Record<string,unknown>).text==="string") as {text:string}|undefined
+        if (!nameItem) return []
+        const name=nameItem.text.slice(0,180)
+        return [{date:item.startDate,name,localName:name,country:code,regions:[] as string[],types:["Public"]}]
+      })
+      return {code,available:true,holidays}
+    } catch {return {code,available:false,holidays:[] as typeof results[number]["holidays"]}}
+  }))
+  results.push(...fallbackResults.filter(result=>result.available))
+  const fallbackAvailableCountries=fallbackResults.filter(result=>result.available).map(result=>result.code)
   const availableCountries = results.filter(result=>result.available).map(result=>result.code)
-  const unavailableCountries = [...unsupportedCountries,...results.filter(result=>!result.available).map(result=>result.code)]
+  const unavailableCountries = selectedCountries.filter(code=>!availableCountries.includes(code))
   const allHolidays = results.flatMap(result=>result.holidays)
   const uniqueHolidays = Array.from(new Map(allHolidays.map(item=>[`${item.country}|${item.date}|${item.name}|${item.regions.join(",")}`,item])).values())
   return NextResponse.json({
     holidays:uniqueHolidays,
     available:availableCountries.length>0,
     complete:unavailableCountries.length===0,
-    availableCountries,unavailableCountries,unsupportedCountries,
-    source:"Nager.Date",updatedAt:new Date().toISOString(),
+    availableCountries,unavailableCountries,unsupportedCountries:unsupportedCountries.filter(code=>!fallbackAvailableCountries.includes(code)),fallbackAvailableCountries,
+    source:"Nager.Date + OpenHolidays fallback",updatedAt:new Date().toISOString(),
     diagnostics:{requestedCountries:selectedCountries.length,returnedHolidays:uniqueHolidays.length,duplicatesRemoved:allHolidays.length-uniqueHolidays.length},
   },{headers:{"Cache-Control":"public, s-maxage=86400, stale-while-revalidate=604800"}})
 }
