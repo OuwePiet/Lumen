@@ -364,7 +364,7 @@ export default function ViaSiteHeader() {
       </div>
       <style>{`
         /* Calendar: keep only the shared VIA language switcher in the utility row. */
-        body:has(main[data-via-world-calendar]) .via-site-header-tools > :not(.via-site-header-language-control) { display: none !important; }
+        body:has(main[data-via-world-calendar]) .via-site-header-tools > :not(.via-site-header-language-wrap) { display: none !important; }
 
         .via-site-header-language-wrap { position: relative; flex: 0 0 auto; }
         .via-notifications-top-control { display: contents; }
