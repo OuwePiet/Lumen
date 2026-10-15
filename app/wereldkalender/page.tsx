@@ -251,6 +251,7 @@ export default function WereldkalenderPage() {
         <select value={selectedRegion} onChange={event=>{const next=event.target.value as ViaCalendarRegion;setRegion(next);const date=viaCalendarLocalDate(new Date(),next);setYear(date.year);setMonth(date.month-1);setSelected(date.day)}} style={{padding:"7px 10px",border:"1px solid #777",borderRadius:8,background:"#18241e",color:"white"}}>
           {availableRegions.map(item=><option key={item.code} value={item.code}>{item.code==="world"?({Dutch:"Wereldwijd",English:"Worldwide",French:"Monde",Spanish:"Mundial",Chinese:"全球",Hindi:"विश्वव्यापी"} as Record<ViaLanguage,string>)[language]:(item.code==="NL"&&language==="English"?"The Netherlands":new Intl.DisplayNames([locale],{type:"region"}).of(item.code)??item.label)}</option>)}
         </select>
+        {countryLanguages[selectedRegion] && <span style={{fontSize:11,opacity:.8,maxWidth:240}}>{countryLanguages[selectedRegion]}</span>}
       </label>
         </div>
         <div style={{display:"flex",alignItems:"center",gap:10,marginLeft:"auto",flexWrap:"wrap"}}>
