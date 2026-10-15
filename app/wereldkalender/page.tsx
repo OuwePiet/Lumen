@@ -167,10 +167,12 @@ export default function WereldkalenderPage() {
     holi:{English:"Holi",French:"Holi",Spanish:"Holi",Chinese:"洒红节",Hindi:"होली"},
   }
   const holidayName=(id:string,fallback:string)=>language==="Dutch"?fallback:(holidayNames[id]?.[language]??fallback)
+  const visualTestReady = true
   return (
     <main data-via-provenance="@OuwePiet-2026" style={{maxWidth:980,width:"100%",minWidth:0,boxSizing:"border-box",margin:"0 auto",padding:"clamp(16px,3vw,32px)",color:"inherit",overflowWrap:"anywhere",borderRadius:24,background:"linear-gradient(155deg,rgba(61,118,88,.17),rgba(19,39,32,.08) 38%,rgba(187,151,76,.09) 100%)",boxShadow:"0 14px 45px rgba(0,0,0,.11),inset 0 1px rgba(255,255,255,.14)",border:"1px solid rgba(113,156,123,.23)"}}>
       <h1 style={{fontSize:"clamp(25px,5vw,38px)",fontWeight:700,letterSpacing:"-.025em",textShadow:"0 2px 12px rgba(57,135,94,.13)"}}>🌍 {ui.title}</h1>
       <p>{ui.intro}</p>
+      {visualTestReady && <p style={{fontSize:12,opacity:.78,marginTop:8}}>{({Dutch:"VIA kalender · voorbeeldweergave: controleer de opmaak en navigatie. Niet alle variabele feestdagen zijn officieel bevestigd.",English:"VIA calendar · preview: check layout and navigation. Not all variable holiday dates are officially confirmed.",French:"Calendrier VIA · aperçu : vérifiez la mise en page et la navigation. Certaines dates restent à confirmer.",Spanish:"Calendario VIA · vista previa: compruebe el diseño y la navegación. Algunas fechas aún requieren confirmación.",Chinese:"VIA 日历 · 预览：请检查布局与导航。部分节日日期尚未正式确认。",Hindi:"VIA कैलेंडर · पूर्वावलोकन: लेआउट और नेविगेशन जाँचें। कुछ त्योहारों की तिथियाँ अभी अपुष्ट हैं।"} as Record<ViaLanguage,string>)[language]}</p>}
       <label style={{display:"flex",alignItems:"center",gap:12,flexWrap:"wrap",marginTop:20}}>{ui.continent}
         <select value={continent} onChange={event=>{const next=event.target.value;setContinent(next);setRegion(next==="world"?"world":(VIA_CALENDAR_REGIONS.find(item=>continentByRegion[item.code]===next)?.code??"world"))}} style={{padding:10,border:"1px solid #777",borderRadius:8,background:"#21392f",color:"#f5f8f4",boxShadow:"0 3px 9px rgba(0,0,0,.12)"}}>
           {Object.entries(continentLabels[language]).map(([value,label])=><option key={value} value={value}>{label}</option>)}
