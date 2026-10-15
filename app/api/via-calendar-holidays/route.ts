@@ -60,11 +60,14 @@ export async function GET(request: NextRequest) {
   results.push(...batchResults.flat())
   const availableCountries = results.filter(result=>result.available).map(result=>result.code)
   const unavailableCountries = [...unsupportedCountries,...results.filter(result=>!result.available).map(result=>result.code)]
+  const allHolidays = results.flatMap(result=>result.holidays)
+  const uniqueHolidays = Array.from(new Map(allHolidays.map(item=>[`${item.country}|${item.date}|${item.name}|${item.regions.join(",")}`,item])).values())
   return NextResponse.json({
-    holidays:results.flatMap(result=>result.holidays),
+    holidays:uniqueHolidays,
     available:availableCountries.length>0,
     complete:unavailableCountries.length===0,
     availableCountries,unavailableCountries,unsupportedCountries,
     source:"Nager.Date",updatedAt:new Date().toISOString(),
+    diagnostics:{requestedCountries:selectedCountries.length,returnedHolidays:uniqueHolidays.length,duplicatesRemoved:allHolidays.length-uniqueHolidays.length},
   },{headers:{"Cache-Control":"public, s-maxage=86400, stale-while-revalidate=604800"}})
 }
