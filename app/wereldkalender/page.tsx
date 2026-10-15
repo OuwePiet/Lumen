@@ -103,6 +103,7 @@ export default function WereldkalenderPage() {
   const [month,setMonth] = useState(() => viaCalendarLocalDate(today,"world").month-1)
   const [selected,setSelected] = useState<number|null>(null)
   const [eventPage,setEventPage] = useState(0)
+  const [eventPageSize,setEventPageSize] = useState(16)
   const [region,setRegion] = useState<ViaCalendarRegion>("world")
   const [language,setLanguage] = useState<ViaLanguage>("English")
   useEffect(() => {
@@ -212,7 +213,7 @@ export default function WereldkalenderPage() {
     setYear(next.getFullYear());setMonth(next.getMonth());setSelected(null)
   }
   const shown=selected===null ? monthEvents : monthEvents.filter(d=>d.day===selected || d.day===null)
-  const pageSize=16
+  const pageSize=eventPageSize
   const pageCount=Math.max(1,Math.ceil(shown.length/pageSize))
   const currentEventPage=Math.min(eventPage,pageCount-1)
   const pagedEvents=shown.slice(currentEventPage*pageSize,(currentEventPage+1)*pageSize)
@@ -317,6 +318,7 @@ export default function WereldkalenderPage() {
       {selectedRegion!=="world" && holidayDataAvailable===false && <p role="status" style={{fontSize:12,opacity:.8}}>{language==="Dutch"?"Geen feestdagengegevens beschikbaar voor dit land; de internationale kalender blijft zichtbaar.":"Country holiday data unavailable; international observances remain visible."}</p>}
       <h2 style={{fontSize:21,fontWeight:600,marginTop:28}}>{selected===null?ui.month:ui.day+" "+selected+" "+localizedMonth}</h2>
       {shown.length===0?<p>{ui.empty}</p>:<ul style={{paddingLeft:22}}>{pagedEvents.map(d=><li key={d.id} style={{margin:"8px 0"}}>{d.day??labels.monthAll} — {"country" in d && typeof d.country==="string" ? flagForCountry(d.country)+" " : ""}{holidayName(d.id,d.nameNl)} {"country" in d && typeof d.country==="string" ? " · "+(new Intl.DisplayNames([locale],{type:"region"}).of(d.country)??d.country) : ""} <span style={{fontSize:12,opacity:.75}}>({d.scope==="international"?labels.international:d.scope==="regional"?labels.regional:labels.cultural})</span></li>)}</ul>}
+      {shown.length>8 && <div style={{display:"flex",justifyContent:"flex-end",alignItems:"center",gap:8,marginTop:12,flexWrap:"wrap"}}><label htmlFor="via-calendar-page-size" style={{fontSize:13}}>{language==="Dutch"?"Per pagina":language==="French"?"Par page":language==="Spanish"?"Por página":language==="Chinese"?"每页":language==="Hindi"?"प्रति पृष्ठ":"Per page"}</label><select id="via-calendar-page-size" value={eventPageSize} onChange={event=>{setEventPageSize(Number(event.target.value));setEventPage(0)}} style={{padding:"7px 10px",borderRadius:8,background:"#21392f",color:"white",border:"1px solid #777"}}><option value={8}>8</option><option value={16}>16</option><option value={32}>32</option></select></div>}
       {pageCount>1 && <nav aria-label="Calendar event pages" style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:10,flexWrap:"wrap",marginTop:18,padding:"12px 0",borderTop:"1px solid rgba(168,164,108,.3)"}}>
         <button type="button" disabled={currentEventPage===0} onClick={()=>setEventPage(p=>Math.max(0,p-1))} style={{padding:"10px 14px",borderRadius:9,border:"1px solid currentColor",opacity:currentEventPage===0?.4:1}}>← {language==="Dutch"?"Vorige":language==="French"?"Précédent":language==="Spanish"?"Anterior":"Previous"}</button>
         <span role="status" style={{fontSize:13}}>{language==="Dutch"?"Pagina":language==="French"?"Page":language==="Spanish"?"Página":"Page"} {currentEventPage+1} / {pageCount} · {shown.length} {language==="Dutch"?"vieringen":"events"}</span>
