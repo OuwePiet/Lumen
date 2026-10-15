@@ -288,10 +288,11 @@ export default function ViaSiteHeader() {
 
         <div style={styles.topRow} className="via-site-header-top">
           <nav style={styles.nav} className={`via-site-header-nav ${pathname === "/notifications" || pathname === "/radio" || pathname === "/messages" || pathname === "/profile" ? "via-site-header-nav-compact-mobile" : ""}`} aria-label="VIA main navigation">
-            {nav.map(([key, href]) => {
+            {(pathname === "/wereldkalender" ? nav.filter(([key]) => ["home", "feed", "nfts", "games"].includes(key)) : nav).map(([key, href]) => {
               const active = href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`)
               return <Link key={href} href={href} className="via-site-header-link" style={{ ...styles.link, ...(active ? styles.activeLink : {}) }}>{t[key]}{active ? <span style={styles.activeLine} aria-hidden="true" /> : null}</Link>
             })}
+            {pathname === "/wereldkalender" ? <><Link href="/help" className="via-site-header-link" style={styles.link}>Handboek VIA</Link><Link href="/music" className="via-site-header-link" style={styles.link}>VIA Muziek</Link></> : null}
           </nav>
         </div>
 
@@ -362,6 +363,9 @@ export default function ViaSiteHeader() {
         </div>
       </div>
       <style>{`
+        /* Calendar: keep only the shared VIA language switcher in the utility row. */
+        body:has(main[data-via-world-calendar]) .via-site-header-tools > :not(.via-site-header-language-control) { display: none !important; }
+
         .via-site-header-language-wrap { position: relative; flex: 0 0 auto; }
         .via-notifications-top-control { display: contents; }
         .via-notifications-top-label { display: none; }
