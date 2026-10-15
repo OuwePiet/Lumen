@@ -117,7 +117,7 @@ export default function WereldkalenderPage() {
   const ui = calendarUi[language]
   const labels = extraUi[language]
   const guidance = guidanceUi[language]
-  const localizedMonth = new Intl.DateTimeFormat(locale,{month:"long",year:"numeric"}).format(new Date(year,month,1))
+  const localizedMonth = new Intl.DateTimeFormat(locale,{month:"long",year:"numeric"}).format(new Date(year,month,1)).replace(/\bDe\b/g,"de")
   const localizedWeekdays = Array.from({length:7},(_,index)=>new Intl.DateTimeFormat(locale,{weekday:"short"}).format(new Date(2024,0,1+index)))
   const days = useMemo(() => {
     const easter=easterSunday(year)
@@ -177,6 +177,26 @@ export default function WereldkalenderPage() {
   }
   const shown=selected===null ? monthEvents : monthEvents.filter(d=>d.day===selected || d.day===null)
   const holidayNames: Record<string,Partial<Record<ViaLanguage,string>>> = {
+    "teachers":{English:"World Teachers’ Day",French:"Journée mondiale des enseignants",Spanish:"Día Mundial de los Docentes",Chinese:"世界教师日",Hindi:"विश्व शिक्षक दिवस"},
+    "food":{English:"World Food Day",French:"Journée mondiale de l’alimentation",Spanish:"Día Mundial de la Alimentación",Chinese:"世界粮食日",Hindi:"विश्व खाद्य दिवस"},
+    "mental-health":{English:"World Mental Health Day",French:"Journée mondiale de la santé mentale",Spanish:"Día Mundial de la Salud Mental",Chinese:"世界精神卫生日",Hindi:"विश्व मानसिक स्वास्थ्य दिवस"},
+    "girls":{English:"International Day of the Girl Child",French:"Journée internationale de la fille",Spanish:"Día Internacional de la Niña",Chinese:"国际女童日",Hindi:"अंतरराष्ट्रीय बालिका दिवस"},
+    "coming-out":{English:"Coming Out Day",French:"Journée du coming out",Spanish:"Día para Salir del Armario",Chinese:"出柜日",Hindi:"कमिंग आउट दिवस"},
+    "halloween":{English:"Halloween",French:"Halloween",Spanish:"Halloween",Chinese:"万圣夜",Hindi:"हैलोवीन"},
+    "united-nations":{English:"United Nations Day",French:"Journée des Nations unies",Spanish:"Día de las Naciones Unidas",Chinese:"联合国日",Hindi:"संयुक्त राष्ट्र दिवस"},
+    "trans-visibility":{English:"Transgender Day of Visibility",French:"Journée de visibilité transgenre",Spanish:"Día de la Visibilidad Trans",Chinese:"跨性别现身日",Hindi:"ट्रांसजेंडर दृश्यता दिवस"},
+    "human-rights":{English:"Human Rights Day",French:"Journée des droits de l’homme",Spanish:"Día de los Derechos Humanos",Chinese:"人权日",Hindi:"मानवाधिकार दिवस"},
+    "education":{English:"International Day of Education",French:"Journée internationale de l’éducation",Spanish:"Día Internacional de la Educación",Chinese:"国际教育日",Hindi:"अंतरराष्ट्रीय शिक्षा दिवस"},
+    "water":{English:"World Water Day",French:"Journée mondiale de l’eau",Spanish:"Día Mundial del Agua",Chinese:"世界水日",Hindi:"विश्व जल दिवस"},
+    "health":{English:"World Health Day",French:"Journée mondiale de la santé",Spanish:"Día Mundial de la Salud",Chinese:"世界卫生日",Hindi:"विश्व स्वास्थ्य दिवस"},
+    "environment":{English:"World Environment Day",French:"Journée mondiale de l’environnement",Spanish:"Día Mundial del Medio Ambiente",Chinese:"世界环境日",Hindi:"विश्व पर्यावरण दिवस"},
+    "ocean":{English:"World Oceans Day",French:"Journée mondiale de l’océan",Spanish:"Día Mundial de los Océanos",Chinese:"世界海洋日",Hindi:"विश्व महासागर दिवस"},
+    "refugees":{English:"World Refugee Day",French:"Journée mondiale des réfugiés",Spanish:"Día Mundial de los Refugiados",Chinese:"世界难民日",Hindi:"विश्व शरणार्थी दिवस"},
+    "youth":{English:"International Youth Day",French:"Journée internationale de la jeunesse",Spanish:"Día Internacional de la Juventud",Chinese:"国际青年日",Hindi:"अंतरराष्ट्रीय युवा दिवस"},
+    "literacy":{English:"International Literacy Day",French:"Journée internationale de l’alphabétisation",Spanish:"Día Internacional de la Alfabetización",Chinese:"国际扫盲日",Hindi:"अंतरराष्ट्रीय साक्षरता दिवस"},
+    "mother-language":{English:"International Mother Language Day",French:"Journée internationale de la langue maternelle",Spanish:"Día Internacional de la Lengua Materna",Chinese:"国际母语日",Hindi:"अंतरराष्ट्रीय मातृभाषा दिवस"},
+    "forest":{English:"International Day of Forests",French:"Journée internationale des forêts",Spanish:"Día Internacional de los Bosques",Chinese:"国际森林日",Hindi:"अंतरराष्ट्रीय वन दिवस"},
+    "social-justice":{English:"World Day of Social Justice",French:"Journée mondiale de la justice sociale",Spanish:"Día Mundial de la Justicia Social",Chinese:"世界社会公正日",Hindi:"विश्व सामाजिक न्याय दिवस"},
     "new-year":{English:"New Year’s Day",French:"Jour de l’An",Spanish:"Año Nuevo",Chinese:"元旦",Hindi:"नव वर्ष"},
     women:{English:"International Women’s Day",French:"Journée internationale des femmes",Spanish:"Día Internacional de la Mujer",Chinese:"国际妇女节",Hindi:"अंतरराष्ट्रीय महिला दिवस"},
     earth:{English:"Earth Day",French:"Jour de la Terre",Spanish:"Día de la Tierra",Chinese:"世界地球日",Hindi:"पृथ्वी दिवस"},
@@ -204,7 +224,7 @@ export default function WereldkalenderPage() {
   const visualTestReady = false
   return (
     <main data-via-provenance="@OuwePiet-2026" style={{maxWidth:980,width:"100%",minWidth:0,boxSizing:"border-box",margin:"0 auto",padding:"clamp(16px,3vw,32px)",color:"inherit",overflowWrap:"anywhere",borderRadius:24,background:"radial-gradient(ellipse at 12% 4%,rgba(87,177,123,.25),transparent 46%),radial-gradient(ellipse at 92% 88%,rgba(216,172,79,.20),transparent 50%),linear-gradient(155deg,rgba(27,65,45,.31),rgba(14,35,30,.14) 48%,rgba(105,83,39,.18) 100%)",boxShadow:"0 22px 65px rgba(0,0,0,.24),inset 0 1px rgba(255,255,255,.20)",border:"1px solid rgba(153,196,155,.36)"}}>
-      <div style={{display:"flex",alignItems:"center",gap:16,flexWrap:"wrap",marginBottom:14}}><span aria-hidden="true" style={{fontSize:"clamp(36px,7vw,56px)",display:"inline-flex",alignItems:"center",justifyContent:"center",width:78,height:78,borderRadius:22,background:"linear-gradient(145deg,rgba(53,146,93,.40),rgba(212,173,85,.28))",border:"1px solid rgba(199,184,110,.5)",boxShadow:"0 10px 24px rgba(0,0,0,.2),inset 0 1px rgba(255,255,255,.2)"}}>🌍</span><div><div style={{fontSize:11,fontWeight:800,letterSpacing:".2em",color:"#b8d6a9",textTransform:"uppercase"}}>VIA · WORLD</div><h1 style={{fontSize:"clamp(25px,5vw,38px)",fontWeight:750,letterSpacing:"-.025em",margin:"2px 0",textShadow:"0 3px 16px rgba(57,135,94,.25)"}}>{ui.title}</h1></div></div>
+      <div style={{display:"flex",alignItems:"center",gap:16,flexWrap:"wrap",marginBottom:14}}><span aria-hidden="true" style={{fontSize:"clamp(36px,7vw,56px)",display:"inline-flex",alignItems:"center",justifyContent:"center",width:78,height:78,borderRadius:22,background:"linear-gradient(145deg,rgba(53,146,93,.40),rgba(212,173,85,.28))",border:"1px solid rgba(199,184,110,.5)",boxShadow:"0 10px 24px rgba(0,0,0,.2),inset 0 1px rgba(255,255,255,.2)"}}>🌍</span><div><div style={{fontSize:11,fontWeight:800,letterSpacing:".2em",color:"#b8d6a9",textTransform:"uppercase"}}>{({Dutch:"VIA · WERELD",English:"VIA · WORLD",French:"VIA · MONDE",Spanish:"VIA · MUNDO",Chinese:"VIA · 世界",Hindi:"VIA · विश्व"} as Record<ViaLanguage,string>)[language]}</div><h1 style={{fontSize:"clamp(25px,5vw,38px)",fontWeight:750,letterSpacing:"-.025em",margin:"2px 0",textShadow:"0 3px 16px rgba(57,135,94,.25)"}}>{ui.title}</h1></div></div>
       <p>{ui.intro}</p>
       {visualTestReady && <p style={{fontSize:12,opacity:.78,marginTop:8}}>{({Dutch:"VIA kalender · voorbeeldweergave: controleer de opmaak en navigatie. Niet alle variabele feestdagen zijn officieel bevestigd.",English:"VIA calendar · preview: check layout and navigation. Not all variable holiday dates are officially confirmed.",French:"Calendrier VIA · aperçu : vérifiez la mise en page et la navigation. Certaines dates restent à confirmer.",Spanish:"Calendario VIA · vista previa: compruebe el diseño y la navegación. Algunas fechas aún requieren confirmación.",Chinese:"VIA 日历 · 预览：请检查布局与导航。部分节日日期尚未正式确认。",Hindi:"VIA कैलेंडर · पूर्वावलोकन: लेआउट और नेविगेशन जाँचें। कुछ त्योहारों की तिथियाँ अभी अपुष्ट हैं।"} as Record<ViaLanguage,string>)[language]}</p>}
       <div style={{display:"flex",flexWrap:"wrap",alignItems:"center",gap:"12px 24px",padding:"12px 16px",marginTop:14,borderRadius:16,background:"linear-gradient(115deg,rgba(42,98,68,.27),rgba(151,120,54,.11))",border:"1px solid rgba(178,170,103,.30)",boxShadow:"inset 0 1px rgba(255,255,255,.08)"}}>
@@ -216,7 +236,7 @@ export default function WereldkalenderPage() {
       </label>
       <label style={{display:"flex",alignItems:"center",gap:12,flexWrap:"wrap",marginTop:0}}>{ui.country}
         <select value={selectedRegion} onChange={event=>{const next=event.target.value as ViaCalendarRegion;setRegion(next);const date=viaCalendarLocalDate(new Date(),next);setYear(date.year);setMonth(date.month-1);setSelected(date.day)}} style={{padding:"7px 10px",border:"1px solid #777",borderRadius:8,background:"#18241e",color:"white"}}>
-          {availableRegions.map(item=><option key={item.code} value={item.code}>{item.label}</option>)}
+          {availableRegions.map(item=><option key={item.code} value={item.code}>{item.code==="world"?({Dutch:"Wereldwijd",English:"Worldwide",French:"Monde",Spanish:"Mundial",Chinese:"全球",Hindi:"विश्वव्यापी"} as Record<ViaLanguage,string>)[language]:new Intl.DisplayNames([locale],{type:"region"}).of(item.code)??item.label}</option>)}
         </select>
       </label>
         </div>
