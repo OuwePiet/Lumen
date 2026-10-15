@@ -279,6 +279,30 @@ export default function ViaSiteHeader() {
   const accountLabel = profile?.username ? `@${profile.username}` : t.connected
   const otherAccounts = knownAccounts.filter((account) => account.publicKey !== session?.publicKey)
 
+  if (pathname === "/wereldkalender") {
+    const calendarLinks = [
+      [t.home, "/"], [t.feed, "/social"], [t.nfts, "/collection"], [t.games, "/quest"],
+      ["Handboek VIA", "/help"], ["VIA Muziek", "/music"],
+    ] as const
+    return (
+      <header className="via-site-header via-calendar-header" style={{ ...styles.header, padding: "12px 16px" }}>
+        <nav aria-label="Wereldkalender navigatie" style={{ display: "flex", justifyContent: "center", alignItems: "center", flexWrap: "wrap", gap: 10 }}>
+          {calendarLinks.map(([label, href]) => <Link key={href} href={href} style={{ ...pill, minHeight: 36 }}>{label}</Link>)}
+          <div style={{ position: "relative" }}>
+            <button type="button" style={styles.language} aria-label="VIA taal en kalender vertalen" aria-expanded={languageOpen} onClick={() => setLanguageOpen(open => !open)}>
+              <LanguageFlag language={language} /><span>{languageCodes[language]}</span>
+            </button>
+            {languageOpen ? <div role="menu" aria-label="VIA taal" style={{ ...styles.menu, top: "42px", width: 140, zIndex: 220 }}>
+              {VIA_LANGUAGES.map(item => <button key={item} type="button" role="menuitemradio" aria-checked={item === language} onClick={() => { changeLanguage(item); setLanguageOpen(false) }} style={{ ...styles.menuButton, display: "flex", alignItems: "center", gap: 8 }}>
+                <LanguageFlag language={item} />{languageCodes[item]}
+              </button>)}
+            </div> : null}
+          </div>
+        </nav>
+      </header>
+    )
+  }
+
   return (
     <header style={styles.header} className="via-site-header">
       <div style={styles.shell} className="via-site-header-shell">
