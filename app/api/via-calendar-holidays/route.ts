@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { VIA_CALENDAR_REGIONS } from "../../../via-calendar-regions"
+import { VIA_CALENDAR_REGIONS } from "../../via-calendar-regions"
 
 /** Public holiday data from Nager.Date, without API keys or paid plans. */
 type Holiday = { date: string; localName: string; name: string; counties?: string[] | null; types?: string[] }
