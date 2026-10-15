@@ -565,8 +565,8 @@ export default function ViaHomeControls() {
             ["VIA Archief", "VIA Archive", "Archives VIA", "Archivo VIA", "VIA 档案"],
           ].map((labels, index) => {
             const languageIndex = ({ Dutch: 0, English: 1, French: 2, Spanish: 3, Chinese: 4 } as Record<ViaLanguage, number>)[language]
-            return <span key={index} aria-disabled="true" title="Binnenkort" style={{ ...disabledButtonStyle, width: "100%", justifyContent: "center", paddingInline: "9px", gap: 5 }}>
-              {labels[languageIndex]} <span style={{ fontSize: 8, opacity: .85 }}>· Binnenkort</span>
+            return <span key={index} aria-disabled="true" title="Binnenkort" style={{ ...disabledButtonStyle, width: "100%", minWidth: 0, boxSizing: "border-box", flexDirection: "column", justifyContent: "center", padding: "5px 4px", gap: 1, overflow: "hidden", textAlign: "center", lineHeight: 1.2 }}>
+              <span style={{ display: "block", maxWidth: "100%", fontSize: 10, overflowWrap: "anywhere" }}>{labels[languageIndex]}</span><span style={{ display: "block", fontSize: 8, opacity: .85 }}>Binnenkort</span>
             </span>
           })}
         </nav>
