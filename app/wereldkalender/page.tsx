@@ -6,10 +6,27 @@ import { viaOfflineLunarDates } from "../via-calendar-offline-dates"
 import { VIA_CALENDAR_REGIONS, viaCalendarLocalDate, type ViaCalendarRegion } from "../via-calendar-regions"
 import { readViaLocalSettings, VIA_SETTINGS_EVENT, type ViaLanguage } from "../via-local-settings"
 
-const holidaySymbol = (id: string, name: string): string => {
+// Inline vector pictograms: no network requests, external fonts or icon package.
+const holidaySymbol = (id: string, name: string): {paths:string; color:string} | null => {
   const text = (id + " " + name).toLowerCase()
+  if (/animal|dier|wildlife/.test(text)) return {paths:"M12 20c-3 0-7-2-7-5 0-2 2-3 3-3 2 0 2 2 4 2s2-2 4-2c1 0 3 1 3 3 0 3-4 5-7 5ZM5 9a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm5-3a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm5 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm5 3a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z",color:"#e9c979"}
+  if (/health|gezondheid/.test(text)) return {paths:"M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8ZM3 12h5l2-4 4 8 2-4h5",color:"#a6e4bd"}
+  if (/food|voedsel/.test(text)) return {paths:"M12 21V8m0 9c-4 0-6-3-6-6 4 0 6 2 6 6Zm0-4c4 0 6-3 6-6-4 0-6 2-6 6Zm0-9c-2-2-2-4 0-6 2 2 2 4 0 6Z",color:"#e8c876"}
+  if (/teacher|leraar|education|onderwijs/.test(text)) return {paths:"M12 7C9 5 6 5 3 6v14c3-1 6-1 9 1 3-2 6-2 9-1V6c-3-1-6-1-9 1Zm0 0v14",color:"#d4e9b7"}
+  if (/united.nations|verenigde.naties/.test(text)) return {paths:"M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm-10 10h20M12 2c-5 5-5 15 0 20M12 2c5 5 5 15 0 20M4 7h16M4 17h16",color:"#a9d6f5"}
+  if (/earth|aarde|environment|milieu/.test(text)) return {paths:"M20 4c-9 0-15 4-15 11a5 5 0 0 0 5 5c7 0 11-6 10-16ZM5 20c3-6 7-9 12-12",color:"#b5e3b2"}
+  return null
+}
+
+const HolidayIcon = ({id,name}:{id:string;name:string}) => {
+  const icon = holidaySymbol(id,name)
+  if (!icon) return null
+  return <svg viewBox="0 0 24 24" width="23" height="23" fill="none" stroke={icon.color} strokeWidth="1.65" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{filter:"drop-shadow(0 1px 3px rgba(0,0,0,.25))",flexShrink:0}}><path d={icon.paths}/></svg>
+}
+
+const holidayEmoji = (id:string,name:string):string => {
+  const text=(id+" "+name).toLowerCase()
   if (/halloween/.test(text)) return "🎃"
-  if (/animal|dier|wildlife/.test(text)) return "🐾"
   if (/christmas|kerst/.test(text)) return "🎄"
   if (/new.year|nieuwjaar/.test(text)) return "🎆"
   if (/easter|pasen/.test(text)) return "🐣"
@@ -18,15 +35,8 @@ const holidaySymbol = (id: string, name: string): string => {
   if (/diwali/.test(text)) return "🪔"
   if (/holi/.test(text)) return "🎨"
   if (/valentine|liefde/.test(text)) return "❤️"
-  if (/earth|aarde|environment|milieu/.test(text)) return "🌱"
-  if (/food|voedsel/.test(text)) return "🌾"
-  if (/peace|vrede/.test(text)) return "🕊️"
-  if (/health|gezondheid/.test(text)) return "💚"
-  if (/women|vrouw|girl|meisje/.test(text)) return "👩"
-  if (/united.nations|verenigde.naties/.test(text)) return "🇺🇳"
-  if (/teacher|leraar|education|onderwijs/.test(text)) return "📚"
   if (/coming.out|pride/.test(text)) return "🏳️‍🌈"
-  if (/national|independence|bevrijding/.test(text)) return "🎉"
+  if (/women|vrouw|girl|meisje/.test(text)) return "👩"
   return "🌍"
 }
 
@@ -230,7 +240,7 @@ export default function WereldkalenderPage() {
           return <button key={day} type="button" onClick={()=>setSelected(selected===day?null:day)}
             aria-pressed={selected===day} aria-current={year===local.year && month+1===local.month && day===local.day?"date":undefined} aria-label={day+" "+localizedMonth+", "+events.length+" "+(language==="Dutch"?"vieringen":language==="French"?"événements":language==="Spanish"?"celebraciones":language==="Chinese"?"项活动":language==="Hindi"?"आयोजन":"observances")}
             style={{minWidth:0,minHeight:"clamp(52px,9vw,68px)",padding:"clamp(2px,0.8vw,6px)",overflow:"hidden",border:"1px solid",borderColor:selected===day?"#4d9f77":year===local.year && month+1===local.month && day===local.day?"#cba34c":"#7775",borderRadius:9,background:selected===day?"linear-gradient(145deg,rgba(70,170,117,.48),rgba(215,175,83,.22))":events.length>0?"linear-gradient(145deg,rgba(78,154,102,.22),rgba(173,148,72,.08))":"rgba(255,255,255,.035)",boxShadow:selected===day?"0 3px 12px rgba(38,99,65,.17)":"inset 0 1px rgba(255,255,255,.04)",textAlign:"left",color:"inherit"}}>
-            <span style={{fontWeight:600}}>{day}</span>{events.length>0&&<span aria-hidden="true" style={{display:"flex",alignItems:"center",gap:5,flexWrap:"wrap",marginTop:5,fontSize:"clamp(18px,2.8vw,24px)",lineHeight:1.3}}>{events.slice(0,3).map(event=><span key={event.id} title={holidayName(event.id,event.nameNl)}>{holidaySymbol(event.id,event.nameNl)}</span>)}{events.length>3&&<span style={{fontSize:10,opacity:.8}}>+{events.length-3}</span>}</span>}
+            <span style={{fontWeight:600}}>{day}</span>{events.length>0&&<span aria-hidden="true" style={{display:"flex",alignItems:"center",gap:5,flexWrap:"wrap",marginTop:5,fontSize:"clamp(18px,2.8vw,24px)",lineHeight:1.3}}>{events.slice(0,3).map(event=><span key={event.id} title={holidayName(event.id,event.nameNl)}>{holidaySymbol(event.id,event.nameNl)?<HolidayIcon id={event.id} name={event.nameNl}/>:holidayEmoji(event.id,event.nameNl)}</span>)}{events.length>3&&<span style={{fontSize:10,opacity:.8}}>+{events.length-3}</span>}</span>}
           </button>
         })}
       </div>
