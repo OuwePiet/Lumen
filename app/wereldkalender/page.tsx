@@ -143,11 +143,11 @@ export default function WereldkalenderPage() {
   }
   const shown=selected===null ? monthEvents : monthEvents.filter(d=>d.day===selected || d.day===null)
   return (
-    <main style={{maxWidth:920,width:"100%",minWidth:0,boxSizing:"border-box",margin:"0 auto",padding:"24px 12px",color:"inherit",overflowWrap:"anywhere"}}>
-      <h1 style={{fontSize:"clamp(25px,5vw,38px)",fontWeight:700}}>🌍 {ui.title}</h1>
+    <main style={{maxWidth:980,width:"100%",minWidth:0,boxSizing:"border-box",margin:"0 auto",padding:"clamp(16px,3vw,32px)",color:"inherit",overflowWrap:"anywhere",borderRadius:24,background:"linear-gradient(155deg,rgba(61,118,88,.17),rgba(19,39,32,.08) 38%,rgba(187,151,76,.09) 100%)",boxShadow:"0 14px 45px rgba(0,0,0,.11),inset 0 1px rgba(255,255,255,.14)",border:"1px solid rgba(113,156,123,.23)"}}>
+      <h1 style={{fontSize:"clamp(25px,5vw,38px)",fontWeight:700,letterSpacing:"-.025em",textShadow:"0 2px 12px rgba(57,135,94,.13)"}}>🌍 {ui.title}</h1>
       <p>{ui.intro}</p>
       <label style={{display:"flex",alignItems:"center",gap:12,flexWrap:"wrap",marginTop:20}}>{ui.continent}
-        <select value={continent} onChange={event=>{const next=event.target.value;setContinent(next);setRegion(next==="world"?"world":(VIA_CALENDAR_REGIONS.find(item=>continentByRegion[item.code]===next)?.code??"world"))}} style={{padding:10,border:"1px solid #777",borderRadius:8,background:"#18241e",color:"white"}}>
+        <select value={continent} onChange={event=>{const next=event.target.value;setContinent(next);setRegion(next==="world"?"world":(VIA_CALENDAR_REGIONS.find(item=>continentByRegion[item.code]===next)?.code??"world"))}} style={{padding:10,border:"1px solid #777",borderRadius:8,background:"#21392f",color:"#f5f8f4",boxShadow:"0 3px 9px rgba(0,0,0,.12)"}}>
           {Object.entries(continentLabels[language]).map(([value,label])=><option key={value} value={value}>{label}</option>)}
         </select>
       </label>
@@ -165,21 +165,21 @@ export default function WereldkalenderPage() {
         <h2 style={{fontSize:22,fontWeight:600,textTransform:"capitalize"}}>{localizedMonth}</h2>
         <button type="button" onClick={()=>move(1)} aria-label={language==="Dutch"?"Volgende maand":language==="French"?"Mois suivant":language==="Spanish"?"Mes siguiente":language==="Chinese"?"下个月":language==="Hindi"?"अगला महीना":"Next month"} style={{padding:"10px 16px",border:"1px solid currentColor",borderRadius:10}}>›</button>
       </div>
-      <div style={{display:"grid",width:"100%",minWidth:0,gridTemplateColumns:"repeat(7,minmax(0,1fr))",gap:"clamp(2px,0.7vw,5px)"}}>
+      <div style={{display:"grid",width:"100%",minWidth:0,padding:"clamp(4px,1.2vw,12px)",boxSizing:"border-box",borderRadius:16,background:"linear-gradient(165deg,rgba(90,142,108,.10),rgba(188,154,79,.07))",border:"1px solid rgba(113,156,123,.22)",gridTemplateColumns:"repeat(7,minmax(0,1fr))",gap:"clamp(2px,0.7vw,5px)"}}>
         {localizedWeekdays.map((w,index)=><div key={index} style={{textAlign:"center",fontWeight:700,padding:6}}>{w}</div>)}
         {Array.from({length:offset},(_,i)=><div key={"blank"+i}/>)}
         {Array.from({length},(_,i)=>{
           const day=i+1, events=monthEvents.filter(d=>d.day===day)
           return <button key={day} type="button" onClick={()=>setSelected(selected===day?null:day)}
             aria-pressed={selected===day} aria-current={year===local.year && month+1===local.month && day===local.day?"date":undefined} aria-label={day+" "+localizedMonth+", "+events.length+" "+(language==="Dutch"?"vieringen":language==="French"?"événements":language==="Spanish"?"celebraciones":language==="Chinese"?"项活动":language==="Hindi"?"आयोजन":"observances")}
-            style={{minWidth:0,minHeight:"clamp(44px,9vw,64px)",padding:"clamp(2px,0.8vw,6px)",overflow:"hidden",border:"1px solid",borderColor:selected===day?"#4d9f77":year===local.year && month+1===local.month && day===local.day?"#cba34c":"#7775",borderRadius:9,background:selected===day?"#4d9f7725":"transparent",textAlign:"left",color:"inherit"}}>
+            style={{minWidth:0,minHeight:"clamp(44px,9vw,64px)",padding:"clamp(2px,0.8vw,6px)",overflow:"hidden",border:"1px solid",borderColor:selected===day?"#4d9f77":year===local.year && month+1===local.month && day===local.day?"#cba34c":"#7775",borderRadius:9,background:selected===day?"linear-gradient(145deg,rgba(74,159,119,.35),rgba(190,163,92,.17))":events.length>0?"rgba(95,145,110,.09)":"rgba(255,255,255,.025)",boxShadow:selected===day?"0 3px 12px rgba(38,99,65,.17)":"inset 0 1px rgba(255,255,255,.04)",textAlign:"left",color:"inherit"}}>
             <span style={{fontWeight:600}}>{day}</span>{events.length>0&&<span style={{display:"block",fontSize:"clamp(9px,2.4vw,12px)"}}>● {events.length}</span>}
           </button>
         })}
       </div>
       <h2 style={{fontSize:21,fontWeight:600,marginTop:28}}>{selected===null?ui.month:ui.day+" "+selected+" "+localizedMonth}</h2>
       {shown.length===0?<p>{ui.empty}</p>:<ul style={{paddingLeft:22}}>{shown.map(d=><li key={d.id} style={{margin:"8px 0"}}>{d.day??labels.monthAll} — {d.nameNl} <span style={{fontSize:12,opacity:.75}}>({d.scope==="international"?labels.international:d.scope==="regional"?labels.regional:labels.cultural})</span></li>)}</ul>}
-      <p style={{fontSize:13,opacity:.85}}>Berekende maanfeestdagen zijn indicatief. Officiële datums kunnen per land of maanwaarneming verschillen; VIA gebruikt hiervoor geen betaalde dienst.</p>
+      <p style={{fontSize:13,opacity:.85}}>{({Dutch:"Berekende maanfeestdagen zijn indicatief; officiële datums kunnen per land of maanwaarneming verschillen. Geen betaalde dienst.",English:"Calculated lunar dates are estimates; official dates may vary by country or moon sighting. No paid service.",French:"Les dates lunaires calculées sont indicatives ; les dates officielles varient selon les pays et l’observation lunaire. Aucun service payant.",Spanish:"Las fechas lunares calculadas son orientativas; las fechas oficiales pueden variar según el país y la observación lunar. Sin servicios de pago.",Chinese:"农历日期仅为估算；各国官方日期可能因月相观测而不同。不使用付费服务。",Hindi:"गणना की गई चंद्र तिथियाँ अनुमानित हैं; देश और चंद्र-दर्शन के अनुसार आधिकारिक तिथियाँ बदल सकती हैं। कोई सशुल्क सेवा नहीं।"} as Record<ViaLanguage,string>)[language]}</p>
       {unresolved.length>0 && <h2 style={{fontSize:21,fontWeight:600,marginTop:28}}>{guidance.pendingTitle}</h2>}
       {unresolved.length>0 && <p>{guidance.pendingInfo}</p>}
       {unresolved.length>0 && <ul style={{paddingLeft:22}}>{unresolved.map(d=><li key={d.id}>{d.nameNl}: {guidance.pendingDate}</li>)}</ul>
