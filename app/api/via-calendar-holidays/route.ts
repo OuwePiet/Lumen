@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
+import { VIA_CALENDAR_REGIONS } from "../../../via-calendar-regions"
 
 /** Public holiday data from Nager.Date, without API keys or paid plans. */
 type Holiday = { date: string; localName: string; name: string; counties?: string[] | null; types?: string[] }
@@ -6,11 +7,13 @@ export async function GET(request: NextRequest) {
   const year = Number(request.nextUrl.searchParams.get("year"))
   const country = (request.nextUrl.searchParams.get("country") ?? "").toUpperCase()
   const world = country === "WORLD"
-  const selectedCountries = world ? ["NL","BE","DE","FR","GB","ES","IT","PT","US","CA","MX","BR","AR","AU","NZ","CN","IN","JP","KR","ID","ZA","EG","NG"] : [country]
+  const selectedCountries = world ? VIA_CALENDAR_REGIONS.filter(entry=>entry.code!=="world").map(entry=>entry.code) : [country]
   if (!Number.isInteger(year) || year < 1900 || year > 2100 || (!world && !/^[A-Z]{2}$/.test(country))) {
     return NextResponse.json({ error: "Invalid year or country" }, { status: 400 })
   }
-  const results = await Promise.all(selectedCountries.map(async code => {
+  const results: Array<{code:string;available:boolean;holidays:Array<{date:string;name:string;localName:string;country:string;regions:string[];types:string[]}>}> = []
+  for (let index=0;index<selectedCountries.length;index+=8) {
+    const batch=await Promise.all(selectedCountries.slice(index,index+8).map(async code => {
     try {
       const response = await fetch(`https://date.nager.at/api/v3/PublicHolidays/${year}/${code}`, {
         next: { revalidate: 86400 },
@@ -23,7 +26,7 @@ export async function GET(request: NextRequest) {
       const holidays = source.filter((entry): entry is Holiday => {
         if (!entry || typeof entry !== "object") return false
         const item = entry as Record<string, unknown>
-        return typeof item.date === "string" && /^\\d{4}-\\d{2}-\\d{2}$/.test(item.date) && typeof item.name === "string" && typeof item.localName === "string"
+        return typeof item.date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(item.date) && typeof item.name === "string" && typeof item.localName === "string"
       }).map(item => ({
         date:item.date, name:item.name.slice(0,180), localName:item.localName.slice(0,180),
         country:code, regions:Array.isArray(item.counties)?item.counties.filter((v):v is string=>typeof v==="string"):[],
@@ -31,7 +34,9 @@ export async function GET(request: NextRequest) {
       }))
       return { code, available:true, holidays }
     } catch { return { code, available:false, holidays:[] } }
-  }))
+    }))
+    results.push(...batch)
+  }
   const availableCountries = results.filter(result=>result.available).map(result=>result.code)
   const unavailableCountries = results.filter(result=>!result.available).map(result=>result.code)
   return NextResponse.json({
