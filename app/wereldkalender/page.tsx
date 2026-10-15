@@ -123,7 +123,7 @@ export default function WereldkalenderPage() {
   const local = viaCalendarLocalDate(today,selectedRegion)
   const [publicHolidays,setPublicHolidays] = useState<Array<{date:string;name:string;localName:string;country:string;regions:string[]}>>([])
   const [holidayDataAvailable,setHolidayDataAvailable] = useState<boolean|null>(null)
-  const [holidayCoverage,setHolidayCoverage] = useState<{availableCountries:string[];unavailableCountries:string[]}|null>(null)
+  const [holidayCoverage,setHolidayCoverage] = useState<{availableCountries:string[];unavailableCountries:string[];unsupportedCountries:string[]}|null>(null)
   useEffect(() => {
     
     const controller = new AbortController()
@@ -132,8 +132,8 @@ export default function WereldkalenderPage() {
     setHolidayCoverage(null)
     fetch(`/api/via-calendar-holidays?year=${year}&country=${selectedRegion}`,{signal:controller.signal})
       .then(response=>response.ok?response.json():Promise.reject(new Error("holiday lookup")))
-      .then((data:{holidays?:Array<{date:string;name:string;localName:string;country:string;regions:string[]}>;available?:boolean;availableCountries?:string[];unavailableCountries?:string[]})=>{
-        if (!controller.signal.aborted) { setPublicHolidays(Array.isArray(data.holidays)?data.holidays:[]); setHolidayDataAvailable(data.available===true); setHolidayCoverage({availableCountries:data.availableCountries??[],unavailableCountries:data.unavailableCountries??[]}) }
+      .then((data:{holidays?:Array<{date:string;name:string;localName:string;country:string;regions:string[]}>;available?:boolean;availableCountries?:string[];unavailableCountries?:string[];unsupportedCountries?:string[]})=>{
+        if (!controller.signal.aborted) { setPublicHolidays(Array.isArray(data.holidays)?data.holidays:[]); setHolidayDataAvailable(data.available===true); setHolidayCoverage({availableCountries:data.availableCountries??[],unavailableCountries:data.unavailableCountries??[],unsupportedCountries:data.unsupportedCountries??[]}) }
       })
       .catch(()=>{ if (!controller.signal.aborted) {setPublicHolidays([]);setHolidayDataAvailable(false)} })
     return ()=>controller.abort()
@@ -306,6 +306,7 @@ export default function WereldkalenderPage() {
         })}
       </div>
       {holidayCoverage && <p role="status" style={{fontSize:12,opacity:.8}}>Feestdagenbron: {holidayCoverage.availableCountries.length} landen beschikbaar; {holidayCoverage.unavailableCountries.length} niet beschikbaar. Gegevens worden dagelijks opnieuw gecontroleerd wanneer de kalender wordt geopend.</p>}
+      {holidayCoverage && holidayCoverage.unsupportedCountries.length>0 && <p role="status" style={{fontSize:12,opacity:.8}}>Geen nationale feestdagenbron voor {holidayCoverage.unsupportedCountries.length} gekozen landen: {holidayCoverage.unsupportedCountries.join(", ")}.</p>}
       {holidayCoverage && holidayCoverage.unavailableCountries.length>0 && <p role="status" style={{fontSize:12,opacity:.8}}>Feestdagenbron niet beschikbaar voor: {holidayCoverage.unavailableCountries.join(", ")}. Andere gegevens blijven zichtbaar.</p>}
       {selectedRegion!=="world" && holidayDataAvailable===false && <p role="status" style={{fontSize:12,opacity:.8}}>{language==="Dutch"?"Geen feestdagengegevens beschikbaar voor dit land; de internationale kalender blijft zichtbaar.":"Country holiday data unavailable; international observances remain visible."}</p>}
       <h2 style={{fontSize:21,fontWeight:600,marginTop:28}}>{selected===null?ui.month:ui.day+" "+selected+" "+localizedMonth}</h2>
