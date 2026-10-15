@@ -6,6 +6,30 @@ import { viaOfflineLunarDates } from "../via-calendar-offline-dates"
 import { VIA_CALENDAR_REGIONS, viaCalendarLocalDate, type ViaCalendarRegion } from "../via-calendar-regions"
 import { readViaLocalSettings, VIA_SETTINGS_EVENT, type ViaLanguage } from "../via-local-settings"
 
+const holidaySymbol = (id: string, name: string): string => {
+  const text = (id + " " + name).toLowerCase()
+  if (/halloween/.test(text)) return "🎃"
+  if (/animal|dier|wildlife/.test(text)) return "🐾"
+  if (/christmas|kerst/.test(text)) return "🎄"
+  if (/new.year|nieuwjaar/.test(text)) return "🎆"
+  if (/easter|pasen/.test(text)) return "🐣"
+  if (/lunar|chinese/.test(text)) return "🧧"
+  if (/ramadan|eid/.test(text)) return "🌙"
+  if (/diwali/.test(text)) return "🪔"
+  if (/holi/.test(text)) return "🎨"
+  if (/valentine|liefde/.test(text)) return "❤️"
+  if (/earth|aarde|environment|milieu/.test(text)) return "🌱"
+  if (/food|voedsel/.test(text)) return "🌾"
+  if (/peace|vrede/.test(text)) return "🕊️"
+  if (/health|gezondheid/.test(text)) return "💚"
+  if (/women|vrouw|girl|meisje/.test(text)) return "👩"
+  if (/united.nations|verenigde.naties/.test(text)) return "🇺🇳"
+  if (/teacher|leraar|education|onderwijs/.test(text)) return "📚"
+  if (/coming.out|pride/.test(text)) return "🏳️‍🌈"
+  if (/national|independence|bevrijding/.test(text)) return "🎉"
+  return "🌍"
+}
+
 const monthNames = ["januari","februari","maart","april","mei","juni","juli","augustus","september","oktober","november","december"]
 const calendarLocales: Record<ViaLanguage,string> = {Dutch:"nl-NL",English:"en-GB",French:"fr-FR",Spanish:"es-ES",Chinese:"zh-CN",Hindi:"hi-IN"}
 
@@ -206,7 +230,7 @@ export default function WereldkalenderPage() {
           return <button key={day} type="button" onClick={()=>setSelected(selected===day?null:day)}
             aria-pressed={selected===day} aria-current={year===local.year && month+1===local.month && day===local.day?"date":undefined} aria-label={day+" "+localizedMonth+", "+events.length+" "+(language==="Dutch"?"vieringen":language==="French"?"événements":language==="Spanish"?"celebraciones":language==="Chinese"?"项活动":language==="Hindi"?"आयोजन":"observances")}
             style={{minWidth:0,minHeight:"clamp(44px,9vw,64px)",padding:"clamp(2px,0.8vw,6px)",overflow:"hidden",border:"1px solid",borderColor:selected===day?"#4d9f77":year===local.year && month+1===local.month && day===local.day?"#cba34c":"#7775",borderRadius:9,background:selected===day?"linear-gradient(145deg,rgba(70,170,117,.48),rgba(215,175,83,.22))":events.length>0?"linear-gradient(145deg,rgba(78,154,102,.22),rgba(173,148,72,.08))":"rgba(255,255,255,.035)",boxShadow:selected===day?"0 3px 12px rgba(38,99,65,.17)":"inset 0 1px rgba(255,255,255,.04)",textAlign:"left",color:"inherit"}}>
-            <span style={{fontWeight:600}}>{day}</span>{events.length>0&&<span style={{display:"block",fontSize:"clamp(9px,2.4vw,12px)"}}>● {events.length}</span>}
+            <span style={{fontWeight:600}}>{day}</span>{events.length>0&&<span aria-hidden="true" style={{display:"flex",alignItems:"center",gap:2,flexWrap:"wrap",marginTop:4,fontSize:"clamp(13px,2.2vw,18px)",lineHeight:1.15}}>{events.slice(0,3).map(event=><span key={event.id} title={holidayName(event.id,event.nameNl)}>{holidaySymbol(event.id,event.nameNl)}</span>)}{events.length>3&&<span style={{fontSize:10,opacity:.8}}>+{events.length-3}</span>}</span>}
           </button>
         })}
       </div>
