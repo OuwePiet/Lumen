@@ -92,7 +92,7 @@ export default function WereldkalenderPage() {
       .concat(easter.month===month+1 ? [{id:"easter",nameNl:"Pasen",month:easter.month,day:easter.day,scope:"cultural" as const,status:"scheduled" as const}]:[])
   },[year,month])
   const offlineLunar = useMemo(() => viaOfflineLunarDates(year), [year])
-  const unresolved = VIA_INTERNATIONAL_DAYS.filter(d=>d.status==="date-required" && d.id!=="easter" && !offlineLunar.some(known=>known.id===d.id))
+  const unresolved = VIA_INTERNATIONAL_DAYS.filter(d=>d.status==="date-required" && d.id!=="easter" && !offlineLunar.some(known=>known.id===d.id || (d.id==="eid" && known.id==="eid-al-fitr")))
   const easter=easterSunday(year)
   const easterDate=new Date(Date.UTC(year,easter.month-1,easter.day))
   const relativeDate=(daysFromEaster:number)=>{
@@ -142,6 +142,31 @@ export default function WereldkalenderPage() {
     setYear(next.getFullYear());setMonth(next.getMonth());setSelected(null)
   }
   const shown=selected===null ? monthEvents : monthEvents.filter(d=>d.day===selected || d.day===null)
+  const holidayNames: Record<string,Partial<Record<ViaLanguage,string>>> = {
+    "new-year":{English:"New Year’s Day",French:"Jour de l’An",Spanish:"Año Nuevo",Chinese:"元旦",Hindi:"नव वर्ष"},
+    women:{English:"International Women’s Day",French:"Journée internationale des femmes",Spanish:"Día Internacional de la Mujer",Chinese:"国际妇女节",Hindi:"अंतरराष्ट्रीय महिला दिवस"},
+    earth:{English:"Earth Day",French:"Jour de la Terre",Spanish:"Día de la Tierra",Chinese:"世界地球日",Hindi:"पृथ्वी दिवस"},
+    pride:{English:"Pride Month",French:"Mois des fiertés",Spanish:"Mes del Orgullo",Chinese:"骄傲月",Hindi:"प्राइड माह"},
+    peace:{English:"International Day of Peace",French:"Journée internationale de la paix",Spanish:"Día Internacional de la Paz",Chinese:"国际和平日",Hindi:"अंतरराष्ट्रीय शांति दिवस"},
+    animals:{English:"World Animal Day",French:"Journée mondiale des animaux",Spanish:"Día Mundial de los Animales",Chinese:"世界动物日",Hindi:"विश्व पशु दिवस"},
+    children:{English:"World Children’s Day",French:"Journée mondiale de l’enfance",Spanish:"Día Mundial de la Infancia",Chinese:"世界儿童日",Hindi:"विश्व बाल दिवस"},
+    christmas:{English:"Christmas Day",French:"Noël",Spanish:"Navidad",Chinese:"圣诞节",Hindi:"क्रिसमस"},
+    "christmas-eve":{English:"Christmas Eve",French:"Réveillon de Noël",Spanish:"Nochebuena",Chinese:"平安夜",Hindi:"क्रिसमस की पूर्व संध्या"},
+    "boxing-day":{English:"Boxing Day",French:"Lendemain de Noël",Spanish:"Segundo día de Navidad",Chinese:"节礼日",Hindi:"बॉक्सिंग डे"},
+    "new-years-eve":{English:"New Year’s Eve",French:"Réveillon du Nouvel An",Spanish:"Nochevieja",Chinese:"除夕（公历）",Hindi:"नव वर्ष की पूर्व संध्या"},
+    easter:{English:"Easter Sunday",French:"Pâques",Spanish:"Domingo de Pascua",Chinese:"复活节",Hindi:"ईस्टर"},
+    "good-friday":{English:"Good Friday",French:"Vendredi saint",Spanish:"Viernes Santo",Chinese:"耶稣受难日",Hindi:"गुड फ्राइडे"},
+    "easter-monday":{English:"Easter Monday",French:"Lundi de Pâques",Spanish:"Lunes de Pascua",Chinese:"复活节星期一",Hindi:"ईस्टर सोमवार"},
+    ascension:{English:"Ascension Day",French:"Ascension",Spanish:"Ascensión",Chinese:"耶稣升天节",Hindi:"स्वर्गारोहण दिवस"},
+    pentecost:{English:"Pentecost",French:"Pentecôte",Spanish:"Pentecostés",Chinese:"圣灵降临节",Hindi:"पेंटेकोस्ट"},
+    "pentecost-monday":{English:"Whit Monday",French:"Lundi de Pentecôte",Spanish:"Lunes de Pentecostés",Chinese:"圣灵降临节星期一",Hindi:"पेंटेकोस्ट सोमवार"},
+    "lunar-new-year":{English:"Lunar New Year (estimated)",French:"Nouvel An lunaire (estimation)",Spanish:"Año Nuevo Lunar (estimado)",Chinese:"农历新年（估算）",Hindi:"चंद्र नव वर्ष (अनुमानित)"},
+    ramadan:{English:"Start of Ramadan (estimated)",French:"Début du ramadan (estimation)",Spanish:"Inicio del Ramadán (estimado)",Chinese:"斋月开始（估算）",Hindi:"रमज़ान आरंभ (अनुमानित)"},
+    "eid-al-fitr":{English:"Eid al-Fitr (estimated)",French:"Aïd el-Fitr (estimation)",Spanish:"Eid al-Fitr (estimado)",Chinese:"开斋节（估算）",Hindi:"ईद-उल-फ़ित्र (अनुमानित)"},
+    diwali:{English:"Diwali",French:"Divali",Spanish:"Diwali",Chinese:"排灯节",Hindi:"दीपावली"},
+    holi:{English:"Holi",French:"Holi",Spanish:"Holi",Chinese:"洒红节",Hindi:"होली"},
+  }
+  const holidayName=(id:string,fallback:string)=>language==="Dutch"?fallback:(holidayNames[id]?.[language]??fallback)
   return (
     <main style={{maxWidth:980,width:"100%",minWidth:0,boxSizing:"border-box",margin:"0 auto",padding:"clamp(16px,3vw,32px)",color:"inherit",overflowWrap:"anywhere",borderRadius:24,background:"linear-gradient(155deg,rgba(61,118,88,.17),rgba(19,39,32,.08) 38%,rgba(187,151,76,.09) 100%)",boxShadow:"0 14px 45px rgba(0,0,0,.11),inset 0 1px rgba(255,255,255,.14)",border:"1px solid rgba(113,156,123,.23)"}}>
       <h1 style={{fontSize:"clamp(25px,5vw,38px)",fontWeight:700,letterSpacing:"-.025em",textShadow:"0 2px 12px rgba(57,135,94,.13)"}}>🌍 {ui.title}</h1>
@@ -178,11 +203,11 @@ export default function WereldkalenderPage() {
         })}
       </div>
       <h2 style={{fontSize:21,fontWeight:600,marginTop:28}}>{selected===null?ui.month:ui.day+" "+selected+" "+localizedMonth}</h2>
-      {shown.length===0?<p>{ui.empty}</p>:<ul style={{paddingLeft:22}}>{shown.map(d=><li key={d.id} style={{margin:"8px 0"}}>{d.day??labels.monthAll} — {d.nameNl} <span style={{fontSize:12,opacity:.75}}>({d.scope==="international"?labels.international:d.scope==="regional"?labels.regional:labels.cultural})</span></li>)}</ul>}
+      {shown.length===0?<p>{ui.empty}</p>:<ul style={{paddingLeft:22}}>{shown.map(d=><li key={d.id} style={{margin:"8px 0"}}>{d.day??labels.monthAll} — {holidayName(d.id,d.nameNl)} <span style={{fontSize:12,opacity:.75}}>({d.scope==="international"?labels.international:d.scope==="regional"?labels.regional:labels.cultural})</span></li>)}</ul>}
       <p style={{fontSize:13,opacity:.85}}>{({Dutch:"Berekende maanfeestdagen zijn indicatief; officiële datums kunnen per land of maanwaarneming verschillen. Geen betaalde dienst.",English:"Calculated lunar dates are estimates; official dates may vary by country or moon sighting. No paid service.",French:"Les dates lunaires calculées sont indicatives ; les dates officielles varient selon les pays et l’observation lunaire. Aucun service payant.",Spanish:"Las fechas lunares calculadas son orientativas; las fechas oficiales pueden variar según el país y la observación lunar. Sin servicios de pago.",Chinese:"农历日期仅为估算；各国官方日期可能因月相观测而不同。不使用付费服务。",Hindi:"गणना की गई चंद्र तिथियाँ अनुमानित हैं; देश और चंद्र-दर्शन के अनुसार आधिकारिक तिथियाँ बदल सकती हैं। कोई सशुल्क सेवा नहीं।"} as Record<ViaLanguage,string>)[language]}</p>
       {unresolved.length>0 && <h2 style={{fontSize:21,fontWeight:600,marginTop:28}}>{guidance.pendingTitle}</h2>}
       {unresolved.length>0 && <p>{guidance.pendingInfo}</p>}
-      {unresolved.length>0 && <ul style={{paddingLeft:22}}>{unresolved.map(d=><li key={d.id}>{d.nameNl}: {guidance.pendingDate}</li>)}</ul>
+      {unresolved.length>0 && <ul style={{paddingLeft:22}}>{unresolved.map(d=><li key={d.id}>{holidayName(d.id,d.nameNl)}: {guidance.pendingDate}</li>)}</ul>
       <p style={{marginTop:24,fontSize:13,opacity:.8}}>Maandlange vieringen worden in de lijst vermeld, maar niet als losse dagmeldingen geteld. Een eerste landen- en tijdzonekeuze is beschikbaar. Regionale feestdagenfilters, juridische controles en automatische bevestigingsbronnen zijn nog in ontwikkeling.</p>
     </main>
   )
