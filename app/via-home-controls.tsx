@@ -560,7 +560,7 @@ export default function ViaHomeControls() {
         <nav aria-label="VIA toekomstige pagina's" style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "7px" }}>
           {[
             ["Wereldkrant", "World Newspaper", "Journal mondial", "Periódico mundial", "世界报纸"],
-            ["Luisterbibliotheek", "Audio Library", "Bibliothèque audio", "Biblioteca de audio", "有声图书馆"],
+            ["LuisterHoek", "Listening Corner", "Coin écoute", "Rincón de escucha", "聆听角"],
             ["VIA Auto", "VIA Auto", "VIA Auto", "VIA Auto", "VIA 汽车"],
             ["VIA Archief", "VIA Archive", "Archives VIA", "Archivo VIA", "VIA 档案"],
           ].map((labels, index) => {
