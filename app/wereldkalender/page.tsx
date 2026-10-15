@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react"
 import { VIA_INTERNATIONAL_DAYS } from "../via-international-calendar"
 import { VIA_CALENDAR_REGIONS, viaCalendarLocalDate, type ViaCalendarRegion } from "../via-calendar-regions"
-import { readViaLocalSettings, saveViaLocalSettings, VIA_LANGUAGES, VIA_SETTINGS_EVENT, type ViaLanguage } from "../via-local-settings"
+import { readViaLocalSettings, VIA_SETTINGS_EVENT, type ViaLanguage } from "../via-local-settings"
 
 const monthNames = ["januari","februari","maart","april","mei","juni","juli","augustus","september","oktober","november","december"]
 const calendarLocales: Record<ViaLanguage,string> = {Dutch:"nl-NL",English:"en-GB",French:"fr-FR",Spanish:"es-ES",Chinese:"zh-CN",Hindi:"hi-IN"}
@@ -141,16 +141,9 @@ export default function WereldkalenderPage() {
   }
   const shown=selected===null ? monthEvents : monthEvents.filter(d=>d.day===selected || d.day===null)
   return (
-    <main style={{maxWidth:920,width:"100%",minWidth:0,boxSizing:"border-box",margin:"0 auto",padding:"24px 12px",color:"inherit",overflowWrap:"anywhere"}}>
-      <a href="/" style={{display:"inline-block",marginBottom:16}}>← {ui.home}</a>
+    <main data-via-world-calendar style={{maxWidth:920,width:"100%",minWidth:0,boxSizing:"border-box",margin:"0 auto",padding:"24px 12px",color:"inherit",overflowWrap:"anywhere"}}>
       <h1 style={{fontSize:"clamp(25px,5vw,38px)",fontWeight:700}}>🌍 {ui.title}</h1>
       <p>{ui.intro}</p>
-      <label style={{display:"flex",alignItems:"center",gap:12,flexWrap:"wrap",marginTop:16}}>{ui.language}
-        <select value={language} onChange={event=>saveViaLocalSettings({interfaceLanguage:event.target.value as ViaLanguage})} style={{padding:10,border:"1px solid #777",borderRadius:8,background:"#18241e",color:"white"}}>
-          {VIA_LANGUAGES.map(item=><option key={item} value={item}>{item}</option>)}
-        </select>
-      </label>
-      <p style={{fontSize:13}}>{guidance.languageNote}</p>
       <label style={{display:"flex",alignItems:"center",gap:12,flexWrap:"wrap",marginTop:20}}>{ui.continent}
         <select value={continent} onChange={event=>{const next=event.target.value;setContinent(next);setRegion(next==="world"?"world":(VIA_CALENDAR_REGIONS.find(item=>continentByRegion[item.code]===next)?.code??"world"))}} style={{padding:10,border:"1px solid #777",borderRadius:8,background:"#18241e",color:"white"}}>
           {Object.entries(continentLabels[language]).map(([value,label])=><option key={value} value={value}>{label}</option>)}
