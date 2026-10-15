@@ -207,7 +207,7 @@ export default function WereldkalenderPage() {
       <p style={{fontSize:13,opacity:.85}}>{({Dutch:"Berekende maanfeestdagen zijn indicatief; officiële datums kunnen per land of maanwaarneming verschillen. Geen betaalde dienst.",English:"Calculated lunar dates are estimates; official dates may vary by country or moon sighting. No paid service.",French:"Les dates lunaires calculées sont indicatives ; les dates officielles varient selon les pays et l’observation lunaire. Aucun service payant.",Spanish:"Las fechas lunares calculadas son orientativas; las fechas oficiales pueden variar según el país y la observación lunar. Sin servicios de pago.",Chinese:"农历日期仅为估算；各国官方日期可能因月相观测而不同。不使用付费服务。",Hindi:"गणना की गई चंद्र तिथियाँ अनुमानित हैं; देश और चंद्र-दर्शन के अनुसार आधिकारिक तिथियाँ बदल सकती हैं। कोई सशुल्क सेवा नहीं।"} as Record<ViaLanguage,string>)[language]}</p>
       {unresolved.length>0 && <h2 style={{fontSize:21,fontWeight:600,marginTop:28}}>{guidance.pendingTitle}</h2>}
       {unresolved.length>0 && <p>{guidance.pendingInfo}</p>}
-      {unresolved.length>0 && <ul style={{paddingLeft:22}}>{unresolved.map(d=><li key={d.id}>{holidayName(d.id,d.nameNl)}: {guidance.pendingDate}</li>)}</ul>
+      {unresolved.length>0 && <ul style={{paddingLeft:22}}>{unresolved.map(d=><li key={d.id}>{holidayName(d.id,d.nameNl)}: {guidance.pendingDate}</li>)}</ul>}
       <p style={{marginTop:24,fontSize:13,opacity:.8}}>Maandlange vieringen worden in de lijst vermeld, maar niet als losse dagmeldingen geteld. Een eerste landen- en tijdzonekeuze is beschikbaar. Regionale feestdagenfilters, juridische controles en automatische bevestigingsbronnen zijn nog in ontwikkeling.</p>
     </main>
   )
