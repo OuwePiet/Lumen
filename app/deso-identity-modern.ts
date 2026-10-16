@@ -78,6 +78,9 @@ export const viaModernIdentity: ViaModernIdentityAdapter = {
   async login() {
     ensureConfigured()
     const payload = await identity.login()
+    // Codex PR #1451: the SDK login becomes the sole active account.
+    // Preserve stored legacy accounts for explicit switching only.
+    clearIdentitySession()
     return { publicKey: payload.publicKeyBase58Check }
   },
 
@@ -117,6 +120,8 @@ export const viaModernIdentity: ViaModernIdentityAdapter = {
     if (viaSession) return
     ensureConfigured()
     await identity.setActiveUser(publicKey)
+    // Codex PR #1451: never let an older legacy selection mask the SDK account.
+    clearIdentitySession()
   },
 
   async signTx(transactionHex: string) {
