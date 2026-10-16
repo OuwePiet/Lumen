@@ -99,6 +99,15 @@ type HomeText = {
   music: string
 }
 
+const accountMenuCopy: Record<ViaLanguage, { active: string; signedOut: string; empty: string }> = {
+  Dutch: { active: "Actieve account", signedOut: "Niet ingelogd", empty: "Andere accounts verschijnen hier nadat je ze bij VIA hebt aangemeld." },
+  English: { active: "Active account", signedOut: "Not logged in", empty: "Other accounts appear here after you sign them in to VIA." },
+  French: { active: "Compte actif", signedOut: "Non connecté", empty: "Les autres comptes apparaissent ici après leur connexion à VIA." },
+  Spanish: { active: "Cuenta activa", signedOut: "Sin sesión", empty: "Las otras cuentas aparecen aquí después de iniciar sesión en VIA." },
+  Chinese: { active: "当前账户", signedOut: "未登录", empty: "其他账户登录 VIA 后将显示在此处。" },
+  Hindi: { active: "सक्रिय खाता", signedOut: "लॉग इन नहीं हैं", empty: "VIA में लॉग इन करने के बाद अन्य खाते यहाँ दिखाई देंगे।" },
+}
+
 const copy: Record<ViaLanguage | "Hindi", HomeText> = {
   Dutch: {
     standard: "", viaExtra: "", account: "Taal", home: "Home",
@@ -207,6 +216,7 @@ function shortPublicKey(publicKey: string) {
 export default function ViaHomeControls() {
   const router = useRouter()
   const loginLock = useRef(false)
+  const accountMenuRef = useRef<HTMLDivElement | null>(null)
   const [session, setSession] = useState<ViaIdentitySession | null>(null)
   const [knownAccounts, setKnownAccounts] = useState<ViaIdentitySession[]>([])
   const [loadedProfile, setProfile] = useState<PublicProfile | null>(null)
@@ -307,6 +317,24 @@ export default function ViaHomeControls() {
       window.clearInterval(interval)
     }
   }, [session?.publicKey, profile?.username])
+
+  useEffect(() => {
+    if (!accountsOpen) return
+    const closeOutside = (event: PointerEvent) => {
+      if (!accountMenuRef.current?.contains(event.target as Node)) setAccountsOpen(false)
+    }
+    const closeEscape = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return
+      setAccountsOpen(false)
+      accountMenuRef.current?.querySelector<HTMLButtonElement>("button")?.focus()
+    }
+    document.addEventListener("pointerdown", closeOutside)
+    document.addEventListener("keydown", closeEscape)
+    return () => {
+      document.removeEventListener("pointerdown", closeOutside)
+      document.removeEventListener("keydown", closeEscape)
+    }
+  }, [accountsOpen])
 
   function refreshAccounts() {
     setKnownAccounts(listIdentitySessions())
@@ -419,6 +447,7 @@ export default function ViaHomeControls() {
   }
 
   const t = copy[language]
+  const menuText = accountMenuCopy[language]
   const avatar = safeProfileImage(profile?.profilePic)
   const accountName = profile?.username ? `@${profile.username}` : session ? shortPublicKey(session.publicKey) : "DeSo"
   const otherAccounts = knownAccounts.filter((account) => account.publicKey !== session?.publicKey)
@@ -467,14 +496,20 @@ export default function ViaHomeControls() {
         {t.standard ? <span className="via-home-standard-label" style={sectionLabel}>{t.standard}</span> : null}
         <nav aria-label="VIA standard navigation" style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "7px" }}>
           {standardNav.map(([key, href]) => key === "home" ? (
-            <div key={key} className="via-home-grid-account-wrap" style={{ position: "relative", width: "100%" }}>
-              <button type="button" onClick={() => { if (!session) { setAccountsOpen(false); openDeSoIdentity(); return } refreshAccounts(); setAccountsOpen((open) => !open) }} aria-label={session ? t.switchAccount : t.login} title={session ? t.switchAccount : t.login} aria-expanded={accountsOpen} aria-haspopup="menu" style={{ ...buttonStyle, width: "100%", minHeight: "48px", justifyContent: "center", paddingInline: "9px", cursor: "pointer", gap: "7px" }}>
+            <div ref={accountMenuRef} key={key} className="via-home-grid-account-wrap" style={{ position: "relative", width: "100%" }}>
+              <button type="button" onClick={() => { refreshAccounts(); setAccountsOpen((open) => !open) }} aria-label={session ? t.switchAccount : t.login} title={session ? t.switchAccount : t.login} aria-expanded={accountsOpen} aria-haspopup="menu" style={{ ...buttonStyle, width: "100%", minHeight: "48px", justifyContent: "center", paddingInline: "9px", cursor: "pointer", gap: "7px" }}>
                 {session && avatar ? <img src={avatar} alt="" referrerPolicy="no-referrer" style={{ width: 28, height: 28, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} /> : session ? <UsersRound aria-hidden="true" size={18} /> : <img src="/via-logo-original.jpg?v=2" alt="" aria-hidden="true" style={{ width: 28, height: 28, borderRadius: "50%", objectFit: "contain", flexShrink: 0 }} />}
                 <span>{session ? accountName : t.login}</span>
               </button>
               {hasNewIdeas ? <Link prefetch={false} href="/owner#centrale-ideeenbus" aria-label="Nieuw idee: open Ideeënbus" title="Open nieuwe ideeën" style={{ position: "absolute", right: 3, top: "50%", transform: "translateY(-50%)", zIndex: 2, fontSize: 18, textDecoration: "none", lineHeight: 1 }}>💡</Link> : null}
               {accountsOpen ? (
                 <div className="via-home-account-menu via-home-grid-account-menu" role="menu" aria-label={t.switchAccount}>
+                  <div className="via-home-account-current">
+                    <span>{session ? menuText.active : menuText.signedOut}</span>
+                    {session ? <strong>{accountName}</strong> : null}
+                  </div>
+                  <div className="via-home-account-menu-heading">{t.switchAccount}</div>
+                  {!otherAccounts.length ? <p className="via-home-account-empty">{menuText.empty}</p> : null}
                   {otherAccounts.map((account) => {
                     const accountProfile = profiles[account.publicKey]
                     const accountAvatar = safeProfileImage(accountProfile?.profilePic)
@@ -483,8 +518,8 @@ export default function ViaHomeControls() {
                       <span>{accountProfile?.username ? `@${accountProfile.username}` : shortPublicKey(account.publicKey)}</span>
                     </button>
                   })}
-                  <button type="button" onClick={() => { setAccountsOpen(false); openDeSoIdentity() }} role="menuitem">{session ? t.addAccount : t.login}</button>
-                  {session ? <button type="button" onClick={logout} role="menuitem">{t.logout}</button> : null}
+                  <button type="button" onClick={() => { setAccountsOpen(false); openDeSoIdentity() }} role="menuitem">{t.addAccount}</button>
+                  <button type="button" onClick={logout} role="menuitem" className="via-home-account-logout">{t.logout}</button>
 
                 </div>
               ) : null}
@@ -541,7 +576,14 @@ export default function ViaHomeControls() {
       <style>{`
         .via-home-language-control { position: relative; width: 100%; }
          .via-home-grid-account-wrap:has(.via-home-grid-account-menu) { z-index: 200; }
-        .via-home-grid-account-menu { position: absolute !important; left: 0; right: auto; top: calc(100% + 6px); width: min(218px, calc(100vw - 28px)) !important; box-sizing: border-box; padding: 5px !important; border-radius: 12px !important; background: rgba(10,22,15,.96) !important; backdrop-filter: blur(12px) !important; border: 1px solid rgba(143,212,169,.32) !important; box-shadow: 0 18px 44px rgba(0,0,0,.42) !important; }
+        .via-home-grid-account-menu { position: absolute !important; left: 0; right: auto; top: calc(100% + 6px); width: min(218px, calc(100vw - 28px)) !important; max-height: 60vh; overflow-y: auto; box-sizing: border-box; padding: 5px !important; border-radius: 12px !important; background: rgba(10,22,15,.96) !important; backdrop-filter: blur(12px) !important; border: 1px solid rgba(143,212,169,.32) !important; box-shadow: 0 18px 44px rgba(0,0,0,.42) !important; }
+        .via-home-account-current { display: grid; gap: 3px; padding: 7px; border-bottom: 1px solid rgba(143,212,169,.18); overflow-wrap: anywhere; }
+        .via-home-account-current > span { color: #95a99b; font-size: 10px; }
+        .via-home-account-current > strong { color: #b8edca; font-size: 12px; }
+        .via-home-account-menu-heading { color: #8fd4a9; font-size: 10px; padding: 7px 7px 3px; }
+        .via-home-account-empty { margin: 0; padding: 4px 7px 8px; color: #a7b4ac; font-size: 11px; line-height: 1.45; }
+        .via-home-grid-account-menu > button { display: flex; align-items: center; gap: 7px; width: 100%; text-align: left; background: transparent; color: #d7e9dd; border: 0; cursor: pointer; }
+        .via-home-grid-account-menu > .via-home-account-logout { color: #edc4b6; }
         .via-home-account-menu > button img, .via-home-account-menu > button svg { width: 23px; height: 23px; border-radius: 50%; object-fit: cover; flex: 0 0 auto; }
         .via-home-account-menu > button span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .via-home-grid-account-menu > a, .via-home-grid-account-menu > button { min-height: 32px !important; padding: 5px 7px !important; border-bottom: 1px solid rgba(143,212,169,.10) !important; }

@@ -47,6 +47,7 @@ function fixture({ active = A, legacy = OLD, users = { [A]: user(A), [B]: user(B
 
 test('canonical active SDK account wins over a different old account', async () => { const f = fixture(); assert.equal(f.session.restoreIdentitySession().publicKey, A); assert.equal((await f.identity.currentUser()).publicKey, A) })
 test('legacy-only account is never silently restored as SDK login', async () => { const f = fixture({ active: null }); assert.equal(f.session.restoreIdentitySession(), null); assert.equal(await f.identity.currentUser(), null) })
+test('a returned publicKeyAdded without registered SDK credentials is not a login', async () => { const f = fixture({ users: { [A]: { publicKey: A } } }); assert.equal(await f.identity.currentUser(), null); await assert.rejects(f.identity.setActiveUser(A)); await f.identity.logout(); assert.equal(f.storage.has('desoActivePublicKey'), false) })
 test('pending/unregistered derived key does not expose a logged-in session', () => { const f = fixture({ users: { [A]: { ...user(A), primaryDerivedKey: { ...user(A).primaryDerivedKey, derivedKeyRegistered: false } } } }); assert.equal(f.session.restoreIdentitySession(), null) })
 test('mismatched SDK owner fails closed', () => { const f = fixture({ users: { [A]: { ...user(A), primaryDerivedKey: user(B).primaryDerivedKey } } }); assert.equal(f.session.restoreIdentitySession(), null) })
 test('corrupt SDK storage does not fall back to legacy', () => { const f = fixture(); f.storage.set('desoIdentityUsers', '{'); assert.equal(f.session.restoreIdentitySession(), null) })
