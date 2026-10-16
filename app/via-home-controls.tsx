@@ -505,14 +505,14 @@ export default function ViaHomeControls() {
         <nav aria-label="VIA standard navigation" style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "7px" }}>
           {standardNav.map(([key, href]) => key === "home" ? (
             <div key={key} className="via-home-grid-account-wrap" style={{ position: "relative", width: "100%" }}>
-              <button type="button" onClick={() => { if (!session) { openDeSoIdentity(); return } refreshAccounts(); setAccountsOpen((open) => !open) }} aria-label={session ? t.switchAccount : t.login} title={session ? t.switchAccount : t.login} aria-expanded={session ? accountsOpen : undefined} aria-haspopup={session ? "menu" : undefined} style={{ ...buttonStyle, width: "100%", justifyContent: "center", paddingInline: "9px", cursor: "pointer" }}>
+              <button type="button" onClick={() => { refreshAccounts(); setAccountsOpen((open) => !open) }} aria-label={session ? t.switchAccount : t.login} title={session ? t.switchAccount : t.login} aria-expanded={accountsOpen} aria-haspopup="menu" style={{ ...buttonStyle, width: "100%", justifyContent: "center", paddingInline: "9px", cursor: "pointer" }}>
                 {session && avatar ? <img src={avatar} alt="" referrerPolicy="no-referrer" style={{ width: 24, height: 24, borderRadius: "50%", objectFit: "cover" }} /> : session ? <UsersRound aria-hidden="true" size={18} /> : <img src="/via-logo-original.jpg?v=2" alt="" aria-hidden="true" style={{ width: 24, height: 24, borderRadius: "50%", objectFit: "cover" }} />}
-                <span>{session ? accountName : status === "waiting" ? t.connecting : t.login}</span>
+                <span>{session ? accountName : t.login}</span>
               </button>
               {hasNewIdeas ? <Link prefetch={false} href="/owner#centrale-ideeenbus" aria-label="Nieuw idee: open Ideeënbus" title="Open nieuwe ideeën" style={{ position: "absolute", right: 3, top: "50%", transform: "translateY(-50%)", zIndex: 2, fontSize: 18, textDecoration: "none", lineHeight: 1 }}>💡</Link> : null}
-              {session && accountsOpen ? (
+              {accountsOpen ? (
                 <div className="via-home-account-menu via-home-grid-account-menu" role="menu" aria-label={t.switchAccount}>
-                  <Link prefetch={false} href="/profile" role="menuitem" onClick={() => setAccountsOpen(false)}>{t.profile}</Link>
+                  {session ? <Link prefetch={false} href="/profile" role="menuitem" onClick={() => setAccountsOpen(false)}>{t.profile}</Link> : null}
                   <div className="via-home-account-menu-heading">{t.switchAccount}</div>
                   {otherAccounts.map((account) => {
                     const accountProfile = profiles[account.publicKey]
@@ -522,8 +522,8 @@ export default function ViaHomeControls() {
                       <span>{accountProfile?.username ? `@${accountProfile.username}` : shortPublicKey(account.publicKey)}</span>
                     </button>
                   })}
-                  <button type="button" onClick={openDeSoIdentity} role="menuitem">{t.addAccount}</button>
-                  <button type="button" onClick={logout} role="menuitem">{t.logout}</button>
+                  <button type="button" onClick={() => { setAccountsOpen(false); openDeSoIdentity() }} role="menuitem">{session ? t.addAccount : t.login}</button>
+                  {session ? <button type="button" onClick={logout} role="menuitem">{t.logout}</button> : null}
 
                 </div>
               ) : null}
