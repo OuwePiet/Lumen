@@ -470,28 +470,11 @@ export default function ViaHomeControls() {
         <Link prefetch={false} href="/help" aria-label="Handboek VIA" title="Handboek VIA"><CircleHelp aria-hidden="true" /></Link>
         <Link prefetch={false} href="/music" aria-label="VIA Muziek" title="VIA Muziek"><Music2 aria-hidden="true" /></Link>
         <Link prefetch={false} href="/radio" aria-label="World Radio" title="World Radio"><RadioTower aria-hidden="true" /></Link>
-        <div className="via-home-iphone-account-wrap">
-          <button type="button" onClick={() => { refreshAccounts(); setAccountsOpen((open) => !open) }} aria-label={t.switchAccount} title={t.switchAccount} className="via-home-iphone-utility-account" aria-expanded={accountsOpen} aria-haspopup="menu">
+        <div className="via-home-iphone-account-wrap" aria-label={session ? accountName : t.login} title={session ? accountName : t.login}>
+          <span className="via-home-iphone-utility-account" aria-hidden="true">
             {avatar ? <img src={avatar} alt="" referrerPolicy="no-referrer" /> : <UsersRound aria-hidden="true" />}
-          </button>
+          </span>
           {hasNewIdeas ? <Link prefetch={false} href="/owner#centrale-ideeenbus" aria-label="Nieuw idee: open Ideeënbus" title="Open nieuwe ideeën" className="via-home-idea-shortcut">💡</Link> : null}
-          {accountsOpen ? (
-            <div className="via-home-account-menu" role="menu" aria-label={t.switchAccount}>
-              <Link prefetch={false} href="/profile" role="menuitem" onClick={() => setAccountsOpen(false)}>{t.profile}</Link>
-              <div className="via-home-account-menu-heading">{t.switchAccount}</div>
-              {otherAccounts.map((account) => {
-                const accountProfile = profiles[account.publicKey]
-                const accountAvatar = safeProfileImage(accountProfile?.profilePic)
-                return <button key={account.publicKey} type="button" onClick={() => chooseAccount(account.publicKey)} role="menuitem" style={{ display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "flex-start", flexWrap: "nowrap", gap: 7, width: "100%", minHeight: 32, padding: "5px 7px", fontSize: 11, textAlign: "left" }}>
-                  {accountAvatar ? <img src={accountAvatar} alt="" referrerPolicy="no-referrer" /> : <UsersRound aria-hidden="true" />}
-                  <span>{accountProfile?.username ? `@${accountProfile.username}` : shortPublicKey(account.publicKey)}</span>
-                </button>
-              })}
-              <button type="button" onClick={openDeSoIdentity} role="menuitem">{t.addAccount}</button>
-              <button type="button" onClick={logout} role="menuitem">{t.logout}</button>
-
-            </div>
-          ) : null}
         </div>
         <Link prefetch={false} href="/my-via" aria-label="VIA Future" title="VIA Future" className="via-home-iphone-utility-future">
           <span>VIA</span><span>Future</span>
