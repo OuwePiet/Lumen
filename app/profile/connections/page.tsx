@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { useEffect, useMemo, useState } from "react"
-import { restoreIdentitySession } from "../../deso-identity-session"
+import { useViaIdentitySession } from "../../use-via-identity-session"
 
 type Connection = {
   publicKey: string
@@ -36,6 +36,7 @@ function formatFr(value: number | null) {
 export default function ProfileConnectionsPage() {
   const [identity, setIdentity] = useState("")
   const [mode, setMode] = useState<"followers" | "following">("followers")
+  const session = useViaIdentitySession()
   const [entries, setEntries] = useState<Connection[]>([])
   const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(true)
@@ -48,10 +49,9 @@ export default function ProfileConnectionsPage() {
     const params = new URLSearchParams(window.location.search)
     const requestedMode = params.get("mode") === "following" ? "following" : "followers"
     const requestedIdentity = (params.get("identity") ?? "").trim()
-    const session = restoreIdentitySession()
     setMode(requestedMode)
     setIdentity(requestedIdentity || session?.publicKey || "")
-  }, [])
+  }, [session?.publicKey])
 
   useEffect(() => {
     if (!identity) {

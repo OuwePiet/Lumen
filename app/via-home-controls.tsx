@@ -5,15 +5,13 @@ import { useRouter } from "next/navigation"
 import { useEffect, useRef, useState } from "react"
 import { CircleHelp, Music2, RadioTower, UsersRound } from "lucide-react"
 import {
-  DESO_LOGIN_URL,
   VIA_IDENTITY_EVENT,
   clearIdentitySession,
   listIdentitySessions,
-  persistIdentityLogin,
   restoreIdentitySession,
-  switchIdentitySession,
   type ViaIdentitySession,
 } from "./deso-identity-session"
+import { viaModernIdentity } from "./deso-identity-modern"
 import ViaIdentityStatusMarks from "./via-identity-status"
 import SponsorPlatform from "./sponsor-platform"
 import ViaWorldClock from "./via-world-clock"
@@ -25,7 +23,7 @@ import {
   type ViaLanguage,
 } from "./via-local-settings"
 
-type PublicProfile = { username?: string; profilePic?: string | null; isVerified?: boolean; isInactive?: boolean; viaRecognized?: boolean }
+type PublicProfile = { publicKey?: string; username?: string; profilePic?: string | null; isVerified?: boolean; isInactive?: boolean; viaRecognized?: boolean }
 type ProfileResponse = { ok?: boolean; profile?: PublicProfile }
 
 // Homepage groups stay compact so account controls remain visible on tablet heights.
@@ -108,7 +106,7 @@ const copy: Record<ViaLanguage | "Hindi", HomeText> = {
     communities: "Community's", games: "Spellen", world: "Wereld", calendar: "Wereldkalender", profile: "Mijn profiel", myVia: "Mijn VIA",
     bookmarks: "Bookmarks", messages: "Berichten", more: "Meer",
     search: "Zoek leden", publicEntrance: "Publieke ingang", wallet: "Mijn Wallet", notifications: "Meldingen",
-    login: "DeSo Login", connecting: "Verbinden…", logout: "Uitloggen", blocked: "Safari heeft het DeSo Identity-venster geblokkeerd.",
+    login: "DeSo Login", connecting: "Verbinden…", logout: "Uitloggen", blocked: "DeSo Identity kon niet worden geopend. Probeer opnieuw.",
     connected: "Verbonden", switchAccount: "Wissel account", addAccount: "DeSo-account toevoegen", inactive90: "90+ dagen inactief", advertising: "Reclame", ideas: "Ideeënbus", storage: "Externe opslag", music: "VIA Muziek",
   },
   English: {
@@ -117,7 +115,7 @@ const copy: Record<ViaLanguage | "Hindi", HomeText> = {
     communities: "Communities", games: "Games", world: "World", calendar: "World Calendar", profile: "My Profile", myVia: "My VIA",
     bookmarks: "Bookmarks", messages: "Messages", more: "More",
     search: "Search members", publicEntrance: "Public Entrance", wallet: "My Wallet", notifications: "Notifications",
-    login: "DeSo Login", connecting: "Connecting…", logout: "Logout", blocked: "Safari blocked the DeSo Identity window.",
+    login: "DeSo Login", connecting: "Connecting…", logout: "Logout", blocked: "DeSo Identity could not open. Please try again.",
     connected: "Connected", switchAccount: "Switch account", addAccount: "Add DeSo account", inactive90: "Inactive 90+ days", advertising: "Advertising", ideas: "Ideas Box", storage: "External storage", music: "VIA Music",
   },
   French: {
@@ -208,10 +206,11 @@ function shortPublicKey(publicKey: string) {
 
 export default function ViaHomeControls() {
   const router = useRouter()
-  const identityWindowRef = useRef<Window | null>(null)
+  const loginLock = useRef(false)
   const [session, setSession] = useState<ViaIdentitySession | null>(null)
   const [knownAccounts, setKnownAccounts] = useState<ViaIdentitySession[]>([])
-  const [profile, setProfile] = useState<PublicProfile | null>(null)
+  const [loadedProfile, setProfile] = useState<PublicProfile | null>(null)
+  const profile = loadedProfile?.publicKey === session?.publicKey ? loadedProfile : null
   const [profiles, setProfiles] = useState<Record<string, PublicProfile>>({})
   const [accountsOpen, setAccountsOpen] = useState(false)
   const [status, setStatus] = useState<"idle" | "waiting" | "blocked">("idle")
@@ -323,24 +322,12 @@ export default function ViaHomeControls() {
     }
     syncLanguage()
 
-    function handleIdentityMessage(event: MessageEvent) {
-      const identityWindow = identityWindowRef.current
-      if (identityWindow && event.source !== identityWindow) return
-      const nextSession = persistIdentityLogin(event)
-      if (!nextSession) return
-      setSession(nextSession)
-      refreshAccounts()
-      setAccountsOpen(false)
-      setStatus("idle")
-      identityWindowRef.current?.close()
-      identityWindowRef.current = null
-    }
+    const unsubscribeIdentity = viaModernIdentity.subscribe(() => syncIdentity())
 
-    window.addEventListener("message", handleIdentityMessage)
     window.addEventListener(VIA_SETTINGS_EVENT, syncLanguage)
     window.addEventListener(VIA_IDENTITY_EVENT, syncIdentity)
     return () => {
-      window.removeEventListener("message", handleIdentityMessage)
+      unsubscribeIdentity()
       window.removeEventListener(VIA_SETTINGS_EVENT, syncLanguage)
       window.removeEventListener(VIA_IDENTITY_EVENT, syncIdentity)
     }
@@ -358,8 +345,8 @@ export default function ViaHomeControls() {
       headers: { Accept: "application/json" },
     })
       .then(async (response) => response.ok ? (await response.json()) as ProfileResponse : null)
-      .then((data) => setProfile(data?.ok && data.profile ? data.profile : null))
-      .catch(() => setProfile(null))
+      .then((data) => { if (!controller.signal.aborted) setProfile(data?.ok && data.profile ? { ...data.profile, publicKey: session.publicKey } : null) })
+      .catch(() => { if (!controller.signal.aborted) setProfile(null) })
     return () => controller.abort()
   }, [session?.publicKey])
 
@@ -377,7 +364,7 @@ export default function ViaHomeControls() {
           headers: { Accept: "application/json" },
         })
         const data = response.ok ? (await response.json()) as ProfileResponse : null
-        return [account.publicKey, data?.ok && data.profile ? data.profile : {}] as const
+        return [account.publicKey, data?.ok && data.profile ? { ...data.profile, publicKey: account.publicKey } : {}] as const
       } catch {
         return [account.publicKey, {}] as const
       }
@@ -393,30 +380,23 @@ export default function ViaHomeControls() {
     setLanguageOpen(false)
   }
 
-  function openDeSoIdentity() {
-    const h = 1000
-    const w = 800
-    const y = window.outerHeight / 2 + window.screenY - h / 2
-    const x = window.outerWidth / 2 + window.screenX - w / 2
-    const touchDevice = window.matchMedia("(pointer: coarse)").matches
-    const identityWindow = touchDevice
-      ? window.open(DESO_LOGIN_URL, "_blank")
-      : window.open(DESO_LOGIN_URL, undefined, `toolbar=no, width=${w}, height=${h}, top=${y}, left=${x}`)
-    if (!identityWindow) {
-      setStatus("blocked")
-      return
-    }
-    identityWindowRef.current = identityWindow
+  async function openDeSoIdentity() {
+    if (loginLock.current) return
+    loginLock.current = true
     setStatus("waiting")
+    try { await viaModernIdentity.login(); setStatus("idle") }
+    catch { setStatus("blocked") }
+    finally { loginLock.current = false }
   }
 
-  function chooseAccount(publicKey: string) {
-    const nextSession = switchIdentitySession(publicKey)
-    if (!nextSession) return
-    setSession(nextSession)
-    setProfile(profiles[publicKey] ?? null)
-    setAccountsOpen(false)
-    router.refresh()
+  async function chooseAccount(publicKey: string) {
+    try {
+      await viaModernIdentity.setActiveUser(publicKey)
+      setSession(restoreIdentitySession())
+      setProfile(profiles[publicKey] ?? null)
+      setAccountsOpen(false)
+      router.refresh()
+    } catch { setStatus("blocked") }
   }
 
   function logout() {
@@ -471,27 +451,10 @@ export default function ViaHomeControls() {
         <Link prefetch={false} href="/music" aria-label="VIA Muziek" title="VIA Muziek"><Music2 aria-hidden="true" /></Link>
         <Link prefetch={false} href="/radio" aria-label="World Radio" title="World Radio"><RadioTower aria-hidden="true" /></Link>
         <div className="via-home-iphone-account-wrap">
-          <button type="button" onClick={() => { refreshAccounts(); setAccountsOpen((open) => !open) }} aria-label={t.switchAccount} title={t.switchAccount} className="via-home-iphone-utility-account" aria-expanded={accountsOpen} aria-haspopup="menu">
+          <span className="via-home-iphone-utility-account" aria-label={session ? accountName : t.login}>
             {avatar ? <img src={avatar} alt="" referrerPolicy="no-referrer" /> : <UsersRound aria-hidden="true" />}
-          </button>
+          </span>
           {hasNewIdeas ? <Link prefetch={false} href="/owner#centrale-ideeenbus" aria-label="Nieuw idee: open Ideeënbus" title="Open nieuwe ideeën" className="via-home-idea-shortcut">💡</Link> : null}
-          {accountsOpen ? (
-            <div className="via-home-account-menu" role="menu" aria-label={t.switchAccount}>
-              <Link prefetch={false} href="/profile" role="menuitem" onClick={() => setAccountsOpen(false)}>{t.profile}</Link>
-              <div className="via-home-account-menu-heading">{t.switchAccount}</div>
-              {otherAccounts.map((account) => {
-                const accountProfile = profiles[account.publicKey]
-                const accountAvatar = safeProfileImage(accountProfile?.profilePic)
-                return <button key={account.publicKey} type="button" onClick={() => chooseAccount(account.publicKey)} role="menuitem" style={{ display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "flex-start", flexWrap: "nowrap", gap: 7, width: "100%", minHeight: 32, padding: "5px 7px", fontSize: 11, textAlign: "left" }}>
-                  {accountAvatar ? <img src={accountAvatar} alt="" referrerPolicy="no-referrer" /> : <UsersRound aria-hidden="true" />}
-                  <span>{accountProfile?.username ? `@${accountProfile.username}` : shortPublicKey(account.publicKey)}</span>
-                </button>
-              })}
-              <button type="button" onClick={openDeSoIdentity} role="menuitem">{t.addAccount}</button>
-              <button type="button" onClick={logout} role="menuitem">{t.logout}</button>
-
-            </div>
-          ) : null}
         </div>
         <Link prefetch={false} href="/my-via" aria-label="VIA Future" title="VIA Future" className="via-home-iphone-utility-future">
           <span>VIA</span><span>Future</span>
@@ -573,6 +536,7 @@ export default function ViaHomeControls() {
       </section>
 
 
+      {status === "waiting" ? <span role="status" style={{ fontSize: "11px" }}>{t.connecting}</span> : null}
       {status === "blocked" ? <span style={{ color: "#c6a97b", fontSize: "9px", lineHeight: 1.45 }}>{t.blocked}</span> : null}
       <style>{`
         .via-home-language-control { position: relative; width: 100%; }

@@ -1,5 +1,4 @@
 export const DESO_IDENTITY_ORIGIN = "https://identity.deso.org"
-export const DESO_LOGIN_URL = `${DESO_IDENTITY_ORIGIN}/log-in?accessLevelRequest=3`
 export const DESO_LOGOUT_URL = `${DESO_IDENTITY_ORIGIN}/logout`
 
 const IDENTITY_USERS_KEY = "identityUsersV2"
@@ -15,19 +14,6 @@ type DeSoIdentityCredentials = {
   encryptedMessagingKeyRandomness?: unknown
   derivedPublicKeyBase58Check?: unknown
   ownerPublicKeyBase58Check?: unknown
-}
-
-type LoginPayload = {
-  users?: unknown
-  publicKeyAdded?: unknown
-  signedUp?: unknown
-}
-
-type LoginMessage = {
-  id?: unknown
-  service?: unknown
-  method?: unknown
-  payload?: LoginPayload
 }
 
 export type ViaIdentitySession = {
@@ -79,76 +65,6 @@ function readIdentityUsers(): Record<string, unknown> {
   }
 }
 
-function sessionForPublicKey(publicKey: string, signedUp = false): ViaIdentitySession | null {
-  if (!PUBLIC_KEY_RE.test(publicKey)) return null
-  const credentials = readIdentityUsers()[publicKey]
-  if (!isUsableCredentials(credentials)) return null
-  return { publicKey, accessLevel: credentials.accessLevel, signedUp }
-}
-
-function acknowledgeIdentityInitialize(event: MessageEvent): boolean {
-  if (event.origin !== DESO_IDENTITY_ORIGIN || !isRecord(event.data)) return false
-
-  const message = event.data as LoginMessage
-  if (message.service !== "identity" || message.method !== "initialize" || typeof message.id !== "string") return false
-  if (!event.source) return false
-
-  ;(event.source as WindowProxy).postMessage(
-    {
-      id: message.id,
-      service: "identity",
-      payload: {},
-    },
-    DESO_IDENTITY_ORIGIN,
-  )
-  return true
-}
-
-export function parseIdentityLoginMessage(event: MessageEvent): ViaIdentitySession | null {
-  if (event.origin !== DESO_IDENTITY_ORIGIN) return null
-  if (!isRecord(event.data)) return null
-
-  const message = event.data as LoginMessage
-  if (message.service !== "identity" || message.method !== "login") return null
-  if (!message.payload || !isRecord(message.payload)) return null
-
-  const publicKey = message.payload.publicKeyAdded
-  const users = message.payload.users
-  if (typeof publicKey !== "string" || !PUBLIC_KEY_RE.test(publicKey) || !isRecord(users)) return null
-
-  const credentials = users[publicKey]
-  if (!isUsableCredentials(credentials)) return null
-
-  return {
-    publicKey,
-    accessLevel: credentials.accessLevel,
-    signedUp: message.payload.signedUp === true,
-  }
-}
-
-export function persistIdentityLogin(event: MessageEvent): ViaIdentitySession | null {
-  if (acknowledgeIdentityInitialize(event)) return null
-
-  const session = parseIdentityLoginMessage(event)
-  if (!session) return null
-
-  const payload = (event.data as LoginMessage).payload
-  if (!payload || !isRecord(payload.users)) return null
-
-  const existingUsers = readIdentityUsers()
-  // Do not replace a previously authorized level-3 account with stale
-  // level-2 credentials from an Identity login response.
-  const mergedUsers = { ...existingUsers, ...payload.users }
-  for (const [key, incoming] of Object.entries(payload.users)) {
-    const previous = existingUsers[key]
-    if (isUsableCredentials(previous) && !isUsableCredentials(incoming)) mergedUsers[key] = previous
-  }
-  localStorage.setItem(IDENTITY_USERS_KEY, JSON.stringify(mergedUsers))
-  localStorage.setItem(VIA_ACTIVE_PUBLIC_KEY, session.publicKey)
-  window.dispatchEvent(new CustomEvent(VIA_IDENTITY_EVENT, { detail: session }))
-  return session
-}
-
 export function getIdentityCredentials(publicKey: string): ViaIdentityCredentials | null {
   try {
     const credentials = readIdentityUsers()[publicKey]
@@ -166,39 +82,34 @@ export function getIdentityCredentials(publicKey: string): ViaIdentityCredential
   }
 }
 
-export function listIdentitySessions(): ViaIdentitySession[] {
-  return Object.entries(readIdentityUsers())
-    .filter(([publicKey, credentials]) => PUBLIC_KEY_RE.test(publicKey) && isUsableCredentials(credentials))
-    .map(([publicKey, credentials]) => ({
-      publicKey,
-      accessLevel: (credentials as DeSoIdentityCredentials & ViaIdentityCredentials).accessLevel,
-      signedUp: false,
-    }))
-}
+// SDK 3.4.1 is the only active session. Legacy encrypted credentials remain
+// untouched, but never select an account implicitly.
+export const SDK_ACTIVE_PUBLIC_KEY = "desoActivePublicKey"
+export const SDK_IDENTITY_USERS = "desoIdentityUsers"
 
-export function switchIdentitySession(publicKey: string): ViaIdentitySession | null {
-  const session = sessionForPublicKey(publicKey)
-  if (!session) return null
-  localStorage.setItem(VIA_ACTIVE_PUBLIC_KEY, publicKey)
-  window.dispatchEvent(new CustomEvent(VIA_IDENTITY_EVENT, { detail: session }))
-  return session
+export function listIdentitySessions(): ViaIdentitySession[] {
+  try {
+    const users: unknown = JSON.parse(localStorage.getItem(SDK_IDENTITY_USERS) || "{}")
+    if (!isRecord(users)) return []
+    return Object.entries(users).flatMap(([publicKey, user]) => {
+      if (!PUBLIC_KEY_RE.test(publicKey) || !isRecord(user) || user.publicKey !== publicKey) return []
+      const key = user.primaryDerivedKey
+      if (!isRecord(key) || key.publicKeyBase58Check !== publicKey || key.derivedKeyRegistered !== true) return []
+      return [{ publicKey, accessLevel: 3, signedUp: false }]
+    })
+  } catch { return [] }
 }
 
 export function restoreIdentitySession(): ViaIdentitySession | null {
   try {
-    const publicKey = localStorage.getItem(VIA_ACTIVE_PUBLIC_KEY)
-    return publicKey ? sessionForPublicKey(publicKey) : null
-  } catch {
-    return null
-  }
+    const active = localStorage.getItem(SDK_ACTIVE_PUBLIC_KEY)
+    return listIdentitySessions().find((session) => session.publicKey === active) ?? null
+  } catch { return null }
 }
 
-export function clearIdentitySession(publicKey?: string) {
+/** Local VIA sign-out, not revocation of the account's DeSo derived key. */
+export function clearIdentitySession() {
   localStorage.removeItem(VIA_ACTIVE_PUBLIC_KEY)
-  if (publicKey) {
-    const users = readIdentityUsers()
-    delete users[publicKey]
-    localStorage.setItem(IDENTITY_USERS_KEY, JSON.stringify(users))
-  }
+  localStorage.removeItem(SDK_ACTIVE_PUBLIC_KEY)
   window.dispatchEvent(new CustomEvent(VIA_IDENTITY_EVENT, { detail: null }))
 }

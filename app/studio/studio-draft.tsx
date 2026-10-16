@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react"
 import YouTubeEmbed from "../youtube-embed"
-import { restoreIdentitySession, VIA_IDENTITY_EVENT } from "../deso-identity-session"
+import { viaModernIdentity } from "../deso-identity-modern"
 import {
   readViaLocalSettings,
   VIA_FEEDS,
@@ -59,8 +59,8 @@ export default function StudioDraft() {
   }, [])
 
   useEffect(() => {
-    function syncIdentity() {
-      const active = Boolean(restoreIdentitySession())
+    return viaModernIdentity.subscribe((session) => {
+      const active = Boolean(session)
       setCanEdit(active)
       if (!active) {
         setTitle("")
@@ -70,11 +70,7 @@ export default function StudioDraft() {
         const activeCopy = studioDraftCopy(readViaLocalSettings().interfaceLanguage)
         setStatus(activeCopy.loginRequired)
       }
-    }
-
-    syncIdentity()
-    window.addEventListener(VIA_IDENTITY_EVENT, syncIdentity)
-    return () => window.removeEventListener(VIA_IDENTITY_EVENT, syncIdentity)
+    })
   }, [])
 
   useEffect(() => {

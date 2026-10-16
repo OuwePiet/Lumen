@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { useEffect, useState } from "react"
-import { restoreIdentitySession } from "../deso-identity-session"
+import { useViaIdentitySession } from "../use-via-identity-session"
 import { fetchViaRates, type ViaRates } from "../via-live-rates"
 import {
   readViaLocalSettings,
@@ -19,12 +19,12 @@ const flags: Record<ViaLanguage | "Hindi", string> = {
 export default function NfViaTopbar() {
   const [language, setLanguage] = useState<ViaLanguage>("English")
   const [rates, setRates] = useState<ViaRates | null>(null)
-  const [hasDeSo, setHasDeSo] = useState(false)
+  const session = useViaIdentitySession()
+  const hasDeSo = Boolean(session)
 
   useEffect(() => {
     const sync = () => {
       setLanguage(readViaLocalSettings().interfaceLanguage)
-      setHasDeSo(Boolean(restoreIdentitySession()?.publicKey))
     }
     sync()
     window.addEventListener(VIA_SETTINGS_EVENT, sync)

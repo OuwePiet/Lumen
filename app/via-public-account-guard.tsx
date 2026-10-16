@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect } from "react"
+import { restoreIdentitySession } from "./deso-identity-session"
 import { viaModernIdentity } from "./deso-identity-modern"
 
 const HIDDEN_MARK = "viaGuardHidden"
@@ -95,10 +96,16 @@ function cleanRestrictedUrl() {
 
 export default function ViaPublicAccountGuard() {
   useEffect(() => {
+    // SDK 3.4.1 consumes the Identity callback during module initialization.
+    // Next hydration can restore its initial URL; remove callback parameters
+    // afterwards too, preserving Next's history state. Never process twice.
+    if (new URLSearchParams(window.location.search).get("service") === "identity") {
+      window.history.replaceState(window.history.state, "", window.location.pathname)
+    }
     let observer: MutationObserver | null = null
 
-    const apply = async () => {
-      const hasSession = Boolean(await viaModernIdentity.currentUser())
+    const apply = () => {
+      const hasSession = Boolean(restoreIdentitySession())
       document.body.classList.toggle("via-deso-session", hasSession)
       document.body.classList.toggle("via-no-deso-session", !hasSession)
       document.body.classList.remove("via-session-pending")

@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useMemo, useState } from "react"
-import { restoreIdentitySession } from "../deso-identity-session"
+import { viaModernIdentity } from "../deso-identity-modern"
 
 type IdeaItem = {
   category?: string
@@ -87,9 +87,8 @@ export default function OwnerDashboard({ ownerPublicKey }: { ownerPublicKey: str
   const [centralIdeasConfigured, setCentralIdeasConfigured] = useState<boolean | null>(null)
 
   useEffect(() => {
-    const session = restoreIdentitySession()
-    setSessionKey(session?.publicKey ?? null)
     setIdeas(readLocalIdeas())
+    return viaModernIdentity.subscribe((session) => setSessionKey(session?.publicKey ?? null))
   }, [])
 
   useEffect(() => {
