@@ -425,6 +425,8 @@ export default function ViaHomeControls() {
     setProfile(null)
     setAccountsOpen(false)
     setStatus("idle")
+    router.push("/")
+    router.refresh()
   }
 
   function enterPublicMode() {
@@ -475,8 +477,8 @@ export default function ViaHomeControls() {
           {hasNewIdeas ? <Link prefetch={false} href="/owner#centrale-ideeenbus" aria-label="Nieuw idee: open Ideeënbus" title="Open nieuwe ideeën" className="via-home-idea-shortcut">💡</Link> : null}
           {accountsOpen ? (
             <div className="via-home-account-menu" role="menu" aria-label={t.switchAccount}>
-              <Link prefetch={false} href="/profile" role="menuitem">{t.profile}</Link>
-
+              <Link prefetch={false} href="/profile" role="menuitem" onClick={() => setAccountsOpen(false)}>{t.profile}</Link>
+              <div className="via-home-account-menu-heading">{t.switchAccount}</div>
               {otherAccounts.map((account) => {
                 const accountProfile = profiles[account.publicKey]
                 const accountAvatar = safeProfileImage(accountProfile?.profilePic)
@@ -511,7 +513,7 @@ export default function ViaHomeControls() {
               {accountsOpen ? (
                 <div className="via-home-account-menu via-home-grid-account-menu" role="menu" aria-label={t.switchAccount}>
                   <Link prefetch={false} href="/profile" role="menuitem" onClick={() => setAccountsOpen(false)}>{t.profile}</Link>
-
+                  <div className="via-home-account-menu-heading">{t.switchAccount}</div>
                   {otherAccounts.map((account) => {
                     const accountProfile = profiles[account.publicKey]
                     const accountAvatar = safeProfileImage(accountProfile?.profilePic)
@@ -673,8 +675,9 @@ export default function ViaHomeControls() {
             border-radius: 50%;
             object-fit: cover;
           }
-          .via-home-account-menu { position: absolute; right: 0; top: 50px; z-index: 120; width: min(270px, calc(100vw - 28px)); max-height: 70vh; overflow-y: auto; padding: 7px; border: 1px solid rgba(143,212,169,.22); border-radius: 14px; background: rgba(10,22,15,.96); backdrop-filter: blur(12px); box-shadow: 0 18px 44px rgba(0,0,0,.42); }
-          .via-home-account-menu > a, .via-home-account-menu > button { width: 100%; min-height: 38px; display: flex; align-items: center; gap: 8px; padding: 8px 9px; border: 0; border-radius: 9px; background: transparent; color: #d3ddd7; text-decoration: none; font: inherit; font-size: 11px; text-align: left; cursor: pointer; box-sizing: border-box; }
+          .via-home-account-menu { position: absolute; left: 0; right: auto; top: calc(100% + 8px); z-index: 120; width: min(240px, calc(100vw - 28px)); max-height: 70vh; overflow-y: auto; padding: 9px; border: 1px solid rgba(143,212,169,.22); border-radius: 14px; background: rgba(10,22,15,.96); backdrop-filter: blur(12px); box-shadow: 0 18px 44px rgba(0,0,0,.42); }
+          .via-home-account-menu-heading { color: #8fd4a9; font-size: 10px; font-weight: 700; padding: 10px 9px 5px; border-top: 1px solid rgba(143,212,169,.18); margin-top: 5px; }
+          .via-home-account-menu > a, .via-home-account-menu > button { width: 100%; min-height: 38px; display: flex; align-items: center; gap: 8px; padding: 8px 9px; border: 0; border-radius: 9px; background: transparent; color: #d3ddd7; text-decoration: none; font: inherit; font-size: 12px; text-align: left; cursor: pointer; box-sizing: border-box; white-space: nowrap; overflow: hidden; }
           .via-home-account-menu > button img, .via-home-account-menu > button svg { width: 26px; height: 26px; border-radius: 50%; object-fit: cover; flex: 0 0 auto; }
           .via-home-account-menu > a:hover, .via-home-account-menu > button:hover { background: rgba(143,212,169,.10); }
           .via-home-iphone-utility-future {
