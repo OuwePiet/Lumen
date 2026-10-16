@@ -272,6 +272,8 @@ export default function ViaSiteHeader() {
     setSession(null)
     setProfile(null)
     setMenuOpen(false)
+    router.push("/")
+    router.refresh()
   }
 
   const t = headerCopy[language]
