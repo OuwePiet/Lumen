@@ -2,18 +2,16 @@
 
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useState } from "react"
 import { CircleHelp, Music2, RadioTower, UsersRound } from "lucide-react"
 import {
-  DESO_LOGIN_URL,
   VIA_IDENTITY_EVENT,
   clearIdentitySession,
   listIdentitySessions,
-  persistIdentityLogin,
   restoreIdentitySession,
-  switchIdentitySession,
   type ViaIdentitySession,
 } from "./deso-identity-session"
+import { viaModernIdentity } from "./deso-identity-modern"
 import ViaIdentityStatusMarks from "./via-identity-status"
 import SponsorPlatform from "./sponsor-platform"
 import ViaWorldClock from "./via-world-clock"
@@ -208,7 +206,6 @@ function shortPublicKey(publicKey: string) {
 
 export default function ViaHomeControls() {
   const router = useRouter()
-  const identityWindowRef = useRef<Window | null>(null)
   const [session, setSession] = useState<ViaIdentitySession | null>(null)
   const [knownAccounts, setKnownAccounts] = useState<ViaIdentitySession[]>([])
   const [profile, setProfile] = useState<PublicProfile | null>(null)
@@ -310,37 +307,30 @@ export default function ViaHomeControls() {
   }, [session?.publicKey, profile?.username])
 
   function refreshAccounts() {
-    setKnownAccounts(listIdentitySessions())
+    void viaModernIdentity.alternateUsers().then((accounts) => setKnownAccounts(accounts.map((account) => ({ ...account, accessLevel: 3, signedUp: false }))))
   }
 
   useEffect(() => {
-    setSession(restoreIdentitySession())
-    refreshAccounts()
+    let active = true
+    const syncIdentity = async () => {
+      try {
+        const [user, accounts] = await Promise.all([viaModernIdentity.currentUser(), viaModernIdentity.alternateUsers()])
+        if (!active) return
+        setSession(user ? { ...user, accessLevel: 3, signedUp: false } : null)
+        setKnownAccounts(accounts.map((account) => ({ ...account, accessLevel: 3, signedUp: false })))
+      } catch {
+        if (active) setSession(null)
+      }
+    }
     const syncLanguage = () => setLanguage(readViaLocalSettings().interfaceLanguage)
-    const syncIdentity = () => {
-      setSession(restoreIdentitySession())
-      refreshAccounts()
-    }
     syncLanguage()
-
-    function handleIdentityMessage(event: MessageEvent) {
-      const identityWindow = identityWindowRef.current
-      if (identityWindow && event.source !== identityWindow) return
-      const nextSession = persistIdentityLogin(event)
-      if (!nextSession) return
-      setSession(nextSession)
-      refreshAccounts()
-      setAccountsOpen(false)
-      setStatus("idle")
-      identityWindowRef.current?.close()
-      identityWindowRef.current = null
-    }
-
-    window.addEventListener("message", handleIdentityMessage)
+    void syncIdentity()
+    const unsubscribe = viaModernIdentity.subscribe(() => { void syncIdentity() })
     window.addEventListener(VIA_SETTINGS_EVENT, syncLanguage)
     window.addEventListener(VIA_IDENTITY_EVENT, syncIdentity)
     return () => {
-      window.removeEventListener("message", handleIdentityMessage)
+      active = false
+      unsubscribe()
       window.removeEventListener(VIA_SETTINGS_EVENT, syncLanguage)
       window.removeEventListener(VIA_IDENTITY_EVENT, syncIdentity)
     }
@@ -393,34 +383,33 @@ export default function ViaHomeControls() {
     setLanguageOpen(false)
   }
 
-  function openDeSoIdentity() {
-    const h = 1000
-    const w = 800
-    const y = window.outerHeight / 2 + window.screenY - h / 2
-    const x = window.outerWidth / 2 + window.screenX - w / 2
-    const touchDevice = window.matchMedia("(pointer: coarse)").matches
-    const identityWindow = touchDevice
-      ? window.open(DESO_LOGIN_URL, "_blank")
-      : window.open(DESO_LOGIN_URL, undefined, `toolbar=no, width=${w}, height=${h}, top=${y}, left=${x}`)
-    if (!identityWindow) {
+  async function openDeSoIdentity() {
+    try {
+      const user = await viaModernIdentity.login()
+      setSession({ ...user, accessLevel: 3, signedUp: false })
+      setAccountsOpen(false)
+      setStatus("idle")
+      router.refresh()
+    } catch {
       setStatus("blocked")
-      return
     }
-    identityWindowRef.current = identityWindow
-    setStatus("waiting")
   }
 
-  function chooseAccount(publicKey: string) {
-    const nextSession = switchIdentitySession(publicKey)
-    if (!nextSession) return
-    setSession(nextSession)
-    setProfile(profiles[publicKey] ?? null)
-    setAccountsOpen(false)
-    router.refresh()
+  async function chooseAccount(publicKey: string) {
+    try {
+      await viaModernIdentity.setActiveUser(publicKey)
+      const user = await viaModernIdentity.currentUser()
+      setSession(user ? { ...user, accessLevel: 3, signedUp: false } : null)
+      setProfile(profiles[publicKey] ?? null)
+      setAccountsOpen(false)
+      router.refresh()
+    } catch {
+      setStatus("blocked")
+    }
   }
 
-  function logout() {
-    clearIdentitySession()
+  async function logout() {
+    await viaModernIdentity.logout()
     setSession(null)
     setProfile(null)
     setAccountsOpen(false)
@@ -498,13 +487,13 @@ export default function ViaHomeControls() {
                   {otherAccounts.map((account) => {
                     const accountProfile = profiles[account.publicKey]
                     const accountAvatar = safeProfileImage(accountProfile?.profilePic)
-                    return <button key={account.publicKey} type="button" onClick={() => chooseAccount(account.publicKey)} role="menuitem">
+                    return <button key={account.publicKey} type="button" onClick={() => void chooseAccount(account.publicKey)} role="menuitem">
                       {accountAvatar ? <img src={accountAvatar} alt="" referrerPolicy="no-referrer" /> : <UsersRound aria-hidden="true" />}
                       <span>{accountProfile?.username ? `@${accountProfile.username}` : shortPublicKey(account.publicKey)}</span>
                     </button>
                   })}
-                  <button type="button" onClick={() => { setAccountsOpen(false); openDeSoIdentity() }} role="menuitem">{session ? t.addAccount : t.login}</button>
-                  {session ? <button type="button" onClick={logout} role="menuitem">{t.logout}</button> : null}
+                  <button type="button" onClick={() => { setAccountsOpen(false); void openDeSoIdentity() }} role="menuitem">{session ? t.addAccount : t.login}</button>
+                  {session ? <button type="button" onClick={() => void logout()} role="menuitem">{t.logout}</button> : null}
 
                 </div>
               ) : null}
