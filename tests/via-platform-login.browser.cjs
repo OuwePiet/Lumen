@@ -24,14 +24,15 @@ async function run(name, engine, options) {
       })
       window.addEventListener('unhandledrejection', event => { void window.__viaUnhandled(String(event.reason?.message || event.reason)) })
     })
-    await context.addInitScript(({ A, users }) => {
+    await context.addInitScript(({ A, users, origin }) => {
+      if (window.top !== window || window.location.origin !== origin) return
       if (localStorage.getItem('via-test-initialized')) return
       localStorage.setItem('via-test-initialized', '1')
       localStorage.setItem('desoIdentityUsers', JSON.stringify(users))
       localStorage.setItem('desoActivePublicKey', A)
       localStorage.setItem('viaActivePublicKey', 'C'.repeat(48))
       localStorage.setItem('via:financial:v1:fixture:pending', 'preserve')
-    }, { A, users })
+    }, { A, users, origin: new URL(base).origin })
     await context.route('**/*', async route => {
       const request = route.request(), url = new URL(request.url())
       if (url.origin === 'https://identity.deso.org') {
