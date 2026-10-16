@@ -425,6 +425,8 @@ export default function ViaHomeControls() {
     setProfile(null)
     setAccountsOpen(false)
     setStatus("idle")
+    router.push("/")
+    router.refresh()
   }
 
   function enterPublicMode() {
@@ -475,12 +477,12 @@ export default function ViaHomeControls() {
           {hasNewIdeas ? <Link prefetch={false} href="/owner#centrale-ideeenbus" aria-label="Nieuw idee: open Ideeënbus" title="Open nieuwe ideeën" className="via-home-idea-shortcut">💡</Link> : null}
           {accountsOpen ? (
             <div className="via-home-account-menu" role="menu" aria-label={t.switchAccount}>
-              <Link prefetch={false} href="/profile" role="menuitem">{t.profile}</Link>
-
+              <Link prefetch={false} href="/profile" role="menuitem" onClick={() => setAccountsOpen(false)}>{t.profile}</Link>
+              <div className="via-home-account-menu-heading">{t.switchAccount}</div>
               {otherAccounts.map((account) => {
                 const accountProfile = profiles[account.publicKey]
                 const accountAvatar = safeProfileImage(accountProfile?.profilePic)
-                return <button key={account.publicKey} type="button" onClick={() => chooseAccount(account.publicKey)} role="menuitem">
+                return <button key={account.publicKey} type="button" onClick={() => chooseAccount(account.publicKey)} role="menuitem" style={{ display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "flex-start", flexWrap: "nowrap", gap: 7, width: "100%", minHeight: 32, padding: "5px 7px", fontSize: 11, textAlign: "left" }}>
                   {accountAvatar ? <img src={accountAvatar} alt="" referrerPolicy="no-referrer" /> : <UsersRound aria-hidden="true" />}
                   <span>{accountProfile?.username ? `@${accountProfile.username}` : shortPublicKey(account.publicKey)}</span>
                 </button>
@@ -503,15 +505,13 @@ export default function ViaHomeControls() {
         <nav aria-label="VIA standard navigation" style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "7px" }}>
           {standardNav.map(([key, href]) => key === "home" ? (
             <div key={key} className="via-home-grid-account-wrap" style={{ position: "relative", width: "100%" }}>
-              <button type="button" onClick={() => { refreshAccounts(); setAccountsOpen((open) => !open) }} aria-label={t.switchAccount} title={t.switchAccount} aria-expanded={accountsOpen} aria-haspopup="menu" style={{ ...buttonStyle, width: "100%", justifyContent: "center", paddingInline: "9px", cursor: "pointer" }}>
-                {avatar ? <img src={avatar} alt="" referrerPolicy="no-referrer" style={{ width: 24, height: 24, borderRadius: "50%", objectFit: "cover" }} /> : <UsersRound aria-hidden="true" size={18} />}
-                <span>{accountName}</span>
+              <button type="button" onClick={() => { if (!session) { setAccountsOpen(false); openDeSoIdentity(); return } refreshAccounts(); setAccountsOpen((open) => !open) }} aria-label={session ? t.switchAccount : t.login} title={session ? t.switchAccount : t.login} aria-expanded={accountsOpen} aria-haspopup="menu" style={{ ...buttonStyle, width: "100%", minHeight: "48px", justifyContent: "center", paddingInline: "9px", cursor: "pointer", gap: "7px" }}>
+                {session && avatar ? <img src={avatar} alt="" referrerPolicy="no-referrer" style={{ width: 28, height: 28, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} /> : session ? <UsersRound aria-hidden="true" size={18} /> : <img src="/via-logo-original.jpg?v=2" alt="" aria-hidden="true" style={{ width: 28, height: 28, borderRadius: "50%", objectFit: "contain", flexShrink: 0 }} />}
+                <span>{session ? accountName : t.login}</span>
               </button>
               {hasNewIdeas ? <Link prefetch={false} href="/owner#centrale-ideeenbus" aria-label="Nieuw idee: open Ideeënbus" title="Open nieuwe ideeën" style={{ position: "absolute", right: 3, top: "50%", transform: "translateY(-50%)", zIndex: 2, fontSize: 18, textDecoration: "none", lineHeight: 1 }}>💡</Link> : null}
               {accountsOpen ? (
                 <div className="via-home-account-menu via-home-grid-account-menu" role="menu" aria-label={t.switchAccount}>
-                  <Link prefetch={false} href="/profile" role="menuitem" onClick={() => setAccountsOpen(false)}>{t.profile}</Link>
-
                   {otherAccounts.map((account) => {
                     const accountProfile = profiles[account.publicKey]
                     const accountAvatar = safeProfileImage(accountProfile?.profilePic)
@@ -520,8 +520,8 @@ export default function ViaHomeControls() {
                       <span>{accountProfile?.username ? `@${accountProfile.username}` : shortPublicKey(account.publicKey)}</span>
                     </button>
                   })}
-                  <button type="button" onClick={openDeSoIdentity} role="menuitem">{t.addAccount}</button>
-                  <button type="button" onClick={logout} role="menuitem">{t.logout}</button>
+                  <button type="button" onClick={() => { setAccountsOpen(false); openDeSoIdentity() }} role="menuitem">{session ? t.addAccount : t.login}</button>
+                  {session ? <button type="button" onClick={logout} role="menuitem">{t.logout}</button> : null}
 
                 </div>
               ) : null}
@@ -572,23 +572,15 @@ export default function ViaHomeControls() {
         </nav>
       </section>
 
-      <section className="via-home-language-section" style={{ display: "grid", gap: "6px" }}>
-        {!session ? <div aria-label="VIA utility controls"><button type="button" onClick={enterPublicMode} style={{ ...buttonStyle, width: "100%", cursor: "pointer" }}>{t.publicEntrance}</button></div> : null}
-
-        {session ? null : (
-          <button type="button" onClick={openDeSoIdentity} style={{ ...buttonStyle, width: "100%", minHeight: "42px", cursor: "pointer", borderColor: "rgba(143,212,169,.34)", color: "#b5e8c7" }}>
-            {status === "waiting" ? t.connecting : t.login}
-          </button>
-        )}
-      </section>
 
       {status === "blocked" ? <span style={{ color: "#c6a97b", fontSize: "9px", lineHeight: 1.45 }}>{t.blocked}</span> : null}
       <style>{`
         .via-home-language-control { position: relative; width: 100%; }
-        .via-home-grid-account-menu { left: 0; right: auto; top: calc(100% + 6px); width: 252px !important; padding: 7px !important; border-radius: 12px !important; background: rgba(10,22,15,.96) !important; backdrop-filter: blur(12px) !important; border: 1px solid rgba(143,212,169,.32) !important; box-shadow: 0 18px 44px rgba(0,0,0,.42) !important; }
-        .via-home-account-menu > button img, .via-home-account-menu > button svg { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; flex: 0 0 auto; }
+         .via-home-grid-account-wrap:has(.via-home-grid-account-menu) { z-index: 200; }
+        .via-home-grid-account-menu { position: absolute !important; left: 0; right: auto; top: calc(100% + 6px); width: min(218px, calc(100vw - 28px)) !important; box-sizing: border-box; padding: 5px !important; border-radius: 12px !important; background: rgba(10,22,15,.96) !important; backdrop-filter: blur(12px) !important; border: 1px solid rgba(143,212,169,.32) !important; box-shadow: 0 18px 44px rgba(0,0,0,.42) !important; }
+        .via-home-account-menu > button img, .via-home-account-menu > button svg { width: 23px; height: 23px; border-radius: 50%; object-fit: cover; flex: 0 0 auto; }
         .via-home-account-menu > button span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .via-home-grid-account-menu > a, .via-home-grid-account-menu > button { min-height: 36px !important; padding: 7px 9px !important; border-bottom: 1px solid rgba(143,212,169,.10) !important; }
+        .via-home-grid-account-menu > a, .via-home-grid-account-menu > button { min-height: 32px !important; padding: 5px 7px !important; border-bottom: 1px solid rgba(143,212,169,.10) !important; }
         .via-home-grid-account-menu > :last-child { border-bottom: 0 !important; }
         .via-home-language-menu { position: absolute; right: 0; top: calc(100% + 6px); z-index: 90; min-width: 112px; padding: 6px; border: 1px solid rgba(143,212,169,.22); border-radius: 12px; background: rgba(5,10,7,.98); box-shadow: 0 16px 36px rgba(0,0,0,.42); }
         .via-home-language-menu button { width: 100%; min-height: 34px; display: flex; align-items: center; justify-content: flex-start; gap: 8px; border: 0; border-radius: 8px; padding: 7px 9px; background: transparent; color: #d3ddd7; font: inherit; font-size: 12px; cursor: pointer; }
@@ -673,8 +665,9 @@ export default function ViaHomeControls() {
             border-radius: 50%;
             object-fit: cover;
           }
-          .via-home-account-menu { position: absolute; right: 0; top: 50px; z-index: 120; width: min(270px, calc(100vw - 28px)); max-height: 70vh; overflow-y: auto; padding: 7px; border: 1px solid rgba(143,212,169,.22); border-radius: 14px; background: rgba(10,22,15,.96); backdrop-filter: blur(12px); box-shadow: 0 18px 44px rgba(0,0,0,.42); }
-          .via-home-account-menu > a, .via-home-account-menu > button { width: 100%; min-height: 38px; display: flex; align-items: center; gap: 8px; padding: 8px 9px; border: 0; border-radius: 9px; background: transparent; color: #d3ddd7; text-decoration: none; font: inherit; font-size: 11px; text-align: left; cursor: pointer; box-sizing: border-box; }
+          .via-home-account-menu { position: absolute; left: 0; right: auto; top: calc(100% + 8px); z-index: 120; width: min(240px, calc(100vw - 28px)); max-height: 70vh; overflow-y: auto; padding: 9px; border: 1px solid rgba(143,212,169,.22); border-radius: 14px; background: rgba(10,22,15,.96); backdrop-filter: blur(12px); box-shadow: 0 18px 44px rgba(0,0,0,.42); }
+          .via-home-account-menu-heading { color: #8fd4a9; font-size: 10px; font-weight: 700; padding: 10px 9px 5px; border-top: 1px solid rgba(143,212,169,.18); margin-top: 5px; }
+          .via-home-account-menu > a, .via-home-account-menu > button { width: 100%; min-height: 32px; display: flex; align-items: center; gap: 6px; padding: 5px 7px; border: 0; border-radius: 9px; background: transparent; color: #d3ddd7; text-decoration: none; font: inherit; font-size: 11px; text-align: left; cursor: pointer; box-sizing: border-box; white-space: nowrap; overflow: hidden; }
           .via-home-account-menu > button img, .via-home-account-menu > button svg { width: 26px; height: 26px; border-radius: 50%; object-fit: cover; flex: 0 0 auto; }
           .via-home-account-menu > a:hover, .via-home-account-menu > button:hover { background: rgba(143,212,169,.10); }
           .via-home-iphone-utility-future {
