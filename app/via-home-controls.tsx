@@ -488,7 +488,7 @@ export default function ViaHomeControls() {
         <nav aria-label="VIA standard navigation" style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "7px" }}>
           {standardNav.map(([key, href]) => key === "home" ? (
             <div key={key} className="via-home-grid-account-wrap" style={{ position: "relative", width: "100%" }}>
-              <button type="button" onClick={() => { if (!session) { setAccountsOpen(false); openDeSoIdentity(); return } refreshAccounts(); setAccountsOpen((open) => !open) }} aria-label={session ? t.switchAccount : t.login} title={session ? t.switchAccount : t.login} aria-expanded={accountsOpen} aria-haspopup="menu" style={{ ...buttonStyle, width: "100%", minHeight: "48px", justifyContent: "center", paddingInline: "9px", cursor: "pointer", gap: "7px" }}>
+              <button type="button" onClick={() => { refreshAccounts(); setAccountsOpen((open) => !open) }} aria-label={session ? t.switchAccount : t.login} title={session ? t.switchAccount : t.login} aria-expanded={accountsOpen} aria-haspopup="menu" style={{ ...buttonStyle, width: "100%", minHeight: "48px", justifyContent: "center", paddingInline: "9px", cursor: "pointer", gap: "7px" }}>
                 {session && avatar ? <img src={avatar} alt="" referrerPolicy="no-referrer" style={{ width: 28, height: 28, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} /> : session ? <UsersRound aria-hidden="true" size={18} /> : <img src="/via-logo-original.jpg?v=2" alt="" aria-hidden="true" style={{ width: 28, height: 28, borderRadius: "50%", objectFit: "contain", flexShrink: 0 }} />}
                 <span>{session ? accountName : t.login}</span>
               </button>
