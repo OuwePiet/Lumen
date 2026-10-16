@@ -210,6 +210,7 @@ export default function ViaHomeControls() {
   const [profiles, setProfiles] = useState<Record<string, PublicProfile>>({})
   const [accountsOpen, setAccountsOpen] = useState(false)
   const [status, setStatus] = useState<"idle" | "waiting" | "blocked">("idle")
+  const [identityError, setIdentityError] = useState<string | null>(null)
   const [language, setLanguage] = useState<ViaLanguage>("English")
   const [languageOpen, setLanguageOpen] = useState(false)
   const [hasUnreadNotifications, setHasUnreadNotifications] = useState(false)
@@ -387,8 +388,13 @@ export default function ViaHomeControls() {
       setSession({ ...user, accessLevel: 3, signedUp: false })
       setAccountsOpen(false)
       setStatus("idle")
+      setIdentityError(null)
       router.refresh()
-    } catch {
+    } catch (error) {
+      // Report the SDK failure category without exposing wallet data or tokens.
+      const message = error instanceof Error ? error.message : ""
+      const name = error instanceof Error ? error.name : "UnknownError"
+      setIdentityError(`${name}: ${message.slice(0, 180) || "DeSo Identity did not complete"}`)
       setStatus("blocked")
     }
   }
@@ -543,7 +549,7 @@ export default function ViaHomeControls() {
       </section>
 
 
-      {status === "blocked" ? <span style={{ color: "#c6a97b", fontSize: "9px", lineHeight: 1.45 }}>{t.blocked}</span> : null}
+      {status === "blocked" ? <span role="alert" style={{ color: "#c6a97b", fontSize: "9px", lineHeight: 1.45, overflowWrap: "anywhere" }}>{t.blocked}{identityError ? ` (${identityError})` : ""}</span> : null}
       <style>{`
         .via-home-language-control { position: relative; width: 100%; }
          .via-home-grid-account-wrap:has(.via-home-grid-account-menu) { z-index: 200; }
