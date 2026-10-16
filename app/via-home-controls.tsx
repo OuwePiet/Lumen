@@ -7,8 +7,6 @@ import { CircleHelp, Music2, RadioTower, UsersRound } from "lucide-react"
 import {
   VIA_IDENTITY_EVENT,
   clearIdentitySession,
-  listIdentitySessions,
-  restoreIdentitySession,
   type ViaIdentitySession,
 } from "./deso-identity-session"
 import { viaModernIdentity } from "./deso-identity-modern"
