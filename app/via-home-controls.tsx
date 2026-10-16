@@ -505,7 +505,7 @@ export default function ViaHomeControls() {
         <nav aria-label="VIA standard navigation" style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "7px" }}>
           {standardNav.map(([key, href]) => key === "home" ? (
             <div key={key} className="via-home-grid-account-wrap" style={{ position: "relative", width: "100%" }}>
-              <button type="button" onClick={() => { refreshAccounts(); setAccountsOpen((open) => !open) }} aria-label={session ? t.switchAccount : t.login} title={session ? t.switchAccount : t.login} aria-expanded={accountsOpen} aria-haspopup="menu" style={{ ...buttonStyle, width: "100%", minHeight: "48px", justifyContent: "center", paddingInline: "9px", cursor: "pointer", gap: "7px" }}>
+              <button type="button" onClick={() => { if (!session) { setAccountsOpen(false); openDeSoIdentity(); return } refreshAccounts(); setAccountsOpen((open) => !open) }} aria-label={session ? t.switchAccount : t.login} title={session ? t.switchAccount : t.login} aria-expanded={accountsOpen} aria-haspopup="menu" style={{ ...buttonStyle, width: "100%", minHeight: "48px", justifyContent: "center", paddingInline: "9px", cursor: "pointer", gap: "7px" }}>
                 {session && avatar ? <img src={avatar} alt="" referrerPolicy="no-referrer" style={{ width: 28, height: 28, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} /> : session ? <UsersRound aria-hidden="true" size={18} /> : <img src="/via-logo-original.jpg?v=2" alt="" aria-hidden="true" style={{ width: 28, height: 28, borderRadius: "50%", objectFit: "contain", flexShrink: 0 }} />}
                 <span>{session ? accountName : t.login}</span>
               </button>
@@ -577,10 +577,10 @@ export default function ViaHomeControls() {
       <style>{`
         .via-home-language-control { position: relative; width: 100%; }
          .via-home-grid-account-wrap:has(.via-home-grid-account-menu) { z-index: 200; }
-        .via-home-grid-account-menu { position: absolute !important; left: 0; right: auto; top: calc(100% + 6px); width: min(236px, calc(100vw - 28px)) !important; box-sizing: border-box; padding: 7px !important; border-radius: 12px !important; background: rgba(10,22,15,.96) !important; backdrop-filter: blur(12px) !important; border: 1px solid rgba(143,212,169,.32) !important; box-shadow: 0 18px 44px rgba(0,0,0,.42) !important; }
-        .via-home-account-menu > button img, .via-home-account-menu > button svg { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; flex: 0 0 auto; }
+        .via-home-grid-account-menu { position: absolute !important; left: 0; right: auto; top: calc(100% + 6px); width: min(218px, calc(100vw - 28px)) !important; box-sizing: border-box; padding: 5px !important; border-radius: 12px !important; background: rgba(10,22,15,.96) !important; backdrop-filter: blur(12px) !important; border: 1px solid rgba(143,212,169,.32) !important; box-shadow: 0 18px 44px rgba(0,0,0,.42) !important; }
+        .via-home-account-menu > button img, .via-home-account-menu > button svg { width: 23px; height: 23px; border-radius: 50%; object-fit: cover; flex: 0 0 auto; }
         .via-home-account-menu > button span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .via-home-grid-account-menu > a, .via-home-grid-account-menu > button { min-height: 36px !important; padding: 7px 9px !important; border-bottom: 1px solid rgba(143,212,169,.10) !important; }
+        .via-home-grid-account-menu > a, .via-home-grid-account-menu > button { min-height: 32px !important; padding: 5px 7px !important; border-bottom: 1px solid rgba(143,212,169,.10) !important; }
         .via-home-grid-account-menu > :last-child { border-bottom: 0 !important; }
         .via-home-language-menu { position: absolute; right: 0; top: calc(100% + 6px); z-index: 90; min-width: 112px; padding: 6px; border: 1px solid rgba(143,212,169,.22); border-radius: 12px; background: rgba(5,10,7,.98); box-shadow: 0 16px 36px rgba(0,0,0,.42); }
         .via-home-language-menu button { width: 100%; min-height: 34px; display: flex; align-items: center; justify-content: flex-start; gap: 8px; border: 0; border-radius: 8px; padding: 7px 9px; background: transparent; color: #d3ddd7; font: inherit; font-size: 12px; cursor: pointer; }
@@ -667,7 +667,7 @@ export default function ViaHomeControls() {
           }
           .via-home-account-menu { position: absolute; left: 0; right: auto; top: calc(100% + 8px); z-index: 120; width: min(240px, calc(100vw - 28px)); max-height: 70vh; overflow-y: auto; padding: 9px; border: 1px solid rgba(143,212,169,.22); border-radius: 14px; background: rgba(10,22,15,.96); backdrop-filter: blur(12px); box-shadow: 0 18px 44px rgba(0,0,0,.42); }
           .via-home-account-menu-heading { color: #8fd4a9; font-size: 10px; font-weight: 700; padding: 10px 9px 5px; border-top: 1px solid rgba(143,212,169,.18); margin-top: 5px; }
-          .via-home-account-menu > a, .via-home-account-menu > button { width: 100%; min-height: 38px; display: flex; align-items: center; gap: 8px; padding: 8px 9px; border: 0; border-radius: 9px; background: transparent; color: #d3ddd7; text-decoration: none; font: inherit; font-size: 12px; text-align: left; cursor: pointer; box-sizing: border-box; white-space: nowrap; overflow: hidden; }
+          .via-home-account-menu > a, .via-home-account-menu > button { width: 100%; min-height: 32px; display: flex; align-items: center; gap: 6px; padding: 5px 7px; border: 0; border-radius: 9px; background: transparent; color: #d3ddd7; text-decoration: none; font: inherit; font-size: 11px; text-align: left; cursor: pointer; box-sizing: border-box; white-space: nowrap; overflow: hidden; }
           .via-home-account-menu > button img, .via-home-account-menu > button svg { width: 26px; height: 26px; border-radius: 50%; object-fit: cover; flex: 0 0 auto; }
           .via-home-account-menu > a:hover, .via-home-account-menu > button:hover { background: rgba(143,212,169,.10); }
           .via-home-iphone-utility-future {
