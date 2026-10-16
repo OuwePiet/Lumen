@@ -482,7 +482,7 @@ export default function ViaHomeControls() {
               {otherAccounts.map((account) => {
                 const accountProfile = profiles[account.publicKey]
                 const accountAvatar = safeProfileImage(accountProfile?.profilePic)
-                return <button key={account.publicKey} type="button" onClick={() => chooseAccount(account.publicKey)} role="menuitem">
+                return <button key={account.publicKey} type="button" onClick={() => chooseAccount(account.publicKey)} role="menuitem" style={{ display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "flex-start", flexWrap: "nowrap", gap: 7, width: "100%", minHeight: 32, padding: "5px 7px", fontSize: 11, textAlign: "left" }}>
                   {accountAvatar ? <img src={accountAvatar} alt="" referrerPolicy="no-referrer" /> : <UsersRound aria-hidden="true" />}
                   <span>{accountProfile?.username ? `@${accountProfile.username}` : shortPublicKey(account.publicKey)}</span>
                 </button>
