@@ -54,12 +54,15 @@ export async function POST(request: Request) {
       const transactionHex = data.TransactionHex
       const feeNanos = data.FeeNanos
       if (!validHex(transactionHex)) return noStore({ ok: false, error: "INVALID_PREPARED_TRANSACTION" }, 502)
+      if (typeof feeNanos !== "number" || !Number.isSafeInteger(feeNanos) || feeNanos < 0 || !Number.isSafeInteger((amountNanos as number) + feeNanos)) return noStore({ ok: false, error: "INVALID_PREPARED_COST" }, 502)
 
       return noStore({
         ok: true,
         transactionHex,
         amountNanos,
-        feeNanos: typeof feeNanos === "number" && Number.isFinite(feeNanos) ? feeNanos : null,
+        senderPublicKey,
+        feeNanos,
+        preparedAt: Date.now(),
       })
     } catch {
       return noStore({ ok: false, error: "DESO_PREPARE_UNAVAILABLE" }, 503)
