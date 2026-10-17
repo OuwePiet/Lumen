@@ -2,8 +2,6 @@
 
 import Link from "next/link"
 import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
-import { viaModernIdentity } from "../deso-identity-modern"
 import { readViaLocalSettings, VIA_SETTINGS_EVENT, type ViaLanguage } from "../via-local-settings"
 
 type HubCopy = {
@@ -46,9 +44,7 @@ const hubLink = {
 } as const
 
 export default function CollectionHub() {
-  const router = useRouter()
   const [language, setLanguage] = useState<ViaLanguage>("English")
-  const [myNftsMessage, setMyNftsMessage] = useState("")
 
   useEffect(() => {
     const sync = () => setLanguage(readViaLocalSettings().interfaceLanguage)
@@ -59,23 +55,6 @@ export default function CollectionHub() {
 
   const t = COPY[language] ?? COPY.English!
 
-  const openMyNfts = async () => {
-    const user = await viaModernIdentity.currentUser().catch(() => null)
-    if (!user?.publicKey) {
-      setMyNftsMessage(t.signInForMyNfts)
-      document.getElementById("account-lookup-heading")?.scrollIntoView({ behavior: "smooth", block: "start" })
-      return
-    }
-
-    const params = new URLSearchParams({
-      account: user.publicKey,
-      accountKey: user.publicKey,
-      view: "nfts",
-    })
-    setMyNftsMessage("")
-    router.push(`/collection?${params.toString()}#collection-controls`)
-  }
-
   return (
     <section style={{ maxWidth: 1480, margin: "0 auto", padding: "22px 20px 4px" }} aria-label={t.navLabel}>
       <div style={{ border: "1px solid rgba(143,212,169,.24)", borderRadius: 16, background: "rgba(5,16,10,.74)", backdropFilter: "blur(5px)", padding: 16 }}>
@@ -85,9 +64,12 @@ export default function CollectionHub() {
           <a href="/collection#account-lookup-heading" style={hubLink}>{t.discover}</a>
           <Link href="/market" style={hubLink}>{t.marketplace}</Link>
           <Link href="/studio#mint-nft" style={hubLink}>{t.mint}</Link>
-          <button type="button" style={hubLink} onClick={() => void openMyNfts()}>{t.myNfts}</button>
+          <Link href="/collection/mine" style={hubLink}>{t.myNfts}</Link>
         </nav>
-        {myNftsMessage ? <p role="status" style={{ margin: "12px 0 0", color: "#b3beb8", fontSize: 13, lineHeight: 1.5 }}>{myNftsMessage}</p> : null}
+        <nav aria-label="NFT workspace" className="mt-3 flex flex-wrap gap-3 text-sm">
+          <Link href="/collections" style={hubLink}>Collections / series</Link>
+          <Link href="/giveaway" style={hubLink}>Claim / Giveaway</Link>
+        </nav>
         <style>{`
           @media (max-width: 980px) {
             .via-collection-hub-nav { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }

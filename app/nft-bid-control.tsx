@@ -2,7 +2,8 @@
 
 import { useEffect, useMemo, useRef, useState } from "react"
 import { viaModernIdentity, type ViaModernIdentityUser } from "./deso-identity-modern"
-import { restoreIdentitySession, restoreLegacyIdentitySession, VIA_IDENTITY_EVENT } from "./deso-identity-session"
+import { restoreIdentitySession, VIA_IDENTITY_EVENT } from "./deso-identity-session"
+import { useNFTActionReview } from "./nft-action-review"
 import { financialSubmissionBlock, markFinancialPending, markFinancialSubmitted, readFinancialReceipt, withFinancialAccountLock, FINANCIAL_SUBMISSION_EVENT } from "./financial-submission"
 
 type SaleEdition = {
@@ -35,6 +36,7 @@ function formatDeso(nanos?: number) {
 }
 
 export default function NFTBidControl({ postHash, editions }: Props) {
+  const review = useNFTActionReview()
   const [session, setSession] = useState<ViaModernIdentityUser | null>(null)
   const [serialNumber, setSerialNumber] = useState(editions[0]?.serialNumber ?? 1)
   const [amount, setAmount] = useState("")
@@ -66,7 +68,7 @@ export default function NFTBidControl({ postHash, editions }: Props) {
       const current = restoreIdentitySession()
       if (selectedAccount.current !== null && selectedAccount.current !== current?.publicKey) setConfirmed(false)
       selectedAccount.current = current?.publicKey ?? null
-      if (operation && (current?.publicKey !== operation.publicKey || restoreLegacyIdentitySession())) operation.invalidated = true
+      if (operation && (current?.publicKey !== operation.publicKey)) operation.invalidated = true
       try { setSubmissionBlock(current ? financialSubmissionBlock(current.publicKey, intent(bidNanos ?? edition?.buyNowPriceNanos ?? 0)) : "") }
       catch { setSubmissionBlock("Herstelregistratie is niet beschikbaar. Niet verzenden.") }
     }
@@ -87,7 +89,6 @@ export default function NFTBidControl({ postHash, editions }: Props) {
   }
 
   useEffect(() => {
-    void viaModernIdentity.currentUser().then(setSession)
     return viaModernIdentity.subscribe(setSession)
   }, [])
 
@@ -106,7 +107,7 @@ export default function NFTBidControl({ postHash, editions }: Props) {
       if (!account || !operation || session?.publicKey !== account.publicKey) throw new Error("DESO_ACCOUNT_CHANGED")
       const assertAccount = async () => {
         const check = () => {
-          if (operation.invalidated || restoreLegacyIdentitySession() || restoreIdentitySession()?.publicKey !== account.publicKey) throw new Error("DESO_ACCOUNT_CHANGED_OR_SDK_REQUIRED")
+          if (operation.invalidated || restoreIdentitySession()?.publicKey !== account.publicKey) throw new Error("DESO_ACCOUNT_CHANGED_OR_SDK_REQUIRED")
         }
         check()
         const current = await viaModernIdentity.currentUser()
@@ -148,6 +149,10 @@ export default function NFTBidControl({ postHash, editions }: Props) {
       const assertFresh = () => { if (Date.now() < data.preparedAt! || Date.now() - data.preparedAt! > 120_000) throw new Error("NFT_QUOTE_EXPIRED") }
       assertFresh()
       setFeeNanos(data.feeNanos)
+      const reviewed = await review({ publicKey: account.publicKey, kind: forBuyNow ? "buy-now" : "bid", postHash, serialNumber: edition.serialNumber, body: { bidAmountNanos: effectiveBidNanos }, feeNanos: data.feeNanos, spendNanos: cost - data.feeNanos, expiresAt: data.preparedAt! + 120_000, isCurrent: () => !operation.invalidated && restoreIdentitySession()?.publicKey === account.publicKey })
+      await assertAccount()
+      assertFresh()
+      if (!reviewed) throw new Error("NFT_REVIEW_CANCELLED")
       await viaModernIdentity.refreshSpendingLimits()
       await assertAccount()
       const limits = await viaModernIdentity.spendingLimits()
@@ -185,7 +190,7 @@ export default function NFTBidControl({ postHash, editions }: Props) {
       if (typeof signedTransactionHex !== "string" || signedTransactionHex.length > 500_000 || !/^(?:[0-9a-f]{2})+$/i.test(signedTransactionHex)) throw new Error("INVALID_SIGNED_TRANSACTION")
       const submission = { publicKey: account.publicKey, intent: actionIntent, amountNanos: effectiveBidNanos, startedAt: Date.now() }
       markFinancialPending(submission)
-      if (operation.invalidated || restoreIdentitySession()?.publicKey !== account.publicKey || restoreLegacyIdentitySession()) throw new Error("DESO_ACCOUNT_CHANGED")
+      if (operation.invalidated || restoreIdentitySession()?.publicKey !== account.publicKey) throw new Error("DESO_ACCOUNT_CHANGED")
       setStatus("submitting")
       setMessage("Submitting the approved NFT bid to DeSo…")
       submissionStarted = true

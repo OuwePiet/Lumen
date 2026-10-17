@@ -46,6 +46,10 @@ function restoreProfileLinks() {
 function hideAccountEntrances() {
   document.querySelectorAll<HTMLAnchorElement>('a[href^="/discover/voices"]').forEach(hideElement)
 
+  // These are public blockchain readers. A supplied public key grants no
+  // signing rights; each financial control independently binds Identity.
+  if (["/collection", "/collections", "/giveaway", "/market"].includes(window.location.pathname) || window.location.pathname.startsWith("/collection/") || window.location.pathname.startsWith("/market/")) return
+
   if (window.location.pathname !== "/collection") {
     const lookupHeading = document.getElementById("account-lookup-heading")
     const lookupSection = lookupHeading?.closest<HTMLElement>("section")
@@ -63,24 +67,10 @@ function hideAccountEntrances() {
 }
 
 function cleanRestrictedUrl() {
-  const { pathname, search, hash } = window.location
+  const { pathname } = window.location
 
   if (pathname === "/discover/voices" || pathname === "/profile" || pathname.startsWith("/profile/")) {
     window.location.replace("/public")
-    return true
-  }
-
-  const params = new URLSearchParams(search)
-  let changed = false
-
-  if (pathname === "/market" && params.has("publicKey")) {
-    params.delete("publicKey")
-    changed = true
-  }
-
-  if (changed) {
-    const query = params.toString()
-    window.location.replace(`${pathname}${query ? `?${query}` : ""}${hash}`)
     return true
   }
 

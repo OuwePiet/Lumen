@@ -45,10 +45,11 @@ function fixture({ switchAt = '', timeout = false, badJson = false, refreshFails
       throw new Error('Unexpected fetch '+url)
     },
     require(name) {
+      if (name === './nft-action-review') return { useNFTActionReview: () => async () => true }
       if (name === 'react') return react
       if (name === 'react/jsx-runtime') return require(name)
       if (name === './deso-identity-modern') return { viaModernIdentity: identity }
-      if (name === './deso-identity-session') return { restoreIdentitySession: () => ({ publicKey: active }), restoreLegacyIdentitySession: () => legacy ? { publicKey: active } : null, VIA_IDENTITY_EVENT: 'via:identity-session' }
+      if (name === './deso-identity-session') return { restoreIdentitySession: () => legacy ? null : ({ publicKey: active }), VIA_IDENTITY_EVENT: 'via:identity-session' }
       if (name === './financial-submission') { const exports = {}; vm.runInNewContext(compile(fs.readFileSync(path.join(__dirname,'../app/financial-submission.ts'),'utf8')), { ...context, exports }); return exports }
       throw new Error('Unexpected import '+name)
     },

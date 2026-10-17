@@ -14,3 +14,9 @@ body.via-no-deso-session a[href^="/profile/"] {
   pointer-events: none !important;
   cursor: default !important;
 }
+
+/* Public NFT readers confer no Identity or transaction permission. */
+body.via-session-pending [data-via-public-nft-reader] section:has(input[name="publicKey"]),
+body.via-no-deso-session [data-via-public-nft-reader] section:has(input[name="publicKey"]) {
+  display: block !important;
+}
