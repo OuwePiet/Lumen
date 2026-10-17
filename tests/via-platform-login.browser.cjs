@@ -36,7 +36,8 @@ async function run(name, engine, options) {
     await context.route('**/*', async route => {
       const request = route.request(), url = new URL(request.url())
       if (url.origin === 'https://identity.deso.org') {
-        identityLaunches.push({ pathname: url.pathname, redirect: url.searchParams.get('redirect_uri') })
+        const permissions = JSON.parse(decodeURIComponent(url.searchParams.get('transactionSpendingLimitResponse')))
+        identityLaunches.push({ pathname: url.pathname, redirect: url.searchParams.get('redirect_uri'), feeBudget: permissions.GlobalDESOLimit })
         return route.fulfill({ contentType: 'text/html', body: '<h1>Identity intercepted — no real login or signing</h1>' })
       }
       if (url.origin !== new URL(base).origin) {
@@ -102,15 +103,12 @@ async function run(name, engine, options) {
     assert.equal(await page.evaluate(() => localStorage.getItem('desoActivePublicKey')), null)
     assert.equal(await page.evaluate(() => localStorage.getItem('viaActivePublicKey')), null)
     assert.equal(await page.evaluate(() => localStorage.getItem('via:financial:v1:fixture:pending')), 'preserve')
-    await page.getByRole('button', { name: 'DeSo Login', exact: true }).click()
-    await page.getByRole('menuitem', { name: 'Logout', exact: true }).waitFor()
-    await page.getByRole('menuitem', { name: '@VIA-Test-A', exact: true }).waitFor()
-    await page.getByRole('menuitem', { name: 'Add DeSo account', exact: true }).waitFor()
-    assert.equal(identityLaunches.length, 0, 'opening account menu while logged out never opens Identity')
+    assert.equal(await page.getByRole('menu').count(), 0, 'logged-out homepage has a direct login button, not an empty account menu')
+    assert.equal(identityLaunches.length, 0, 'logout and reload never launch Identity automatically')
     await page.screenshot({ path: path.join(out, name + '-uitgelogd.png'), fullPage: true })
     await page.waitForLoadState('networkidle')
-    await replace(async () => { await page.getByRole('menuitem', { name: 'Add DeSo account', exact: true }).click(); await page.waitForURL('https://identity.deso.org/**') })
-    assert.deepEqual(identityLaunches, [{ pathname: '/derive', redirect: base + '/' }])
+    await replace(async () => { await page.getByRole('button', { name: 'DeSo Login', exact: true }).click(); await page.waitForURL('https://identity.deso.org/**') })
+    assert.deepEqual(identityLaunches, [{ pathname: '/derive', redirect: base + '/', feeBudget: 10000000 }])
     // Exercise real SDK callback parsing for an already authorized alternate account.
     // Existing stored user B bypasses authorization/signing; financial POSTs remain forbidden.
     await replace(() => page.goto(base, { waitUntil: 'networkidle' }))
