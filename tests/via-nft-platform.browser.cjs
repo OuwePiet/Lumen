@@ -84,6 +84,8 @@ async function run(name, engine, options) {
     await navigate('/collection/mine'); await switchTo('@VIA-Test-A', A)
     await navigate('/nft/'+HASH)
     await page.getByRole('heading', { name: 'Manage sale', exact: true }).waitFor()
+    await page.getByRole('link', { name: 'Open oorspronkelijk bestand', exact: true }).waitFor()
+    assert.equal(await page.getByRole('link', { name: 'Open oorspronkelijk bestand', exact: true }).getAttribute('href'), 'https://media.example.test/book.pdf')
     await page.getByRole('checkbox', { name: 'I understand this is a real on-chain NFT sale-status transaction.', exact: true }).check()
     await page.getByRole('textbox', { name: 'Type BURN to confirm', exact: true }).fill('BURN')
     await page.getByRole('button', { name: 'Burn edition #1', exact: true }).click()
