@@ -10,7 +10,8 @@
       "codex/via-nft-bid-safety-20261013": false,
       "codex/via-sponsor-safety-20261013": false,
       "backup/via-nft-preserved-20261017": false,
-      "fix/via-nft-platform-release-20261017": false
+      "fix/via-nft-platform-release-20261017": false,
+      "feat/via-nft-storage-preview-20261017": false
     }
   },
   "$schema": "https://openapi.vercel.sh/vercel.json"
