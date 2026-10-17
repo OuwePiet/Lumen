@@ -1,4 +1,5 @@
 "use client"
+import { hasUnfinishedSDKLogin } from "./deso-session-recovery"
 
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -224,6 +225,7 @@ export default function ViaHomeControls() {
   const [profiles, setProfiles] = useState<Record<string, PublicProfile>>({})
   const [accountsOpen, setAccountsOpen] = useState(false)
   const [status, setStatus] = useState<"idle" | "waiting" | "blocked">("idle")
+  const [unfinishedLogin, setUnfinishedLogin] = useState(false)
   const [language, setLanguage] = useState<ViaLanguage>("English")
   const [languageOpen, setLanguageOpen] = useState(false)
   const [hasUnreadNotifications, setHasUnreadNotifications] = useState(false)
@@ -346,6 +348,7 @@ export default function ViaHomeControls() {
     const syncLanguage = () => setLanguage(readViaLocalSettings().interfaceLanguage)
     const syncIdentity = () => {
       setSession(restoreIdentitySession())
+      setUnfinishedLogin(hasUnfinishedSDKLogin())
       refreshAccounts()
     }
     syncLanguage()
@@ -423,7 +426,6 @@ export default function ViaHomeControls() {
       setSession(restoreIdentitySession())
       setProfile(profiles[publicKey] ?? null)
       setAccountsOpen(false)
-      router.refresh()
     } catch { setStatus("blocked") }
   }
 
@@ -497,7 +499,7 @@ export default function ViaHomeControls() {
         <nav aria-label="VIA standard navigation" style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "7px" }}>
           {standardNav.map(([key, href]) => key === "home" ? (
             <div ref={accountMenuRef} key={key} className="via-home-grid-account-wrap" style={{ position: "relative", width: "100%" }}>
-              <button type="button" onClick={() => { refreshAccounts(); setAccountsOpen((open) => !open) }} aria-label={session ? t.switchAccount : t.login} title={session ? t.switchAccount : t.login} aria-expanded={accountsOpen} aria-haspopup="menu" style={{ ...buttonStyle, width: "100%", minHeight: "48px", justifyContent: "center", paddingInline: "9px", cursor: "pointer", gap: "7px" }}>
+              <button type="button" onClick={() => { if (!session) { void openDeSoIdentity(); return }; refreshAccounts(); setAccountsOpen((open) => !open) }} disabled={status === "waiting"} aria-label={session ? t.switchAccount : t.login} title={session ? t.switchAccount : t.login} aria-expanded={session ? accountsOpen : undefined} aria-haspopup={session ? "menu" : undefined} style={{ ...buttonStyle, width: "100%", minHeight: "48px", justifyContent: "center", paddingInline: "9px", cursor: "pointer", gap: "7px" }}>
                 {session && avatar ? <img src={avatar} alt="" referrerPolicy="no-referrer" style={{ width: 28, height: 28, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} /> : session ? <UsersRound aria-hidden="true" size={18} /> : <img src="/via-logo-original.jpg?v=2" alt="" aria-hidden="true" style={{ width: 28, height: 28, borderRadius: "50%", objectFit: "contain", flexShrink: 0 }} />}
                 <span>{session ? accountName : t.login}</span>
               </button>
@@ -572,6 +574,7 @@ export default function ViaHomeControls() {
 
 
       {status === "waiting" ? <span role="status" style={{ fontSize: "11px" }}>{t.connecting}</span> : null}
+      {unfinishedLogin && !session ? <span role="status" style={{ color: "#c6a97b", fontSize: "11px", lineHeight: 1.5 }}>{language === "Dutch" ? "Je DeSo-aanmelding is nog niet afgerond. Kies ‘DeSo Login’ om de toegang opnieuw te verbinden." : "Your DeSo connection has not finished. Use ‘DeSo Login’ to reconnect."}</span> : null}
       {status === "blocked" ? <span style={{ color: "#c6a97b", fontSize: "9px", lineHeight: 1.45 }}>{t.blocked}</span> : null}
       <style>{`
         .via-home-language-control { position: relative; width: 100%; }

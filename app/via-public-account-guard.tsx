@@ -96,15 +96,10 @@ function cleanRestrictedUrl() {
 
 export default function ViaPublicAccountGuard() {
   useEffect(() => {
-    // SDK 3.4.1 consumes the Identity callback during module initialization.
-    // Next hydration can restore its initial URL; remove callback parameters
-    // afterwards too, preserving Next's history state. Never process twice.
-    if (new URLSearchParams(window.location.search).get("service") === "identity") {
-      window.history.replaceState(window.history.state, "", window.location.pathname)
-    }
     let observer: MutationObserver | null = null
 
     const apply = () => {
+      viaModernIdentity.resumeRedirect()
       const hasSession = Boolean(restoreIdentitySession())
       document.body.classList.toggle("via-deso-session", hasSession)
       document.body.classList.toggle("via-no-deso-session", !hasSession)
@@ -126,11 +121,13 @@ export default function ViaPublicAccountGuard() {
 
     const onHistory = () => { void apply() }
     window.addEventListener("popstate", onHistory)
+    window.addEventListener("pageshow", onHistory)
 
     return () => {
       observer?.disconnect()
       unsubscribeIdentity()
       window.removeEventListener("popstate", onHistory)
+      window.removeEventListener("pageshow", onHistory)
     }
   }, [])
 

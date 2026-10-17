@@ -2,6 +2,8 @@
 
 import { identity, type AccessGroupEntryResponse, type NewMessageEntryResponse } from "deso-protocol"
 import { clearIdentitySession, listIdentitySessions, restoreIdentitySession, SDK_ACTIVE_PUBLIC_KEY, SDK_IDENTITY_USERS, VIA_IDENTITY_EVENT } from "./deso-identity-session"
+import { checkedIdentityLoginURL, recoverExistingSDKSession } from "./deso-session-recovery"
+import { resumeIdentityReturn } from "./deso-identity-return"
 
 /**
  * Central modern DeSo Identity boundary for VIA.
@@ -25,12 +27,18 @@ export type ViaModernIdentityAdapter = {
   requestPermissions(permissions: Parameters<typeof identity.requestPermissions>[0]): ReturnType<typeof identity.requestPermissions>
   spendingLimits(): Promise<NonNullable<Awaited<ReturnType<typeof identity.snapshot>>["currentUser"]>["primaryDerivedKey"]["transactionSpendingLimits"] | null>
   refreshSpendingLimits(): Promise<void>
+  resumeRedirect(): void
   encryptMessage(recipientPublicKey: string, message: string): Promise<string>
   decryptMessage(message: NewMessageEntryResponse, groups?: AccessGroupEntryResponse[]): Promise<string>
   jwt(): Promise<string>
 }
 
 export const VIA_BASE_SPENDING_LIMITS: Parameters<typeof identity.hasPermissions>[0] = {
+  // SDK 3.4.1 DEFAULT_PERMISSIONS: a finite 0.01 DESO allowance. Replacing
+  // the default with only transaction counts otherwise drops the fee budget,
+  // including the fee needed to authorize the login key itself. This is a
+  // spending ceiling presented by Identity, not a payment or a fee charged by VIA.
+  GlobalDESOLimit: 10_000_000,
   TransactionCountLimitMap: {
     SUBMIT_POST: "UNLIMITED",
     LIKE: "UNLIMITED",
@@ -54,6 +62,7 @@ function configure(redirectLogin = false) {
     identityURI: "https://identity.deso.org", spendingLimitOptions: VIA_BASE_SPENDING_LIMITS,
     // Official SDK redirect: no Safari popup/opener dependency. Only login redirects.
     redirectURI: redirectLogin ? `${window.location.origin}/` : undefined,
+    identityPresenter: redirectLogin ? (url) => { window.location.href = checkedIdentityLoginURL(url, window.location.origin) } : undefined,
   })
   configured = true
 }
@@ -102,6 +111,7 @@ export const viaModernIdentity: ViaModernIdentityAdapter = {
     loginPending = true
     try {
       localStorage.removeItem("viaActivePublicKey")
+      await recoverExistingSDKSession()
       configure(true)
       const payload = await identity.login()
       return { publicKey: payload.publicKeyBase58Check }
@@ -112,6 +122,10 @@ export const viaModernIdentity: ViaModernIdentityAdapter = {
     ensureConfigured()
     return listIdentitySessions().map(({ publicKey }) => ({ publicKey }))
   },
+  resumeRedirect() {
+    resumeIdentityReturn((url) => identity.handleRedirectURI(url))
+    void recoverExistingSDKSession().then(recovered => { if (recovered) notify() })
+  },
   subscribe(listener) {
     ensureConfigured()
     identityListeners.add(listener)
@@ -119,6 +133,7 @@ export const viaModernIdentity: ViaModernIdentityAdapter = {
       subscribed = true
       void identity.subscribe(() => {
         notify()
+        void recoverExistingSDKSession().then(recovered => { if (recovered) notify() })
         window.dispatchEvent(new CustomEvent(VIA_IDENTITY_EVENT, { detail: restoreIdentitySession() }))
       }).catch(() => notify())
       window.addEventListener(VIA_IDENTITY_EVENT, notify)
@@ -129,6 +144,7 @@ export const viaModernIdentity: ViaModernIdentityAdapter = {
       window.addEventListener("focus", notify)
     }
     listener(selectedUser())
+    void recoverExistingSDKSession().then(recovered => { if (recovered) notify() })
     return () => { identityListeners.delete(listener) }
   },
   async setActiveUser(publicKey) {
@@ -158,3 +174,9 @@ export const viaModernIdentity: ViaModernIdentityAdapter = {
   jwt() { return forSelectedUser(() => identity.jwt()) },
 }
 export const VIA_MODERN_IDENTITY_READY = true as const
+
+// SDK 3.4.1 starts redirect handling in its constructor. Configure synchronously
+// in this module, before that async callback resumes, rather than waiting for a
+// React effect: otherwise key registration uses the SDK's default blockproducer
+// endpoint and empty app name instead of VIA's configured node and app name.
+if (typeof window !== "undefined") configure()
