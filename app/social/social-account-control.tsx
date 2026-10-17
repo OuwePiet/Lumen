@@ -16,7 +16,7 @@ export default function SocialAccountControl() {
   }
 
   useEffect(() => {
-    void sync()
+    return viaModernIdentity.subscribe(setSession)
   }, [])
 
   async function addAccount() {

@@ -1,9 +1,7 @@
 "use client"
 
 import { identity, type AccessGroupEntryResponse, type NewMessageEntryResponse } from "deso-protocol"
-import { clearIdentitySession, listIdentitySessions, restoreIdentitySession, switchIdentitySession, VIA_IDENTITY_EVENT } from "./deso-identity-session"
-import { signViaTransaction } from "./deso-identity-sign"
-import { requestViaIdentityJwt } from "./deso-identity-jwt"
+import { clearIdentitySession, listIdentitySessions, restoreIdentitySession, SDK_ACTIVE_PUBLIC_KEY, SDK_IDENTITY_USERS, VIA_IDENTITY_EVENT } from "./deso-identity-session"
 
 /**
  * Central modern DeSo Identity boundary for VIA.
@@ -46,134 +44,117 @@ export const VIA_BASE_SPENDING_LIMITS: Parameters<typeof identity.hasPermissions
 
 let configured = false
 let subscribed = false
+let loginPending = false
 const identityListeners = new Set<(user: ViaModernIdentityUser | null) => void>()
 
-function ensureConfigured() {
-  if (configured || typeof window === "undefined") return
-
+function configure(redirectLogin = false) {
+  if (typeof window === "undefined") return
   identity.configure({
-    appName: "VIA",
-    network: "mainnet",
-    nodeURI: "https://node.deso.org",
-    identityURI: "https://identity.deso.org",
-    spendingLimitOptions: VIA_BASE_SPENDING_LIMITS,
+    appName: "VIA", network: "mainnet", nodeURI: "https://node.deso.org",
+    identityURI: "https://identity.deso.org", spendingLimitOptions: VIA_BASE_SPENDING_LIMITS,
+    // Official SDK redirect: no Safari popup/opener dependency. Only login redirects.
+    redirectURI: redirectLogin ? `${window.location.origin}/` : undefined,
   })
-
   configured = true
 }
-
-async function currentUser(): Promise<ViaModernIdentityUser | null> {
-  const viaSession = restoreIdentitySession()
-  if (viaSession?.publicKey) return { publicKey: viaSession.publicKey }
-
+function ensureConfigured() { if (!configured) configure() }
+function selectedUser(): ViaModernIdentityUser | null {
+  const session = restoreIdentitySession()
+  return session ? { publicKey: session.publicKey } : null
+}
+function notify() {
+  const user = selectedUser()
+  identityListeners.forEach((listener) => listener(user))
+}
+function requireUser() {
   ensureConfigured()
-  const state = await identity.snapshot()
-  const publicKey = state.currentUser?.publicKey
-  return publicKey ? { publicKey } : null
+  const user = selectedUser()
+  if (!user) throw new Error("Log in once on the VIA homepage with DeSo Identity.")
+  return user
+}
+async function forSelectedUser<T>(operation: () => T | Promise<T>): Promise<T> {
+  const user = requireUser()
+  let changed = false
+  const check = () => { if (selectedUser()?.publicKey !== user.publicKey) changed = true }
+  const onStorage = (event: StorageEvent) => {
+    if (event.key === null || event.key === SDK_ACTIVE_PUBLIC_KEY || event.key === SDK_IDENTITY_USERS) {
+      if (event.key === SDK_ACTIVE_PUBLIC_KEY && event.newValue !== user.publicKey) changed = true
+      check()
+    }
+  }
+  window.addEventListener(VIA_IDENTITY_EVENT, check)
+  window.addEventListener("storage", onStorage)
+  try {
+    const result = await operation()
+    check()
+    if (changed) throw new Error("The active DeSo account changed. Please review the action again.")
+    return result
+  } finally {
+    window.removeEventListener(VIA_IDENTITY_EVENT, check)
+    window.removeEventListener("storage", onStorage)
+  }
 }
 
 export const viaModernIdentity: ViaModernIdentityAdapter = {
-  currentUser,
-
+  async currentUser() { ensureConfigured(); return selectedUser() },
   async login() {
-    ensureConfigured()
-    const payload = await identity.login()
-    // Codex PR #1451: the SDK login becomes the sole active account.
-    // Preserve stored legacy accounts for explicit switching only.
-    clearIdentitySession()
-    return { publicKey: payload.publicKeyBase58Check }
+    if (loginPending) throw new Error("DeSo Identity login is already opening.")
+    loginPending = true
+    try {
+      localStorage.removeItem("viaActivePublicKey")
+      configure(true)
+      const payload = await identity.login()
+      return { publicKey: payload.publicKeyBase58Check }
+    } finally { loginPending = false; configure() }
   },
-
-  async logout() {
-    clearIdentitySession()
-  },
-
+  async logout() { clearIdentitySession() },
   async alternateUsers() {
-    const users = new Set(listIdentitySessions().map((session) => session.publicKey))
     ensureConfigured()
-    const state = await identity.snapshot()
-    Object.keys(state.alternateUsers ?? {}).forEach((publicKey) => users.add(publicKey))
-    if (state.currentUser?.publicKey) users.add(state.currentUser.publicKey)
-    return [...users].map((publicKey) => ({ publicKey }))
+    return listIdentitySessions().map(({ publicKey }) => ({ publicKey }))
   },
-
   subscribe(listener) {
     ensureConfigured()
     identityListeners.add(listener)
-
     if (!subscribed) {
-      const notify = () => {
-        void currentUser().then((user) => identityListeners.forEach((currentListener) => currentListener(user)))
-      }
-      identity.subscribe(() => notify())
-      window.addEventListener(VIA_IDENTITY_EVENT, notify)
       subscribed = true
-    } else {
-      void currentUser().then(listener)
+      void identity.subscribe(() => {
+        notify()
+        window.dispatchEvent(new CustomEvent(VIA_IDENTITY_EVENT, { detail: restoreIdentitySession() }))
+      }).catch(() => notify())
+      window.addEventListener(VIA_IDENTITY_EVENT, notify)
+      window.addEventListener("storage", (event) => {
+        if (event.key === null || event.key === SDK_ACTIVE_PUBLIC_KEY || event.key === SDK_IDENTITY_USERS) notify()
+      })
+      window.addEventListener("pageshow", notify)
+      window.addEventListener("focus", notify)
     }
-
-    return () => identityListeners.delete(listener)
+    listener(selectedUser())
+    return () => { identityListeners.delete(listener) }
   },
-
-  async setActiveUser(publicKey: string) {
-    const viaSession = switchIdentitySession(publicKey)
-    if (viaSession) return
+  async setActiveUser(publicKey) {
     ensureConfigured()
+    if (!listIdentitySessions().some((user) => user.publicKey === publicKey)) {
+      throw new Error("This account must first log in with DeSo Identity on the VIA homepage.")
+    }
+    localStorage.removeItem("viaActivePublicKey")
     await identity.setActiveUser(publicKey)
-    // Codex PR #1451: never let an older legacy selection mask the SDK account.
-    clearIdentitySession()
+    window.dispatchEvent(new CustomEvent(VIA_IDENTITY_EVENT, { detail: restoreIdentitySession() }))
   },
-
-  async signTx(transactionHex: string) {
-    const viaSession = restoreIdentitySession()
-    if (viaSession?.publicKey) return signViaTransaction(viaSession.publicKey, transactionHex)
-    ensureConfigured()
-    return identity.signTx(transactionHex)
-  },
-
-  hasPermissions(permissions) {
-    if (restoreIdentitySession()?.publicKey) return Promise.resolve(true)
-    ensureConfigured()
-    return identity.hasPermissions(permissions)
-  },
-
-  requestPermissions(permissions) {
-    ensureConfigured()
-    return identity.requestPermissions(permissions)
-  },
-
+  signTx(transactionHex) { return forSelectedUser(() => identity.signTx(transactionHex)) },
+  hasPermissions(permissions) { return forSelectedUser(() => identity.hasPermissions(permissions)) },
+  requestPermissions(permissions) { return forSelectedUser(() => identity.requestPermissions(permissions)) },
   async spendingLimits() {
-    ensureConfigured()
-    const state = await identity.snapshot()
-    return state.currentUser?.primaryDerivedKey?.transactionSpendingLimits ?? null
+    return forSelectedUser(async () => {
+      const state = await identity.snapshot()
+      if (state.currentUser?.publicKey !== selectedUser()?.publicKey) throw new Error("DeSo account mismatch")
+      return state.currentUser?.primaryDerivedKey?.transactionSpendingLimits ?? null
+    })
   },
-
-  async refreshSpendingLimits() {
-    ensureConfigured()
-    await identity.refreshDerivedKeyPermissions()
+  refreshSpendingLimits() { return forSelectedUser(() => identity.refreshDerivedKeyPermissions()) },
+  encryptMessage(recipientPublicKey, message) { return forSelectedUser(() => identity.encryptMessage(recipientPublicKey, message)) },
+  async decryptMessage(message, groups = []) {
+    return forSelectedUser(async () => (await identity.decryptMessage(message, groups)).DecryptedMessage)
   },
-
-  async encryptMessage(recipientPublicKey: string, message: string) {
-    ensureConfigured()
-    return identity.encryptMessage(recipientPublicKey, message)
-  },
-
-  async decryptMessage(message: NewMessageEntryResponse, groups: AccessGroupEntryResponse[] = []) {
-    ensureConfigured()
-    const result = await identity.decryptMessage(message, groups)
-    return result.DecryptedMessage
-  },
-
-  async jwt() {
-    const viaSession = restoreIdentitySession()
-    if (viaSession?.publicKey) return requestViaIdentityJwt(viaSession.publicKey)
-    ensureConfigured()
-    return identity.jwt()
-  },
+  jwt() { return forSelectedUser(() => identity.jwt()) },
 }
-
-/**
- * The SDK boundary itself is now live. Existing VIA action consumers are still
- * migrated one by one before the legacy Identity files are removed.
- */
 export const VIA_MODERN_IDENTITY_READY = true as const

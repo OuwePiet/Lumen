@@ -18,7 +18,7 @@ import {
   type ViaLanguage,
 } from "./via-local-settings"
 
-type PublicProfile = { username?: string; profilePic?: string | null; isVerified?: boolean; isInactive?: boolean; viaRecognized?: boolean }
+type PublicProfile = { publicKey?: string; username?: string; profilePic?: string | null; isVerified?: boolean; isInactive?: boolean; viaRecognized?: boolean }
 type ProfileResponse = { ok?: boolean; profile?: PublicProfile }
 type SearchProfile = { publicKey: string; username: string; profilePic?: string | null; isVerified?: boolean }
 type SearchResponse = { ok?: boolean; profiles?: SearchProfile[] }
@@ -151,8 +151,10 @@ export default function ViaSiteHeader() {
   const searchWrapRef = useRef<HTMLDivElement | null>(null)
   const [session, setSession] = useState<ViaIdentitySession | null>(null)
   const [knownAccounts, setKnownAccounts] = useState<ViaIdentitySession[]>([])
-  const [profile, setProfile] = useState<PublicProfile | null>(null)
+  const [loadedProfile, setProfile] = useState<PublicProfile | null>(null)
+  const profile = loadedProfile?.publicKey === session?.publicKey ? loadedProfile : null
   const [profiles, setProfiles] = useState<Record<string, PublicProfile>>({})
+  const [identityError, setIdentityError] = useState("")
   const [menuOpen, setMenuOpen] = useState(false)
   const [language, setLanguage] = useState<ViaLanguage>("Dutch")
   const [languageOpen, setLanguageOpen] = useState(false)
@@ -215,8 +217,8 @@ export default function ViaSiteHeader() {
     const controller = new AbortController()
     void fetch(`/api/via/profile?identity=${encodeURIComponent(session.publicKey)}`, { cache: "no-store", signal: controller.signal, headers: { Accept: "application/json" } })
       .then(async (response) => response.ok ? (await response.json()) as ProfileResponse : null)
-      .then((data) => setProfile(data?.ok && data.profile ? data.profile : null))
-      .catch((error) => { if (!(error instanceof DOMException && error.name === "AbortError")) setProfile(null) })
+      .then((data) => { if (!controller.signal.aborted) setProfile(data?.ok && data.profile ? { ...data.profile, publicKey: session.publicKey } : null) })
+      .catch(() => { if (!controller.signal.aborted) setProfile(null) })
     return () => controller.abort()
   }, [isHomepage, session?.publicKey])
 
@@ -228,7 +230,7 @@ export default function ViaSiteHeader() {
       try {
         const response = await fetch(`/api/via/profile?identity=${encodeURIComponent(account.publicKey)}`, { cache: "no-store", signal: controller.signal, headers: { Accept: "application/json" } })
         const data = response.ok ? (await response.json()) as ProfileResponse : null
-        return [account.publicKey, data?.ok && data.profile ? data.profile : {}] as const
+        return [account.publicKey, data?.ok && data.profile ? { ...data.profile, publicKey: account.publicKey } : {}] as const
       } catch {
         return [account.publicKey, {}] as const
       }
@@ -253,10 +255,13 @@ export default function ViaSiteHeader() {
   }
 
   async function loginWithDeSo() {
-    const user = await viaModernIdentity.login()
-    setSession({ ...user, accessLevel: 3, signedUp: false })
-    setMenuOpen(false)
-    router.refresh()
+    setIdentityError("")
+    try {
+      const user = await viaModernIdentity.login()
+      setSession({ ...user, accessLevel: 3, signedUp: false })
+      setMenuOpen(false)
+      router.refresh()
+    } catch { setIdentityError("DeSo Identity kon niet worden geopend. Probeer opnieuw via de homepage.") }
   }
 
   function enterPublicMode() {
@@ -334,11 +339,12 @@ export default function ViaSiteHeader() {
           </div>
           {pathname === "/notifications" || pathname === "/radio" || pathname === "/messages" || pathname === "/profile" ? <Link href="/" className="via-notifications-home-top" aria-label="Home" title="Home"><span className="via-notifications-home-label">Home</span></Link> : null}
           {pathname === "/messages" ? <Link href="/radio" className="via-notifications-radio-top" aria-label="World Radio" title="World Radio"><Radio className="h-4 w-4" aria-hidden="true" /><span className="via-radio-top-label">Radio</span></Link> : null}
-          {!session && pathname !== "/messages" ? <button type="button" onClick={enterPublicMode} style={{ ...pill, cursor: "pointer" }}>{t.publicEntrance}</button> : null}
-          {!session && pathname !== "/messages" ? <button type="button" onClick={() => void loginWithDeSo()} style={styles.login}>{t.login}</button> : null}
+          {!session && !isHomepage && pathname !== "/messages" ? <button type="button" onClick={enterPublicMode} style={{ ...pill, cursor: "pointer" }}>{t.publicEntrance}</button> : null}
+          {!session && !isHomepage && pathname !== "/messages" ? <button type="button" onClick={() => void loginWithDeSo()} style={styles.login}>{t.login}</button> : null}
           {pathname !== "/messages" && pathname !== "/radio" && pathname !== "/profile" ? <Link href="/wallet" style={pill} className={`via-site-header-utility ${pathname === "/notifications" ? "via-site-header-wallet-notifications" : ""}`}>{t.wallet}</Link> : null}
           {pathname !== "/notifications" && pathname !== "/messages" && pathname !== "/radio" && pathname !== "/profile" ? <Link href="/notifications" style={pill} className="via-site-header-utility">{t.notifications}</Link> : null}
 
+          {identityError ? <span role="status">{identityError}</span> : null}
           {session && !isHomepage ? (
             <>
               {pathname === "/notifications" || pathname === "/radio" || pathname === "/messages" || pathname === "/profile" ? <span className="via-notifications-future-mark">VIA Future</span> : null}

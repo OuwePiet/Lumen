@@ -1,7 +1,8 @@
 "use client"
 
 import { useEffect, useMemo, useRef, useState } from "react"
-import { DESO_IDENTITY_ORIGIN, restoreIdentitySession, VIA_IDENTITY_EVENT, type ViaIdentitySession } from "../deso-identity-session"
+import { viaModernIdentity } from "../deso-identity-modern"
+import { DESO_IDENTITY_ORIGIN, restoreIdentitySession, type ViaIdentitySession } from "../deso-identity-session"
 
 type InspectResponse = {
   ok?: boolean
@@ -49,10 +50,18 @@ export default function EditPostControl() {
       setPostHashHex(linkedHash.toLowerCase())
       setMessage("Post hash loaded from VIA. Verify ownership before editing.")
     }
-    const onSession = (event: Event) => setSession((event as CustomEvent<ViaIdentitySession | null>).detail ?? restoreIdentitySession())
-    window.addEventListener(VIA_IDENTITY_EVENT, onSession)
-    return () => window.removeEventListener(VIA_IDENTITY_EVENT, onSession)
+    return viaModernIdentity.subscribe((user) => {
+      setSession(user ? { ...user, accessLevel: 3, signedUp: false } : null)
+    })
   }, [])
+
+  useEffect(() => {
+    setLoadedHash("")
+    setBody("")
+    setOriginalBody("")
+    popupRef.current?.close()
+    popupRef.current = null
+  }, [session?.publicKey])
 
   useEffect(() => {
     const onMessage = async (event: MessageEvent) => {
