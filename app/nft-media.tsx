@@ -12,11 +12,12 @@ type NFTMediaProps = {
   sensitive?: boolean
 }
 
-type MediaKind = "image" | "video" | "audio"
+type MediaKind = "image" | "video" | "audio" | "file"
 type MediaCandidate = { url: string; kind: MediaKind }
 
 const VIDEO_EXTENSIONS = [".mp4", ".webm", ".mov", ".m4v"]
 const AUDIO_EXTENSIONS = [".mp3", ".wav", ".m4a", ".aac", ".flac", ".oga"]
+const FILE_EXTENSIONS = [".pdf", ".zip", ".epub", ".txt", ".csv", ".docx", ".xlsx", ".pptx", ".glb", ".gltf"]
 
 const mediaWrapperStyle: CSSProperties = {
   position: "relative",
@@ -50,6 +51,7 @@ function filePath(url: string) {
 
 function mediaKind(url: string, suppliedAsVideo: boolean): MediaKind {
   const path = filePath(url)
+  if (FILE_EXTENSIONS.some((extension) => path.endsWith(extension))) return "file"
 
   if (AUDIO_EXTENSIONS.some((extension) => path.endsWith(extension))) {
     return "audio"
@@ -68,7 +70,7 @@ function mediaKind(url: string, suppliedAsVideo: boolean): MediaKind {
 function safeHttpsUrl(value: string) {
   try {
     const parsed = new URL(value)
-    return parsed.protocol === "https:" ? parsed.toString() : null
+    return parsed.protocol === "https:" && !parsed.username && !parsed.password ? parsed.toString() : null
   } catch {
     return null
   }
@@ -114,7 +116,7 @@ function mediaCandidates(url?: string) {
   return safeUrl ? [safeUrl] : []
 }
 
-function buildCandidates(imageUrl?: string, videoUrl?: string): MediaCandidate[] {
+export function buildCandidates(imageUrl?: string, videoUrl?: string): MediaCandidate[] {
   const candidates: MediaCandidate[] = []
   const seen = new Set<string>()
 
@@ -169,7 +171,8 @@ export default function NFTMedia({
     return (
       <div style={{ ...placeholderStyle, position: "relative" }}>
         <MediaBadge label="Media unavailable" />
-        <span>Media unavailable</span>
+        <span>De browser kan dit bestand niet weergeven.</span>
+        <a href={candidates[0].url} target="_blank" rel="noopener noreferrer" style={{ color: "#9adbb2", padding: 12 }}>Open oorspronkelijk bestand</a>
       </div>
     )
   }
@@ -208,6 +211,15 @@ export default function NFTMedia({
       </div>
     )
   }
+  if (current.kind === "file") {
+    return <div style={{ ...placeholderStyle, position: "relative", padding: 24, flexDirection: "column", gap: 16 }}>
+      <MediaBadge label="Bestand" />
+      <p style={{ overflowWrap: "anywhere" }}>{alt}</p>
+      <a href={current.url} target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", minHeight: 44, padding: "10px 16px", color: "#9adbb2", border: "1px solid #285f40", borderRadius: 12 }}>Open oorspronkelijk bestand</a>
+      <p style={{ fontSize: 12, color: "#aebbb4" }}>Opent bij de gekozen opslagprovider. Ondersteuning hangt af van het bestand en je apparaat.</p>
+    </div>
+  }
+
   if (current.kind === "video") {
     return (
       <div style={mediaWrapperStyle}>

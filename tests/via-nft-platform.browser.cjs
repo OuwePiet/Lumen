@@ -8,7 +8,7 @@ const base = process.env.VIA_TEST_BASE || 'http://127.0.0.1:3028'
 const out = process.env.VIA_TEST_OUTPUT || path.resolve(__dirname, '../../../outputs/VIA-nft-platform-browserbewijs-2026-10-17')
 fs.mkdirSync(out, { recursive: true })
 const A = 'BC1'+'A'.repeat(48), B = 'BC1'+'B'.repeat(48), HASH = 'a'.repeat(64), ID = '1'.repeat(64)
-const users = Object.fromEntries([A,B].map(publicKey => [publicKey, { publicKey, primaryDerivedKey: { publicKeyBase58Check: publicKey, derivedPublicKeyBase58Check: publicKey, derivedKeyRegistered: true, IsValid: true, transactionSpendingLimits: { GlobalDESOLimit: 0, TransactionCountLimitMap: {} } } }]))
+const users = Object.fromEntries([A,B].map(publicKey => [publicKey, { publicKey, primaryDerivedKey: { publicKeyBase58Check: publicKey, derivedPublicKeyBase58Check: publicKey, derivedSeedHex: '11'.repeat(32), derivedKeyRegistered: true, IsValid: true, transactionSpendingLimits: { GlobalDESOLimit: 0, TransactionCountLimitMap: {} } } }]))
 const results = []
 async function run(name, engine, options) {
   const browser = await engine.launch(name === 'laptop-edge' ? { channel: 'msedge', headless: true } : { headless: true })
@@ -32,6 +32,7 @@ async function run(name, engine, options) {
         if (url.hostname === 'identity.deso.org' || !['GET','HEAD'].includes(request.method()) && !['get-nfts-for-user','get-posts-for-public-key','get-users-stateless'].includes(endpoint)) {
           forbidden.push(url.href); return route.fulfill({ status: 403, json: { error: 'IDENTITY_OR_WRITES_FORBIDDEN' } })
         }
+        if (endpoint.startsWith('get-single-derived-key/')) return route.fulfill({ json: { DerivedKey: { IsValid: true, TransactionSpendingLimit: { GlobalDESOLimit: 0, TransactionCountLimitMap: {} } } } });
         let data = {}
         const body = request.method() === 'POST' ? request.postDataJSON() : {}
         if (endpoint === 'get-users-stateless') data = { UserList: [{ PublicKeyBase58Check: A, BalanceNanos: 100000000 }, { PublicKeyBase58Check: B, BalanceNanos: 100000000 }] }
@@ -127,6 +128,7 @@ async function run(name, engine, options) {
     assert.deepEqual(reported.filter(entry => !warnings.includes(entry)), [], 'no unexpected engine errors')
     results.push({ name, result: 'PASS', viewport: options.viewport, accountSwitch: 'A-B-A', exactFinancialReviewCancelled: true, localDraftAccountIsolation: true, publicGuestRead: true, mockedUnsignedPrepares: prepares.length, realSigning: false, realFinancialTransactions: false, physicalDevice: false, errors, warnings })
   } catch (error) {
+    if (page) fs.writeFileSync(path.join(out,name+'-overflow.json'), JSON.stringify(await page.evaluate(()=>({width:innerWidth,scroll:document.documentElement.scrollWidth,elements:[...document.querySelectorAll('body *')].map(e=>({tag:e.tagName,cls:e.className,left:e.getBoundingClientRect().left,right:e.getBoundingClientRect().right})).filter(e=>e.left< -1||e.right>innerWidth+1).slice(0,25)})),null,2));
     const url = page?.url(); const body = page ? (await page.locator('body').innerText()).slice(0, 12000) : '';
     if (page) await page.screenshot({ path: path.join(out, name+'-failure.png'), fullPage: true });
     results.push({ name, result: 'FAIL', error: error.stack, url, body, errors, reported, forbidden, prepares })
