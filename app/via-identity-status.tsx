@@ -12,6 +12,7 @@ type Props = {
   showLeaf?: boolean
   language?: ViaLanguage | "Hindi"
   className?: string
+  interactive?: boolean
 }
 
 type MarkKind = "verified" | "inactive" | "via"
@@ -106,11 +107,13 @@ function MarkShell({
   compact,
   language,
   children,
+  interactive,
 }: {
   kind: MarkKind
   compact: boolean
   language: ViaLanguage | "Hindi"
   children: React.ReactNode
+  interactive: boolean
 }) {
   const [open, setOpen] = useState(false)
   const text = COPY[language][kind]
@@ -131,13 +134,13 @@ function MarkShell({
   return (
     <span style={{ position: "relative", display: "inline-flex" }}>
       <span
-        role="button"
-        tabIndex={0}
-        aria-expanded={open}
+        role={interactive ? "button" : undefined}
+        tabIndex={interactive ? 0 : undefined}
+        aria-expanded={interactive ? open : undefined}
         aria-label={`${text.title}. ${text.body}`}
         title={text.title}
-        onClick={toggle}
-        onKeyDown={keyboard}
+        onClick={interactive ? toggle : undefined}
+        onKeyDown={interactive ? keyboard : undefined}
         style={{ display: "inline-flex", cursor: "help", outline: "none" }}
       >
         {children}
@@ -174,30 +177,11 @@ function MarkShell({
 }
 
 function CheckMark({ inactive, compact }: { inactive: boolean; compact: boolean }) {
-  const size = compact ? 17 : 21
-  const background = inactive
-    ? "linear-gradient(145deg, #8a918d, #545c58)"
-    : "linear-gradient(145deg, #51b8ff, #2386e8)"
-  const shadow = inactive
-    ? "0 0 0 1px rgba(210,220,214,.16), inset 0 1px 0 rgba(255,255,255,.16)"
-    : "0 0 14px rgba(55,157,255,.30), 0 0 0 1px rgba(167,220,255,.24), inset 0 1px 0 rgba(255,255,255,.28)"
-
   return (
-    <span
-      style={{
-        width: size,
-        height: size,
-        display: "inline-grid",
-        placeItems: "center",
-        borderRadius: "50%",
-        background,
-        boxShadow: shadow,
-      }}
-    >
-      <svg width={compact ? 10 : 12} height={compact ? 10 : 12} viewBox="0 0 16 16" aria-hidden="true">
-        <path d="M3.2 8.3 6.4 11.2 12.8 4.8" fill="none" stroke={inactive ? "#202824" : "#fff"} strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+      <svg width={compact ? 16 : 20} height={compact ? 16 : 20} viewBox="0 0 24 24" fill="none" aria-hidden="true" style={{ display: "block", flexShrink: 0 }}>
+        <path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.77 4 4 0 0 1 0 6.76 4 4 0 0 1-4.77 4.77 4 4 0 0 1-6.76 0 4 4 0 0 1-4.77-4.77 4 4 0 0 1 0-6.76Z" fill={inactive ? "#78837e" : "#3898ec"} />
+        <path d="m8 12 2.6 2.6L16.1 9" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
-    </span>
   )
 }
 
@@ -235,21 +219,22 @@ export default function ViaIdentityStatusMarks({
   showLeaf = true,
   language = "English",
   className,
+  interactive = true,
 }: Props) {
   return (
     <span className={className} style={wrap}>
       {verified ? (
-        <MarkShell kind="verified" compact={compact} language={language}>
+        <MarkShell kind="verified" compact={compact} language={language} interactive={interactive}>
           <CheckMark inactive={false} compact={compact} />
         </MarkShell>
       ) : null}
       {inactive ? (
-        <MarkShell kind="inactive" compact={compact} language={language}>
+        <MarkShell kind="inactive" compact={compact} language={language} interactive={interactive}>
           <CheckMark inactive compact={compact} />
         </MarkShell>
       ) : null}
       {showLeaf && canShowViaRecognition(viaRecognized) ? (
-        <MarkShell kind="via" compact={compact} language={language}>
+        <MarkShell kind="via" compact={compact} language={language} interactive={interactive}>
           <ViaLeaf compact={compact} />
         </MarkShell>
       ) : null}

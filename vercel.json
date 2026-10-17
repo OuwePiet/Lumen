@@ -1,4 +1,10 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "git": { "deploymentEnabled": { "codex/via-platform-login-20261016": false, "fix/via-identity-return-production-20261017": false } }
+  "git": {
+    "deploymentEnabled": {
+      "codex/via-platform-login-20261016": false,
+      "fix/via-identity-return-production-20261017": false,
+      "fix/via-platform-preserved-release-20261017": false
+    }
+  }
 }

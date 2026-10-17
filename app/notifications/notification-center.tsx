@@ -1,10 +1,20 @@
 "use client"
 
 import Link from "next/link"
+import styles from "./notification-center.module.css"
+import { acknowledgeNotificationVisit, validNotificationIndex } from "../notification-indicator"
 import { useEffect, useMemo, useRef, useState } from "react"
-import { ArrowUpRight, AtSign, Badge, Check, CheckCircle2, ChevronsRight, CircleDot, Gem, Heart, Link2, MessageSquare, RefreshCw, Repeat2, ShieldCheck, ShieldOff, Smile, UserPlus, UserRound, LayoutGrid } from "lucide-react"
+import { ArrowUpRight, AtSign, Badge, Check, CheckCircle2, ChevronsRight, CircleDot, CircleDollarSign, Gem, Heart, Link2, MessageSquare, RefreshCw, Repeat2, ShieldCheck, ShieldOff, Smile, UserPlus, UserRound, LayoutGrid } from "lucide-react"
 
 const QUALITY_SHIELD_STORAGE_KEY = "via:notifications:quality-shield"
+const BODY_LABELS = {
+  Dutch: { more: "Lees meer…", less: "Minder tonen" },
+  English: { more: "Read more…", less: "Show less" },
+  French: { more: "Lire la suite…", less: "Réduire" },
+  Spanish: { more: "Leer más…", less: "Mostrar menos" },
+  Chinese: { more: "展开全文…", less: "收起" },
+  Hindi: { more: "और पढ़ें…", less: "कम दिखाएँ" },
+}
 import { viaModernIdentity, type ViaModernIdentityUser } from "../deso-identity-modern"
 import { fetchViaRates, isViaRateStale } from "../via-live-rates"
 import type { ViaLanguage } from "../via-local-settings"
@@ -60,10 +70,11 @@ type Category = "all" | "reaction" | "diamond1" | "diamondMany" | "creatorCoin" 
 function CategoryIcon({ category, className = "h-4 w-4" }: { category: Category; className?: string }) {
   if (category === "all") return <Check className={className} strokeWidth={2} />
   if (category === "reaction") return <Smile className={className} strokeWidth={2} />
-  if (category === "diamond1" || category === "diamondMany") return <Gem className={className} strokeWidth={2} />
-  if (category === "creatorCoin") return <span className="text-[13px] font-bold">$</span>
+  if (category === "diamond1") return <Gem className={className} strokeWidth={2} />
+  if (category === "diamondMany") return <span className={styles.multipleDiamonds}><Gem className={className} strokeWidth={2} /><Gem className={className} strokeWidth={2} /></span>
+  if (category === "creatorCoin") return <CircleDollarSign className={className} strokeWidth={1.7} />
   if (category === "follow") return <UserRound className={className} strokeWidth={2} />
-  if (category === "mention5" || category === "mention6") return <AtSign className={className} strokeWidth={2} />
+  if (category === "mention5" || category === "mention6") return <span className={styles.mentionSymbol}><AtSign className={className} strokeWidth={2} /><span>{category === "mention5" ? "5" : "6+"}</span></span>
   if (category === "reply") return <MessageSquare className={className} strokeWidth={2} />
   if (category === "repost") return <Repeat2 className={className} strokeWidth={2} />
   if (category === "nft") return <Badge className={className} strokeWidth={2} />
@@ -443,6 +454,20 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
   const [activeCategories, setActiveCategories] = useState<Exclude<Category, "all">[]>(() => ["reaction", "diamond1", "diamondMany", "creatorCoin", "follow", "mention5", "mention6", "reply", "repost", "other"])
   const [preferencesHydratedFor, setPreferencesHydratedFor] = useState<string | null>(null)
   const [status, setStatus] = useState<"idle" | "loading" | "ready" | "error">("idle")
+  useEffect(() => {
+    if (status !== "ready" || !session || visitSnapshotRef.current?.publicKey !== session.publicKey) return
+    const indices = items.map(item => item.Index).filter(validNotificationIndex)
+    if (!indices.length) return
+    const publicKey = session.publicKey
+    const latestIndex = Math.max(...indices)
+    let viewed = document.visibilityState === "visible"
+    const onVisible = () => { if (document.visibilityState === "visible") viewed = true }
+    document.addEventListener("visibilitychange", onVisible)
+    return () => {
+      document.removeEventListener("visibilitychange", onVisible)
+      if (viewed) acknowledgeNotificationVisit(publicKey, latestIndex)
+    }
+  }, [session?.publicKey, status, items])
   const [messageKey, setMessageKey] = useState<"loading" | "loaded" | "empty" | "error" | "">("")
   const [lastSeenIndex, setLastSeenIndex] = useState<number | null>(null)
   // Capture the notification boundary once per account visit, before any refresh
@@ -455,6 +480,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
   const [qualityShield, setQualityShield] = useState(false)
   const [profiles, setProfiles] = useState<Record<string, ActorProfile>>({})
   const [expandedKey, setExpandedKey] = useState<string | null>(null)
+  const [expandedBodies, setExpandedBodies] = useState<Record<string, boolean>>({})
   const [postCache, setPostCache] = useState<Record<string, PublicPost | null>>({})
   const [replyingTo, setReplyingTo] = useState<string | null>(null)
   const [copiedPost, setCopiedPost] = useState<string | null>(null)
@@ -785,13 +811,13 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
   }
 
   return (
-    <section className={`${expandedView ? "max-h-[calc(100vh-6rem)]" : "max-h-[88vh]"} min-w-0 w-full max-w-full overflow-x-hidden overflow-y-auto rounded-2xl border border-zinc-800 bg-zinc-950/60`} aria-labelledby="notification-center-heading">
-      <div className="sticky top-0 z-20 flex flex-nowrap items-center justify-between gap-1 border-b border-zinc-800 bg-zinc-950/95 px-2 py-1 backdrop-blur max-sm:items-stretch sm:flex-wrap sm:gap-3 sm:px-5 sm:py-4">
+    <section className={`${styles.center} ${expandedView ? "max-h-[calc(100vh-6rem)]" : "max-h-[88vh]"} min-w-0 w-full max-w-full overflow-x-hidden overflow-y-auto rounded-2xl border border-zinc-800 bg-zinc-950/60`} aria-labelledby="notification-center-heading">
+      <div className={`${styles.toolbar} sticky top-0 z-20 flex flex-nowrap items-center justify-between gap-1 border-b border-zinc-800 bg-zinc-950/95 px-2 py-1 backdrop-blur max-sm:items-stretch sm:flex-wrap sm:gap-3 sm:px-5 sm:py-4`}>
         <div className="hidden sm:block">
           <h2 id="notification-center-heading" className="whitespace-nowrap text-xl font-semibold text-white">{copy.heading}</h2>
           <p className="mt-1 text-xs text-zinc-500">{copy.active}: {shortKey(session.publicKey, copy.actor)}</p>
         </div>
-        <div className="flex w-full min-w-0 flex-nowrap items-center justify-between gap-1 sm:w-auto sm:flex-wrap sm:justify-start sm:gap-2">
+        <div className={`${styles.controls} flex w-full min-w-0 flex-nowrap items-center justify-between gap-1 sm:w-auto sm:flex-wrap sm:justify-start sm:gap-2`}>
           <button
             type="button"
             onClick={() => setQualityShield((value) => {
@@ -833,8 +859,8 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
         </div>
       </div>
 
-      <div className="sticky top-[36px] z-20 border-b border-zinc-800 bg-zinc-950/95 px-1 py-1 backdrop-blur sm:top-[73px] sm:px-4 sm:py-3" aria-label={copy.filters}>
-        <div className="grid min-w-0 grid-cols-5 justify-items-center gap-1 overflow-hidden px-0 pb-3 pt-0.5 sm:flex sm:flex-wrap sm:justify-start sm:justify-items-stretch sm:gap-2 sm:px-0 sm:pt-0 sm:pb-0">
+      <div className={`${styles.filters} sticky top-[36px] z-20 border-b border-zinc-800 bg-zinc-950/95 px-1 py-1 backdrop-blur sm:top-[73px] sm:px-4 sm:py-3`} aria-label={copy.filters}>
+        <div className={`${styles.filterRow} grid min-w-0 grid-cols-5 justify-items-center gap-1 overflow-hidden px-0 pb-3 pt-0.5 sm:flex sm:flex-wrap sm:justify-start sm:justify-items-stretch sm:gap-2 sm:px-0 sm:pt-0 sm:pb-0`}>
           {([
             { id: "reaction", label: copy.categories.reaction, ids: ["reaction"] },
             { id: "diamond1", label: copy.categories.diamond1, ids: ["diamond1"] },
@@ -852,7 +878,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
                 const allActive = option.ids.every((id) => current.includes(id))
                 return allActive ? current.filter((id) => !option.ids.includes(id)) : Array.from(new Set([...current, ...option.ids]))
               })
-            }} title={option.label} aria-label={option.label} className={`relative inline-flex h-8 w-8 min-w-0 items-center justify-center rounded-full border p-0 text-[11px] font-semibold transition sm:h-auto sm:w-auto sm:min-h-9 sm:gap-2 sm:rounded-xl sm:px-3 sm:py-1.5 sm:text-xs ${active ? "border-[#8fd4a9]/70 bg-[#10251a] text-white" : "border-zinc-800 bg-[#111214] text-zinc-300 hover:border-[#8fd4a9]/45"}`}>
+            }} title={option.label} aria-label={option.label} className={`${styles.filter} relative inline-flex h-8 w-8 min-w-0 items-center justify-center rounded-full border p-0 text-[11px] font-semibold transition sm:h-auto sm:w-auto sm:min-h-9 sm:gap-2 sm:rounded-xl sm:px-3 sm:py-1.5 sm:text-xs ${active ? "border-[#8fd4a9]/70 bg-[#10251a] text-white" : "border-zinc-800 bg-[#111214] text-zinc-300 hover:border-[#8fd4a9]/45"}`}>
               <span className="sm:hidden" aria-hidden="true"><CategoryIcon category={option.id} className="h-3 w-3" /></span><span className="hidden sm:inline">{option.label}</span>
             </button>
           })}
@@ -879,7 +905,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
           const expanded = expandedKey === rowKey || (index < 8 && Boolean(postHashFor(item)))
           const postHash = postHashFor(item)
           const post = postHash ? postCache[postHash] : undefined
-          return <article key={rowKey} className={`mx-1 mb-1 grid grid-cols-[34px_minmax(0,1fr)] gap-2 rounded-xl border px-2 py-1.5 transition sm:mx-0 sm:mb-0 sm:rounded-none sm:border-x-0 sm:border-b-0 sm:grid-cols-[46px_minmax(0,1fr)_auto] sm:gap-3 sm:px-5 sm:py-4 ${unread ? "border-[#285f40]/70 bg-[#0b1510]/70" : "border-zinc-800 bg-black/10"}`}>
+          return <article key={rowKey} className={`${styles.row} mx-1 mb-1 grid grid-cols-[34px_minmax(0,1fr)] gap-2 rounded-xl border px-2 py-1.5 transition sm:mx-0 sm:mb-0 sm:rounded-none sm:border-x-0 sm:border-b-0 sm:grid-cols-[46px_minmax(0,1fr)_auto] sm:gap-3 sm:px-5 sm:py-4 ${unread ? "border-[#285f40]/70 bg-[#0b1510]/70" : "border-zinc-800 bg-black/10"}`}>
             <Link href={actorPublicKey ? `/profile/${encodeURIComponent(actorPublicKey)}` : destination || "/notifications"} aria-label={actorPublicKey ? `Open creator profile ${actor}` : copy.actor} className="relative block h-8 w-8 sm:h-11 sm:w-11">
               {profile.profilePic ? <img src={profile.profilePic} alt="" referrerPolicy="no-referrer" className="h-full w-full rounded-full border border-zinc-700 object-cover" /> : <div aria-hidden="true" className={`grid h-full w-full place-items-center rounded-full border text-base font-bold ${unread ? "border-[#8fd4a9] bg-[#285f40] text-white" : "border-[#8e8e8e] bg-[#8e8e8e] text-white"}`}><CategoryIcon category={itemCategory} className="h-5 w-5" /></div>}
               <span aria-hidden="true" className="absolute -bottom-1 -right-1 grid h-4 w-4 sm:h-5 sm:w-5 place-items-center rounded-full border border-zinc-700 bg-black text-white"><CategoryIcon category={itemCategory} className="h-3 w-3" /></span>
@@ -887,15 +913,18 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                 {actorPublicKey ? <Link href={`/profile/${encodeURIComponent(actorPublicKey)}`} className="truncate text-[13px] font-semibold text-zinc-100 hover:text-[#9adbb2] sm:text-sm">{actor}</Link> : <strong className="truncate text-[13px] font-semibold text-zinc-100 sm:text-sm">{actor}</strong>}
-                <span className="text-[10px] font-semibold uppercase tracking-[0.06em] text-[#7dbb93] sm:text-[11px] sm:tracking-[0.08em]">{copy.categories[itemCategory]}</span>
+                <span className={`${styles.category} text-[10px] font-semibold uppercase tracking-[0.06em] text-[#7dbb93] sm:text-[11px] sm:tracking-[0.08em]`}>{copy.categories[itemCategory]}</span>
                 {unread ? <span className="inline-flex items-center gap-1 rounded-full border border-[#285f40] px-2 py-0.5 text-[10px] text-[#9adbb2]"><span aria-hidden="true" className="h-2 w-2 shrink-0 rounded-full bg-emerald-400" />{copy.fresh}</span> : null}
               </div>
               <p className="mt-0 text-[12px] leading-4 text-zinc-400 sm:mt-1 sm:text-sm sm:leading-5">{copy.descriptions[itemCategory](actor)}</p>
               {destination && index >= 8 ? <button type="button" onClick={() => void toggleExpanded(item, rowKey)} className="mt-1 inline-flex rounded-full border border-zinc-700 px-1.5 py-0.5 text-[9px] leading-none text-zinc-300 transition hover:border-[#8fd4a9] hover:text-white sm:mt-2 sm:px-2.5 sm:py-1 sm:text-[11px] sm:leading-normal">{expanded ? copy.close : copy.open}</button> : null}
-              {expanded && postHash ? <div className="mt-3 rounded-xl border border-zinc-800 bg-black/25 p-3">
+              {expanded && postHash ? <div className={`${styles.post} mt-3 rounded-xl border border-zinc-800 bg-black/25 p-3`}>
                 {post === undefined ? <p className="text-xs text-zinc-500">{copy.loading}</p> : post ? <>
                   <p className="text-xs font-semibold text-zinc-300">@{post.username?.replace(/^@/, "") || shortKey(post.publicKey, copy.actor)}</p>
-                  {post.body ? <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-zinc-200">{post.body}</p> : null}
+                  {post.body ? <>
+                    <p id={`notification-body-${rowKey}`} className={`${expandedBodies[rowKey] ? "" : styles.bodyPreview} mt-2 whitespace-pre-wrap text-sm leading-6 text-zinc-200`}>{post.body}</p>
+                    {post.body.length > 240 || post.body.split("\n").length > 5 ? <button type="button" className={styles.readMore} aria-expanded={Boolean(expandedBodies[rowKey])} aria-controls={`notification-body-${rowKey}`} onClick={() => setExpandedBodies(current => ({ ...current, [rowKey]: !current[rowKey] }))}>{expandedBodies[rowKey] ? BODY_LABELS[language].less : BODY_LABELS[language].more}</button> : null}
+                  </> : null}
                   {post.imageUrls?.length ? <div className="mt-3 grid gap-2 sm:grid-cols-2">{post.imageUrls.slice(0, 4).map((url) => <img key={url} src={url} alt="" loading="lazy" className="max-h-72 w-full rounded-xl object-contain" />)}</div> : null}
                   <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-zinc-800/70 pt-3">
                     <button
