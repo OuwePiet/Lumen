@@ -14,6 +14,26 @@ export const FINANCIAL_SUBMISSION_EVENT = "via:financial-state"
 const pendingKey = (key: string) => `${prefix}${key}:pending`
 const receiptKey = (key: string, intent: string) => `${prefix}${key}:${encodeURIComponent(intent)}:submitted`
 
+/** Read only the active account's non-secret recovery records; never clear uncertainty here. */
+export function financialAccountRecovery(publicKey: string) {
+  const storage = window.localStorage
+  const rawPending = storage.getItem(pendingKey(publicKey))
+  const receipts: FinancialSubmission[] = []
+  let invalid = false
+  for (let index = 0; index < storage.length; index += 1) {
+    const key = storage.key(index)
+    if (!key?.startsWith(`${prefix}${publicKey}:`) || !key.endsWith(":submitted")) continue
+    try {
+      const candidate = JSON.parse(storage.getItem(key) ?? "null") as FinancialSubmission | null
+      if (!candidate || typeof candidate.intent !== "string") throw new Error("INVALID_FINANCIAL_RECEIPT")
+      const record = financialReceipt(publicKey, candidate.intent)
+      if (!record || receiptKey(publicKey, candidate.intent) !== key) throw new Error("INVALID_FINANCIAL_RECEIPT")
+      receipts.push(record)
+    } catch { invalid = true }
+  }
+  return { uncertain: rawPending !== null, invalid, receipts: receipts.sort((a, b) => b.startedAt - a.startedAt) }
+}
+
 export function financialSubmissionBlock(publicKey: string, intent: string, allowNewConfirmedAction = false) {
   if (window.localStorage.getItem(pendingKey(publicKey)) !== null) return "Een eerdere financiële verzending is onzeker. Controleer DeSo; niet opnieuw verzenden."
   if (!allowNewConfirmedAction && window.localStorage.getItem(receiptKey(publicKey, intent)) !== null) return "Deze actie is al door DeSo ontvangen. Niet opnieuw verzenden."

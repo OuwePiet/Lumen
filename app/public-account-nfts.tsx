@@ -409,6 +409,7 @@ export default function PublicAccountNFTs({
 
     try {
       const collections = await getNFTsForUser(publicKey, controller.signal)
+      if (controller.signal.aborted || loadController.current !== controller) return
       const savedAt = Date.now()
       setNFTs(collections)
       setLastUpdated(savedAt)

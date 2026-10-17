@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server"
 import { fetchDeSo } from "../../../../deso-api"
+import { parseNFTCollectionManifest, NFT_COLLECTION_EXTRA_KEY } from "../../../../../lib/via/nft-collection-manifest"
+import { assertNFTCollectionItems } from "../../../../nft-collection-preflight"
 
 export const dynamic = "force-dynamic"
 
@@ -113,6 +115,8 @@ export async function POST(request: Request) {
     if (!text && imageUrls.length === 0 && videoUrls.length === 0) return noStore({ ok: false, error: "EMPTY_POST" }, 400)
     if (parentStakeID && !validPostHash(parentStakeID)) return noStore({ ok: false, error: "INVALID_PARENT_POST" }, 400)
     if (parentStakeID && pollOptions.length) return noStore({ ok: false, error: "POLL_REPLY_UNSUPPORTED" }, 400)
+    const nftCollection = body.nftCollection === undefined ? null : parseNFTCollectionManifest(body.nftCollection, publicKey)
+    if (body.nftCollection !== undefined && (!nftCollection || parentStakeID || pollOptions.length)) return noStore({ ok: false, error: "INVALID_NFT_COLLECTION" }, 400)
 
     const configuredRate = Number(process.env.DESO_MIN_FEE_RATE_NANOS_PER_KB)
     const minFeeRate = Number.isFinite(configuredRate) && configuredRate > 0
@@ -121,6 +125,8 @@ export async function POST(request: Request) {
 
     try {
       const postExtraData: Record<string, string> = { ViaClient: "viadeso.online" }
+      if (nftCollection) await assertNFTCollectionItems(nftCollection)
+      if (nftCollection) postExtraData[NFT_COLLECTION_EXTRA_KEY] = JSON.stringify(nftCollection)
       if (pollOptions.length >= 2) postExtraData.PollOptions = JSON.stringify(pollOptions)
       if (!parentStakeID && sensitiveContent) postExtraData.ViaSensitiveContent = "1"
 

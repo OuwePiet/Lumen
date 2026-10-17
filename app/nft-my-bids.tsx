@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react"
 import { viaModernIdentity, type ViaModernIdentityUser } from "./deso-identity-modern"
+import { useNFTAction } from "./use-nft-action"
 
 type Bid = {
   serialNumber: number
@@ -14,25 +15,21 @@ type Props = {
   bids: Bid[]
 }
 
-type PrepareResponse = {
-  ok?: boolean
-  transactionHex?: string
-  feeNanos?: number | null
-  error?: string
-}
-
 function formatDeso(nanos: number) {
   return new Intl.NumberFormat("en-US", { maximumFractionDigits: 9 }).format(nanos / 1_000_000_000)
 }
 
 export default function NFTMyBids({ postHash, bids }: Props) {
   const [session, setSession] = useState<ViaModernIdentityUser | null>(null)
-  const [confirmedSerial, setConfirmedSerial] = useState<number | null>(null)
+  const [confirmationValue, setConfirmationValue] = useState<number | null>(null)
+  const [confirmationAccount, setConfirmationAccount] = useState<string | null>(null)
+  const confirmedSerial = confirmationAccount === session?.publicKey ? confirmationValue : null
+  function setConfirmedSerial(value: number | null) { setConfirmationValue(value); setConfirmationAccount(value === null ? null : session?.publicKey ?? null) }
   const [status, setStatus] = useState<"idle"|"preparing"|"approval"|"submitting"|"done"|"error">("idle")
   const [message, setMessage] = useState("")
+  const actionRunner = useNFTAction()
 
   useEffect(() => {
-    void viaModernIdentity.currentUser().then(setSession)
     return viaModernIdentity.subscribe(setSession)
   }, [])
 
@@ -43,64 +40,12 @@ export default function NFTMyBids({ postHash, bids }: Props) {
     [bids, session],
   )
 
+  useEffect(() => { setConfirmedSerial(null); actionRunner.current?.invalidate() }, [session?.publicKey])
+
   async function withdrawBid(serialNumber: number) {
-    if (!session || confirmedSerial !== serialNumber) return
-    if (status === "preparing" || status === "approval" || status === "submitting") return
-
-    setStatus("preparing")
-    setMessage("Preparing exact DeSo bid withdrawal…")
-
-    try {
-      const response = await fetch("/api/via/nft/withdraw-bid", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        cache: "no-store",
-        body: JSON.stringify({
-          action: "prepare",
-          publicKey: session.publicKey,
-          postHash,
-          serialNumber,
-        }),
-      })
-      const result = await response.json() as PrepareResponse
-      if (!response.ok || !result.ok || !result.transactionHex) throw new Error(result.error || "PREPARE_FAILED")
-
-      const withdrawBidPermission = {
-        NFTOperationLimitMap: {
-          [postHash]: {
-            [serialNumber]: {
-              nft_bid: 1,
-            },
-          },
-        },
-      }
-      if (!(await viaModernIdentity.hasPermissions(withdrawBidPermission))) {
-        setMessage("Requesting permission to withdraw this exact DeSo NFT bid…")
-        await viaModernIdentity.requestPermissions(withdrawBidPermission)
-      }
-
-      setStatus("approval")
-      setMessage("Signing the exact bid withdrawal with DeSo Identity…")
-      const signedTransactionHex = await viaModernIdentity.signTx(result.transactionHex)
-      setStatus("submitting")
-      setMessage("Submitting the approved bid withdrawal to DeSo…")
-      const submitResponse = await fetch("/api/via/nft/withdraw-bid", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        cache: "no-store",
-        body: JSON.stringify({ action: "submit", signedTransactionHex }),
-      })
-      const submitResult = await submitResponse.json() as { ok?: boolean; error?: string }
-      if (!submitResponse.ok || !submitResult.ok) throw new Error(submitResult.error || "SUBMIT_FAILED")
-      setStatus("done")
-      setMessage("Bid withdrawal submitted to DeSo.")
-      setConfirmedSerial(null)
-    } catch (error) {
-      setStatus("error")
-      setMessage(error instanceof Error && error.message === "POPUP_BLOCKED"
-        ? "Approval window was blocked. VIA changed nothing."
-        : "Bid withdrawal could not be prepared. VIA changed nothing.")
-    }
+    if (!session || confirmedSerial !== serialNumber || !actionRunner.current) return
+    const result = await actionRunner.current.run({ kind: "withdraw-bid", publicKey: session.publicKey, postHash, serialNumber, body: { publicKey: session.publicKey, postHash, serialNumber } }, (value, text) => { setStatus(value); setMessage(text) })
+    if (result.outcome !== "stopped") setConfirmedSerial(null)
   }
 
   if (!session || myBids.length === 0) return null

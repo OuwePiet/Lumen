@@ -2,17 +2,21 @@
 
 import { useEffect, useState } from "react"
 import { viaModernIdentity, type ViaModernIdentityUser } from "../deso-identity-modern"
+import { useNFTAction } from "../use-nft-action"
+import { fetchDeSo } from "../deso-api"
+import { restoreIdentitySession } from "../deso-identity-session"
 import VideoUploadControl from "../social/video-upload-control"
 
 type StorageMode = "deso" | "protected" | "advanced"
 
 const choices: Array<{id:StorageMode; title:string; text:string}> = [
   { id:"deso", title:"Standard · DeSo", text:"Use the normal DeSo media route. Recommended for a simple native DeSo NFT." },
-  { id:"protected", title:"Recommended · Arweave", text:"Permanent decentralized media storage. VIA shows the current network quote before upload; the creator pays the storage provider directly." },
+  { id:"protected", title:"Optional · Arweave preview", text:"Storage quotes only. Upload and provider payment are not connected. This option is not required for native DeSo minting." },
   { id:"advanced", title:"Advanced", text:"Use a supported external/IPFS provider, your own server, or an existing durable media URL." },
 ]
 
 export default function MintMediaStep({ onPostHash }: { onPostHash?: (postHash: string) => void }) {
+  const sourceRunner = useNFTAction()
   const [mode,setMode]=useState<StorageMode>("deso")
   const [fileName,setFileName]=useState("")
   const [file,setFile]=useState<File | null>(null)
@@ -30,7 +34,6 @@ export default function MintMediaStep({ onPostHash }: { onPostHash?: (postHash: 
   const [arweaveQuoteBusy,setArweaveQuoteBusy]=useState(false)
   const [arweaveQuoteError,setArweaveQuoteError]=useState("")
   useEffect(()=>{
-    void viaModernIdentity.currentUser().then(setSession)
     return viaModernIdentity.subscribe(setSession)
   },[])
   useEffect(()=>{
@@ -56,23 +59,22 @@ export default function MintMediaStep({ onPostHash }: { onPostHash?: (postHash: 
     if(postBusy) return
     if(description.trim().length===0){ setMessage("Add a description before creating the DeSo source post. Nothing was posted or minted."); return }
     if(mode==="advanced"){ try { const parsed=new URL(sourceUrl); if(parsed.protocol!=="https:" || !parsed.hostname) throw new Error("HTTPS_REQUIRED") } catch { setMessage("Use a valid HTTPS media URL. Nothing was posted or minted."); return } }
-    setSourcePostReady(false); onPostHash?.(""); setPostBusy(true); setMessage("Preparing the DeSo source post…")
+    if (!sourceRunner.current) return
+    const account = session.publicKey
+    setSourcePostReady(false); onPostHash?.("")
+    const result = await sourceRunner.current.run({ kind: "source-post", publicKey: account, body: { publicKey: account, body: description, imageUrls: videoUrl && mode === "deso" ? [] : [sourceUrl], videoUrls: videoUrl && mode === "deso" ? [sourceUrl] : [], sensitiveContent } }, (status, text) => {
+      setPostBusy(["preparing", "approval", "submitting"].includes(status)); setMessage(text)
+    })
+    if (result.outcome !== "accepted") return
+    if (!result.postHashHex) { setMessage("DeSo heeft de bronpost ontvangen, maar een betrouwbare PostHash ontbreekt. Niet opnieuw plaatsen; controleer DeSo handmatig."); return }
     try {
-      const response=await fetch("/api/via/social/post",{method:"POST",headers:{"Content-Type":"application/json"},cache:"no-store",body:JSON.stringify({action:"prepare",publicKey:session.publicKey,body:description,imageUrls:videoUrl && mode==="deso" ? [] : [sourceUrl],videoUrls:videoUrl && mode==="deso" ? [sourceUrl] : [],sensitiveContent})})
-      const data=await response.json() as {ok?:boolean;transactionHex?:string;error?:string}
-      if(!response.ok || !data.ok || !data.transactionHex) throw new Error(data.error || "PREPARE_FAILED")
-      setMessage("Signing the DeSo source post with the active Identity…")
-      const signedTransactionHex=await viaModernIdentity.signTx(data.transactionHex)
-      setMessage("Submitting approved DeSo source post…")
-      const submitResponse=await fetch("/api/via/social/post",{method:"POST",headers:{"Content-Type":"application/json"},cache:"no-store",body:JSON.stringify({action:"submit",signedTransactionHex})})
-      const submitResult=await submitResponse.json() as {ok?:boolean;postHashHex?:string|null;error?:string}
-      if(!submitResponse.ok || !submitResult.ok || !submitResult.postHashHex) throw new Error(submitResult.error || "POST_HASH_MISSING")
-      if(!/^[0-9a-fA-F]{64}$/.test(submitResult.postHashHex)) throw new Error("INVALID_POST_HASH")
-      onPostHash?.(submitResult.postHashHex)
-      setSourcePostReady(true)
-      setMessage("Source post confirmed. Its DeSo PostHash is ready for the NFT mint terms below.")
-    } catch { setMessage("The source post could not be prepared. Nothing was posted or minted.") }
-    finally { setPostBusy(false) }
+      const response = await fetchDeSo("get-single-post", { method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store", body: JSON.stringify({ PostHashHex: result.postHashHex, ReaderPublicKeyBase58Check: account, FetchParents: false, CommentLimit: 0 }) })
+      const data = await response.json() as { PostFound?: { PostHashHex?: string; PublicKeyBase58Check?: string } }
+      if (restoreIdentitySession()?.publicKey !== account) return
+      if (!response.ok || data.PostFound?.PostHashHex?.toLowerCase() !== result.postHashHex || data.PostFound.PublicKeyBase58Check !== account) throw new Error("SOURCE_NOT_VISIBLE")
+      onPostHash?.(result.postHashHex); setSourcePostReady(true)
+      setMessage("DeSo toont de ontvangen bronpost. Dit bewijst nog geen definitieve block inclusion. Minten is een afzonderlijke actie met een nieuwe controle.")
+    } catch { setMessage("DeSo heeft de bronpost ontvangen; de vervolgcontrole is niet beschikbaar. Niet opnieuw plaatsen. Controleer de post voordat je mint.") }
   }
 
   async function uploadStandardImage(){
@@ -94,7 +96,7 @@ export default function MintMediaStep({ onPostHash }: { onPostHash?: (postHash: 
     finally { setUploading(false) }
   }
   return (
-    <section className="mb-4 rounded-[14px] border border-zinc-800/80 bg-zinc-950/55 p-5 sm:p-6" aria-labelledby="mint-media-heading">
+    <section onChangeCapture={() => sourceRunner.current?.invalidate()} className="mb-4 rounded-[14px] border border-zinc-800/80 bg-zinc-950/55 p-5 sm:p-6" aria-labelledby="mint-media-heading">
       <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#8fd4a9]">Step 1 · Media</p>
       <h2 id="mint-media-heading" className="mt-2 text-2xl font-semibold tracking-tight">Choose media and storage</h2>
       <p className="mt-3 text-sm leading-6 text-zinc-400">Your original stays yours. Keep a master copy on your iPad, computer, SSD/HDD or NAS. The public NFT media can use the route you choose below.</p>
