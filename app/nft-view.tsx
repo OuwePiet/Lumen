@@ -28,8 +28,6 @@ type DeSoPost = {
   ImageURLs?: string[]
   VideoURLs?: string[]
   NumNFTCopies?: number
-  NFTRoyaltyToCreatorBasisPoints?: number
-  NFTRoyaltyToCoinBasisPoints?: number
   HasUnlockable?: boolean
   PosterPublicKeyBase58Check?: string
   TimestampNanos?: number
@@ -114,7 +112,7 @@ function accountCollectionHref(username: string, publicKey?: string) {
     params.set("view", "nfts")
   }
 
-  return `/?${params.toString()}${publicKey ? "#collection-controls" : "#account-lookup-heading"}`
+  return `/collection?${params.toString()}${publicKey ? "#collection-controls" : "#account-lookup-heading"}`
 }
 
 function formatDeSo(nanos: number) {
@@ -497,7 +495,7 @@ export default async function NFTView({
         Boolean(post.PosterPublicKeyBase58Check),
     }
     const utility = readUtilityMetadata(postExtraData)
-    const royalties = readRoyaltyMetadata(post)
+    const royalties = readRoyaltyMetadata(postExtraData)
     const royaltyLabel =
       royalties.source === "unavailable"
         ? "Not available"
