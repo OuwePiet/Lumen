@@ -14,6 +14,7 @@ import {
 } from "./deso-identity-session"
 import { viaModernIdentity } from "./deso-identity-modern"
 import ViaIdentityStatusMarks from "./via-identity-status"
+import { NOTIFICATION_SEEN_EVENT, notificationSeenKey, notificationLampIsOn, readSeenNotificationIndex, validNotificationIndex } from "./notification-indicator"
 import SponsorPlatform from "./sponsor-platform"
 import ViaWorldClock from "./via-world-clock"
 import {
@@ -232,13 +233,20 @@ export default function ViaHomeControls() {
   const [hasNewIdeas, setHasNewIdeas] = useState(false)
 
   useEffect(() => {
+    setHasUnreadNotifications(false)
     if (!session?.publicKey) {
-      setHasUnreadNotifications(false)
       return
     }
     const publicKey = session.publicKey
     const controller = new AbortController()
+    let requestId = 0
+    let snapshot: { count: number; latestIndex: number | null } | null = null
+    const sameAccount = () => !controller.signal.aborted && restoreIdentitySession()?.publicKey === publicKey
+    const applySnapshot = () => {
+      if (snapshot && sameAccount()) setHasUnreadNotifications(notificationLampIsOn(snapshot.count, snapshot.latestIndex, readSeenNotificationIndex(publicKey)))
+    }
     const loadUnread = async () => {
+      const id = ++requestId
       try {
         const response = await fetch("/api/via/social/notifications", {
           method: "POST",
@@ -247,26 +255,47 @@ export default function ViaHomeControls() {
           cache: "no-store",
           signal: controller.signal,
         })
-        if (!response.ok) { setHasUnreadNotifications(false); return }
+        if (!response.ok) return
         const data = await response.json() as { ok?: boolean; unreadCount?: number }
-        if (!controller.signal.aborted) {
-          const count = data.ok === true && typeof data.unreadCount === "number" && Number.isSafeInteger(data.unreadCount) && data.unreadCount >= 0 ? data.unreadCount : 0
-          let acknowledgedCount = -1
-          try {
-            const stored = window.sessionStorage.getItem(`via:notifications:home-ack:${publicKey}`)
-            if (stored !== null && stored.trim() !== "" && Number.isSafeInteger(Number(stored)) && Number(stored) >= 0) acknowledgedCount = Number(stored)
-          } catch { /* storage unavailable */ }
-          setHasUnreadNotifications(count > 0 && (acknowledgedCount < 0 || count > acknowledgedCount))
+        if (data.ok !== true || !validNotificationIndex(data.unreadCount) || id !== requestId || !sameAccount()) return
+        let latestIndex: number | null = null
+        if (data.unreadCount > 0) {
+          const latestResponse = await fetch("/api/via/social/notifications", {
+            method: "POST", headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ publicKey, fetchStartIndex: -1, numToFetch: 1 }),
+            cache: "no-store", signal: controller.signal,
+          })
+          if (latestResponse.ok) {
+            const latest = await latestResponse.json() as { ok?: boolean; notifications?: Array<{ Index?: unknown }> }
+            if (latest.ok === true && Array.isArray(latest.notifications)) {
+              const indices = latest.notifications.map(item => item.Index).filter(validNotificationIndex)
+              if (indices.length) latestIndex = Math.max(...indices)
+            }
+          }
         }
-      } catch {
-        if (!controller.signal.aborted) setHasUnreadNotifications(false)
-      }
+        if (id !== requestId || !sameAccount()) return
+        snapshot = { count: data.unreadCount, latestIndex }
+        applySnapshot()
+      } catch { /* A failed read does not mean that existing notifications were read. */ }
     }
+    const onSeen = () => { applySnapshot(); void loadUnread() }
+    const onStorage = (event: StorageEvent) => { if (event.key === null || event.key === notificationSeenKey(publicKey)) onSeen() }
+    const onVisible = () => { if (document.visibilityState === "visible") void loadUnread() }
     void loadUnread()
     window.addEventListener("focus", loadUnread)
+    window.addEventListener("pageshow", loadUnread)
+    window.addEventListener(NOTIFICATION_SEEN_EVENT, onSeen)
+    window.addEventListener("storage", onStorage)
+    document.addEventListener("visibilitychange", onVisible)
+    const interval = window.setInterval(() => { if (document.visibilityState === "visible") void loadUnread() }, 60_000)
     return () => {
       controller.abort()
       window.removeEventListener("focus", loadUnread)
+      window.removeEventListener("pageshow", loadUnread)
+      window.removeEventListener(NOTIFICATION_SEEN_EVENT, onSeen)
+      window.removeEventListener("storage", onStorage)
+      document.removeEventListener("visibilitychange", onVisible)
+      window.clearInterval(interval)
     }
   }, [session?.publicKey])
 
@@ -502,13 +531,14 @@ export default function ViaHomeControls() {
               <button type="button" onClick={() => { if (!session) { void openDeSoIdentity(); return }; refreshAccounts(); setAccountsOpen((open) => !open) }} disabled={status === "waiting"} aria-label={session ? t.switchAccount : t.login} title={session ? t.switchAccount : t.login} aria-expanded={session ? accountsOpen : undefined} aria-haspopup={session ? "menu" : undefined} style={{ ...buttonStyle, width: "100%", minHeight: "48px", justifyContent: "center", paddingInline: "9px", cursor: "pointer", gap: "7px" }}>
                 {session && avatar ? <img src={avatar} alt="" referrerPolicy="no-referrer" style={{ width: 28, height: 28, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} /> : session ? <UsersRound aria-hidden="true" size={18} /> : <img src="/via-logo-original.jpg?v=2" alt="" aria-hidden="true" style={{ width: 28, height: 28, borderRadius: "50%", objectFit: "contain", flexShrink: 0 }} />}
                 <span>{session ? accountName : t.login}</span>
+                {session ? <ViaIdentityStatusMarks verified={Boolean(profile?.isVerified)} inactive={Boolean(profile?.isInactive)} viaRecognized={Boolean(profile?.viaRecognized)} compact language={language} interactive={false} /> : null}
               </button>
               {hasNewIdeas ? <Link prefetch={false} href="/owner#centrale-ideeenbus" aria-label="Nieuw idee: open Ideeënbus" title="Open nieuwe ideeën" style={{ position: "absolute", right: 3, top: "50%", transform: "translateY(-50%)", zIndex: 2, fontSize: 18, textDecoration: "none", lineHeight: 1 }}>💡</Link> : null}
               {accountsOpen ? (
                 <div className="via-home-account-menu via-home-grid-account-menu" role="menu" aria-label={t.switchAccount}>
                   <div className="via-home-account-current">
                     <span>{session ? menuText.active : menuText.signedOut}</span>
-                    {session ? <strong>{accountName}</strong> : null}
+                    {session ? <strong style={{ display: "inline-flex", alignItems: "center", gap: 5 }}>{accountName}<ViaIdentityStatusMarks verified={Boolean(profile?.isVerified)} inactive={Boolean(profile?.isInactive)} viaRecognized={Boolean(profile?.viaRecognized)} compact language={language} interactive={false} /></strong> : null}
                   </div>
                   <div className="via-home-account-menu-heading">{t.switchAccount}</div>
                   {!otherAccounts.length ? <p className="via-home-account-empty">{menuText.empty}</p> : null}
@@ -518,6 +548,7 @@ export default function ViaHomeControls() {
                     return <button key={account.publicKey} type="button" onClick={() => chooseAccount(account.publicKey)} role="menuitem">
                       {accountAvatar ? <img src={accountAvatar} alt="" referrerPolicy="no-referrer" /> : <UsersRound aria-hidden="true" />}
                       <span>{accountProfile?.username ? `@${accountProfile.username}` : shortPublicKey(account.publicKey)}</span>
+                      <ViaIdentityStatusMarks verified={Boolean(accountProfile?.isVerified)} inactive={Boolean(accountProfile?.isInactive)} viaRecognized={Boolean(accountProfile?.viaRecognized)} compact language={language} interactive={false} />
                     </button>
                   })}
                   <button type="button" onClick={() => { setAccountsOpen(false); openDeSoIdentity() }} role="menuitem">{t.addAccount}</button>
