@@ -20,6 +20,7 @@ export default function StudioPage() {
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8fd4a9]">NF.VIA</p>
           <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-[2.5rem]">Mint NFT</h1>
           <p className="mt-3 text-sm leading-6 text-zinc-400">Prepare the NFT, review its terms and costs, then approve the native DeSo mint.</p>
+          <Link href="/studio/storage-preview" className="mt-4 inline-flex min-h-11 items-center rounded-xl border border-[#35533f] px-4 py-2 text-sm text-[#a5dfb8]">Bekijk het voorbeeld: bestand, opslag en NFT</Link>
         </header>
 
         <section id="mint-nft" aria-label="Mint NFT">
