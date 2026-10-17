@@ -95,6 +95,7 @@ export function listIdentitySessions(): ViaIdentitySession[] {
       if (!PUBLIC_KEY_RE.test(publicKey) || !isRecord(user) || user.publicKey !== publicKey) return []
       const key = user.primaryDerivedKey
       if (!isRecord(key) || key.publicKeyBase58Check !== publicKey || key.derivedKeyRegistered !== true) return []
+      if (key.IsValid === false || typeof key.derivedPublicKeyBase58Check !== "string" || !PUBLIC_KEY_RE.test(key.derivedPublicKeyBase58Check) || typeof key.derivedSeedHex !== "string" || !/^[a-f0-9]{64}$/i.test(key.derivedSeedHex)) return []
       return [{ publicKey, accessLevel: 3, signedUp: false }]
     })
   } catch { return [] }

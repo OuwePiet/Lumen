@@ -5,9 +5,9 @@ const path = require('node:path')
 const vm = require('node:vm')
 const ts = require('typescript')
 const A = 'A'.repeat(48), B = 'B'.repeat(48), OLD = 'C'.repeat(48)
-const user = publicKey => ({ publicKey, primaryDerivedKey: { publicKeyBase58Check: publicKey, derivedKeyRegistered: true } })
+const user = publicKey => ({ publicKey, primaryDerivedKey: { publicKeyBase58Check: publicKey, derivedPublicKeyBase58Check: publicKey, derivedSeedHex: '11'.repeat(32), derivedKeyRegistered: true } })
 const tick = () => new Promise(resolve => setImmediate(resolve))
-const compile = file => ts.transpileModule(fs.readFileSync(path.join(__dirname, '../app', file), 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 } }).outputText
+const compile = file => ts.transpileModule(fs.readFileSync(file === 'deso-identity-modern.ts' && process.env.VIA_TEST_IDENTITY_SOURCE ? process.env.VIA_TEST_IDENTITY_SOURCE : path.join(__dirname, '../app', file), 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 } }).outputText
 
 function fixture({ active = A, legacy = OLD, users = { [A]: user(A), [B]: user(B) } } = {}) {
   const storage = new Map([
@@ -34,10 +34,12 @@ function fixture({ active = A, legacy = OLD, users = { [A]: user(A), [B]: user(B
     async encryptMessage() { return 'mock-encrypted' },
     async decryptMessage() { return { DecryptedMessage: 'mock-decrypted' } },
   }
-  const sessionExports = {}, modernExports = {}
-  const context = { window, localStorage, CustomEvent, console, exports: sessionExports }
+  const sessionExports = {}, modernExports = {}, recoveryExports = {}, returnExports = {}
+  const context = { window, localStorage, CustomEvent, console, exports: sessionExports, URL, URLSearchParams, AbortController, setTimeout, clearTimeout }
   vm.runInNewContext(compile('deso-identity-session.ts'), context)
-  vm.runInNewContext(compile('deso-identity-modern.ts'), { ...context, exports: modernExports, require(name) { if (name === 'deso-protocol') return { identity: sdk }; if (name === './deso-identity-session') return sessionExports; throw new Error('Unexpected legacy import: '+name) } })
+  vm.runInNewContext(compile('deso-session-recovery.ts'), { ...context, exports: recoveryExports, require: () => sessionExports })
+  vm.runInNewContext(compile('deso-identity-return.ts'), { ...context, exports: returnExports })
+  vm.runInNewContext(compile('deso-identity-modern.ts'), { ...context, exports: modernExports, require(name) { if (name === 'deso-protocol') return { identity: sdk }; if (name === './deso-identity-session') return sessionExports; if (name === './deso-session-recovery') return recoveryExports; if (name === './deso-identity-return') return returnExports; throw new Error('Unexpected legacy import: '+name) } })
   return { storage, localStorage, window, calls, sdk, session: sessionExports, identity: modernExports.viaModernIdentity,
     resolveLogin() { loginResolve({ publicKeyBase58Check: A }) }, rejectLogin() { loginReject(new Error('cancelled')) },
     emitSDK() { subscribers.forEach(fn => fn({})) },
@@ -49,6 +51,13 @@ test('canonical active SDK account wins over a different old account', async () 
 test('legacy-only account is never silently restored as SDK login', async () => { const f = fixture({ active: null }); assert.equal(f.session.restoreIdentitySession(), null); assert.equal(await f.identity.currentUser(), null) })
 test('a returned publicKeyAdded without registered SDK credentials is not a login', async () => { const f = fixture({ users: { [A]: { publicKey: A } } }); assert.equal(await f.identity.currentUser(), null); await assert.rejects(f.identity.setActiveUser(A)); await f.identity.logout(); assert.equal(f.storage.has('desoActivePublicKey'), false) })
 test('pending/unregistered derived key does not expose a logged-in session', () => { const f = fixture({ users: { [A]: { ...user(A), primaryDerivedKey: { ...user(A).primaryDerivedKey, derivedKeyRegistered: false } } } }); assert.equal(f.session.restoreIdentitySession(), null) })
+
+for (const fields of [{ IsValid: false }, { derivedSeedHex: undefined }, { derivedPublicKeyBase58Check: undefined }]) test('registered flag alone cannot create a usable session: '+JSON.stringify(fields), async () => {
+  const f=fixture({users:{[A]:{...user(A),primaryDerivedKey:{...user(A).primaryDerivedKey,...fields}}}})
+  assert.equal(f.session.restoreIdentitySession(),null)
+  await assert.rejects(f.identity.signTx('mock-tx'))
+  assert.equal(f.calls.some(call=>call[0]==='sign'),false)
+})
 test('mismatched SDK owner fails closed', () => { const f = fixture({ users: { [A]: { ...user(A), primaryDerivedKey: user(B).primaryDerivedKey } } }); assert.equal(f.session.restoreIdentitySession(), null) })
 test('corrupt SDK storage does not fall back to legacy', () => { const f = fixture(); f.storage.set('desoIdentityUsers', '{'); assert.equal(f.session.restoreIdentitySession(), null) })
 test('unavailable browser storage fails closed', () => { const f = fixture(); f.localStorage.getItem = () => { throw new Error('blocked') }; assert.equal(f.session.restoreIdentitySession(), null) })
@@ -63,12 +72,27 @@ test('storage clear logs out other tabs', () => { const f = fixture(); const see
 test('back-forward cache restore and focus re-read canonical session', () => { const f = fixture(); const seen = []; f.identity.subscribe(u => seen.push(u?.publicKey ?? null)); f.storage.set('desoActivePublicKey', B); f.event('pageshow'); assert.equal(seen.at(-1), B); f.storage.delete('desoActivePublicKey'); f.event('focus'); assert.equal(seen.at(-1), null) })
 test('unsubscribed page receives no later updates', () => { const f = fixture(); let count = 0; const stop = f.identity.subscribe(() => count++); stop(); f.emitSDK(); assert.equal(count, 1) })
 for (const device of ['iPhone', 'iPad', 'laptop']) {
-  test(`${device}: login uses official SDK redirect to same-origin homepage`, async () => { const f = fixture(); const result = f.identity.login(); assert.equal(f.calls.find(c => c[0] === 'configure')[1].redirectURI, 'https://via.example/'); assert.equal(f.calls.find(c => c[0] === 'configure')[1].identityURI, 'https://identity.deso.org'); f.resolveLogin(); await result })
+  test(`${device}: login uses official SDK redirect to same-origin homepage`, async () => { const f = fixture(); const result = f.identity.login(); await tick(); const loginConfiguration = f.calls.find(c => c[0] === 'configure' && c[1].redirectURI); assert.equal(loginConfiguration[1].redirectURI, 'https://via.example/'); assert.equal(loginConfiguration[1].identityURI, 'https://identity.deso.org'); f.resolveLogin(); await result })
 }
 test('double click starts only one SDK login', async () => { const f = fixture(); const first = f.identity.login(); await assert.rejects(f.identity.login(), /already opening/); assert.equal(f.calls.filter(c => c[0] === 'login').length, 1); f.resolveLogin(); await first })
-test('cancelled login allows explicit retry', async () => { const f = fixture(); const first = f.identity.login(); f.rejectLogin(); await assert.rejects(first); const retry = f.identity.login(); f.resolveLogin(); await retry; assert.equal(f.calls.filter(c => c[0] === 'login').length, 2) })
+test('cancelled login allows explicit retry', async () => { const f = fixture(); const first = f.identity.login(); await tick(); f.rejectLogin(); await assert.rejects(first); const retry = f.identity.login(); await tick(); f.resolveLogin(); await retry; assert.equal(f.calls.filter(c => c[0] === 'login').length, 2) })
 test('reading session, switching, and subscribing do not open login', async () => { const f = fixture(); await f.identity.currentUser(); f.identity.subscribe(() => {}); await f.identity.alternateUsers(); await f.identity.setActiveUser(B); assert.equal(f.calls.filter(c => c[0] === 'login').length, 0) })
 test('permissions come from SDK, never implicit legacy true', async () => { const f = fixture(); assert.equal(await f.identity.hasPermissions({}), false); assert.equal(f.calls.filter(c => c[0] === 'hasPermissions').length, 1) })
+
+test('login retains the SDK default finite fee budget instead of an implicit zero limit', async () => {
+  const f = fixture()
+  await f.identity.currentUser()
+  const permissions = f.calls.find(call => call[0] === 'configure')[1].spendingLimitOptions
+  const { DEFAULT_PERMISSIONS } = await import('deso-protocol/src/identity/constants.js')
+  const { buildTransactionSpendingLimitResponse } = await import('deso-protocol/src/identity/permissions-utils.js')
+  const actual = buildTransactionSpendingLimitResponse(permissions)
+  assert.equal(actual.GlobalDESOLimit, DEFAULT_PERMISSIONS.GlobalDESOLimit)
+  assert.ok(actual.GlobalDESOLimit > 0 && Number.isSafeInteger(actual.GlobalDESOLimit))
+  assert.equal(actual.IsUnlimited, undefined)
+  assert.equal(actual.TransactionCountLimitMap.BASIC_TRANSFER, undefined)
+  assert.equal(actual.TransactionCountLimitMap.NFT_BID, undefined)
+  assert.equal(actual.TransactionCountLimitMap.AUTHORIZE_DERIVED_KEY, 1)
+})
 test('JWT and signing use SDK account, no old iframe credentials', async () => { const f = fixture(); assert.equal(await f.identity.jwt(), 'mock-jwt'); assert.equal(await f.identity.signTx('mock-tx'), 'mock-signed') })
 test('logged-out account cannot sign or request JWT', async () => { const f = fixture({ active: null }); await assert.rejects(f.identity.signTx('mock-tx')); await assert.rejects(f.identity.jwt()); assert.equal(f.calls.some(c => c[0] === 'jwt' || c[0] === 'sign'), false) })
 test('account A→B→A during pending signing invalidates the result', async () => { const f = fixture(); let resolve; f.sdk.signTx = () => new Promise(r => { resolve = r }); const result = f.identity.signTx('mock-tx'); await f.identity.setActiveUser(B); await f.identity.setActiveUser(A); resolve('mock-signed'); await assert.rejects(result, /account changed/) })

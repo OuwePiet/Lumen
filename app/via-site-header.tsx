@@ -251,7 +251,6 @@ export default function ViaSiteHeader() {
     setSession(nextUser ? { ...nextUser, accessLevel: 3, signedUp: false } : null)
     setProfile(profiles[publicKey] ?? null)
     setMenuOpen(false)
-    router.refresh()
   }
 
   async function loginWithDeSo() {
