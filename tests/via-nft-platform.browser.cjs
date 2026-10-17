@@ -15,7 +15,8 @@ async function run(name, engine, options) {
   const context = await browser.newContext(options)
   const errors = [], reported = [], forbidden = [], prepares = []
   let replacing = false
-  let page
+  let page, releaseUpload, notifyUpload, uploadCount = 0
+  const uploadStarted = new Promise(resolve => { notifyUpload = resolve })
   try {
     await context.exposeBinding('__viaError', (_, message) => errors.push(message))
     await context.addInitScript(({ A, users, origin }) => {
@@ -41,6 +42,10 @@ async function run(name, engine, options) {
         return route.fulfill({ json: data })
       }
       if (!url.pathname.startsWith('/api/')) return route.continue()
+      if (url.pathname === '/api/via/social/image-upload' && request.method() === 'POST') {
+        uploadCount++; notifyUpload(); await new Promise(resolve => { releaseUpload = resolve });
+        return route.fulfill({ json: { ok: true, imageUrl: 'https://media.example.test/uploaded-by-A.png' } })
+      }
       if (request.method() !== 'GET') {
         const body = request.postDataJSON()
         if (url.pathname.startsWith('/api/via/nft/') && body?.action === 'prepare') {
@@ -116,6 +121,14 @@ async function run(name, engine, options) {
     await page.getByRole('button', { name: 'Continue to Mint', exact: true }).click()
     await page.getByRole('heading', { name: 'Choose media and storage', exact: true }).waitFor()
     await page.screenshot({ path: path.join(out, name+'-mint-review.png'), fullPage: true })
+    await page.locator('input[type="file"]').first().setInputFiles({ name: 'fixture.png', mimeType: 'image/png', buffer: Buffer.from('synthetic image upload fixture') })
+    const uploadButton = page.getByRole('button', { name: /^(Upload image to DeSo|Uploading…)$/ })
+    await uploadButton.dispatchEvent('click'); await uploadButton.dispatchEvent('click')
+    await Promise.race([uploadStarted, new Promise((_,reject) => setTimeout(()=>reject(new Error('UPLOAD_FIXTURE_NOT_REACHED')),10000))])
+    await switchTo('@VIA-Test-B', B)
+    releaseUpload(); await page.waitForLoadState('networkidle')
+    assert.equal(uploadCount, 1, 'double-click starts one media upload')
+    assert.equal(await page.getByText('Image uploaded to DeSo.', { exact: false }).count(), 0, 'A upload cannot become B mint media')
     await page.getByRole('button', { name: 'Open VIA account menu', exact: true }).click()
     await page.getByRole('menuitem', { name: 'Logout from VIA', exact: true }).click()
     await navigate('/market?publicKey='+B)
@@ -128,7 +141,7 @@ async function run(name, engine, options) {
     assert.deepEqual(errors, [], 'no window errors or unhandled rejections')
     const warnings = reported.filter(entry => /due to access control checks\.$/.test(entry.message) && entry.message.includes(new URL(base).host))
     assert.deepEqual(reported.filter(entry => !warnings.includes(entry)), [], 'no unexpected engine errors')
-    results.push({ name, result: 'PASS', viewport: options.viewport, accountSwitch: 'A-B-A', exactFinancialReviewCancelled: true, localDraftAccountIsolation: true, publicGuestRead: true, mockedUnsignedPrepares: prepares.length, realSigning: false, realFinancialTransactions: false, physicalDevice: false, errors, warnings })
+    results.push({ name, result: 'PASS', viewport: options.viewport, accountSwitch: 'A-B-A', singleMediaUpload: uploadCount === 1, staleUploadNotAttached: true, exactFinancialReviewCancelled: true, localDraftAccountIsolation: true, publicGuestRead: true, mockedUnsignedPrepares: prepares.length, realSigning: false, realFinancialTransactions: false, physicalDevice: false, errors, warnings })
   } catch (error) {
     if (page) fs.writeFileSync(path.join(out,name+'-overflow.json'), JSON.stringify(await page.evaluate(()=>({width:innerWidth,scroll:document.documentElement.scrollWidth,elements:[...document.querySelectorAll('body *')].map(e=>({tag:e.tagName,cls:e.className,left:e.getBoundingClientRect().left,right:e.getBoundingClientRect().right})).filter(e=>e.left< -1||e.right>innerWidth+1).slice(0,25)})),null,2));
     const url = page?.url(); const body = page ? (await page.locator('body').innerText()).slice(0, 12000) : '';
