@@ -21,7 +21,7 @@ export default function NFTInfo() {
     </section>
     <section className="mt-6 rounded-2xl border border-[#594c29] bg-[#18150d] p-5 sm:p-7" aria-labelledby="nft-cost-heading">
       <h3 id="nft-cost-heading" className="text-xl font-semibold">Opslag en VIA-behandelingskosten</h3>
-      <p className="mt-3 text-sm leading-7">VIA beheert geen eigen DeSo-node en betaalt voorlopig geen opslag of andere kosten voor derden vooruit. Je gebruikt eigen of externe opslag. Zelf opslag huren en aanbieden is een toekomstoptie. VIA wil betaalbaar blijven en een onderhoudsbuffer opbouwen; een concrete bijdrage is nog niet vastgesteld.</p>
+      <p className="mt-3 text-sm leading-7">VIA beheert geen eigen DeSo-node en betaalt voorlopig geen opslag of andere kosten voor derden vooruit. Je gebruikt eigen of externe opslag. Zelf opslag huren en vervolgens aan gebruikers aanbieden is voor VIA een toekomstoptie. VIA wil betaalbaar blijven en een onderhoudsbuffer opbouwen; een concrete bijdrage is nog niet vastgesteld.</p>
       <p className="mt-3 text-sm leading-7">De prijs van de NFT, DeSo-netwerkkosten, opslagkosten en een eventuele VIA-dienstvergoeding zijn verschillende bedragen. Ze moeten vóór een betaalde actie apart zichtbaar zijn. De maker betaalt gekozen opslag rechtstreeks aan de provider; VIA schiet die kosten niet voor.</p>
       <p className="mt-3 text-sm leading-7 text-amber-100">De kostenregels in deze testversie zijn nog niet allemaal op elkaar afgestemd. Er is daarom geen enkel, definitief NFT-tarief dat we hier eerlijk als volledig aangesloten kunnen aanbieden.</p>
       <ul className="mt-4 list-disc space-y-2 pl-5 text-sm leading-7">

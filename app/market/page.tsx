@@ -94,6 +94,11 @@ export default async function MarketPage({ searchParams }: { searchParams: Promi
   return (
     <main data-via-public-nft-reader className="mx-auto min-h-screen max-w-6xl px-5 py-10 text-zinc-100">
       <MarketIdentityRedirect />
+      <nav aria-label="NFT return navigation" className="mb-4">
+        <Link href="/collection" data-via-market-back className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-[#8fd4a9]/30 px-3 py-2 text-sm font-medium text-[#b8ddc5] hover:border-[#8fd4a9] hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#8fd4a9]">
+          <span aria-hidden="true">←</span><MarketLocalizedText kind="backToCollection" />
+        </Link>
+      </nav>
       <header className="max-w-3xl">
         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8fd4a9]"><MarketLocalizedText kind="marketplace" /></p>
         <h1 className="mt-2 text-3xl font-semibold"><MarketLocalizedText kind="heading" /></h1>
@@ -101,7 +106,6 @@ export default async function MarketPage({ searchParams }: { searchParams: Promi
       </header>
 
       <nav aria-label="Marketplace sections" className="mt-6 flex flex-wrap gap-2">
-        <Link href="/collection" className="rounded-lg border border-zinc-800 px-3 py-2 text-sm text-zinc-300"><MarketLocalizedText kind="collection" /></Link>
         <Link href={"/market/received-bids" + query} className="rounded-lg border border-zinc-800 px-3 py-2 text-sm text-zinc-300"><MarketLocalizedText kind="receivedBids" /></Link>
         <Link href={"/market/my-bids" + query} className="rounded-lg border border-zinc-800 px-3 py-2 text-sm text-zinc-300"><MarketLocalizedText kind="myBids" /></Link>
         <a href="#listings" className="rounded-lg border border-zinc-800 px-3 py-2 text-sm text-zinc-300"><MarketLocalizedText kind="listings" /></a>
