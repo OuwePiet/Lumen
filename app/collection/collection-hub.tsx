@@ -69,6 +69,7 @@ export default function CollectionHub() {
         <nav aria-label="NFT workspace" className="mt-3 flex flex-wrap gap-3 text-sm">
           <Link href="/collections" style={hubLink}>Collections / series</Link>
           <Link href="/giveaway" style={hubLink}>Claim / Giveaway</Link>
+          <Link href="/nft-info" style={hubLink}>Uitleg, eigendom & kosten</Link>
         </nav>
         <style>{`
           @media (max-width: 980px) {

@@ -8,6 +8,7 @@ import {
   type DeSoNFTPost,
 } from "./deso-nfts"
 import NFTMedia from "./nft-media"
+import { compareNFTCollections } from "../lib/via/nft-collection-sort"
 import XShareButton from "./x-share-button"
 import { isViaSensitiveContent } from "../lib/via/sensitive-content"
 
@@ -26,6 +27,7 @@ type SortMode =
   | "fewest-owned"
   | "lowest-price"
   | "highest-price"
+  | "newest" | "oldest" | "creator" | "serial"
 
 type NFTCacheEnvelope = {
   version: number
@@ -365,7 +367,7 @@ export default function PublicAccountNFTs({
       requestedSort === "most-owned" ||
       requestedSort === "fewest-owned" ||
       requestedSort === "lowest-price" ||
-      requestedSort === "highest-price"
+      requestedSort === "highest-price" || requestedSort === "newest" || requestedSort === "oldest" || requestedSort === "creator" || requestedSort === "serial"
     ) {
       setSortMode(requestedSort)
     }
@@ -513,6 +515,7 @@ export default function PublicAccountNFTs({
 
   const sortedNFTs = [...mediaFilteredNFTs].sort((left, right) => {
     if (sortMode === "collection") return 0
+    if (sortMode === "newest" || sortMode === "oldest" || sortMode === "creator" || sortMode === "serial") return compareNFTCollections(left, right, sortMode)
 
     const leftTitle = title(left.PostEntryResponse?.Body)
     const rightTitle = title(right.PostEntryResponse?.Body)
@@ -609,7 +612,7 @@ export default function PublicAccountNFTs({
               setVisibleCount(PAGE_SIZE)
             }}
           />
-          <select
+          <label style={{ display: "grid", gap: 4 }}><span style={styles.controlLabel}>Sort</span><select
             aria-label="Sort this account collection"
             value={sortMode}
             style={styles.select}
@@ -620,11 +623,12 @@ export default function PublicAccountNFTs({
           >
             <option value="collection">Collection order</option>
             <option value="title">Title A–Z</option>
+            <option value="newest">Date: newest first</option><option value="oldest">Date: oldest first</option><option value="creator">Creator A–Z</option><option value="serial">Edition number: low–high</option>
             <option value="most-owned">Most copies owned</option>
             <option value="fewest-owned">Fewest copies owned</option>
             <option value="lowest-price">Lowest price</option>
             <option value="highest-price">Highest price</option>
-          </select>
+          </select></label>
           <span style={styles.controlLabel}>Sale</span>
           {([["all", "All"], ["for-sale", "For sale"], ["not-for-sale", "Not for sale"]] as const).map(
             ([value, label]) => (

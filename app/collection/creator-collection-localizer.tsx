@@ -8,10 +8,17 @@ type Copy = {
   patterns: Array<[RegExp, (...parts: string[]) => string]>
 }
 
+const SORT_COPY: Record<string, Record<string,string>> = {
+  Dutch: { "Date: newest first": "Datum: nieuwste eerst", "Date: oldest first": "Datum: oudste eerst", "Creator A–Z": "Maker A–Z", "Edition number: low–high": "Editienummer: laag–hoog" },
+  French: { "Date: newest first": "Date : plus récent", "Date: oldest first": "Date : plus ancien", "Creator A–Z": "Créateur A–Z", "Edition number: low–high": "Numéro d’édition croissant" },
+  Spanish: { "Date: newest first": "Fecha: más recientes", "Date: oldest first": "Fecha: más antiguos", "Creator A–Z": "Creador A–Z", "Edition number: low–high": "Número de edición ascendente" },
+  Chinese: { "Date: newest first": "日期：最新优先", "Date: oldest first": "日期：最早优先", "Creator A–Z": "创作者 A–Z", "Edition number: low–high": "版本编号：从低到高" },
+  Hindi: { "Date: newest first": "तारीख: नवीनतम पहले", "Date: oldest first": "तारीख: सबसे पुराना पहले", "Creator A–Z": "क्रिएटर A–Z", "Edition number: low–high": "संस्करण संख्या: कम से अधिक" },
+}
 const COPY: Record<ViaLanguage | "Hindi", Copy> = {
   English: { exact: {}, patterns: [] },
   Dutch: {
-    exact: {
+    exact: { ...SORT_COPY.Dutch,
       "VIA · NFT hub": "VIA · NFT-groep",
       "Everything NFT in one place": "Alles rond NFT's op één plek",
       "Browse collections, create and mint, buy or sell, manage bids and follow transfers without separate homepage groups.": "Bekijk collecties, maak en mint, koop of verkoop, beheer biedingen en volg transfers zonder aparte hoofdgroepen op de homepage.",
@@ -90,7 +97,7 @@ const COPY: Record<ViaLanguage | "Hindi", Copy> = {
     ],
   },
   French: {
-    exact: {
+    exact: { ...SORT_COPY.French,
       "VIA · NFT hub": "VIA · groupe NFT",
       "Everything NFT in one place": "Tout ce qui concerne les NFT au même endroit",
       "Browse collections, create and mint, buy or sell, manage bids and follow transfers without separate homepage groups.": "Parcourez les collections, créez et mintez, achetez ou vendez, gérez les offres et suivez les transferts sans groupes séparés sur la page d’accueil.",
@@ -165,7 +172,7 @@ const COPY: Record<ViaLanguage | "Hindi", Copy> = {
     ],
   },
   Spanish: {
-    exact: {
+    exact: { ...SORT_COPY.Spanish,
       "VIA · NFT hub": "VIA · grupo NFT",
       "Everything NFT in one place": "Todo sobre NFT en un solo lugar",
       "Browse collections, create and mint, buy or sell, manage bids and follow transfers without separate homepage groups.": "Explora colecciones, crea y acuña, compra o vende, gestiona ofertas y sigue transferencias sin grupos separados en la página de inicio.",
@@ -240,7 +247,7 @@ const COPY: Record<ViaLanguage | "Hindi", Copy> = {
     ],
   },
   Chinese: {
-    exact: {
+    exact: { ...SORT_COPY.Chinese,
       "VIA · NFT hub": "VIA · NFT 分组",
       "Everything NFT in one place": "所有 NFT 功能集中在一处",
       "Browse collections, create and mint, buy or sell, manage bids and follow transfers without separate homepage groups.": "浏览收藏、创建和铸造、买卖、管理出价并跟踪转移，不再把这些功能拆成独立的主页分组。",
@@ -315,7 +322,7 @@ const COPY: Record<ViaLanguage | "Hindi", Copy> = {
     ],
   },
   Hindi: {
-    exact: {
+    exact: { ...SORT_COPY.Hindi,
       "VIA · NFT hub": "VIA · NFT हब", "Everything NFT in one place": "सभी NFT सुविधाएँ एक ही जगह",
       "Browse collections, create and mint, buy or sell, manage bids and follow transfers without separate homepage groups.": "कलेक्शन देखें, बनाएँ और mint करें, खरीदें या बेचें, बोलियाँ संभालें और ट्रांसफ़र का अनुसरण करें।",
       "Collection": "कलेक्शन", "Create & Mint": "बनाएँ और Mint करें", "Market": "बाज़ार", "Received Bids": "प्राप्त बोलियाँ", "My Bids": "मेरी बोलियाँ",

@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import NFTInfo from "../../nft-info"
 import { useEffect, useState } from "react"
 import { FileImage, HardDrive, Globe, ShieldCheck, ArrowRight, Check, Layers } from "lucide-react"
 
@@ -74,7 +75,7 @@ export default function StoragePreview() {
           <section className={`${panel} space-y-4 text-sm leading-6`}><p className="flex gap-3"><HardDrive size={20} className="shrink-0 text-[#91cba3]" />Bewaar zelf je originele bestand.</p><p className="flex gap-3"><Globe size={20} className="shrink-0 text-[#91cba3]" />De media staat bij DeSo of jouw opslagprovider.</p><p className="flex gap-3"><Layers size={20} className="shrink-0 text-[#91cba3]" />De NFT en het eigendom worden op DeSo vastgelegd.</p><p className="flex gap-3"><ShieldCheck size={20} className="shrink-0 text-[#91cba3]" />DeSo Identity blijft leidend voor echte goedkeuring.</p></section>
         </aside>
       </div>
-      <details className={`${panel} mt-6 text-sm leading-7`}><summary className="cursor-pointer font-medium">Waarom deze stappen? De eerdere afspraken en NFTz als referentie</summary><p className="mt-4 text-[#afc2b5]">De VIA-opzet volgt de afgesproken scheiding tussen het originele bestand, publieke mediaopslag en de DeSo-NFT. De historische NFTz-handleiding beschreef eveneens een aparte opslagkeuze en een bestaande Arweave-link. Dit voorbeeld neemt die begrijpelijke volgorde mee in de eigen VIA-vormgeving.</p><div className="mt-3 flex flex-wrap gap-x-6 gap-y-2"><a className="inline-flex min-h-11 items-center text-[#a5dfb8] underline" href="https://help.nftz.zone/beginners-guide/nft/selling-nft-intro/how-do-you-mint-sell-an-nft" target="_blank" rel="noopener noreferrer">Historische NFTz-mintinstructie</a><a className="inline-flex min-h-11 items-center text-[#a5dfb8] underline" href="https://help.nftz.zone/beginners-guide/nft/selling-nft-intro/how-to-use-an-arweave-link-advanced" target="_blank" rel="noopener noreferrer">NFTz: bestaande Arweave-link</a><a className="inline-flex min-h-11 items-center text-[#a5dfb8] underline" href="https://docs.deso.org/deso-features/social-nfts" target="_blank" rel="noopener noreferrer">Officiële DeSo-NFT-uitleg</a></div></details>
+      <NFTInfo />
     </div>
   </main>
 }

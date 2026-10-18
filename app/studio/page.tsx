@@ -23,6 +23,7 @@ export default function StudioPage() {
           <Link href="/studio/storage-preview" className="mt-4 inline-flex min-h-11 items-center rounded-xl border border-[#35533f] px-4 py-2 text-sm text-[#a5dfb8]">Bekijk het voorbeeld: bestand, opslag en NFT</Link>
         </header>
 
+        <Link href="/nft-info" className="mb-5 inline-flex min-h-11 items-center text-[#a5dfb8] underline">Lees eerst: opslag, eigendom en VIA-kosten</Link>
         <section id="mint-nft" aria-label="Mint NFT">
           <MintFlow />
         </section>

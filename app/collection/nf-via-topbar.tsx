@@ -4,32 +4,13 @@ import Link from "next/link"
 import { useEffect, useState } from "react"
 import { useViaIdentitySession } from "../use-via-identity-session"
 import { fetchViaRates, type ViaRates } from "../via-live-rates"
-import {
-  readViaLocalSettings,
-  saveViaLocalSettings,
-  VIA_LANGUAGES,
-  VIA_SETTINGS_EVENT,
-  type ViaLanguage,
-} from "../via-local-settings"
-
-const flags: Record<ViaLanguage | "Hindi", string> = {
-  Dutch: "🇳🇱", English: "🇬🇧", French: "🇫🇷", Spanish: "🇪🇸", Chinese: "🇨🇳", Hindi: "🇮🇳",
-}
-
 export default function NfViaTopbar() {
-  const [language, setLanguage] = useState<ViaLanguage>("English")
   const [rates, setRates] = useState<ViaRates | null>(null)
   const session = useViaIdentitySession()
   const hasDeSo = Boolean(session)
 
   useEffect(() => {
-    const sync = () => {
-      setLanguage(readViaLocalSettings().interfaceLanguage)
-    }
-    sync()
-    window.addEventListener(VIA_SETTINGS_EVENT, sync)
     void fetchViaRates().then(setRates).catch(() => setRates(null))
-    return () => window.removeEventListener(VIA_SETTINGS_EVENT, sync)
   }, [])
 
   const usd = rates?.rates?.USD
@@ -37,7 +18,7 @@ export default function NfViaTopbar() {
 
   return (
     <div className="nf-via-topbar" aria-label="NF.VIA controls">
-      <Link href="/" className="nf-via-topbar-item nf-via-home">Home</Link>
+
       <div className="nf-via-topbar-item nf-via-rate" aria-label="DeSo price">
         <strong>DESO</strong>
         <span>{typeof usd === "number" ? `$${usd.toLocaleString(undefined, { maximumFractionDigits: 3 })}` : "—"}</span>
@@ -46,16 +27,6 @@ export default function NfViaTopbar() {
       <Link href="/wallet" className="nf-via-topbar-item nf-via-my-deso">
         My DESO{hasDeSo ? "" : " · Login"}
       </Link>
-      <label className="nf-via-language">
-        <span aria-hidden="true">{flags[language] ?? "🌐"}</span>
-        <select
-          aria-label="Language"
-          value={language}
-          onChange={(event) => saveViaLocalSettings({ interfaceLanguage: event.target.value as ViaLanguage })}
-        >
-          {VIA_LANGUAGES.map((item) => <option key={item} value={item}>{flags[item]} {item}</option>)}
-        </select>
-      </label>
       <style>{`
         .nf-via-topbar {
           width: min(1480px, calc(100% - 40px));

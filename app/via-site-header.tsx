@@ -3,12 +3,13 @@
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { useEffect, useRef, useState } from "react"
-import { Radio, UsersRound } from "lucide-react"
+import { Radio, UsersRound, Wallet, Bell } from "lucide-react"
 import {
   clearIdentitySession,
   type ViaIdentitySession,
 } from "./deso-identity-session"
 import ViaIdentityStatusMarks from "./via-identity-status"
+import ViaHelpButton from "./via-help-button"
 import { viaModernIdentity } from "./deso-identity-modern"
 import {
   readViaLocalSettings,
@@ -317,7 +318,7 @@ export default function ViaSiteHeader() {
 
         <div style={styles.topRow} className="via-site-header-top">
           <nav style={styles.nav} className={`via-site-header-nav ${pathname === "/notifications" || pathname === "/radio" || pathname === "/messages" || pathname === "/profile" ? "via-site-header-nav-compact-mobile" : ""}`} aria-label="VIA main navigation">
-            {nav.map(([key, href]) => {
+            {nav.filter(([key]) => key !== "home").map(([key, href]) => {
               const active = href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`)
               return <Link key={href} href={href} className="via-site-header-link" style={{ ...styles.link, ...(active ? styles.activeLink : {}) }}>{t[key]}{active ? <span style={styles.activeLine} aria-hidden="true" /> : null}</Link>
             })}
@@ -338,10 +339,10 @@ export default function ViaSiteHeader() {
           </div>
           {pathname === "/notifications" || pathname === "/radio" || pathname === "/messages" || pathname === "/profile" ? <Link href="/" className="via-notifications-home-top" aria-label="Home" title="Home"><span className="via-notifications-home-label">Home</span></Link> : null}
           {pathname === "/messages" ? <Link href="/radio" className="via-notifications-radio-top" aria-label="World Radio" title="World Radio"><Radio className="h-4 w-4" aria-hidden="true" /><span className="via-radio-top-label">Radio</span></Link> : null}
-          {!session && !isHomepage && pathname !== "/messages" ? <button type="button" onClick={enterPublicMode} style={{ ...pill, cursor: "pointer" }}>{t.publicEntrance}</button> : null}
+          {!session && !isHomepage && pathname !== "/messages" ? <button className="via-site-header-public-entry" type="button" onClick={enterPublicMode} style={{ ...pill, cursor: "pointer" }}>{t.publicEntrance}</button> : null}
           {!session && !isHomepage && pathname !== "/messages" ? <button type="button" onClick={() => void loginWithDeSo()} style={styles.login}>{t.login}</button> : null}
-          {pathname !== "/messages" && pathname !== "/radio" && pathname !== "/profile" ? <Link href="/wallet" style={pill} className={`via-site-header-utility ${pathname === "/notifications" ? "via-site-header-wallet-notifications" : ""}`}>{t.wallet}</Link> : null}
-          {pathname !== "/notifications" && pathname !== "/messages" && pathname !== "/radio" && pathname !== "/profile" ? <Link href="/notifications" style={pill} className="via-site-header-utility">{t.notifications}</Link> : null}
+          {pathname !== "/messages" && pathname !== "/radio" && pathname !== "/profile" ? <Link href="/wallet" style={pill} className={`via-site-header-utility ${pathname === "/notifications" ? "via-site-header-wallet-notifications" : ""}`} aria-label={t.wallet}><Wallet size={16} aria-hidden="true" className="via-header-utility-icon" /><span className="via-header-utility-label">{t.wallet}</span></Link> : null}
+          {pathname !== "/notifications" && pathname !== "/messages" && pathname !== "/radio" && pathname !== "/profile" ? <Link href="/notifications" style={pill} className="via-site-header-utility" aria-label={t.notifications}><Bell size={16} aria-hidden="true" className="via-header-utility-icon" /><span className="via-header-utility-label">{t.notifications}</span></Link> : null}
 
           {identityError ? <span role="status">{identityError}</span> : null}
           {session && !isHomepage ? (
@@ -391,6 +392,7 @@ export default function ViaSiteHeader() {
           ) : null}
         </div>
       </div>
+      <ViaHelpButton />
       <style>{`
         .via-site-header-language-wrap { position: relative; flex: 0 0 auto; }
         .via-notifications-top-control { display: contents; }
@@ -631,6 +633,40 @@ export default function ViaSiteHeader() {
         }
         @media (min-width: 721px) {
           .via-site-header-account-menu-icon { display: none !important; }
+          .via-site-header-shell { grid-template-columns: 118px minmax(0, 1fr) !important; grid-template-rows: 42px auto !important; column-gap: 14px !important; }
+          .via-site-header-logo { width: 112px !important; height: 78px !important; }
+          .via-site-header-nav { justify-content: flex-start !important; }
+          .via-site-header-link { padding: 13px 9px 12px !important; }
+          .via-site-header-link > span { bottom: 5px !important; }
+          .via-site-header-tools { justify-content: flex-start !important; flex-wrap: wrap !important; gap: 6px !important; padding: 4px 0 6px !important; }
+          .via-site-header-search { min-width: 140px !important; }
+          .via-site-header-tools > a, .via-site-header-tools > button, .via-site-header-search, .via-site-header-language, .via-site-header-account-button { min-height: 36px !important; font-size: 11px !important; padding-top: 4px !important; padding-bottom: 4px !important; }
+          .via-site-header-language { min-width: 60px !important; }
+        }
+        @media (pointer: coarse) and (min-width: 721px) {
+          .via-site-header-tools > a, .via-site-header-tools > button, .via-site-header-search, .via-site-header-language, .via-site-header-account-button { min-height: 44px !important; }
+          .via-site-header-link { min-height: 44px; display: inline-flex; align-items: center; padding-top: 8px !important; padding-bottom: 8px !important; }
+        }
+        .via-header-utility-icon { display: none; }
+        @media (max-width: 720px) {
+          .via-site-header-shell:not(:has(.via-site-header-tools-notifications)) { grid-template-columns: 60px minmax(0, 1fr) !important; grid-template-rows: 48px 48px !important; }
+          .via-site-header-shell:not(:has(.via-site-header-tools-notifications)) .via-site-header-logo { width: 58px !important; height: 44px !important; margin: 0 !important; }
+          .via-site-header-top { padding-right: 0 !important; }
+          .via-site-header-link { min-height: 44px; display: inline-flex; align-items: center; padding: 8px !important; }
+          .via-site-header-tools:not(.via-site-header-tools-notifications) { overflow: visible !important; padding: 2px 0 !important; gap: 5px !important; justify-content: space-between !important; }
+          .via-site-header-tools:not(.via-site-header-tools-notifications) .via-site-header-public-entry { display: none !important; }
+          .via-site-header-tools:not(.via-site-header-tools-notifications) .via-site-header-search-label { display: none; }
+          .via-site-header-tools:not(.via-site-header-tools-notifications) .via-site-header-search,
+          .via-site-header-tools:not(.via-site-header-tools-notifications) .via-site-header-utility { min-width: 44px !important; width: 44px !important; min-height: 44px !important; padding: 0 !important; justify-content: center !important; flex: 0 0 44px !important; }
+          .via-site-header-tools:not(.via-site-header-tools-notifications) .via-header-utility-label { display: none; }
+          .via-site-header-tools:not(.via-site-header-tools-notifications) .via-header-utility-icon { display: block; }
+          .via-site-header-tools:not(.via-site-header-tools-notifications) .via-site-header-language { min-width: 48px !important; min-height: 44px !important; padding: 4px !important; font-size: 10px !important; }
+          .via-site-header-tools:not(.via-site-header-tools-notifications) > button { min-height: 44px !important; padding: 4px 8px !important; font-size: 10px !important; }
+          .via-site-header-tools:not(.via-site-header-tools-notifications) .via-site-header-account-button { min-height: 44px !important; max-width: 120px; padding: 4px 6px !important; gap: 4px !important; font-size: 10px !important; }
+          .via-site-header-account-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+        }
+        @media (max-width: 360px) {
+          .via-site-header-tools:not(.via-site-header-tools-notifications) .via-site-header-account-button { max-width: 100px; }
         }
       `}</style>
     </header>
