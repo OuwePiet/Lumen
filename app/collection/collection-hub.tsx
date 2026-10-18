@@ -56,17 +56,17 @@ export default function CollectionHub() {
   const t = COPY[language] ?? COPY.English!
 
   return (
-    <section style={{ maxWidth: 1480, margin: "0 auto", padding: "22px 20px 4px" }} aria-label={t.navLabel}>
-      <div style={{ border: "1px solid rgba(143,212,169,.24)", borderRadius: 16, background: "rgba(5,16,10,.74)", backdropFilter: "blur(5px)", padding: 16 }}>
+    <section style={{ maxWidth: 1480, margin: "0 auto", padding: "12px 12px 4px" }} aria-label={t.navLabel}>
+      <div style={{ border: "1px solid rgba(143,212,169,.24)", borderRadius: 16, background: "rgba(5,16,10,.74)", backdropFilter: "blur(5px)", padding: 12 }}>
         <p style={{ margin: 0, color: "#8fd4a9", fontSize: 11, fontWeight: 800, letterSpacing: ".16em", textTransform: "uppercase" }}>{t.kicker}</p>
-        <h1 style={{ margin: "7px 0 18px", color: "#f1f6f3", fontSize: "clamp(24px,4vw,34px)", lineHeight: 1.08 }}>{t.title}</h1>
-        <nav className="via-collection-hub-nav" style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0, 1fr))", gap: 10 }} aria-label={t.navLabel}>
+        <h1 style={{ margin: "5px 0 12px", color: "#f1f6f3", fontSize: "clamp(22px,3vw,28px)", lineHeight: 1.08 }}>{t.title}</h1>
+        <nav className="via-collection-hub-nav" style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0, 1fr))", gap: 6 }} aria-label={t.navLabel}>
           <a href="/collection#account-lookup-heading" style={hubLink}>{t.discover}</a>
           <Link href="/market" style={hubLink}>{t.marketplace}</Link>
           <Link href="/studio#mint-nft" style={hubLink}>{t.mint}</Link>
           <Link href="/collection/mine" style={hubLink}>{t.myNfts}</Link>
         </nav>
-        <nav aria-label="NFT workspace" className="mt-3 flex flex-wrap gap-3 text-sm">
+        <nav aria-label="NFT workspace" className="mt-2 flex flex-wrap gap-2 text-xs">
           <Link href="/collections" style={hubLink}>Collections / series</Link>
           <Link href="/giveaway" style={hubLink}>Claim / Giveaway</Link>
           <Link href="/nft-info" style={hubLink}>Uitleg, eigendom & kosten</Link>
@@ -76,7 +76,7 @@ export default function CollectionHub() {
             .via-collection-hub-nav { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
           }
           @media (max-width: 720px) {
-            .via-collection-hub-nav { grid-template-columns: minmax(0, 1fr) !important; }
+            .via-collection-hub-nav { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
           }
         `}</style>
       </div>
