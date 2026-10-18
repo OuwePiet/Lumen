@@ -207,6 +207,8 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
         ? "Er loopt al een Diamond-actie met dit account in een andere knop of tab."
         : code === "DIAMOND_LOCK_UNAVAILABLE"
         ? "Deze browser ondersteunt geen veilige Diamond-klikblokkering. Gebruik een actuele browser."
+        : code === "DIAMOND_LEVEL_ALREADY_GIVEN"
+        ? "Je hebt dit Diamond-niveau voor deze post al gegeven. DeSo heeft geen nieuwe betaling uitgevoerd. Alleen een hoger niveau kan een extra bijdrage geven."
         : "Diamond niet verzonden. Controleer je DeSo-account, toestemming en browseropslag.")
       try {
         const selectedAccount = restoreIdentitySession()
