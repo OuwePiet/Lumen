@@ -4,6 +4,7 @@ import { identity, type AccessGroupEntryResponse, type NewMessageEntryResponse }
 import { clearIdentitySession, listIdentitySessions, restoreIdentitySession, SDK_ACTIVE_PUBLIC_KEY, SDK_IDENTITY_USERS, VIA_IDENTITY_EVENT } from "./deso-identity-session"
 import { checkedIdentityLoginURL, recoverExistingSDKSession } from "./deso-session-recovery"
 import { resumeIdentityReturn } from "./deso-identity-return"
+import { armPostOfficeAfterLogin, continueToPostOffice, markLoginReturn } from "./deso-login-destination"
 
 /**
  * Central modern DeSo Identity boundary for VIA.
@@ -62,7 +63,7 @@ function configure(redirectLogin = false) {
     identityURI: "https://identity.deso.org", spendingLimitOptions: VIA_BASE_SPENDING_LIMITS,
     // Official SDK redirect: no Safari popup/opener dependency. Only login redirects.
     redirectURI: redirectLogin ? `${window.location.origin}/` : undefined,
-    identityPresenter: redirectLogin ? (url) => { window.location.href = checkedIdentityLoginURL(url, window.location.origin) } : undefined,
+    identityPresenter: redirectLogin ? (url) => { const checked = checkedIdentityLoginURL(url, window.location.origin); armPostOfficeAfterLogin(); window.location.href = checked } : undefined,
   })
   configured = true
 }
@@ -74,6 +75,7 @@ function selectedUser(): ViaModernIdentityUser | null {
 function notify() {
   const user = selectedUser()
   identityListeners.forEach((listener) => listener(user))
+  continueToPostOffice(user?.publicKey)
 }
 function requireUser() {
   ensureConfigured()
@@ -123,6 +125,7 @@ export const viaModernIdentity: ViaModernIdentityAdapter = {
     return listIdentitySessions().map(({ publicKey }) => ({ publicKey }))
   },
   resumeRedirect() {
+    markLoginReturn(window.location.href)
     resumeIdentityReturn((url) => identity.handleRedirectURI(url))
     void recoverExistingSDKSession().then(recovered => { if (recovered) notify() })
   },

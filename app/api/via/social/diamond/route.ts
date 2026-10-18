@@ -79,7 +79,15 @@ export async function POST(request: Request) {
           TransactionFees: [],
         }),
       })
-      if (!response.ok) return noStore({ ok: false, error: "DESO_PREPARE_REJECTED" }, 502)
+      if (!response.ok) {
+        // This is a constructor rejection: no signature or broadcast occurred.
+        // Only expose a recognized domain code, never the raw upstream payload.
+        const rejected = await response.json().catch(() => null) as { error?: unknown } | null
+        if (typeof rejected?.error === "string" && rejected.error.includes("RuleErrorCreatorCoinTransferPostAlreadyHasSufficientDiamonds")) {
+          return noStore({ ok: false, error: "DIAMOND_LEVEL_ALREADY_GIVEN" }, 409)
+        }
+        return noStore({ ok: false, error: "DESO_PREPARE_REJECTED" }, 502)
+      }
       const data = await response.json() as Record<string, unknown>
       const transactionHex = data.TransactionHex
       const feeNanos = data.FeeNanos
