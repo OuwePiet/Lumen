@@ -281,6 +281,14 @@ function translated(value: string, language: ViaLanguage | "Hindi") {
 }
 
 function translateDynamic(value: string, language: ViaLanguage | "Hindi") {
+  const priceWords = [
+    ["Price currency", "Valuta voor verkoopprijzen"],
+    ["DESO is the final DeSo sale amount. USD/EUR are converted estimates, not a dollar or euro payment. A rate change requires a fresh quote.", "DESO is het uiteindelijke verkoopbedrag op DeSo. USD/EUR zijn omgerekende indicaties, geen betaling in dollars of euro’s. Bij een gewijzigde koers is een nieuwe offerte nodig."],
+    ["Current USD/EUR rate unavailable. Refresh the rate or choose DESO.", "De actuele dollar/eurokoers is niet beschikbaar. Wacht op de koers of kies DESO."],
+    ["Enter a valid amount: up to 9 decimals for DESO, or 2 for USD/EUR.", "Vul een geldig bedrag in: maximaal 9 decimalen voor DESO, of 2 voor dollar/euro."],
+    ["Royalties must be non-negative whole numbers.", "Royaltywaarden moeten gehele getallen van nul of hoger zijn."],
+  ]
+  for (const [english, dutch] of priceWords) if (value === english || value === dutch) return language === "Dutch" ? dutch : english
   const direct = translated(value, language)
   if (direct !== value) return direct
   const prefixes: Array<[string, string]> = language === "Dutch" ? [

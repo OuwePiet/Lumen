@@ -26,6 +26,7 @@ export default function SocialPage() {
               <p className="mt-1 hidden text-sm text-zinc-500 sm:block">Write, publish and follow DeSo posts in the VIA way.</p>
             </div>
           </div>
+          <Link href="/" data-via-postoffice-home aria-label="Terug naar homepage" className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-full border border-[#8fd4a9]/45 bg-[#07140d] px-4 py-2 text-sm font-semibold text-[#b8ddc5] hover:border-[#8fd4a9] hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#8fd4a9]"><span aria-hidden="true">←</span> Homepage</Link>
           <details className="w-full sm:hidden">
             <summary className="w-fit cursor-pointer list-none rounded-full border border-white/10 bg-white/[0.02] px-4 py-2 text-sm text-zinc-300">Snelkeuzes ▾</summary>
             <nav className="mt-2 flex gap-2 overflow-x-auto pb-1" aria-label="VIA Post Office shortcuts">

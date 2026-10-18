@@ -3,6 +3,7 @@ import { fetchDeSo } from "./deso-api"
 export type DeSoNFTPost = {
   PostHashHex?: string
   Body?: string
+  TimestampNanos?: number
   ImageURLs?: string[]
   VideoURLs?: string[]
   NumNFTCopies?: number
@@ -50,6 +51,7 @@ function normalizeCollection(value: unknown): DeSoNFTCollection | null {
   }
 
   if (typeof post.Body === "string") normalizedPost.Body = post.Body.slice(0, 100_000)
+  if (typeof post.TimestampNanos === "number" && Number.isFinite(post.TimestampNanos) && post.TimestampNanos > 0) normalizedPost.TimestampNanos = post.TimestampNanos
   normalizedPost.ImageURLs = safeUrlArray(post.ImageURLs)
   normalizedPost.VideoURLs = safeUrlArray(post.VideoURLs)
   if (isFiniteNonNegativeNumber(post.NumNFTCopies)) {

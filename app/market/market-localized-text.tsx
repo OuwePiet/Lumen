@@ -168,7 +168,7 @@ const copy: Record<ViaLanguage | "Hindi", Copy> = {
 }
 
 type Props = {
-  kind: keyof Copy | "listedCount" | "pendingCount"
+  kind: keyof Copy | "listedCount" | "pendingCount" | "backToCollection"
   count?: number
 }
 
@@ -183,6 +183,7 @@ export default function MarketLocalizedText({ kind, count = 0 }: Props) {
   }, [])
 
   const t = copy[language]
+  if (kind === "backToCollection") return <>{({ Dutch: "Terug naar NFT-collectie", English: "Back to NFT collection", French: "Retour à la collection NFT", Spanish: "Volver a la colección NFT", Chinese: "返回 NFT 收藏", Hindi: "NFT संग्रह पर वापस जाएँ" })[language]}</>
   if (kind === "listedCount") return <>{count} {count === 1 ? t.listedEdition : t.listedEditions}</>
   if (kind === "pendingCount") return <>{count} {count === 1 ? t.pendingEdition : t.pendingEditions}</>
   return <>{t[kind]}</>
