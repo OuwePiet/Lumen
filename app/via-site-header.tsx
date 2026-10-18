@@ -394,6 +394,8 @@ export default function ViaSiteHeader() {
       </div>
       <ViaHelpButton />
       <style>{`
+        .via-site-header-link:focus:not(:focus-visible) { outline: none; }
+        .via-site-header-link:focus-visible { outline: 2px solid #b9ffd4; outline-offset: -4px; border-radius: 7px; }
         .via-site-header-language-wrap { position: relative; flex: 0 0 auto; }
         .via-notifications-top-control { display: contents; }
         .via-notifications-top-label { display: none; }
