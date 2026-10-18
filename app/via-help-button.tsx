@@ -6,7 +6,7 @@ import { BookOpen, Music2, House } from "lucide-react"
 /** Central header links, never fixed over page content. */
 export default function ViaHelpButton() {
   return <nav className="via-global-guides" aria-label="VIA handbook and music">
-    <Link href="/" aria-label="Home" className="via-global-guide-link"><House size={17} aria-hidden="true" /><span>Home</span></Link>
+    <Link href="/" aria-label="Homepage" className="via-global-guide-link"><House size={17} aria-hidden="true" /><span>Homepage</span></Link>
     <Link href="/help" aria-label="Handboek VIA" className="via-global-guide-link"><BookOpen size={17} aria-hidden="true" /><span>Handboek VIA</span></Link>
     <Link href="/music" aria-label="VIA Muziek" className="via-global-guide-link"><Music2 size={17} aria-hidden="true" /><span>VIA Muziek</span></Link>
     <style>{`

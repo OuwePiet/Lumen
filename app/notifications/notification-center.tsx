@@ -920,7 +920,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
               {destination && index >= 8 ? <button type="button" onClick={() => void toggleExpanded(item, rowKey)} className="mt-1 inline-flex rounded-full border border-zinc-700 px-1.5 py-0.5 text-[9px] leading-none text-zinc-300 transition hover:border-[#8fd4a9] hover:text-white sm:mt-2 sm:px-2.5 sm:py-1 sm:text-[11px] sm:leading-normal">{expanded ? copy.close : copy.open}</button> : null}
               {expanded && postHash ? <div className={`${styles.post} mt-3 rounded-xl border border-zinc-800 bg-black/25 p-3`}>
                 {post === undefined ? <p className="text-xs text-zinc-500">{copy.loading}</p> : post ? <>
-                  <p className="text-xs font-semibold text-zinc-300">@{post.username?.replace(/^@/, "") || shortKey(post.publicKey, copy.actor)}</p>
+                  <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1"><p className="min-w-0 break-words text-xs font-semibold text-zinc-300">@{post.username?.replace(/^@/, "") || shortKey(post.publicKey, copy.actor)}</p>{Number.isFinite(post.timestampNanos) && post.timestampNanos > 0 && Number.isFinite(new Date(post.timestampNanos / 1_000_000).getTime()) ? <time data-via-post-time dateTime={new Date(post.timestampNanos / 1_000_000).toISOString()} title={language === "Dutch" ? "Geplaatst op (lokale tijd)" : "Posted at (local time)"} className="text-xs tabular-nums text-zinc-400">{new Date(post.timestampNanos / 1_000_000).toLocaleString(language === "Dutch" ? "nl-NL" : language === "French" ? "fr-FR" : language === "Spanish" ? "es-ES" : language === "Chinese" ? "zh-CN" : language === "Hindi" ? "hi-IN" : "en-GB", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}</time> : null}</div>
                   {post.body ? <>
                     <p id={`notification-body-${rowKey}`} className={`${expandedBodies[rowKey] ? "" : styles.bodyPreview} mt-2 whitespace-pre-wrap text-sm leading-6 text-zinc-200`}>{post.body}</p>
                     {post.body.length > 240 || post.body.split("\n").length > 5 ? <button type="button" className={styles.readMore} aria-expanded={Boolean(expandedBodies[rowKey])} aria-controls={`notification-body-${rowKey}`} onClick={() => setExpandedBodies(current => ({ ...current, [rowKey]: !current[rowKey] }))}>{expandedBodies[rowKey] ? BODY_LABELS[language].less : BODY_LABELS[language].more}</button> : null}
@@ -959,7 +959,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
                         <button type="button" onClick={(event) => event.currentTarget.closest("details")?.removeAttribute("open")} className="mt-1 w-full rounded-lg border border-zinc-800 px-3 py-2 text-left text-xs text-zinc-400 hover:border-[#8fd4a9]/45 hover:text-white">{copy.close}</button>
                       </div>
                     </details>
-                    {Number.isFinite(post.timestampNanos) && post.timestampNanos > 0 ? <span className="ml-auto self-center whitespace-nowrap text-[11px] text-zinc-600">{new Date(post.timestampNanos / 1_000_000).toLocaleString()}</span> : null}
+                    
                   </div>
                   {rewardPost === post.postHash ? <div className="mt-3 rounded-xl border border-[#285f40]/70 bg-[#07110b] p-3">
                     <div className="flex flex-wrap items-center gap-2">

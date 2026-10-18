@@ -44,12 +44,12 @@ type HeaderCopy = {
 
 const headerCopy: Record<ViaLanguage | "Hindi", HeaderCopy> = {
   Dutch: {
-    home: "Home", feed: "Postkantoor", discover: "Ontdekken", nfts: "NFT's", live: "Live", games: "Spellen", communities: "Community's", world: "Wereld", myVia: "Mijn VIA",
+    home: "Homepage", feed: "Postkantoor", discover: "Ontdekken", nfts: "NFT's", live: "Live", games: "Spellen", communities: "Community's", world: "Wereld", myVia: "Mijn VIA",
     search: "Zoek leden", publicEntrance: "Publieke ingang", login: "DeSo Login", wallet: "Mijn Wallet", notifications: "Meldingen", connected: "DeSo verbonden",
     profile: "Mijn profiel", saved: "Bookmarks", drafts: "Concepten", settings: "Instellingen", switchAccount: "Wissel account", desoAccount: "DeSo-account", addAccount: "DeSo-account toevoegen", logout: "Uitloggen uit VIA",
   },
   English: {
-    home: "Home", feed: "Post Office", discover: "Discover", nfts: "NFTs", live: "Live", games: "Games", communities: "Communities", world: "World", myVia: "My VIA",
+    home: "Homepage", feed: "Post Office", discover: "Discover", nfts: "NFTs", live: "Live", games: "Games", communities: "Communities", world: "World", myVia: "My VIA",
     search: "Search members", publicEntrance: "Public Entrance", login: "DeSo Login", wallet: "My Wallet", notifications: "Notifications", connected: "DeSo connected",
     profile: "My Profile", saved: "Bookmarks", drafts: "Drafts", settings: "Settings", switchAccount: "Switch account", desoAccount: "DeSo account", addAccount: "Add DeSo account", logout: "Logout from VIA",
   },
