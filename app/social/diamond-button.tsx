@@ -3,7 +3,9 @@
 import { useEffect, useRef, useState } from "react"
 import { Gem } from "lucide-react"
 import { viaModernIdentity } from "../deso-identity-modern"
+import { restoreIdentitySession, VIA_IDENTITY_EVENT } from "../deso-identity-session"
 import { fetchViaRates } from "../via-live-rates"
+import { diamondSubmissionBlock, markDiamondPending, markDiamondSubmitted, withDiamondAccountLock, DIAMOND_SUBMISSION_EVENT } from "./diamond-submission"
 
 type Props = { postHash: string; receiverPublicKey: string; initialCount: number; variant?: "default" | "icon" }
 type PrepareResponse = { ok?: boolean; transactionHex?: string; diamondLevel?: number; feeNanos?: number | null; spendAmountNanos?: number | null; error?: string }
@@ -34,6 +36,41 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
   const [feeNanos, setFeeNanos] = useState<number | null>(null)
   const [diamondValues, setDiamondValues] = useState<Array<{ level: number; nanos: number }> | null>(null)
   const [desoUsd, setDesoUsd] = useState<number | null>(null)
+  const sendLock = useRef(false)
+  const activeOperation = useRef<{ publicKey: string; invalidated: boolean } | null>(null)
+  const [submissionBlock, setSubmissionBlock] = useState("")
+  const busy = status === "preparing" || status === "approval" || status === "submitting"
+
+  useEffect(() => {
+    const sync = (event?: Event) => {
+      const operation = activeOperation.current
+      // Storage events preserve intermediate selections even if another tab
+      // has already switched A -> B -> A before this tab processes the events.
+      if (operation && event?.type === "storage") {
+        const changed = event as StorageEvent
+        if ((changed.key === "viaActivePublicKey" || changed.key === "desoActivePublicKey") &&
+          changed.newValue !== operation.publicKey) operation.invalidated = true
+      }
+      try {
+        const session = restoreIdentitySession()
+        if (operation && (session?.publicKey !== operation.publicKey)) operation.invalidated = true
+        setSubmissionBlock(session ? diamondSubmissionBlock(session.publicKey, postHash, receiverPublicKey, level) : "Log in met DeSo om een Diamond te bevestigen.")
+      } catch {
+        if (operation) operation.invalidated = true
+        setSubmissionBlock("Veilige browseropslag is niet beschikbaar. Diamonds zijn geblokkeerd.")
+      }
+    }
+    sync()
+    window.addEventListener(VIA_IDENTITY_EVENT, sync)
+    window.addEventListener(DIAMOND_SUBMISSION_EVENT, sync)
+    window.addEventListener("storage", sync)
+    return () => {
+      if (activeOperation.current) activeOperation.current.invalidated = true
+      window.removeEventListener(VIA_IDENTITY_EVENT, sync)
+      window.removeEventListener(DIAMOND_SUBMISSION_EVENT, sync)
+      window.removeEventListener("storage", sync)
+    }
+  }, [postHash, receiverPublicKey, level])
 
   useEffect(() => {
     const controller = new AbortController()
@@ -64,52 +101,121 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
   }, [diamondValues])
 
   async function prepare(chosenLevel = level) {
-    const session = await viaModernIdentity.currentUser()
-    if (!session || !diamondValues?.some((item) => item.level === chosenLevel) || status === "preparing" || status === "approval" || status === "submitting") return
-    setCelebrate(false); setStatus("preparing"); setMessage("Preparing the exact value-transfer transaction…"); setFeeNanos(null)
+    // Acquire before the first await: two rapid clicks must not both pass a
+    // React state check. Capture the account at the actual confirmation click.
+    if (sendLock.current || busy || !diamondValues?.some((item) => item.level === chosenLevel)) return
+    sendLock.current = true
+    let submissionStarted = false
+    let submitted = false
     try {
-      const response = await fetch("/api/via/social/diamond", { method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store", body: JSON.stringify({ action: "prepare", senderPublicKey: session.publicKey, receiverPublicKey, diamondPostHashHex: postHash, diamondLevel: chosenLevel }) })
-      const data = await response.json() as PrepareResponse
-      if (!response.ok || !data.ok || !data.transactionHex) throw new Error(data.error || "PREPARE_FAILED")
-      const selected = diamondValues?.find((item) => item.level === chosenLevel)
-      if (!selected || data.diamondLevel !== chosenLevel || typeof data.feeNanos !== "number" || !Number.isFinite(data.feeNanos) || data.feeNanos < 0 || typeof data.spendAmountNanos !== "number" || !Number.isFinite(data.spendAmountNanos) || data.spendAmountNanos < 0) throw new Error("INVALID_DESO_TRANSACTION_DATA")
-      setFeeNanos(data.feeNanos)
-      const diamondSpendLimit = data.spendAmountNanos + data.feeNanos
-      if (!Number.isSafeInteger(diamondSpendLimit) || diamondSpendLimit < 0) throw new Error("INVALID_DESO_SPEND_LIMIT")
-      const currentSpendingLimits = await viaModernIdentity.spendingLimits()
-      const currentGlobalDESOLimit = currentSpendingLimits?.GlobalDESOLimit ?? 0
-      if (!Number.isSafeInteger(currentGlobalDESOLimit) || currentGlobalDESOLimit < 0) throw new Error("INVALID_DESO_SPENDING_LIMITS")
-      const requiredPermissions = {
-        GlobalDESOLimit: currentGlobalDESOLimit + diamondSpendLimit,
-        TransactionCountLimitMap: { BASIC_TRANSFER: 1 },
-      }
-      if (!viaModernIdentity.hasPermissions(requiredPermissions)) {
-        setStatus("approval"); setMessage("Confirm this Diamond spending permission with DeSo Identity…")
-        await viaModernIdentity.requestPermissions(requiredPermissions)
-      }
-      setStatus("approval"); setMessage("Signing the confirmed Diamond with your VIA DeSo session…")
-      const signedTransactionHex = await viaModernIdentity.signTx(data.transactionHex)
-      setStatus("submitting"); setMessage("Submitting your confirmed Diamond to DeSo…")
-      const submitResponse = await fetch("/api/via/social/diamond", { method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store", body: JSON.stringify({ action: "submit", signedTransactionHex }) })
-      const submitData = await submitResponse.json() as { ok?: boolean; error?: string }
-      if (!submitResponse.ok || !submitData.ok) throw new Error(submitData.error || "SUBMIT_FAILED")
-      await viaModernIdentity.refreshSpendingLimits()
-      setStatus("done"); setMessage(`Diamond level ${chosenLevel} submitted to DeSo. Awaiting the DeSo count.`)
-      setCelebrate(true)
-      window.setTimeout(() => setCelebrate(false), 3200)
-      window.dispatchEvent(new Event("via:social:post-published"))
-      // Refresh the displayed total from the official DeSo post; never infer a count from the chosen level.
-      try {
-        const postResponse = await fetch(`/api/via/post?hash=${encodeURIComponent(postHash)}&reader=${encodeURIComponent(session.publicKey)}`, { cache: "no-store" })
-        const postData = await postResponse.json() as { ok?: boolean; post?: { diamondCount?: number } }
-        const officialCount = postData.post?.diamondCount
-        if (postResponse.ok && postData.ok && typeof officialCount === "number" && Number.isSafeInteger(officialCount) && officialCount >= 0) {
-          setCount(officialCount)
+      const session = restoreIdentitySession()
+      const operation = session ? { publicKey: session.publicKey, invalidated: false } : null
+      activeOperation.current = operation
+      if (!session || !operation) throw new Error("DESO_LOGIN_REQUIRED")
+      const assertAccount = async () => {
+        if (operation.invalidated || restoreIdentitySession()?.publicKey !== session.publicKey ||
+          (await viaModernIdentity.currentUser())?.publicKey !== session.publicKey) {
+          throw new Error("DESO_ACCOUNT_CHANGED_RETRY")
         }
-      } catch {
-        // A read failure must never trigger a second financial transaction.
       }
-    } catch { setStatus("error"); setMessage("DeSo did not confirm completion. Check the transaction on DeSo before trying again.") }
+      await withDiamondAccountLock(session.publicKey, async () => {
+        await assertAccount()
+        const blocked = diamondSubmissionBlock(session.publicKey, postHash, receiverPublicKey, chosenLevel)
+        if (blocked) { setSubmissionBlock(blocked); return }
+        setCelebrate(false); setStatus("preparing"); setMessage("Preparing the exact value-transfer transaction…"); setFeeNanos(null)
+        const response = await fetch("/api/via/social/diamond", { method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store", body: JSON.stringify({ action: "prepare", senderPublicKey: session.publicKey, receiverPublicKey, diamondPostHashHex: postHash, diamondLevel: chosenLevel }) })
+        const data = await response.json() as PrepareResponse
+        if (!response.ok || !data.ok || !data.transactionHex) throw new Error(data.error || "PREPARE_FAILED")
+        const selected = diamondValues?.find((item) => item.level === chosenLevel)
+        if (!selected || data.diamondLevel !== chosenLevel || typeof data.feeNanos !== "number" || !Number.isFinite(data.feeNanos) || data.feeNanos < 0 || typeof data.spendAmountNanos !== "number" || !Number.isFinite(data.spendAmountNanos) || data.spendAmountNanos < 0) throw new Error("INVALID_DESO_TRANSACTION_DATA")
+        setFeeNanos(data.feeNanos)
+        const diamondSpendLimit = data.spendAmountNanos + data.feeNanos
+        if (!Number.isSafeInteger(diamondSpendLimit) || diamondSpendLimit < 0) throw new Error("INVALID_DESO_SPEND_LIMIT")
+        await assertAccount()
+        const currentSpendingLimits = await viaModernIdentity.spendingLimits()
+        await assertAccount()
+        const currentGlobalDESOLimit = currentSpendingLimits?.GlobalDESOLimit ?? 0
+        if (!Number.isSafeInteger(currentGlobalDESOLimit) || currentGlobalDESOLimit < 0) throw new Error("INVALID_DESO_SPENDING_LIMITS")
+        const requiredPermissions = {
+          // Check the cost of this action against the remaining budget. Adding
+          // the remaining budget here would force approval on every Diamond.
+          GlobalDESOLimit: diamondSpendLimit,
+          TransactionCountLimitMap: { BASIC_TRANSFER: 1 },
+        }
+        // A restored legacy VIA session signs through the legacy Identity iframe, not the modern SDK.
+        // Never authorize its spending against an unrelated modern SDK account.
+        const permitted = await viaModernIdentity.hasPermissions(requiredPermissions)
+        await assertAccount()
+        if (!permitted) {
+          setStatus("approval"); setMessage("Confirm this Diamond spending permission with DeSo Identity…")
+          const requestedLimit = currentGlobalDESOLimit + diamondSpendLimit
+          if (!Number.isSafeInteger(requestedLimit)) throw new Error("INVALID_DESO_SPEND_LIMIT")
+          await viaModernIdentity.requestPermissions({ ...requiredPermissions, GlobalDESOLimit: requestedLimit })
+          await assertAccount()
+          if (!(await viaModernIdentity.hasPermissions(requiredPermissions))) throw new Error("DESO_DIAMOND_PERMISSION_NOT_CONFIRMED")
+        }
+        setStatus("approval"); setMessage("Signing the confirmed Diamond with your VIA DeSo session…")
+        // Never submit a paid transaction after the user changes the active DeSo account.
+        await assertAccount()
+        const signedTransactionHex = await viaModernIdentity.signTx(data.transactionHex)
+        await assertAccount()
+        const submission = { publicKey: session.publicKey, postHash, receiverPublicKey, level: chosenLevel, startedAt: Date.now() }
+        // Persist before broadcast, while holding the cross-tab account lock.
+        // A reload, timeout, bad JSON or rejected response must not enable retry.
+        markDiamondPending(submission)
+        if (operation.invalidated || restoreIdentitySession()?.publicKey !== session.publicKey) throw new Error("DESO_ACCOUNT_CHANGED_RETRY")
+        // There is no await between persisting uncertainty and sending.
+        setStatus("submitting"); setMessage("Submitting your confirmed Diamond to DeSo…")
+        submissionStarted = true
+        const submitResponse = await fetch("/api/via/social/diamond", { method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store", body: JSON.stringify({ action: "submit", signedTransactionHex }) })
+        const submitData = await submitResponse.json() as { ok?: boolean; error?: string }
+        if (!submitResponse.ok || !submitData.ok) throw new Error(submitData.error || "SUBMIT_FAILED")
+        submitted = true
+        markDiamondSubmitted(submission)
+        const selectedAccount = restoreIdentitySession()
+        setSubmissionBlock(selectedAccount ? diamondSubmissionBlock(selectedAccount.publicKey, postHash, receiverPublicKey, chosenLevel) : "Log in met DeSo om een Diamond te bevestigen.")
+        setStatus("done"); setMessage(`Diamond level ${chosenLevel} submitted to DeSo. Awaiting the DeSo count.`)
+        setCelebrate(true)
+        window.setTimeout(() => setCelebrate(false), 3200)
+        window.dispatchEvent(new Event("via:social:post-published"))
+        // A post-submit refresh failure is not a failed payment. Never make the
+        // completed level available for another financial transaction.
+        try {
+          await assertAccount()
+          await viaModernIdentity.refreshSpendingLimits()
+        } catch { /* The submitted receipt remains authoritative for local retry safety. */ }
+        // Refresh the displayed total from the official DeSo post; never infer a count from the chosen level.
+        try {
+          const postResponse = await fetch(`/api/via/post?hash=${encodeURIComponent(postHash)}&reader=${encodeURIComponent(session.publicKey)}`, { cache: "no-store" })
+          const postData = await postResponse.json() as { ok?: boolean; post?: { diamondCount?: number } }
+          const officialCount = postData.post?.diamondCount
+          if (postResponse.ok && postData.ok && typeof officialCount === "number" && Number.isSafeInteger(officialCount) && officialCount >= 0) {
+            setCount(officialCount)
+          }
+        } catch {
+          // A read failure must never trigger a second financial transaction.
+        }
+      })
+    } catch (error) {
+      const code = error instanceof Error ? error.message : "DIAMOND_FAILED"
+      setStatus(submitted ? "done" : "error")
+      setMessage(submitted
+        ? "Diamond submitted to DeSo. Browser confirmation could not be saved; check DeSo. Do not send again."
+        : submissionStarted
+        ? "DeSo did not confirm completion. Check the transaction on DeSo; do not send twice."
+        : code === "DIAMOND_ALREADY_IN_PROGRESS"
+        ? "Er loopt al een Diamond-actie met dit account in een andere knop of tab."
+        : code === "DIAMOND_LOCK_UNAVAILABLE"
+        ? "Deze browser ondersteunt geen veilige Diamond-klikblokkering. Gebruik een actuele browser."
+        : "Diamond niet verzonden. Controleer je DeSo-account, toestemming en browseropslag.")
+      try {
+        const selectedAccount = restoreIdentitySession()
+        setSubmissionBlock(selectedAccount ? diamondSubmissionBlock(selectedAccount.publicKey, postHash, receiverPublicKey, chosenLevel) : "Log in met DeSo om een Diamond te bevestigen.")
+      } catch { setSubmissionBlock("Veilige browseropslag is niet beschikbaar. Diamonds zijn geblokkeerd.") }
+    } finally {
+      activeOperation.current = null
+      sendLock.current = false
+    }
   }
 
   if (variant === "icon") {
@@ -134,11 +240,12 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
           ))}
         </div>
         <div className="mt-2 flex flex-wrap gap-2">
-          <button type="button" onClick={() => void prepare(level)} disabled={!diamondValues?.some((item) => item.level === level) || status === "preparing" || status === "approval" || status === "submitting"} className="h-9 rounded-full border border-[#8fd4a9] px-3 text-xs text-[#9adbb2] disabled:opacity-60">Bevestig 💎 {level}</button><button type="button" onClick={() => { setCompactOpen(false) }} disabled={status === "preparing" || status === "approval" || status === "submitting"} className="h-9 rounded-full border border-zinc-700 px-3 text-xs text-zinc-300 disabled:opacity-60">Sluiten</button>
+          <button type="button" onClick={() => void prepare(level)} disabled={!diamondValues?.some((item) => item.level === level) || busy || Boolean(submissionBlock)} className="h-9 rounded-full border border-[#8fd4a9] px-3 text-xs text-[#9adbb2] disabled:opacity-60">Bevestig 💎 {level}</button><button type="button" onClick={() => { setCompactOpen(false) }} disabled={busy} className="h-9 rounded-full border border-zinc-700 px-3 text-xs text-zinc-300 disabled:opacity-60">Sluiten</button>
         </div>
       </div> : null}
       {leafRain}
-      {message ? <span className="sr-only" role="status" aria-live="polite">{message}</span> : null}
+      {submissionBlock ? <p className="basis-full text-xs text-amber-200" role="status">{submissionBlock}</p> : null}
+      {message ? <span className="basis-full text-[11px] text-amber-200" role="status" aria-live="polite">{message}</span> : null}
     </div>
   }
 
@@ -148,10 +255,11 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
       <summary className="inline-flex cursor-pointer list-none items-center gap-1 rounded-full border border-zinc-800 px-2 py-1 text-xs text-zinc-300"><Gem className="h-3.5 w-3.5" aria-hidden="true" /> {level} ▾</summary>
       <div className="absolute bottom-full left-0 z-30 mb-2 grid w-56 grid-cols-2 gap-1 rounded-xl border border-zinc-800 bg-[#050806] p-2 shadow-xl">
         {(diamondValues ?? Array.from({ length: 8 }, (_, index) => ({ level: index + 1, nanos: NaN }))).map((entry) => <button key={entry.level} type="button" onClick={() => { if (!Number.isFinite(entry.nanos) || status === "preparing" || status === "approval" || status === "submitting") return; setLevel(entry.level) }} aria-pressed={level === entry.level} className={`rounded-lg border px-2 py-2 text-xs ${level === entry.level ? "border-[#8fd4a9] bg-[#285f40] text-white" : "border-zinc-800 text-zinc-300 hover:border-[#8fd4a9]"}`}><span className="block text-[11px] text-amber-300">{Number.isFinite(entry.nanos) ? (diamondUsd(entry.nanos) ?? "prijs laden…") : "prijs laden…"}</span><span className="block">{entry.level} 💎</span></button>)}
-        <button type="button" onClick={() => void prepare(level)} disabled={!diamondValues?.some((item) => item.level === level) || status === "preparing" || status === "approval" || status === "submitting"} className="col-span-2 rounded-lg border border-[#8fd4a9] px-2 py-2 text-xs text-[#9adbb2] disabled:opacity-60">Bevestig 💎 {level}</button><button type="button" onClick={(event) => { (event.currentTarget.closest("details") as HTMLDetailsElement | null)?.removeAttribute("open") }} className="col-span-2 rounded-lg border border-zinc-700 px-2 py-2 text-xs text-zinc-300 hover:border-[#8fd4a9]">Sluiten</button>
+        <button type="button" onClick={() => void prepare(level)} disabled={!diamondValues?.some((item) => item.level === level) || busy || Boolean(submissionBlock)} className="col-span-2 rounded-lg border border-[#8fd4a9] px-2 py-2 text-xs text-[#9adbb2] disabled:opacity-60">Bevestig 💎 {level}</button><button type="button" onClick={(event) => { (event.currentTarget.closest("details") as HTMLDetailsElement | null)?.removeAttribute("open") }} className="col-span-2 rounded-lg border border-zinc-700 px-2 py-2 text-xs text-zinc-300 hover:border-[#8fd4a9]">Sluiten</button>
       </div>
     </details>
     {leafRain}
+    {submissionBlock ? <p className="basis-full text-xs text-amber-200" role="status">{submissionBlock}</p> : null}
     {message ? <span className={`text-[11px] ${status === "error" ? "text-amber-300" : "text-zinc-500"}`}>{message}</span> : null}
   </div>
 }
