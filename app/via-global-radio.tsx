@@ -37,6 +37,7 @@ export default function ViaGlobalRadio() {
   const audio = useRef<HTMLAudioElement | null>(null)
   const [station, setStation] = useState<Station | null>(null)
   const [playing, setPlaying] = useState(false)
+  const [playbackError, setPlaybackError] = useState(false)
   const [language, setLanguage] = useState<ViaLanguage>("English")
 
   useEffect(() => {
@@ -69,7 +70,8 @@ export default function ViaGlobalRadio() {
       const player = audio.current
       if (!player) return
       if (player.src !== next.streamUrl) player.src = next.streamUrl
-      void player.play().catch(() => setPlaying(false))
+      setPlaybackError(false)
+      void player.play().catch(() => { setPlaying(false); setPlaybackError(true) })
     }
     sync()
     const pauseSelected = () => audio.current?.pause()
@@ -100,14 +102,14 @@ export default function ViaGlobalRadio() {
     if (!station) return
     const player = audio.current
     if (!player) return
-    if (player.paused) { try { await player.play(); setPlaying(true) } catch { setPlaying(false) } }
+    if (player.paused) { try { setPlaybackError(false); await player.play(); setPlaying(true) } catch { setPlaying(false); setPlaybackError(true) } }
     else { player.pause(); setPlaying(false) }
   }
 
   const copy = COPY[language]
 
   if (pathname === "/radio" || pathname === "/messages") {
-    return <audio ref={audio} onPause={()=>setPlaying(false)} onPlay={()=>setPlaying(true)} />
+    return <audio ref={audio} onPause={()=>setPlaying(false)} onPlay={()=>setPlaying(true)} onError={() => { setPlaying(false); setPlaybackError(true) }} />
   }
 
   return <audio ref={audio} onPause={()=>setPlaying(false)} onPlay={()=>setPlaying(true)} />
