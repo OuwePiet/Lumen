@@ -31,3 +31,8 @@ Bestaande `app/manifest.ts`, `app/layout.tsx`, `app/apple-icon.tsx`. Concept PR 
 
 ## Relatie tot eerdere documenten
 Lees `docs/VIA-MASTERREGISTER-2026-10-18.md` en `docs/VIA-NFT-EXTERNE-OPSLAG-VIEWER-2026-10-19.md` op branch `docs/via-masterregister-20261018`. Geen tweede DeSo360, alleen compatibele NFT-mediaviewer voor externe opslag.
+
+## Uitvoering Wereldradio 19 oktober — expliciete keuze 1, 2, 3 en 5
+Gebruiker gaf toestemming voor punten 1 (zichtbare globale speler), 2 (vertalingen), 3 (streamfouten) en 5 (voorbereiding VIA-auto). Punt 4 (apparaatproeven) is NIET aangevraagd. Losse draft PR's: #1484 zichtbare bediening; #1485 streamfoutmelding; #1486 aanvullende vertalingen. PR #1483 bevat paginauitleg. Geen van deze PR's is geaccepteerd of gemerged. #1484 en #1485 wijzigen hetzelfde bestand en moeten gecontroleerd in volgorde geïntegreerd worden.
+
+Voor VIA-auto (punt 5) uitsluitend integratievoorbereiding: bestaande globale radio events `via:world-radio:station`, `via:world-radio:play`, `via:world-radio:pause` en geselecteerde station in `via:world-radio:station` (localStorage) hergebruiken. Spraakcommando's radio aan, radio uit, kies station alleen via gratis OS/browser mogelijkheden en expliciete gebruikersactie; niet beloven dat handsfree wake word of continue achtergrondspraak op iOS PWA mogelijk is. Nooit een tweede audioplayer of radio-backend maken. Geen nieuwe server, geen kosten, geen code voor VIA-auto zonder aparte gecontroleerde PR. 
