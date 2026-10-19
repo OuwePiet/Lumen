@@ -109,7 +109,7 @@ export default function ViaGlobalRadio() {
   const copy = COPY[language]
 
   if (pathname === "/radio" || pathname === "/messages") {
-    return <audio ref={audio} onPause={()=>setPlaying(false)} onPlay={()=>setPlaying(true)} onError={() => { setPlaying(false); setPlaybackError(true) }} />
+    return <><audio ref={audio} onPause={()=>setPlaying(false)} onPlay={()=>setPlaying(true)} onError={() => { setPlaying(false); setPlaybackError(true) }} />{playbackError && station && pathname !== "/messages" ? <p role="alert" style={{ position: "fixed", bottom: 72, left: 12, right: 12, zIndex: 46, margin: "0 auto", maxWidth: 460, background: "#2b1414", color: "#fff", padding: 12, borderRadius: 10 }}>Radio stream unavailable. Choose another station.</p> : null}</>
   }
 
   return <audio ref={audio} onPause={()=>setPlaying(false)} onPlay={()=>setPlaying(true)} />
