@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { useEffect, useRef, useState } from "react"
-import { Radio, UsersRound, Wallet, Bell } from "lucide-react"
+import { Radio, UsersRound, Wallet } from "lucide-react"
 import {
   clearIdentitySession,
   type ViaIdentitySession,
@@ -27,6 +27,7 @@ type SearchResponse = { ok?: boolean; profiles?: SearchProfile[] }
 const nav = [
   ["home", "/"],
   ["feed", "/social"],
+  ["notifications", "/notifications"],
   ["discover", "/discover"],
   ["nfts", "/collection"],
   ["live", "/live"],
@@ -342,7 +343,6 @@ export default function ViaSiteHeader() {
           {!session && !isHomepage && pathname !== "/messages" ? <button className="via-site-header-public-entry" type="button" onClick={enterPublicMode} style={{ ...pill, cursor: "pointer" }}>{t.publicEntrance}</button> : null}
           {!session && !isHomepage && pathname !== "/messages" ? <button type="button" onClick={() => void loginWithDeSo()} style={styles.login}>{t.login}</button> : null}
           {pathname !== "/messages" && pathname !== "/radio" && pathname !== "/profile" ? <Link href="/wallet" style={pill} className={`via-site-header-utility ${pathname === "/notifications" ? "via-site-header-wallet-notifications" : ""}`} aria-label={t.wallet}><Wallet size={16} aria-hidden="true" className="via-header-utility-icon" /><span className="via-header-utility-label">{t.wallet}</span></Link> : null}
-          {pathname !== "/notifications" && pathname !== "/messages" && pathname !== "/radio" && pathname !== "/profile" ? <Link href="/notifications" style={pill} className="via-site-header-utility" aria-label={t.notifications}><Bell size={16} aria-hidden="true" className="via-header-utility-icon" /><span className="via-header-utility-label">{t.notifications}</span></Link> : null}
 
           {identityError ? <span role="status">{identityError}</span> : null}
           {session && !isHomepage ? (
