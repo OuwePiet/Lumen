@@ -4,7 +4,7 @@ Status: current VIA product rule
 
 ## Fixed rule
 
-VIA does not structurally subsidize storage required for a creator/customer NFT or storage service.
+VIA does not subsidize or advance storage, handling, payment-processing or conversion costs for a creator/customer. This applies to art, music, video, documents and other media, with or without an NFT.
 
 When a creator/customer action requires paid external storage, that creator/customer pays the VIA customer price before the paid storage service is activated.
 
@@ -48,7 +48,7 @@ Keep these values distinct internally:
 - payment/network cost where applicable;
 - VIA remainder.
 
-Only the approved customer price belongs on the public price board. Supplier cost and VIA remainder are internal settlement/accounting data unless VIA deliberately publishes a transparency breakdown later.
+The public price board must show an approved final customer price. Before approval, the customer must also receive an understandable breakdown of applicable storage, handling, payment/network and conversion costs, the selected service, recipients and quote expiry. Do not expose private supplier credentials or internal accounting records. Never charge the same component twice. The separately discussed 1.5% NFT platform contribution is not an external-storage tariff or proof of an operational collection route.
 
 ## Safety
 

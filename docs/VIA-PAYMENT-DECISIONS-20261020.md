@@ -4,6 +4,14 @@ Gebruikersrichting: euro en bitcoin kunnen als ingang dienen, waarna daadwerkeli
 
 Geen vervanging van NFT-verkoper, creatorroyalty of bestaande Diamond-ontvanger door @OuwePiet: dienstontvangsten en NFT-verkoopopbrengsten zijn verschillende geldstromen. Bestaande transactietargets blijven intact.
 
+## Laatste gebruikersafspraken — 20 oktober 2026
+
+- Historisch NFTz-voorbeeld: 1% royalty op NFT-verkopen voor kosten en uitbreiding van NFTz, zoals aangeleverd door de gebruiker en zichtbaar in het bewaarde screenshot. Dit is geen DeSo-opslagheffing.
+- Voor VIA is 1,5% besproken voor onderhoud en ontwikkeling van het NFT-platform. Niet stilzwijgend verbreden naar andere verkoopvormen of toevoegen aan bestaande NFT-royalties. Grondslag, ontvanger, primaire/secundaire verkoop en daadwerkelijke inningsroute moeten vóór activering exact worden vastgelegd. DeSoMarket-pariteit is geen bewezen technische eigenschap.
+- De klant betaalt de gekozen externe opslag en alle bijbehorende behandelings-, betalings- en eventuele omwisselkosten. VIA betaalt niet voor de klant en schiet niets voor. Dit geldt ook voor kunst, muziek, video en andere bestanden, met of zonder NFT.
+- Vóór akkoord: begrijpelijke volledige klantprijs, afzonderlijke kostenposten, dienst/leverancier, ontvangers, koersbron, vervaltijd en netto-opbrengst. Geen dubbele inning; geen levering bij onvoldoende geverifieerde klantmiddelen.
+- De 1,5% is geen alles-in-éénopslagtarief. Bestaande algemene checkoutgrens van 1%, 5%-opslagvoorbeeld en 2-centvoorbeeld zijn geen goedgekeurde inning van deze NFT-vergoeding. Geen configuratie of betaalroute is hiermee geactiveerd.
+
 Nog expliciet te beantwoorden:
 - Betekent dollar DESO met dollarindicatie, fiat-USD of een concrete stablecoin op een bepaalde keten?
 - Welke reeds beschikbare betaal-/wisseldienst verwerkt EUR/BTC en betaalt DESO/USD uit? Koersweergave alleen converteert geen geld.
