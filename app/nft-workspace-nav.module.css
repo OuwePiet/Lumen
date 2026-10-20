@@ -1,0 +1,8 @@
+.workspace { width: min(1480px, calc(100% - 24px)); margin: 0 auto; padding: 10px 0; }
+.links { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
+.link { box-sizing: border-box; display: flex; align-items: center; justify-content: center; min-width: 0; height: 44px; padding: 4px 8px; border: 1px solid #8fd4a938; border-radius: 10px; background: #08130dbb; color: #bad9c5; text-align: center; text-decoration: none; font: 500 13px/1.2 Arial, sans-serif; }
+.link[aria-current="page"] { border-color: #8fd4a9; background: #173b27; color: #effbf3; }
+.link:hover { border-color: #8fd4a9; color: #fff; }
+.link:focus-visible { outline: 2px solid #b9ffd4; outline-offset: 2px; }
+@media (max-width: 980px) { .links { grid-template-columns: repeat(4, minmax(0, 1fr)); } .link:last-child { grid-column: span 2; } }
+@media (max-width: 400px) { .link { font-size: 11px; padding: 4px; } }
