@@ -36,3 +36,12 @@ export function formatRoyaltyBasisPoints(value?: number) {
   if (value === undefined) return "Not available"
   return `${(value / 100).toFixed(value % 100 === 0 ? 0 : 2)}%`
 }
+
+/** Percent input is decimal text; never reinterpret user-entered 9 as 0.09%. */
+export function royaltyPercentToBasisPoints(input: string): number | null {
+  const value = input.trim().replace(",", ".")
+  if (!/^\d{1,3}(?:\.\d{1,2})?$/.test(value)) return null
+  const [whole, fraction = ""] = value.split(".")
+  const result = Number(whole) * 100 + Number(fraction.padEnd(2, "0"))
+  return result <= 10000 ? result : null
+}

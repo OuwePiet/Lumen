@@ -282,6 +282,11 @@ function translated(value: string, language: ViaLanguage | "Hindi") {
 
 function translateDynamic(value: string, language: ViaLanguage | "Hindi") {
   const priceWords = [
+    ["Creator royalty (%)", "Creatorroyalty (%)"],
+    ["Coin royalty (%)", "Coinroyalty (%)"],
+    ["Enter the percentage for the creator. Creator + coin royalties may not exceed 100%.", "Vul het percentage voor de maker in. Creator- en coinroyalty mogen samen niet hoger zijn dan 100%."],
+    ["Optional percentage for creator-coin holders.", "Optioneel percentage voor creatorcoinhouders."],
+    ["Enter a royalty from 0 to 100%, with up to 2 decimals.", "Vul een royalty in van 0 tot 100%, met maximaal 2 decimalen."],
     ["Price currency", "Valuta voor verkoopprijzen"],
     ["DESO is the final DeSo sale amount. USD/EUR are converted estimates, not a dollar or euro payment. A rate change requires a fresh quote.", "DESO is het uiteindelijke verkoopbedrag op DeSo. USD/EUR zijn omgerekende indicaties, geen betaling in dollars of euro’s. Bij een gewijzigde koers is een nieuwe offerte nodig."],
     ["Current USD/EUR rate unavailable. Refresh the rate or choose DESO.", "De actuele dollar/eurokoers is niet beschikbaar. Wacht op de koers of kies DESO."],

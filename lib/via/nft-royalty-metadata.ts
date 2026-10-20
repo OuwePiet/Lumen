@@ -47,3 +47,25 @@ export function readRoyaltyMetadata(post: unknown): ViaRoyaltyInfo {
     source: "deso-nft",
   })
 }
+
+export type AdditionalRoyalty = { publicKey: string; basisPoints: number; destination: "wallet" | "coin" }
+export function readRoyaltyBreakdown(post: unknown) {
+  const base = readRoyaltyMetadata(post)
+  const data = record(post)
+  const additional: AdditionalRoyalty[] = []
+  let complete = Boolean(data && typeof data.NFTRoyaltyToCreatorBasisPoints === "number" && typeof data.NFTRoyaltyToCoinBasisPoints === "number" && base.creatorBasisPoints !== undefined && base.coinBasisPoints !== undefined)
+  for (const [field, destination] of [["AdditionalDESORoyaltiesMap", "wallet"], ["AdditionalCoinRoyaltiesMap", "coin"]] as const) {
+    if (!data || !Object.prototype.hasOwnProperty.call(data, field)) { complete = false; continue }
+    if (data[field] === null) continue
+    const entries = record(data[field])
+    if (!entries || Array.isArray(entries) || Object.keys(entries).length > 1000) { complete = false; continue }
+    for (const [publicKey, value] of Object.entries(entries)) {
+      if (!/^[1-9A-HJ-NP-Za-km-z]{20,100}$/.test(publicKey) || typeof value !== "number" || !Number.isInteger(value) || value < 0 || value > 10_000) { complete = false; continue }
+      if (value > 0) additional.push({ publicKey, basisPoints: value, destination })
+    }
+  }
+  additional.sort((a, b) => a.publicKey.localeCompare(b.publicKey) || a.destination.localeCompare(b.destination))
+  const sum = (base.creatorBasisPoints ?? 0) + (base.coinBasisPoints ?? 0) + additional.reduce((total, entry) => total + entry.basisPoints, 0)
+  if (sum > 10_000) complete = false
+  return { ...base, additional, complete, totalBasisPoints: complete ? sum : undefined }
+}
