@@ -5,6 +5,7 @@ import { viaModernIdentity, type ViaModernIdentityUser } from "../deso-identity-
 import { useNFTAction } from "../use-nft-action"
 import { fetchViaRates, isViaRateStale, VIA_RATE_REFRESH_MS, type ViaRates } from "../via-live-rates"
 import { mintPriceNanos, type MintCurrency } from "../../lib/via/mint-price"
+import { royaltyPercentToBasisPoints } from "../../lib/via/nft-royalties"
 
 type MintQuote = {
   resolved?: boolean
@@ -68,6 +69,8 @@ export default function MintPreflight({ initialPostHash = "" }: { initialPostHas
   const [rates, setRates] = useState<ViaRates | null>(null)
   const [creatorRoyalty, setCreatorRoyalty] = useState("0")
   const [coinRoyalty, setCoinRoyalty] = useState("0")
+  const creatorRoyaltyBasisPoints = royaltyPercentToBasisPoints(creatorRoyalty)
+  const coinRoyaltyBasisPoints = royaltyPercentToBasisPoints(coinRoyalty)
   const [unlockable, setUnlockable] = useState(false)
   const [loading, setLoading] = useState(false)
   const requestInFlight = useRef(false)
@@ -142,7 +145,8 @@ export default function MintPreflight({ initialPostHash = "" }: { initialPostHas
   const quoteReadinessCode = !result?.resolved ? "unresolved" : !quoteContractSupported ? "unsupported_contract" : !quoteSourceSupported ? "unsupported_source" : quoteSessionMismatch ? "identity_changed" : !quotedPublicKey || quotedPublicKey !== session?.publicKey ? "owner_mismatch" : !clockSkewAcceptable ? "clock_skew" : quoteExpired ? "expired" : "ready"
   const quoteReadinessReason = quoteReadinessCode === "unresolved" ? "No resolved quote" : quoteReadinessCode === "unsupported_contract" ? "Unsupported quote contract" : quoteReadinessCode === "unsupported_source" ? "Unsupported quote source" : quoteReadinessCode === "identity_changed" ? "Identity changed" : quoteReadinessCode === "owner_mismatch" ? "Quote owner mismatch" : quoteReadinessCode === "clock_skew" ? "Device clock differs from server" : quoteReadinessCode === "expired" ? "Quote expired" : ""
   const quotePricesMatch = result?.mint?.minBidAmountNanos === (forSale ? minimumPriceNanos : 0) && result?.mint?.buyNowPriceNanos === (forSale && buyNow ? buyPriceNanos : 0)
-  const quoteUsable = quoteReadinessCode === "ready" && quotePricesMatch && (!forSale || (minimumPriceNanos !== null && (!buyNow || buyPriceNanos !== null)))
+  const quoteTermsMatch = result?.mint?.nftPostHashHex === postHash.trim() && result?.mint?.numCopies === Number(copies) && result?.mint?.hasUnlockable === unlockable && result?.mint?.isForSale === forSale && result?.mint?.isBuyNow === (forSale && buyNow) && creatorRoyaltyBasisPoints !== null && coinRoyaltyBasisPoints !== null && result?.mint?.creatorRoyaltyBasisPoints === creatorRoyaltyBasisPoints && result?.mint?.coinRoyaltyBasisPoints === coinRoyaltyBasisPoints
+  const quoteUsable = quoteReadinessCode === "ready" && quotePricesMatch && quoteTermsMatch && (!forSale || (minimumPriceNanos !== null && (!buyNow || buyPriceNanos !== null)))
 
   const validationMessage = useMemo(() => {
     if (!session) return "Log in with DeSo Identity to request a mint quote."
@@ -150,11 +154,11 @@ export default function MintPreflight({ initialPostHash = "" }: { initialPostHas
     if (!Number.isSafeInteger(Number(copies)) || Number(copies) < 1 || Number(copies) > 10000) return "Copies must be a whole number from 1 to 10,000."
     if (forSale && priceCurrency !== "DESO" && !ratesFresh) return "Current USD/EUR rate unavailable. Refresh the rate or choose DESO."
     if (forSale && (minimumPriceNanos === null || (buyNow && buyPriceNanos === null))) return "Enter a valid amount: up to 9 decimals for DESO, or 2 for USD/EUR."
-    if (![creatorRoyalty, coinRoyalty].map(Number).every((n) => Number.isSafeInteger(n) && n >= 0)) return "Royalties must be non-negative whole numbers."
-    if (Number(creatorRoyalty) + Number(coinRoyalty) > 10000) return "Creator and coin royalties together cannot exceed 100%."
+    if (creatorRoyaltyBasisPoints === null || coinRoyaltyBasisPoints === null) return "Enter a royalty from 0 to 100%, with up to 2 decimals."
+    if (creatorRoyaltyBasisPoints + coinRoyaltyBasisPoints > 10000) return "Creator and coin royalties together cannot exceed 100%."
     if (buyNow && (!forSale || buyPriceNanos === null || buyPriceNanos <= 0 || unlockable)) return "Buy Now requires a sale price above zero and cannot be combined with unlockable content in this flow."
     return ""
-  }, [session, postHash, copies, minimumPriceNanos, buyPriceNanos, priceCurrency, ratesFresh, creatorRoyalty, coinRoyalty, buyNow, forSale, unlockable])
+  }, [session, postHash, copies, minimumPriceNanos, buyPriceNanos, priceCurrency, ratesFresh, creatorRoyalty, coinRoyalty, creatorRoyaltyBasisPoints, coinRoyaltyBasisPoints, buyNow, forSale, unlockable])
 
   const valid = validationMessage === ""
 
@@ -190,8 +194,8 @@ export default function MintPreflight({ initialPostHash = "" }: { initialPostHas
           hasUnlockable: unlockable,
           isForSale: forSale,
           minBidAmountNanos: forSale ? minimumPriceNanos : 0,
-          creatorRoyaltyBasisPoints: Number(creatorRoyalty),
-          coinRoyaltyBasisPoints: Number(coinRoyalty),
+          creatorRoyaltyBasisPoints: creatorRoyaltyBasisPoints,
+          coinRoyaltyBasisPoints: coinRoyaltyBasisPoints,
           isBuyNow: forSale && buyNow,
           buyNowPriceNanos: forSale && buyNow ? buyPriceNanos : 0,
         }),
@@ -223,8 +227,8 @@ export default function MintPreflight({ initialPostHash = "" }: { initialPostHas
       hasUnlockable: unlockable,
       isForSale: forSale,
       minBidAmountNanos: forSale ? minimumPriceNanos : 0,
-      creatorRoyaltyBasisPoints: Number(creatorRoyalty),
-      coinRoyaltyBasisPoints: Number(coinRoyalty),
+      creatorRoyaltyBasisPoints: creatorRoyaltyBasisPoints,
+      coinRoyaltyBasisPoints: coinRoyaltyBasisPoints,
       isBuyNow: forSale && buyNow,
       buyNowPriceNanos: forSale && buyNow ? buyPriceNanos : 0,
     } } }, (status, text) => { setMintStatus(status); setMintMessage(text) })
@@ -257,8 +261,8 @@ export default function MintPreflight({ initialPostHash = "" }: { initialPostHas
         <label className="grid gap-2"><span className="text-sm font-semibold text-zinc-200">NFT post hash</span><input className={field} value={postHash} onChange={(e)=>setPostHash(e.target.value)} maxLength={64} autoCapitalize="none" autoCorrect="off" placeholder="64-character DeSo post hash"/></label>
         <div className="grid gap-4 sm:grid-cols-3">
           <label className="grid gap-2"><span className="text-sm font-semibold text-zinc-200">Copies</span><input className={field} type="number" min="1" max="10000" step="1" value={copies} onChange={(e)=>setCopies(e.target.value)}/></label>
-          <label className="grid gap-2"><span className="text-sm font-semibold text-zinc-200">Creator royalty</span><span className="text-xs text-zinc-500">100 basis points = 1%. Creator + coin royalty may not exceed 100%.</span><input className={field} type="number" min="0" max="10000" step="1" value={creatorRoyalty} onChange={(e)=>setCreatorRoyalty(e.target.value)}/></label>
-          <label className="grid gap-2"><span className="text-sm font-semibold text-zinc-200">Coin royalty</span><span className="text-xs text-zinc-500">Optional creator-coin royalty, entered in basis points.</span><input className={field} type="number" min="0" max="10000" step="1" value={coinRoyalty} onChange={(e)=>setCoinRoyalty(e.target.value)}/></label>
+          <label className="grid gap-2"><span className="text-sm font-semibold text-zinc-200">Creator royalty (%)</span><span className="text-xs text-zinc-500">Enter the percentage for the creator. Creator + coin royalties may not exceed 100%.</span><input aria-label="Creator royalty percentage" className={field} type="text" inputMode="decimal" value={creatorRoyalty} onChange={(e)=>setCreatorRoyalty(e.target.value)}/></label>
+          <label className="grid gap-2"><span className="text-sm font-semibold text-zinc-200">Coin royalty (%)</span><span className="text-xs text-zinc-500">Optional percentage for creator-coin holders.</span><input aria-label="Coin royalty percentage" className={field} type="text" inputMode="decimal" value={coinRoyalty} onChange={(e)=>setCoinRoyalty(e.target.value)}/></label>
         </div>
         <div className="flex flex-wrap gap-5 rounded-[11px] border border-zinc-800/80 bg-black/20 p-4 text-sm text-zinc-300">
           <label className="flex items-center gap-2"><input className={check} type="checkbox" checked={forSale} onChange={(e)=>{setForSale(e.target.checked); if(!e.target.checked)setBuyNow(false)}}/>Offer for sale</label>
