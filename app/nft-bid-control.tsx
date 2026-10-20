@@ -1,5 +1,8 @@
 "use client"
 
+import useNFTDisplayRates from "./use-nft-display-rates"
+import { nftMoney } from "../lib/via/nft-money-display"
+
 import { useEffect, useMemo, useRef, useState } from "react"
 import { viaModernIdentity, type ViaModernIdentityUser } from "./deso-identity-modern"
 import { restoreIdentitySession, VIA_IDENTITY_EVENT } from "./deso-identity-session"
@@ -37,6 +40,7 @@ function formatDeso(nanos?: number) {
 
 export default function NFTBidControl({ postHash, editions }: Props) {
   const review = useNFTActionReview()
+  const displayRates = useNFTDisplayRates()
   const [session, setSession] = useState<ViaModernIdentityUser | null>(null)
   const [serialNumber, setSerialNumber] = useState(editions[0]?.serialNumber ?? 1)
   const [amount, setAmount] = useState("")
@@ -232,7 +236,7 @@ export default function NFTBidControl({ postHash, editions }: Props) {
       {!session ? <p className="mt-3 text-sm text-zinc-500">Connect through DeSo Identity on VIA before bidding.</p> : <>
         <label className="mt-4 block text-sm text-zinc-300">Edition
           <select value={serialNumber} onChange={(event) => { invalidateSelection(); setSerialNumber(Number(event.target.value)); setConfirmed(false) }} className="mt-2 block w-full rounded-lg border border-zinc-800 bg-black px-3 py-2 text-sm">
-            {editions.map((item) => <option key={item.serialNumber} value={item.serialNumber}>#${item.serialNumber} · min ${formatDeso(item.minBidAmountNanos)} DESO${typeof item.buyNowPriceNanos === "number" ? ` · buy now ${formatDeso(item.buyNowPriceNanos)} DESO` : ""}</option>)}
+            {editions.map((item) => <option key={item.serialNumber} value={item.serialNumber}>#{item.serialNumber} · min {formatDeso(item.minBidAmountNanos)} DESO{typeof item.buyNowPriceNanos === "number" ? ` · buy now ${formatDeso(item.buyNowPriceNanos)} DESO` : ""}</option>)}
           </select>
         </label>
         <label className="mt-3 block text-sm text-zinc-300">Bid amount in DESO
@@ -240,8 +244,9 @@ export default function NFTBidControl({ postHash, editions }: Props) {
         </label>
         {isOwner ? <p className="mt-2 text-xs text-amber-300">The active DeSo account owns this edition and cannot bid on itself through VIA.</p> : null}
         {!isOwner && amount && !amountValid ? <p className="mt-2 text-xs text-amber-300">Enter a valid amount of at least {formatDeso(minBid)} DESO.</p> : null}
+        {bidNanos !== null ? <p className="mt-2 text-xs text-zinc-400">{nftMoney(bidNanos, displayRates)} · settlement in DESO</p> : null}
         <label className="mt-3 flex items-start gap-2 text-xs text-amber-200"><input type="checkbox" checked={confirmed} onChange={(event) => { invalidateSelection(); setConfirmed(event.target.checked) }} />I understand this creates a real on-chain bid that may reserve/spend $DESO according to DeSo rules.</label>
-        {feeNanos !== null ? <p className="mt-2 text-xs text-zinc-500">Prepared network fee: {feeNanos.toLocaleString()} nanos.</p> : null}
+        {feeNanos !== null ? <p className="mt-2 text-xs text-zinc-500">Prepared network fee: {nftMoney(feeNanos, displayRates)}.</p> : null}
         <div className="mt-3 flex flex-wrap gap-2">
           <button type="button" onClick={() => void prepare(false)} disabled={!confirmed || !amountValid || isOwner || busy} className="rounded-lg border border-[#8fd4a9]/55 px-4 py-2 text-sm font-semibold text-[#9adbb2] disabled:border-zinc-800 disabled:text-zinc-600">
             {status === "preparing" ? "Preparing…" : status === "approval" ? "Review in DeSo…" : status === "submitting" ? "Submitting…" : "Review bid in DeSo"}

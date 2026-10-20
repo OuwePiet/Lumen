@@ -8,6 +8,7 @@ import ViaGlobalRadio from './via-global-radio'
 
 import ViaPublicAccountGuard from './via-public-account-guard'
 import ViaSiteHeader from './via-site-header'
+import NFTWorkspaceNav from './nft-workspace-nav'
 import WalletLocalizer from './wallet/wallet-localizer'
 import { NFTActionReviewProvider } from './nft-action-review'
 
@@ -115,6 +116,7 @@ export default async function RootLayout({
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(viaStructuredData) }} />
         <ViaPublicAccountGuard />
         <ViaSiteHeader />
+        <NFTWorkspaceNav />
         <NFTActionReviewProvider>{children}</NFTActionReviewProvider>
         <WalletLocalizer />
         <RadioLocalizer />

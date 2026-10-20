@@ -1,0 +1,5 @@
+const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),ts=require('typescript')
+const api={};vm.runInNewContext(ts.transpileModule(fs.readFileSync('lib/via/nft-money-display.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2020}}).outputText,{exports:api})
+const now=Date.now(),rates={status:'current',checkedAt:new Date(now).toISOString(),rates:{USD:2,EUR:1}}
+test('NFT amounts preserve DESO and label USD/EUR as estimates',()=>{assert.equal(api.nftMoney(500000000,rates,now),'0.5 DESO · ≈ $1.00 / €0.50');assert.equal(api.nftMoney(1,rates,now),'0.000000001 DESO · ≈ < $0.01 / < €0.01')})
+test('missing, stale, invalid and future rates never invent fiat prices',()=>{assert.equal(api.nftMoney(500000000,null,now),'0.5 DESO');for(const delta of [-180001,60001])assert.equal(api.nftMoney(500000000,{...rates,checkedAt:new Date(now+delta).toISOString()},now),'0.5 DESO');assert.equal(api.nftMoney(-1,rates,now),undefined);assert.equal(api.nftMoney(1.5,rates,now),undefined)})

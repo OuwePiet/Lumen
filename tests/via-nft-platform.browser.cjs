@@ -96,7 +96,7 @@ async function run(name, engine, options) {
     await page.getByRole('button', { name: 'Burn edition #1', exact: true }).click()
     const dialog = page.getByRole('dialog')
     await dialog.waitFor()
-    await dialog.getByText('100', { exact: true }).first().waitFor()
+    await dialog.getByText('0.0000001 DESO', { exact: true }).first().waitFor(); assert.equal(/nanos|basispunten/.test(await dialog.innerText()), false, 'financial review uses user-facing units')
     const box = await dialog.boundingBox()
     assert.ok(box && box.width <= options.viewport.width && box.x >= 0)
     await page.screenshot({ path: path.join(out, name+'-exact-review.png'), fullPage: true })

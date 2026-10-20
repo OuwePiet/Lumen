@@ -51,6 +51,8 @@ function fixture({ switchAt = '', timeout = false, badJson = false, refreshFails
       if (name === './deso-identity-modern') return { viaModernIdentity: identity }
       if (name === './deso-identity-session') return { restoreIdentitySession: () => legacy ? null : ({ publicKey: active }), VIA_IDENTITY_EVENT: 'via:identity-session' }
       if (name === './financial-submission') { const exports = {}; vm.runInNewContext(compile(fs.readFileSync(path.join(__dirname,'../app/financial-submission.ts'),'utf8')), { ...context, exports }); return exports }
+      if (name === './use-nft-display-rates') return { default: () => null };
+      if (name === '../lib/via/nft-money-display') { const exports = {}; vm.runInNewContext(compile(fs.readFileSync(path.join(__dirname,'../lib/via/nft-money-display.ts'),'utf8')), { exports }); return exports };
       throw new Error('Unexpected import '+name)
     },
   }

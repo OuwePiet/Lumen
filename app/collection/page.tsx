@@ -11,7 +11,6 @@ import NFTGrid from "../nft-grid"
 import ViaPriceBoard from "../via-price-board"
 import ViaStoragePriceBoard from "../via-storage-price-board"
 import CollectionHub from "./collection-hub"
-import NfViaTopbar from "./nf-via-topbar"
 import CreatorCollectionLocalizer from "./creator-collection-localizer"
 
 export const dynamic = "force-dynamic"
@@ -36,7 +35,7 @@ export default function CollectionPage() {
       </div>
 
       <div style={{ position: "relative", zIndex: 2 }}>
-        <NfViaTopbar />
+
         <CollectionHub />
         <NFTGrid />
         <div style={{ maxWidth: 1480, margin: "0 auto", padding: "0 20px 8px" }}>
