@@ -17,7 +17,7 @@ import { normalizeNftRecord } from "../lib/via/nft-record"
 import { readRightsMetadata } from "../lib/via/nft-rights-metadata"
 import { rightsDisplayLabel } from "../lib/via/nft-rights"
 import { readUtilityMetadata } from "../lib/via/nft-utility-metadata"
-import { readRoyaltyMetadata } from "../lib/via/nft-royalty-metadata"
+import { readRoyaltyBreakdown } from "../lib/via/nft-royalty-metadata"
 import { formatRoyaltyBasisPoints } from "../lib/via/nft-royalties"
 import { readViaMintProvenance } from "../lib/via/mint-provenance"
 import { evaluateUtilityCapability } from "../lib/via/nft-capability"
@@ -500,7 +500,7 @@ export default async function NFTView({
         Boolean(post.PosterPublicKeyBase58Check),
     }
     const utility = readUtilityMetadata(postExtraData)
-    const royalties = readRoyaltyMetadata(post)
+    const royalties = readRoyaltyBreakdown(post)
     const royaltyLabel =
       royalties.source === "unavailable"
         ? "Not available"
@@ -659,6 +659,8 @@ export default async function NFTView({
                 <p style={styles.ownershipText}><strong>Media:</strong> {storageSummary}.</p>
                 <p style={styles.ownershipText}><strong>Rights:</strong> {rightsLabel}.</p>
                 <p style={styles.ownershipText}><strong>Royalties:</strong> {royaltyLabel}.</p>
+                {royalties.additional.length > 0 ? <ul data-via-additional-royalties style={{ ...styles.ownershipText, paddingLeft: 18, overflowWrap: "anywhere" }}>{royalties.additional.map(entry => <li key={`${entry.destination}:${entry.publicKey}`}><span>{entry.destination === "wallet" ? "Additional wallet royalty" : "Additional creator-coin royalty"}: {formatRoyaltyBasisPoints(entry.basisPoints)} · </span><a href={`/profile/${encodeURIComponent(entry.publicKey)}`} style={{ color: "#a5dfb8", textDecoration: "underline" }}>{entry.publicKey}</a></li>)}</ul> : null}
+                <p data-via-royalty-total style={styles.ownershipText}>{royalties.complete ? `Total on-chain royalties: ${formatRoyaltyBasisPoints(royalties.totalBasisPoints)}.` : "Complete royalty total unavailable: additional royalty fields are missing or invalid."} Royalties are separate from network costs and any separately agreed service fee.</p>
                 <p style={styles.ownershipText}><strong>Utility:</strong> {utilityLabel}.</p>
                 <p style={styles.verifyNote}><strong>Verify:</strong> current ownership can be checked against live DeSo NFT entries. Public-key ownership lookup does not prove control of that identity.</p>
               </section>
