@@ -71,6 +71,9 @@ export default function AccountLookup({ onAccountSelected }: { onAccountSelected
   const [username, setUsername] = useState("")
   const [profile, setProfile] = useState<DeSoProfile | null>(null)
   const [matches, setMatches] = useState<DeSoProfile[]>([])
+  const [suggestionQuery, setSuggestionQuery] = useState("")
+  const [suggestionsLoading, setSuggestionsLoading] = useState(false)
+  const suggestionsController = useRef<AbortController | null>(null)
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
   const [autoLoadNFTs, setAutoLoadNFTs] = useState(false)
@@ -115,6 +118,9 @@ export default function AccountLookup({ onAccountSelected }: { onAccountSelected
   }
 
   const lookupAccount = useCallback(async (requestedUsername: string, expectedPublicKey?: string, openNFTs = false) => {
+    suggestionsController.current?.abort()
+    setSuggestionQuery("")
+    setSuggestionsLoading(false)
     lookupController.current?.abort()
     const controller = new AbortController()
     lookupController.current = controller
@@ -139,6 +145,7 @@ export default function AccountLookup({ onAccountSelected }: { onAccountSelected
     setLoading(true)
     try {
       const exactProfile = await readExactProfile(requested, controller.signal)
+      if (controller.signal.aborted || lookupController.current !== controller) return
       if (exactProfile) {
         if (expectedKey && exactProfile.PublicKeyBase58Check !== expectedKey) {
           setError("This VIA link contains an account key that does not match the DeSo profile. Nothing was loaded.")
@@ -165,6 +172,7 @@ export default function AccountLookup({ onAccountSelected }: { onAccountSelected
       }
 
       const data = await response.json()
+      if (controller.signal.aborted || lookupController.current !== controller) return
       const profiles: DeSoProfile[] = Array.isArray(data.ProfilesFound)
         ? data.ProfilesFound
         : Array.isArray(data.Profiles)
@@ -192,6 +200,31 @@ export default function AccountLookup({ onAccountSelected }: { onAccountSelected
     }
   }, [onAccountSelected])
 
+  useEffect(() => {
+    const prefix = normalizedUsername(suggestionQuery)
+    if (prefix.length < 2) return
+    const controller = new AbortController()
+    suggestionsController.current = controller
+    const timer = window.setTimeout(async () => {
+      setSuggestionsLoading(true)
+      try {
+        const response = await fetch(`/api/via/profile-search?prefix=${encodeURIComponent(prefix)}`, { signal: controller.signal, headers: { Accept: "application/json" } })
+        if (!response.ok) throw new Error("PROFILE_SEARCH_UNAVAILABLE")
+        const data = await response.json() as { profiles?: NonNullable<ViaProfileResponse["profile"]>[] }
+        if (controller.signal.aborted) return
+        setMatches((Array.isArray(data.profiles) ? data.profiles : []).filter(candidate =>
+          typeof candidate.username === "string" && candidate.username.length <= MAX_USERNAME_LENGTH && candidate.username.toLowerCase().startsWith(prefix.toLowerCase()) &&
+          typeof candidate.publicKey === "string" && /^[1-9A-HJ-NP-Za-km-z]{40,128}$/.test(candidate.publicKey)
+        ).slice(0, 10).map(viaProfileToDeSo))
+      } catch {
+        if (!controller.signal.aborted) setMatches([])
+      } finally {
+        if (!controller.signal.aborted) setSuggestionsLoading(false)
+      }
+    }, 250)
+    return () => { window.clearTimeout(timer); controller.abort() }
+  }, [suggestionQuery])
+
   useEffect(() => () => lookupController.current?.abort(), [])
 
   useEffect(() => {
@@ -214,11 +247,20 @@ export default function AccountLookup({ onAccountSelected }: { onAccountSelected
       <h2 id="account-lookup-heading" style={styles.heading}>Find NFT creator</h2>
       <p style={styles.text}>Search a public DeSo account and open its NFT collection.</p>
       <form style={styles.form} onSubmit={findAccount}>
-        <input type="search" aria-label="DeSo username" autoComplete="off" autoCapitalize="none" spellCheck={false} maxLength={MAX_USERNAME_LENGTH + 1} placeholder="DeSo username" value={username} style={styles.input} onChange={(event) => setUsername(event.target.value)} />
+        <input type="search" aria-label="DeSo username" aria-describedby="creator-search-hint" autoComplete="off" autoCapitalize="none" spellCheck={false} maxLength={MAX_USERNAME_LENGTH + 1} placeholder="DeSo username" value={username} style={styles.input} onChange={(event) => { lookupController.current?.abort(); suggestionsController.current?.abort(); setLoading(false); setSuggestionsLoading(false); setMatches([]); setError(""); setUsername(event.target.value); setSuggestionQuery(event.target.value) }} />
         <button type="submit" disabled={loading} style={{ ...styles.button, opacity: loading ? 0.65 : 1 }}>{loading ? "Checking…" : "Find creator"}</button>
       </form>
+      <p id="creator-search-hint" style={styles.status}>{suggestionsLoading ? "Finding matching DeSo accounts…" : "Type at least 2 letters and choose an account below, or enter a full username."}</p>
       <div aria-live="polite" aria-atomic="true">
         {loading ? <p style={styles.status}>Checking DeSo…</p> : null}
+        {matches.length > 0 ? (
+          <ul style={styles.choices} aria-label="Matching DeSo accounts">
+            {matches.map((candidate) => {
+              const candidateImage = safeProfileImage(candidate.ProfilePic)
+              return <li key={candidate.PublicKeyBase58Check}><button type="button" style={styles.choiceButton} onClick={() => void lookupAccount(candidate.Username ?? "", candidate.PublicKeyBase58Check, true)}>{candidateImage ? <img src={candidateImage} alt="" width={36} height={36} style={styles.avatar} referrerPolicy="no-referrer" /> : <span style={styles.avatarFallback} aria-hidden="true">{(candidate.Username ?? "?").slice(0, 1).toUpperCase()}</span>}<span style={styles.username}>@{candidate.Username}</span></button></li>
+            })}
+          </ul>
+        ) : null}
         {profile ? (
           <div style={styles.result}>
             <div style={styles.profileHeader}>
@@ -227,14 +269,6 @@ export default function AccountLookup({ onAccountSelected }: { onAccountSelected
             </div>
             <PublicAccountNFTs key={profile.PublicKeyBase58Check} publicKey={profile.PublicKeyBase58Check!} username={profile.Username!} autoLoad={autoLoadNFTs} />
           </div>
-        ) : null}
-        {matches.length > 0 ? (
-          <ul style={styles.choices} aria-label="Matching DeSo accounts">
-            {matches.map((candidate) => {
-              const candidateImage = safeProfileImage(candidate.ProfilePic)
-              return <li key={candidate.PublicKeyBase58Check}><button type="button" style={styles.choiceButton} onClick={() => void lookupAccount(candidate.Username ?? "", candidate.PublicKeyBase58Check, true)}>{candidateImage ? <img src={candidateImage} alt="" width={36} height={36} style={styles.avatar} referrerPolicy="no-referrer" /> : <span style={styles.avatarFallback} aria-hidden="true">{(candidate.Username ?? "?").slice(0, 1).toUpperCase()}</span>}<span style={styles.username}>@{candidate.Username}</span></button></li>
-            })}
-          </ul>
         ) : null}
         {error ? <div style={styles.error} role="alert">{error}</div> : null}
       </div>
