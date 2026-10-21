@@ -35,7 +35,7 @@ export default function CollectionHub() {
   }, [])
   const t = COPY[language] ?? COPY.English!
   if (pathname !== "/collection") return null
-  return <header className="mx-auto max-w-[1480px] px-3 py-5">
+  return <header data-via-collection-heading className="mx-auto max-w-[1480px] px-3 py-5">
     <p className="text-xs font-medium tracking-[0.14em] text-[#8fd4a9]">NF.VIA</p>
     <h1 className="mt-2 text-[28px] font-medium leading-tight text-zinc-100">{t.title}</h1>
   </header>
