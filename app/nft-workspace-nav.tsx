@@ -67,6 +67,12 @@ export default function NFTWorkspaceNav() {
         body:has([data-via-nft-workspace]) section[aria-labelledby="account-lookup-heading"] input[type="search"] { min-height: 44px; padding: 8px !important; font-size: 16px !important; }
         body:has([data-via-nft-workspace]) section[aria-labelledby="account-lookup-heading"] button { min-height: 44px !important; }
         body:has([data-via-nft-workspace]) #creator-search-hint { margin: 6px 0 0; font-size: 11px !important; line-height: 1.45; }
+        body:has([data-via-nft-workspace]) [data-via-nft-preferences] { gap: 5px !important; margin-top: 8px !important; }
+        body:has([data-via-nft-workspace]) [data-via-nft-preferences] button { font-size: 11px !important; padding: 6px 9px !important; }
+        body:has([data-via-nft-workspace]) [data-via-nft-preferences] select { font-size: 16px !important; padding: 6px 8px !important; max-width: 100%; }
+        body:has([data-via-nft-workspace]) [data-via-nft-preferences] > label { min-width: 0; max-width: 100%; }
+        body:has([data-via-nft-workspace]) [data-via-owned-nft-grid] { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 8px !important; }
+        body:has([data-via-nft-workspace]) [data-via-owned-nft-grid] > a { min-width: 0; border-radius: 10px !important; }
       }
     `}</style>
   </nav>

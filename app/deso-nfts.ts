@@ -93,7 +93,7 @@ function normalizeCollection(value: unknown): DeSoNFTCollection | null {
  * Read all owned editions through the current node's verified cursor contract.
  * One work can span pages: merge by post hash and edition serial, not page totals.
  */
-export async function getNFTsForUser(publicKey: string, signal?: AbortSignal, onProgress?: (progress: { pages: number; works: number; editions: number }) => void) {
+export async function getNFTsForUser(publicKey: string, signal?: AbortSignal, onProgress?: (progress: { pages: number; works: number; editions: number; collections: DeSoNFTCollection[] }) => void) {
   const collections = new Map<string, DeSoNFTCollection>()
   const cursors = new Set<string>()
   let cursor = ""
@@ -131,7 +131,8 @@ export async function getNFTsForUser(publicKey: string, signal?: AbortSignal, on
       }
       collections.set(hash, { ...collection, NFTEntryResponses: [...entries.values()] })
     }
-    onProgress?.({ pages: page + 1, works: collections.size, editions: [...collections.values()].reduce((sum, item) => sum + (item.NFTEntryResponses?.length ?? 0), 0) })
+    const available = [...collections.values()]
+    onProgress?.({ pages: page + 1, works: collections.size, editions: available.reduce((sum, item) => sum + (item.NFTEntryResponses?.length ?? 0), 0), collections: available })
     const next = data.LastKeyHex ?? ""
     if (typeof next !== "string" || !/^[a-f0-9]{0,1024}$/i.test(next)) throw new Error("DESO_NFT_CURSOR_INVALID")
     if (!next) return [...collections.values()]
