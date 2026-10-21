@@ -56,7 +56,7 @@ export default function NFTWorkspaceNav() {
         body:has([data-via-nft-workspace]) .via-site-header-shell { grid-template-rows: 44px 48px !important; }
         body:has([data-via-nft-workspace]) .via-site-header-tools { overflow-x: auto !important; overflow-y: visible !important; gap: 5px !important; }
         body:has([data-via-nft-workspace]) .via-site-header-tools .via-site-header-search-label { display: inline !important; font-size: 11px; }
-        body:has([data-via-nft-workspace]) .via-site-header-tools .via-site-header-search { width: auto !important; min-width: 96px !important; padding: 0 8px !important; }
+        body:has([data-via-nft-workspace]) .via-site-header-tools .via-site-header-search { flex: 0 0 auto !important; width: auto !important; min-width: 112px !important; padding: 0 8px !important; white-space: nowrap; }
         body:has([data-via-nft-workspace]) .via-global-guides { min-height: 44px; padding-bottom: 0; gap: 4px; }
         body:has([data-via-nft-workspace]) .via-global-guide-link { min-height: 44px; border-color: #8fd4a938; border-radius: 10px; }
         body:has([data-via-nft-workspace]) [data-via-collection-heading] { padding-top: 8px; padding-bottom: 6px; }
