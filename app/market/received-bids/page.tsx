@@ -1,13 +1,9 @@
 import Link from "next/link"
-import { fetchDeSo } from "../../deso-api"
+import { getReceivedNFTBids, type ReceivedNFTBid } from "../../nft-received-bids-reader"
 import ReceivedBidsIdentityRedirect from "./received-bids-identity-redirect"
 
 export const dynamic = "force-dynamic"
 
-type Entry={SerialNumber?:number}
-type Post={Body?:string;ProfileEntryResponse?:{Username?:string}}
-type Owned={PostEntryResponse?:Post;NFTEntryResponses?:Entry[]}
-type Bid={PublicKeyBase58Check?:string;SerialNumber?:number;BidAmountNanos?:number}
 
 function title(body?:string){const t=(body??"").replace(/https?:\/\/nftz\.me\/\S+/gi,"").replace(/\s+/g," ").trim();return t?(t.length>78?t.slice(0,75)+"...":t):"Untitled NFT"}
 function deso(n?:number){return typeof n==="number"?new Intl.NumberFormat("en-US",{maximumFractionDigits:9}).format(n/1_000_000_000):"—"}
@@ -15,24 +11,12 @@ function shortKey(k?:string){return k&&k.length>22?k.slice(0,10)+"…"+k.slice(-
 
 export default async function ReceivedBidsPage({searchParams}:{searchParams:Promise<{publicKey?:string;account?:string}>}){
  const {publicKey,account}=await searchParams
- let rows:Array<{hash:string;post:Post;serial:number;bidder:string;amount:number}>=[]
+ let rows:ReceivedNFTBid[]=[]
  let error=""
  if(publicKey){
   try{
-   const ownedResponse=await fetchDeSo("get-nfts-for-user",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({UserPublicKeyBase58Check:publicKey,ReaderPublicKeyBase58Check:publicKey,Limit:100}),cache:"no-store"})
-   if(!ownedResponse.ok)throw new Error()
-   const ownedData=await ownedResponse.json() as {NFTsMap?:Record<string,Owned>}
-   const owned=Object.entries(ownedData.NFTsMap??{}).filter(([hash])=>/^[0-9a-fA-F]{64}$/.test(hash))
-   const results=await Promise.all(owned.map(async([hash,record])=>{
-    const serials=new Set((record.NFTEntryResponses??[]).map(e=>e.SerialNumber).filter((n):n is number=>typeof n==="number"))
-    if(serials.size===0)return []
-    const response=await fetchDeSo("get-nft-bids-for-nft-post",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({ReaderPublicKeyBase58Check:publicKey,PostHashHex:hash}),cache:"no-store"})
-    if(!response.ok)return []
-    const data=await response.json() as {BidEntryResponses?:Bid[]}
-    return (data.BidEntryResponses??[]).filter((b):b is Bid&{PublicKeyBase58Check:string;SerialNumber:number;BidAmountNanos:number}=>typeof b.PublicKeyBase58Check==="string"&&typeof b.SerialNumber==="number"&&serials.has(b.SerialNumber)&&typeof b.BidAmountNanos==="number"&&b.BidAmountNanos>0).map(b=>({hash,post:record.PostEntryResponse??{},serial:b.SerialNumber,bidder:b.PublicKeyBase58Check,amount:b.BidAmountNanos}))
-   }))
-   rows=results.flat().sort((a,b)=>b.amount-a.amount)
-  }catch{error="VIA could not load received NFT bids for this DeSo account right now."}
+   rows=await getReceivedNFTBids(publicKey)
+  }catch{error="VIA could not load the complete received-bids overview. Please retry; no incomplete list is shown."}
  }
  const q=account==="active"||!publicKey?"?account=active":"?publicKey="+encodeURIComponent(publicKey)
  return <main data-via-public-nft-reader className="mx-auto min-h-screen max-w-5xl px-5 py-10 text-zinc-100">
