@@ -1,6 +1,7 @@
 {
   "git": {
     "deploymentEnabled": {
+      "fix/via-creator-suggestions-20261021": false,
       "fix/via-nft-owned-pagination-20261021": false,
       "fix/via-nft-royalty-clarity-20261020": false,
       "fix/via-nft-workspace-polish-20261020": false,
