@@ -13,7 +13,7 @@ import XShareButton from "./x-share-button"
 import { isViaSensitiveContent } from "../lib/via/sensitive-content"
 
 const PAGE_SIZE = 25
-const CACHE_VERSION = 1
+const CACHE_VERSION = 2
 const QUERY_LIMIT = 120
 const VIDEO_EXTENSIONS = [".mp4", ".webm", ".mov", ".m4v"]
 const AUDIO_EXTENSIONS = [".mp3", ".wav", ".m4a", ".aac", ".flac", ".oga"]
@@ -338,6 +338,7 @@ export default function PublicAccountNFTs({
   const cacheKey = `via:account-nfts:v${CACHE_VERSION}:${publicKey}`
   const [nfts, setNFTs] = useState<DeSoNFTCollection[] | null>(null)
   const [loading, setLoading] = useState(false)
+  const [readProgress, setReadProgress] = useState<{ pages: number; works: number; editions: number } | null>(null)
   const [lastUpdated, setLastUpdated] = useState<number | null>(null)
   const [linkCopied, setLinkCopied] = useState(false)
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
@@ -407,10 +408,13 @@ export default function PublicAccountNFTs({
     const controller = new AbortController()
     loadController.current = controller
     setLoading(true)
+    setReadProgress(null)
     setError("")
 
     try {
-      const collections = await getNFTsForUser(publicKey, controller.signal)
+      const collections = await getNFTsForUser(publicKey, controller.signal, progress => {
+        if (!controller.signal.aborted && loadController.current === controller) setReadProgress(progress)
+      })
       if (controller.signal.aborted || loadController.current !== controller) return
       const savedAt = Date.now()
       setNFTs(collections)
@@ -460,6 +464,7 @@ export default function PublicAccountNFTs({
     if (autoLoad) {
       return (
         <div aria-live="polite" aria-busy={loading}>
+          {loading && readProgress ? <p style={{ color: "#a5dfb8", lineHeight: 1.6 }}>Reading all ownership pages from DeSo: {readProgress.editions.toLocaleString()} editions across {readProgress.works.toLocaleString()} works found so far ({readProgress.pages} pages). This is not the final total.</p> : null}
           <button
             type="button"
             style={styles.action}
@@ -592,6 +597,7 @@ export default function PublicAccountNFTs({
 
   return (
     <section aria-label={`Public NFTs owned by @${username}`}>
+      {loading && readProgress ? <p role="status" aria-live="polite" style={{ color: "#a5dfb8", lineHeight: 1.6 }}>Reading all ownership pages from DeSo: {readProgress.editions.toLocaleString()} editions across {readProgress.works.toLocaleString()} works found so far ({readProgress.pages} pages). This is not the final total.</p> : null}
       {nfts.length > 0 ? (
         <p style={styles.status}>
           @{username} owns {totalOwnedCopies} NFT {totalOwnedCopies === 1 ? "copy" : "copies"} across {nfts.length} different NFT{nfts.length === 1 ? "" : "s"}.
