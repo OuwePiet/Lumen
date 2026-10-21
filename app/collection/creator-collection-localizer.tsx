@@ -364,6 +364,8 @@ function translate(source: string, copy: Copy) {
   return source
 }
 
+const textRendered = new WeakMap<Text, string>()
+
 function translateRoot(root: HTMLElement, language: ViaLanguage | "Hindi") {
   const copy = COPY[language]
   const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT)
@@ -373,14 +375,17 @@ function translateRoot(root: HTMLElement, language: ViaLanguage | "Hindi") {
     const current = textNode.nodeValue ?? ""
     const trimmed = current.trim()
     if (trimmed) {
-      const source = textSource.get(textNode) ?? trimmed
-      if (!textSource.has(textNode)) textSource.set(textNode, source)
+      // React may update a reused text node (counts, progress and button labels).
+      // Only reuse the original while the node still contains our last output.
+      const source = textRendered.get(textNode) === trimmed ? textSource.get(textNode) ?? trimmed : trimmed
+      textSource.set(textNode, source)
       const next = language === "English" ? source : translate(source, copy)
       if (trimmed !== next) {
         const leading = current.slice(0, current.length - current.trimStart().length)
         const trailing = current.slice(current.trimEnd().length)
         textNode.nodeValue = `${leading}${next}${trailing}`
       }
+      textRendered.set(textNode, next)
     }
     node = walker.nextNode()
   }
