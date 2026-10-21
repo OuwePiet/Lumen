@@ -80,6 +80,9 @@ function documentedRequest(endpoint: string, init: RequestInit): RequestInit {
 
     if (typeof body.IsForSale === "boolean") safeBody.IsForSale = body.IsForSale
     if (typeof body.IsPending === "boolean") safeBody.IsPending = body.IsPending
+    // Verified against the current node and backend/routes/nft.go (21 Oct 2026).
+    if (typeof body.LastKeyHex === "string" && /^[a-f0-9]{0,1024}$/i.test(body.LastKeyHex)) safeBody.LastKeyHex = body.LastKeyHex
+    if (Number.isInteger(body.Limit) && Number(body.Limit) >= 1 && Number(body.Limit) <= 100) safeBody.Limit = body.Limit
 
     return { ...init, body: JSON.stringify(safeBody) }
   } catch {
@@ -97,10 +100,7 @@ async function documentedResponse(endpoint: string, response: Response): Promise
 
   try {
     const data = await response.clone().json() as Record<string, unknown>
-    // VIA does not rely on undocumented transport cursor fields. Removing the
-    // field here keeps legacy callers from accidentally looping over the same
-    // documented request after LastKeyHex/Limit were stripped above.
-    delete data.LastKeyHex
+    // Preserve LastKeyHex: the current node defaults to 100 NFT editions per page.
 
     const headers = new Headers(response.headers)
     headers.set("content-type", "application/json")

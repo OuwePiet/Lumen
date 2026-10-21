@@ -90,29 +90,58 @@ function normalizeCollection(value: unknown): DeSoNFTCollection | null {
 }
 
 /**
- * Read a user's public NFT map using only the documented request fields for
- * DeSo's get-nfts-for-user endpoint. Do not add cursor/limit fields unless
- * they are verified against the currently deployed DeSo API contract.
+ * Read all owned editions through the current node's verified cursor contract.
+ * One work can span pages: merge by post hash and edition serial, not page totals.
  */
-export async function getNFTsForUser(publicKey: string, signal?: AbortSignal) {
-  const response = await fetchDeSo("get-nfts-for-user", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      UserPublicKeyBase58Check: publicKey,
-      ReaderPublicKeyBase58Check: "",
-    }),
-    signal,
-  })
+export async function getNFTsForUser(publicKey: string, signal?: AbortSignal, onProgress?: (progress: { pages: number; works: number; editions: number }) => void) {
+  const collections = new Map<string, DeSoNFTCollection>()
+  const cursors = new Set<string>()
+  let cursor = ""
+  for (let page = 0; page < 1000; page += 1) {
+    if (signal?.aborted) throw new DOMException("NFT read cancelled", "AbortError")
+    const response = await fetchDeSo("get-nfts-for-user", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        UserPublicKeyBase58Check: publicKey,
+        ReaderPublicKeyBase58Check: "",
+        Limit: 100,
+        LastKeyHex: cursor,
+      }),
+      signal,
+    })
 
-  if (!response.ok) {
-    throw new Error("DESO_NFT_COLLECTION_UNAVAILABLE")
+    if (!response.ok) {
+      throw new Error("DESO_NFT_COLLECTION_UNAVAILABLE")
+    }
+
+    const data = await response.json()
+    if (!data.NFTsMap || typeof data.NFTsMap !== "object" || Array.isArray(data.NFTsMap)) throw new Error("DESO_NFT_COLLECTION_INVALID")
+    let addedEdition = false
+    for (const value of Object.values(data.NFTsMap)) {
+      const collection = normalizeCollection(value)
+      if (!collection) throw new Error("DESO_NFT_COLLECTION_INVALID")
+      const hash = collection.PostEntryResponse!.PostHashHex!
+      const previous = collections.get(hash)
+      const entries = new Map<number, DeSoNFTEntry>((previous?.NFTEntryResponses ?? []).map(entry => [entry.SerialNumber!, entry]))
+      for (const entry of collection.NFTEntryResponses ?? []) {
+        if (!entry.SerialNumber || entry.OwnerPublicKeyBase58Check !== publicKey) throw new Error("DESO_NFT_EDITION_INVALID")
+        if (!entries.has(entry.SerialNumber)) addedEdition = true
+        entries.set(entry.SerialNumber, entry)
+      }
+      collections.set(hash, { ...collection, NFTEntryResponses: [...entries.values()] })
+    }
+    onProgress?.({ pages: page + 1, works: collections.size, editions: [...collections.values()].reduce((sum, item) => sum + (item.NFTEntryResponses?.length ?? 0), 0) })
+    const next = data.LastKeyHex ?? ""
+    if (typeof next !== "string" || !/^[a-f0-9]{0,1024}$/i.test(next)) throw new Error("DESO_NFT_CURSOR_INVALID")
+    if (!next) return [...collections.values()]
+    // The backend's Badger seek is inclusive: its exhausted page repeats the
+    // final anchor (plus possible mempool entries), with the same last key.
+    if (next === cursor && !addedEdition) return [...collections.values()]
+    if (cursors.has(next)) throw new Error("DESO_NFT_CURSOR_REPEATED")
+    cursors.add(next)
+    cursor = next
+    }
+    // Never return a bounded partial read as a complete ownership count.
+    throw new Error("DESO_NFT_COLLECTION_INCOMPLETE")
   }
-
-  const data = await response.json()
-  const values = Object.values(data.NFTsMap ?? {})
-
-  return values
-    .map(normalizeCollection)
-    .filter((value): value is DeSoNFTCollection => value !== null)
-}
