@@ -6,3 +6,4 @@
 .link:focus-visible { outline: 2px solid #b9ffd4; outline-offset: 2px; }
 @media (max-width: 980px) { .links { grid-template-columns: repeat(4, minmax(0, 1fr)); } .link:last-child { grid-column: span 2; } }
 @media (max-width: 400px) { .link { font-size: 11px; padding: 4px; } }
+@media (max-width: 720px) { .workspace { width: calc(100% - 20px); padding: 6px 0; } .links { gap: 5px; } .link { font-size: 11px; padding: 4px; } }

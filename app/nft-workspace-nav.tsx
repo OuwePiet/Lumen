@@ -53,7 +53,26 @@ export default function NFTWorkspaceNav() {
         body:has([data-via-nft-workspace]) .via-site-header-account-label { max-width: 100px; }
       }
       @media (max-width: 720px) {
-        body:has([data-via-nft-workspace]) .via-site-header-shell { grid-template-rows: 48px 48px !important; }
+        body:has([data-via-nft-workspace]) .via-site-header-shell { grid-template-rows: 44px 48px !important; }
+        body:has([data-via-nft-workspace]) .via-site-header-tools { overflow-x: auto !important; overflow-y: visible !important; gap: 5px !important; }
+        body:has([data-via-nft-workspace]) .via-site-header-tools .via-site-header-search-label { display: inline !important; font-size: 11px; }
+        body:has([data-via-nft-workspace]) .via-site-header-tools .via-site-header-search { flex: 0 0 auto !important; width: auto !important; min-width: 112px !important; padding: 0 8px !important; white-space: nowrap; }
+        body:has([data-via-nft-workspace]) .via-global-guides { min-height: 44px; padding-bottom: 0; gap: 4px; }
+        body:has([data-via-nft-workspace]) .via-global-guide-link { min-height: 44px; border-color: #8fd4a938; border-radius: 10px; }
+        body:has([data-via-nft-workspace]) [data-via-collection-heading] { padding-top: 8px; padding-bottom: 6px; }
+        body:has([data-via-nft-workspace]) [data-via-collection-heading] h1 { font-size: 24px; margin-top: 3px; }
+        body:has([data-via-nft-workspace]) #main-content { padding: 4px 10px 32px !important; }
+        body:has([data-via-nft-workspace]) section[aria-labelledby="account-lookup-heading"] { padding: 12px !important; margin-bottom: 12px !important; }
+        body:has([data-via-nft-workspace]) section[aria-labelledby="account-lookup-heading"] form { display: grid !important; grid-template-columns: minmax(0, 1fr) auto; gap: 6px !important; }
+        body:has([data-via-nft-workspace]) section[aria-labelledby="account-lookup-heading"] input[type="search"] { min-height: 44px; padding: 8px !important; font-size: 16px !important; }
+        body:has([data-via-nft-workspace]) section[aria-labelledby="account-lookup-heading"] button { min-height: 44px !important; }
+        body:has([data-via-nft-workspace]) #creator-search-hint { margin: 6px 0 0; font-size: 11px !important; line-height: 1.45; }
+        body:has([data-via-nft-workspace]) [data-via-nft-preferences] { gap: 5px !important; margin-top: 8px !important; }
+        body:has([data-via-nft-workspace]) [data-via-nft-preferences] button { font-size: 11px !important; padding: 6px 9px !important; }
+        body:has([data-via-nft-workspace]) [data-via-nft-preferences] select { font-size: 16px !important; padding: 6px 8px !important; max-width: 100%; }
+        body:has([data-via-nft-workspace]) [data-via-nft-preferences] > label { min-width: 0; max-width: 100%; }
+        body:has([data-via-nft-workspace]) [data-via-owned-nft-grid] { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 8px !important; }
+        body:has([data-via-nft-workspace]) [data-via-owned-nft-grid] > a { min-width: 0; border-radius: 10px !important; }
       }
     `}</style>
   </nav>
