@@ -2,13 +2,32 @@
 
 import Link from "next/link"
 import { BookOpen, Music2, House } from "lucide-react"
+import { useEffect, useState } from "react"
+import { readViaLocalSettings, VIA_SETTINGS_EVENT, type ViaLanguage } from "./via-local-settings"
+
+const LABELS: Record<ViaLanguage, readonly [string, string, string]> = {
+  Dutch: ["Homepage", "Handboek VIA", "VIA Muziek"],
+  English: ["Homepage", "VIA Handbook", "VIA Music"],
+  French: ["Accueil", "Guide VIA", "Musique VIA"],
+  Spanish: ["Inicio", "Manual VIA", "Música VIA"],
+  Chinese: ["首页", "VIA 手册", "VIA 音乐"],
+  Hindi: ["होमपेज", "VIA मार्गदर्शिका", "VIA संगीत"],
+}
 
 /** Central header links, never fixed over page content. */
 export default function ViaHelpButton() {
+  const [language, setLanguage] = useState<ViaLanguage>("English")
+  useEffect(() => {
+    const sync = () => setLanguage(readViaLocalSettings().interfaceLanguage)
+    sync()
+    window.addEventListener(VIA_SETTINGS_EVENT, sync)
+    return () => window.removeEventListener(VIA_SETTINGS_EVENT, sync)
+  }, [])
+  const labels = LABELS[language]
   return <nav className="via-global-guides" aria-label="VIA handbook and music">
-    <Link href="/" aria-label="Homepage" className="via-global-guide-link"><House size={17} aria-hidden="true" /><span>Homepage</span></Link>
-    <Link href="/help" aria-label="Handboek VIA" className="via-global-guide-link"><BookOpen size={17} aria-hidden="true" /><span>Handboek VIA</span></Link>
-    <Link href="/music" aria-label="VIA Muziek" className="via-global-guide-link"><Music2 size={17} aria-hidden="true" /><span>VIA Muziek</span></Link>
+    <Link href="/" aria-label={labels[0]} className="via-global-guide-link"><House size={17} aria-hidden="true" /><span>{labels[0]}</span></Link>
+    <Link href="/help" aria-label={labels[1]} className="via-global-guide-link"><BookOpen size={17} aria-hidden="true" /><span>{labels[1]}</span></Link>
+    <Link href="/music" aria-label={labels[2]} className="via-global-guide-link"><Music2 size={17} aria-hidden="true" /><span>{labels[2]}</span></Link>
     <style>{`
       .via-global-guides { position: static; display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 4px; width: min(1480px, calc(100% - 24px)); margin: 0 auto; padding: 0 0 3px; }
       .via-global-guide-link { box-sizing: border-box; min-height: 36px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 4px 10px; border: 1px solid transparent; border-radius: 9px; background: transparent; color: #b8ddc5; font-size: 11px; text-decoration: none; }

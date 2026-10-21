@@ -330,9 +330,11 @@ export default function PublicAccountNFTs({
   publicKey,
   username,
   autoLoad = false,
+  profileImage,
 }: {
   publicKey: string
   username: string
+  profileImage?: string
   autoLoad?: boolean
 }) {
   const cacheKey = `via:account-nfts:v${CACHE_VERSION}:${publicKey}`
@@ -612,15 +614,17 @@ export default function PublicAccountNFTs({
 
   return (
     <section aria-label={`Public NFTs owned by @${username}`}>
+      <style>{`.via-owned-preferences { padding:10px; border:1px solid #8fd4a926; border-radius:12px; background:#05080766; } .via-owned-preferences > input { max-width:420px; } .via-nft-filter-group { display:flex; flex-wrap:wrap; align-items:center; gap:6px; max-width:100%; } .via-nft-filter-group button { min-height:44px; } @media(max-width:720px) { .via-owned-preferences > input { flex-basis:100% !important; max-width:none; } .via-nft-filter-group { flex-basis:100%; } }`}</style>
       {loading && readProgress ? <p role="status" aria-live="polite" style={{ color: "#a5dfb8", lineHeight: 1.6 }}>Reading all ownership pages from DeSo: {readProgress.editions.toLocaleString()} editions across {readProgress.works.toLocaleString()} works found so far ({readProgress.pages} pages). This is not the final total.</p> : null}
       {nfts.length > 0 ? (
-        <p style={styles.status}>
-          {readComplete ? `@${username} owns ${totalOwnedCopies} NFT ${totalOwnedCopies === 1 ? "copy" : "copies"} across ${nfts.length} different NFT${nfts.length === 1 ? "" : "s"}.` : `@${username}: ${totalOwnedCopies} editions across ${nfts.length} works loaded so far. Incomplete read — this is not the final total.`}
+        <p style={{ ...styles.status, display: "flex", alignItems: "center", gap: 10, overflowWrap: "anywhere" }}>
+          {profileImage ? <img src={profileImage} alt="" width={44} height={44} style={{ borderRadius: "50%", flexShrink: 0 }} referrerPolicy="no-referrer" /> : null}
+          <span>{readComplete ? `@${username} owns ${totalOwnedCopies} NFT ${totalOwnedCopies === 1 ? "copy" : "copies"} across ${nfts.length} different NFT${nfts.length === 1 ? "" : "s"}.` : `@${username}: ${totalOwnedCopies} editions across ${nfts.length} works loaded so far. Incomplete read — this is not the final total.`}</span>
         </p>
       ) : null}
 
       {nfts.length > 0 ? (
-        <div id="collection-controls" data-via-nft-preferences ref={controlsRef} style={styles.controls}>
+        <div id="collection-controls" data-via-nft-preferences className="via-owned-preferences" ref={controlsRef} style={styles.controls}>
           <input
             type="search"
             aria-label="Search this account collection"
@@ -650,7 +654,7 @@ export default function PublicAccountNFTs({
             <option value="lowest-price">Lowest price</option>
             <option value="highest-price">Highest price</option>
           </select></label>
-          <span style={styles.controlLabel}>Sale</span>
+          <div className="via-nft-filter-group" role="group" aria-label="Sale status"><span style={styles.controlLabel}>Sale</span>
           {([["all", "All"], ["for-sale", "For sale"], ["not-for-sale", "Not for sale"]] as const).map(
             ([value, label]) => (
               <button
@@ -670,7 +674,7 @@ export default function PublicAccountNFTs({
               </button>
             )
           )}
-          <span style={styles.controlLabel}>Media</span>
+          </div><div className="via-nft-filter-group" role="group" aria-label="Media type"><span style={styles.controlLabel}>Media</span>
           {([["all", "All"], ["image", "Image"], ["video", "Video"], ["audio", "Audio"], ["unavailable", "Unavailable"]] as const).map(
             ([value, label]) => (
               <button
@@ -690,7 +694,7 @@ export default function PublicAccountNFTs({
               </button>
             )
           )}
-          <button
+          </div><div className="via-nft-filter-group" role="group" aria-label="Collection actions"><button
             type="button"
             disabled={!controlsChanged}
             style={{
@@ -713,7 +717,7 @@ export default function PublicAccountNFTs({
             onClick={loadNFTs}
           >
             {loading ? "Refreshing from DeSo…" : "Refresh from DeSo"}
-          </button>
+          </button></div>
         </div>
       ) : (
         <button
