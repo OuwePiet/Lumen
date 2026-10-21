@@ -338,6 +338,9 @@ export default function PublicAccountNFTs({
   const cacheKey = `via:account-nfts:v${CACHE_VERSION}:${publicKey}`
   const [nfts, setNFTs] = useState<DeSoNFTCollection[] | null>(null)
   const [loading, setLoading] = useState(false)
+  const [readComplete, setReadComplete] = useState(false)
+  const controlsRef = useRef<HTMLDivElement | null>(null)
+  const scrolledToControls = useRef(false)
   const [readProgress, setReadProgress] = useState<{ pages: number; works: number; editions: number } | null>(null)
   const [lastUpdated, setLastUpdated] = useState<number | null>(null)
   const [linkCopied, setLinkCopied] = useState(false)
@@ -392,6 +395,7 @@ export default function PublicAccountNFTs({
       const cached = readCache(window.sessionStorage.getItem(cacheKey), publicKey)
       if (cached) {
         setNFTs(cached.collections)
+        setReadComplete(true)
         setLastUpdated(cached.savedAt)
       } else {
         window.sessionStorage.removeItem(cacheKey)
@@ -408,16 +412,18 @@ export default function PublicAccountNFTs({
     const controller = new AbortController()
     loadController.current = controller
     setLoading(true)
+    setReadComplete(false)
     setReadProgress(null)
     setError("")
 
     try {
       const collections = await getNFTsForUser(publicKey, controller.signal, progress => {
-        if (!controller.signal.aborted && loadController.current === controller) setReadProgress(progress)
+        if (!controller.signal.aborted && loadController.current === controller) { setReadProgress(progress); setNFTs(progress.collections) }
       })
       if (controller.signal.aborted || loadController.current !== controller) return
       const savedAt = Date.now()
       setNFTs(collections)
+      setReadComplete(true)
       setLastUpdated(savedAt)
 
       const envelope: NFTCacheEnvelope = {
@@ -452,6 +458,15 @@ export default function PublicAccountNFTs({
       void loadNFTs()
     }
   }, [autoLoad, loadNFTs, restored])
+
+  useEffect(() => {
+    if (!autoLoad || !nfts?.length || scrolledToControls.current || !window.matchMedia("(max-width: 720px)").matches) return
+    const controls = controlsRef.current
+    if (!controls) return
+    scrolledToControls.current = true
+    const headerHeight = document.querySelector(".via-site-header")?.getBoundingClientRect().height ?? 0
+    window.scrollTo({ top: Math.max(0, controls.getBoundingClientRect().top + window.scrollY - headerHeight - 8), behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" })
+  }, [autoLoad, nfts])
 
   const collectionParams = new URLSearchParams({
     account: username,
@@ -600,12 +615,12 @@ export default function PublicAccountNFTs({
       {loading && readProgress ? <p role="status" aria-live="polite" style={{ color: "#a5dfb8", lineHeight: 1.6 }}>Reading all ownership pages from DeSo: {readProgress.editions.toLocaleString()} editions across {readProgress.works.toLocaleString()} works found so far ({readProgress.pages} pages). This is not the final total.</p> : null}
       {nfts.length > 0 ? (
         <p style={styles.status}>
-          @{username} owns {totalOwnedCopies} NFT {totalOwnedCopies === 1 ? "copy" : "copies"} across {nfts.length} different NFT{nfts.length === 1 ? "" : "s"}.
+          {readComplete ? `@${username} owns ${totalOwnedCopies} NFT ${totalOwnedCopies === 1 ? "copy" : "copies"} across ${nfts.length} different NFT${nfts.length === 1 ? "" : "s"}.` : `@${username}: ${totalOwnedCopies} editions across ${nfts.length} works loaded so far. Incomplete read — this is not the final total.`}
         </p>
       ) : null}
 
       {nfts.length > 0 ? (
-        <div style={styles.controls}>
+        <div id="collection-controls" data-via-nft-preferences ref={controlsRef} style={styles.controls}>
           <input
             type="search"
             aria-label="Search this account collection"
@@ -730,7 +745,7 @@ export default function PublicAccountNFTs({
       </p>
 
       {mediaFilteredNFTs.length > 0 ? (
-        <div style={styles.grid}>
+        <div data-via-owned-nft-grid style={styles.grid}>
           {visibleNFTs.map((collection) => {
             const post = collection.PostEntryResponse!
             const postHash = post.PostHashHex!
