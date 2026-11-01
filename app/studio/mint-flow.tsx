@@ -22,6 +22,7 @@ function AccountMintFlow({ publicKey }: { publicKey: string }) {
   return <>
     <MintPreflightLocalizer />
     <NFTRecoveryNotice />
+    <details open={!reviewed} className="mb-3 rounded-xl border border-zinc-800 px-3 py-2"><summary className="cursor-pointer text-sm text-[#9adbb2]">Mintinformatie / Mint information</summary>
     <section className="mb-4 rounded-xl border border-zinc-800 bg-black/20 p-5" aria-labelledby="via-nft-terms-heading">
       <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#8fd4a9]">VIA NFT · mint review {REVIEW_VERSION}</p>
       <h2 id="via-nft-terms-heading" className="mt-2 text-xl font-semibold">Before you mint</h2>
@@ -43,8 +44,8 @@ function AccountMintFlow({ publicKey }: { publicKey: string }) {
         }}>Continue to Mint</button>
       </> : null}
       {storageMessage ? <p role="status" className="mt-3 text-sm text-amber-300">{storageMessage}</p> : null}
-    </section>
-    {reviewed ? <><MintMediaStep onPostHash={setPostHash} /><MintPreflight initialPostHash={postHash} /></> : null}
+    </section></details>
+    {reviewed ? <div className="grid items-start gap-3 xl:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]"><MintMediaStep onPostHash={setPostHash} /><MintPreflight initialPostHash={postHash} /></div> : null}
   </>
 }
 export default function MintFlow() {

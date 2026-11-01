@@ -302,29 +302,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
         {imagePreviews.length || imageUrls.length ? <div className="flex flex-wrap gap-2 rounded-b-xl border-x border-b border-zinc-800 bg-zinc-950 px-3 pb-3">{imagePreviews.map((url, index) => <div key={`local-${url}`} className="relative h-28 w-28 overflow-hidden rounded-lg border border-zinc-800 bg-black"><img src={url} alt={`Selected image ${index + 1}`} className="h-full w-full object-cover" /></div>)}{imageUrls.map((url, index) => <div key={`attached-${url}`} className="relative h-28 w-28 overflow-hidden rounded-lg border border-zinc-800 bg-black"><img src={url} alt={`Attached image ${index + 1}`} className="h-full w-full object-cover" /><button type="button" onClick={() => removeUploadedImage(index)} aria-label={`Remove attached image ${index + 1}`} className="absolute right-1 top-1 rounded-md bg-black/75 px-1.5 py-0.5 text-[10px] text-zinc-200">×</button></div>)}</div> : null}
       </div>
 
-      {isReply ? <div className="mt-4 flex justify-end gap-2">
-        {onCancel ? <button type="button" onClick={onCancel} disabled={busy} className="rounded-xl border border-zinc-800 px-4 py-2 text-sm text-zinc-400 hover:border-zinc-700 hover:text-zinc-200 disabled:opacity-60">Sluiten</button> : null}
-        <button type="button" onClick={preparePost} disabled={!canPrepare} className="rounded-xl border border-[#8fd4a9]/55 px-4 py-2 text-sm font-semibold text-[#9adbb2] disabled:cursor-not-allowed disabled:border-zinc-800 disabled:text-zinc-600">{status === "preparing" ? "Preparing…" : status === "awaiting-approval" ? "Awaiting approval…" : status === "submitting" ? "Posting…" : "Reply"}</button>
-      </div> : null}
-
-      <div className="mt-3 grid grid-cols-3 gap-2 sm:flex sm:flex-wrap sm:items-center">
-        <button type="button" onClick={() => setEmojiOpen((open) => !open)} disabled={busy} className="min-h-10 rounded-lg border border-zinc-800 px-3 py-1.5 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2] disabled:opacity-50">Emoji</button>
-        {!isReply ? <><label className="flex min-h-10 cursor-pointer items-center justify-center rounded-lg border border-zinc-800 px-3 py-1.5 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2]"><span>{imageUploading ? "Uploading…" : "Photo"}</span><input type="file" accept="image/*" className="sr-only" disabled={busy || imageUploading || imageUrls.length >= MAX_IMAGES} onChange={(event) => { const file = event.target.files?.[0] ?? null; event.currentTarget.value = ""; void uploadImage(file) }} /></label><button type="button" onClick={() => { setMediaChoice("video"); setMediaOpen(true) }} disabled={busy} className="min-h-10 rounded-lg border border-zinc-800 px-3 py-1.5 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2] disabled:opacity-50">Video</button></> : null}
-        {!isReply ? <>
-          <button type="button" onClick={saveDraft} disabled={busy} className="rounded-lg border border-zinc-800 px-3 py-1.5 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2] disabled:opacity-50">Save</button>
-          <button type="button" onClick={() => { setPollOpen((open) => !open); if (pollOpen) setPollOptions(["", ""]) }} disabled={busy} className="rounded-lg border border-zinc-800 px-3 py-1.5 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2] disabled:opacity-50">{pollOpen ? "Remove poll" : "Poll"}</button>
-
-          <button type="button" onClick={preparePost} disabled={!canPrepare} className="rounded-lg border border-[#8fd4a9]/55 px-3 py-1.5 text-xs font-semibold text-[#9adbb2] disabled:cursor-not-allowed disabled:border-zinc-800 disabled:text-zinc-600">{imageUploading ? "Uploading…" : videoUploading ? "Uploading…" : status === "preparing" ? "Preparing…" : status === "awaiting-approval" ? "Awaiting approval…" : status === "submitting" ? "Sending…" : "Send"}</button>
-        </> : null}
-      </div>
-      {!isReply && !canPrepare && hasContent ? <p className="mt-2 text-[11px] text-amber-300" role="status" aria-live="polite">Send unavailable: {sendBlockedReason}</p> : null}
-
-      {emojiOpen ? <div className="mt-2 flex flex-wrap gap-1 rounded-xl border border-zinc-800 bg-zinc-950/70 p-2" aria-label="Insert emoji">
-        {COMPOSER_EMOJI.map((emoji) => <button key={emoji} type="button" onClick={() => insertEmoji(emoji)} disabled={busy || body.length + emoji.length > MAX_POST_LENGTH} className="rounded-lg px-2 py-1 text-lg hover:bg-white/[0.06] disabled:opacity-40" aria-label={`Insert ${emoji}`}>{emoji}</button>)}
-      </div> : null}
-      {!isReply && draftMessage ? <p className="mt-2 text-xs text-zinc-500" role="status" aria-live="polite">{draftMessage}</p> : null}
-
-      {!isReply && pollOpen ? <div className="mt-4 rounded-xl border border-zinc-800 bg-zinc-950/70 p-3">
+      {!isReply && pollOpen ? <div data-via-poll-options className="mt-2 scroll-mt-32 rounded-xl border border-zinc-800 bg-zinc-950/70 p-3">
         <p className="text-sm font-medium text-zinc-200">Poll options</p>
         <p className="mt-1 hidden text-xs text-zinc-500 sm:block">Add 2–5 unique choices.</p>
         <div className="mt-3 space-y-2">
@@ -336,6 +314,30 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
         {pollOptions.length < MAX_POLL_OPTIONS ? <button type="button" onClick={() => setPollOptions((current) => [...current, ""])} className="mt-2 text-xs text-[#9adbb2]">+ Add option</button> : null}
         {!pollValid ? <p className="mt-2 text-xs text-amber-300">Use at least two different, non-empty poll options.</p> : null}
       </div> : null}
+
+      {isReply ? <div className="mt-4 flex justify-end gap-2">
+        {onCancel ? <button type="button" onClick={onCancel} disabled={busy} className="rounded-xl border border-zinc-800 px-4 py-2 text-sm text-zinc-400 hover:border-zinc-700 hover:text-zinc-200 disabled:opacity-60">Sluiten</button> : null}
+        <button type="button" onClick={preparePost} disabled={!canPrepare} className="rounded-xl border border-[#8fd4a9]/55 px-4 py-2 text-sm font-semibold text-[#9adbb2] disabled:cursor-not-allowed disabled:border-zinc-800 disabled:text-zinc-600">{status === "preparing" ? "Preparing…" : status === "awaiting-approval" ? "Awaiting approval…" : status === "submitting" ? "Posting…" : "Reply"}</button>
+      </div> : null}
+
+      <div className="mt-3 grid grid-cols-3 gap-2 sm:flex sm:flex-wrap sm:items-center">
+        <button type="button" onClick={() => setEmojiOpen((open) => !open)} disabled={busy} className="min-h-10 rounded-lg border border-zinc-800 px-3 py-1.5 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2] disabled:opacity-50">Emoji</button>
+        {!isReply ? <><label className="flex min-h-10 cursor-pointer items-center justify-center rounded-lg border border-zinc-800 px-3 py-1.5 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2]"><span>{imageUploading ? "Uploading…" : "Photo"}</span><input type="file" accept="image/*" className="sr-only" disabled={busy || imageUploading || imageUrls.length >= MAX_IMAGES} onChange={(event) => { const file = event.target.files?.[0] ?? null; event.currentTarget.value = ""; void uploadImage(file) }} /></label><button type="button" onClick={() => { setMediaChoice("video"); setMediaOpen(true) }} disabled={busy} className="min-h-10 rounded-lg border border-zinc-800 px-3 py-1.5 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2] disabled:opacity-50">Video</button></> : null}
+        {!isReply ? <>
+          <button type="button" onClick={saveDraft} disabled={busy} className="rounded-lg border border-zinc-800 px-3 py-1.5 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2] disabled:opacity-50">Save</button>
+          <button type="button" onClick={() => { setPollOpen((open) => !open); if (pollOpen) setPollOptions(["", ""]); else requestAnimationFrame(() => { const panel = document.querySelector<HTMLElement>("[data-via-poll-options]"); panel?.scrollIntoView({ behavior: "smooth", block: "center" }); panel?.querySelector("input")?.focus({ preventScroll: true }) }) }} disabled={busy} className="rounded-lg border border-zinc-800 px-3 py-1.5 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2] disabled:opacity-50">{pollOpen ? "Remove poll" : "Poll"}</button>
+
+          <button type="button" onClick={preparePost} disabled={!canPrepare} className="rounded-lg border border-[#8fd4a9]/55 px-3 py-1.5 text-xs font-semibold text-[#9adbb2] disabled:cursor-not-allowed disabled:border-zinc-800 disabled:text-zinc-600">{imageUploading ? "Uploading…" : videoUploading ? "Uploading…" : status === "preparing" ? "Preparing…" : status === "awaiting-approval" ? "Awaiting approval…" : status === "submitting" ? "Sending…" : "Send"}</button>
+        </> : null}
+      </div>
+      {!isReply && !canPrepare && hasContent ? <p className="mt-2 text-[11px] text-amber-300" role="status" aria-live="polite">Send unavailable: {sendBlockedReason}</p> : null}
+
+      {emojiOpen ? <div className="mt-2 flex flex-wrap gap-1 rounded-xl border border-zinc-800 bg-zinc-950/70 p-2" aria-label="Insert emoji">
+        {COMPOSER_EMOJI.map((emoji) => <button key={emoji} type="button" onClick={() => insertEmoji(emoji)} disabled={busy || body.length + emoji.length > MAX_POST_LENGTH} className="rounded-lg px-2 py-1 text-lg hover:bg-white/[0.06] disabled:opacity-40" aria-label={`Insert ${emoji}`}>{emoji}</button>)}
+      </div> : null}
+      {!isReply && draftMessage ? <p className="mt-2 text-xs text-zinc-500" role="status" aria-live="polite">{draftMessage}</p> : null}
+
+
 
       {!isReply ? <label className="mt-2 inline-flex items-center gap-1.5 text-[11px] text-zinc-600"><input type="checkbox" checked={sensitiveContent} onChange={(event)=>setSensitiveContent(event.target.checked)} className="h-3.5 w-3.5 accent-[#8fd4a9]" /><span>Sensitive content</span></label> : null}
 

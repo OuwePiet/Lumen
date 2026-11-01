@@ -10,6 +10,7 @@ import {
 } from "./deso-identity-session"
 import ViaIdentityStatusMarks from "./via-identity-status"
 import ViaHelpButton from "./via-help-button"
+import { isNFTWorkspace } from "./nft-workspace-nav"
 import { viaModernIdentity } from "./deso-identity-modern"
 import {
   readViaLocalSettings,
@@ -30,6 +31,7 @@ const nav = [
   ["notifications", "/notifications"],
   ["discover", "/discover"],
   ["nfts", "/collection"],
+  ["market", "/market"],
   ["live", "/live"],
   ["games", "/quest"],
   ["communities", "/communities"],
@@ -106,7 +108,7 @@ const pill = {
 }
 
 const styles = {
-  header: { position: "sticky" as const, top: 0, zIndex: 80, background: "rgba(2,7,4,.95)", backdropFilter: "blur(18px)", borderBottom: "1px solid rgba(143,212,169,.13)" },
+  header: { position: "relative" as const, top: 0, zIndex: 80, background: "rgba(2,7,4,.95)", backdropFilter: "blur(18px)", borderBottom: "1px solid rgba(143,212,169,.13)" },
   shell: { width: "min(1480px, calc(100% - 32px))", margin: "0 auto", display: "grid", gridTemplateColumns: "260px minmax(0,1fr)", gridTemplateRows: "72px 58px", columnGap: "18px", alignItems: "stretch" },
   brand: { gridColumn: "1", gridRow: "1 / span 2", display: "flex", alignItems: "center", justifyContent: "center", color: "inherit", textDecoration: "none", overflow: "hidden" },
   logo: { width: "250px", height: "130px", objectFit: "contain" as const, display: "block" },
@@ -216,12 +218,28 @@ export default function ViaSiteHeader() {
   useEffect(() => {
     if (isHomepage) { setProfile(null); return }
     if (!session?.publicKey) { setProfile(null); return }
+    const publicKey = session.publicKey
+    const cacheKey = "via:public-profile:" + publicKey
+    try {
+      const saved = JSON.parse(window.localStorage.getItem(cacheKey) ?? "null") as PublicProfile | null
+      if (saved?.publicKey === publicKey && typeof saved.username === "string") setProfile({ publicKey, username: saved.username, profilePic: saved.profilePic })
+      else setProfile(null)
+    } catch { setProfile(null) }
     const controller = new AbortController()
-    void fetch(`/api/via/profile?identity=${encodeURIComponent(session.publicKey)}`, { cache: "no-store", signal: controller.signal, headers: { Accept: "application/json" } })
-      .then(async (response) => response.ok ? (await response.json()) as ProfileResponse : null)
-      .then((data) => { if (!controller.signal.aborted) setProfile(data?.ok && data.profile ? { ...data.profile, publicKey: session.publicKey } : null) })
-      .catch(() => { if (!controller.signal.aborted) setProfile(null) })
-    return () => controller.abort()
+    const load = async () => {
+      try {
+        const response = await fetch("/api/via/profile?identity=" + encodeURIComponent(publicKey) + "&compact=1", { cache: "no-store", signal: controller.signal, headers: { Accept: "application/json" } })
+        const data = response.ok ? await response.json() as ProfileResponse : null
+        if (controller.signal.aborted || !data?.ok || !data.profile) return
+        const next = { ...data.profile, publicKey }
+        setProfile(next)
+        try { window.localStorage.setItem(cacheKey, JSON.stringify({ publicKey, username: next.username, profilePic: next.profilePic })) } catch {}
+      } catch { /* Retain only the last public name and avatar, never a cached verification mark. */ }
+    }
+    void load()
+    window.addEventListener("focus", load)
+    return () => { controller.abort(); window.removeEventListener("focus", load) }
+
   }, [isHomepage, session?.publicKey])
 
   useEffect(() => {
@@ -230,7 +248,7 @@ export default function ViaSiteHeader() {
     const controller = new AbortController()
     void Promise.all(knownAccounts.map(async (account) => {
       try {
-        const response = await fetch(`/api/via/profile?identity=${encodeURIComponent(account.publicKey)}`, { cache: "no-store", signal: controller.signal, headers: { Accept: "application/json" } })
+        const response = await fetch(`/api/via/profile?identity=${encodeURIComponent(account.publicKey)}&compact=1`, { cache: "no-store", signal: controller.signal, headers: { Accept: "application/json" } })
         const data = response.ok ? (await response.json()) as ProfileResponse : null
         return [account.publicKey, data?.ok && data.profile ? { ...data.profile, publicKey: account.publicKey } : {}] as const
       } catch {
@@ -320,8 +338,8 @@ export default function ViaSiteHeader() {
         <div style={styles.topRow} className="via-site-header-top">
           <nav style={styles.nav} className={`via-site-header-nav ${pathname === "/notifications" || pathname === "/radio" || pathname === "/messages" || pathname === "/profile" ? "via-site-header-nav-compact-mobile" : ""}`} aria-label="VIA main navigation">
             {nav.filter(([key]) => key !== "home").map(([key, href]) => {
-              const active = href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`)
-              return <Link key={href} href={href} className="via-site-header-link" style={{ ...styles.link, ...(active ? styles.activeLink : {}) }}>{t[key]}{active ? <span style={styles.activeLine} aria-hidden="true" /> : null}</Link>
+              const active = href === "/collection" ? isNFTWorkspace(pathname) : href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`)
+              return <Link key={href} href={href} className="via-site-header-link" style={{ ...styles.link, ...(active ? styles.activeLink : {}) }}>{key === "market" ? (language === "Dutch" ? "Markt" : "Market") : t[key]}{active ? <span style={styles.activeLine} aria-hidden="true" /> : null}</Link>
             })}
           </nav>
         </div>
@@ -394,6 +412,8 @@ export default function ViaSiteHeader() {
       </div>
       <ViaHelpButton />
       <style>{`
+        @media (min-width: 721px) { .via-notifications-home-top { display: none !important; } .via-notifications-future-mark { display:inline-flex; align-items:center; min-height:32px; padding:4px 10px; border:1px solid rgba(143,212,169,.3); border-radius:999px; background:rgba(40,95,64,.15); color:#b8ddc5; font-size:10px; font-weight:700; line-height:1; letter-spacing:.08em; text-transform:uppercase; white-space:nowrap; } }
+        @media (max-width:720px) { .via-site-header:has(.via-site-header-tools-notifications) .via-global-guides a[href="/"] { display:none; } }
         .via-site-header-link:focus:not(:focus-visible) { outline: none; }
         .via-site-header-link:focus-visible { outline: 2px solid #b9ffd4; outline-offset: -4px; border-radius: 7px; }
         .via-site-header-language-wrap { position: relative; flex: 0 0 auto; }

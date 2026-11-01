@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import Link from "next/link"
 import { readViaLocalSettings, VIA_SETTINGS_EVENT, type ViaLanguage } from "../via-local-settings"
 
 type Copy = { title: string; intro: string; safety: string }
@@ -55,11 +56,12 @@ export default function MusicPage() {
   const copy = COPY[language]
 
   return (
-    <main style={{ minHeight: "100vh", background: "#050807", color: "#e8f1eb", padding: "clamp(28px,5vw,72px) 20px 110px" }}>
-      <section style={{ width: "min(980px,100%)", margin: "0 auto", border: "1px solid rgba(143,212,169,.16)", borderRadius: 24, background: "rgba(7,16,11,.78)", padding: "clamp(24px,5vw,54px)" }}>
+    <main style={{ minHeight: "100vh", background: "#050807", color: "#e8f1eb", padding: "20px 16px 48px" }}>
+      <section style={{ width: "min(980px,100%)", margin: "0 auto", border: "1px solid rgba(143,212,169,.16)", borderRadius: 24, background: "rgba(7,16,11,.78)", padding: "clamp(16px,3vw,28px)" }}>
         <p style={{ margin: "0 0 10px", color: "#8fd4a9", fontSize: 12, fontWeight: 800, letterSpacing: ".16em", textTransform: "uppercase" }}>VIA</p>
-        <h1 style={{ margin: 0, fontSize: "clamp(32px,6vw,62px)", lineHeight: 1 }}>{copy.title}</h1>
+        <h1 style={{ margin: 0, fontSize: "clamp(28px,4vw,42px)", lineHeight: 1 }}>{copy.title}</h1>
         <p style={{ margin: "18px 0 0", maxWidth: 720, color: "#b8c6bd", lineHeight: 1.7 }}>{copy.intro}</p>
+        <nav aria-label="VIA music destinations" className="mt-4 grid gap-2 sm:grid-cols-3">{[{href:"/radio",name:language === "Dutch" ? "Wereldradio" : "World Radio"},{href:"/discover/voices",name:language === "Dutch" ? "Ontdek creators" : "Discover creators"},{href:"/collection?media=audio",name:language === "Dutch" ? "Muziekcollecties" : "Music collections"}].map(item => <Link key={item.href} href={item.href} className="flex min-h-11 items-center justify-center rounded-xl border border-[#285f40] p-3 text-sm text-[#9adbb2] hover:border-[#8fd4a9]">{item.name}</Link>)}</nav>
         <p style={{ margin: "14px 0 0", maxWidth: 720, color: "#829087", lineHeight: 1.7, fontSize: 14 }}>{copy.safety}</p>
       </section>
     </main>

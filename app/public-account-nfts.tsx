@@ -8,7 +8,6 @@ import {
   type DeSoNFTPost,
 } from "./deso-nfts"
 import NFTMedia from "./nft-media"
-import NFTReadStatus from "./nft-read-status"
 import { compareNFTCollections } from "../lib/via/nft-collection-sort"
 import XShareButton from "./x-share-button"
 import { isViaSensitiveContent } from "../lib/via/sensitive-content"
@@ -268,8 +267,8 @@ const styles = {
   },
   grid: {
     display: "grid",
-    gap: "12px",
-    gridTemplateColumns: "repeat(auto-fill, minmax(min(160px, 100%), 1fr))",
+    gap: "10px",
+    gridTemplateColumns: "repeat(auto-fill, minmax(min(145px, 100%), 1fr))",
     marginTop: "12px",
   },
   card: {
@@ -311,7 +310,7 @@ const styles = {
     WebkitBoxOrient: "vertical" as const,
     WebkitLineClamp: 2,
   },
-  fact: { color: "#a9b8af", fontSize: "11px", margin: 0 },
+  fact: { overflowWrap: "anywhere" as const, color: "#a9b8af", fontSize: "11px", margin: 0 },
   saleFact: { color: "#b9ffd4", fontSize: "11px", margin: "5px 0 0" },
   more: {
     background: "transparent",
@@ -338,6 +337,17 @@ export default function PublicAccountNFTs({
   profileImage?: string
   autoLoad?: boolean
 }) {
+  const [accountName, setAccountName] = useState<{ key: string; name: string } | null>(null)
+  useEffect(() => {
+    if (username !== publicKey && !username.startsWith("BC1")) return
+    const controller = new AbortController()
+    void fetch("/api/via/profile?identity=" + encodeURIComponent(publicKey) + "&compact=1", { signal: controller.signal })
+      .then(response => response.ok ? response.json() : null)
+      .then(data => { if (!controller.signal.aborted && data?.ok && typeof data.profile?.username === "string") setAccountName({ key: publicKey, name: data.profile.username }) })
+      .catch(() => {})
+    return () => controller.abort()
+  }, [publicKey, username])
+  const displayUsername = username === publicKey || username.startsWith("BC1") ? accountName?.key === publicKey ? accountName.name : "Account" : username
   const cacheKey = `via:account-nfts:v${CACHE_VERSION}:${publicKey}`
   const [nfts, setNFTs] = useState<DeSoNFTCollection[] | null>(null)
   const [loading, setLoading] = useState(false)
@@ -482,7 +492,7 @@ export default function PublicAccountNFTs({
     if (autoLoad) {
       return (
         <div aria-live="polite" aria-busy={loading}>
-          {loading && readProgress ? <p style={{ color: "#a5dfb8", lineHeight: 1.6 }}><NFTReadStatus editions={readProgress.editions} works={readProgress.works} pages={readProgress.pages} /></p> : null}
+          {loading && readProgress ? <p style={{ color: "#a5dfb8", lineHeight: 1.6 }}>Reading all ownership pages from DeSo: {readProgress.editions.toLocaleString()} editions across {readProgress.works.toLocaleString()} works found so far ({readProgress.pages} pages). This is not the final total.</p> : null}
           <button
             type="button"
             style={styles.action}
@@ -614,13 +624,13 @@ export default function PublicAccountNFTs({
   }
 
   return (
-    <section aria-label={`Public NFTs owned by @${username}`}>
+    <section aria-label={`Public NFTs owned by @${displayUsername}`}>
       <style>{`.via-owned-preferences { padding:10px; border:1px solid #8fd4a926; border-radius:12px; background:#05080766; } .via-owned-preferences > input { max-width:420px; } .via-nft-filter-group { display:flex; flex-wrap:wrap; align-items:center; gap:6px; max-width:100%; } .via-nft-filter-group button { min-height:44px; } @media (min-width:981px) and (pointer:fine) { .via-owned-preferences { padding:8px 10px; gap:7px !important; margin-top:8px !important; } .via-owned-preferences > input { max-width:320px; flex-basis:220px !important; } .via-owned-preferences input, .via-owned-preferences select { min-height:34px !important; height:34px; font-size:12px !important; padding:5px 9px !important; border-radius:8px !important; } .via-owned-preferences button, .via-owned-preferences a { min-height:32px !important; font-size:11px !important; font-weight:500 !important; padding:5px 10px !important; border-radius:8px !important; } .via-owned-preferences label { gap:2px !important; } .via-nft-filter-group { gap:4px; } .via-owned-preferences span { font-size:11px !important; font-weight:500 !important; } section[aria-label^="Public NFTs owned"] > p { margin-top:8px !important; font-size:12px !important; } section[aria-label^="Public NFTs owned"] > p img { width:32px; height:32px; } } @media(max-width:720px) { .via-owned-preferences > input { flex-basis:100% !important; max-width:none; } .via-nft-filter-group { flex-basis:100%; } }`}</style>
-      {loading && readProgress ? <p role="status" aria-live="polite" style={{ color: "#a5dfb8", lineHeight: 1.6 }}><NFTReadStatus editions={readProgress.editions} works={readProgress.works} pages={readProgress.pages} /></p> : null}
+      {loading && readProgress ? <p role="status" aria-live="polite" style={{ color: "#a5dfb8", lineHeight: 1.6 }}>Reading all ownership pages from DeSo: {readProgress.editions.toLocaleString()} editions across {readProgress.works.toLocaleString()} works found so far ({readProgress.pages} pages). This is not the final total.</p> : null}
       {nfts.length > 0 ? (
         <p style={{ ...styles.status, display: "flex", alignItems: "center", gap: 10, overflowWrap: "anywhere" }}>
           {profileImage ? <img src={profileImage} alt="" width={44} height={44} style={{ borderRadius: "50%", flexShrink: 0 }} referrerPolicy="no-referrer" /> : null}
-          <NFTReadStatus username={username} editions={totalOwnedCopies} works={nfts.length} complete={readComplete} />
+          <span>{readComplete ? `@${displayUsername} owns ${totalOwnedCopies} NFT ${totalOwnedCopies === 1 ? "copy" : "copies"} across ${nfts.length} different NFT${nfts.length === 1 ? "" : "s"}.` : `@${displayUsername}: ${totalOwnedCopies} editions across ${nfts.length} works loaded so far. Incomplete read — this is not the final total.`}</span>
         </p>
       ) : null}
 
@@ -710,7 +720,7 @@ export default function PublicAccountNFTs({
           <button type="button" style={styles.filter} onClick={copyCollectionLink}>
             {linkCopied ? "Link copied" : "Copy collection link"}
           </button>
-          <XShareButton href={sharePath} text={`VIA NFT collection · @${username}`} label="X" style={styles.filter} />
+          <XShareButton href={sharePath} text={`VIA NFT collection · @${displayUsername}`} label="X" style={styles.filter} />
           <button
             type="button"
             style={styles.filter}
@@ -745,7 +755,7 @@ export default function PublicAccountNFTs({
 
       <p style={styles.status} aria-live="polite">
         {nfts.length === 0
-          ? `No public NFTs found for @${username}.`
+          ? `No public NFTs found for @${displayUsername}.`
           : `${mediaFilteredNFTs.length} of ${nfts.length} public NFTs match.`}
       </p>
 
@@ -789,7 +799,7 @@ export default function PublicAccountNFTs({
                 <div style={styles.content}>
                   <h3 style={styles.title}>{title(post.Body)}</h3>
                   <p style={styles.fact}>
-                    @{username} owns {ownedCopies} of {totalCopies} {totalCopies === 1 ? "copy" : "copies"}
+                    @{displayUsername} owns {ownedCopies} of {totalCopies} {totalCopies === 1 ? "copy" : "copies"}
                   </p>
                   <p style={styles.saleFact}>{ownedSaleStatus(ownedEntries)}</p>
                 </div>

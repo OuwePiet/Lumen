@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import PublicAccountLabel from "../public-account-label"
 import { useEffect, useState } from "react"
 import { useViaIdentitySession } from "../use-via-identity-session"
 import { useNFTAction } from "../use-nft-action"
@@ -91,7 +92,7 @@ function PublishedCollections({ publicKey }: { publicKey: string }) {
   }, [publicKey, revision, cursor])
   return <section className="mt-8" aria-labelledby="published-collections-heading">
     <h2 id="published-collections-heading" className="text-xl font-semibold">Public collections / series</h2>
-    <p className="mt-3 break-all text-xs text-zinc-500">Publisher: {publicKey}</p>
+    <p className="mt-3 break-all text-xs text-zinc-500">Publisher: <PublicAccountLabel publicKey={publicKey} /></p>
     <button type="button" disabled={loading} className="mt-3 min-h-11 rounded-lg border border-zinc-700 px-4 py-2" onClick={() => { setCursor(""); setNextCursor(""); setRevision(value => value + 1) }}>Refresh publications</button>
     <p role="status" className="mt-3 text-sm text-zinc-400">{message}</p>
     <div className="mt-5 grid gap-4">{collections.map(({ hash, data }) => <article key={hash} className="rounded-xl border border-zinc-800 p-5"><h3 className="text-lg font-semibold">{data.title}</h3><p className="mt-2 whitespace-pre-wrap text-sm text-zinc-400">{data.description}</p><p className="mt-2 text-xs text-zinc-500">{data.category} · {data.items.length} NFT references · curated membership</p><ul className="mt-3 grid gap-2">{data.items.map((item, index) => <li key={item}><Link className="inline-block min-h-11 break-all py-2 text-sm text-[#9adbb2] underline" href={`/nft/${item}`}>{index + 1}. {item}</Link></li>)}</ul><p className="break-all text-xs text-zinc-500">Publication: {hash}</p></article>)}</div>
@@ -101,9 +102,24 @@ function PublishedCollections({ publicKey }: { publicKey: string }) {
 
 export default function CollectionWorkspace({ publicKey }: { publicKey?: string }) {
   const session = useViaIdentitySession()
-  const reader = publicKey || session?.publicKey
+  const requested = publicKey || session?.publicKey || ""
+  const [resolved, setResolved] = useState<{ input: string; key: string } | null>(null)
+  const [lookupError, setLookupError] = useState("")
+  useEffect(() => {
+    if (!requested || /^[1-9A-HJ-NP-Za-km-z]{40,128}$/.test(requested)) return
+    const controller = new AbortController()
+    setLookupError("")
+    void fetch("/api/via/profile?identity=" + encodeURIComponent(requested.replace(/^@/, "")) + "&compact=1", { signal: controller.signal })
+      .then(response => response.ok ? response.json() : null)
+      .then(data => { if (!controller.signal.aborted) { if (data?.ok && typeof data.profile?.publicKey === "string") setResolved({ input: requested, key: data.profile.publicKey }); else setLookupError("Account niet gevonden. Controleer de naam of publieke sleutel.") } })
+      .catch(() => { if (!controller.signal.aborted) setLookupError("Het account kan nu niet worden opgezocht.") })
+    return () => controller.abort()
+  }, [requested])
+  const reader = /^[1-9A-HJ-NP-Za-km-z]{40,128}$/.test(requested) ? requested : resolved?.input === requested ? resolved.key : undefined
+
   return <><h1 className="text-2xl font-semibold">Collections & series</h1><p className="mt-3 text-sm text-zinc-400">Public DeSo publications stay readable without login. Local drafts belong to the currently selected VIA account.</p>
-    <form className="mt-5"><label className="text-sm">Public publisher key<input name="publicKey" defaultValue={publicKey ?? ""} required className={field} placeholder="BC1…" /></label><button className="mt-3 min-h-11 rounded-lg border border-zinc-700 px-4 py-2">Open public collections</button></form>
+    <form className="mt-5"><label className="text-sm">Accountnaam of publieke sleutel<input name="publicKey" defaultValue={publicKey ?? ""} required className={field} placeholder="OuwePiet, @OuwePiet of BC1…" /></label><button className="mt-3 min-h-11 rounded-lg border border-zinc-700 px-4 py-2">Open public collections</button></form>
+    {lookupError ? <p role="status" className="mt-2 text-sm text-amber-300">{lookupError}</p> : null}
     {reader ? <PublishedCollections key={reader} publicKey={reader} /> : <p className="mt-4 text-sm text-zinc-400">Choose a public publisher or sign in through the VIA account menu.</p>}
     {session ? <CollectionEditor key={session.publicKey} publicKey={session.publicKey} /> : null}
   </>

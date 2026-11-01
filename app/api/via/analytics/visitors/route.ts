@@ -33,6 +33,7 @@ async function readCount(from: Date, to: Date) {
 
   const url = new URL(VERCEL_ANALYTICS_URL)
   url.searchParams.set("projectId", projectId)
+  url.searchParams.set("teamId", teamId)
   url.searchParams.set("since", from.toISOString())
   url.searchParams.set("until", to.toISOString())
 
@@ -84,6 +85,7 @@ async function readCountries(from: Date, to: Date) {
 
   const url = new URL(VERCEL_ANALYTICS_AGGREGATE_URL)
   url.searchParams.set("projectId", projectId)
+  url.searchParams.set("teamId", teamId)
   url.searchParams.set("since", from.toISOString())
   url.searchParams.set("until", to.toISOString())
   url.searchParams.set("by", "country")
@@ -129,6 +131,14 @@ async function readCountries(from: Date, to: Date) {
 }
 
 export async function GET() {
+  // Test instances show the public production aggregate, without copying production credentials.
+  if (process.env.VERCEL_ENV !== "production" && !process.env.VIA_VERCEL_ANALYTICS_TOKEN) {
+    try {
+      const response = await fetch("https://www.viadeso.online/api/via/analytics/visitors", { cache: "no-store", signal: AbortSignal.timeout(12_000) })
+      const data = await response.json() as { ok?: boolean }
+      if (response.ok && data.ok) return NextResponse.json(data, { headers: { "Cache-Control": "no-store" } })
+    } catch { /* Preserve the unavailable state if the real source cannot be reached. */ }
+  }
   const now = new Date()
   const dayStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()))
   const monthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1))

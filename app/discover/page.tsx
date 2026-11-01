@@ -148,37 +148,17 @@ export default function DiscoverPage() {
   const copy = COPY[language]
 
   return (
-    <main className="min-h-screen bg-black px-5 py-8 text-white sm:px-8 lg:px-12">
-      <div className="mx-auto max-w-6xl">
-        <header className="mb-7 border-b border-white/10 pb-5">
-          <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">{copy.title}</h1>
-          <p className="mt-2 text-sm text-zinc-500 sm:text-base">{copy.intro}</p>
-        </header>
-
-        <section className="grid gap-4 sm:grid-cols-2" aria-label={copy.title}>
-          {copy.primary.map((item) => (
-            <article key={item.href} className="rounded-2xl border border-zinc-800 bg-zinc-950/75 p-5">
-              <h2 className="text-xl font-medium text-zinc-100">{item.title}</h2>
-              <p className="mt-2 text-sm leading-6 text-zinc-400">{item.text}</p>
-              <Link href={item.href} className="mt-5 inline-flex rounded-full border border-[#285f40] px-4 py-2 text-sm font-medium text-[#9adbb2] hover:border-[#8fd4a9]/70">
-                {item.action}
-              </Link>
-            </article>
-          ))}
-        </section>
-
-        <section className="mt-8 border-t border-zinc-900 pt-6" aria-labelledby="discover-more-heading">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <h2 id="discover-more-heading" className="text-xl font-semibold">{copy.more}</h2>
-            <div className="flex flex-wrap gap-2">
-              {copy.secondary.map((item) => (
-                <Link key={item.href} href={item.href} className="rounded-full border border-zinc-800 px-3.5 py-2 text-sm text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2]">
-                  {item.title}
-                </Link>
-              ))}
-            </div>
-          </div>
-        </section>
+    <main className="min-h-screen bg-black px-4 py-3 text-white sm:px-6">
+      <div className="mx-auto max-w-7xl">
+        <nav aria-label={copy.title} className="grid grid-cols-2 gap-2 md:grid-cols-4">
+          {copy.primary.map(item => <Link key={item.href} href={item.href} className="rounded-xl border border-[#285f40] bg-[#07100b] p-3 transition hover:border-[#8fd4a9] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#8fd4a9]">
+            <span className="block font-semibold text-[#9adbb2]">{item.action}</span><span className="mt-1 block text-xs leading-5 text-zinc-400">{item.text}</span>
+          </Link>)}
+        </nav>
+        <header className="my-4"><h1 className="text-2xl font-semibold">{copy.title}</h1><p className="mt-1 text-sm text-zinc-400">{copy.intro}</p></header>
+        <nav aria-label={copy.more} className="flex flex-wrap gap-2">
+          {copy.secondary.filter(item => !copy.primary.some(primary => primary.href === item.href)).map(item => <Link key={item.href} href={item.href} className="inline-flex min-h-11 items-center rounded-full border border-zinc-800 px-3 py-2 text-sm text-zinc-300 hover:border-[#8fd4a9]">{item.title}</Link>)}
+        </nav>
       </div>
     </main>
   )

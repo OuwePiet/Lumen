@@ -84,9 +84,9 @@ function countryFlag(code: string) {
 
 function Panel({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="rounded-2xl border border-[#285f40]/70 bg-[#050806]/90 p-4 shadow-[0_10px_30px_rgba(0,0,0,0.28)]">
+    <section className="rounded-2xl border border-[#285f40]/70 bg-[#050806]/90 p-3 shadow-[0_10px_30px_rgba(0,0,0,0.28)]">
       <h2 className="text-sm font-semibold tracking-wide text-[#9adbb2]">{title}</h2>
-      <div className="mt-3 space-y-2 text-xs text-zinc-400">{children}</div>
+      <div className="mt-2 space-y-1.5 text-xs text-zinc-400">{children}</div>
     </section>
   )
 }
@@ -104,15 +104,7 @@ function Metric({ label, value, note }: { label: string; value: number | null; n
 }
 
 function PendingMetric({ label, note }: { label: string; note: string }) {
-  return (
-    <div className="rounded-xl border border-zinc-800 bg-black/25 px-3 py-2">
-      <div className="flex items-center justify-between gap-3">
-        <span className="text-zinc-300">{label}</span>
-        <span className="text-zinc-600">—</span>
-      </div>
-      <p className="mt-1 text-[10px] leading-4 text-zinc-600">{note}</p>
-    </div>
-  )
+  return <div title={note} className="flex items-center justify-between gap-3 rounded-xl border border-zinc-800 bg-black/25 px-3 py-2"><span className="text-zinc-300">{label}</span><span className="text-zinc-600" aria-label={note}>—</span></div>
 }
 
 export default function ViaRightPanels() {
@@ -185,6 +177,7 @@ export default function ViaRightPanels() {
   return (
     <aside className="space-y-3" aria-label="VIA live and activity panels">
       <Panel title={copy.live}>
+        <p className="text-xs leading-5 text-zinc-500">{copy.sourcePending}</p>
         <PendingMetric label={copy.activeNow} note={copy.sourcePending} />
         <PendingMetric label={copy.desoAccounts} note={copy.sourcePending} />
         <PendingMetric label={copy.guests} note={copy.sourcePending} />
@@ -222,6 +215,7 @@ export default function ViaRightPanels() {
       <Panel title={copy.activity}>
         <Metric label={copy.posts} value={activityPosts} note={copy.sourcePending} />
         <Metric label={copy.creators} value={activityCreators} note={copy.sourcePending} />
+
         <PendingMetric label={copy.trends} note={copy.sourcePending} />
         <Metric label={copy.nftActivity} value={activityNfts} note={copy.sourcePending} />
       </Panel>

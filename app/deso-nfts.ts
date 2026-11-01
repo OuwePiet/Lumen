@@ -93,7 +93,7 @@ function normalizeCollection(value: unknown): DeSoNFTCollection | null {
  * Read all owned editions through the current node's verified cursor contract.
  * One work can span pages: merge by post hash and edition serial, not page totals.
  */
-export async function getNFTsForUser(publicKey: string, signal?: AbortSignal, onProgress?: (progress: { pages: number; works: number; editions: number; collections: DeSoNFTCollection[] }) => void) {
+export async function getNFTsForUser(publicKey: string, signal?: AbortSignal, onProgress?: (progress: { pages: number; works: number; editions: number; collections: DeSoNFTCollection[] }) => void, filters: { IsForSale?: boolean; IsPending?: boolean } = {}) {
   const collections = new Map<string, DeSoNFTCollection>()
   const cursors = new Set<string>()
   let cursor = ""
@@ -107,6 +107,7 @@ export async function getNFTsForUser(publicKey: string, signal?: AbortSignal, on
         ReaderPublicKeyBase58Check: "",
         Limit: 100,
         LastKeyHex: cursor,
+        ...filters,
       }),
       signal,
     })

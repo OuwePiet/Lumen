@@ -20,6 +20,7 @@ import { fetchViaRates, isViaRateStale } from "../via-live-rates"
 import type { ViaLanguage } from "../via-local-settings"
 import LikeButton from "../social/like-button"
 import PostComposer from "../social/post-composer"
+import PostVideo from "../social/post-video"
 import RepostButton from "../social/repost-button"
 import DiamondButton from "../social/diamond-button"
 import SponsorPlatform from "../sponsor-platform"
@@ -55,6 +56,7 @@ type PublicPost = {
   username: string
   body: string
   imageUrls: string[]
+  videoUrls?: string[]
   timestampNanos: number
   likeCount: number
   diamondCount: number
@@ -926,7 +928,8 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
                     {post.body.length > 240 || post.body.split("\n").length > 5 ? <button type="button" className={styles.readMore} aria-expanded={Boolean(expandedBodies[rowKey])} aria-controls={`notification-body-${rowKey}`} onClick={() => setExpandedBodies(current => ({ ...current, [rowKey]: !current[rowKey] }))}>{expandedBodies[rowKey] ? BODY_LABELS[language].less : BODY_LABELS[language].more}</button> : null}
                   </> : null}
                   {post.imageUrls?.length ? <div className="mt-3 grid gap-2 sm:grid-cols-2">{post.imageUrls.slice(0, 4).map((url) => <img key={url} src={url} alt="" loading="lazy" className="max-h-72 w-full rounded-xl object-contain" />)}</div> : null}
-                  <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-zinc-800/70 pt-3">
+                  {post.videoUrls?.length ? <div className="mt-3 space-y-2">{post.videoUrls.slice(0, 2).filter(url => { try { return new URL(url).protocol === "https:" } catch { return false } }).map(url => <PostVideo key={url} url={url} />)}</div> : null}
+                  <div data-via-post-actions className="mt-3 flex flex-wrap items-start gap-2 border-t border-zinc-800/70 pt-3">
                     <button
                       type="button"
                       onClick={() => setReplyingTo((current) => current === post.postHash ? null : post.postHash)}

@@ -374,7 +374,7 @@ function translateRoot(root: HTMLElement, language: ViaLanguage | "Hindi") {
     const textNode = node as Text
     const current = textNode.nodeValue ?? ""
     const trimmed = current.trim()
-    if (trimmed && !textNode.parentElement?.closest("[data-via-native-i18n]")) {
+    if (trimmed) {
       // React may update a reused text node (counts, progress and button labels).
       // Only reuse the original while the node still contains our last output.
       const source = textRendered.get(textNode) === trimmed ? textSource.get(textNode) ?? trimmed : trimmed

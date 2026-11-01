@@ -30,13 +30,13 @@ export default function NfViaTopbar() {
       <style>{`
         .nf-via-topbar {
           width: min(1480px, calc(100% - 40px));
-          min-height: 50px;
+          min-height: 36px;
           margin: 0 auto;
           display: flex;
           align-items: center;
           justify-content: flex-end;
           gap: 8px;
-          padding: 8px 0 0;
+          padding: 3px 0 0;
         }
         .nf-via-topbar-item, .nf-via-language {
           min-height: 34px;

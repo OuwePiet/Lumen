@@ -13,6 +13,7 @@ const SAFE_POST_RETRY_ENDPOINTS = new Set([
   "get-user-dm-threads-ordered-by-timestamp",
   "get-follows-stateless",
   "get-hot-feed",
+  "get-nft-showcase",
   "get-users-stateless",
   "get-nft-entries-for-nft-post",
   "post-associations/query",
@@ -138,7 +139,7 @@ async function performDeSoRequest(
     const abortFromUpstream = () => controller.abort(upstreamSignal?.reason)
     if (upstreamSignal?.aborted) controller.abort(upstreamSignal.reason)
     else upstreamSignal?.addEventListener("abort", abortFromUpstream, { once: true })
-    const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS)
+    const timeout = setTimeout(() => controller.abort(), safeEndpoint === "get-nft-showcase" ? 45000 : REQUEST_TIMEOUT_MS)
 
     try {
       const response = await fetch(

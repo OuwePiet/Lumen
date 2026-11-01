@@ -244,11 +244,12 @@ export default function AccountLookup({ onAccountSelected }: { onAccountSelected
 
   return (
     <section style={styles.section} aria-labelledby="account-lookup-heading" aria-busy={loading}>
-      <div className="via-creator-heading"><h2 id="account-lookup-heading" style={styles.heading}>Find NFT creator</h2><p style={styles.text}>Search a public DeSo account and open its NFT collection.</p></div>
-      <style>{`.via-creator-heading { display:flex; align-items:baseline; flex-wrap:wrap; gap:4px 12px; margin-bottom:10px; } @media (max-width:720px) { .via-creator-heading { gap:3px 8px; margin-bottom:8px; } }`}</style>
+      <div className="via-creator-heading"><h2 id="account-lookup-heading" style={styles.heading}>Find NFT creator</h2><p className="sr-only">Search a public DeSo account and open its NFT collection.</p></div>
+      <style>{`.via-selected-creator { max-width:100%; } @media(max-width:720px){.via-selected-creator{grid-column:1/-1;width:100%;}} .via-creator-heading { display:flex; align-items:baseline; flex-wrap:wrap; gap:4px 12px; margin-bottom:10px; } @media (max-width:720px) { .via-creator-heading { gap:3px 8px; margin-bottom:8px; } }`}</style>
       <form style={styles.form} onSubmit={findAccount}>
         <input type="search" aria-label="DeSo username" aria-describedby="creator-search-hint" autoComplete="off" autoCapitalize="none" spellCheck={false} maxLength={MAX_USERNAME_LENGTH + 1} placeholder="DeSo username" value={username} style={styles.input} onChange={(event) => { lookupController.current?.abort(); suggestionsController.current?.abort(); setLoading(false); setSuggestionsLoading(false); setMatches([]); setError(""); setUsername(event.target.value); setSuggestionQuery(event.target.value) }} />
         <button type="submit" disabled={loading} style={{ ...styles.button, opacity: loading ? 0.65 : 1 }}>{loading ? "Checking…" : "Find creator"}</button>
+        {profile ? <div className="via-selected-creator inline-flex min-h-9 items-center gap-2 rounded-lg border border-[#285f40] px-3 py-1" title={profile.PublicKeyBase58Check}>{profileImage ? <img src={profileImage} alt="" width={28} height={28} className="h-7 w-7 rounded-full" referrerPolicy="no-referrer" /> : null}<strong className="text-sm text-[#9adbb2]">@{profile.Username}</strong><details className="text-xs text-zinc-500"><summary className="cursor-pointer">Account</summary><span className="break-all">{profile.PublicKeyBase58Check}</span></details></div> : null}
       </form>
       <p id="creator-search-hint" style={styles.status}>{suggestionsLoading ? "Finding matching DeSo accounts…" : "Type at least 2 letters and choose an account below, or enter a full username."}</p>
       <div aria-live="polite" aria-atomic="true">

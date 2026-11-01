@@ -1,5 +1,8 @@
 import type { Metadata } from "next"
 import Link from "next/link"
+import NFTMarketRail from "./nft-market-rail"
+import PublicAccountLabel from "../public-account-label"
+import { getNFTsForUser } from "../deso-nfts"
 import { fetchDeSo } from "../deso-api"
 import MarketLocalizedText from "./market-localized-text"
 import MarketIdentityRedirect from "./market-identity-redirect"
@@ -45,18 +48,8 @@ function formatDeso(nanos?: number) {
 }
 
 async function loadNFTs(publicKey: string, filter: { IsForSale?: boolean; IsPending?: boolean }) {
-  const response = await fetchDeSo("get-nfts-for-user", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      UserPublicKeyBase58Check: publicKey,
-      ReaderPublicKeyBase58Check: publicKey,
-      ...filter,
-    }),
-    cache: "no-store",
-  })
-  if (!response.ok) throw new Error("DESO_NFTS_UNAVAILABLE")
-  return await response.json() as NFTMapResponse
+  const collections = await getNFTsForUser(publicKey, undefined, undefined, filter)
+  return { NFTsMap: Object.fromEntries(collections.map(collection => [collection.PostEntryResponse!.PostHashHex!, collection])) } as NFTMapResponse
 }
 
 function flatten(map?: Record<string, NFTRecord>) {
@@ -71,13 +64,21 @@ function flatten(map?: Record<string, NFTRecord>) {
 }
 
 export default async function MarketPage({ searchParams }: { searchParams: Promise<{ publicKey?: string; account?: string }> }) {
-  const { publicKey, account } = await searchParams
+  let { publicKey, account } = await searchParams
   let listings: ReturnType<typeof flatten> = []
   let transfers: ReturnType<typeof flatten> = []
   let error = false
 
   if (publicKey) {
     try {
+      if (!/^[1-9A-HJ-NP-Za-km-z]{40,128}$/.test(publicKey)) {
+        if (!/^@?[A-Za-z0-9_]{1,32}$/.test(publicKey)) throw new Error("INVALID_ACCOUNT")
+        const response = await fetchDeSo("get-single-profile", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ Username: publicKey.replace(/^@/, "") }) })
+        const data = await response.json()
+        const resolved = data.Profile?.PublicKeyBase58Check ?? data.ProfileEntryResponse?.PublicKeyBase58Check
+        if (!response.ok || typeof resolved !== "string" || !/^[1-9A-HJ-NP-Za-km-z]{40,128}$/.test(resolved)) throw new Error("ACCOUNT_UNAVAILABLE")
+        publicKey = resolved
+      }
       const [listingData, pendingData] = await Promise.all([
         loadNFTs(publicKey, { IsForSale: true }),
         loadNFTs(publicKey, { IsPending: true }),
@@ -92,20 +93,21 @@ export default async function MarketPage({ searchParams }: { searchParams: Promi
   const query = account === "active" || !publicKey ? "?account=active" : "?publicKey=" + encodeURIComponent(publicKey)
 
   return (
-    <main data-via-public-nft-reader className="mx-auto min-h-screen max-w-6xl px-5 py-10 text-zinc-100">
+    <main data-via-public-nft-reader className="mx-auto min-h-screen max-w-6xl px-4 py-4 text-zinc-100">
       <MarketIdentityRedirect />
       <nav aria-label="NFT return navigation" className="mb-4">
         <Link href="/collection" data-via-market-back className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-[#8fd4a9]/30 px-3 py-2 text-sm font-medium text-[#b8ddc5] hover:border-[#8fd4a9] hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#8fd4a9]">
           <span aria-hidden="true">←</span><MarketLocalizedText kind="backToCollection" />
         </Link>
       </nav>
-      <header className="max-w-3xl">
+      <header className="max-w-3xl">{publicKey && !error ? <PublicAccountLabel publicKey={publicKey} /> : null}
         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8fd4a9]"><MarketLocalizedText kind="marketplace" /></p>
         <h1 className="mt-2 text-3xl font-semibold"><MarketLocalizedText kind="heading" /></h1>
         <p className="mt-2 text-sm leading-6 text-zinc-400"><MarketLocalizedText kind="intro" /></p>
       </header>
 
-      <nav aria-label="Marketplace sections" className="mt-6 flex flex-wrap gap-2">
+      <NFTMarketRail />
+      <nav aria-label="Marketplace sections" className="mt-3 flex flex-wrap gap-2">
         <Link href={"/market/received-bids" + query} className="rounded-lg border border-zinc-800 px-3 py-2 text-sm text-zinc-300"><MarketLocalizedText kind="receivedBids" /></Link>
         <Link href={"/market/my-bids" + query} className="rounded-lg border border-zinc-800 px-3 py-2 text-sm text-zinc-300"><MarketLocalizedText kind="myBids" /></Link>
         <a href="#listings" className="rounded-lg border border-zinc-800 px-3 py-2 text-sm text-zinc-300"><MarketLocalizedText kind="listings" /></a>
@@ -117,13 +119,13 @@ export default async function MarketPage({ searchParams }: { searchParams: Promi
           <h2 id="market-account-heading" className="text-sm font-semibold text-zinc-200"><MarketLocalizedText kind="chooseAccount" /></h2>
           <p className="mt-1 text-sm text-zinc-500"><MarketLocalizedText kind="readOnly" /></p>
           <form className="mt-4 flex flex-wrap gap-3">
-            <input name="publicKey" required placeholder="DeSo public key (BC1…)" aria-label="DeSo public key" className="min-w-0 flex-1 rounded-lg border border-zinc-800 bg-black px-3 py-2 text-sm" />
+            <input name="publicKey" required placeholder="DeSo accountnaam of publieke sleutel" aria-label="DeSo accountnaam of publieke sleutel" className="min-w-0 flex-1 rounded-lg border border-zinc-800 bg-black px-3 py-2 text-sm" />
             <button className="rounded-lg border border-[#285f40] px-4 py-2 text-sm font-semibold text-[#9adbb2]"><MarketLocalizedText kind="openMarket" /></button>
           </form>
         </section></>
       ) : error ? <p className="mt-8 text-sm text-amber-300"><MarketLocalizedText kind="loadError" /></p> : (
         <>
-          <section id="listings" className="mt-10 scroll-mt-24">
+          <section id="listings" className="mt-5 scroll-mt-24">
             <div className="flex items-baseline justify-between gap-4">
               <h2 className="text-xl font-semibold"><MarketLocalizedText kind="listings" /></h2>
               <span className="text-xs text-zinc-500"><MarketLocalizedText kind="listedCount" count={listings.length} /></span>
