@@ -19,6 +19,11 @@ const SAFE_POST_RETRY_ENDPOINTS = new Set([
   "post-associations/query",
 ])
 
+// Public chain reads only. No signing, submission or node-local notification state
+// is sent to this fallback. Verified against live public responses on 1 Nov 2026.
+const PUBLIC_READ_FALLBACK = "https://desocialworld.com"
+const FALLBACK_READ_ENDPOINTS = new Set(["get-posts-stateless", "get-nfts-for-user", "get-nft-showcase"])
+
 let activeProfileLookups = 0
 const profileLookupWaiters: Array<() => void> = []
 
@@ -130,16 +135,18 @@ async function performDeSoRequest(
     safeEndpoint === "get-unread-notifications-count" ||
     safeEndpoint === "set-notification-metadata"
   const retrySafe = !notificationMetadataEndpoint && (method === "GET" || method === "HEAD" || (method === "POST" && SAFE_POST_RETRY_ENDPOINTS.has(safeEndpoint)))
-  const maxAttempts = retrySafe ? Math.max(MIN_ATTEMPTS, DESO_NODES.length) : 1
+  const nodes = retrySafe && FALLBACK_READ_ENDPOINTS.has(safeEndpoint)
+    ? Array.from(new Set([...DESO_NODES, PUBLIC_READ_FALLBACK])) : DESO_NODES
+  const maxAttempts = retrySafe ? Math.max(MIN_ATTEMPTS, nodes.length) : 1
 
   for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
-    const node = notificationMetadataEndpoint ? DEFAULT_DESO_NODE : (DESO_NODES[attempt % DESO_NODES.length] ?? DEFAULT_DESO_NODE)
+    const node = notificationMetadataEndpoint ? DEFAULT_DESO_NODE : (nodes[attempt % nodes.length] ?? DEFAULT_DESO_NODE)
     const controller = new AbortController()
     const upstreamSignal = requestInit.signal
     const abortFromUpstream = () => controller.abort(upstreamSignal?.reason)
     if (upstreamSignal?.aborted) controller.abort(upstreamSignal.reason)
     else upstreamSignal?.addEventListener("abort", abortFromUpstream, { once: true })
-    const timeout = setTimeout(() => controller.abort(), safeEndpoint === "get-nft-showcase" ? 45000 : REQUEST_TIMEOUT_MS)
+    const timeout = setTimeout(() => controller.abort(), safeEndpoint === "get-posts-stateless" ? 5000 : safeEndpoint === "get-nft-showcase" ? 15000 : REQUEST_TIMEOUT_MS)
 
     try {
       const response = await fetch(

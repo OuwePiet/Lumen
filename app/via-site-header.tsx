@@ -31,7 +31,6 @@ const nav = [
   ["notifications", "/notifications"],
   ["discover", "/discover"],
   ["nfts", "/collection"],
-  ["market", "/market"],
   ["live", "/live"],
   ["games", "/quest"],
   ["communities", "/communities"],
@@ -339,7 +338,7 @@ export default function ViaSiteHeader() {
           <nav style={styles.nav} className={`via-site-header-nav ${pathname === "/notifications" || pathname === "/radio" || pathname === "/messages" || pathname === "/profile" ? "via-site-header-nav-compact-mobile" : ""}`} aria-label="VIA main navigation">
             {nav.filter(([key]) => key !== "home").map(([key, href]) => {
               const active = href === "/collection" ? isNFTWorkspace(pathname) : href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`)
-              return <Link key={href} href={href} className="via-site-header-link" style={{ ...styles.link, ...(active ? styles.activeLink : {}) }}>{key === "market" ? (language === "Dutch" ? "Markt" : "Market") : t[key]}{active ? <span style={styles.activeLine} aria-hidden="true" /> : null}</Link>
+              return <Link key={href} href={href} className="via-site-header-link" style={{ ...styles.link, ...(active ? styles.activeLink : {}) }}>{t[key]}{active ? <span style={styles.activeLine} aria-hidden="true" /> : null}</Link>
             })}
           </nav>
         </div>

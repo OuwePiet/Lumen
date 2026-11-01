@@ -22,7 +22,6 @@ export default function LivePage(){
     <LiveLocalizer />
     <div style={{width:"min(980px,100%)",margin:"0 auto"}}>
       <nav style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:12,flexWrap:"wrap"}} aria-label="VIA LIVE navigation">
-        <a href="/" style={{...navLink,color:"#9adbb2",borderColor:"rgba(143,212,169,.45)"}}>← VIA</a>
         <div style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"}}>
           <a href="#live-room" style={navLink}>Live</a>
           <a href="#replay" style={navLink}>Replay</a>
