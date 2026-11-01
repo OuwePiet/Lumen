@@ -368,7 +368,8 @@ export default function ViaHomeControls() {
   }, [accountsOpen])
 
   function refreshAccounts() {
-    setKnownAccounts(listIdentitySessions())
+    const next = listIdentitySessions()
+    setKnownAccounts(previous => JSON.stringify(previous) === JSON.stringify(next) ? previous : next)
   }
 
   useEffect(() => {
@@ -398,16 +399,26 @@ export default function ViaHomeControls() {
       setProfile(null)
       return
     }
+    const publicKey = session.publicKey
+    const cacheKey = "via:public-profile:" + publicKey
+    try {
+      const saved = JSON.parse(localStorage.getItem(cacheKey) ?? "null") as PublicProfile | null
+      setProfile(saved?.publicKey === publicKey && typeof saved.username === "string" ? { publicKey, username: saved.username, profilePic: saved.profilePic } : null)
+    } catch { setProfile(null) }
     const controller = new AbortController()
-    void fetch(`/api/via/profile?identity=${encodeURIComponent(session.publicKey)}`, {
-      cache: "no-store",
-      signal: controller.signal,
-      headers: { Accept: "application/json" },
-    })
-      .then(async (response) => response.ok ? (await response.json()) as ProfileResponse : null)
-      .then((data) => { if (!controller.signal.aborted) setProfile(data?.ok && data.profile ? { ...data.profile, publicKey: session.publicKey } : null) })
-      .catch(() => { if (!controller.signal.aborted) setProfile(null) })
-    return () => controller.abort()
+    const load = async () => {
+      try {
+        const response = await fetch("/api/via/profile?identity=" + encodeURIComponent(publicKey) + "&compact=1", { cache: "no-store", signal: controller.signal, headers: { Accept: "application/json" } })
+        const data = response.ok ? await response.json() as ProfileResponse : null
+        if (controller.signal.aborted || !data?.ok || !data.profile) return
+        const next = { ...data.profile, publicKey }
+        setProfile(next)
+        try { localStorage.setItem(cacheKey, JSON.stringify({ publicKey, username: next.username, profilePic: next.profilePic })) } catch {}
+      } catch { /* Public cached data never grants an authenticated session. */ }
+    }
+    void load()
+    window.addEventListener("focus", load)
+    return () => { controller.abort(); window.removeEventListener("focus", load) }
   }, [session?.publicKey])
 
   useEffect(() => {
@@ -418,7 +429,7 @@ export default function ViaHomeControls() {
     const controller = new AbortController()
     void Promise.all(knownAccounts.map(async (account) => {
       try {
-        const response = await fetch(`/api/via/profile?identity=${encodeURIComponent(account.publicKey)}`, {
+        const response = await fetch(`/api/via/profile?identity=${encodeURIComponent(account.publicKey)}&compact=1`, {
           cache: "no-store",
           signal: controller.signal,
           headers: { Accept: "application/json" },
@@ -656,6 +667,13 @@ export default function ViaHomeControls() {
             max-height: 70px !important;
             margin: 0 auto !important;
           }
+        }
+        @media (min-width: 1367px) and (max-height: 900px) {
+          .via-home-controls { top: 8px !important; left: 10px !important; bottom: 48px !important; width: 244px !important; gap: 6px !important; }
+          .via-home-controls-logo { max-height: 76px !important; }
+          .via-home-controls nav { gap: 5px !important; }
+          .via-home-controls nav > a, .via-home-controls nav > span, .via-home-grid-account-wrap > button { min-height: 33px !important; padding-block: 5px !important; }
+          .via-home-grid-account-wrap > button > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         }
         .via-home-iphone-utility-row { display: none; }
         .via-home-iphone-clock-inline { display: none; }
