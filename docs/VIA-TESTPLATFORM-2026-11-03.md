@@ -32,3 +32,18 @@ Geen echte financiële transactie uitgevoerd door Codex. Fysieke iPhone/iPad-acc
 - De door Vercel gebouwde preview van commit 2700b1cb is READY. De collectieroute antwoordt via geautoriseerde Vercel-toegang 200; de bronroute meldt correct 503/ANALYTICS_NOT_CONFIGURED.
 
 De losse toren-PR is klein gehouden; de geïntegreerde test-PR bewaart ook de eerdere lokale NFT-geschiedenis. Beide blijven concepten en sluiten geen open opdracht automatisch af.
+
+## Aanvulling: kalender, Saved en radio — applicatiecommit 090d498b
+
+Geteste preview: https://lumen-3z-elknp7n3b-beleggerpiet-4479s-projects.vercel.app — Vercel READY, /wereldkalender geautoriseerd gecontroleerd met HTTP 200 en juiste deployment-id.
+
+- 295 unit tests geslaagd; Next-productiebouw geslaagd.
+- Kalender en Saved: zes talen × drie breedtes (390/1024/1536), geen React-pageerrors of horizontale overflow in deze controles.
+- Vooruitgezette browserdatum: 11 november 2026 toont opening carnavalsseizoen én Sint-Maarten apart. Voor 2027 zijn carnavalszondag/maandag/dinsdag 7/8/9 februari en Aswoensdag 10 februari. Regionaal, geen universele wettelijke vrije dag; lokale/Braziliaanse evenementen kunnen afwijken.
+- Homepage: maskers/lampionnen op 11/11, carnavalsversiering in de paasrelatieve periode; klikdoorgang en wissel van 11 naar 12 november gecontroleerd. Geen betaalde API, serverjob of geolocatie.
+- Saved: opslaan vanuit een spel, een ondertussen toegevoegd item behouden bij verwijderen, herladen, verwijderen en actualiseren in tweede tab geslaagd. Bestaande browserlokale sleutel en opgeslagen lijst behouden; geen accountsync toegevoegd.
+- Radio: bestaande reparaties #1484 en #1485 gecombineerd. Eén zichtbare speler, aan/uit, behoud bij navigatie en Nederlandstalige streamfout gecontroleerd. Media-API gesimuleerd: dit bewijst de bediening, niet echt hoorbaar zendergeluid.
+- Logs naast werkmap: via-calendar-saved-radio-tests.log, via-calendar-saved-radio-build.log, via-calendar-saved-radio-browser.log (18 matrixchecks; eerste flowselectie te strikt) en via-calendar-saved-radio-flows.log (alle drie gecorrigeerde flows PASS). De foutieve testselector is hersteld in tests/via-calendar-saved-radio.browser.cjs.
+- Schermbeelden lokaal: outputs/VIA-kalender-saved-radio-20261103/. Geen browserauthenticatiestatus opgeslagen.
+
+Volledige fotopunten/restlijst: VIA-FOTOPUNTEN-EN-RESTWERK-2026-11-03.md. Niet alle reparaties zijn afgerond; echte financiële handelingen en fysieke iPhone/iPad-acceptatie ontbreken. Productie blijft ongewijzigd.
