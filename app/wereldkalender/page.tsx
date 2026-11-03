@@ -88,6 +88,8 @@ const continentLabels: Record<ViaLanguage,Record<string,string>> = {
 }
 
 export default function WereldkalenderPage() {
+  const [ready,setReady]=useState(false)
+  useEffect(()=>setReady(true),[])
   const [today,setToday] = useState(() => new Date())
   useEffect(() => {
     const refresh = () => setToday(new Date())
@@ -270,6 +272,8 @@ export default function WereldkalenderPage() {
     holi:{English:"Holi",French:"Holi",Spanish:"Holi",Chinese:"洒红节",Hindi:"होली"},
   }
   const holidayName=(id:string,fallback:string)=>language==="Dutch"?fallback:(holidayNames[id]?.[language]??fallback)
+  // The browser owns the local date. Avoid rendering a server timezone/date into hydration.
+  if(!ready)return <main aria-busy="true" className="mx-auto max-w-5xl p-4"><p role="status">{ui.title}…</p></main>
   const visualTestReady = false
   return (
     <main data-via-provenance="@OuwePiet-2026" style={{maxWidth:980,width:"100%",minWidth:0,boxSizing:"border-box",margin:"0 auto",padding:"clamp(16px,3vw,32px)",color:"inherit",overflowWrap:"anywhere",borderRadius:24,background:"radial-gradient(ellipse at 12% 4%,rgba(87,177,123,.25),transparent 46%),radial-gradient(ellipse at 92% 88%,rgba(216,172,79,.20),transparent 50%),linear-gradient(155deg,rgba(27,65,45,.31),rgba(14,35,30,.14) 48%,rgba(105,83,39,.18) 100%)",boxShadow:"0 22px 65px rgba(0,0,0,.24),inset 0 1px rgba(255,255,255,.20)",border:"1px solid rgba(153,196,155,.36)"}}>
