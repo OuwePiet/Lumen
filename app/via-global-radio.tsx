@@ -37,6 +37,7 @@ export default function ViaGlobalRadio() {
   const audio = useRef<HTMLAudioElement | null>(null)
   const [station, setStation] = useState<Station | null>(null)
   const [playing, setPlaying] = useState(false)
+  const [playbackError,setPlaybackError]=useState(false)
   const [language, setLanguage] = useState<ViaLanguage>("English")
 
   useEffect(() => {
@@ -60,7 +61,7 @@ export default function ViaGlobalRadio() {
         player.load()
         setPlaying(false)
       }
-      setStation(next)
+      setStation(next);setPlaybackError(false)
     }
     const playSelected = () => {
       const next = readStation()
@@ -69,7 +70,8 @@ export default function ViaGlobalRadio() {
       const player = audio.current
       if (!player) return
       if (player.src !== next.streamUrl) player.src = next.streamUrl
-      void player.play().catch(() => setPlaying(false))
+      setPlaybackError(false)
+      void player.play().catch(() => {if(player.src===next.streamUrl){setPlaying(false);setPlaybackError(true)}})
     }
     sync()
     const pauseSelected = () => audio.current?.pause()
@@ -100,15 +102,27 @@ export default function ViaGlobalRadio() {
     if (!station) return
     const player = audio.current
     if (!player) return
-    if (player.paused) { try { await player.play(); setPlaying(true) } catch { setPlaying(false) } }
+    if (player.paused) { const source=player.src;try {setPlaybackError(false);await player.play();if(player.src===source)setPlaying(true)}catch{if(player.src===source){setPlaying(false);setPlaybackError(true)}} }
     else { player.pause(); setPlaying(false) }
   }
 
   const copy = COPY[language]
+  const errorCopy:Record<ViaLanguage,string>={Dutch:"Deze radiozender kan niet worden afgespeeld. Kies een andere zender.",English:"This radio stream cannot be played. Choose another station.",French:"Cette station ne peut pas être écoutée. Choisissez une autre station.",Spanish:"No se puede reproducir esta emisora. Elige otra.",Chinese:"无法播放此电台，请选择其他电台。",Hindi:"यह रेडियो स्ट्रीम नहीं चल सकती। दूसरा स्टेशन चुनें।"}
 
-  if (pathname === "/radio" || pathname === "/messages") {
-    return <audio ref={audio} onPause={()=>setPlaying(false)} onPlay={()=>setPlaying(true)} />
-  }
-
-  return <audio ref={audio} onPause={()=>setPlaying(false)} onPlay={()=>setPlaying(true)} />
+  return (
+    <>
+      <audio ref={audio} onPause={() => setPlaying(false)} onPlay={() => {setPlaying(true);setPlaybackError(false)}} onError={()=>{setPlaying(false);setPlaybackError(true)}} />
+      {playbackError && station && pathname!=="/messages" ? <p role="alert" className="via-radio-error" style={{position:"fixed",bottom:84,left:12,right:12,zIndex:46,margin:"0 auto",maxWidth:460,background:"#2b1414",color:"#fff",padding:12,borderRadius:10}}>{errorCopy[language]}</p>:null}
+      {station && pathname !== "/messages" ? (
+        <aside data-via-radio-player aria-label={copy.radio} style={{ position: "fixed", bottom: 12, left: 12, right: 12, zIndex: 45, maxWidth: 460, margin: "0 auto", padding: "10px 12px", border: "1px solid #285f40", borderRadius: 14, background: "#07100b", color: "#f4f7f5", display: "flex", alignItems: "center", gap: 10, boxShadow: "0 4px 24px #0009" }}>
+          <div style={{ minWidth: 0, flex: 1 }}>
+            <div style={{ fontSize: 12, color: "#b9ffd4" }}>{copy.radio}</div>
+            <div style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontSize: 14, fontWeight: 700 }} title={station.name}>{station.name}</div>
+          </div>
+          <button type="button" onClick={() => void toggle()} aria-label={playing ? copy.turnOff : copy.turnOn} aria-pressed={playing} style={{ minHeight: 44, minWidth: 58, padding: "8px 12px", borderRadius: 22, border: "1px solid #285f40", background: "#10261a", color: "#b9ffd4", fontWeight: 700 }}>{playing ? copy.off : copy.on}</button>
+          <Link href="/radio" aria-label={copy.chooseAria} style={{ color: "#b9ffd4", fontSize: 13, padding: 8 }}>{copy.choose}</Link>
+        </aside>
+      ) : null}
+    </>
+  )
 }

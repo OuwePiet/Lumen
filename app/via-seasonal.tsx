@@ -1,44 +1,31 @@
 "use client"
 
-import { useMemo } from "react"
-
-function easterSunday(year: number) {
-  const a = year % 19
-  const b = Math.floor(year / 100)
-  const c = year % 100
-  const d = Math.floor(b / 4)
-  const e = b % 4
-  const f = Math.floor((b + 8) / 25)
-  const g = Math.floor((b - f + 1) / 3)
-  const h = (19 * a + b - d - g + 15) % 30
-  const i = Math.floor(c / 4)
-  const k = c % 4
-  const l = (32 + 2 * e + 2 * i - h - k) % 7
-  const m = Math.floor((a + 11 * h + 22 * l) / 451)
-  const month = Math.floor((h + l - 7 * m + 114) / 31)
-  const day = ((h + l - 7 * m + 114) % 31) + 1
-  return new Date(year, month - 1, day)
-}
-
-function withinEasterWindow(now: Date) {
-  const easter = easterSunday(now.getFullYear())
-  const start = new Date(easter)
-  start.setDate(easter.getDate() - 2)
-  const end = new Date(easter)
-  end.setDate(easter.getDate() + 1)
-  now = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-  return now >= start && now <= end
-}
+import { useEffect, useState } from "react"
+import { viaSeasonalMode, type ViaSeasonalMode } from "./via-calendar-celebrations"
 
 export default function ViaSeasonal() {
-  const mode = useMemo(() => {
-    const now = new Date()
-    if (withinEasterWindow(now)) return "easter" as const
-    if ([11, 0, 1].includes(now.getMonth())) return "snow" as const
-    return "none" as const
-  }, [])
+  const [mode,setMode]=useState<ViaSeasonalMode>("none")
+  useEffect(()=>{
+    const update=()=>{if(!document.hidden)setMode(viaSeasonalMode(new Date()))}
+    update(); const timer=window.setInterval(update,60000)
+    document.addEventListener("visibilitychange",update)
+    return ()=>{window.clearInterval(timer);document.removeEventListener("visibilitychange",update)}
+  },[])
 
   if (mode === "none") return null
+
+  if (mode === "november-eleven" || mode === "carnival" || mode === "halloween") {
+    const symbols=mode==="november-eleven"?["🏮","🎭","🏮"]:mode==="carnival"?["🎭","🎊","🎭"]:["🎃","🍂","🎃"]
+    return <div data-via-seasonal={mode} aria-hidden="true" className="via-celebration-layer">
+      {symbols.map((symbol,index)=><span key={index} style={{left:["3%","49%","94%"][index],animationDelay:(index*-1.7)+"s"}}>{symbol}</span>)}
+      <style jsx>{`
+        .via-celebration-layer { position:fixed;inset:0;z-index:64;pointer-events:none;overflow:hidden; }
+        .via-celebration-layer span { position:absolute;bottom:18px;font-size:clamp(18px,3vw,27px);opacity:.45;animation:viaCelebrationFloat 6s ease-in-out infinite; }
+        @keyframes viaCelebrationFloat { 50% { transform:translateY(-6px) rotate(5deg); } }
+        @media(prefers-reduced-motion:reduce) { .via-celebration-layer span { animation:none; } }
+      `}</style>
+    </div>
+  }
 
   if (mode === "easter") {
     return (
