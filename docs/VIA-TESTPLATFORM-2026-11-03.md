@@ -21,3 +21,14 @@ De productiebron voor bezoekers antwoordt HTTP 403 forbidden; de productiebezoek
 Gasten, aangemelde DeSo-accounts en een echte eerste-posttelling zijn zonder betrouwbare meetbron niet bewezen. Recente activiteit/trends zijn een begrensde steekproef van DeSo-posts, geen volledige historie.
 
 Geen echte financiële transactie uitgevoerd door Codex. Fysieke iPhone/iPad-acceptatie en alle 18 onderdelen zijn niet afgerond. De centrale werkstaat blijft docs/VIA-1444-WERKSTAAT-2026-11-03.md. Geen merge of productie-deployment uitgevoerd.
+
+## Vastgelegde controle van deze versie
+
+- Next-productiebouw geslaagd; 290 unit tests geslaagd.
+- Toren: zes talen × drie schermbreedtes geslaagd met expliciete bronfixtures; ook foutmelding, behoud van 372 bij een mislukte verversing/herlaad en deduplicatie bij twintig focusgebeurtenissen.
+- Collectie: taalwissel via de echte centrale knop, alle zes talen en terug naar Nederlands, herladen, geen tweede NFT-taalkeuze en geen horizontale overflow bij 390/1024/1536 pixels. De bestaande DOM-vertaler slaat tekst over die al door React wordt vertaald.
+- Lokale logs staan naast de werkmap: via-language-final-tests.log, via-language-final-build.log, via-integrated-tower-browser.log, via-integrated-language-browser.log en via-integrated-review-browser.log.
+- Schermbeelden staan lokaal in outputs/VIA-testbewijs-20261103/. Deze bevatten de publieke testcollectie; geen browserauthenticatiestatus is opgeslagen.
+- De door Vercel gebouwde preview van commit 2700b1cb is READY. De collectieroute antwoordt via geautoriseerde Vercel-toegang 200; de bronroute meldt correct 503/ANALYTICS_NOT_CONFIGURED.
+
+De losse toren-PR is klein gehouden; de geïntegreerde test-PR bewaart ook de eerdere lokale NFT-geschiedenis. Beide blijven concepten en sluiten geen open opdracht automatisch af.
