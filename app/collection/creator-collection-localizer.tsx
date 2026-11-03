@@ -372,6 +372,8 @@ function translateRoot(root: HTMLElement, language: ViaLanguage | "Hindi") {
   let node = walker.nextNode()
   while (node) {
     const textNode = node as Text
+    // React-localized components own their text; do not translate them twice.
+    if (textNode.parentElement?.closest("[data-via-localized-text], [data-via-collection-heading]")) { node = walker.nextNode(); continue }
     const current = textNode.nodeValue ?? ""
     const trimmed = current.trim()
     if (trimmed) {

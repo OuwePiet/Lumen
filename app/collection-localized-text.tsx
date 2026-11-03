@@ -155,7 +155,7 @@ export default function CollectionLocalizedText(props: Props) {
   }, [])
 
   const t = copy[language]
-  if (props.kind in t) return <>{t[props.kind as keyof Copy]}</>
+  if (props.kind in t) return <span data-via-localized-text>{t[props.kind as keyof Copy]}</span>
 
   if (props.kind === "cardFacts") {
     const copies = props.copies ?? 0
@@ -164,15 +164,15 @@ export default function CollectionLocalizedText(props: Props) {
     if (forSale > 0 && typeof props.buyNowPrice === "number") price = `${t.buyNow}: ${formatDeSo(props.buyNowPrice)} DESO`
     else if (forSale > 0 && typeof props.minBidAmount === "number") price = `${t.minBid}: ${formatDeSo(props.minBidAmount)} DESO`
     else if (forSale > 0) price = t.forSale
-    return <>{copies} {copies === 1 ? t.copy : t.copies} · {forSale} {t.forSale} · {price}</>
+    return <span data-via-localized-text>{copies} {copies === 1 ? t.copy : t.copies} · {forSale} {t.forSale} · {price}</span>
   }
 
   if (props.username) {
     const detected = typeof props.detectedCount === "number" && props.detectedCount > (props.displayedCount ?? 0)
       ? ` · ${props.detectedCount} ${t.detected}`
       : ""
-    return <>@{props.username} · {props.displayedCount ?? 0} {t.displayed}{detected}</>
+    return <span data-via-localized-text>@{props.username} · {props.displayedCount ?? 0} {t.displayed}{detected}</span>
   }
 
-  return <>{t.unavailable}: @{props.selectedAccount}</>
+  return <span data-via-localized-text>{t.unavailable}: @{props.selectedAccount}</span>
 }
