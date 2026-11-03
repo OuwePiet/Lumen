@@ -1,0 +1,623 @@
+[
+  {
+    "number": 1504,
+    "title": "docs: VIA Platform AI dagelijkse controle en goedkeuringspoort",
+    "branch": "docs/via-platform-ai-monitor-spec-20261101",
+    "sha": "db7aad2e29047b2fe255fbab230c0e5488f572fd",
+    "base": "main",
+    "draft": true,
+    "url": "https://github.com/OuwePiet/Lumen/pull/1504"
+  },
+  {
+    "number": 1503,
+    "title": "VIA veilige integratie: radiovertalingen, radio-uitleg, PWA en NFT-royalties",
+    "branch": "fix/via-small-safe-integration-20261101",
+    "sha": "d6aefd6197d94b07db7da78777619fdff0a3920e",
+    "base": "main",
+    "draft": true,
+    "url": "https://github.com/OuwePiet/Lumen/pull/1503"
+  },
+  {
+    "number": 1502,
+    "title": "VIA: consistente Post via VIA / Reply via VIA bronvermelding",
+    "branch": "fix/via-attribution-labels-20261101",
+    "sha": "9c20f19d26bcf9fe69a8218e7e5d0d5131b87a36",
+    "base": "main",
+    "draft": true,
+    "url": "https://github.com/OuwePiet/Lumen/pull/1502"
+  },
+  {
+    "number": 1491,
+    "title": "NFT mobiel: compacte kop, voorkeuren en kaarten tijdens doorladen",
+    "branch": "fix/via-nft-mobile-compact-20261021",
+    "sha": "b318a94354238da9da67f0bff27d2b7adf02567f",
+    "base": "fix/via-creator-suggestions-20261021",
+    "draft": true,
+    "url": "https://github.com/OuwePiet/Lumen/pull/1491"
+  },
+  {
+    "number": 1490,
+    "title": "NFT: creatornaam voorstellen vanaf twee letters",
+    "branch": "fix/via-creator-suggestions-20261021",
+    "sha": "d348acaab32292e01bf1aeb6cc51f4ac60c81274",
+    "base": "fix/via-nft-owned-pagination-20261021",
+    "draft": true,
+    "url": "https://github.com/OuwePiet/Lumen/pull/1490"
+  },
+  {
+    "number": 1489,
+    "title": "fix: laad volledig NFT-bezit voorbij de eerste 100 edities",
+    "branch": "fix/via-nft-owned-pagination-20261021",
+    "sha": "e5bb3240f50e28186a7c66abb0f7ffa56ba52d6e",
+    "base": "fix/via-nft-royalty-clarity-20261020",
+    "draft": true,
+    "url": "https://github.com/OuwePiet/Lumen/pull/1489"
+  },
+  {
+    "number": 1488,
+    "title": "NFT: volledige royalties, percentage-invoer en heldere kostengrenzen",
+    "branch": "fix/via-nft-royalty-clarity-20261020",
+    "sha": "ea4e9b8661ad9b95b911cc8944b2373c38aee1be",
+    "base": "fix/via-nft-workspace-polish-20261020",
+    "draft": true,
+    "url": "https://github.com/OuwePiet/Lumen/pull/1488"
+  },
+  {
+    "number": 1487,
+    "title": "VIA NFT: vaste navigatie, begrijpelijke bedragen en opslagtoets",
+    "branch": "fix/via-nft-workspace-polish-20261020",
+    "sha": "ebda5e78f777fa6bbe7d36c5ec0449931ef7704f",
+    "base": "fix/via-nft-controls-explanation-20261018",
+    "draft": true,
+    "url": "https://github.com/OuwePiet/Lumen/pull/1487"
+  },
+  {
+    "number": 1486,
+    "title": "Wereldradio: zoekvelden en knoppen in zes talen",
+    "branch": "fix/radio-translations-20261019",
+    "sha": "c536734974cb8221545507a812927b302431cd96",
+    "base": "main",
+    "draft": true,
+    "url": "https://github.com/OuwePiet/Lumen/pull/1486"
+  },
+  {
+    "number": 1485,
+    "title": "Wereldradio: melding bij niet-afspeelbare zender",
+    "branch": "fix/radio-stream-errors-20261019",
+    "sha": "1e24a6ac0e5e8d40370c799842dfcc6c731b1616",
+    "base": "main",
+    "draft": true,
+    "url": "https://github.com/OuwePiet/Lumen/pull/1485"
+  },
+  {
+    "number": 1484,
+    "title": "Wereldradio: zichtbare globale speler",
+    "branch": "fix/radio-visible-controls-20261019",
+    "sha": "48293d40143073111c5901ad593c884d443cae9c",
+    "base": "main",
+    "draft": true,
+    "url": "https://github.com/OuwePiet/Lumen/pull/1484"
+  },
+  {
+    "number": 1483,
+    "title": "Wereldradio: duidelijke uitleg en nette afwerking radiopagina",
+    "branch": "fix/world-radio-page-finish-20261019",
+    "sha": "d1ace057278fdfaaabe4dbe61f163be08e405b26",
+    "base": "main",
+    "draft": true,
+    "url": "https://github.com/OuwePiet/Lumen/pull/1483"
+  },
+  {
+    "number": 1482,
+    "title": "PWA: stabiele VIA-appidentiteit bij installatie",
+    "branch": "feat/via-pwa-stable-install-20261019",
+    "sha": "ce72e5f6325cac76659c22761ebd55dd3f0c0370",
+    "base": "main",
+    "draft": true,
+    "url": "https://github.com/OuwePiet/Lumen/pull/1482"
+  },
+  {
+    "number": 1481,
+    "title": "VIA NFT: compacte navigatie, duidelijke Mint-bedragen en uitleg",
+    "branch": "fix/via-nft-controls-explanation-20261018",
+    "sha": "fb9dadecab9b8a1668ed85c552c58959d71526fd",
+    "base": "feat/via-nft-storage-preview-20261017",
+    "draft": true,
+    "url": "https://github.com/OuwePiet/Lumen/pull/1481"
+  },
+  {
+    "number": 1480,
+    "title": "VIA: na Identity-login naar Postkantoor, behoud feed en veilige Diamonds",
+    "branch": "fix/via-login-postoffice-diamonds-20261018",
+    "sha": "76f124b3325c0c1db9c77df32feb0f1a9d116fbe",
+    "base": "main",
+    "draft": true,
+    "url": "https://github.com/OuwePiet/Lumen/pull/1480"
+  },
+  {
+    "number": 1479,
+    "title": "feat: bekijkbare NFT-opslagflow op basis van eerdere afspraken en NFTz-referentie",
+    "branch": "feat/via-nft-storage-preview-20261017",
+    "sha": "093d99779e9e5080a3f3b4f45f0e4301bb1a0895",
+    "base": "fix/via-nft-platform-release-20261017",
+    "draft": true,
+    "url": "https://github.com/OuwePiet/Lumen/pull/1479"
+  },
+  {
+    "number": 1478,
+    "title": "feat: sluit bewaarde NFT-pagina’s en veilige acties aan op centrale Identity",
+    "branch": "fix/via-nft-platform-release-20261017",
+    "sha": "f42843c8c4e484836cc54c10d9a2589c702e7b67",
+    "base": "main",
+    "draft": true,
+    "url": "https://github.com/OuwePiet/Lumen/pull/1478"
+  },
+  {
+    "number": 1474,
+    "title": "fix: beveilig DESO-sponsoring tegen dubbele en onzekere submits",
+    "branch": "codex/via-sponsor-safety-20261013",
+    "sha": "633223cbef7d04d4df63056aa9a7df2a3558170e",
+    "base": "codex/via-nft-bid-safety-20261013",
+    "draft": true,
+    "url": "https://github.com/OuwePiet/Lumen/pull/1474"
+  },
+  {
+    "number": 1473,
+    "title": "iPhone: verwijder dubbel accountmenu op homepage",
+    "branch": "fix/iphone-home-duplicate-account-20261016",
+    "sha": "f34c29860616872f4d8fce928c122b966ebba1e9",
+    "base": "main",
+    "draft": true,
+    "url": "https://github.com/OuwePiet/Lumen/pull/1473"
+  },
+  {
+    "number": 1471,
+    "title": "Handboek: veiligheid en externe reputatie bewaren",
+    "branch": "docs/via-handboek-veiligheid-reputatie-20261016",
+    "sha": "81ef8686d97002d71f88bd43d1fde58cccc7b71f",
+    "base": "main",
+    "draft": true,
+    "url": "https://github.com/OuwePiet/Lumen/pull/1471"
+  },
+  {
+    "number": 1469,
+    "title": "Wereldkalender: vieringen op datum en meertalige knoppen",
+    "branch": "fix/calendar-sorted-observances-20261015",
+    "sha": "fabeb83451210643cfb4d51f22aa1ccc095eb1c8",
+    "base": "main",
+    "draft": true,
+    "url": "https://github.com/OuwePiet/Lumen/pull/1469"
+  },
+  {
+    "number": 1468,
+    "title": "Wereldkalender: kosteloze offline berekening maanfeestdagen",
+    "branch": "feat/calendar-offline-dates-20261015",
+    "sha": "e5e85df2d2ead8dea78607745d35141c7958acfb",
+    "base": "main",
+    "draft": true,
+    "url": "https://github.com/OuwePiet/Lumen/pull/1468"
+  },
+  {
+    "number": 1462,
+    "title": "fix: beveilig NFT-biedingen en Buy Now tegen dubbele/onzekere submits",
+    "branch": "codex/via-nft-bid-safety-20261013",
+    "sha": "a532e0b031d9a9ab054b4e2bd8d624749cfe6cc5",
+    "base": "codex/via-diamond-single-flight-20261013",
+    "draft": true,
+    "url": "https://github.com/OuwePiet/Lumen/pull/1462"
+  },
+  {
+    "number": 1461,
+    "title": "fix: blokkeer dubbele en onzekere Diamond-verzendingen",
+    "branch": "codex/via-diamond-single-flight-20261013",
+    "sha": "1bc40573e9209a9e1eead7a95c794fcca0007546",
+    "base": "codex/via-diamond-budget-20261013",
+    "draft": true,
+    "url": "https://github.com/OuwePiet/Lumen/pull/1461"
+  },
+  {
+    "number": 1460,
+    "title": "fix: voorkom onnodige Diamond-bestedingstoestemming",
+    "branch": "codex/via-diamond-budget-20261013",
+    "sha": "f7488a14dc345d822e44cedcab54ea47367736e1",
+    "base": "codex/via-existing-work-integration-20261012",
+    "draft": true,
+    "url": "https://github.com/OuwePiet/Lumen/pull/1460"
+  },
+  {
+    "number": 1459,
+    "title": "fix: integrate existing VIA social and notification repairs",
+    "branch": "codex/via-existing-work-integration-20261012",
+    "sha": "7f8a4af1b6a1aa40cae82310256968ccd80bfeeb",
+    "base": "codex/via-social-action-guards-20261012",
+    "draft": true,
+    "url": "https://github.com/OuwePiet/Lumen/pull/1459"
+  },
+  {
+    "number": 1458,
+    "title": "fix: guard remaining DeSo social actions by active account",
+    "branch": "codex/via-social-action-guards-20261012",
+    "sha": "b26f09acb88ecee9bdc85a6d82d362341213f02f",
+    "base": "fix/via-home-hydration-20261011",
+    "draft": true,
+    "url": "https://github.com/OuwePiet/Lumen/pull/1458"
+  },
+  {
+    "number": 1457,
+    "title": "fix: toon officiële DeSo NFT-royalties",
+    "branch": "codex/via-nft-royalty-display-20261011",
+    "sha": "0f267996c097c1dbc6a1d81504c584ebc5e4c0c4",
+    "base": "main",
+    "draft": true,
+    "url": "https://github.com/OuwePiet/Lumen/pull/1457"
+  },
+  {
+    "number": 1456,
+    "title": "fix: simplify NFT collection heading and mobile navigation",
+    "branch": "fix/via-collection-overview-20261011",
+    "sha": "fc61525ccd80c9f86639f39d0d0a0a120dd0c67e",
+    "base": "main",
+    "draft": true,
+    "url": "https://github.com/OuwePiet/Lumen/pull/1456"
+  },
+  {
+    "number": 1455,
+    "title": "fix: prevent homepage clock hydration mismatch",
+    "branch": "fix/via-home-hydration-20261011",
+    "sha": "6b16985b209523421730cd2acf29382445b9c27d",
+    "base": "fix/via-tablet-header-20261011",
+    "draft": true,
+    "url": "https://github.com/OuwePiet/Lumen/pull/1455"
+  },
+  {
+    "number": 1454,
+    "title": "fix: prevent VIA header overflow at tablet widths",
+    "branch": "fix/via-tablet-header-20261011",
+    "sha": "c72db9e54da10e48fc402caace96f441e0667787",
+    "base": "fix/via-unified-identity-20261011",
+    "draft": true,
+    "url": "https://github.com/OuwePiet/Lumen/pull/1454"
+  },
+  {
+    "number": 1453,
+    "title": "fix: share the active DeSo account across legacy and SDK Identity",
+    "branch": "fix/via-unified-identity-20261011",
+    "sha": "26a281b21f343f5533a1368d67591a529af35b6b",
+    "base": "fix/via-post-session-investigation-20261011",
+    "draft": true,
+    "url": "https://github.com/OuwePiet/Lumen/pull/1453"
+  },
+  {
+    "number": 1451,
+    "title": "fix: keep Post Office actions on the selected DeSo account",
+    "branch": "fix/via-post-session-investigation-20261011",
+    "sha": "8c2638c7def4bbb5e652dd580ac8bdff5fb1ed05",
+    "base": "main",
+    "draft": true,
+    "url": "https://github.com/OuwePiet/Lumen/pull/1451"
+  },
+  {
+    "number": 1450,
+    "title": "Extend VIA leaf rain after successful DeSo Diamond",
+    "branch": "fix/diamond-leaf-rain-longer-20261009",
+    "sha": "5198294b45f7ffc1222ef454fc8708543a0fbcb1",
+    "base": "main",
+    "draft": true,
+    "url": "https://github.com/OuwePiet/Lumen/pull/1450"
+  },
+  {
+    "number": 1449,
+    "title": "Use gray VIA leaf for inactivity; preserve official DeSo blue check",
+    "branch": "fix/recognition-gray-leaf-preserve-deso-verified-20261009",
+    "sha": "921e9a946ea50b516c2ec9aef590eecd861ea7c8",
+    "base": "main",
+    "draft": true,
+    "url": "https://github.com/OuwePiet/Lumen/pull/1449"
+  },
+  {
+    "number": 1448,
+    "title": "Identity: block mixed legacy/SDK signing until migration",
+    "branch": "fix/identity-sdk-signer-consistency-20261009",
+    "sha": "c658eb51e2d5d5bc168b8444d3b104c865191f96",
+    "base": "main",
+    "draft": true,
+    "url": "https://github.com/OuwePiet/Lumen/pull/1448"
+  },
+  {
+    "number": 1447,
+    "title": "Guard Follow and Repost against active DeSo account switches",
+    "branch": "fix/follow-repost-account-guard-20261009",
+    "sha": "80e1832ca9a227dcc42d74c819c5c3bce58f7611",
+    "base": "main",
+    "draft": true,
+    "url": "https://github.com/OuwePiet/Lumen/pull/1447"
+  },
+  {
+    "number": 1446,
+    "title": "Guard DeSo Like signing and submission against account switches",
+    "branch": "fix/like-account-switch-guard-20261009",
+    "sha": "bca4cfb08202d2afb4e9178b7b9fa4973ad6392f",
+    "base": "main",
+    "draft": true,
+    "url": "https://github.com/OuwePiet/Lumen/pull/1446"
+  },
+  {
+    "number": 1443,
+    "title": "NFT claim: represent DeSo like and follow requirements",
+    "branch": "via-claim-rules-types-20261009",
+    "sha": "dc7d3fdd055f15933522d572fb79332050ac3cde",
+    "base": "main",
+    "draft": true,
+    "url": "https://github.com/OuwePiet/Lumen/pull/1443"
+  },
+  {
+    "number": 1442,
+    "title": "NFT posts: link to existing NFT details from Post Office",
+    "branch": "via-nft-post-detail-link-20261009",
+    "sha": "3e4f1a6650d3e73d3ae0eede7ea966f9393efd17",
+    "base": "main",
+    "draft": true,
+    "url": "https://github.com/OuwePiet/Lumen/pull/1442"
+  },
+  {
+    "number": 1441,
+    "title": "Prefer DeSo SDK active account in central Identity adapter",
+    "branch": "fix/deso-identity-sdk-current-user-priority-20261009",
+    "sha": "458c905b6459c4794b3d776e94281d77d9a40ac2",
+    "base": "main",
+    "draft": true,
+    "url": "https://github.com/OuwePiet/Lumen/pull/1441"
+  },
+  {
+    "number": 1440,
+    "title": "DeSo Identity: stop treating legacy sessions as approved SDK permissions",
+    "branch": "fix/deso-identity-no-legacy-permission-bypass-20261009",
+    "sha": "4f330d3eb783651635909e4559d96e669c63cafd",
+    "base": "main",
+    "draft": true,
+    "url": "https://github.com/OuwePiet/Lumen/pull/1440"
+  },
+  {
+    "number": 1439,
+    "title": "Document DeSo Identity-only architecture for every VIA page",
+    "branch": "docs/deso-identity-single-source-20261009",
+    "sha": "37f0dcb0652931b4e9dc77a8cc97641e17ab9212",
+    "base": "main",
+    "draft": false,
+    "url": "https://github.com/OuwePiet/Lumen/pull/1439"
+  },
+  {
+    "number": 1438,
+    "title": "Guard diamond submission when active DeSo account changes",
+    "branch": "fix/diamond-account-consistency-20261009",
+    "sha": "beb214e94edf6c3dc330cd2ffe84a74217ece29a",
+    "base": "main",
+    "draft": true,
+    "url": "https://github.com/OuwePiet/Lumen/pull/1438"
+  },
+  {
+    "number": 1433,
+    "title": "Draft: await DeSo diamond permissions (requires Identity audit)",
+    "branch": "fix/diamond-await-permissions-20261008",
+    "sha": "7e14b79931afbbac1d44faa2b31e8a1408195682",
+    "base": "main",
+    "draft": true,
+    "url": "https://github.com/OuwePiet/Lumen/pull/1433"
+  },
+  {
+    "number": 1394,
+    "title": "Use approved VIA pen on homepage Post Office",
+    "branch": "fix/home-postoffice-pen-20261005",
+    "sha": "ec900a569543bc024c59136ad57c6e8da4279320",
+    "base": "main",
+    "draft": true,
+    "url": "https://github.com/OuwePiet/Lumen/pull/1394"
+  },
+  {
+    "number": 1393,
+    "title": "Keep likes visible and show diamond values in USD",
+    "branch": "fix/postoffice-like-diamond-display-20261005",
+    "sha": "3fed7449a139349e7f50e3bc229a0c9506b914cb",
+    "base": "main",
+    "draft": true,
+    "url": "https://github.com/OuwePiet/Lumen/pull/1393"
+  },
+  {
+    "number": 1389,
+    "title": "Give desktop notifications more room",
+    "branch": "fix/notifications-desktop-space-guides-20261005",
+    "sha": "64f5c601304dfe9981e107716b3251591b9bdd11",
+    "base": "main",
+    "draft": true,
+    "url": "https://github.com/OuwePiet/Lumen/pull/1389"
+  },
+  {
+    "number": 1386,
+    "title": "Use central Diamond action on profile replies",
+    "branch": "fix/profile-reply-diamond-actions-20261005",
+    "sha": "002be10dc08e0ca69e60d4078dbf8198c7f523b8",
+    "base": "main",
+    "draft": true,
+    "url": "https://github.com/OuwePiet/Lumen/pull/1386"
+  },
+  {
+    "number": 1384,
+    "title": "Post Office: toon DeSo repost-inhoud volledig",
+    "branch": "fix/postoffice-deso-reposted-content-20261005",
+    "sha": "f2bb0e0f46f07ebbf663c3af739d28df4a333618",
+    "base": "main",
+    "draft": true,
+    "url": "https://github.com/OuwePiet/Lumen/pull/1384"
+  },
+  {
+    "number": 1383,
+    "title": "Performance: deel DeSo diamond-level request",
+    "branch": "perf/share-diamond-levels-20261005",
+    "sha": "cb56e99e8ba7541827b9d296aa8a2977be6eed62",
+    "base": "main",
+    "draft": true,
+    "url": "https://github.com/OuwePiet/Lumen/pull/1383"
+  },
+  {
+    "number": 1380,
+    "title": "Postkantoor: eigen posts zonder diamantverzendknop",
+    "branch": "fix/via-hide-self-diamond-20261004",
+    "sha": "0a27f2a4767eb138fca61fb386735768f09a8111",
+    "base": "main",
+    "draft": true,
+    "url": "https://github.com/OuwePiet/Lumen/pull/1380"
+  },
+  {
+    "number": 1372,
+    "title": "DRAFT: Align VIA diamonds with official DeSo protocol",
+    "branch": "fix/deso-diamond-count-source-20261004",
+    "sha": "852557e61b98b742365458c46589ca86f73df91f",
+    "base": "main",
+    "draft": true,
+    "url": "https://github.com/OuwePiet/Lumen/pull/1372"
+  },
+  {
+    "number": 1370,
+    "title": "Show diamond submission status and verify DeSo count",
+    "branch": "via-diamond-visible-status-20261003",
+    "sha": "4c80bb9d0739872db4ce08c4b7845c69f22bfe31",
+    "base": "main",
+    "draft": true,
+    "url": "https://github.com/OuwePiet/Lumen/pull/1370"
+  },
+  {
+    "number": 1369,
+    "title": "DeSo Like state and counts on updated VIA main",
+    "branch": "via-like-deso-main-sync-20261003",
+    "sha": "ff991bbf9198acab1f094579ecc02b04c2f91630",
+    "base": "main",
+    "draft": true,
+    "url": "https://github.com/OuwePiet/Lumen/pull/1369"
+  },
+  {
+    "number": 1368,
+    "title": "Verify DeSo Like status and counts in VIA Post Office",
+    "branch": "via-like-deso-state-20261003",
+    "sha": "9e627f2e8d0b23efda226549de435e94405e236a",
+    "base": "main",
+    "draft": true,
+    "url": "https://github.com/OuwePiet/Lumen/pull/1368"
+  },
+  {
+    "number": 1366,
+    "title": "Security: prevent external framing of VIA pages",
+    "branch": "via-security-headers-provenance-20261003",
+    "sha": "c1d4ceab6469649e146af9626abd3f770797bf4f",
+    "base": "main",
+    "draft": true,
+    "url": "https://github.com/OuwePiet/Lumen/pull/1366"
+  },
+  {
+    "number": 1354,
+    "title": "Finish VIA counters with only sourced working metrics",
+    "branch": "via-counter-final-hide-unavailable",
+    "sha": "7b17374cf8ce4e60ca95e005843f339a3a0a94d0",
+    "base": "main",
+    "draft": false,
+    "url": "https://github.com/OuwePiet/Lumen/pull/1354"
+  },
+  {
+    "number": 1335,
+    "title": "Test scoped Web Analytics token without teamId query",
+    "branch": "via-analytics-scoped-token-test",
+    "sha": "51d19ea34272d154e2813939c7a4640172cf02d8",
+    "base": "main",
+    "draft": false,
+    "url": "https://github.com/OuwePiet/Lumen/pull/1335"
+  },
+  {
+    "number": 1323,
+    "title": "Display real Messages authorization errors to user",
+    "branch": "via-messages-show-identity-error-20261002",
+    "sha": "14b786506648e77d4d3f90bcc4ec49c413e7d74c",
+    "base": "main",
+    "draft": false,
+    "url": "https://github.com/OuwePiet/Lumen/pull/1323"
+  },
+  {
+    "number": 1311,
+    "title": "Make DeSo Safari storage permission step explicit",
+    "branch": "via-identity-storage-permission-visibility-20261002",
+    "sha": "4b8acfaedb14ea28329eb991e3c3cfa6d322319b",
+    "base": "main",
+    "draft": false,
+    "url": "https://github.com/OuwePiet/Lumen/pull/1311"
+  },
+  {
+    "number": 1308,
+    "title": "Label Safari approval tab while post prepares",
+    "branch": "via-safari-approval-tab-label-20261002",
+    "sha": "b3e5b260a4df7a93e0430cedc5ca661815446b09",
+    "base": "main",
+    "draft": false,
+    "url": "https://github.com/OuwePiet/Lumen/pull/1308"
+  },
+  {
+    "number": 1307,
+    "title": "Refresh DeSo Identity credentials on each login",
+    "branch": "via-identity-refresh-credentials-20261002",
+    "sha": "6573c7f90eef52583b0a8ba9834dd899b5b252ca",
+    "base": "main",
+    "draft": false,
+    "url": "https://github.com/OuwePiet/Lumen/pull/1307"
+  },
+  {
+    "number": 1305,
+    "title": "Avoid misleading post failure confirmation",
+    "branch": "via-post-submit-uncertain-feedback-20261002",
+    "sha": "764a98238707a5cb5e9d5d2d621712c98a17b6ed",
+    "base": "main",
+    "draft": false,
+    "url": "https://github.com/OuwePiet/Lumen/pull/1305"
+  },
+  {
+    "number": 1268,
+    "title": "VIA: align post signing with DeSo Identity service flow",
+    "branch": "via-central-deso-sign-client",
+    "sha": "2e87a9d86ded1e117b68c80c7cee09da2499bf89",
+    "base": "main",
+    "draft": false,
+    "url": "https://github.com/OuwePiet/Lumen/pull/1268"
+  },
+  {
+    "number": 1210,
+    "title": "VIA: keep complete Postoffice actions on iPad",
+    "branch": "via-postoffice-ipad-actions",
+    "sha": "4f75d6ca1bc14baf6ecef89b03b046a649a0da8d",
+    "base": "main",
+    "draft": false,
+    "url": "https://github.com/OuwePiet/Lumen/pull/1210"
+  },
+  {
+    "number": 1169,
+    "title": "Keep World Radio playback HTTPS-safe",
+    "branch": "via-radio-https-playback",
+    "sha": "26e46bf3d7696c5fceef5da55680e7f12d065412",
+    "base": "main",
+    "draft": false,
+    "url": "https://github.com/OuwePiet/Lumen/pull/1169"
+  },
+  {
+    "number": 1147,
+    "title": "Style Messages with approved blue visual theme",
+    "branch": "via-messages-blue-background",
+    "sha": "9f49fbc8bbac2fc02466a831ebb12375fd6c3732",
+    "base": "main",
+    "draft": false,
+    "url": "https://github.com/OuwePiet/Lumen/pull/1147"
+  },
+  {
+    "number": 1140,
+    "title": "Messages: align DM fee rate with DeSo default",
+    "branch": "via-messages-dm-fee-default",
+    "sha": "a4f87d00841987699dd5e892fbe830b62bff0a3e",
+    "base": "main",
+    "draft": false,
+    "url": "https://github.com/OuwePiet/Lumen/pull/1140"
+  }
+]

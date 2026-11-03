@@ -21,6 +21,7 @@ import type { ViaLanguage } from "../via-local-settings"
 import LikeButton from "../social/like-button"
 import PostComposer from "../social/post-composer"
 import PostVideo from "../social/post-video"
+import PostSource from "../post-source"
 import RepostButton from "../social/repost-button"
 import DiamondButton from "../social/diamond-button"
 import SponsorPlatform from "../sponsor-platform"
@@ -51,6 +52,7 @@ type ProfileResponse = {
 }
 
 type PublicPost = {
+  postExtraData?: Record<string, string>
   postHash: string
   publicKey: string
   username: string
@@ -923,7 +925,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
               {expanded && postHash ? <div className={`${styles.post} mt-3 rounded-xl border border-zinc-800 bg-black/25 p-3`}>
                 {post === undefined ? <p className="text-xs text-zinc-500">{copy.loading}</p> : post ? <>
                   <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1"><p className="min-w-0 break-words text-xs font-semibold text-zinc-300">@{post.username?.replace(/^@/, "") || shortKey(post.publicKey, copy.actor)}</p>{Number.isFinite(post.timestampNanos) && post.timestampNanos > 0 && Number.isFinite(new Date(post.timestampNanos / 1_000_000).getTime()) ? <time data-via-post-time dateTime={new Date(post.timestampNanos / 1_000_000).toISOString()} title={language === "Dutch" ? "Geplaatst op (lokale tijd)" : "Posted at (local time)"} className="text-xs tabular-nums text-zinc-400">{new Date(post.timestampNanos / 1_000_000).toLocaleString(language === "Dutch" ? "nl-NL" : language === "French" ? "fr-FR" : language === "Spanish" ? "es-ES" : language === "Chinese" ? "zh-CN" : language === "Hindi" ? "hi-IN" : "en-GB", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}</time> : null}</div>
-                  {post.body ? <>
+                  {post.postExtraData ? <PostSource extra={post.postExtraData} /> : null}{post.body ? <>
                     <p id={`notification-body-${rowKey}`} className={`${expandedBodies[rowKey] ? "" : styles.bodyPreview} mt-2 whitespace-pre-wrap text-sm leading-6 text-zinc-200`}>{post.body}</p>
                     {post.body.length > 240 || post.body.split("\n").length > 5 ? <button type="button" className={styles.readMore} aria-expanded={Boolean(expandedBodies[rowKey])} aria-controls={`notification-body-${rowKey}`} onClick={() => setExpandedBodies(current => ({ ...current, [rowKey]: !current[rowKey] }))}>{expandedBodies[rowKey] ? BODY_LABELS[language].less : BODY_LABELS[language].more}</button> : null}
                   </> : null}

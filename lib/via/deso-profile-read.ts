@@ -315,9 +315,9 @@ export async function readPublicProfile(
   const canonicalVerified = verificationFromProfile(profile)
   const [followersCount, followingCount, latestPublicActivity, verificationSources] = publicKey
     ? await Promise.all([
-        readFollowCount(publicKey, true),
-        readFollowCount(publicKey, false),
-        readLatestPublicActivity(publicKey),
+        readFollowCount(publicKey, true).catch(() => null),
+        readFollowCount(publicKey, false).catch(() => null),
+        readLatestPublicActivity(publicKey).catch(() => null),
         readTrustedVerificationSources(publicKey, canonicalVerified),
       ])
     : [null, null, null, canonicalVerified ? ["DeSo"] : []]

@@ -1,6 +1,9 @@
 "use client"
 
 import Link from "next/link"
+import CoinPrice from "./coin-price"
+import PostSource from "../post-source"
+import PostVideo from "../social/post-video"
 import { useEffect, useState } from "react"
 import { Copy, MoreVertical, UserRoundPen, WalletCards } from "lucide-react"
 import { viaModernIdentity, type ViaModernIdentityUser } from "../deso-identity-modern"
@@ -33,7 +36,7 @@ type PublicProfile = {
 
 type ProfileResponse = { ok?: boolean; profile?: PublicProfile }
 type ReplyComment = { postHash: string; username?: string; publicKey?: string; body: string; likeCount: number; repostCount: number; quoteRepostCount: number; diamondCount: number; comments?: ReplyComment[] }
-type OwnPost = { postHash: string; body: string; imageUrls: string[]; videoUrls: string[]; timestampNanos: number; likeCount: number; diamondCount: number; commentCount: number; repostCount: number; quoteRepostCount: number }
+type OwnPost = { postExtraData?: Record<string, string>; postHash: string; body: string; imageUrls: string[]; videoUrls: string[]; timestampNanos: number; likeCount: number; diamondCount: number; commentCount: number; repostCount: number; quoteRepostCount: number }
 type OwnPostsResponse = { ok?: boolean; posts?: OwnPost[] }
 
 type Copy = {
@@ -378,13 +381,13 @@ export default function ProfilePage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#050807] px-5 py-8 text-zinc-100 sm:px-8 lg:px-12">
+    <main className="min-h-screen bg-[#050807] px-4 py-4 text-zinc-100 sm:px-6" data-via-profile-page>
       <div className="mx-auto max-w-4xl">
-        <header className="mb-8 flex flex-wrap items-start justify-between gap-5">
+        <header className="mb-3 flex flex-wrap items-start justify-between gap-3">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8fd4a9]">{t.kicker}</p>
-            <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-[2.25rem]">{t.heading}</h1>
-            <p className="mt-3 max-w-2xl text-sm leading-6 text-zinc-400">{t.intro}</p>
+            <h1 className="mt-1 text-xl font-semibold tracking-tight sm:text-2xl">{t.heading}</h1>
+            
           </div>
           <div className="flex flex-wrap gap-2">
             {session?.publicKey ? (
@@ -407,7 +410,7 @@ export default function ProfilePage() {
           <section className="rounded-[14px] border border-zinc-800/80 bg-zinc-950/50 p-6 text-sm text-zinc-400" role="status">{t.unavailable}</section>
         ) : profile ? (
           <section
-            className="relative overflow-hidden rounded-[28px] border border-[#8fd4a9]/25 p-3 sm:p-8 shadow-[0_24px_80px_rgba(0,0,0,.45)]"
+            className="relative overflow-hidden rounded-2xl border border-[#8fd4a9]/25 p-3 sm:p-4 shadow-[0_24px_80px_rgba(0,0,0,.45)]"
             style={{
               background: profile.isInactive
                 ? "linear-gradient(145deg, rgba(48,55,51,.82), rgba(5,10,7,.96) 62%)"
@@ -419,17 +422,17 @@ export default function ProfilePage() {
             }}
           >
             {coverPhoto ? (
-              <div className="-mx-6 -mt-6 mb-6 overflow-hidden sm:-mx-8 sm:-mt-8">
-                <img src={coverPhoto} alt="" className="block h-auto w-full object-contain [@media(orientation:landscape)_and_(pointer:coarse)_and_(min-width:768px)_and_(max-width:1400px)]:max-h-[420px]" loading="lazy" referrerPolicy="no-referrer" />
+              <div className="-mx-3 -mt-3 mb-3 overflow-hidden sm:-mx-4 sm:-mt-4">
+                <img src={coverPhoto} alt="" className="block h-[170px] w-full object-cover sm:h-[200px]" loading="lazy" referrerPolicy="no-referrer" />
               </div>
             ) : null}
             <div className="pointer-events-none absolute -right-20 -top-24 h-56 w-56 rounded-full bg-[#8fd4a9]/10 blur-3xl" aria-hidden="true" />
             <div className="relative flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-6">
               <div className="relative shrink-0 self-start">
                 {image ? (
-                  <img src={image} alt="" className="h-16 w-16 rounded-full border border-[#8fd4a9]/35 object-cover shadow-[0_0_28px_rgba(143,212,169,.12)] sm:h-32 sm:w-32" referrerPolicy="no-referrer" />
+                  <img src={image} alt="" className="h-16 w-16 rounded-full border border-[#8fd4a9]/35 object-cover shadow-[0_0_28px_rgba(143,212,169,.12)] sm:h-20 sm:w-20" referrerPolicy="no-referrer" />
                 ) : (
-                  <div className="grid h-16 w-16 place-items-center rounded-full border border-[#8fd4a9]/30 bg-[#112019] text-3xl font-semibold text-[#9adbb2] sm:h-32 sm:w-32" aria-hidden="true">{profile.username.slice(0, 1).toUpperCase() || "V"}</div>
+                  <div className="grid h-16 w-16 place-items-center rounded-full border border-[#8fd4a9]/30 bg-[#112019] text-3xl font-semibold text-[#9adbb2] sm:h-20 sm:w-20" aria-hidden="true">{profile.username.slice(0, 1).toUpperCase() || "V"}</div>
                 )}
                 <span className="absolute -bottom-2 -right-2 rounded-full bg-[#06100a]/95 p-1.5 shadow-lg">
                   <ViaIdentityStatusMarks verified={profile.isVerified} inactive={profile.isInactive} compact={false} showLeaf={false} language={language} />
@@ -455,7 +458,9 @@ export default function ProfilePage() {
                   ) : null}
                 </div>
 
-                <div className="mt-3 grid grid-cols-2 gap-2 sm:mt-5">
+                <div className="mt-3"><CoinPrice nanos={profile.coinPriceDeSoNanos} dutch={language === "Dutch"} /></div>
+                <div className="mt-2 flex flex-wrap items-center gap-4 text-sm"><span title="Founder reward">FR <strong>{formatBasisPoints(profile.creatorBasisPoints)}</strong></span></div>
+                <div className="mt-3 grid grid-cols-2 gap-2">
                   <Link href={`/profile/connections?mode=followers&identity=${encodeURIComponent(profile.publicKey)}`} className={metricLink}>
                     <p className="text-[11px] uppercase tracking-[0.12em] text-zinc-500">{t.followers}</p>
                     <p className="mt-1 text-sm font-medium text-zinc-100">{formatCompact(profile.followersCount)}</p>
@@ -470,11 +475,14 @@ export default function ProfilePage() {
                   <span aria-hidden="true">📍</span>
                   <span>{t.countryVoluntary}</span>
                 </div>
-                <p className="mt-3 whitespace-pre-wrap text-sm leading-5 text-zinc-300 sm:mt-5 sm:leading-6">{profile.description || t.noBio}</p>
+                <details className="mt-3 border-t border-zinc-700/50 pt-3" data-via-profile-details>
+<summary className="cursor-pointer text-sm text-[#a9dfbc]">{language === "Dutch" ? "Bio en profielgegevens" : "Bio and profile details"}</summary>
+<p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-zinc-300">{profile.description || t.noBio}</p>
+<div className="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-sm text-zinc-400"><span>{t.coinHolders}: {formatCompact(profile.numberOfHolders)}</span><span>{t.coinsCirculation}: {formatCoins(profile.coinsInCirculationNanos)}</span></div>
                 <div className="mt-3 rounded-[12px] border border-zinc-800/80 bg-black/25 p-3 sm:mt-5 sm:p-4">
                   <p className="text-xs font-semibold uppercase tracking-[0.14em] text-zinc-500">{t.publicKey}</p>
                   <p className="mt-2 break-all font-mono text-xs leading-5 text-zinc-400">{profile.publicKey}</p>
-                </div>
+                </div></details>
               </div>
             </div>
           </section>
@@ -486,9 +494,9 @@ export default function ProfilePage() {
           {contentTab === "posts" ? <>
           <div className="mb-3 flex items-center justify-between gap-3"><h2 className="text-xl font-semibold">My Posts</h2><button type="button" onClick={() => setPostsRefresh((current) => current + 1)} className="text-xs text-[#9adbb2]">Refresh</button></div>
           {ownPostsLoading ? <p className="text-sm text-zinc-400">Loading DeSo posts…</p> : ownPostsError ? <p className="text-sm text-zinc-400" role="status">DeSo posts are temporarily unavailable.</p> : ownPosts.length === 0 ? <p className="text-sm text-zinc-400">No posts returned for the active DeSo account.</p> : <div className="space-y-3">{ownPosts.map((post) => <article key={post.postHash} className="rounded-[14px] border border-zinc-800/80 bg-zinc-950/50 p-4">
-            <p className="whitespace-pre-wrap text-sm text-zinc-200">{post.body}</p>
+            <div className="mb-2 flex flex-wrap items-center justify-between gap-2 text-xs"><Link href={"/profile/" + encodeURIComponent(profile.publicKey)} className="font-semibold text-[#b9e4c8]">@{profile.username}</Link><PostSource extra={post.postExtraData} /></div><p className="whitespace-pre-wrap text-sm text-zinc-200">{post.body}</p>
             {post.imageUrls?.length ? <div className="mt-3 grid gap-2 sm:grid-cols-2">{post.imageUrls.slice(0, 4).map((url) => <img key={url} src={url} alt="" loading="lazy" referrerPolicy="no-referrer" className="max-h-96 w-full rounded-lg object-cover" />)}</div> : null}
-            {post.videoUrls?.length ? <div className="mt-3 space-y-2">{post.videoUrls.slice(0, 2).map((url) => <video key={url} src={url} controls playsInline preload="none" className="max-h-96 w-full" />)}</div> : null}
+            {post.videoUrls?.length ? <div className="mt-3 space-y-2">{post.videoUrls.slice(0, 2).map((url) => <PostVideo key={url} url={url} />)}</div> : null}
             <div className="mt-3 flex flex-wrap items-center gap-2" aria-label="DeSo post actions">
               <button type="button" onClick={() => setReplyingToOwnPost(replyingToOwnPost === post.postHash ? null : post.postHash)} className="rounded-full border border-zinc-800 px-3 py-2 text-xs">Reply · {post.commentCount}</button>
               <RepostButton postHash={post.postHash} initialCount={post.repostCount + post.quoteRepostCount} variant="icon" />

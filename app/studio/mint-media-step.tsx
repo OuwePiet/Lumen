@@ -133,7 +133,7 @@ export default function MintMediaStep({ onPostHash }: { onPostHash?: (postHash: 
       <div className="mt-5 grid gap-3 sm:grid-cols-3">
         {choices.map((choice)=>(
           <button key={choice.id} type="button" onClick={()=>{mediaVersion.current += 1; setMode(choice.id); setVideoUrl(""); setImageUrl(""); setExternalMediaUrl(""); setDescription(""); setSensitiveContent(false); setSourcePostReady(false); onPostHash?.(""); setMessage(choice.id==="protected" ? "Arweave quote mode selected. Nothing will be uploaded or charged until permanent storage upload and direct provider payment are connected." : "")}} aria-pressed={mode===choice.id}
-            className={`min-h-32 rounded-[12px] border p-4 text-left transition ${mode===choice.id ? "border-[#8fd4a9]/60 bg-[#0c1711]/60" : "border-zinc-800 bg-black/20 hover:border-zinc-700"}`}>
+            className={`min-h-24 rounded-[12px] border p-3 text-left transition ${mode===choice.id ? "border-[#8fd4a9]/60 bg-[#0c1711]/60" : "border-zinc-800 bg-black/20 hover:border-zinc-700"}`}>
             <span className="block text-sm font-semibold text-zinc-100">{choice.title}</span>
             <span className="mt-2 block text-xs leading-5 text-zinc-400">{choice.text}</span>
           </button>

@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import PublicAccountLabel from "../public-account-label"
+import MintAccountOption from "./mint-account-option"
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react"
 import { viaModernIdentity, type ViaModernIdentityUser } from "../deso-identity-modern"
 import { useNFTAction } from "../use-nft-action"
@@ -257,7 +258,7 @@ export default function MintPreflight({ initialPostHash = "" }: { initialPostHas
         <span className="rounded-[9px] border border-[#8fd4a9]/30 bg-[#0c1711]/40 px-3 py-2 text-xs font-semibold text-[#8fd4a9]">No blockchain write</span>
       </div>
 
-      {!session ? <p className="mt-5 rounded-[11px] border border-amber-900/50 bg-amber-950/15 px-4 py-3 text-sm text-amber-100/80">Log in with DeSo Identity first. VIA will use only the active public key for this preflight.</p> : <div className="mt-5 rounded-[11px] border border-zinc-800/80 bg-black/20 p-4"><label className="grid gap-2"><span className="text-sm font-semibold text-zinc-200">Mint from DeSo account</span><select value={session.publicKey} disabled={accountSwitchBusy || mintStatus === "preparing" || mintStatus === "approval" || mintStatus === "submitting"} onChange={(e)=>void switchMintAccount(e.target.value)} className={field}>{mintAccounts.map((account)=><option key={account.publicKey} value={account.publicKey}>{account.publicKey}</option>)}</select></label><p className="mt-2 break-all text-xs text-zinc-500">Active signing public key: <PublicAccountLabel publicKey={session.publicKey} /></p><p className="mt-2 text-xs leading-5 text-zinc-500">Changing account clears the current mint quote. VIA will request a fresh quote for the selected DeSo account before mint approval.</p></div>}
+      {!session ? <p className="mt-5 rounded-[11px] border border-amber-900/50 bg-amber-950/15 px-4 py-3 text-sm text-amber-100/80">Log in with DeSo Identity first. VIA will use only the active public key for this preflight.</p> : <div className="mt-5 rounded-[11px] border border-zinc-800/80 bg-black/20 p-4"><label className="grid gap-2"><span className="text-sm font-semibold text-zinc-200">Mint from DeSo account</span><select value={session.publicKey} disabled={accountSwitchBusy || mintStatus === "preparing" || mintStatus === "approval" || mintStatus === "submitting"} onChange={(e)=>void switchMintAccount(e.target.value)} className={field}>{mintAccounts.map((account)=><MintAccountOption key={account.publicKey} publicKey={account.publicKey} />)}</select></label><div className="mt-2" data-via-native-i18n><PublicAccountLabel publicKey={session.publicKey} /></div><details className="mt-2 text-xs text-zinc-500"><summary className="cursor-pointer">Public key</summary><p className="mt-1 break-all">{session.publicKey}</p></details><p className="mt-2 text-xs leading-5 text-zinc-500">Changing account clears the current mint quote. VIA will request a fresh quote for the selected DeSo account before mint approval.</p></div>}
 
       <form onSubmit={runPreflight} className="mt-5 grid gap-4">
         <label className="grid gap-2"><span className="text-sm font-semibold text-zinc-200">NFT post hash</span><input className={field} value={postHash} onChange={(e)=>setPostHash(e.target.value)} maxLength={64} autoCapitalize="none" autoCorrect="off" placeholder="64-character DeSo post hash"/></label>

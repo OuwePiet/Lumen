@@ -11,8 +11,9 @@ export default function ActiveAccountReader() {
   const search = useSearchParams()
   const query = search.toString()
   const [active, setActive] = useState<string | null>(null)
-  const tracksActive = !search.has("publicKey") || search.get("account") === "active"
+  const tracksActive = search.get("account") === "active" || (pathname !== "/market" && !search.has("publicKey"))
   useEffect(() => {
+    if (!tracksActive) return
     const params = new URLSearchParams(query)
     if (params.has("publicKey") && params.get("account") !== "active") return
     return viaModernIdentity.subscribe((user) => {
@@ -23,7 +24,7 @@ export default function ActiveAccountReader() {
       else next.delete("publicKey")
       if (next.toString() !== query) router.replace(`${pathname}?${next}`, { scroll: false })
     })
-  }, [pathname, query, router])
+  }, [pathname, query, router, tracksActive])
   if (!tracksActive || search.get("publicKey") === active) return null
   return <div data-via-reader-stale role="status" className="py-6 text-sm text-zinc-400">
     Actieve VIA-account controleren…

@@ -83,8 +83,8 @@ export default async function MarketPage({ searchParams }: { searchParams: Promi
         loadNFTs(publicKey, { IsForSale: true }),
         loadNFTs(publicKey, { IsPending: true }),
       ])
-      listings = flatten(listingData.NFTsMap)
-      transfers = flatten(pendingData.NFTsMap)
+      listings = flatten(listingData.NFTsMap).filter(row => row.entry.IsForSale === true && row.entry.IsPending !== true)
+      transfers = flatten(pendingData.NFTsMap).filter(row => row.entry.IsPending === true)
     } catch {
       error = true
     }

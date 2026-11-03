@@ -22,7 +22,7 @@ function AccountMintFlow({ publicKey }: { publicKey: string }) {
   return <>
     <MintPreflightLocalizer />
     <NFTRecoveryNotice />
-    <details open={!reviewed} className="mb-3 rounded-xl border border-zinc-800 px-3 py-2"><summary className="cursor-pointer text-sm text-[#9adbb2]">Mintinformatie / Mint information</summary>
+    <details open={!reviewed} className="mb-3 rounded-xl border border-zinc-800 px-3 py-2"><summary className="cursor-pointer text-sm text-[#9adbb2]">Mint information</summary>
     <section className="mb-4 rounded-xl border border-zinc-800 bg-black/20 p-5" aria-labelledby="via-nft-terms-heading">
       <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#8fd4a9]">VIA NFT · mint review {REVIEW_VERSION}</p>
       <h2 id="via-nft-terms-heading" className="mt-2 text-xl font-semibold">Before you mint</h2>

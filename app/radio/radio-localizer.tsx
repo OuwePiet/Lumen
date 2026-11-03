@@ -6,6 +6,12 @@ import { readViaLocalSettings, VIA_SETTINGS_EVENT, type ViaLanguage } from "../v
 type Copy = Record<string, string>
 
 const dutch: Copy = {
+  "Station name": "Zendernaam",
+  "Station, e.g. Radio 538": "Zender, bijv. Radio 538",
+  "Genre": "Genre",
+  "Genre, e.g. jazz": "Genre, bijv. jazz",
+  "Stop": "Stoppen",
+  "World Radio station discovery": "Wereldradiozenders zoeken",
   "Back to VIA": "Terug naar VIA",
   "World Radio": "Wereldradio",
   "Listen around the world.": "Luister de wereld rond.",
@@ -29,6 +35,14 @@ const dutch: Copy = {
 }
 
 const french: Copy = {
+  "Discover public internet radio by country or genre. Station metadata comes from the Radio Browser directory; when you press Play, audio is requested directly from the station and is not hosted or proxied by VIA.": "Découvrez les radios publiques sur Internet par pays ou par genre. Les informations sur les stations proviennent de Radio Browser ; lorsque vous lancez la lecture, le flux audio vient directement de la station et n’est ni hébergé ni relayé par VIA.",
+  "World Radio is separate from VIA LIVE. Radio is for station listening; VIA LIVE is for community conversations and later replays. Availability and rights remain the responsibility of each station or stream provider.": "La Radio mondiale est distincte de VIA LIVE. La radio sert à écouter des stations ; VIA LIVE est destiné aux échanges de la communauté et aux rediffusions futures. La disponibilité et les droits relèvent de chaque station ou fournisseur de flux.",
+  "Station name": "Nom de la station",
+  "Station, e.g. Radio 538": "Station, par ex. Radio 538",
+  "Genre": "Genre",
+  "Genre, e.g. jazz": "Genre, par ex. jazz",
+  "Stop": "Arrêter",
+  "World Radio station discovery": "Recherche de stations de radio",
   "Back to VIA": "Retour à VIA",
   "World Radio": "Radio mondiale",
   "Listen around the world.": "Écoutez le monde entier.",
@@ -46,6 +60,14 @@ const french: Copy = {
 }
 
 const spanish: Copy = {
+  "Discover public internet radio by country or genre. Station metadata comes from the Radio Browser directory; when you press Play, audio is requested directly from the station and is not hosted or proxied by VIA.": "Descubre emisoras públicas de radio por Internet según el país o el género. Los datos proceden del directorio Radio Browser; al pulsar Reproducir, el audio se solicita directamente a la emisora y VIA no lo aloja ni lo retransmite.",
+  "World Radio is separate from VIA LIVE. Radio is for station listening; VIA LIVE is for community conversations and later replays. Availability and rights remain the responsibility of each station or stream provider.": "La Radio mundial es independiente de VIA LIVE. La radio permite escuchar emisoras; VIA LIVE está destinado a conversaciones de la comunidad y futuras repeticiones. Cada emisora o proveedor del flujo es responsable de su disponibilidad y derechos.",
+  "Station name": "Nombre de la emisora",
+  "Station, e.g. Radio 538": "Emisora, p. ej. Radio 538",
+  "Genre": "Género",
+  "Genre, e.g. jazz": "Género, p. ej. jazz",
+  "Stop": "Detener",
+  "World Radio station discovery": "Buscar emisoras de radio",
   "Back to VIA": "Volver a VIA",
   "World Radio": "Radio mundial",
   "Listen around the world.": "Escucha alrededor del mundo.",
@@ -63,6 +85,14 @@ const spanish: Copy = {
 }
 
 const chinese: Copy = {
+  "Discover public internet radio by country or genre. Station metadata comes from the Radio Browser directory; when you press Play, audio is requested directly from the station and is not hosted or proxied by VIA.": "按国家或类型探索公开的网络电台。电台信息来自 Radio Browser 目录；点击播放后，音频直接从电台获取，VIA 不托管或转发音频。",
+  "World Radio is separate from VIA LIVE. Radio is for station listening; VIA LIVE is for community conversations and later replays. Availability and rights remain the responsibility of each station or stream provider.": "世界电台与 VIA LIVE 相互独立。世界电台用于收听广播；VIA LIVE 用于社区交流及未来的回放。各电台或流媒体提供方自行负责可用性和相关权利。",
+  "Station name": "电台名称",
+  "Station, e.g. Radio 538": "电台，例如 Radio 538",
+  "Genre": "类型",
+  "Genre, e.g. jazz": "类型，例如爵士乐",
+  "Stop": "停止",
+  "World Radio station discovery": "搜索广播电台",
   "Back to VIA": "返回 VIA",
   "World Radio": "世界电台",
   "Listen around the world.": "聆听世界各地。",
@@ -80,6 +110,14 @@ const chinese: Copy = {
 }
 
 const hindi: Copy = {
+  "Discover public internet radio by country or genre. Station metadata comes from the Radio Browser directory; when you press Play, audio is requested directly from the station and is not hosted or proxied by VIA.": "देश या शैली के अनुसार सार्वजनिक इंटरनेट रेडियो खोजें। स्टेशन की जानकारी Radio Browser निर्देशिका से आती है; चलाएँ दबाने पर ऑडियो सीधे स्टेशन से प्राप्त होता है, VIA उसे होस्ट या प्रॉक्सी नहीं करता।",
+  "World Radio is separate from VIA LIVE. Radio is for station listening; VIA LIVE is for community conversations and later replays. Availability and rights remain the responsibility of each station or stream provider.": "विश्व रेडियो, VIA LIVE से अलग है। रेडियो स्टेशन सुनने के लिए है; VIA LIVE समुदाय की बातचीत और भविष्य के रीप्ले के लिए है। उपलब्धता और अधिकारों की जिम्मेदारी संबंधित स्टेशन या स्ट्रीम प्रदाता की है।",
+  "Station name": "स्टेशन का नाम",
+  "Station, e.g. Radio 538": "स्टेशन, जैसे रेडियो 538",
+  "Genre": "शैली",
+  "Genre, e.g. jazz": "शैली, जैसे जैज़",
+  "Stop": "रोकें",
+  "World Radio station discovery": "रेडियो स्टेशन खोजें",
   "Back to VIA": "VIA पर वापस जाएँ",
   "World Radio": "विश्व रेडियो",
   "Listen around the world.": "दुनिया भर के रेडियो सुनें।",
