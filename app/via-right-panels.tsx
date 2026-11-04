@@ -184,10 +184,15 @@ export default function ViaRightPanels() {
         if (!response.ok) throw new Error("Visitor analytics unavailable")
         const data = await response.json() as VisitorAnalyticsResponse
         if (disposed || !data.ok || !data.visitors) throw new Error("Visitor analytics unavailable")
-        setVisitorMeasuredAt(typeof data.measuredAt === "string" ? data.measuredAt : null)
-        if (typeof data.visitors.today === "number" && Number.isFinite(data.visitors.today)) setVisitorToday(data.visitors.today)
-        if (typeof data.visitors.month === "number" && Number.isFinite(data.visitors.month)) setVisitorMonth(data.visitors.month)
-        if (typeof data.visitors.year === "number" && Number.isFinite(data.visitors.year)) setVisitorYear(data.visitors.year)
+        const { today, month, year } = data.visitors
+        if (![today, month, year].every((value) => typeof value === "number" && Number.isSafeInteger(value) && value >= 0) ||
+          (today as number) > (month as number) || (month as number) > (year as number)) {
+          throw new Error("Invalid visitor analytics totals")
+        }
+        setVisitorToday(today as number)
+        setVisitorMonth(month as number)
+        setVisitorYear(year as number)
+        setVisitorMeasuredAt(typeof data.measuredAt === "string" && Number.isFinite(Date.parse(data.measuredAt)) ? data.measuredAt : null)
         if (Array.isArray(data.countries)) {
           setVisitorCountries(data.countries.filter((entry): entry is { country: string; visitors: number } =>
             Boolean(entry && typeof entry.country === "string" && typeof entry.visitors === "number" && Number.isFinite(entry.visitors)),
@@ -211,9 +216,13 @@ export default function ViaRightPanels() {
         const data = await response.json() as ActivityAnalyticsResponse
         if (disposed || !data.ok || data.scope !== "bounded-recent-via-posts") throw new Error("Activity analytics unavailable")
         setActivitySampleSize(typeof data.sampledPosts === "number" ? data.sampledPosts : null)
-        if (typeof data.activity?.posts === "number") setActivityPosts(data.activity.posts)
-        if (typeof data.activity?.creators === "number") setActivityCreators(data.activity.creators)
-        if (typeof data.activity?.nftPosts === "number") setActivityNfts(data.activity.nftPosts)
+        const counts = [data.activity?.posts, data.activity?.creators, data.activity?.nftPosts]
+        if (!counts.every((value) => typeof value === "number" && Number.isSafeInteger(value) && value >= 0)) {
+          throw new Error("Invalid activity sample")
+        }
+        setActivityPosts(counts[0] as number)
+        setActivityCreators(counts[1] as number)
+        setActivityNfts(counts[2] as number)
       }).catch(() => {
         if (disposed || activityController.signal.aborted) return
         setAnalyticsError(true)
