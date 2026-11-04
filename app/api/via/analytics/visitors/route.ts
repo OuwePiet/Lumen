@@ -149,30 +149,17 @@ export async function GET() {
     }, { status: 503 })
   }
 
-  // When the count endpoint reports zero but country aggregation has
-  // visitors for the same interval, use the country breakdown as a
-  // provisional count. A visitor switching countries may be counted twice.
-  const countryTotal = countries?.reduce((sum, row) => sum + row.visitors, 0) ?? 0
-  const todayFromCountries = today === 0 && countryTotal > 0
-  const resolvedToday = todayFromCountries ? countryTotal : today
-  if (todayFromCountries) console.warn("[VIA analytics] Daily count sourced from country aggregate", {
-    intervalStart: dayStart.toISOString(),
-    intervalEnd: now.toISOString(),
-    dailyCount: today,
-    countryVisitors: countryTotal,
-  })
-
   return NextResponse.json({
     ok: true,
     source: "vercel-web-analytics",
     privacy: "aggregated",
     measuredAt: now.toISOString(),
     visitors: {
-      today: resolvedToday,
+      today,
       month,
       year,
     },
-    todayCountSource: todayFromCountries ? "country-aggregate-provisional" : "visits-count",
+    todayCountSource: "visits-count",
     countries: countries ?? [],
   }, { headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=300" } })
 }
