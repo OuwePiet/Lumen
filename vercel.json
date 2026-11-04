@@ -1,10 +1,24 @@
 {
-  "$schema": "https://openapi.vercel.sh/vercel.json",
   "git": {
     "deploymentEnabled": {
+      "fix/via-nft-mobile-compact-20261021": false,
+      "fix/via-creator-suggestions-20261021": false,
+      "fix/via-nft-owned-pagination-20261021": false,
+      "fix/via-nft-royalty-clarity-20261020": false,
+      "fix/via-nft-workspace-polish-20261020": false,
       "codex/via-platform-login-20261016": false,
       "fix/via-identity-return-production-20261017": false,
-      "fix/via-platform-preserved-release-20261017": false
+      "fix/via-platform-preserved-release-20261017": false,
+      "codex/via-nft-platform-20261016": false,
+      "codex/via-diamond-budget-20261013": false,
+      "codex/via-diamond-single-flight-20261013": false,
+      "codex/via-nft-bid-safety-20261013": false,
+      "codex/via-sponsor-safety-20261013": false,
+      "backup/via-nft-preserved-20261017": false,
+      "fix/via-nft-platform-release-20261017": false,
+      "feat/via-nft-storage-preview-20261017": false,
+      "fix/via-nft-controls-explanation-20261018": false
     }
-  }
+  },
+  "$schema": "https://openapi.vercel.sh/vercel.json"
 }

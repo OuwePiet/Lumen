@@ -57,12 +57,10 @@ export default function FeedChoice() {
   const inactiveClass = "rounded-full border border-zinc-800 px-4 py-2 text-sm text-zinc-400 transition hover:border-zinc-700 hover:text-zinc-200"
 
   return (
-    <section className="rounded-2xl border border-white/10 bg-black/35 px-2 py-2 sm:px-5 sm:py-3" aria-labelledby="feed-choice-heading">
+    <section className="rounded-t-2xl border border-b-0 border-white/10 bg-black/35 px-3 py-2" aria-labelledby="feed-choice-heading">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="hidden sm:block">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#8fd4a9]">Feed</p>
-          <h2 id="feed-choice-heading" className="mt-1 text-base font-semibold text-zinc-100">{active.title}</h2>
-          <p className="mt-1 text-xs text-zinc-500">{active.text}</p>
+          <h2 id="feed-choice-heading" className="text-sm font-semibold text-zinc-100">{active.title}</h2>
         </div>
         <div className="grid w-full grid-cols-3 gap-2 sm:flex sm:w-auto sm:flex-wrap" aria-label="Choose social feed">
           {choices.map((choice) => {
@@ -82,7 +80,7 @@ export default function FeedChoice() {
 
         </div>
       </div>
-      <p className={`text-[11px] text-zinc-600 sm:mt-2 sm:min-h-4 ${status ? "mt-2" : "hidden sm:block"}`} role="status" aria-live="polite">{status}</p>
+      <p className={`text-[11px] text-zinc-600 ${status ? "mt-2" : "hidden"}`} role="status" aria-live="polite">{status}</p>
     </section>
   )
 }

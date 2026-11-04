@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server"
+import { storageQuoteAmounts } from "../../../../../../lib/via/storage-quote-amount"
 
 export const dynamic = "force-dynamic"
 
 const ARWEAVE_PRICE_URL = "https://arweave.net/price"
 const VIA_STORAGE_SERVICE_BASIS_POINTS = 500
-const BASIS_POINTS_DENOMINATOR = 10_000
+
 
 export async function GET(request: NextRequest) {
   const rawBytes = request.nextUrl.searchParams.get("bytes")
@@ -32,8 +33,7 @@ export async function GET(request: NextRequest) {
     if (!Number.isSafeInteger(providerPriceWinston)) {
       return NextResponse.json({ ok: false, error: "INVALID_ARWEAVE_PRICE" }, { status: 502 })
     }
-    const viaStorageServiceWinston = Math.ceil((providerPriceWinston * VIA_STORAGE_SERVICE_BASIS_POINTS) / BASIS_POINTS_DENOMINATOR)
-    const totalWinston = providerPriceWinston + viaStorageServiceWinston
+    const amounts = storageQuoteAmounts(providerPriceWinston, VIA_STORAGE_SERVICE_BASIS_POINTS)
 
     return NextResponse.json({
       ok: true,
@@ -43,10 +43,10 @@ export async function GET(request: NextRequest) {
       viaStorageService: {
         basisPoints: VIA_STORAGE_SERVICE_BASIS_POINTS,
         percent: 5,
-        amountWinston: String(viaStorageServiceWinston),
+        amountWinston: amounts.service,
         collectionStatus: "not-collected",
       },
-      totalWinston: String(totalWinston),
+      totalWinston: amounts.total,
       quotedAt: new Date().toISOString(),
       paymentResponsibility: "creator-direct-to-provider",
       viaAdvancesProviderCost: false,

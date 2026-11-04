@@ -8,11 +8,12 @@ import {
   type DeSoNFTPost,
 } from "./deso-nfts"
 import NFTMedia from "./nft-media"
+import { compareNFTCollections } from "../lib/via/nft-collection-sort"
 import XShareButton from "./x-share-button"
 import { isViaSensitiveContent } from "../lib/via/sensitive-content"
 
 const PAGE_SIZE = 25
-const CACHE_VERSION = 1
+const CACHE_VERSION = 2
 const QUERY_LIMIT = 120
 const VIDEO_EXTENSIONS = [".mp4", ".webm", ".mov", ".m4v"]
 const AUDIO_EXTENSIONS = [".mp3", ".wav", ".m4a", ".aac", ".flac", ".oga"]
@@ -26,6 +27,7 @@ type SortMode =
   | "fewest-owned"
   | "lowest-price"
   | "highest-price"
+  | "newest" | "oldest" | "creator" | "serial"
 
 type NFTCacheEnvelope = {
   version: number
@@ -265,8 +267,8 @@ const styles = {
   },
   grid: {
     display: "grid",
-    gap: "12px",
-    gridTemplateColumns: "repeat(auto-fill, minmax(min(160px, 100%), 1fr))",
+    gap: "10px",
+    gridTemplateColumns: "repeat(auto-fill, minmax(min(145px, 100%), 1fr))",
     marginTop: "12px",
   },
   card: {
@@ -308,7 +310,7 @@ const styles = {
     WebkitBoxOrient: "vertical" as const,
     WebkitLineClamp: 2,
   },
-  fact: { color: "#a9b8af", fontSize: "11px", margin: 0 },
+  fact: { overflowWrap: "anywhere" as const, color: "#a9b8af", fontSize: "11px", margin: 0 },
   saleFact: { color: "#b9ffd4", fontSize: "11px", margin: "5px 0 0" },
   more: {
     background: "transparent",
@@ -328,14 +330,31 @@ export default function PublicAccountNFTs({
   publicKey,
   username,
   autoLoad = false,
+  profileImage,
 }: {
   publicKey: string
   username: string
+  profileImage?: string
   autoLoad?: boolean
 }) {
+  const [accountName, setAccountName] = useState<{ key: string; name: string } | null>(null)
+  useEffect(() => {
+    if (username !== publicKey && !username.startsWith("BC1")) return
+    const controller = new AbortController()
+    void fetch("/api/via/profile?identity=" + encodeURIComponent(publicKey) + "&compact=1", { signal: controller.signal })
+      .then(response => response.ok ? response.json() : null)
+      .then(data => { if (!controller.signal.aborted && data?.ok && typeof data.profile?.username === "string") setAccountName({ key: publicKey, name: data.profile.username }) })
+      .catch(() => {})
+    return () => controller.abort()
+  }, [publicKey, username])
+  const displayUsername = username === publicKey || username.startsWith("BC1") ? accountName?.key === publicKey ? accountName.name : "Account" : username
   const cacheKey = `via:account-nfts:v${CACHE_VERSION}:${publicKey}`
   const [nfts, setNFTs] = useState<DeSoNFTCollection[] | null>(null)
   const [loading, setLoading] = useState(false)
+  const [readComplete, setReadComplete] = useState(false)
+  const controlsRef = useRef<HTMLDivElement | null>(null)
+  const scrolledToControls = useRef(false)
+  const [readProgress, setReadProgress] = useState<{ pages: number; works: number; editions: number } | null>(null)
   const [lastUpdated, setLastUpdated] = useState<number | null>(null)
   const [linkCopied, setLinkCopied] = useState(false)
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
@@ -365,7 +384,7 @@ export default function PublicAccountNFTs({
       requestedSort === "most-owned" ||
       requestedSort === "fewest-owned" ||
       requestedSort === "lowest-price" ||
-      requestedSort === "highest-price"
+      requestedSort === "highest-price" || requestedSort === "newest" || requestedSort === "oldest" || requestedSort === "creator" || requestedSort === "serial"
     ) {
       setSortMode(requestedSort)
     }
@@ -389,6 +408,7 @@ export default function PublicAccountNFTs({
       const cached = readCache(window.sessionStorage.getItem(cacheKey), publicKey)
       if (cached) {
         setNFTs(cached.collections)
+        setReadComplete(true)
         setLastUpdated(cached.savedAt)
       } else {
         window.sessionStorage.removeItem(cacheKey)
@@ -405,12 +425,18 @@ export default function PublicAccountNFTs({
     const controller = new AbortController()
     loadController.current = controller
     setLoading(true)
+    setReadComplete(false)
+    setReadProgress(null)
     setError("")
 
     try {
-      const collections = await getNFTsForUser(publicKey, controller.signal)
+      const collections = await getNFTsForUser(publicKey, controller.signal, progress => {
+        if (!controller.signal.aborted && loadController.current === controller) { setReadProgress(progress); setNFTs(progress.collections) }
+      })
+      if (controller.signal.aborted || loadController.current !== controller) return
       const savedAt = Date.now()
       setNFTs(collections)
+      setReadComplete(true)
       setLastUpdated(savedAt)
 
       const envelope: NFTCacheEnvelope = {
@@ -446,6 +472,15 @@ export default function PublicAccountNFTs({
     }
   }, [autoLoad, loadNFTs, restored])
 
+  useEffect(() => {
+    if (!autoLoad || !nfts?.length || scrolledToControls.current || !window.matchMedia("(max-width: 720px)").matches) return
+    const controls = controlsRef.current
+    if (!controls) return
+    scrolledToControls.current = true
+    const headerHeight = document.querySelector(".via-site-header")?.getBoundingClientRect().height ?? 0
+    window.scrollTo({ top: Math.max(0, controls.getBoundingClientRect().top + window.scrollY - headerHeight - 8), behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" })
+  }, [autoLoad, nfts])
+
   const collectionParams = new URLSearchParams({
     account: username,
     accountKey: publicKey,
@@ -457,6 +492,7 @@ export default function PublicAccountNFTs({
     if (autoLoad) {
       return (
         <div aria-live="polite" aria-busy={loading}>
+          {loading && readProgress ? <p style={{ color: "#a5dfb8", lineHeight: 1.6 }}>Reading all ownership pages from DeSo: {readProgress.editions.toLocaleString()} editions across {readProgress.works.toLocaleString()} works found so far ({readProgress.pages} pages). This is not the final total.</p> : null}
           <button
             type="button"
             style={styles.action}
@@ -512,6 +548,7 @@ export default function PublicAccountNFTs({
 
   const sortedNFTs = [...mediaFilteredNFTs].sort((left, right) => {
     if (sortMode === "collection") return 0
+    if (sortMode === "newest" || sortMode === "oldest" || sortMode === "creator" || sortMode === "serial") return compareNFTCollections(left, right, sortMode)
 
     const leftTitle = title(left.PostEntryResponse?.Body)
     const rightTitle = title(right.PostEntryResponse?.Body)
@@ -587,15 +624,18 @@ export default function PublicAccountNFTs({
   }
 
   return (
-    <section aria-label={`Public NFTs owned by @${username}`}>
+    <section aria-label={`Public NFTs owned by @${displayUsername}`}>
+      <style>{`.via-owned-preferences { padding:10px; border:1px solid #8fd4a926; border-radius:12px; background:#05080766; } .via-owned-preferences > input { max-width:420px; } .via-nft-filter-group { display:flex; flex-wrap:wrap; align-items:center; gap:6px; max-width:100%; } .via-nft-filter-group button { min-height:44px; } @media (min-width:981px) and (pointer:fine) { .via-owned-preferences { padding:8px 10px; gap:7px !important; margin-top:8px !important; } .via-owned-preferences > input { max-width:320px; flex-basis:220px !important; } .via-owned-preferences input, .via-owned-preferences select { min-height:34px !important; height:34px; font-size:12px !important; padding:5px 9px !important; border-radius:8px !important; } .via-owned-preferences button, .via-owned-preferences a { min-height:32px !important; font-size:11px !important; font-weight:500 !important; padding:5px 10px !important; border-radius:8px !important; } .via-owned-preferences label { gap:2px !important; } .via-nft-filter-group { gap:4px; } .via-owned-preferences span { font-size:11px !important; font-weight:500 !important; } section[aria-label^="Public NFTs owned"] > p { margin-top:8px !important; font-size:12px !important; } section[aria-label^="Public NFTs owned"] > p img { width:32px; height:32px; } } @media(max-width:720px) { .via-owned-preferences > input { flex-basis:100% !important; max-width:none; } .via-nft-filter-group { flex-basis:100%; } }`}</style>
+      {loading && readProgress ? <p role="status" aria-live="polite" style={{ color: "#a5dfb8", lineHeight: 1.6 }}>Reading all ownership pages from DeSo: {readProgress.editions.toLocaleString()} editions across {readProgress.works.toLocaleString()} works found so far ({readProgress.pages} pages). This is not the final total.</p> : null}
       {nfts.length > 0 ? (
-        <p style={styles.status}>
-          @{username} owns {totalOwnedCopies} NFT {totalOwnedCopies === 1 ? "copy" : "copies"} across {nfts.length} different NFT{nfts.length === 1 ? "" : "s"}.
+        <p style={{ ...styles.status, display: "flex", alignItems: "center", gap: 10, overflowWrap: "anywhere" }}>
+          {profileImage ? <img src={profileImage} alt="" width={44} height={44} style={{ borderRadius: "50%", flexShrink: 0 }} referrerPolicy="no-referrer" /> : null}
+          <span>{readComplete ? `@${displayUsername} owns ${totalOwnedCopies} NFT ${totalOwnedCopies === 1 ? "copy" : "copies"} across ${nfts.length} different NFT${nfts.length === 1 ? "" : "s"}.` : `@${displayUsername}: ${totalOwnedCopies} editions across ${nfts.length} works loaded so far. Incomplete read — this is not the final total.`}</span>
         </p>
       ) : null}
 
       {nfts.length > 0 ? (
-        <div style={styles.controls}>
+        <div id="collection-controls" data-via-nft-preferences className="via-owned-preferences" ref={controlsRef} style={styles.controls}>
           <input
             type="search"
             aria-label="Search this account collection"
@@ -608,7 +648,7 @@ export default function PublicAccountNFTs({
               setVisibleCount(PAGE_SIZE)
             }}
           />
-          <select
+          <label style={{ display: "grid", gap: 4 }}><span style={styles.controlLabel}>Sort</span><select
             aria-label="Sort this account collection"
             value={sortMode}
             style={styles.select}
@@ -619,12 +659,13 @@ export default function PublicAccountNFTs({
           >
             <option value="collection">Collection order</option>
             <option value="title">Title A–Z</option>
+            <option value="newest">Date: newest first</option><option value="oldest">Date: oldest first</option><option value="creator">Creator A–Z</option><option value="serial">Edition number: low–high</option>
             <option value="most-owned">Most copies owned</option>
             <option value="fewest-owned">Fewest copies owned</option>
             <option value="lowest-price">Lowest price</option>
             <option value="highest-price">Highest price</option>
-          </select>
-          <span style={styles.controlLabel}>Sale</span>
+          </select></label>
+          <div className="via-nft-filter-group" role="group" aria-label="Sale status"><span style={styles.controlLabel}>Sale</span>
           {([["all", "All"], ["for-sale", "For sale"], ["not-for-sale", "Not for sale"]] as const).map(
             ([value, label]) => (
               <button
@@ -644,7 +685,7 @@ export default function PublicAccountNFTs({
               </button>
             )
           )}
-          <span style={styles.controlLabel}>Media</span>
+          </div><div className="via-nft-filter-group" role="group" aria-label="Media type"><span style={styles.controlLabel}>Media</span>
           {([["all", "All"], ["image", "Image"], ["video", "Video"], ["audio", "Audio"], ["unavailable", "Unavailable"]] as const).map(
             ([value, label]) => (
               <button
@@ -664,7 +705,7 @@ export default function PublicAccountNFTs({
               </button>
             )
           )}
-          <button
+          </div><div className="via-nft-filter-group" role="group" aria-label="Collection actions"><button
             type="button"
             disabled={!controlsChanged}
             style={{
@@ -679,7 +720,7 @@ export default function PublicAccountNFTs({
           <button type="button" style={styles.filter} onClick={copyCollectionLink}>
             {linkCopied ? "Link copied" : "Copy collection link"}
           </button>
-          <XShareButton href={sharePath} text={`VIA NFT collection · @${username}`} label="X" style={styles.filter} />
+          <XShareButton href={sharePath} text={`VIA NFT collection · @${displayUsername}`} label="X" style={styles.filter} />
           <button
             type="button"
             style={styles.filter}
@@ -687,7 +728,7 @@ export default function PublicAccountNFTs({
             onClick={loadNFTs}
           >
             {loading ? "Refreshing from DeSo…" : "Refresh from DeSo"}
-          </button>
+          </button></div>
         </div>
       ) : (
         <button
@@ -714,12 +755,12 @@ export default function PublicAccountNFTs({
 
       <p style={styles.status} aria-live="polite">
         {nfts.length === 0
-          ? `No public NFTs found for @${username}.`
+          ? `No public NFTs found for @${displayUsername}.`
           : `${mediaFilteredNFTs.length} of ${nfts.length} public NFTs match.`}
       </p>
 
       {mediaFilteredNFTs.length > 0 ? (
-        <div style={styles.grid}>
+        <div data-via-owned-nft-grid style={styles.grid}>
           {visibleNFTs.map((collection) => {
             const post = collection.PostEntryResponse!
             const postHash = post.PostHashHex!
@@ -758,7 +799,7 @@ export default function PublicAccountNFTs({
                 <div style={styles.content}>
                   <h3 style={styles.title}>{title(post.Body)}</h3>
                   <p style={styles.fact}>
-                    @{username} owns {ownedCopies} of {totalCopies} {totalCopies === 1 ? "copy" : "copies"}
+                    @{displayUsername} owns {ownedCopies} of {totalCopies} {totalCopies === 1 ? "copy" : "copies"}
                   </p>
                   <p style={styles.saleFact}>{ownedSaleStatus(ownedEntries)}</p>
                 </div>

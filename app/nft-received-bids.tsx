@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react"
 import { viaModernIdentity, type ViaModernIdentityUser } from "./deso-identity-modern"
+import { useNFTAction } from "./use-nft-action"
 
 type Bid = {
   serialNumber: number
@@ -21,13 +22,6 @@ type Props = {
   hasUnlockable: boolean
 }
 
-type PrepareResponse = {
-  ok?: boolean
-  transactionHex?: string
-  feeNanos?: number | null
-  error?: string
-}
-
 function formatDeso(nanos: number) {
   return new Intl.NumberFormat("en-US", { maximumFractionDigits: 9 }).format(nanos / 1_000_000_000)
 }
@@ -38,12 +32,15 @@ function shortKey(key: string) {
 
 export default function NFTReceivedBids({ postHash, bids, editions, hasUnlockable }: Props) {
   const [session, setSession] = useState<ViaModernIdentityUser | null>(null)
-  const [confirmedKey, setConfirmedKey] = useState<string | null>(null)
+  const [confirmationValue, setConfirmationValue] = useState<string | null>(null)
+  const [confirmationAccount, setConfirmationAccount] = useState<string | null>(null)
+  const confirmedKey = confirmationAccount === session?.publicKey ? confirmationValue : null
+  function setConfirmedKey(value: string | null) { setConfirmationValue(value); setConfirmationAccount(value === null ? null : session?.publicKey ?? null) }
   const [status, setStatus] = useState<"idle"|"preparing"|"approval"|"submitting"|"done"|"error">("idle")
   const [message, setMessage] = useState("")
+  const actionRunner = useNFTAction()
 
   useEffect(() => {
-    void viaModernIdentity.currentUser().then(setSession)
     return viaModernIdentity.subscribe(setSession)
   }, [])
 
@@ -57,65 +54,14 @@ export default function NFTReceivedBids({ postHash, bids, editions, hasUnlockabl
     [bids, ownedSerials],
   )
 
-  async function acceptBid(bid: Bid) {
-    if (!session || hasUnlockable) return
-    const key = `${bid.serialNumber}:${bid.bidderPublicKey}:${bid.bidAmountNanos}`
-    if (confirmedKey !== key || status === "preparing" || status === "approval" || status === "submitting") return
+  useEffect(() => { setConfirmedKey(null); actionRunner.current?.invalidate() }, [session?.publicKey])
 
-    setStatus("preparing")
-    setMessage("Preparing exact DeSo bid acceptance…")
-    try {
-      const response = await fetch("/api/via/nft/accept-bid", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        cache: "no-store",
-        body: JSON.stringify({
-          action: "prepare",
-          ownerPublicKey: session.publicKey,
-          bidderPublicKey: bid.bidderPublicKey,
-          postHash,
-          serialNumber: bid.serialNumber,
-          bidAmountNanos: bid.bidAmountNanos,
-          hasUnlockable,
-        }),
-      })
-      const result = await response.json() as PrepareResponse
-      if (!response.ok || !result.ok || !result.transactionHex) throw new Error(result.error || "PREPARE_FAILED")
-      const acceptBidPermission = {
-        NFTOperationLimitMap: {
-          [postHash]: {
-            [bid.serialNumber]: {
-              accept_nft_bid: 1,
-            },
-          },
-        },
-      }
-      if (!(await viaModernIdentity.hasPermissions(acceptBidPermission))) {
-        setMessage("Requesting permission to accept this exact DeSo NFT bid…")
-        await viaModernIdentity.requestPermissions(acceptBidPermission)
-      }
-      setStatus("approval")
-      setMessage("Signing the exact accepted NFT bid with DeSo Identity…")
-      const signedTransactionHex = await viaModernIdentity.signTx(result.transactionHex)
-      setStatus("submitting")
-      setMessage("Submitting the accepted NFT bid to DeSo…")
-      const submitResponse = await fetch("/api/via/nft/accept-bid", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        cache: "no-store",
-        body: JSON.stringify({ action: "submit", signedTransactionHex }),
-      })
-      const submitResult = await submitResponse.json() as { ok?: boolean; error?: string }
-      if (!submitResponse.ok || !submitResult.ok) throw new Error(submitResult.error || "SUBMIT_FAILED")
-      setStatus("done")
-      setMessage("Accepted NFT bid submitted to DeSo.")
-      setConfirmedKey(null)
-    } catch (error) {
-      setStatus("error")
-      setMessage(error instanceof Error && error.message === "POPUP_BLOCKED"
-        ? "Approval window was blocked. VIA changed nothing."
-        : "Bid acceptance could not be prepared. VIA changed nothing.")
-    }
+  async function acceptBid(bid: Bid) {
+    if (!session || hasUnlockable || !actionRunner.current || !ownedSerials.has(bid.serialNumber)) return
+    const key = `${bid.serialNumber}:${bid.bidderPublicKey}:${bid.bidAmountNanos}`
+    if (confirmedKey !== key) return
+    const result = await actionRunner.current.run({ kind: "accept-bid", publicKey: session.publicKey, postHash, serialNumber: bid.serialNumber, body: { ownerPublicKey: session.publicKey, bidderPublicKey: bid.bidderPublicKey, postHash, serialNumber: bid.serialNumber, bidAmountNanos: bid.bidAmountNanos, hasUnlockable } }, (value, text) => { setStatus(value); setMessage(text) })
+    if (result.outcome !== "stopped") setConfirmedKey(null)
   }
 
   if (!session || received.length === 0) return null

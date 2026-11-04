@@ -13,10 +13,16 @@ const SAFE_POST_RETRY_ENDPOINTS = new Set([
   "get-user-dm-threads-ordered-by-timestamp",
   "get-follows-stateless",
   "get-hot-feed",
+  "get-nft-showcase",
   "get-users-stateless",
   "get-nft-entries-for-nft-post",
   "post-associations/query",
 ])
+
+// Public chain reads only. No signing, submission or node-local notification state
+// is sent to this fallback. Verified against live public responses on 1 Nov 2026.
+const PUBLIC_READ_FALLBACK = "https://desocialworld.com"
+const FALLBACK_READ_ENDPOINTS = new Set(["get-posts-stateless", "get-nfts-for-user", "get-nft-showcase"])
 
 let activeProfileLookups = 0
 const profileLookupWaiters: Array<() => void> = []
@@ -45,7 +51,7 @@ const DESO_NODES = Array.from(
 
 function normalizedEndpoint(endpoint: string) {
   const normalized = endpoint.trim().replace(/^\/+/, "")
-  if (!/^[a-z0-9-]+$/.test(normalized)) {
+  if (!/^[a-z0-9-]+$/.test(normalized) && normalized !== "post-associations/query") {
     throw new Error("INVALID_DESO_ENDPOINT")
   }
   return normalized
@@ -80,6 +86,9 @@ function documentedRequest(endpoint: string, init: RequestInit): RequestInit {
 
     if (typeof body.IsForSale === "boolean") safeBody.IsForSale = body.IsForSale
     if (typeof body.IsPending === "boolean") safeBody.IsPending = body.IsPending
+    // Verified against the current node and backend/routes/nft.go (21 Oct 2026).
+    if (typeof body.LastKeyHex === "string" && /^[a-f0-9]{0,1024}$/i.test(body.LastKeyHex)) safeBody.LastKeyHex = body.LastKeyHex
+    if (Number.isInteger(body.Limit) && Number(body.Limit) >= 1 && Number(body.Limit) <= 100) safeBody.Limit = body.Limit
 
     return { ...init, body: JSON.stringify(safeBody) }
   } catch {
@@ -97,10 +106,7 @@ async function documentedResponse(endpoint: string, response: Response): Promise
 
   try {
     const data = await response.clone().json() as Record<string, unknown>
-    // VIA does not rely on undocumented transport cursor fields. Removing the
-    // field here keeps legacy callers from accidentally looping over the same
-    // documented request after LastKeyHex/Limit were stripped above.
-    delete data.LastKeyHex
+    // Preserve LastKeyHex: the current node defaults to 100 NFT editions per page.
 
     const headers = new Headers(response.headers)
     headers.set("content-type", "application/json")
@@ -129,16 +135,18 @@ async function performDeSoRequest(
     safeEndpoint === "get-unread-notifications-count" ||
     safeEndpoint === "set-notification-metadata"
   const retrySafe = !notificationMetadataEndpoint && (method === "GET" || method === "HEAD" || (method === "POST" && SAFE_POST_RETRY_ENDPOINTS.has(safeEndpoint)))
-  const maxAttempts = retrySafe ? Math.max(MIN_ATTEMPTS, DESO_NODES.length) : 1
+  const nodes = retrySafe && FALLBACK_READ_ENDPOINTS.has(safeEndpoint)
+    ? Array.from(new Set([...DESO_NODES, PUBLIC_READ_FALLBACK])) : DESO_NODES
+  const maxAttempts = retrySafe ? Math.max(MIN_ATTEMPTS, nodes.length) : 1
 
   for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
-    const node = notificationMetadataEndpoint ? DEFAULT_DESO_NODE : (DESO_NODES[attempt % DESO_NODES.length] ?? DEFAULT_DESO_NODE)
+    const node = notificationMetadataEndpoint ? DEFAULT_DESO_NODE : (nodes[attempt % nodes.length] ?? DEFAULT_DESO_NODE)
     const controller = new AbortController()
     const upstreamSignal = requestInit.signal
     const abortFromUpstream = () => controller.abort(upstreamSignal?.reason)
     if (upstreamSignal?.aborted) controller.abort(upstreamSignal.reason)
     else upstreamSignal?.addEventListener("abort", abortFromUpstream, { once: true })
-    const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS)
+    const timeout = setTimeout(() => controller.abort(), safeEndpoint === "get-posts-stateless" ? 5000 : safeEndpoint === "get-nft-showcase" ? 15000 : REQUEST_TIMEOUT_MS)
 
     try {
       const response = await fetch(

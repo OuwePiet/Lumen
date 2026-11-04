@@ -1,4 +1,5 @@
 "use client"
+import { useSavedCopy } from "./saved-copy"
 
 import { useEffect, useRef, useState } from "react"
 
@@ -29,13 +30,16 @@ function readSaved(): SavedItem[] {
 }
 
 export default function SaveButton({ title, href, kind }: { title: string; href: string; kind: string }) {
+  const t=useSavedCopy()
   const [saved, setSaved] = useState(false)
   const [status, setStatus] = useState("")
   const statusTimer = useRef<number | null>(null)
 
   useEffect(() => {
-    setSaved(readSaved().some((item) => item.href === href))
+    const sync=()=>setSaved(readSaved().some((item) => item.href === href))
+    sync();window.addEventListener("via:saved:changed",sync);window.addEventListener("storage",sync)
     return () => {
+      window.removeEventListener("via:saved:changed",sync);window.removeEventListener("storage",sync)
       if (statusTimer.current !== null) window.clearTimeout(statusTimer.current)
     }
   }, [href])
@@ -47,7 +51,7 @@ export default function SaveButton({ title, href, kind }: { title: string; href:
         const next = current.filter((item) => item.href !== href)
         window.localStorage.setItem(SAVED_KEY, JSON.stringify(next))
         setSaved(false)
-        setStatus("Removed from Saved")
+        setStatus(t.removed)
       } else {
         const next: SavedItem[] = [
           { title, href, kind, savedAt: new Date().toISOString() },
@@ -55,11 +59,12 @@ export default function SaveButton({ title, href, kind }: { title: string; href:
         ].slice(0, 100)
         window.localStorage.setItem(SAVED_KEY, JSON.stringify(next))
         setSaved(true)
-        setStatus("Saved in this browser")
+        setStatus(t.stored)
       }
     } catch {
-      setStatus("Saving is unavailable in this browser")
+      setStatus(t.unavailable)
     }
+    window.dispatchEvent(new Event("via:saved:changed"))
     if (statusTimer.current !== null) window.clearTimeout(statusTimer.current)
     statusTimer.current = window.setTimeout(() => {
       statusTimer.current = null
@@ -84,7 +89,7 @@ export default function SaveButton({ title, href, kind }: { title: string; href:
           cursor: "pointer",
         }}
       >
-        {saved ? "Saved ✓" : "Save"}
+        {saved ? t.saved : t.save}
       </button>
       <span role="status" aria-live="polite" style={{ color: "#91a69a", fontSize: 12, minHeight: 18 }}>{status}</span>
     </span>

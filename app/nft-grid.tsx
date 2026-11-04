@@ -124,9 +124,9 @@ function cardTitle(body?: string) {
 }
 
 const styles = {
-  section: { minHeight: "100vh", background: "transparent", color: "#f4f7f5", fontFamily: "Arial, Helvetica, sans-serif", padding: "28px 20px 72px" },
+  section: { minHeight: "100vh", background: "transparent", color: "#f4f7f5", fontFamily: "Arial, Helvetica, sans-serif", padding: "12px 20px 72px" },
   container: { width: "100%", maxWidth: "1120px", margin: "0 auto" },
-  brandRow: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: "18px", marginBottom: "26px", flexWrap: "wrap" as const },
+  brandRow: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: "10px", marginBottom: "26px", flexWrap: "wrap" as const },
   brandLockup: { display: "flex", alignItems: "center", gap: "12px", textDecoration: "none" },
   brandMark: { display: "grid", placeItems: "center", width: "38px", height: "38px", border: "1px solid rgba(143,212,169,.32)", borderRadius: "12px", color: "#9adbb2", background: "rgba(12,23,17,.45)", fontSize: "15px", fontWeight: 800, letterSpacing: "0.08em" },
   brandText: { display: "grid", gap: "2px" },
@@ -137,7 +137,7 @@ const styles = {
   heading: { fontSize: "clamp(27px, 4vw, 44px)", lineHeight: 1.08, margin: "0 0 10px", letterSpacing: "-0.02em" },
   introduction: { color: "#9ba9a0", fontSize: "15px", lineHeight: 1.6, margin: "0 0 30px", maxWidth: "760px" },
   owner: { color: "#8fd4a9", fontSize: "13px", fontWeight: 700, lineHeight: 1.7, margin: "-12px 0 30px" },
-  grid: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: "18px" },
+  grid: { display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(150px, 100%), 1fr))", gap: "18px" },
   card: { display: "block", overflow: "hidden", color: "inherit", background: "rgba(9,13,11,.72)", border: "1px solid rgba(63,74,68,.72)", borderRadius: "14px", textDecoration: "none" },
   mediaFrame: { position: "relative" as const, width: "100%", aspectRatio: "1 / 1", overflow: "hidden", background: "#070b09", borderBottom: "1px solid rgba(63,74,68,.72)" },
   image: { display: "block", width: "100%", height: "100%", objectFit: "cover" as const, background: "#070b09" },
@@ -180,8 +180,6 @@ export default async function NFTGrid({ initialAccount }: { initialAccount?: str
     <main id="main-content" style={styles.section}>
       <a className={accessibilityStyles.skipLink} href="#collection-controls">Skip to collection controls</a>
       <div style={styles.container}>
-        <h1 style={styles.heading}><CollectionLocalizedText kind="heading" /></h1>
-        <p style={styles.introduction}><CollectionLocalizedText kind="intro" /></p>
         <CollectionBrowser initialAccount={initialAccount}>
           {selectedAccount ? (
             <>

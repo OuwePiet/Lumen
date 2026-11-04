@@ -322,6 +322,7 @@ const COPY: Record<ViaLanguage | "Hindi", Copy> = {
 }
 
 const originalText = new WeakMap<Text, string>()
+const appliedText = new WeakMap<Text, string>()
 const originalAttributes = new WeakMap<Element, Map<string, string>>()
 
 function translated(source: string, copy: Copy) {
@@ -343,11 +344,11 @@ function translateRoot(root: HTMLElement, language: ViaLanguage | "Hindi") {
     const current = textNode.nodeValue ?? ""
     const trimmed = current.trim()
     if (trimmed) {
-      const dynamic = textNode.parentElement?.hasAttribute("data-via-dynamic-text") === true
-      if (dynamic) originalText.set(textNode, trimmed)
+      const previous = appliedText.get(textNode)
+      if (!originalText.has(textNode) || (previous !== undefined && trimmed !== previous)) originalText.set(textNode, trimmed)
       const source = originalText.get(textNode) ?? trimmed
-      if (!originalText.has(textNode)) originalText.set(textNode, source)
       const next = language === "English" ? source : translated(source, copy)
+      appliedText.set(textNode, next)
       if (next !== trimmed) {
         const leading = current.slice(0, current.length - current.trimStart().length)
         const trailing = current.slice(current.trimEnd().length)

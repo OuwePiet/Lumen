@@ -3,12 +3,14 @@
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { useEffect, useRef, useState } from "react"
-import { Radio, UsersRound } from "lucide-react"
+import { Radio, UsersRound, Wallet } from "lucide-react"
 import {
   clearIdentitySession,
   type ViaIdentitySession,
 } from "./deso-identity-session"
 import ViaIdentityStatusMarks from "./via-identity-status"
+import ViaHelpButton from "./via-help-button"
+import { isNFTWorkspace } from "./nft-workspace-nav"
 import { viaModernIdentity } from "./deso-identity-modern"
 import {
   readViaLocalSettings,
@@ -26,6 +28,7 @@ type SearchResponse = { ok?: boolean; profiles?: SearchProfile[] }
 const nav = [
   ["home", "/"],
   ["feed", "/social"],
+  ["notifications", "/notifications"],
   ["discover", "/discover"],
   ["nfts", "/collection"],
   ["live", "/live"],
@@ -43,12 +46,12 @@ type HeaderCopy = {
 
 const headerCopy: Record<ViaLanguage | "Hindi", HeaderCopy> = {
   Dutch: {
-    home: "Home", feed: "Postkantoor", discover: "Ontdekken", nfts: "NFT's", live: "Live", games: "Spellen", communities: "Community's", world: "Wereld", myVia: "Mijn VIA",
+    home: "Homepage", feed: "Postkantoor", discover: "Ontdekken", nfts: "NFT's", live: "Live", games: "Spellen", communities: "Community's", world: "Wereld", myVia: "Mijn VIA",
     search: "Zoek leden", publicEntrance: "Publieke ingang", login: "DeSo Login", wallet: "Mijn Wallet", notifications: "Meldingen", connected: "DeSo verbonden",
     profile: "Mijn profiel", saved: "Bookmarks", drafts: "Concepten", settings: "Instellingen", switchAccount: "Wissel account", desoAccount: "DeSo-account", addAccount: "DeSo-account toevoegen", logout: "Uitloggen uit VIA",
   },
   English: {
-    home: "Home", feed: "Post Office", discover: "Discover", nfts: "NFTs", live: "Live", games: "Games", communities: "Communities", world: "World", myVia: "My VIA",
+    home: "Homepage", feed: "Post Office", discover: "Discover", nfts: "NFTs", live: "Live", games: "Games", communities: "Communities", world: "World", myVia: "My VIA",
     search: "Search members", publicEntrance: "Public Entrance", login: "DeSo Login", wallet: "My Wallet", notifications: "Notifications", connected: "DeSo connected",
     profile: "My Profile", saved: "Bookmarks", drafts: "Drafts", settings: "Settings", switchAccount: "Switch account", desoAccount: "DeSo account", addAccount: "Add DeSo account", logout: "Logout from VIA",
   },
@@ -104,7 +107,7 @@ const pill = {
 }
 
 const styles = {
-  header: { position: "sticky" as const, top: 0, zIndex: 80, background: "rgba(2,7,4,.95)", backdropFilter: "blur(18px)", borderBottom: "1px solid rgba(143,212,169,.13)" },
+  header: { position: "relative" as const, top: 0, zIndex: 80, background: "rgba(2,7,4,.95)", backdropFilter: "blur(18px)", borderBottom: "1px solid rgba(143,212,169,.13)" },
   shell: { width: "min(1480px, calc(100% - 32px))", margin: "0 auto", display: "grid", gridTemplateColumns: "260px minmax(0,1fr)", gridTemplateRows: "72px 58px", columnGap: "18px", alignItems: "stretch" },
   brand: { gridColumn: "1", gridRow: "1 / span 2", display: "flex", alignItems: "center", justifyContent: "center", color: "inherit", textDecoration: "none", overflow: "hidden" },
   logo: { width: "250px", height: "130px", objectFit: "contain" as const, display: "block" },
@@ -214,12 +217,28 @@ export default function ViaSiteHeader() {
   useEffect(() => {
     if (isHomepage) { setProfile(null); return }
     if (!session?.publicKey) { setProfile(null); return }
+    const publicKey = session.publicKey
+    const cacheKey = "via:public-profile:" + publicKey
+    try {
+      const saved = JSON.parse(window.localStorage.getItem(cacheKey) ?? "null") as PublicProfile | null
+      if (saved?.publicKey === publicKey && typeof saved.username === "string") setProfile({ publicKey, username: saved.username, profilePic: saved.profilePic })
+      else setProfile(null)
+    } catch { setProfile(null) }
     const controller = new AbortController()
-    void fetch(`/api/via/profile?identity=${encodeURIComponent(session.publicKey)}`, { cache: "no-store", signal: controller.signal, headers: { Accept: "application/json" } })
-      .then(async (response) => response.ok ? (await response.json()) as ProfileResponse : null)
-      .then((data) => { if (!controller.signal.aborted) setProfile(data?.ok && data.profile ? { ...data.profile, publicKey: session.publicKey } : null) })
-      .catch(() => { if (!controller.signal.aborted) setProfile(null) })
-    return () => controller.abort()
+    const load = async () => {
+      try {
+        const response = await fetch("/api/via/profile?identity=" + encodeURIComponent(publicKey) + "&compact=1", { cache: "no-store", signal: controller.signal, headers: { Accept: "application/json" } })
+        const data = response.ok ? await response.json() as ProfileResponse : null
+        if (controller.signal.aborted || !data?.ok || !data.profile) return
+        const next = { ...data.profile, publicKey }
+        setProfile(next)
+        try { window.localStorage.setItem(cacheKey, JSON.stringify({ publicKey, username: next.username, profilePic: next.profilePic })) } catch {}
+      } catch { /* Retain only the last public name and avatar, never a cached verification mark. */ }
+    }
+    void load()
+    window.addEventListener("focus", load)
+    return () => { controller.abort(); window.removeEventListener("focus", load) }
+
   }, [isHomepage, session?.publicKey])
 
   useEffect(() => {
@@ -228,7 +247,7 @@ export default function ViaSiteHeader() {
     const controller = new AbortController()
     void Promise.all(knownAccounts.map(async (account) => {
       try {
-        const response = await fetch(`/api/via/profile?identity=${encodeURIComponent(account.publicKey)}`, { cache: "no-store", signal: controller.signal, headers: { Accept: "application/json" } })
+        const response = await fetch(`/api/via/profile?identity=${encodeURIComponent(account.publicKey)}&compact=1`, { cache: "no-store", signal: controller.signal, headers: { Accept: "application/json" } })
         const data = response.ok ? (await response.json()) as ProfileResponse : null
         return [account.publicKey, data?.ok && data.profile ? { ...data.profile, publicKey: account.publicKey } : {}] as const
       } catch {
@@ -317,8 +336,8 @@ export default function ViaSiteHeader() {
 
         <div style={styles.topRow} className="via-site-header-top">
           <nav style={styles.nav} className={`via-site-header-nav ${pathname === "/notifications" || pathname === "/radio" || pathname === "/messages" || pathname === "/profile" ? "via-site-header-nav-compact-mobile" : ""}`} aria-label="VIA main navigation">
-            {nav.map(([key, href]) => {
-              const active = href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`)
+            {nav.filter(([key]) => key !== "home").map(([key, href]) => {
+              const active = href === "/collection" ? isNFTWorkspace(pathname) : href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`)
               return <Link key={href} href={href} className="via-site-header-link" style={{ ...styles.link, ...(active ? styles.activeLink : {}) }}>{t[key]}{active ? <span style={styles.activeLine} aria-hidden="true" /> : null}</Link>
             })}
           </nav>
@@ -338,10 +357,9 @@ export default function ViaSiteHeader() {
           </div>
           {pathname === "/notifications" || pathname === "/radio" || pathname === "/messages" || pathname === "/profile" ? <Link href="/" className="via-notifications-home-top" aria-label="Home" title="Home"><span className="via-notifications-home-label">Home</span></Link> : null}
           {pathname === "/messages" ? <Link href="/radio" className="via-notifications-radio-top" aria-label="World Radio" title="World Radio"><Radio className="h-4 w-4" aria-hidden="true" /><span className="via-radio-top-label">Radio</span></Link> : null}
-          {!session && !isHomepage && pathname !== "/messages" ? <button type="button" onClick={enterPublicMode} style={{ ...pill, cursor: "pointer" }}>{t.publicEntrance}</button> : null}
+          {!session && !isHomepage && pathname !== "/messages" ? <button className="via-site-header-public-entry" type="button" onClick={enterPublicMode} style={{ ...pill, cursor: "pointer" }}>{t.publicEntrance}</button> : null}
           {!session && !isHomepage && pathname !== "/messages" ? <button type="button" onClick={() => void loginWithDeSo()} style={styles.login}>{t.login}</button> : null}
-          {pathname !== "/messages" && pathname !== "/radio" && pathname !== "/profile" ? <Link href="/wallet" style={pill} className={`via-site-header-utility ${pathname === "/notifications" ? "via-site-header-wallet-notifications" : ""}`}>{t.wallet}</Link> : null}
-          {pathname !== "/notifications" && pathname !== "/messages" && pathname !== "/radio" && pathname !== "/profile" ? <Link href="/notifications" style={pill} className="via-site-header-utility">{t.notifications}</Link> : null}
+          {pathname !== "/messages" && pathname !== "/radio" && pathname !== "/profile" ? <Link href="/wallet" style={pill} className={`via-site-header-utility ${pathname === "/notifications" ? "via-site-header-wallet-notifications" : ""}`} aria-label={t.wallet}><Wallet size={16} aria-hidden="true" className="via-header-utility-icon" /><span className="via-header-utility-label">{t.wallet}</span></Link> : null}
 
           {identityError ? <span role="status">{identityError}</span> : null}
           {session && !isHomepage ? (
@@ -391,7 +409,12 @@ export default function ViaSiteHeader() {
           ) : null}
         </div>
       </div>
+      <ViaHelpButton />
       <style>{`
+        @media (min-width: 721px) { .via-notifications-home-top { display: none !important; } .via-notifications-future-mark { display:inline-flex; align-items:center; min-height:32px; padding:4px 10px; border:1px solid rgba(143,212,169,.3); border-radius:999px; background:rgba(40,95,64,.15); color:#b8ddc5; font-size:10px; font-weight:700; line-height:1; letter-spacing:.08em; text-transform:uppercase; white-space:nowrap; } }
+        @media (max-width:720px) { .via-site-header:has(.via-site-header-tools-notifications) .via-global-guides a[href="/"] { display:none; } }
+        .via-site-header-link:focus:not(:focus-visible) { outline: none; }
+        .via-site-header-link:focus-visible { outline: 2px solid #b9ffd4; outline-offset: -4px; border-radius: 7px; }
         .via-site-header-language-wrap { position: relative; flex: 0 0 auto; }
         .via-notifications-top-control { display: contents; }
         .via-notifications-top-label { display: none; }
@@ -631,6 +654,40 @@ export default function ViaSiteHeader() {
         }
         @media (min-width: 721px) {
           .via-site-header-account-menu-icon { display: none !important; }
+          .via-site-header-shell { grid-template-columns: 118px minmax(0, 1fr) !important; grid-template-rows: 42px auto !important; column-gap: 14px !important; }
+          .via-site-header-logo { width: 112px !important; height: 78px !important; }
+          .via-site-header-nav { justify-content: flex-start !important; }
+          .via-site-header-link { padding: 13px 9px 12px !important; }
+          .via-site-header-link > span { bottom: 5px !important; }
+          .via-site-header-tools { justify-content: flex-start !important; flex-wrap: wrap !important; gap: 6px !important; padding: 4px 0 6px !important; }
+          .via-site-header-search { min-width: 140px !important; }
+          .via-site-header-tools > a, .via-site-header-tools > button, .via-site-header-search, .via-site-header-language, .via-site-header-account-button { min-height: 36px !important; font-size: 11px !important; padding-top: 4px !important; padding-bottom: 4px !important; }
+          .via-site-header-language { min-width: 60px !important; }
+        }
+        @media (pointer: coarse) and (min-width: 721px) {
+          .via-site-header-tools > a, .via-site-header-tools > button, .via-site-header-search, .via-site-header-language, .via-site-header-account-button { min-height: 44px !important; }
+          .via-site-header-link { min-height: 44px; display: inline-flex; align-items: center; padding-top: 8px !important; padding-bottom: 8px !important; }
+        }
+        .via-header-utility-icon { display: none; }
+        @media (max-width: 720px) {
+          .via-site-header-shell:not(:has(.via-site-header-tools-notifications)) { grid-template-columns: 60px minmax(0, 1fr) !important; grid-template-rows: 48px 48px !important; }
+          .via-site-header-shell:not(:has(.via-site-header-tools-notifications)) .via-site-header-logo { width: 58px !important; height: 44px !important; margin: 0 !important; }
+          .via-site-header-top { padding-right: 0 !important; }
+          .via-site-header-link { min-height: 44px; display: inline-flex; align-items: center; padding: 8px !important; }
+          .via-site-header-tools:not(.via-site-header-tools-notifications) { overflow: visible !important; padding: 2px 0 !important; gap: 5px !important; justify-content: space-between !important; }
+          .via-site-header-tools:not(.via-site-header-tools-notifications) .via-site-header-public-entry { display: none !important; }
+          .via-site-header-tools:not(.via-site-header-tools-notifications) .via-site-header-search-label { display: none; }
+          .via-site-header-tools:not(.via-site-header-tools-notifications) .via-site-header-search,
+          .via-site-header-tools:not(.via-site-header-tools-notifications) .via-site-header-utility { min-width: 44px !important; width: 44px !important; min-height: 44px !important; padding: 0 !important; justify-content: center !important; flex: 0 0 44px !important; }
+          .via-site-header-tools:not(.via-site-header-tools-notifications) .via-header-utility-label { display: none; }
+          .via-site-header-tools:not(.via-site-header-tools-notifications) .via-header-utility-icon { display: block; }
+          .via-site-header-tools:not(.via-site-header-tools-notifications) .via-site-header-language { min-width: 48px !important; min-height: 44px !important; padding: 4px !important; font-size: 10px !important; }
+          .via-site-header-tools:not(.via-site-header-tools-notifications) > button { min-height: 44px !important; padding: 4px 8px !important; font-size: 10px !important; }
+          .via-site-header-tools:not(.via-site-header-tools-notifications) .via-site-header-account-button { min-height: 44px !important; max-width: 120px; padding: 4px 6px !important; gap: 4px !important; font-size: 10px !important; }
+          .via-site-header-account-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+        }
+        @media (max-width: 360px) {
+          .via-site-header-tools:not(.via-site-header-tools-notifications) .via-site-header-account-button { max-width: 100px; }
         }
       `}</style>
     </header>

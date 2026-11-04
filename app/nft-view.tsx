@@ -5,6 +5,8 @@ import EditionOwners from "./edition-owners"
 import NFTMedia from "./nft-media"
 import ViaWatermark from "./via-watermark"
 import NFTBidControl from "./nft-bid-control"
+import NFTRecoveryNotice from "./nft-recovery-notice"
+import { actionableNFTEntries } from "../lib/via/nft-actionable-editions"
 import NFTOwnerSaleControl from "./nft-owner-sale-control"
 import NFTAcceptTransferControl from "./nft-accept-transfer-control"
 import NFTReceivedBids from "./nft-received-bids"
@@ -15,7 +17,7 @@ import { normalizeNftRecord } from "../lib/via/nft-record"
 import { readRightsMetadata } from "../lib/via/nft-rights-metadata"
 import { rightsDisplayLabel } from "../lib/via/nft-rights"
 import { readUtilityMetadata } from "../lib/via/nft-utility-metadata"
-import { readRoyaltyMetadata } from "../lib/via/nft-royalty-metadata"
+import { readRoyaltyBreakdown } from "../lib/via/nft-royalty-metadata"
 import { formatRoyaltyBasisPoints } from "../lib/via/nft-royalties"
 import { readViaMintProvenance } from "../lib/via/mint-provenance"
 import { evaluateUtilityCapability } from "../lib/via/nft-capability"
@@ -28,6 +30,8 @@ type DeSoPost = {
   ImageURLs?: string[]
   VideoURLs?: string[]
   NumNFTCopies?: number
+  NFTRoyaltyToCreatorBasisPoints?: number
+  NFTRoyaltyToCoinBasisPoints?: number
   HasUnlockable?: boolean
   PosterPublicKeyBase58Check?: string
   TimestampNanos?: number
@@ -112,7 +116,7 @@ function accountCollectionHref(username: string, publicKey?: string) {
     params.set("view", "nfts")
   }
 
-  return `/?${params.toString()}${publicKey ? "#collection-controls" : "#account-lookup-heading"}`
+  return `/collection?${params.toString()}${publicKey ? "#collection-controls" : "#account-lookup-heading"}`
 }
 
 function formatDeSo(nanos: number) {
@@ -453,6 +457,7 @@ export default async function NFTView({
       }
     })
     const forSale = entries.filter((entry) => entry.IsForSale)
+    const actionableEntries = actionableNFTEntries(sortedEntries)
     const bidAmounts = forSale
       .map((entry) => entry.MinBidAmountNanos)
       .filter(
@@ -495,7 +500,7 @@ export default async function NFTView({
         Boolean(post.PosterPublicKeyBase58Check),
     }
     const utility = readUtilityMetadata(postExtraData)
-    const royalties = readRoyaltyMetadata(postExtraData)
+    const royalties = readRoyaltyBreakdown(post)
     const royaltyLabel =
       royalties.source === "unavailable"
         ? "Not available"
@@ -624,13 +629,14 @@ export default async function NFTView({
                 <EditionOwners editions={editionOwners} />
               ) : null}
 
-              <NFTBidControl postHash={postHash} editions={forSale.map((entry, index) => ({ serialNumber: entry.SerialNumber ?? index + 1, minBidAmountNanos: entry.MinBidAmountNanos, buyNowPriceNanos: entry.BuyNowPriceNanos, isBuyNow: entry.IsBuyNow === true, ownerPublicKey: entry.OwnerPublicKeyBase58Check }))} />
+              <NFTRecoveryNotice />
+              <NFTBidControl postHash={postHash} editions={actionableEntries.filter(entry => entry.IsForSale && !entry.IsPending).map((entry) => ({ serialNumber: entry.SerialNumber, minBidAmountNanos: entry.MinBidAmountNanos, buyNowPriceNanos: entry.BuyNowPriceNanos, isBuyNow: entry.IsBuyNow === true, ownerPublicKey: entry.OwnerPublicKeyBase58Check }))} />
 
-              <NFTOwnerSaleControl postHash={postHash} hasUnlockable={post.HasUnlockable === true} editions={sortedEntries.map((entry, index) => ({ serialNumber: entry.SerialNumber ?? index + 1, isForSale: entry.IsForSale === true, isPending: entry.IsPending === true, ownerPublicKey: entry.OwnerPublicKeyBase58Check, minBidAmountNanos: entry.MinBidAmountNanos, isBuyNow: entry.IsBuyNow === true, buyNowPriceNanos: entry.BuyNowPriceNanos }))} />
+              <NFTOwnerSaleControl postHash={postHash} hasUnlockable={post.HasUnlockable === true} editions={actionableEntries.map((entry) => ({ serialNumber: entry.SerialNumber, isForSale: entry.IsForSale === true, isPending: entry.IsPending === true, ownerPublicKey: entry.OwnerPublicKeyBase58Check, minBidAmountNanos: entry.MinBidAmountNanos, isBuyNow: entry.IsBuyNow === true, buyNowPriceNanos: entry.BuyNowPriceNanos }))} />
 
-              <NFTAcceptTransferControl postHash={postHash} editions={sortedEntries.map((entry, index) => ({ serialNumber: entry.SerialNumber ?? index + 1, isPending: entry.IsPending === true, ownerPublicKey: entry.OwnerPublicKeyBase58Check }))} />
+              <NFTAcceptTransferControl postHash={postHash} editions={actionableEntries.map((entry) => ({ serialNumber: entry.SerialNumber, isPending: entry.IsPending === true, ownerPublicKey: entry.OwnerPublicKeyBase58Check }))} />
 
-              <NFTReceivedBids postHash={postHash} hasUnlockable={post.HasUnlockable === true} editions={sortedEntries.map((entry, index) => ({ serialNumber: entry.SerialNumber ?? index + 1, ownerPublicKey: entry.OwnerPublicKeyBase58Check }))} bids={bidEntries.filter((bid): bid is NFTBidEntry & { PublicKeyBase58Check: string; SerialNumber: number; BidAmountNanos: number } => typeof bid.PublicKeyBase58Check === "string" && typeof bid.SerialNumber === "number" && typeof bid.BidAmountNanos === "number" && bid.BidAmountNanos > 0).map((bid) => ({ serialNumber: bid.SerialNumber, bidderPublicKey: bid.PublicKeyBase58Check, bidAmountNanos: bid.BidAmountNanos }))} />
+              <NFTReceivedBids postHash={postHash} hasUnlockable={post.HasUnlockable === true} editions={actionableEntries.map((entry) => ({ serialNumber: entry.SerialNumber, ownerPublicKey: entry.OwnerPublicKeyBase58Check }))} bids={bidEntries.filter((bid): bid is NFTBidEntry & { PublicKeyBase58Check: string; SerialNumber: number; BidAmountNanos: number } => typeof bid.PublicKeyBase58Check === "string" && typeof bid.SerialNumber === "number" && typeof bid.BidAmountNanos === "number" && bid.BidAmountNanos > 0).map((bid) => ({ serialNumber: bid.SerialNumber, bidderPublicKey: bid.PublicKeyBase58Check, bidAmountNanos: bid.BidAmountNanos }))} />
 
               <NFTMyBids postHash={postHash} bids={bidEntries.filter((bid): bid is NFTBidEntry & { PublicKeyBase58Check: string; SerialNumber: number; BidAmountNanos: number } => typeof bid.PublicKeyBase58Check === "string" && typeof bid.SerialNumber === "number" && typeof bid.BidAmountNanos === "number" && bid.BidAmountNanos > 0).map((bid) => ({ serialNumber: bid.SerialNumber, bidderPublicKey: bid.PublicKeyBase58Check, bidAmountNanos: bid.BidAmountNanos }))} />
 
@@ -653,6 +659,8 @@ export default async function NFTView({
                 <p style={styles.ownershipText}><strong>Media:</strong> {storageSummary}.</p>
                 <p style={styles.ownershipText}><strong>Rights:</strong> {rightsLabel}.</p>
                 <p style={styles.ownershipText}><strong>Royalties:</strong> {royaltyLabel}.</p>
+                {royalties.additional.length > 0 ? <ul data-via-additional-royalties style={{ ...styles.ownershipText, paddingLeft: 18, overflowWrap: "anywhere" }}>{royalties.additional.map(entry => <li key={`${entry.destination}:${entry.publicKey}`}><span>{entry.destination === "wallet" ? "Additional wallet royalty" : "Additional creator-coin royalty"}: {formatRoyaltyBasisPoints(entry.basisPoints)} · </span><a href={`/profile/${encodeURIComponent(entry.publicKey)}`} style={{ color: "#a5dfb8", textDecoration: "underline" }}>{entry.publicKey}</a></li>)}</ul> : null}
+                <p data-via-royalty-total style={styles.ownershipText}>{royalties.complete ? `Total on-chain royalties: ${formatRoyaltyBasisPoints(royalties.totalBasisPoints)}.` : "Complete royalty total unavailable: additional royalty fields are missing or invalid."} Royalties are separate from network costs and any separately agreed service fee.</p>
                 <p style={styles.ownershipText}><strong>Utility:</strong> {utilityLabel}.</p>
                 <p style={styles.verifyNote}><strong>Verify:</strong> current ownership can be checked against live DeSo NFT entries. Public-key ownership lookup does not prove control of that identity.</p>
               </section>

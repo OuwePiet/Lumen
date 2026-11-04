@@ -71,10 +71,11 @@ export default function RadioBrowser() {
       const data = await response.json()
       if (!response.ok) throw new Error(data?.error ?? "Radio directory unavailable")
       const nextStations = Array.isArray(data.stations) ? data.stations : []
+      if(controller.signal.aborted || searchController.current!==controller)return
       setStations(nextStations)
       requestAnimationFrame(() => resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }))
     } catch (error) {
-      if (!(error instanceof DOMException && error.name === "AbortError")) {
+      if (searchController.current===controller && !(error instanceof DOMException && error.name === "AbortError")) {
         setStations([])
         setError("World Radio could not load stations right now.")
       }

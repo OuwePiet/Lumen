@@ -11,7 +11,6 @@ import NFTGrid from "../nft-grid"
 import ViaPriceBoard from "../via-price-board"
 import ViaStoragePriceBoard from "../via-storage-price-board"
 import CollectionHub from "./collection-hub"
-import NfViaTopbar from "./nf-via-topbar"
 import CreatorCollectionLocalizer from "./creator-collection-localizer"
 
 export const dynamic = "force-dynamic"
@@ -36,7 +35,7 @@ export default function CollectionPage() {
       </div>
 
       <div style={{ position: "relative", zIndex: 2 }}>
-        <NfViaTopbar />
+
         <CollectionHub />
         <NFTGrid />
         <div style={{ maxWidth: 1480, margin: "0 auto", padding: "0 20px 8px" }}>
@@ -46,6 +45,15 @@ export default function CollectionPage() {
       </div>
 
       <style>{`
+        body.via-session-pending:has([data-via-collection-page]) section:has(#account-lookup-heading),
+        body.via-no-deso-session:has([data-via-collection-page]) section:has(#account-lookup-heading) {
+          display: block !important;
+        }
+        body.via-session-pending:has([data-via-collection-page]) a[href^="/profile/"],
+        body.via-no-deso-session:has([data-via-collection-page]) a[href^="/profile/"] {
+          pointer-events: auto !important;
+          cursor: pointer !important;
+        }
         .nf-via-screenprint {
           position: fixed;
           inset: 0;
@@ -77,6 +85,20 @@ export default function CollectionPage() {
           .nf-via-screenprint span {
             font-size: 72vw;
             transform: translateX(-14vw) scaleY(1.12);
+          }
+        }
+        @media (min-width: 721px) and (max-width: 980px) {
+          body:has([data-via-collection-page]) .via-site-header-top {
+            overflow: hidden !important;
+          }
+          body:has([data-via-collection-page]) .via-site-header-tools {
+            justify-content: flex-start !important;
+            overflow-x: auto !important;
+            overflow-y: hidden !important;
+            scrollbar-width: none;
+          }
+          body:has([data-via-collection-page]) .via-site-header-tools::-webkit-scrollbar {
+            display: none;
           }
         }
       `}</style>

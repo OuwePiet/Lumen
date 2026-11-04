@@ -2,6 +2,9 @@
 
 import { useEffect, useRef, useState } from "react"
 import { Gem } from "lucide-react"
+import { ensureDiamondPermission } from "./diamond-permissions"
+import { restoreIdentitySession, VIA_IDENTITY_EVENT } from "../deso-identity-session"
+import { financialSubmissionBlock, markFinancialPending, markFinancialSubmitted, withFinancialAccountLock } from "../financial-submission"
 import { viaModernIdentity } from "../deso-identity-modern"
 import { fetchViaRates } from "../via-live-rates"
 
@@ -44,7 +47,7 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
   function diamondUsd(nanos: number) {
     if (!Number.isFinite(nanos) || !desoUsd) return null
     const usd = (nanos / 1_000_000_000) * desoUsd
-    return usd < 1 ? `${Math.max(usd, 0.01).toFixed(2)}` : `${usd.toLocaleString(undefined, { maximumFractionDigits: 0 })}`
+    return usd < 0.01 ? "< $0.01" : new Intl.NumberFormat(undefined, { style: "currency", currency: "USD", maximumFractionDigits: 2 }).format(usd)
   }
 
   useEffect(() => {
@@ -63,57 +66,81 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
     return () => controller.abort()
   }, [diamondValues])
 
+  const sendLock = useRef(false)
   async function prepare(chosenLevel = level) {
-    const session = await viaModernIdentity.currentUser()
-    if (!session || !diamondValues?.some((item) => item.level === chosenLevel) || status === "preparing" || status === "approval" || status === "submitting") return
-    setCelebrate(false); setStatus("preparing"); setMessage("Preparing the exact value-transfer transaction…"); setFeeNanos(null)
+    if (sendLock.current || !diamondValues?.some(item => item.level === chosenLevel)) return
+    sendLock.current = true
+    const session = restoreIdentitySession()
+    let invalidated = false, sent = false, accepted = false
+    const onIdentity = (event: Event) => {
+      if (event.type === "storage") {
+        const changed = event as StorageEvent
+        if (changed.key === null || changed.key === "desoIdentityUsers" || (changed.key === "desoActivePublicKey" && changed.newValue !== session?.publicKey)) invalidated = true
+      }
+      if (restoreIdentitySession()?.publicKey !== session?.publicKey) invalidated = true
+    }
+    const assertAccount = async () => {
+      if (!session || invalidated || restoreIdentitySession()?.publicKey !== session.publicKey) throw new Error("ACCOUNT_CHANGED")
+      const current = await viaModernIdentity.currentUser()
+      if (invalidated || current?.publicKey !== session.publicKey) throw new Error("ACCOUNT_CHANGED")
+    }
+    window.addEventListener(VIA_IDENTITY_EVENT, onIdentity)
+    window.addEventListener("storage", onIdentity)
     try {
-      const response = await fetch("/api/via/social/diamond", { method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store", body: JSON.stringify({ action: "prepare", senderPublicKey: session.publicKey, receiverPublicKey, diamondPostHashHex: postHash, diamondLevel: chosenLevel }) })
-      const data = await response.json() as PrepareResponse
-      if (!response.ok || !data.ok || !data.transactionHex) throw new Error(data.error || "PREPARE_FAILED")
-      const selected = diamondValues?.find((item) => item.level === chosenLevel)
-      if (!selected || data.diamondLevel !== chosenLevel || typeof data.feeNanos !== "number" || !Number.isFinite(data.feeNanos) || data.feeNanos < 0 || typeof data.spendAmountNanos !== "number" || !Number.isFinite(data.spendAmountNanos) || data.spendAmountNanos < 0) throw new Error("INVALID_DESO_TRANSACTION_DATA")
-      setFeeNanos(data.feeNanos)
-      const diamondSpendLimit = data.spendAmountNanos + data.feeNanos
-      if (!Number.isSafeInteger(diamondSpendLimit) || diamondSpendLimit < 0) throw new Error("INVALID_DESO_SPEND_LIMIT")
-      const currentSpendingLimits = await viaModernIdentity.spendingLimits()
-      const currentGlobalDESOLimit = currentSpendingLimits?.GlobalDESOLimit ?? 0
-      if (!Number.isSafeInteger(currentGlobalDESOLimit) || currentGlobalDESOLimit < 0) throw new Error("INVALID_DESO_SPENDING_LIMITS")
-      const requiredPermissions = {
-        GlobalDESOLimit: currentGlobalDESOLimit + diamondSpendLimit,
-        TransactionCountLimitMap: { BASIC_TRANSFER: 1 },
-      }
-      if (!viaModernIdentity.hasPermissions(requiredPermissions)) {
-        setStatus("approval"); setMessage("Confirm this Diamond spending permission with DeSo Identity…")
-        await viaModernIdentity.requestPermissions(requiredPermissions)
-      }
-      setStatus("approval"); setMessage("Signing the confirmed Diamond with your VIA DeSo session…")
-      const signedTransactionHex = await viaModernIdentity.signTx(data.transactionHex)
-      setStatus("submitting"); setMessage("Submitting your confirmed Diamond to DeSo…")
-      const submitResponse = await fetch("/api/via/social/diamond", { method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store", body: JSON.stringify({ action: "submit", signedTransactionHex }) })
-      const submitData = await submitResponse.json() as { ok?: boolean; error?: string }
-      if (!submitResponse.ok || !submitData.ok) throw new Error(submitData.error || "SUBMIT_FAILED")
-      await viaModernIdentity.refreshSpendingLimits()
-      setStatus("done"); setMessage(`Diamond level ${chosenLevel} submitted to DeSo. Awaiting the DeSo count.`)
-      setCelebrate(true)
-      window.setTimeout(() => setCelebrate(false), 3200)
-      window.dispatchEvent(new Event("via:social:post-published"))
-      // Refresh the displayed total from the official DeSo post; never infer a count from the chosen level.
-      try {
-        const postResponse = await fetch(`/api/via/post?hash=${encodeURIComponent(postHash)}&reader=${encodeURIComponent(session.publicKey)}`, { cache: "no-store" })
-        const postData = await postResponse.json() as { ok?: boolean; post?: { diamondCount?: number } }
-        const officialCount = postData.post?.diamondCount
-        if (postResponse.ok && postData.ok && typeof officialCount === "number" && Number.isSafeInteger(officialCount) && officialCount >= 0) {
-          setCount(officialCount)
-        }
-      } catch {
-        // A read failure must never trigger a second financial transaction.
-      }
-    } catch { setStatus("error"); setMessage("DeSo did not confirm completion. Check the transaction on DeSo before trying again.") }
+      if (!session) throw new Error("DESO_LOGIN_REQUIRED")
+      const intent = "diamond:" + postHash + ":" + receiverPublicKey + ":" + chosenLevel
+      await withFinancialAccountLock(session.publicKey, async () => {
+        await assertAccount()
+        const blocked = financialSubmissionBlock(session.publicKey, intent)
+        if (blocked) throw new Error(blocked)
+        setCelebrate(false); setStatus("preparing"); setMessage("Preparing the Diamond and exact DeSo cost…"); setFeeNanos(null)
+        const response = await fetch("/api/via/social/diamond", { method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store", body: JSON.stringify({ action: "prepare", senderPublicKey: session.publicKey, receiverPublicKey, diamondPostHashHex: postHash, diamondLevel: chosenLevel }) })
+        const data = await response.json() as PrepareResponse
+        await assertAccount()
+        if (!response.ok || !data.ok || !data.transactionHex || data.diamondLevel !== chosenLevel ||
+            typeof data.feeNanos !== "number" || !Number.isSafeInteger(data.feeNanos) || data.feeNanos < 0 ||
+            typeof data.spendAmountNanos !== "number" || !Number.isSafeInteger(data.spendAmountNanos) || data.spendAmountNanos < 0) throw new Error(data.error || "INVALID_DESO_TRANSACTION_DATA")
+        const cost = data.spendAmountNanos + data.feeNanos
+        if (!Number.isSafeInteger(cost) || cost < 1) throw new Error("INVALID_DESO_SPEND_LIMIT")
+        setFeeNanos(data.feeNanos)
+        setStatus("approval"); setMessage("Confirm the Diamond permission with DeSo Identity if requested…")
+        await ensureDiamondPermission(viaModernIdentity, cost)
+        await assertAccount()
+        const signedTransactionHex = await viaModernIdentity.signTx(data.transactionHex)
+        await assertAccount()
+        const submission = { publicKey: session.publicKey, intent, amountNanos: cost, startedAt: Date.now() }
+        markFinancialPending(submission)
+        if (invalidated || restoreIdentitySession()?.publicKey !== session.publicKey) throw new Error("ACCOUNT_CHANGED")
+        setStatus("submitting"); setMessage("Submitting your Diamond to DeSo…")
+        sent = true
+        const submit = await fetch("/api/via/social/diamond", { method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store", body: JSON.stringify({ action: "submit", signedTransactionHex }) })
+        const result = await submit.json() as { ok?: boolean; error?: string; transaction?: { TxnHashHex?: string; TransactionHashHex?: string } }
+        if (!submit.ok || !result.ok) throw new Error(result.error || "SUBMIT_FAILED")
+        accepted = true
+        markFinancialSubmitted(submission, result.transaction?.TxnHashHex ?? result.transaction?.TransactionHashHex)
+        setStatus("done"); setMessage("Diamond received by DeSo. Final confirmation is not yet verified.")
+        setCelebrate(true); window.setTimeout(() => setCelebrate(false), 3200)
+        window.dispatchEvent(new Event("via:social:post-published"))
+        await viaModernIdentity.refreshSpendingLimits().catch(() => {})
+        try {
+          const response = await fetch("/api/via/post?hash=" + encodeURIComponent(postHash) + "&reader=" + encodeURIComponent(session.publicKey), { cache: "no-store" })
+          const data = await response.json() as { ok?: boolean; post?: { diamondCount?: number } }
+          const count = data.post?.diamondCount
+          if (!invalidated && response.ok && data.ok && typeof count === "number" && Number.isSafeInteger(count) && count >= 0) setCount(count)
+        } catch { /* Read failures never resend or clear recovery state. */ }
+      })
+    } catch (error) {
+      setStatus(accepted ? "done" : "error")
+      setMessage(accepted ? "DeSo received the Diamond. Recovery storage could not be updated; check DeSo before any new payment." : sent ? "The Diamond outcome is uncertain. Do not resend; check DeSo." : error instanceof Error ? error.message : "Diamond preparation stopped. Nothing was submitted.")
+    } finally {
+      window.removeEventListener(VIA_IDENTITY_EVENT, onIdentity)
+      window.removeEventListener("storage", onIdentity)
+      sendLock.current = false
+    }
   }
 
   if (variant === "icon") {
-    return <div ref={menuRootRef} className="inline-flex flex-wrap items-center gap-2">
+    return <div ref={menuRootRef} className="contents">
       <button
         type="button"
         onClick={() => { setCompactOpen((open) => !open) }}
@@ -124,7 +151,7 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
       >
         <Gem className="h-4 w-4" aria-hidden="true" /><span>{count}</span>
       </button>
-      {compactOpen ? <div className="basis-full rounded-xl border border-zinc-800 bg-[#050806] p-2">
+      {compactOpen ? <div className="order-last w-full basis-full rounded-xl border border-zinc-800 bg-[#050806] p-2">
         <div className="flex max-w-full flex-wrap items-center gap-1.5" aria-label="Diamond value">
           {(diamondValues ?? Array.from({ length: 8 }, (_, index) => ({ level: index + 1, nanos: NaN }))).map((entry) => (
             <button key={entry.level} type="button" onClick={() => { if (!Number.isFinite(entry.nanos) || status === "preparing" || status === "approval" || status === "submitting") return; setLevel(entry.level) }} aria-pressed={level === entry.level} className={`min-w-[3.35rem] rounded-xl border px-2 py-1 text-center text-[10px] transition ${level === entry.level ? "border-[#8fd4a9] bg-[#285f40] text-white" : "border-zinc-800 text-zinc-400 hover:border-[#8fd4a9] hover:text-white"}`}>
@@ -138,7 +165,7 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
         </div>
       </div> : null}
       {leafRain}
-      {message ? <span className="sr-only" role="status" aria-live="polite">{message}</span> : null}
+      {message ? <span className="order-last w-full basis-full text-xs text-amber-200" role="status" aria-live="polite">{message}</span> : null}
     </div>
   }
 
@@ -146,7 +173,7 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
     <span>{count} Diamonds</span>
     <details className="relative">
       <summary className="inline-flex cursor-pointer list-none items-center gap-1 rounded-full border border-zinc-800 px-2 py-1 text-xs text-zinc-300"><Gem className="h-3.5 w-3.5" aria-hidden="true" /> {level} ▾</summary>
-      <div className="absolute bottom-full left-0 z-30 mb-2 grid w-56 grid-cols-2 gap-1 rounded-xl border border-zinc-800 bg-[#050806] p-2 shadow-xl">
+      <div className="absolute top-full left-0 z-30 mt-2 grid w-56 grid-cols-2 gap-1 rounded-xl border border-zinc-800 bg-[#050806] p-2 shadow-xl">
         {(diamondValues ?? Array.from({ length: 8 }, (_, index) => ({ level: index + 1, nanos: NaN }))).map((entry) => <button key={entry.level} type="button" onClick={() => { if (!Number.isFinite(entry.nanos) || status === "preparing" || status === "approval" || status === "submitting") return; setLevel(entry.level) }} aria-pressed={level === entry.level} className={`rounded-lg border px-2 py-2 text-xs ${level === entry.level ? "border-[#8fd4a9] bg-[#285f40] text-white" : "border-zinc-800 text-zinc-300 hover:border-[#8fd4a9]"}`}><span className="block text-[11px] text-amber-300">{Number.isFinite(entry.nanos) ? (diamondUsd(entry.nanos) ?? "prijs laden…") : "prijs laden…"}</span><span className="block">{entry.level} 💎</span></button>)}
         <button type="button" onClick={() => void prepare(level)} disabled={!diamondValues?.some((item) => item.level === level) || status === "preparing" || status === "approval" || status === "submitting"} className="col-span-2 rounded-lg border border-[#8fd4a9] px-2 py-2 text-xs text-[#9adbb2] disabled:opacity-60">Bevestig 💎 {level}</button><button type="button" onClick={(event) => { (event.currentTarget.closest("details") as HTMLDetailsElement | null)?.removeAttribute("open") }} className="col-span-2 rounded-lg border border-zinc-700 px-2 py-2 text-xs text-zinc-300 hover:border-[#8fd4a9]">Sluiten</button>
       </div>

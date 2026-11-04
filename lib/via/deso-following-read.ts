@@ -1,6 +1,6 @@
 import { fetchDeSo } from "../../app/deso-api"
 import type { ViaPublicPost } from "./deso-post-read"
-import { readPublicProfile } from "./deso-profile-read"
+import { readPublicProfileIdentity } from "./deso-profile-read"
 
 type DeSoPost = {
   PostHashHex?: unknown
@@ -83,8 +83,8 @@ export async function readFollowingPosts(
   usernameOrPublicKey: string,
   limit = 30,
 ): Promise<ViaFollowingPost[]> {
-  const profile = await readPublicProfile(usernameOrPublicKey)
-  if (!profile?.publicKey) return []
+  const publicKey = /^[1-9A-HJ-NP-Za-km-z]{40,128}$/.test(usernameOrPublicKey) ? usernameOrPublicKey : (await readPublicProfileIdentity(usernameOrPublicKey))?.publicKey
+  if (!publicKey) throw new Error("FOLLOWING_ACCOUNT_UNAVAILABLE")
 
   const numToFetch = Math.max(1, Math.min(50, Math.trunc(limit) || 30))
   const response = await fetchDeSo("get-posts-stateless", {
@@ -92,14 +92,14 @@ export async function readFollowingPosts(
     headers: { "content-type": "application/json", accept: "application/json" },
     body: JSON.stringify({
       GetPostsForFollowFeed: true,
-      ReaderPublicKeyBase58Check: profile.publicKey,
+      ReaderPublicKeyBase58Check: publicKey,
       NumToFetch: numToFetch,
       FetchSubcomments: false,
       MediaRequired: false,
     }),
   })
 
-  if (!response.ok) return []
+  if (!response.ok) throw new Error("FOLLOWING_SOURCE_UNAVAILABLE")
 
   const data = (await response.json()) as DeSoPostsResponse
   const rawPosts = Array.isArray(data.PostsFound) ? (data.PostsFound as DeSoPost[]) : []

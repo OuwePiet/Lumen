@@ -5,10 +5,12 @@ import './global.css'
 import './visitor-account-access.css'
 import RadioLocalizer from './radio/radio-localizer'
 import ViaGlobalRadio from './via-global-radio'
-import ViaHelpButton from './via-help-button'
+
 import ViaPublicAccountGuard from './via-public-account-guard'
 import ViaSiteHeader from './via-site-header'
+import NFTWorkspaceNav from './nft-workspace-nav'
 import WalletLocalizer from './wallet/wallet-localizer'
+import { NFTActionReviewProvider } from './nft-action-review'
 
 const description =
   'VIA is an international DeSo platform for creators, collectors and communities: discover people, social posts, digital art, NFT collections, markets, live culture, games and world discovery.'
@@ -114,11 +116,12 @@ export default async function RootLayout({
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(viaStructuredData) }} />
         <ViaPublicAccountGuard />
         <ViaSiteHeader />
-        {children}
+        <NFTWorkspaceNav />
+        <NFTActionReviewProvider>{children}</NFTActionReviewProvider>
         <WalletLocalizer />
         <RadioLocalizer />
         <ViaGlobalRadio />
-        <ViaHelpButton />
+
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
     </html>

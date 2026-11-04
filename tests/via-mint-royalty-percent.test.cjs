@@ -1,0 +1,9 @@
+const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),ts=require('typescript')
+const api={};vm.runInNewContext(ts.transpileModule(fs.readFileSync('lib/via/nft-royalties.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2020}}).outputText,{exports:api})
+test('royalty percent input converts exact whole and decimal percentages',()=>{for(const [text,expected]of [['9',900],['10',1000],['5',500],['2.25',225],['2,25',225],['0.01',1],['100',10000],['0',0]])assert.equal(api.royaltyPercentToBasisPoints(text),expected)})
+test('invalid, excessive and overprecise percentage input fails closed',()=>{for(const text of ['','-1','100.01','101','0.001','1e2','Infinity','NaN','1,2.3'])assert.equal(api.royaltyPercentToBasisPoints(text),null)})
+const source=ts.createSourceFile('mint-preflight.tsx',fs.readFileSync('app/studio/mint-preflight.tsx','utf8'),ts.ScriptTarget.Latest,true,ts.ScriptKind.TSX);let expression
+function visit(node){if(ts.isVariableDeclaration(node)&&node.name.getText(source)==='quoteTermsMatch')expression=node.initializer.getText(source);ts.forEachChild(node,visit)}visit(source)
+const hash='a'.repeat(64),mint={nftPostHashHex:hash,numCopies:1,hasUnlockable:false,isForSale:true,isBuyNow:false,creatorRoyaltyBasisPoints:900,coinRoyaltyBasisPoints:225}
+function matches(changes={}){const context={result:{mint},postHash:hash,copies:'1',unlockable:false,forSale:true,buyNow:false,creatorRoyaltyBasisPoints:900,coinRoyaltyBasisPoints:225,...changes};return vm.runInNewContext(expression,context)}
+test('mint quote becomes unusable immediately when royalties, edition count or sale terms change',()=>{assert.equal(matches(),true);for(const change of [{creatorRoyaltyBasisPoints:1000},{coinRoyaltyBasisPoints:0},{creatorRoyaltyBasisPoints:null},{copies:'2'},{buyNow:true},{unlockable:true},{postHash:'b'.repeat(64)}])assert.equal(matches(change),false)})

@@ -9,19 +9,21 @@ export const metadata: Metadata = {
 
 export default function StudioPage() {
   return (
-    <main className="min-h-screen bg-[#070908] px-4 py-5 text-zinc-100 sm:px-8 lg:px-12">
+    <main id="via-mint-page" className="min-h-screen bg-[#070908] px-4 py-5 text-zinc-100 sm:px-8 lg:px-12">
       <div className="mx-auto max-w-5xl">
-        <nav className="mb-7 flex items-center justify-between gap-3" aria-label="NF.VIA mint navigation">
+        <nav className="mb-2 flex items-center justify-between gap-3" aria-label="NF.VIA mint navigation">
           <Link href="/collection" className="inline-flex min-h-10 items-center rounded-[11px] border border-zinc-700/80 px-3 py-2 text-sm font-semibold text-zinc-300 hover:border-[#8fd4a9]/50 hover:text-[#9adbb2]">← NF.VIA</Link>
           <span className="text-xs font-semibold uppercase tracking-[0.16em] text-[#8fd4a9]">Mint</span>
         </nav>
 
-        <header className="mb-6 max-w-2xl">
+        <header className="mb-3 max-w-2xl">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8fd4a9]">NF.VIA</p>
-          <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-[2.5rem]">Mint NFT</h1>
+          <h1 className="mt-1 text-2xl font-semibold tracking-tight">Mint NFT</h1>
           <p className="mt-3 text-sm leading-6 text-zinc-400">Prepare the NFT, review its terms and costs, then approve the native DeSo mint.</p>
+          <Link href="/studio/storage-preview" className="mt-4 inline-flex min-h-11 items-center rounded-xl border border-[#35533f] px-4 py-2 text-sm text-[#a5dfb8]">Bekijk het voorbeeld: bestand, opslag en NFT</Link>
         </header>
 
+        <Link href="/nft-info" className="mb-5 inline-flex min-h-11 items-center text-[#a5dfb8] underline">Lees eerst: opslag, eigendom en VIA-kosten</Link>
         <section id="mint-nft" aria-label="Mint NFT">
           <MintFlow />
         </section>

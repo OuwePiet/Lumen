@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react"
 import { VIA_INTERNATIONAL_DAYS } from "../via-international-calendar"
+import { viaEasterSunday as easterSunday, viaRegionalCelebrations, VIA_CARNIVAL_NOTE } from "../via-calendar-celebrations"
 import { viaOfflineLunarDates } from "../via-calendar-offline-dates"
 import { VIA_CALENDAR_REGIONS, viaCalendarLocalDate, type ViaCalendarRegion } from "../via-calendar-regions"
 import { readViaLocalSettings, VIA_SETTINGS_EVENT, type ViaLanguage } from "../via-local-settings"
@@ -30,6 +31,9 @@ const holidayEmoji = (id:string,name:string):string => {
   const text=(id+" "+name).toLowerCase()
   const nationalFlag: Record<string,string> = {"es-national":"🇪🇸","nl-kings-day":"🇳🇱","nl-liberation":"🇳🇱","be-national":"🇧🇪","fr-bastille":"🇫🇷","de-unity":"🇩🇪","pt-national":"🇵🇹","us-independence":"🇺🇸","ca-canada":"🇨🇦","mx-independence":"🇲🇽","br-independence":"🇧🇷","in-republic":"🇮🇳","cn-national":"🇨🇳","jp-foundation":"🇯🇵","za-freedom":"🇿🇦","au-day":"🇦🇺","nz-waitangi":"🇳🇿"}
   if (nationalFlag[id]) return nationalFlag[id]
+  if (/carnival/.test(text)) return "🎭"
+  if (/saint-martin/.test(text)) return "🏮"
+  if (/ash-wednesday/.test(text)) return "✝️"
   if (/halloween/.test(text)) return "🎃"
   if (/christmas|kerst/.test(text)) return "🎄"
   if (/new.year|nieuwjaar/.test(text)) return "🎆"
@@ -83,15 +87,9 @@ const continentLabels: Record<ViaLanguage,Record<string,string>> = {
   Hindi: {world:"विश्वभर",europe:"यूरोप",asia:"एशिया",africa:"अफ़्रीका","north-america":"उत्तरी अमेरिका","south-america":"दक्षिणी अमेरिका",oceania:"ओशिनिया"},
 }
 
-function easterSunday(year: number) {
-  const a=year%19,b=Math.floor(year/100),c=year%100,d=Math.floor(b/4),e=b%4
-  const f=Math.floor((b+8)/25),g=Math.floor((b-f+1)/3),h=(19*a+b-d-g+15)%30
-  const i=Math.floor(c/4),k=c%4,l=(32+2*e+2*i-h-k)%7,m=Math.floor((a+11*h+22*l)/451)
-  const n=h+l-7*m+114
-  return {month:Math.floor(n/31),day:n%31+1}
-}
-
 export default function WereldkalenderPage() {
+  const [ready,setReady]=useState(false)
+  useEffect(()=>setReady(true),[])
   const [today,setToday] = useState(() => new Date())
   useEffect(() => {
     const refresh = () => setToday(new Date())
@@ -207,7 +205,8 @@ export default function WereldkalenderPage() {
     month:month+1,day:Number(d.date.slice(8,10)),country:d.country,
     scope:"regional" as const,status:"scheduled" as const,
   }))
-  const monthEventsRaw=[...days,...offlineLunar.filter(d=>d.month===month+1),...calculatedHolidays.map(d=>({...d,scope:"cultural" as const,status:"scheduled" as const})),...countryDays.filter(d=>holidayDataAvailable!==true || holidayCoverage?.unavailableCountries.includes(d.country)).map(d=>({...d,scope:"regional" as const,status:"scheduled" as const})),...sourceHolidays]
+  const regionalCelebrations=viaRegionalCelebrations(year,selectedRegion,language).filter(event=>event.month===month+1)
+  const monthEventsRaw=[...regionalCelebrations,...days,...offlineLunar.filter(d=>d.month===month+1),...calculatedHolidays.map(d=>({...d,scope:"cultural" as const,status:"scheduled" as const})),...countryDays.filter(d=>holidayDataAvailable!==true || holidayCoverage?.unavailableCountries.includes(d.country)).map(d=>({...d,scope:"regional" as const,status:"scheduled" as const})),...sourceHolidays]
   const monthEvents=Array.from(new Map(monthEventsRaw.map(d=>[`${d.month}|${d.day}|${"country" in d ? d.country : ""}|${d.nameNl.trim().toLowerCase()}`,d])).values()).sort((a,b)=>(a.day??0)-(b.day??0) || a.nameNl.localeCompare(b.nameNl,locale))
   const offset=(new Date(year,month,1).getDay()+6)%7
   const length=new Date(year,month+1,0).getDate()
@@ -273,6 +272,8 @@ export default function WereldkalenderPage() {
     holi:{English:"Holi",French:"Holi",Spanish:"Holi",Chinese:"洒红节",Hindi:"होली"},
   }
   const holidayName=(id:string,fallback:string)=>language==="Dutch"?fallback:(holidayNames[id]?.[language]??fallback)
+  // The browser owns the local date. Avoid rendering a server timezone/date into hydration.
+  if(!ready)return <main aria-busy="true" className="mx-auto max-w-5xl p-4"><p role="status">{ui.title}…</p></main>
   const visualTestReady = false
   return (
     <main data-via-provenance="@OuwePiet-2026" style={{maxWidth:980,width:"100%",minWidth:0,boxSizing:"border-box",margin:"0 auto",padding:"clamp(16px,3vw,32px)",color:"inherit",overflowWrap:"anywhere",borderRadius:24,background:"radial-gradient(ellipse at 12% 4%,rgba(87,177,123,.25),transparent 46%),radial-gradient(ellipse at 92% 88%,rgba(216,172,79,.20),transparent 50%),linear-gradient(155deg,rgba(27,65,45,.31),rgba(14,35,30,.14) 48%,rgba(105,83,39,.18) 100%)",boxShadow:"0 22px 65px rgba(0,0,0,.24),inset 0 1px rgba(255,255,255,.20)",border:"1px solid rgba(153,196,155,.36)"}}>
@@ -326,6 +327,7 @@ export default function WereldkalenderPage() {
       {selected!==null && <div style={{display:"flex",justifyContent:"flex-end",marginTop:16}}><button type="button" onClick={()=>{setSelected(null);setEventPage(0)}} style={{padding:"9px 13px",border:"1px solid rgba(201,211,176,.65)",borderRadius:9,fontWeight:600}}>{({Dutch:"← Hele maand bekijken",English:"← View full month",French:"← Voir tout le mois",Spanish:"← Ver todo el mes",Chinese:"← 查看整个月",Hindi:"← पूरा महीना देखें"} as Record<ViaLanguage,string>)[language]}</button></div>}
       <h2 style={{fontSize:21,fontWeight:600,marginTop:28}}>{selected===null?ui.month:ui.day+" "+selected+" "+localizedMonth}</h2>
       {shown.length===0?<p>{ui.empty}</p>:<ul style={{paddingLeft:22}}>{pagedEvents.map(d=><li key={d.id} style={{margin:"8px 0"}}>{d.day??labels.monthAll} — {"country" in d && typeof d.country==="string" ? flagForCountry(d.country)+" " : ""}{holidayName(d.id,d.nameNl)} {"country" in d && typeof d.country==="string" ? " · "+(new Intl.DisplayNames([locale],{type:"region"}).of(d.country)??d.country) : ""} <span style={{fontSize:12,opacity:.75}}>({d.scope==="international"?labels.international:d.scope==="regional"?labels.regional:labels.cultural})</span></li>)}</ul>}
+      {regionalCelebrations.length>0 && <p data-via-regional-calendar-note style={{fontSize:12,opacity:.8}}>{VIA_CARNIVAL_NOTE[language]}</p>}
       {shown.length>8 && <div style={{display:"flex",justifyContent:"flex-end",alignItems:"center",gap:8,marginTop:12,flexWrap:"wrap"}}><label htmlFor="via-calendar-page-size" style={{fontSize:13}}>{language==="Dutch"?"Per pagina":language==="French"?"Par page":language==="Spanish"?"Por página":language==="Chinese"?"每页":language==="Hindi"?"प्रति पृष्ठ":"Per page"}</label><select id="via-calendar-page-size" value={eventPageSize} onChange={event=>{setEventPageSize(Number(event.target.value));setEventPage(0)}} style={{padding:"7px 10px",borderRadius:8,background:"#21392f",color:"white",border:"1px solid #777"}}><option value={8}>8</option><option value={16}>16</option><option value={32}>32</option></select></div>}
       {pageCount>1 && <nav aria-label="Calendar event pages" style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:10,flexWrap:"wrap",marginTop:18,padding:"12px 0",borderTop:"1px solid rgba(168,164,108,.3)"}}>
         <button type="button" disabled={currentEventPage===0} onClick={()=>setEventPage(p=>Math.max(0,p-1))} style={{padding:"10px 14px",borderRadius:9,border:"1px solid currentColor",opacity:currentEventPage===0?.4:1}}>← {language==="Dutch"?"Vorige":language==="French"?"Précédent":language==="Spanish"?"Anterior":"Previous"}</button>

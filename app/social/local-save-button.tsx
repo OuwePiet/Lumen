@@ -1,4 +1,5 @@
 "use client"
+import { useSavedCopy } from "../saved/saved-copy"
 
 import { useEffect, useState } from "react"
 import { SAVED_KEY, type SavedItem } from "../saved/save-button"
@@ -42,6 +43,7 @@ function readSaved(): SavedItem[] {
 
 export default function LocalSaveButton({ postHash, body, publicKey }: Props) {
   const href = postHref(postHash)
+  const t=useSavedCopy()
   const [saved, setSaved] = useState(false)
   const [message, setMessage] = useState("")
 
@@ -64,7 +66,7 @@ export default function LocalSaveButton({ postHash, body, publicKey }: Props) {
         window.localStorage.setItem(SAVED_KEY, JSON.stringify(next))
         setSaved(false)
         window.dispatchEvent(new Event(SAVE_EVENT))
-        setMessage("Removed from Saved.")
+        setMessage(t.removed)
         return
       }
 
@@ -80,9 +82,9 @@ export default function LocalSaveButton({ postHash, body, publicKey }: Props) {
       window.localStorage.setItem(SAVED_KEY, JSON.stringify(next))
       setSaved(true)
       window.dispatchEvent(new Event(SAVE_EVENT))
-      setMessage("Saved in VIA Saved on this device.")
+      setMessage(t.stored)
     } catch {
-      setMessage("Saving is unavailable on this device.")
+      setMessage(t.unavailable)
     }
   }
 
@@ -93,9 +95,9 @@ export default function LocalSaveButton({ postHash, body, publicKey }: Props) {
         onClick={toggle}
         aria-pressed={saved}
         className="rounded-full border border-zinc-800 px-3 py-1 text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2]"
-        title="Local VIA save · no blockchain write"
+        title={t.local}
       >
-        {saved ? "Saved ✓" : "Save"}
+        {saved ? t.saved : t.save}
       </button>
       {message ? <span className="sr-only" role="status" aria-live="polite">{message}</span> : null}
     </span>
