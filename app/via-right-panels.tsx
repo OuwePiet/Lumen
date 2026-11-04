@@ -138,46 +138,70 @@ export default function ViaRightPanels() {
   }, [])
 
   useEffect(() => {
-    const controller = new AbortController()
-    void fetch("/api/via/analytics/visitors", {
-      cache: "no-store",
-      signal: controller.signal,
-      headers: { Accept: "application/json" },
-    })
-      .then(async (response) => {
+    // Refresh only after the tab becomes visible again, and at most once
+    // per five minutes. Do not poll while the user is away.
+    const refreshIntervalMs = 5 * 60 * 1000
+    let lastRefresh = 0
+    let inFlight = false
+    let disposed = false
+    const controllers = new Set<AbortController>()
+
+    const refresh = async () => {
+      if (disposed || document.visibilityState === "hidden" || inFlight) return
+      const now = Date.now()
+      if (now - lastRefresh < refreshIntervalMs) return
+      lastRefresh = now
+      inFlight = true
+      const visitorController = new AbortController()
+      const activityController = new AbortController()
+      controllers.add(visitorController)
+      controllers.add(activityController)
+
+      const visitors = fetch("/api/via/analytics/visitors", {
+        signal: visitorController.signal,
+        headers: { Accept: "application/json" },
+      }).then(async (response) => {
+        if (!response.ok) return
         const data = await response.json() as VisitorAnalyticsResponse
-        if (!response.ok || !data.ok || !data.visitors) return
+        if (disposed || !data.ok || !data.visitors) return
         if (typeof data.visitors.today === "number" && Number.isFinite(data.visitors.today)) setVisitorToday(data.visitors.today)
         if (typeof data.visitors.month === "number" && Number.isFinite(data.visitors.month)) setVisitorMonth(data.visitors.month)
         if (typeof data.visitors.year === "number" && Number.isFinite(data.visitors.year)) setVisitorYear(data.visitors.year)
         if (Array.isArray(data.countries)) {
-          setVisitorCountries(data.countries
-            .filter((entry): entry is { country: string; visitors: number } => Boolean(entry && typeof entry.country === "string" && typeof entry.visitors === "number" && Number.isFinite(entry.visitors)))
-             )
+          setVisitorCountries(data.countries.filter((entry): entry is { country: string; visitors: number } =>
+            Boolean(entry && typeof entry.country === "string" && typeof entry.visitors === "number" && Number.isFinite(entry.visitors)),
+          ))
         }
-      })
-      .catch(() => {})
+      }).catch(() => {}).finally(() => controllers.delete(visitorController))
 
-    return () => controller.abort()
-  }, [])
-
-
-  useEffect(() => {
-    const controller = new AbortController()
-    void fetch("/api/via/analytics/activity", {
-      signal: controller.signal,
-      headers: { Accept: "application/json" },
-    })
-      .then(async (response) => {
+      const activity = fetch("/api/via/analytics/activity", {
+        signal: activityController.signal,
+        headers: { Accept: "application/json" },
+      }).then(async (response) => {
         if (!response.ok) return
         const data = await response.json() as ActivityAnalyticsResponse
-        if (!data.ok || data.scope !== "bounded-recent-via-posts") return
+        if (disposed || !data.ok || data.scope !== "bounded-recent-via-posts") return
         if (typeof data.activity?.posts === "number") setActivityPosts(data.activity.posts)
         if (typeof data.activity?.creators === "number") setActivityCreators(data.activity.creators)
         if (typeof data.activity?.nftPosts === "number") setActivityNfts(data.activity.nftPosts)
-      })
-      .catch(() => {})
-    return () => controller.abort()
+      }).catch(() => {}).finally(() => controllers.delete(activityController))
+
+      await Promise.all([visitors, activity])
+      inFlight = false
+    }
+
+    const onReturn = () => { void refresh() }
+    void refresh()
+    window.addEventListener("focus", onReturn)
+    window.addEventListener("pageshow", onReturn)
+    document.addEventListener("visibilitychange", onReturn)
+    return () => {
+      disposed = true
+      controllers.forEach((controller) => controller.abort())
+      window.removeEventListener("focus", onReturn)
+      window.removeEventListener("pageshow", onReturn)
+      document.removeEventListener("visibilitychange", onReturn)
+    }
   }, [])
 
   const copy = COPY[language]
