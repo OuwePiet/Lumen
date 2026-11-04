@@ -9,14 +9,13 @@ type VercelCountResponse = {
   value?: number
   data?: {
     visitors?: number
-    pageviews?: number
   }
 }
 
 type CountryRow = Record<string, unknown>
 
 function countFromResponse(data: VercelCountResponse) {
-  for (const value of [data.data?.visitors, data.total, data.count, data.value, data.data?.pageviews]) {
+  for (const value of [data.data?.visitors, data.total, data.count, data.value]) {
     if (typeof value === "number" && Number.isFinite(value) && value >= 0) return Math.floor(value)
   }
   return null
@@ -148,7 +147,9 @@ export async function GET() {
     result.status === "fulfilled" ? result.value : null,
   ) as [number | null, number | null, number | null, Array<{ country: string; visitors: number }> | null]
 
-  if (today === null || month === null || year === null) {
+  // Never show contradictory totals as if they measured the same thing.
+  // This is a data-quality failure, not a reason to invent replacement counts.
+  if (today === null || month === null || year === null || today > month || month > year) {
     return NextResponse.json({
       ok: false,
       source: "vercel-web-analytics",
