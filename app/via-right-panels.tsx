@@ -264,7 +264,7 @@ export default function ViaRightPanels() {
       </Panel>
 
       <Panel title={copy.visitors}>
-        {visitorMeasuredAt ? <p className="text-[10px] text-zinc-500">{new Date(visitorMeasuredAt).toLocaleString(language === "Dutch" ? "nl-NL" : undefined)}</p> : null}
+        {visitorMeasuredAt ? <p className="text-[10px] text-zinc-500">{new Date(visitorMeasuredAt).toLocaleString(({ Dutch: "nl-NL", English: "en-GB", French: "fr-FR", Spanish: "es-ES", Chinese: "zh-CN", Hindi: "hi-IN" } as const)[language])}</p> : null}
         <Metric label={copy.today} value={visitorToday} note={copy.sourcePending} />
         <Metric label={copy.month} value={visitorMonth} note={copy.sourcePending} />
         <Metric label={copy.year} value={visitorYear} note={copy.sourcePending} />
