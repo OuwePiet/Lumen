@@ -195,7 +195,8 @@ export default function ViaRightPanels() {
         setVisitorMeasuredAt(typeof data.measuredAt === "string" && Number.isFinite(Date.parse(data.measuredAt)) ? data.measuredAt : null)
         if (Array.isArray(data.countries)) {
           setVisitorCountries(data.countries.filter((entry): entry is { country: string; visitors: number } =>
-            Boolean(entry && typeof entry.country === "string" && typeof entry.visitors === "number" && Number.isFinite(entry.visitors)),
+            Boolean(entry && typeof entry.country === "string" && /^[A-Za-z]{2}$/.test(entry.country) &&
+              typeof entry.visitors === "number" && Number.isSafeInteger(entry.visitors) && entry.visitors >= 0),
           ))
         }
       }).catch(() => {
@@ -215,11 +216,14 @@ export default function ViaRightPanels() {
         if (!response.ok) throw new Error("Activity analytics unavailable")
         const data = await response.json() as ActivityAnalyticsResponse
         if (disposed || !data.ok || data.scope !== "bounded-recent-via-posts") throw new Error("Activity analytics unavailable")
-        setActivitySampleSize(typeof data.sampledPosts === "number" ? data.sampledPosts : null)
+        const sampleSize = data.sampledPosts
         const counts = [data.activity?.posts, data.activity?.creators, data.activity?.nftPosts]
-        if (!counts.every((value) => typeof value === "number" && Number.isSafeInteger(value) && value >= 0)) {
+        if (typeof sampleSize !== "number" || !Number.isSafeInteger(sampleSize) || sampleSize < 1 ||
+          !counts.every((value) => typeof value === "number" && Number.isSafeInteger(value) && value >= 0 && value <= sampleSize) ||
+          (counts[1] as number) > (counts[0] as number) || (counts[2] as number) > (counts[0] as number)) {
           throw new Error("Invalid activity sample")
         }
+        setActivitySampleSize(sampleSize)
         setActivityPosts(counts[0] as number)
         setActivityCreators(counts[1] as number)
         setActivityNfts(counts[2] as number)
