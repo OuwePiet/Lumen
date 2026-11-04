@@ -5,6 +5,7 @@ import { readViaLocalSettings, VIA_SETTINGS_EVENT, type ViaLanguage } from "./vi
 
 type VisitorAnalyticsResponse = {
   ok?: boolean
+  measuredAt?: string
   visitors?: { today?: number; month?: number; year?: number }
   countries?: Array<{ country?: string; visitors?: number }>
 }
@@ -12,6 +13,7 @@ type VisitorAnalyticsResponse = {
 type ActivityAnalyticsResponse = {
   ok?: boolean
   scope?: string
+  sampledPosts?: number
   activity?: { posts?: number; creators?: number; nftPosts?: number }
 }
 
@@ -125,6 +127,8 @@ export default function ViaRightPanels() {
   const [activityPosts, setActivityPosts] = useState<number | null>(null)
   const [activityCreators, setActivityCreators] = useState<number | null>(null)
   const [activityNfts, setActivityNfts] = useState<number | null>(null)
+  const [visitorMeasuredAt, setVisitorMeasuredAt] = useState<string | null>(null)
+  const [activitySampleSize, setActivitySampleSize] = useState<number | null>(null)
 
   useEffect(() => {
     const sync = () => setLanguage(readViaLocalSettings().interfaceLanguage)
@@ -161,9 +165,10 @@ export default function ViaRightPanels() {
         signal: visitorController.signal,
         headers: { Accept: "application/json" },
       }).then(async (response) => {
-        if (!response.ok) return
+        if (!response.ok) throw new Error("Visitor analytics unavailable")
         const data = await response.json() as VisitorAnalyticsResponse
-        if (disposed || !data.ok || !data.visitors) return
+        if (disposed || !data.ok || !data.visitors) throw new Error("Visitor analytics unavailable")
+        setVisitorMeasuredAt(typeof data.measuredAt === "string" ? data.measuredAt : null)
         if (typeof data.visitors.today === "number" && Number.isFinite(data.visitors.today)) setVisitorToday(data.visitors.today)
         if (typeof data.visitors.month === "number" && Number.isFinite(data.visitors.month)) setVisitorMonth(data.visitors.month)
         if (typeof data.visitors.year === "number" && Number.isFinite(data.visitors.year)) setVisitorYear(data.visitors.year)
@@ -172,19 +177,33 @@ export default function ViaRightPanels() {
             Boolean(entry && typeof entry.country === "string" && typeof entry.visitors === "number" && Number.isFinite(entry.visitors)),
           ))
         }
-      }).catch(() => {}).finally(() => controllers.delete(visitorController))
+      }).catch(() => {
+        if (disposed || visitorController.signal.aborted) return
+        setVisitorToday(null)
+        setVisitorMonth(null)
+        setVisitorYear(null)
+        setVisitorCountries([])
+        setVisitorMeasuredAt(null)
+      }).finally(() => controllers.delete(visitorController))
 
       const activity = fetch("/api/via/analytics/activity", {
         signal: activityController.signal,
         headers: { Accept: "application/json" },
       }).then(async (response) => {
-        if (!response.ok) return
+        if (!response.ok) throw new Error("Activity analytics unavailable")
         const data = await response.json() as ActivityAnalyticsResponse
-        if (disposed || !data.ok || data.scope !== "bounded-recent-via-posts") return
+        if (disposed || !data.ok || data.scope !== "bounded-recent-via-posts") throw new Error("Activity analytics unavailable")
+        setActivitySampleSize(typeof data.sampledPosts === "number" ? data.sampledPosts : null)
         if (typeof data.activity?.posts === "number") setActivityPosts(data.activity.posts)
         if (typeof data.activity?.creators === "number") setActivityCreators(data.activity.creators)
         if (typeof data.activity?.nftPosts === "number") setActivityNfts(data.activity.nftPosts)
-      }).catch(() => {}).finally(() => controllers.delete(activityController))
+      }).catch(() => {
+        if (disposed || activityController.signal.aborted) return
+        setActivityPosts(null)
+        setActivityCreators(null)
+        setActivityNfts(null)
+        setActivitySampleSize(null)
+      }).finally(() => controllers.delete(activityController))
 
       await Promise.all([visitors, activity])
       inFlight = false
@@ -238,12 +257,14 @@ export default function ViaRightPanels() {
       </Panel>
 
       <Panel title={copy.visitors}>
+        {visitorMeasuredAt ? <p className="text-[10px] text-zinc-500">{new Date(visitorMeasuredAt).toLocaleString(language === "Dutch" ? "nl-NL" : undefined)}</p> : null}
         <Metric label={copy.today} value={visitorToday} note={copy.sourcePending} />
         <Metric label={copy.month} value={visitorMonth} note={copy.sourcePending} />
         <Metric label={copy.year} value={visitorYear} note={copy.sourcePending} />
       </Panel>
 
       <Panel title={copy.activity}>
+        {activitySampleSize !== null ? <p className="text-[10px] text-zinc-500">DeSo · {activitySampleSize} sampled recent posts</p> : null}
         <Metric label={copy.posts} value={activityPosts} note={copy.sourcePending} />
         <Metric label={copy.creators} value={activityCreators} note={copy.sourcePending} />
         <PendingMetric label={copy.trends} note={copy.sourcePending} />
