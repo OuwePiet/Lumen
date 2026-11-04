@@ -38,6 +38,7 @@ type PanelCopy = {
   welcome: string
   sourcePending: string
   sampleNote: string
+  retry: string
 }
 
 const COPY: Record<ViaLanguage | "Hindi", PanelCopy> = {
@@ -47,6 +48,7 @@ const COPY: Record<ViaLanguage | "Hindi", PanelCopy> = {
     today: "Vandaag", month: "Deze maand", year: "Start VIA 17-09-2026", posts: "Recente VIA-posts", creators: "Recente VIA-creators",
     trends: "Trends", nftActivity: "Recente VIA-NFT-posts", welcome: "Welcome / First Post", sourcePending: "Betrouwbare meetbron nog niet gekoppeld.",
     sampleNote: "steekproef recente berichten",
+    retry: "Opnieuw proberen",
   },
   English: {
     live: "VIA Live", visitors: "VIA Visitors", activity: "VIA Activity", community: "VIA Community",
@@ -54,6 +56,7 @@ const COPY: Record<ViaLanguage | "Hindi", PanelCopy> = {
     today: "Today", month: "This month", year: "Start VIA 17-09-2026", posts: "Recent VIA posts", creators: "Recent VIA creators",
     trends: "Trends", nftActivity: "Recent VIA NFT posts", welcome: "Welcome / First Post", sourcePending: "Reliable measurement source not connected yet.",
     sampleNote: "sampled recent posts",
+    retry: "Retry",
   },
   French: {
     live: "VIA Live", visitors: "VIA Visiteurs", activity: "VIA Activité", community: "VIA Communauté",
@@ -61,6 +64,7 @@ const COPY: Record<ViaLanguage | "Hindi", PanelCopy> = {
     today: "Aujourd’hui", month: "Ce mois-ci", year: "Start VIA 17-09-2026", posts: "Publications VIA récentes", creators: "Créateurs VIA récents",
     trends: "Tendances", nftActivity: "Publications NFT VIA récentes", welcome: "Welcome / First Post", sourcePending: "Source de mesure fiable pas encore connectée.",
     sampleNote: "publications récentes échantillonnées",
+    retry: "Réessayer",
   },
   Spanish: {
     live: "VIA Live", visitors: "VIA Visitantes", activity: "VIA Actividad", community: "VIA Comunidad",
@@ -68,6 +72,7 @@ const COPY: Record<ViaLanguage | "Hindi", PanelCopy> = {
     today: "Hoy", month: "Este mes", year: "Start VIA 17-09-2026", posts: "Publicaciones VIA recientes", creators: "Creadores VIA recientes",
     trends: "Tendencias", nftActivity: "Publicaciones NFT VIA recientes", welcome: "Welcome / First Post", sourcePending: "La fuente de medición fiable aún no está conectada.",
     sampleNote: "publicaciones recientes muestreadas",
+    retry: "Reintentar",
   },
   Chinese: {
     live: "VIA 实时", visitors: "VIA 访客", activity: "VIA 活动", community: "VIA 社区",
@@ -75,6 +80,7 @@ const COPY: Record<ViaLanguage | "Hindi", PanelCopy> = {
     today: "今天", month: "本月", year: "Start VIA 17-09-2026", posts: "近期 VIA 帖子", creators: "近期 VIA 创作者",
     trends: "趋势", nftActivity: "近期 VIA NFT 帖子", welcome: "Welcome / First Post", sourcePending: "尚未连接可靠的统计来源。",
     sampleNote: "近期帖子抽样",
+    retry: "重试",
   },
   Hindi: {
     live: "VIA लाइव", visitors: "VIA आगंतुक", activity: "VIA गतिविधि", community: "VIA समुदाय",
@@ -82,6 +88,7 @@ const COPY: Record<ViaLanguage | "Hindi", PanelCopy> = {
     today: "आज", month: "इस महीने", year: "Start VIA 17-09-2026", posts: "हालिया VIA पोस्ट", creators: "हालिया VIA क्रिएटर",
     trends: "रुझान", nftActivity: "हालिया VIA NFT पोस्ट", welcome: "स्वागत / पहली पोस्ट", sourcePending: "विश्वसनीय मापन स्रोत अभी जुड़ा नहीं है।",
     sampleNote: "हालिया पोस्ट का नमूना",
+    retry: "फिर कोशिश करें",
   },
 }
 
@@ -135,6 +142,7 @@ export default function ViaRightPanels() {
   const [activityCreators, setActivityCreators] = useState<number | null>(null)
   const [activityNfts, setActivityNfts] = useState<number | null>(null)
   const [visitorMeasuredAt, setVisitorMeasuredAt] = useState<string | null>(null)
+  const [analyticsError, setAnalyticsError] = useState(false)
   const [activitySampleSize, setActivitySampleSize] = useState<number | null>(null)
 
   useEffect(() => {
@@ -157,12 +165,13 @@ export default function ViaRightPanels() {
     let disposed = false
     const controllers = new Set<AbortController>()
 
-    const refresh = async () => {
+    const refresh = async (force = false) => {
       if (disposed || document.visibilityState === "hidden" || inFlight) return
       const now = Date.now()
-      if (now - lastRefresh < refreshIntervalMs) return
+      if (!force && now - lastRefresh < refreshIntervalMs) return
       lastRefresh = now
       inFlight = true
+      setAnalyticsError(false)
       const visitorController = new AbortController()
       const activityController = new AbortController()
       controllers.add(visitorController)
@@ -186,6 +195,7 @@ export default function ViaRightPanels() {
         }
       }).catch(() => {
         if (disposed || visitorController.signal.aborted) return
+        setAnalyticsError(true)
         setVisitorToday(null)
         setVisitorMonth(null)
         setVisitorYear(null)
@@ -206,6 +216,7 @@ export default function ViaRightPanels() {
         if (typeof data.activity?.nftPosts === "number") setActivityNfts(data.activity.nftPosts)
       }).catch(() => {
         if (disposed || activityController.signal.aborted) return
+        setAnalyticsError(true)
         setActivityPosts(null)
         setActivityCreators(null)
         setActivityNfts(null)
@@ -217,16 +228,19 @@ export default function ViaRightPanels() {
     }
 
     const onReturn = () => { void refresh() }
+    const onRetry = () => { void refresh(true) }
     void refresh()
     window.addEventListener("focus", onReturn)
     window.addEventListener("pageshow", onReturn)
     document.addEventListener("visibilitychange", onReturn)
+    window.addEventListener("via:analytics-retry", onRetry)
     return () => {
       disposed = true
       controllers.forEach((controller) => controller.abort())
       window.removeEventListener("focus", onReturn)
       window.removeEventListener("pageshow", onReturn)
       document.removeEventListener("visibilitychange", onReturn)
+      window.removeEventListener("via:analytics-retry", onRetry)
     }
   }, [])
 
@@ -234,6 +248,7 @@ export default function ViaRightPanels() {
 
   return (
     <aside className="space-y-3" aria-label="VIA live and activity panels">
+      {analyticsError ? <button type="button" onClick={() => window.dispatchEvent(new Event("via:analytics-retry"))} className="rounded-xl border border-[#285f40] px-3 py-2 text-xs text-[#9adbb2] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#9adbb2]">{copy.retry}</button> : null}
       <Panel title={copy.live}>
         <PendingMetric label={copy.activeNow} note={copy.sourcePending} />
         <PendingMetric label={copy.desoAccounts} note={copy.sourcePending} />
