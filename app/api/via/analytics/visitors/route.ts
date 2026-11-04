@@ -42,6 +42,7 @@ async function readCount(from: Date, to: Date) {
       Accept: "application/json",
     },
     cache: "no-store",
+    signal: AbortSignal.timeout(10000),
   })
 
   if (!response.ok) {
@@ -94,6 +95,7 @@ async function readCountries(from: Date, to: Date) {
       Accept: "application/json",
     },
     cache: "no-store",
+    signal: AbortSignal.timeout(10000),
   })
 
   if (!response.ok) {
@@ -134,12 +136,17 @@ export async function GET() {
   const monthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1))
   const yearStart = new Date(Date.UTC(2026, 8, 17))
 
-  const [today, month, year, countries] = await Promise.all([
+  // A failed or timed-out upstream request must not turn this endpoint into
+  // an unhandled 500 or an indefinitely pending visitor panel.
+  const results = await Promise.allSettled([
     readCount(dayStart, now),
     readCount(monthStart, now),
     readCount(yearStart, now),
     readCountries(dayStart, now),
   ])
+  const [today, month, year, countries] = results.map((result) =>
+    result.status === "fulfilled" ? result.value : null,
+  ) as [number | null, number | null, number | null, Array<{ country: string; visitors: number }> | null]
 
   if (today === null || month === null || year === null) {
     return NextResponse.json({
