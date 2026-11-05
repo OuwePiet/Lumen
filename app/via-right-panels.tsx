@@ -39,6 +39,7 @@ type PanelCopy = {
   sourcePending: string
   sampleNote: string
   retry: string
+  noCountries: string
 }
 
 const COPY: Record<ViaLanguage | "Hindi", PanelCopy> = {
@@ -49,6 +50,7 @@ const COPY: Record<ViaLanguage | "Hindi", PanelCopy> = {
     trends: "Trends", nftActivity: "Recente VIA-NFT-posts", welcome: "Welcome / First Post", sourcePending: "Betrouwbare meetbron nog niet gekoppeld.",
     sampleNote: "steekproef recente berichten",
     retry: "Opnieuw proberen",
+    noCountries: "Geen landen gemeten in deze periode.",
   },
   English: {
     live: "VIA Live", visitors: "VIA Visitors", activity: "VIA Activity", community: "VIA Community",
@@ -57,6 +59,7 @@ const COPY: Record<ViaLanguage | "Hindi", PanelCopy> = {
     trends: "Trends", nftActivity: "Recent VIA NFT posts", welcome: "Welcome / First Post", sourcePending: "Reliable measurement source not connected yet.",
     sampleNote: "sampled recent posts",
     retry: "Retry",
+    noCountries: "No countries measured in this period.",
   },
   French: {
     live: "VIA Live", visitors: "VIA Visiteurs", activity: "VIA Activité", community: "VIA Communauté",
@@ -65,6 +68,7 @@ const COPY: Record<ViaLanguage | "Hindi", PanelCopy> = {
     trends: "Tendances", nftActivity: "Publications NFT VIA récentes", welcome: "Welcome / First Post", sourcePending: "Source de mesure fiable pas encore connectée.",
     sampleNote: "publications récentes échantillonnées",
     retry: "Réessayer",
+    noCountries: "Aucun pays mesuré sur cette période.",
   },
   Spanish: {
     live: "VIA Live", visitors: "VIA Visitantes", activity: "VIA Actividad", community: "VIA Comunidad",
@@ -73,6 +77,7 @@ const COPY: Record<ViaLanguage | "Hindi", PanelCopy> = {
     trends: "Tendencias", nftActivity: "Publicaciones NFT VIA recientes", welcome: "Welcome / First Post", sourcePending: "La fuente de medición fiable aún no está conectada.",
     sampleNote: "publicaciones recientes muestreadas",
     retry: "Reintentar",
+    noCountries: "No se registraron países en este período.",
   },
   Chinese: {
     live: "VIA 实时", visitors: "VIA 访客", activity: "VIA 活动", community: "VIA 社区",
@@ -81,6 +86,7 @@ const COPY: Record<ViaLanguage | "Hindi", PanelCopy> = {
     trends: "趋势", nftActivity: "近期 VIA NFT 帖子", welcome: "Welcome / First Post", sourcePending: "尚未连接可靠的统计来源。",
     sampleNote: "近期帖子抽样",
     retry: "重试",
+    noCountries: "此期间未记录到国家或地区。",
   },
   Hindi: {
     live: "VIA लाइव", visitors: "VIA आगंतुक", activity: "VIA गतिविधि", community: "VIA समुदाय",
@@ -89,6 +95,7 @@ const COPY: Record<ViaLanguage | "Hindi", PanelCopy> = {
     trends: "रुझान", nftActivity: "हालिया VIA NFT पोस्ट", welcome: "स्वागत / पहली पोस्ट", sourcePending: "विश्वसनीय मापन स्रोत अभी जुड़ा नहीं है।",
     sampleNote: "हालिया पोस्ट का नमूना",
     retry: "फिर कोशिश करें",
+    noCountries: "इस अवधि में कोई देश दर्ज नहीं हुआ।",
   },
 }
 
@@ -284,6 +291,7 @@ export default function ViaRightPanels() {
             </button>
             {countriesExpanded ? (
               <div id="via-countries-list" className="max-h-52 space-y-1 overflow-y-auto border-t border-zinc-800 px-3 py-2">
+                {visitorCountries.length === 0 ? <p className="py-1 text-zinc-500">{copy.noCountries}</p> : null}
                 {visitorCountries.map((entry) => (
                   <div key={entry.country} className="flex items-center justify-between gap-2 py-1 text-zinc-300">
                     <span>{countryFlag(entry.country)} {entry.country}</span>
