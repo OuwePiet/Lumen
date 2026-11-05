@@ -193,12 +193,14 @@ export default function ViaRightPanels() {
         setVisitorMonth(month as number)
         setVisitorYear(year as number)
         setVisitorMeasuredAt(typeof data.measuredAt === "string" && Number.isFinite(Date.parse(data.measuredAt)) ? data.measuredAt : null)
-        if (Array.isArray(data.countries)) {
-          setVisitorCountries(data.countries.filter((entry): entry is { country: string; visitors: number } =>
-            Boolean(entry && typeof entry.country === "string" && /^[A-Za-z]{2}$/.test(entry.country) &&
-              typeof entry.visitors === "number" && Number.isSafeInteger(entry.visitors) && entry.visitors >= 0),
-          ))
-        }
+        // An unavailable country source must clear previously displayed countries.
+        // Never keep an old country list alongside fresh visitor totals.
+        setVisitorCountries(Array.isArray(data.countries)
+          ? data.countries.filter((entry): entry is { country: string; visitors: number } =>
+              Boolean(entry && typeof entry.country === "string" && /^[A-Za-z]{2}$/.test(entry.country) &&
+                typeof entry.visitors === "number" && Number.isSafeInteger(entry.visitors) && entry.visitors >= 0),
+            )
+          : [])
       }).catch(() => {
         if (disposed || visitorController.signal.aborted) return
         setAnalyticsError(true)
