@@ -138,6 +138,7 @@ export default function ViaRightPanels() {
   const [visitorMonth, setVisitorMonth] = useState<number | null>(null)
   const [visitorYear, setVisitorYear] = useState<number | null>(null)
   const [visitorCountries, setVisitorCountries] = useState<Array<{ country: string; visitors: number }>>([])
+  const [countriesAvailable, setCountriesAvailable] = useState(false)
   const [activityPosts, setActivityPosts] = useState<number | null>(null)
   const [activityCreators, setActivityCreators] = useState<number | null>(null)
   const [activityNfts, setActivityNfts] = useState<number | null>(null)
@@ -195,6 +196,7 @@ export default function ViaRightPanels() {
         setVisitorMeasuredAt(typeof data.measuredAt === "string" && Number.isFinite(Date.parse(data.measuredAt)) ? data.measuredAt : null)
         // An unavailable country source must clear previously displayed countries.
         // Never keep an old country list alongside fresh visitor totals.
+        setCountriesAvailable(Array.isArray(data.countries))
         setVisitorCountries(Array.isArray(data.countries)
           ? data.countries.filter((entry): entry is { country: string; visitors: number } =>
               Boolean(entry && typeof entry.country === "string" && /^[A-Za-z]{2}$/.test(entry.country) &&
@@ -208,6 +210,7 @@ export default function ViaRightPanels() {
         setVisitorMonth(null)
         setVisitorYear(null)
         setVisitorCountries([])
+        setCountriesAvailable(false)
         setVisitorMeasuredAt(null)
       }).finally(() => controllers.delete(visitorController))
 
@@ -268,7 +271,7 @@ export default function ViaRightPanels() {
         <PendingMetric label={copy.activeNow} note={copy.sourcePending} />
         <PendingMetric label={copy.desoAccounts} note={copy.sourcePending} />
         <PendingMetric label={copy.guests} note={copy.sourcePending} />
-        {visitorCountries.length ? (
+        {countriesAvailable ? (
           <div className="rounded-xl border border-zinc-800 bg-black/25">
             <button type="button" aria-expanded={countriesExpanded} aria-controls="via-countries-list"
               onClick={() => setCountriesExpanded((open) => !open)}
