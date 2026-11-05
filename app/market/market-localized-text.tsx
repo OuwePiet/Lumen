@@ -31,8 +31,8 @@ type Copy = {
 
 const copy: Record<ViaLanguage | "Hindi", Copy> = {
   Dutch: {
-    marketplace: "VIA Marketplace",
-    heading: "Markt",
+    marketplace: "VIA-Emporium",
+    heading: "VIA-Emporium",
     intro: "Biedingen, actieve aanbiedingen en lopende overdrachten voor één DeSo-account. Transactieacties blijven op de NFT-detailpagina, waar VIA de volledige bevestigingsstroom bewaakt.",
     collection: "Collectie",
     receivedBids: "Ontvangen biedingen",
@@ -56,8 +56,8 @@ const copy: Record<ViaLanguage | "Hindi", Copy> = {
     pendingOnDeSo: "in afwachting op DeSo",
   },
   English: {
-    marketplace: "VIA Marketplace",
-    heading: "Market",
+    marketplace: "VIA-Emporium",
+    heading: "VIA-Emporium",
     intro: "Bids, active listings and pending transfers for one DeSo account. Transaction actions stay on the NFT detail page where VIA keeps the full confirmation flow.",
     collection: "Collection",
     receivedBids: "Received Bids",
@@ -81,8 +81,8 @@ const copy: Record<ViaLanguage | "Hindi", Copy> = {
     pendingOnDeSo: "pending on DeSo",
   },
   French: {
-    marketplace: "VIA Marketplace",
-    heading: "Marché",
+    marketplace: "VIA-Emporium",
+    heading: "VIA-Emporium",
     intro: "Enchères, offres actives et transferts en attente pour un compte DeSo. Les actions de transaction restent sur la page de détail du NFT, où VIA conserve le flux complet de confirmation.",
     collection: "Collection",
     receivedBids: "Enchères reçues",
@@ -106,8 +106,8 @@ const copy: Record<ViaLanguage | "Hindi", Copy> = {
     pendingOnDeSo: "en attente sur DeSo",
   },
   Spanish: {
-    marketplace: "VIA Marketplace",
-    heading: "Mercado",
+    marketplace: "VIA-Emporium",
+    heading: "VIA-Emporium",
     intro: "Pujas, anuncios activos y transferencias pendientes para una cuenta DeSo. Las acciones de transacción permanecen en la página de detalle del NFT, donde VIA mantiene el flujo completo de confirmación.",
     collection: "Colección",
     receivedBids: "Pujas recibidas",
@@ -131,7 +131,7 @@ const copy: Record<ViaLanguage | "Hindi", Copy> = {
     pendingOnDeSo: "pendiente en DeSo",
   },
   Hindi: {
-    marketplace: "VIA Marketplace", heading: "बाज़ार",
+    marketplace: "VIA-Emporium", heading: "VIA-Emporium",
     intro: "एक DeSo खाते की बोलियाँ, सक्रिय लिस्टिंग और लंबित ट्रांसफ़र देखें। लेनदेन की कार्रवाइयाँ NFT विवरण पृष्ठ पर रहती हैं, जहाँ VIA पूरी पुष्टि प्रक्रिया बनाए रखता है।",
     collection: "संग्रह", receivedBids: "प्राप्त बोलियाँ", myBids: "मेरी बोलियाँ", listings: "लिस्टिंग", transfers: "ट्रांसफ़र",
     chooseAccount: "DeSo खाता चुनें", readOnly: "यह केवल पढ़ने के लिए बाज़ार खोज है। VIA इस फ़ॉर्म से हस्ताक्षर या खर्च नहीं करता।",
@@ -141,8 +141,8 @@ const copy: Record<ViaLanguage | "Hindi", Copy> = {
     noTransfers: "इस खाते के लिए कोई लंबित NFT ट्रांसफ़र नहीं मिला।", pendingOnDeSo: "DeSo पर लंबित",
   },
   Chinese: {
-    marketplace: "VIA Marketplace",
-    heading: "市场",
+    marketplace: "VIA-Emporium",
+    heading: "VIA-Emporium",
     intro: "查看一个 DeSo 账户的出价、在售项目和待处理转账。交易操作保留在 NFT 详情页，由 VIA 提供完整确认流程。",
     collection: "收藏",
     receivedBids: "收到的出价",

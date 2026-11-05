@@ -15,12 +15,12 @@ type HubCopy = {
 }
 
 const COPY: Partial<Record<ViaLanguage | "Hindi", HubCopy>> = {
-  Dutch: { kicker: "NF.VIA", title: "NFT's, eenvoudig bij elkaar", intro: "Mint je werk, beheer je eigen NFT's of ontdek werk van creators.", mint: "Mint", myNfts: "Mijn NFT's", creatorsMarket: "Creators & Markt", navLabel: "NF.VIA hoofdingangen" },
-  English: { kicker: "NF.VIA", title: "NFTs, kept simple", intro: "Mint your work, manage your NFTs or discover work from creators.", mint: "Mint", myNfts: "My NFTs", creatorsMarket: "Creators & Market", navLabel: "NF.VIA main sections" },
-  French: { kicker: "NF.VIA", title: "Les NFT, simplement", intro: "Mintez votre travail, gérez vos NFT ou découvrez les créations d'autres artistes.", mint: "Minter", myNfts: "Mes NFT", creatorsMarket: "Créateurs & Marché", navLabel: "Sections principales NF.VIA" },
-  Spanish: { kicker: "NF.VIA", title: "NFT, de forma sencilla", intro: "Mintea tu obra, gestiona tus NFT o descubre el trabajo de otros creadores.", mint: "Mintear", myNfts: "Mis NFT", creatorsMarket: "Creadores & Mercado", navLabel: "Secciones principales NF.VIA" },
-  Chinese: { kicker: "NF.VIA", title: "简单清晰的 NFT", intro: "铸造作品、管理自己的 NFT，或发现创作者的作品。", mint: "铸造", myNfts: "我的 NFT", creatorsMarket: "创作者与市场", navLabel: "NF.VIA 主入口" },
-  Hindi: { kicker: "NF.VIA", title: "NFT, सरल और साफ़", intro: "अपना काम mint करें, अपने NFT संभालें या creators का काम खोजें।", mint: "Mint", myNfts: "मेरे NFT", creatorsMarket: "Creators & Market", navLabel: "NF.VIA मुख्य सेक्शन" },
+  Dutch: { kicker: "NF.VIA", title: "NFT's, eenvoudig bij elkaar", intro: "Mint je werk, beheer je eigen NFT's of ontdek werk van creators.", mint: "Mint", myNfts: "Mijn NFT's", creatorsMarket: "Creators & VIA-Emporium", navLabel: "NF.VIA hoofdingangen" },
+  English: { kicker: "NF.VIA", title: "NFTs, kept simple", intro: "Mint your work, manage your NFTs or discover work from creators.", mint: "Mint", myNfts: "My NFTs", creatorsMarket: "Creators & VIA-Emporium", navLabel: "NF.VIA main sections" },
+  French: { kicker: "NF.VIA", title: "Les NFT, simplement", intro: "Mintez votre travail, gérez vos NFT ou découvrez les créations d'autres artistes.", mint: "Minter", myNfts: "Mes NFT", creatorsMarket: "Créateurs & VIA-Emporium", navLabel: "Sections principales NF.VIA" },
+  Spanish: { kicker: "NF.VIA", title: "NFT, de forma sencilla", intro: "Mintea tu obra, gestiona tus NFT o descubre el trabajo de otros creadores.", mint: "Mintear", myNfts: "Mis NFT", creatorsMarket: "Creadores & VIA-Emporium", navLabel: "Secciones principales NF.VIA" },
+  Chinese: { kicker: "NF.VIA", title: "简单清晰的 NFT", intro: "铸造作品、管理自己的 NFT，或发现创作者的作品。", mint: "铸造", myNfts: "我的 NFT", creatorsMarket: "创作者与 VIA-Emporium", navLabel: "NF.VIA 主入口" },
+  Hindi: { kicker: "NF.VIA", title: "NFT, सरल और साफ़", intro: "अपना काम mint करें, अपने NFT संभालें या creators का काम खोजें।", mint: "Mint", myNfts: "मेरे NFT", creatorsMarket: "Creators & VIA-Emporium", navLabel: "NF.VIA मुख्य सेक्शन" },
 }
 
 const hubLink = {
