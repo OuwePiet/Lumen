@@ -16,7 +16,7 @@ type CountryRow = Record<string, unknown>
 
 function countFromResponse(data: VercelCountResponse) {
   for (const value of [data.data?.visitors, data.total, data.count, data.value]) {
-    if (typeof value === "number" && Number.isFinite(value) && value >= 0) return Math.floor(value)
+    if (typeof value === "number" && Number.isSafeInteger(value) && value >= 0) return value
   }
   return null
 }
@@ -60,7 +60,7 @@ async function readCount(from: Date, to: Date) {
 function countryFromRow(row: CountryRow) {
   for (const key of ["country", "Country", "requestCountry", "request_country", "key", "name"]) {
     const value = row[key]
-    if (typeof value === "string" && value.trim()) return value.trim().toUpperCase().slice(0, 3)
+    if (typeof value === "string" && /^[A-Za-z]{2}$/.test(value.trim())) return value.trim().toUpperCase()
   }
   return null
 }
@@ -154,7 +154,7 @@ export async function GET() {
       ok: false,
       source: "vercel-web-analytics",
       error: "ANALYTICS_SOURCE_UNAVAILABLE",
-    }, { status: 503 })
+    }, { status: 503, headers: { "Cache-Control": "no-store" } })
   }
 
   return NextResponse.json({
@@ -168,6 +168,6 @@ export async function GET() {
       year,
     },
     todayCountSource: "visits-count",
-    countries: countries ?? [],
+    countries: countries ?? null,
   }, { headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=300" } })
 }
