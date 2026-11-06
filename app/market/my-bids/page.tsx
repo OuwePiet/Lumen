@@ -62,11 +62,11 @@ export default async function MarketMyBidsPage({ searchParams }: { searchParams:
     <main className="mx-auto min-h-screen max-w-5xl px-5 py-10 text-zinc-100">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8fd4a9]">VIA Marketplace</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8fd4a9]">VIA-Emporium</p>
           <h1 className="mt-2 text-3xl font-semibold">My bids</h1>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-400">One quiet overview of active NFT bids from a DeSo account. Open an NFT to change or withdraw its bid.</p>
         </div>
-        <Link href={marketHref} className="text-sm text-[#8fd4a9] hover:text-[#9adbb2]">Back to Market</Link>
+        <Link href={marketHref} className="text-sm text-[#8fd4a9] hover:text-[#9adbb2]">Back to VIA-Emporium</Link>
       </div>
 
       {!publicKey ? (
