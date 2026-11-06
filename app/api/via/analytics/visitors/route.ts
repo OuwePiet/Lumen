@@ -9,15 +9,14 @@ type VercelCountResponse = {
   value?: number
   data?: {
     visitors?: number
-    pageviews?: number
   }
 }
 
 type CountryRow = Record<string, unknown>
 
 function countFromResponse(data: VercelCountResponse) {
-  for (const value of [data.data?.visitors, data.total, data.count, data.value, data.data?.pageviews]) {
-    if (typeof value === "number" && Number.isFinite(value) && value >= 0) return Math.floor(value)
+  for (const value of [data.data?.visitors, data.total, data.count, data.value]) {
+    if (typeof value === "number" && Number.isSafeInteger(value) && value >= 0) return value
   }
   return null
 }
@@ -42,6 +41,7 @@ async function readCount(from: Date, to: Date) {
       Accept: "application/json",
     },
     cache: "no-store",
+    signal: AbortSignal.timeout(10000),
   })
 
   if (!response.ok) {
@@ -60,7 +60,7 @@ async function readCount(from: Date, to: Date) {
 function countryFromRow(row: CountryRow) {
   for (const key of ["country", "Country", "requestCountry", "request_country", "key", "name"]) {
     const value = row[key]
-    if (typeof value === "string" && value.trim()) return value.trim().toUpperCase().slice(0, 3)
+    if (typeof value === "string" && /^[A-Za-z]{2}$/.test(value.trim())) return value.trim().toUpperCase()
   }
   return null
 }
@@ -94,6 +94,7 @@ async function readCountries(from: Date, to: Date) {
       Accept: "application/json",
     },
     cache: "no-store",
+    signal: AbortSignal.timeout(10000),
   })
 
   if (!response.ok) {
@@ -134,33 +135,27 @@ export async function GET() {
   const monthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1))
   const yearStart = new Date(Date.UTC(2026, 8, 17))
 
-  const [today, month, year, countries] = await Promise.all([
+  // A failed or timed-out upstream request must not turn this endpoint into
+  // an unhandled 500 or an indefinitely pending visitor panel.
+  const results = await Promise.allSettled([
     readCount(dayStart, now),
     readCount(monthStart, now),
     readCount(yearStart, now),
     readCountries(dayStart, now),
   ])
+  const [today, month, year, countries] = results.map((result) =>
+    result.status === "fulfilled" ? result.value : null,
+  ) as [number | null, number | null, number | null, Array<{ country: string; visitors: number }> | null]
 
-  if (today === null || month === null || year === null) {
+  // Never show contradictory totals as if they measured the same thing.
+  // This is a data-quality failure, not a reason to invent replacement counts.
+  if (today === null || month === null || year === null || today > month || month > year) {
     return NextResponse.json({
       ok: false,
       source: "vercel-web-analytics",
       error: "ANALYTICS_SOURCE_UNAVAILABLE",
-    }, { status: 503 })
+    }, { status: 503, headers: { "Cache-Control": "no-store" } })
   }
-
-  // When the count endpoint reports zero but country aggregation has
-  // visitors for the same interval, use the country breakdown as a
-  // provisional count. A visitor switching countries may be counted twice.
-  const countryTotal = countries?.reduce((sum, row) => sum + row.visitors, 0) ?? 0
-  const todayFromCountries = today === 0 && countryTotal > 0
-  const resolvedToday = todayFromCountries ? countryTotal : today
-  if (todayFromCountries) console.warn("[VIA analytics] Daily count sourced from country aggregate", {
-    intervalStart: dayStart.toISOString(),
-    intervalEnd: now.toISOString(),
-    dailyCount: today,
-    countryVisitors: countryTotal,
-  })
 
   return NextResponse.json({
     ok: true,
@@ -168,11 +163,11 @@ export async function GET() {
     privacy: "aggregated",
     measuredAt: now.toISOString(),
     visitors: {
-      today: resolvedToday,
+      today,
       month,
       year,
     },
-    todayCountSource: todayFromCountries ? "country-aggregate-provisional" : "visits-count",
-    countries: countries ?? [],
+    todayCountSource: "visits-count",
+    countries: countries ?? null,
   }, { headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=300" } })
 }
