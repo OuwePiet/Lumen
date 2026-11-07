@@ -39,7 +39,7 @@ function fixture({ active = A, legacy = OLD, users = { [A]: user(A), [B]: user(B
   vm.runInNewContext(compile('deso-identity-session.ts'), context)
   vm.runInNewContext(compile('deso-session-recovery.ts'), { ...context, exports: recoveryExports, require: () => sessionExports })
   vm.runInNewContext(compile('deso-identity-return.ts'), { ...context, exports: returnExports })
-  vm.runInNewContext(compile('deso-identity-modern.ts'), { ...context, exports: modernExports, require(name) { if (name === 'deso-protocol') return { identity: sdk }; if (name === './deso-identity-session') return sessionExports; if (name === './deso-session-recovery') return recoveryExports; if (name === './deso-identity-return') return returnExports; throw new Error('Unexpected legacy import: '+name) } })
+  vm.runInNewContext(compile('deso-identity-modern.ts'), { ...context, exports: modernExports, require(name) { if (name === './deso-login-destination') return {armPostOfficeAfterLogin(){},continueToPostOffice(){},markLoginReturn(){}};  if (name === 'deso-protocol') return { identity: sdk }; if (name === './deso-identity-session') return sessionExports; if (name === './deso-session-recovery') return recoveryExports; if (name === './deso-identity-return') return returnExports; throw new Error('Unexpected legacy import: '+name) } })
   return { storage, localStorage, window, calls, sdk, session: sessionExports, identity: modernExports.viaModernIdentity,
     resolveLogin() { loginResolve({ publicKeyBase58Check: A }) }, rejectLogin() { loginReject(new Error('cancelled')) },
     emitSDK() { subscribers.forEach(fn => fn({})) },

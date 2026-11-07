@@ -2,6 +2,7 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "git": {
     "deploymentEnabled": {
+      "fix/via-login-postoffice-diamonds-20261018": false,
       "codex/via-platform-login-20261016": false,
       "fix/via-identity-return-production-20261017": false,
       "fix/via-platform-preserved-release-20261017": false

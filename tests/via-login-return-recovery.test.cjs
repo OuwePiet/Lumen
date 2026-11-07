@@ -104,7 +104,7 @@ test('real SDK redirect callback uses VIA configuration before its first authori
     const browser={location:{search:'?'+query,pathname:'/',hostname:'via.example',origin:'https://via.example'},history:{replaceState(){}}}
     const sdk=new Identity(browser,{get(){throw new Error('Unexpected read')},post(url){requests.push(url);return Promise.reject(new Error('TEST_STOP_BEFORE_SIGNING'))}})
     const exports={}
-    vm.runInNewContext(compile('deso-identity-modern.ts'),{exports,window:browser,localStorage:f.localStorage,require(name){
+    vm.runInNewContext(compile('deso-identity-modern.ts'),{exports,window:browser,localStorage:f.localStorage,require(name){ if (name === './deso-login-destination') return {armPostOfficeAfterLogin(){},continueToPostOffice(){},markLoginReturn(){}};
       if(name==='deso-protocol')return {identity:sdk}
       if(name==='./deso-session-recovery')return f.api
       if(name==='./deso-identity-return')return {resumeIdentityReturn(){return false}}
