@@ -1,6 +1,8 @@
 export type ViaClaimRequirement =
   | { kind: "free" }
   | { kind: "diamond"; minimumLevel: 1 | 2 | 3 | 4 }
+  | { kind: "like"; postHash: string }
+  | { kind: "follow"; creatorPublicKey: string }
   | { kind: "via-key"; keyId: string }
   | { kind: "via-points"; points: number }
   | { kind: "paid"; currency: "DESO" | "fiat" | "external-wallet"; amount: number }
