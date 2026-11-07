@@ -185,9 +185,6 @@ export default function ViaRightPanels() {
   return (
     <aside className="space-y-3" aria-label="VIA live and activity panels">
       <Panel title={copy.live}>
-        <PendingMetric label={copy.activeNow} note={copy.sourcePending} />
-        <PendingMetric label={copy.desoAccounts} note={copy.sourcePending} />
-        <PendingMetric label={copy.guests} note={copy.sourcePending} />
         {visitorCountries.length ? (
           <div className="rounded-xl border border-zinc-800 bg-black/25">
             <button type="button" aria-expanded={countriesExpanded} aria-controls="via-countries-list"
@@ -222,13 +219,9 @@ export default function ViaRightPanels() {
       <Panel title={copy.activity}>
         <Metric label={copy.posts} value={activityPosts} note={copy.sourcePending} />
         <Metric label={copy.creators} value={activityCreators} note={copy.sourcePending} />
-        <PendingMetric label={copy.trends} note={copy.sourcePending} />
         <Metric label={copy.nftActivity} value={activityNfts} note={copy.sourcePending} />
       </Panel>
 
-      <Panel title={copy.community}>
-        <PendingMetric label={copy.welcome} note={copy.sourcePending} />
-      </Panel>
     </aside>
   )
 }
