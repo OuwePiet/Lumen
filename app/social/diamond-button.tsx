@@ -83,7 +83,7 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
         GlobalDESOLimit: currentGlobalDESOLimit + diamondSpendLimit,
         TransactionCountLimitMap: { BASIC_TRANSFER: 1 },
       }
-      if (!viaModernIdentity.hasPermissions(requiredPermissions)) {
+      if (!(await viaModernIdentity.hasPermissions(requiredPermissions))) {
         setStatus("approval"); setMessage("Confirm this Diamond spending permission with DeSo Identity…")
         await viaModernIdentity.requestPermissions(requiredPermissions)
       }
