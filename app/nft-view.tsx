@@ -28,6 +28,8 @@ type DeSoPost = {
   ImageURLs?: string[]
   VideoURLs?: string[]
   NumNFTCopies?: number
+  NFTRoyaltyToCreatorBasisPoints?: number
+  NFTRoyaltyToCoinBasisPoints?: number
   HasUnlockable?: boolean
   PosterPublicKeyBase58Check?: string
   TimestampNanos?: number
@@ -495,7 +497,7 @@ export default async function NFTView({
         Boolean(post.PosterPublicKeyBase58Check),
     }
     const utility = readUtilityMetadata(postExtraData)
-    const royalties = readRoyaltyMetadata(postExtraData)
+    const royalties = readRoyaltyMetadata(post)
     const royaltyLabel =
       royalties.source === "unavailable"
         ? "Not available"
