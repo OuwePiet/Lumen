@@ -1,5 +1,7 @@
 # VIA Authentication Audit
 
+> **VIA PRODUCTBESLUIT — 9 oktober 2026 (OuwePiet).** Voor alle bestaande en toekomstige VIA-pagina's en alle beelddragers geldt de officiële actuele DeSo Identity SDK als enige autoriteit voor DeSo-accountselectie, login, permissies en transacties. Eén homepage-login moet app-breed werken. Accountwissel volgt de officiële DeSo-flow. Google of andere inlogmethoden *binnen* DeSo Identity zijn geldig zodra DeSo een geautoriseerde public key en de benodigde rechten levert; losse externe OAuth geeft geen DeSo-transactierechten. NFT's vereisen hun afzonderlijke officiële transactierechten/procedure. Oude VIA Identity-, sessie- en signingroutes mogen niet als definitieve oplossing worden hergebruikt zonder uitdrukkelijke toestemming van OuwePiet. Historische passkey/social-login/Phase 3-ideeën hieronder zijn **niet goedgekeurd voor implementatie** en mogen dit productbesluit niet overrulen. Elke wijziging eerst toetsen aan officiële DeSo-documentatie/SDK en daarna pas coderen.
+
 viadeso.online remains the active VIA baseline. Historical login proposals are treated as idea stock, not as production-ready authentication code.
 
 ## Retain
