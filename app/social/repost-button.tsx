@@ -158,7 +158,9 @@ export default function RepostButton({ postHash, initialCount, variant = "defaul
       if (!response.ok || !data.ok || !data.transactionHex) throw new Error(data.error || "PREPARE_FAILED")
 
       setMessage(asQuote ? "Signing your Quote Repost with your DeSo Identity session…" : "Signing your repost with your DeSo Identity session…")
+      if ((await viaModernIdentity.currentUser())?.publicKey !== session.publicKey) throw new Error("DESO_ACCOUNT_CHANGED")
       const signedTransactionHex = await viaModernIdentity.signTx(data.transactionHex)
+      if ((await viaModernIdentity.currentUser())?.publicKey !== session.publicKey) throw new Error("DESO_ACCOUNT_CHANGED")
       const submitResponse = await fetch("/api/via/social/repost", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
