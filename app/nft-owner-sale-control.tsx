@@ -1,7 +1,8 @@
 "use client"
 
-import { useEffect, useMemo, useRef, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { viaModernIdentity, type ViaModernIdentityUser } from "./deso-identity-modern"
+import { useNFTAction } from "./use-nft-action"
 
 type OwnerEdition = {
   serialNumber: number
@@ -17,13 +18,6 @@ type Props = {
   postHash: string
   editions: OwnerEdition[]
   hasUnlockable: boolean
-}
-
-type PrepareResponse = {
-  ok?: boolean
-  transactionHex?: string
-  feeNanos?: number | null
-  error?: string
 }
 
 function desoToSafeNanos(input: string) {
@@ -47,17 +41,19 @@ export default function NFTOwnerSaleControl({ postHash, editions, hasUnlockable 
   const [minBid, setMinBid] = useState("0")
   const [buyNowEnabled, setBuyNowEnabled] = useState(false)
   const [buyNowPrice, setBuyNowPrice] = useState("0")
-  const [confirmed, setConfirmed] = useState(false)
+  const [confirmedValue, setConfirmedValue] = useState(false)
+  const [confirmationAccount, setConfirmationAccount] = useState<string | null>(null)
+  const confirmed = confirmedValue && confirmationAccount === session?.publicKey
+  function setConfirmed(value: boolean) { setConfirmedValue(value); setConfirmationAccount(value ? session?.publicKey ?? null : null) }
   const [receiverPublicKey, setReceiverPublicKey] = useState("")
   const [status, setStatus] = useState<"idle"|"preparing"|"approval"|"submitting"|"done"|"error">("idle")
   const [message, setMessage] = useState("")
-  const [feeNanos, setFeeNanos] = useState<number | null>(null)
-  const pendingMode = useRef<"list"|"update"|"remove"|"transfer"|"burn"|null>(null)
+  const actionRunner = useNFTAction()
+  const [burnConfirmation, setBurnConfirmation] = useState("")
 
   const selected = owned.find((item) => item.serialNumber === serialNumber) ?? owned[0]
 
   useEffect(() => {
-    void viaModernIdentity.currentUser().then(setSession)
     return viaModernIdentity.subscribe(setSession)
   }, [])
 
@@ -68,166 +64,34 @@ export default function NFTOwnerSaleControl({ postHash, editions, hasUnlockable 
     setBuyNowEnabled(Boolean(selected.isBuyNow && !hasUnlockable))
     setBuyNowPrice(formatDeso(selected.buyNowPriceNanos))
     setConfirmed(false)
-  }, [selected?.serialNumber, selected?.isForSale, selected?.minBidAmountNanos, selected?.isBuyNow, selected?.buyNowPriceNanos, hasUnlockable])
+    setBurnConfirmation("")
+    actionRunner.current?.invalidate()
+  }, [session?.publicKey, selected?.serialNumber, selected?.isForSale, selected?.minBidAmountNanos, selected?.isBuyNow, selected?.buyNowPriceNanos, hasUnlockable])
+
+  async function perform(kind: "update-sale" | "transfer" | "burn", body: Record<string, unknown>) {
+    if (!session || !selected || !confirmed || !actionRunner.current) return
+    const result = await actionRunner.current.run({ kind, publicKey: session.publicKey, postHash, serialNumber: selected.serialNumber, body }, (value, text) => { setStatus(value); setMessage(text) })
+    if (result.outcome !== "stopped") { setConfirmed(false); setBurnConfirmation("") }
+  }
 
   async function prepare(mode: "list" | "update" | "remove") {
-    if (!session || !selected || !confirmed || status === "preparing" || status === "approval" || status === "submitting") return
-
-    const minBidNanos = mode === "remove" ? 0 : desoToSafeNanos(minBid)
-    const buyNowNanos = mode === "remove" || !buyNowEnabled ? 0 : desoToSafeNanos(buyNowPrice)
-
-    if (mode !== "remove" && minBidNanos === null) {
-      setStatus("error")
-      setMessage("Enter a valid minimum bid in DESO.")
-      return
+    if (!session || !selected || selected.isPending || !confirmed) return
+    const min = mode === "remove" ? 0 : desoToSafeNanos(minBid)
+    const price = mode === "remove" || !buyNowEnabled ? 0 : desoToSafeNanos(buyNowPrice)
+    if (min === null || price === null || (buyNowEnabled && mode !== "remove" && price < min)) {
+      setStatus("error"); setMessage("Enter valid prices; Buy Now must be at least the minimum bid."); return
     }
-    if (mode !== "remove" && buyNowEnabled && (buyNowNanos === null || buyNowNanos < (minBidNanos ?? 0))) {
-      setStatus("error")
-      setMessage("Buy Now must be at least the minimum bid.")
-      return
-    }
-
-    setStatus("preparing")
-    setMessage(mode === "remove" ? "Preparing removal from sale…" : mode === "update" ? "Preparing the NFT price update…" : "Preparing the NFT sale listing…")
-    setFeeNanos(null)
-    pendingMode.current = mode
-
-    try {
-      const response = await fetch("/api/via/nft/update-sale", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        cache: "no-store",
-        body: JSON.stringify({
-          action: "prepare",
-          publicKey: session.publicKey,
-          postHash,
-          serialNumber: selected.serialNumber,
-          isForSale: mode !== "remove",
-          minBidAmountNanos: mode === "remove" ? 0 : minBidNanos,
-          isBuyNow: mode !== "remove" && buyNowEnabled,
-          buyNowPriceNanos: mode === "remove" || !buyNowEnabled ? 0 : buyNowNanos,
-        }),
-      })
-      const data = await response.json() as PrepareResponse
-      if (!response.ok || !data.ok || !data.transactionHex) throw new Error(data.error || "PREPARE_FAILED")
-      setFeeNanos(typeof data.feeNanos === "number" ? data.feeNanos : null)
-      const updatePermission = {
-        NFTOperationLimitMap: {
-          [postHash]: {
-            [selected.serialNumber]: {
-              update: 1,
-            },
-          },
-        },
-      }
-      if (!(await viaModernIdentity.hasPermissions(updatePermission))) {
-        setMessage("Requesting permission for this exact DeSo NFT sale change…")
-        await viaModernIdentity.requestPermissions(updatePermission)
-      }
-      setStatus("approval")
-      setMessage("Signing this NFT sale change with DeSo Identity…")
-      const signedTransactionHex = await viaModernIdentity.signTx(data.transactionHex)
-      setStatus("submitting")
-      setMessage("Submitting the approved NFT sale update to DeSo…")
-      const submitResponse = await fetch("/api/via/nft/update-sale", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        cache: "no-store",
-        body: JSON.stringify({ action: "submit", signedTransactionHex }),
-      })
-      const submitData = await submitResponse.json() as { ok?: boolean; error?: string }
-      if (!submitResponse.ok || !submitData.ok) throw new Error(submitData.error || "SUBMIT_FAILED")
-      setStatus("done")
-      setMessage(
-        mode === "remove" ? "NFT removed from sale on DeSo."
-          : mode === "update" ? "NFT sale price updated on DeSo."
-            : "NFT listed for sale on DeSo.",
-      )
-      setConfirmed(false)
-      pendingMode.current = null
-    } catch (error) {
-      pendingMode.current = null
-      setStatus("error")
-      setMessage(error instanceof Error && error.message === "POPUP_BLOCKED"
-        ? "Approval window was blocked. VIA changed nothing."
-        : "The NFT sale change could not be prepared. VIA changed nothing.")
-    }
+    await perform("update-sale", { publicKey: session.publicKey, postHash, serialNumber: selected.serialNumber, isForSale: mode !== "remove", minBidAmountNanos: min, isBuyNow: mode !== "remove" && buyNowEnabled && !hasUnlockable, buyNowPriceNanos: mode === "remove" || !buyNowEnabled || hasUnlockable ? 0 : price })
   }
 
   async function prepareTransfer() {
-    if (!session || !selected || selected.isForSale || hasUnlockable || !confirmed || !receiverPublicKey.trim() || status === "preparing" || status === "approval" || status === "submitting") return
-    setStatus("preparing"); setMessage("Preparing the NFT transfer…"); setFeeNanos(null); pendingMode.current = "transfer"
-    try {
-      const response = await fetch("/api/via/nft/transfer", { method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store", body: JSON.stringify({ action: "prepare", senderPublicKey: session.publicKey, receiverPublicKey: receiverPublicKey.trim(), postHash, serialNumber: selected.serialNumber, hasUnlockable }) })
-      const data = await response.json() as PrepareResponse
-      if (!response.ok || !data.ok || !data.transactionHex) throw new Error(data.error || "PREPARE_FAILED")
-      setFeeNanos(typeof data.feeNanos === "number" ? data.feeNanos : null)
-      const transferPermission = {
-        NFTOperationLimitMap: {
-          [postHash]: {
-            [selected.serialNumber]: {
-              transfer: 1,
-            },
-          },
-        },
-      }
-      if (!(await viaModernIdentity.hasPermissions(transferPermission))) {
-        setMessage("Requesting permission to transfer this exact DeSo NFT edition…")
-        await viaModernIdentity.requestPermissions(transferPermission)
-      }
-      setStatus("approval"); setMessage("Signing the NFT transfer with DeSo Identity…")
-      const signedTransactionHex = await viaModernIdentity.signTx(data.transactionHex)
-      setStatus("submitting"); setMessage("Submitting the approved NFT transfer to DeSo…")
-      const submitResponse = await fetch("/api/via/nft/transfer", { method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store", body: JSON.stringify({ action: "submit", signedTransactionHex }) })
-      const submitData = await submitResponse.json() as { ok?: boolean; error?: string }
-      if (!submitResponse.ok || !submitData.ok) throw new Error(submitData.error || "SUBMIT_FAILED")
-      setStatus("done")
-      setMessage("NFT transfer submitted to DeSo. The receiver must accept the transfer before ownership changes.")
-      setConfirmed(false)
-      pendingMode.current = null
-    } catch (error) {
-      pendingMode.current = null; setStatus("error"); setMessage(error instanceof Error && error.message === "POPUP_BLOCKED" ? "Approval window was blocked. VIA changed nothing." : "The NFT transfer could not be prepared. VIA changed nothing.")
-    }
+    if (!session || !selected || selected.isForSale || selected.isPending || hasUnlockable || !confirmed || !/^[1-9A-HJ-NP-Za-km-z]{40,128}$/.test(receiverPublicKey.trim()) || receiverPublicKey.trim() === session.publicKey) return
+    await perform("transfer", { senderPublicKey: session.publicKey, receiverPublicKey: receiverPublicKey.trim(), postHash, serialNumber: selected.serialNumber, hasUnlockable })
   }
 
   async function prepareBurn() {
-    if (!session || !selected || selected.isForSale || selected.isPending || !confirmed || busy) return
-    setStatus("preparing"); setMessage("Preparing irreversible NFT burn…"); setFeeNanos(null); pendingMode.current = "burn"
-    try {
-      const response = await fetch("/api/via/nft/burn", { method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store", body: JSON.stringify({ action: "prepare", publicKey: session.publicKey, postHash, serialNumber: selected.serialNumber, isForSale: selected.isForSale, isPending: false }) })
-      const data = await response.json() as PrepareResponse
-      if (!response.ok || !data.ok || !data.transactionHex) throw new Error()
-      setFeeNanos(typeof data.feeNanos === "number" ? data.feeNanos : null)
-      const burnPermission = {
-        NFTOperationLimitMap: {
-          [postHash]: {
-            [selected.serialNumber]: {
-              burn: 1,
-            },
-          },
-        },
-      }
-      if (!(await viaModernIdentity.hasPermissions(burnPermission))) {
-        setMessage("Requesting permission to burn this exact DeSo NFT edition…")
-        await viaModernIdentity.requestPermissions(burnPermission)
-      }
-      setStatus("approval")
-      setMessage("Signing the irreversible NFT burn with DeSo Identity…")
-      const signedTransactionHex = await viaModernIdentity.signTx(data.transactionHex)
-      setStatus("submitting")
-      setMessage("Submitting the approved NFT burn to DeSo…")
-      const submitResponse = await fetch("/api/via/nft/burn", { method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store", body: JSON.stringify({ action: "submit", signedTransactionHex }) })
-      const submitData = await submitResponse.json() as { ok?: boolean; error?: string }
-      if (!submitResponse.ok || !submitData.ok) throw new Error(submitData.error || "SUBMIT_FAILED")
-      setStatus("done")
-      setMessage("NFT burn submitted to DeSo.")
-      setConfirmed(false)
-      pendingMode.current = null
-    } catch {
-      pendingMode.current = null
-      setStatus("error")
-      setMessage("NFT burn could not be prepared. VIA changed nothing.")
-    }
+    if (!session || !selected || selected.isForSale || selected.isPending || !confirmed || burnConfirmation !== "BURN") return
+    await perform("burn", { publicKey: session.publicKey, postHash, serialNumber: selected.serialNumber, isForSale: false, isPending: false })
   }
 
   if (!session || owned.length === 0) return null
@@ -235,7 +99,7 @@ export default function NFTOwnerSaleControl({ postHash, editions, hasUnlockable 
   const busy = status === "preparing" || status === "approval" || status === "submitting"
 
   return (
-    <section className="mt-5 rounded-xl border border-zinc-800 bg-black/25 p-4" aria-labelledby="via-nft-owner-sale-heading">
+    <section onChangeCapture={() => actionRunner.current?.invalidate()} className="mt-5 rounded-xl border border-zinc-800 bg-black/25 p-4" aria-labelledby="via-nft-owner-sale-heading">
       <p className="text-xs font-semibold uppercase tracking-[0.16em] text-zinc-500">Owner control</p>
       <h2 id="via-nft-owner-sale-heading" className="mt-2 text-lg font-semibold">Manage sale</h2>
       <p className="mt-2 text-sm leading-6 text-zinc-400">Only editions owned by the active DeSo account appear here. DeSo itself verifies ownership again when constructing and processing the transaction.</p>
@@ -256,7 +120,6 @@ export default function NFTOwnerSaleControl({ postHash, editions, hasUnlockable 
       {selected?.isForSale ? <p className="mt-3 text-sm text-zinc-400">This edition is currently listed. You can update its sale price or remove it from sale. Removing it from sale also clears outstanding bids according to DeSo rules.</p> : null}
 
       <label className="mt-3 flex items-start gap-2 text-xs text-amber-200"><input type="checkbox" checked={confirmed} onChange={(event) => setConfirmed(event.target.checked)} />I understand this is a real on-chain NFT sale-status transaction.</label>
-      {feeNanos !== null ? <p className="mt-2 text-xs text-zinc-500">Prepared network fee: {feeNanos.toLocaleString()} nanos.</p> : null}
       <div className="mt-3 flex flex-wrap gap-2">
         <button type="button" disabled={!confirmed || busy} onClick={() => void prepare(selected?.isForSale ? "update" : "list")} className="rounded-lg border border-[#8fd4a9]/55 px-4 py-2 text-sm font-semibold text-[#9adbb2] disabled:border-zinc-800 disabled:text-zinc-600">
           {status === "preparing" ? "Preparing…" : status === "approval" ? "Review in DeSo…" : status === "submitting" ? "Submitting…" : selected?.isForSale ? "Update price" : "List for sale"}
@@ -268,7 +131,8 @@ export default function NFTOwnerSaleControl({ postHash, editions, hasUnlockable 
       <div className="mt-5 border-t border-red-950/70 pt-4">
         <h3 className="text-sm font-semibold text-red-300">Permanent burn</h3>
         <p className="mt-2 text-xs leading-5 text-zinc-500">Burn permanently destroys this NFT edition. VIA only enables this when the edition is not for sale and not pending transfer. This cannot be undone.</p>
-        <button type="button" disabled={!confirmed || busy || selected?.isForSale || selected?.isPending} onClick={() => void prepareBurn()} className="mt-3 rounded-lg border border-red-900 px-4 py-2 text-sm font-semibold text-red-300 disabled:border-zinc-800 disabled:text-zinc-600">Burn edition #{selected?.serialNumber}</button>
+        <label className="mt-3 block text-xs text-zinc-400">Type BURN to confirm edition #{selected?.serialNumber}<input aria-label="Type BURN to confirm" value={burnConfirmation} onChange={event => setBurnConfirmation(event.target.value)} className="mt-2 block rounded-lg border border-red-950 bg-black p-3" autoComplete="off" /></label>
+        <button type="button" disabled={!confirmed || burnConfirmation !== "BURN" || busy || selected?.isForSale || selected?.isPending} onClick={() => void prepareBurn()} className="mt-3 rounded-lg border border-red-900 px-4 py-2 text-sm font-semibold text-red-300 disabled:border-zinc-800 disabled:text-zinc-600">Burn edition #{selected?.serialNumber}</button>
       </div>
 
       {!selected?.isForSale ? <div className="mt-5 border-t border-zinc-800 pt-4">

@@ -46,6 +46,10 @@ export async function POST(request: Request) {
     const minFeeRate = Number.isFinite(configuredRate) && configuredRate > 0 ? Math.trunc(configuredRate) : DEFAULT_MIN_FEE_RATE_NANOS_PER_KB
 
     try {
+      const sourceResponse = await fetchDeSo("get-single-post", { method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store", body: JSON.stringify({ PostHashHex: mint.nftPostHashHex, ReaderPublicKeyBase58Check: mint.updaterPublicKey, FetchParents: false, CommentLimit: 0 }) })
+      if (!sourceResponse.ok) return json({ ok: false, error: "MINT_SOURCE_UNAVAILABLE" }, 503)
+      const source = await sourceResponse.json() as { PostFound?: { PublicKeyBase58Check?: string; IsNFT?: boolean; IsHidden?: boolean } }
+      if (source.PostFound?.PublicKeyBase58Check !== mint.updaterPublicKey || source.PostFound.IsNFT !== false || source.PostFound.IsHidden !== false) return json({ ok: false, error: "MINT_SOURCE_CHANGED" }, 409)
       const response = await fetchDeSo("create-nft", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

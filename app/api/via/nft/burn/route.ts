@@ -1,3 +1,4 @@
+import { assertNFTActionState } from "../../../../nft-action-preflight"
 import { NextResponse } from "next/server"
 import { fetchDeSo } from "../../../../deso-api"
 export const dynamic="force-dynamic"
@@ -18,7 +19,7 @@ export async function POST(request:Request){
   if(b.isForSale===true)return json({ok:false,error:"NFT_FOR_SALE"},400)
   if(b.isPending===true)return json({ok:false,error:"NFT_PENDING_TRANSFER"},400)
   const configured=Number(process.env.DESO_MIN_FEE_RATE_NANOS_PER_KB);const rate=Number.isFinite(configured)&&configured>0?Math.trunc(configured):DEFAULT_MIN_FEE_RATE_NANOS_PER_KB
-  try{const r=await fetchDeSo("burn-nft",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({UpdaterPublicKeyBase58Check:b.publicKey,NFTPostHashHex:String(b.postHash).toLowerCase(),SerialNumber:b.serialNumber,MinFeeRateNanosPerKB:rate,TransactionFees:[]})});if(!r.ok)return json({ok:false,error:"DESO_BURN_PREPARE_REJECTED"},502);const d=await r.json() as Record<string,unknown>;if(!hex(d.TransactionHex))return json({ok:false,error:"INVALID_PREPARED_TRANSACTION"},502);return json({ok:true,transactionHex:d.TransactionHex,feeNanos:typeof d.FeeNanos==="number"?d.FeeNanos:null})}catch{return json({ok:false,error:"DESO_BURN_PREPARE_UNAVAILABLE"},503)}
+  try{await assertNFTActionState("burn",b);const r=await fetchDeSo("burn-nft",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({UpdaterPublicKeyBase58Check:b.publicKey,NFTPostHashHex:String(b.postHash).toLowerCase(),SerialNumber:b.serialNumber,MinFeeRateNanosPerKB:rate,TransactionFees:[]})});if(!r.ok)return json({ok:false,error:"DESO_BURN_PREPARE_REJECTED"},502);const d=await r.json() as Record<string,unknown>;if(!hex(d.TransactionHex))return json({ok:false,error:"INVALID_PREPARED_TRANSACTION"},502);return json({ok:true,transactionHex:d.TransactionHex,feeNanos:typeof d.FeeNanos==="number"?d.FeeNanos:null})}catch{return json({ok:false,error:"DESO_BURN_PREPARE_UNAVAILABLE"},503)}
  }
  if(b.action==="submit"){
   if(!hex(b.signedTransactionHex))return json({ok:false,error:"INVALID_SIGNED_TRANSACTION"},400)

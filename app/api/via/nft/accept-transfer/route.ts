@@ -1,3 +1,4 @@
+import { assertNFTActionState } from "../../../../nft-action-preflight"
 import { NextResponse } from "next/server"
 import { fetchDeSo } from "../../../../deso-api"
 export const dynamic = "force-dynamic"
@@ -17,6 +18,7 @@ export async function POST(request: Request) {
   if(!validSerial(b.serialNumber)) return json({ok:false,error:"INVALID_SERIAL_NUMBER"},400)
   const configured=Number(process.env.DESO_MIN_FEE_RATE_NANOS_PER_KB); const rate=Number.isFinite(configured)&&configured>0?Math.trunc(configured):DEFAULT_MIN_FEE_RATE_NANOS_PER_KB
   try{
+   await assertNFTActionState("accept-transfer",b)
    const response=await fetchDeSo("accept-nft-transfer",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({UpdaterPublicKeyBase58Check:b.publicKey,NFTPostHashHex:String(b.postHash).toLowerCase(),SerialNumber:b.serialNumber,MinFeeRateNanosPerKB:rate,TransactionFees:[]})})
    if(!response.ok) return json({ok:false,error:"DESO_ACCEPT_TRANSFER_PREPARE_REJECTED"},502)
    const data=await response.json() as Record<string,unknown>; if(!validHex(data.TransactionHex)) return json({ok:false,error:"INVALID_PREPARED_TRANSACTION"},502)

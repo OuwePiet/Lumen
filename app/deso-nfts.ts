@@ -12,6 +12,10 @@ export type DeSoNFTPost = {
 }
 
 export type DeSoNFTEntry = {
+  SerialNumber?: number
+  OwnerPublicKeyBase58Check?: string
+  IsPending?: boolean
+  IsBuyNow?: boolean
   IsForSale?: boolean
   BuyNowPriceNanos?: number
   MinBidAmountNanos?: number
@@ -23,7 +27,7 @@ export type DeSoNFTCollection = {
 }
 
 function isFiniteNonNegativeNumber(value: unknown): value is number {
-  return typeof value === "number" && Number.isFinite(value) && value >= 0
+  return typeof value === "number" && Number.isSafeInteger(value) && value >= 0
 }
 
 function safeUrlArray(value: unknown): string[] | undefined {
@@ -63,6 +67,10 @@ function normalizeCollection(value: unknown): DeSoNFTCollection | null {
     ? raw.NFTEntryResponses
         .filter((entry): entry is DeSoNFTEntry => Boolean(entry && typeof entry === "object"))
         .map((entry) => ({
+          SerialNumber: isFiniteNonNegativeNumber(entry.SerialNumber) && entry.SerialNumber > 0 ? entry.SerialNumber : undefined,
+          OwnerPublicKeyBase58Check: typeof entry.OwnerPublicKeyBase58Check === "string" && /^[1-9A-HJ-NP-Za-km-z]{40,128}$/.test(entry.OwnerPublicKeyBase58Check) ? entry.OwnerPublicKeyBase58Check : undefined,
+          IsPending: typeof entry.IsPending === "boolean" ? entry.IsPending : undefined,
+          IsBuyNow: typeof entry.IsBuyNow === "boolean" ? entry.IsBuyNow : undefined,
           IsForSale: typeof entry.IsForSale === "boolean" ? entry.IsForSale : undefined,
           BuyNowPriceNanos: isFiniteNonNegativeNumber(entry.BuyNowPriceNanos)
             ? entry.BuyNowPriceNanos
