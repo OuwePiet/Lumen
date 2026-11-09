@@ -6,6 +6,8 @@ import { readViaLocalSettings, VIA_SETTINGS_EVENT, type ViaLanguage } from "../v
 
 type Copy = { title: string; intro: string; safety: string }
 
+const destinationStyle = "flex min-h-11 items-center justify-center rounded-lg border border-[#285f40] px-3 py-2 text-center text-sm text-[#9adbb2] hover:border-[#8fd4a9]"
+
 const COPY: Record<ViaLanguage, Copy> = {
   Dutch: {
     title: "VIA Play",
@@ -56,13 +58,21 @@ export default function MusicPage() {
   const copy = COPY[language]
 
   return (
-    <main style={{ minHeight: "100vh", background: "#050807", color: "#e8f1eb", padding: "20px 16px 48px" }}>
-      <section style={{ width: "min(980px,100%)", margin: "0 auto", border: "1px solid rgba(143,212,169,.16)", borderRadius: 24, background: "rgba(7,16,11,.78)", padding: "clamp(16px,3vw,28px)" }}>
-        <p style={{ margin: "0 0 10px", color: "#8fd4a9", fontSize: 12, fontWeight: 800, letterSpacing: ".16em", textTransform: "uppercase" }}>VIA</p>
-        <h1 style={{ margin: 0, fontSize: "clamp(28px,4vw,42px)", lineHeight: 1 }}>{copy.title}</h1>
-        <p style={{ margin: "18px 0 0", maxWidth: 720, color: "#b8c6bd", lineHeight: 1.7 }}>{copy.intro}</p>
-        <nav aria-label="VIA Play destinations" className="mt-4 grid gap-2 sm:grid-cols-3">{[{href:"/radio",name:language === "Dutch" ? "Wereldradio" : "World Radio"},{href:"/discover/voices",name:language === "Dutch" ? "Ontdek creators" : "Discover creators"},{href:"/collection?media=audio",name:language === "Dutch" ? "Muziekcollecties" : "Music collections"}].map(item => <Link key={item.href} href={item.href} className="flex min-h-11 items-center justify-center rounded-xl border border-[#285f40] p-3 text-sm text-[#9adbb2] hover:border-[#8fd4a9]">{item.name}</Link>)}</nav>
-        <p style={{ margin: "14px 0 0", maxWidth: 720, color: "#829087", lineHeight: 1.7, fontSize: 14 }}>{copy.safety}</p>
+    <main className="min-h-screen bg-[#050807] px-3 py-4 text-[#e8f1eb]">
+      <section className="mx-auto max-w-[980px] rounded-2xl border border-[#294231] bg-[#09120d] p-3 sm:p-4">
+        <h1 className="text-2xl font-semibold">{copy.title}</h1>
+        <nav aria-label="VIA Play" className="mt-3 grid gap-2 sm:grid-cols-3">
+          <Link href="/radio" className={destinationStyle}>{language === "Dutch" ? "Wereldradio" : "World Radio"}</Link>
+          <Link href="/discover/voices" className={destinationStyle}>{language === "Dutch" ? "Ontdek creators" : "Discover creators"}</Link>
+          <Link href="/collection?media=audio" className={destinationStyle}>{language === "Dutch" ? "Muziekcollecties" : "Music collections"}</Link>
+        </nav>
+        <details className="mt-2 text-sm text-[#b8c6bd]">
+          <summary className="w-fit cursor-pointer rounded-lg px-2 py-2 text-[#9adbb2]">Info</summary>
+          <div className="max-w-2xl space-y-2 px-2 pb-2 leading-6">
+            <p>{copy.intro}</p>
+            <p>{copy.safety}</p>
+          </div>
+        </details>
       </section>
     </main>
   )
