@@ -306,7 +306,7 @@ export default function ViaSiteHeader() {
 
   if (pathname === "/wereldkalender") {
     const calendarLinks = [
-      [t.home, "/"], ["Handboek VIA", "/help"], ["VIA Muziek", "/music"],
+      [t.home, "/"], ["Handboek VIA", "/help"], ["VIA Play", "/music"],
     ] as const
     return (
       <header className="via-site-header via-calendar-header" style={{ ...styles.header, padding: "7px 10px",background:"linear-gradient(90deg,rgba(8,22,15,.97),rgba(19,42,29,.97) 50%,rgba(31,35,19,.97))",borderBottom:"1px solid rgba(181,157,91,.30)",boxShadow:"0 6px 22px rgba(0,0,0,.22)" }}>

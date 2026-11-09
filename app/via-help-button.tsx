@@ -6,12 +6,12 @@ import { useEffect, useState } from "react"
 import { readViaLocalSettings, VIA_SETTINGS_EVENT, type ViaLanguage } from "./via-local-settings"
 
 const LABELS: Record<ViaLanguage, readonly [string, string, string]> = {
-  Dutch: ["Homepage", "Handboek VIA", "VIA Muziek"],
-  English: ["Homepage", "VIA Handbook", "VIA Music"],
-  French: ["Accueil", "Guide VIA", "Musique VIA"],
-  Spanish: ["Inicio", "Manual VIA", "Música VIA"],
-  Chinese: ["首页", "VIA 手册", "VIA 音乐"],
-  Hindi: ["होमपेज", "VIA मार्गदर्शिका", "VIA संगीत"],
+  Dutch: ["Homepage", "Handboek VIA", "VIA Play"],
+  English: ["Homepage", "VIA Handbook", "VIA Play"],
+  French: ["Accueil", "Guide VIA", "VIA Play"],
+  Spanish: ["Inicio", "Manual VIA", "VIA Play"],
+  Chinese: ["首页", "VIA 手册", "VIA Play"],
+  Hindi: ["होमपेज", "VIA मार्गदर्शिका", "VIA Play"],
 }
 
 /** Central header links, never fixed over page content. */

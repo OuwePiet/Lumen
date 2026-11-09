@@ -118,7 +118,7 @@ const copy: Record<ViaLanguage | "Hindi", HomeText> = {
     bookmarks: "Bookmarks", messages: "Berichten", more: "Meer",
     search: "Zoek leden", publicEntrance: "Publieke ingang", wallet: "Mijn Wallet", notifications: "Meldingen",
     login: "DeSo Login", connecting: "Verbinden…", logout: "Uitloggen", blocked: "DeSo Identity kon niet worden geopend. Probeer opnieuw.",
-    connected: "Verbonden", switchAccount: "Wissel account", addAccount: "DeSo-account toevoegen", inactive90: "90+ dagen inactief", advertising: "Reclame", ideas: "Ideeënbus", storage: "Externe opslag", music: "VIA Muziek",
+    connected: "Verbonden", switchAccount: "Wissel account", addAccount: "DeSo-account toevoegen", inactive90: "90+ dagen inactief", advertising: "Reclame", ideas: "Ideeënbus", storage: "Externe opslag", music: "VIA Play",
   },
   English: {
     standard: "", viaExtra: "", account: "Language", home: "Home",
@@ -127,7 +127,7 @@ const copy: Record<ViaLanguage | "Hindi", HomeText> = {
     bookmarks: "Bookmarks", messages: "Messages", more: "More",
     search: "Search members", publicEntrance: "Public Entrance", wallet: "My Wallet", notifications: "Notifications",
     login: "DeSo Login", connecting: "Connecting…", logout: "Logout", blocked: "DeSo Identity could not open. Please try again.",
-    connected: "Connected", switchAccount: "Switch account", addAccount: "Add DeSo account", inactive90: "Inactive 90+ days", advertising: "Advertising", ideas: "Ideas Box", storage: "External storage", music: "VIA Music",
+    connected: "Connected", switchAccount: "Switch account", addAccount: "Add DeSo account", inactive90: "Inactive 90+ days", advertising: "Advertising", ideas: "Ideas Box", storage: "External storage", music: "VIA Play",
   },
   French: {
     standard: "", viaExtra: "", account: "Langue", home: "Accueil",
@@ -136,7 +136,7 @@ const copy: Record<ViaLanguage | "Hindi", HomeText> = {
     bookmarks: "Favoris", messages: "Messages", more: "Plus",
     search: "Rechercher des membres", publicEntrance: "Entrée publique", wallet: "Mon Wallet", notifications: "Notifications",
     login: "Connexion DeSo", connecting: "Connexion…", logout: "Déconnexion", blocked: "Safari a bloqué la fenêtre DeSo Identity.",
-    connected: "Connecté", switchAccount: "Changer de compte", addAccount: "Ajouter un compte DeSo", inactive90: "Inactif depuis 90+ jours", advertising: "Publicité", ideas: "Boîte à idées", storage: "Stockage externe", music: "VIA Musique",
+    connected: "Connecté", switchAccount: "Changer de compte", addAccount: "Ajouter un compte DeSo", inactive90: "Inactif depuis 90+ jours", advertising: "Publicité", ideas: "Boîte à idées", storage: "Stockage externe", music: "VIA Play",
   },
   Spanish: {
     standard: "", viaExtra: "", account: "Idioma", home: "Inicio",
@@ -145,7 +145,7 @@ const copy: Record<ViaLanguage | "Hindi", HomeText> = {
     bookmarks: "Guardados", messages: "Mensajes", more: "Más",
     search: "Buscar miembros", publicEntrance: "Entrada pública", wallet: "Mi Wallet", notifications: "Notificaciones",
     login: "Acceso DeSo", connecting: "Conectando…", logout: "Cerrar sesión", blocked: "Safari bloqueó la ventana de DeSo Identity.",
-    connected: "Conectado", switchAccount: "Cambiar cuenta", addAccount: "Añadir cuenta DeSo", inactive90: "Inactivo 90+ días", advertising: "Publicidad", ideas: "Buzón de ideas", storage: "Almacenamiento externo", music: "VIA Música",
+    connected: "Conectado", switchAccount: "Cambiar cuenta", addAccount: "Añadir cuenta DeSo", inactive90: "Inactivo 90+ días", advertising: "Publicidad", ideas: "Buzón de ideas", storage: "Almacenamiento externo", music: "VIA Play",
   },
   Chinese: {
     standard: "", viaExtra: "", account: "语言", home: "首页",
@@ -154,7 +154,7 @@ const copy: Record<ViaLanguage | "Hindi", HomeText> = {
     bookmarks: "书签", messages: "消息", more: "更多",
     search: "搜索成员", publicEntrance: "公开入口", wallet: "我的钱包", notifications: "通知",
     login: "DeSo 登录", connecting: "连接中…", logout: "退出", blocked: "Safari 阻止了 DeSo Identity 窗口。",
-    connected: "已连接", switchAccount: "切换账户", addAccount: "添加 DeSo 账户", inactive90: "90+ 天未活跃", advertising: "广告", ideas: "意见箱", storage: "外部存储", music: "VIA 音乐",
+    connected: "已连接", switchAccount: "切换账户", addAccount: "添加 DeSo 账户", inactive90: "90+ 天未活跃", advertising: "广告", ideas: "意见箱", storage: "外部存储", music: "VIA Play",
   },
   Hindi: {
     standard: "", viaExtra: "", account: "भाषा", home: "होम",
@@ -162,7 +162,7 @@ const copy: Record<ViaLanguage | "Hindi", HomeText> = {
     profile: "मेरी प्रोफ़ाइल", myVia: "मेरा VIA", bookmarks: "बुकमार्क", messages: "संदेश", more: "और",
     search: "सदस्य खोजें", publicEntrance: "सार्वजनिक प्रवेश", wallet: "मेरा वॉलेट", notifications: "सूचनाएँ",
     login: "DeSo लॉगिन", connecting: "कनेक्ट हो रहा है…", logout: "लॉग आउट", blocked: "Safari ने DeSo Identity विंडो को ब्लॉक कर दिया।",
-    connected: "कनेक्टेड", switchAccount: "खाता बदलें", addAccount: "DeSo खाता जोड़ें", inactive90: "90+ दिनों से निष्क्रिय", advertising: "विज्ञापन", ideas: "विचार बॉक्स", storage: "बाहरी स्टोरेज", music: "VIA संगीत",
+    connected: "कनेक्टेड", switchAccount: "खाता बदलें", addAccount: "DeSo खाता जोड़ें", inactive90: "90+ दिनों से निष्क्रिय", advertising: "विज्ञापन", ideas: "विचार बॉक्स", storage: "बाहरी स्टोरेज", music: "VIA Play",
   },
 }
 
@@ -519,7 +519,7 @@ export default function ViaHomeControls() {
 
       <nav className="via-home-iphone-utility-row" aria-label="VIA iPhone quick controls">
         <Link prefetch={false} href="/help" aria-label="Handboek VIA" title="Handboek VIA"><CircleHelp aria-hidden="true" /></Link>
-        <Link prefetch={false} href="/music" aria-label="VIA Muziek" title="VIA Muziek"><Music2 aria-hidden="true" /></Link>
+        <Link prefetch={false} href="/music" aria-label="VIA Play" title="VIA Play"><Music2 aria-hidden="true" /></Link>
         <Link prefetch={false} href="/radio" aria-label="World Radio" title="World Radio"><RadioTower aria-hidden="true" /></Link>
         <div className="via-home-iphone-account-wrap">
           <span className="via-home-iphone-utility-account" aria-label={session ? accountName : t.login}>
@@ -602,7 +602,6 @@ export default function ViaHomeControls() {
         <nav aria-label="VIA toekomstige pagina's" style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "7px" }}>
           {[
             ["Wereldkrant", "World Newspaper", "Journal mondial", "Periódico mundial", "世界报纸"],
-            ["LuisterHoek", "Listening Corner", "Coin écoute", "Rincón de escucha", "聆听角"],
             ["VIA Auto", "VIA Auto", "VIA Auto", "VIA Auto", "VIA 汽车"],
             ["VIA Archief", "VIA Archive", "Archives VIA", "Archivo VIA", "VIA 档案"],
           ].map((labels, index) => {
