@@ -2,6 +2,10 @@ export function postVideoEmbed(value: string): string | null {
   try {
     const url = new URL(value)
     if (url.protocol !== "https:" || url.username || url.password) return null
+    if (url.origin === "https://lvpr.tv" && url.pathname === "/") {
+      const playbackId = url.searchParams.get("v") ?? ""
+      return /^[A-Za-z0-9_-]{6,128}$/.test(playbackId) ? "https://lvpr.tv/?v=" + playbackId : null
+    }
     const host = url.hostname.toLowerCase().replace(/^www\./, "")
     const parts = url.pathname.split("/").filter(Boolean)
     let id = ""

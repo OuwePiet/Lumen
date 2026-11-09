@@ -1,5 +1,12 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),path=require('node:path'),ts=require('typescript');
 const root=path.join(__dirname,'..');
+test('Post Office uses the Livepeer player for a valid playback ID', () => {
+  const { postVideoEmbed } = load('app/social/video-source.ts')
+  const player = 'https://lvpr.tv/?v=108cw0ltd9mwzrcu'
+  assert.equal(postVideoEmbed(player + '&autoplay=true'), player)
+  assert.equal(postVideoEmbed('https://lvpr.tv.evil.test/?v=108cw0ltd9mwzrcu'), null)
+  assert.equal(postVideoEmbed('https://lvpr.tv/?v=%2Fbad'), null)
+})
 function load(file,requireMock=()=>({})){const exports={};vm.runInNewContext(ts.transpileModule(fs.readFileSync(path.join(root,file),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2020}}).outputText,{exports,require:requireMock,URL,Number,Response});return exports}
 test('post video embeds support exact YouTube and native DeSo Stream hosts',()=>{const {postVideoEmbed:f}=load('app/social/video-source.ts');assert.equal(f('https://youtu.be/abcdef12345'),'https://www.youtube-nocookie.com/embed/abcdef12345');assert.equal(f('https://www.youtube.com/shorts/abcdef12345'),'https://www.youtube-nocookie.com/embed/abcdef12345');const id='a'.repeat(32);assert.equal(f('https://videodelivery.net/'+id+'/manifest/video.m3u8'),'https://iframe.videodelivery.net/'+id);assert.equal(f('https://iframe.videodelivery.net/'+id),'https://iframe.videodelivery.net/'+id)});
 test('untrusted hosts, credentials and direct media never become video iframe targets',()=>{const {postVideoEmbed:f}=load('app/social/video-source.ts');for(const url of ['http://youtube.com/watch?v=abcdef12345','https://youtube.com.evil.test/watch?v=abcdef12345','https://user:pass@youtube.com/watch?v=abcdef12345','https://example.test/video.mp4'])assert.equal(f(url),null)});
