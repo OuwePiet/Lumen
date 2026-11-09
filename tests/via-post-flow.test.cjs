@@ -7,12 +7,13 @@ const ts = require('typescript')
 
 // Exercise the real PostComposer handlers with mocked React, Identity and HTTP
 // boundaries. No DeSo login, signing or broadcast leaves this process.
-function fixture({ parent = '', switchAt, submitTimeout = false, guest = false } = {}) {
+function fixture({ parent = '', switchAt, submitTimeout = false, guest = false, failUpload = false } = {}) {
   let activeKey = 'account-A'
   let index = 0
   const states = []
   const requests = []
   const signed = []
+  const revoked = []
   const react = {
     useState(initial) {
       const slot = index++
@@ -26,6 +27,7 @@ function fixture({ parent = '', switchAt, submitTimeout = false, guest = false }
   }
   const identity = {
     currentUser: async () => ({ publicKey: activeKey }),
+    jwt: async () => 'test-jwt',
     signTx: async (hex) => {
       signed.push(hex)
       if (switchAt === 'sign') activeKey = 'account-B'
@@ -42,8 +44,17 @@ function fixture({ parent = '', switchAt, submitTimeout = false, guest = false }
       throw new Error(`Unexpected import: ${name}`)
     },
     window: { setTimeout, clearTimeout, localStorage: { removeItem() {} }, dispatchEvent() {} },
-    AbortController, DOMException, Event, URL,
+    AbortController, DOMException, Event, FormData,
+    URL: class extends URL {
+      static createObjectURL() { return 'blob:test-photo' }
+      static revokeObjectURL(url) { revoked.push(url) }
+    },
     fetch: async (url, options) => {
+      if (url === '/api/via/social/image-upload') {
+        requests.push({ url, body: options.body })
+        if (switchAt === 'upload') activeKey = 'account-B'
+        return { ok: !failUpload, json: async () => ({ ok: !failUpload, imageUrl: 'https://images.deso.org/new.webp' }) }
+      }
       const body = JSON.parse(options.body)
       requests.push({ url, body })
       if (body.action === 'prepare') {
@@ -71,8 +82,42 @@ function fixture({ parent = '', switchAt, submitTimeout = false, guest = false }
   const send = nodes.find((node) => node.type === 'button' && node.props.children === (parent ? 'Reply' : 'Send'))
   assert.ok(send)
   if (switchAt === 'before') activeKey = 'account-B'
-  return { send: () => send.props.onClick(), disabled: send.props.disabled, requests, signed, states }
+  const photo = nodes.find((node) => node.type === 'input' && node.props.type === 'file')
+  function selectPhoto(type = 'image/png') {
+    const input = { files: [new File(['fixture'], 'photo.png', { type })], value: 'photo.png' }
+    photo.props.onChange({ target: input, currentTarget: input })
+    return new Promise((resolve) => setImmediate(resolve))
+  }
+  return { send: () => send.props.onClick(), selectPhoto, disabled: send.props.disabled, requests, signed, states, revoked }
 }
+
+test('rapid photo selections send a single upload and leave one confirmed attachment', async () => {
+  const flow = fixture()
+  await Promise.all([flow.selectPhoto(), flow.selectPhoto(), flow.send()])
+  assert.equal(flow.requests.length, 1)
+  assert.equal(flow.requests[0].body.get('publicKey'), 'account-A')
+  assert.deepEqual(Array.from(flow.states[2]), ['https://images.deso.org/example.webp', 'https://images.deso.org/new.webp'])
+  assert.equal(flow.states[3].length, 0)
+  assert.deepEqual(flow.revoked, ['blob:test-photo'])
+})
+
+test('failed or cross-account photo uploads clear the preview without adding an attachment', async () => {
+  for (const options of [{ failUpload: true }, { switchAt: 'upload' }]) {
+    const flow = fixture(options)
+    await flow.selectPhoto()
+    assert.equal(flow.requests.length, 1)
+    assert.deepEqual(flow.states[2], ['https://images.deso.org/example.webp'])
+    assert.equal(flow.states[3].length, 0)
+    assert.deepEqual(flow.revoked, ['blob:test-photo'])
+  }
+})
+
+test('unsupported image types are rejected before the upload request', async () => {
+  const flow = fixture()
+  await flow.selectPhoto('image/heic')
+  assert.equal(flow.requests.length, 0)
+  assert.equal(flow.revoked.length, 0)
+})
 
 test('text and attached photo use the existing prepare/sign/submit route', async () => {
   const flow = fixture()

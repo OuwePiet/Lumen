@@ -72,6 +72,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
   const [draftMessage, setDraftMessage] = useState("")
   const textareaRef = useRef<HTMLTextAreaElement | null>(null)
   const publishingRef = useRef(false)
+  const uploadingImageRef = useRef(false)
   const isReply = Boolean(parentStakeID)
 
   useEffect(() => {
@@ -179,16 +180,12 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
     setImageUploadMessage("")
   }
 
-  function clearImagePreviews() {
-    setImagePreviews((current) => { current.forEach((url) => URL.revokeObjectURL(url)); return [] })
-  }
-
   async function uploadImage(file: File | null) {
-    if (!session || !file || imageUrls.length >= MAX_IMAGES || imageUploading) return
+    if (!session || !file || imageUrls.length >= MAX_IMAGES || uploadingImageRef.current || publishingRef.current) return
 
-    if (!file.type.startsWith("image/")) {
+    if (!ALLOWED_IMAGE_TYPES.has(file.type)) {
       setImageUploadStatus("error")
-      setImageUploadMessage("Choose an image from your photo library.")
+      setImageUploadMessage("Choose a GIF, JPEG, PNG or WebP image.")
       return
     }
     if (file.size <= 0 || file.size >= MAX_IMAGE_BYTES) {
@@ -198,7 +195,8 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
     }
 
     const previewUrl = URL.createObjectURL(file)
-    setImagePreviews((current) => [...current, previewUrl].slice(-MAX_IMAGES))
+    uploadingImageRef.current = true
+    setImagePreviews([previewUrl])
 
     try {
       setImageUploadStatus("jwt")
@@ -226,7 +224,6 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
       setMediaOpen(false)
       setImageUploadStatus("idle")
       setImageUploadMessage("Image attached. Your post has not been published yet.")
-      setImagePreviews((current) => { current.forEach((url) => URL.revokeObjectURL(url)); return [] })
     } catch (error) {
       setImageUploadStatus("error")
       const code = error instanceof Error ? error.message : "IMAGE_UPLOAD_FAILED"
@@ -235,11 +232,15 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
         : code === "DESO_ACCOUNT_CHANGED_RECONNECT"
         ? "DeSo account changed. Select your account and attach the photo again."
         : "The image was not attached. No post was published.")
+    } finally {
+      URL.revokeObjectURL(previewUrl)
+      setImagePreviews([])
+      uploadingImageRef.current = false
     }
   }
 
   async function preparePost() {
-    if (!session || !canPrepare || publishingRef.current) return
+    if (!session || !canPrepare || publishingRef.current || uploadingImageRef.current) return
     publishingRef.current = true
     setStatus("preparing")
     setMessage(isReply ? "Preparing your reply…" : "Preparing your post…")
@@ -369,6 +370,8 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
         <button type="button" onClick={() => { setMediaChoice("video"); setMediaOpen(true) }} disabled={busy} className="min-h-10 rounded-lg border border-zinc-800 px-3 py-1.5 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2] disabled:opacity-50">Video</button>
       </div> : null}
 
+      {imageUploadMessage ? <p role="status" className={`mt-2 text-xs ${imageUploadStatus === "error" ? "text-amber-300" : "text-zinc-400"}`}>{imageUploadMessage}</p> : null}
+
       {mediaOpen && (isReply || mediaChoice === "video") ? <div className="mt-4 rounded-xl border border-zinc-800 bg-zinc-950/70 p-3"><div className="flex justify-end"><button type="button" onClick={() => setMediaOpen(false)} className="text-xs text-zinc-500 hover:text-zinc-300">Sluiten</button></div>
         {mediaChoice === "photo" ? <>
         <p className="text-sm font-medium text-zinc-200">Images</p>
@@ -379,8 +382,6 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
           <input type="file" accept="image/*" className="sr-only" disabled={imageUploading} onChange={(event) => { const file = event.target.files?.[0] ?? null; event.currentTarget.value = ""; void uploadImage(file) }} />
         </label> : null}
         <p className="mt-2 text-xs text-zinc-600">Up to {MAX_IMAGES} images · maximum 10 MB each.</p>
-        {imagePreviews.length ? <button type="button" onClick={clearImagePreviews} className="mt-2 text-xs text-zinc-500 hover:text-zinc-300">Sluiten</button> : null}
-        {imageUploadMessage ? <p className={`mt-2 text-xs ${imageUploadStatus === "error" ? "text-amber-300" : "text-zinc-400"}`}>{imageUploadMessage}</p> : null}
 
         </>
         : <div>
