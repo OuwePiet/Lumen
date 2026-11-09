@@ -1,6 +1,8 @@
 "use client"
 
 import { useEffect, useMemo, useState } from "react"
+import { parseApprovedCalendarEvents } from "./approved-events"
+import approvedEventsData from "./calendar-approved.json"
 import { VIA_INTERNATIONAL_DAYS } from "../via-international-calendar"
 import { PAPAL_JOURNEY_2026, PAPAL_ITINERARY_SOURCE } from "../via-papal-calendar"
 import { viaOfflineLunarDates } from "../via-calendar-offline-dates"
@@ -210,7 +212,23 @@ export default function WereldkalenderPage() {
   }))
   const papalJourney = year===2026 && month===10 ? PAPAL_JOURNEY_2026.filter(d=>selectedRegion==="world" || selectedRegion===d.country).map(d=>({id:`pope-leo-2026-${d.day}-${d.country}`,nameNl:`Paus Leo XIV · ${d.place}`,month:11,day:d.day,country:d.country,scope:"cultural" as const,status:"scheduled" as const,papalDetail:d.detail,papalSource:PAPAL_ITINERARY_SOURCE})) : []
   const urbiEtOrbi = (month===11 ? [{id:"urbi-et-orbi-christmas",nameNl:"Urbi et Orbi · Kerstmis · Vaticaanstad",month:12,day:25,scope:"cultural" as const,status:"scheduled" as const,papalSource:"https://www.vatican.va/content/vatican/en.html"}] : easter.month===month+1 ? [{id:"urbi-et-orbi-easter",nameNl:"Urbi et Orbi · Pasen · Vaticaanstad",month:easter.month,day:easter.day,scope:"cultural" as const,status:"scheduled" as const,papalSource:"https://www.vatican.va/content/vatican/en.html"}] : [])
-  const monthEventsRaw=[...papalJourney,...urbiEtOrbi,...days,...offlineLunar.filter(d=>d.month===month+1),...calculatedHolidays.map(d=>({...d,scope:"cultural" as const,status:"scheduled" as const})),...countryDays.filter(d=>holidayDataAvailable!==true || holidayCoverage?.unavailableCountries.includes(d.country)).map(d=>({...d,scope:"regional" as const,status:"scheduled" as const})),...sourceHolidays]
+  // Only repository-reviewed, explicitly approved data; never display unmoderated submissions.
+  const approvedEvents = parseApprovedCalendarEvents(approvedEventsData).filter(e =>
+    e.startDate.slice(0, 7) <= `${year}-${String(month+1).padStart(2,"0")}` &&
+    e.endDate.slice(0, 7) >= `${year}-${String(month+1).padStart(2,"0")}` &&
+    (selectedRegion==="world" || selectedRegion===e.country)
+  ).flatMap(e => {
+    const start = new Date(e.startDate + "T00:00:00Z")
+    const end = new Date(e.endDate + "T00:00:00Z")
+    const output = []
+    for (let t = start.getTime(), n=0; t <= end.getTime() && n<32; t+=86400000,n++) {
+      const d = new Date(t)
+      if (d.getUTCFullYear()===year && d.getUTCMonth()===month)
+        output.push({id:`approved-${e.id}-${d.getUTCDate()}`,nameNl:e.title,month:month+1,day:d.getUTCDate(),country:e.country,scope:"cultural" as const,status:"scheduled" as const})
+    }
+    return output
+  })
+  const monthEventsRaw=[...approvedEvents,...papalJourney,...urbiEtOrbi,...days,...offlineLunar.filter(d=>d.month===month+1),...calculatedHolidays.map(d=>({...d,scope:"cultural" as const,status:"scheduled" as const})),...countryDays.filter(d=>holidayDataAvailable!==true || holidayCoverage?.unavailableCountries.includes(d.country)).map(d=>({...d,scope:"regional" as const,status:"scheduled" as const})),...sourceHolidays]
   const monthEvents=Array.from(new Map(monthEventsRaw.map(d=>[`${d.month}|${d.day}|${"country" in d ? d.country : ""}|${d.nameNl.trim().toLowerCase()}`,d])).values()).sort((a,b)=>(a.day??0)-(b.day??0) || a.nameNl.localeCompare(b.nameNl,locale))
   const offset=(new Date(year,month,1).getDay()+6)%7
   const length=new Date(year,month+1,0).getDate()
