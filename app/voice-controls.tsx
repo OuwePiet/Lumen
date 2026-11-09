@@ -474,8 +474,7 @@ export default function VoiceControls({
     setCompatibilityChecked(true)
   }
 
-  const compatibilityReady =
-    supported && speechOutputSupported && secureContext
+  const compatibilityReady = supported && secureContext
 
   return (
     <details
