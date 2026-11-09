@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react"
 import { approvedEventDaysForMonth } from "./approved-event-days"
+import ViaInformationTower from "./via-information-tower"
 import approvedEventsData from "./calendar-approved.json"
 import { VIA_INTERNATIONAL_DAYS } from "../via-international-calendar"
 import { PAPAL_JOURNEY_2026, PAPAL_ITINERARY_SOURCE } from "../via-papal-calendar"
@@ -329,6 +330,14 @@ export default function WereldkalenderPage() {
             <span style={{fontWeight:600}}>{day}</span>{events.length>0&&<span aria-hidden="true" style={{display:"flex",alignItems:"center",gap:5,flexWrap:"wrap",marginTop:5,fontSize:"clamp(25px,3.6vw,34px)",lineHeight:1.15}}>{events.slice(0,3).map(event=><span key={event.id} title={holidayName(event.id,event.nameNl)}>{event.id.startsWith("pope-leo-") ? "✝️" : event.id.startsWith("urbi-et-orbi-") ? "🕊️" : ("country" in event && typeof event.country==="string") ? flagForCountry(event.country) : holidaySymbol(event.id,event.nameNl)?<HolidayIcon id={event.id} name={event.nameNl}/>:holidayEmoji(event.id,event.nameNl)}</span>)}{events.length>3&&<span style={{fontSize:10,opacity:.8}}>+{events.length-3}</span>}</span>}
           </button>
         })}
+      </div>
+      <div style={{marginTop:14}}>
+        <ViaInformationTower
+          events={monthEvents.map(d=>({id:d.id,day:d.day,title:holidayName(d.id,d.nameNl),country:"country" in d && typeof d.country==="string"?d.country:undefined}))}
+          selectedDay={selected}
+          onSelectDay={day=>{setSelected(day);setEventPage(0)}}
+          language={language}
+        />
       </div>
       {holidayLoading && <p role="status" aria-live="polite" style={{fontSize:12,opacity:.8}}>{({Dutch:"Feestdagen worden opgehaald…",English:"Loading holiday data…",French:"Chargement des jours fériés…",Spanish:"Cargando festivos…",Chinese:"正在加载节日数据…",Hindi:"छुट्टियों का डेटा लोड हो रहा है…"} as Record<ViaLanguage,string>)[language]}</p>}
       {holidayCoverage && <details style={{marginTop:12,padding:"10px 12px",border:"1px solid rgba(162,185,126,.35)",borderRadius:10,fontSize:12}}>
