@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react"
 import { approvedEventDaysForMonth } from "./approved-event-days"
 import ViaInformationTower from "./via-information-tower"
+import ViaGlobe from "./via-globe"
 import approvedEventsData from "./calendar-approved.json"
 import { VIA_INTERNATIONAL_DAYS } from "../via-international-calendar"
 import { PAPAL_JOURNEY_2026, PAPAL_ITINERARY_SOURCE } from "../via-papal-calendar"
@@ -295,6 +296,7 @@ export default function WereldkalenderPage() {
       <div style={{display:"flex",alignItems:"center",gap:16,flexWrap:"wrap",marginBottom:14}}><span aria-hidden="true" style={{fontSize:"clamp(36px,7vw,56px)",display:"inline-flex",alignItems:"center",justifyContent:"center",width:78,height:78,borderRadius:22,background:"linear-gradient(145deg,rgba(53,146,93,.40),rgba(212,173,85,.28))",border:"1px solid rgba(199,184,110,.5)",boxShadow:"0 10px 24px rgba(0,0,0,.2),inset 0 1px rgba(255,255,255,.2)"}}>🌍</span><div><h1 style={{fontSize:"clamp(25px,5vw,38px)",fontWeight:750,letterSpacing:"-.025em",margin:"2px 0",textShadow:"0 3px 16px rgba(57,135,94,.25)"}}>{ui.title}</h1></div></div>
       <p>{ui.intro}</p>
       {visualTestReady && <p style={{fontSize:12,opacity:.78,marginTop:8}}>{({Dutch:"VIA kalender · voorbeeldweergave: controleer de opmaak en navigatie. Niet alle variabele feestdagen zijn officieel bevestigd.",English:"VIA calendar · preview: check layout and navigation. Not all variable holiday dates are officially confirmed.",French:"Calendrier VIA · aperçu : vérifiez la mise en page et la navigation. Certaines dates restent à confirmer.",Spanish:"Calendario VIA · vista previa: compruebe el diseño y la navegación. Algunas fechas aún requieren confirmación.",Chinese:"VIA 日历 · 预览：请检查布局与导航。部分节日日期尚未正式确认。",Hindi:"VIA कैलेंडर · पूर्वावलोकन: लेआउट और नेविगेशन जाँचें। कुछ त्योहारों की तिथियाँ अभी अपुष्ट हैं।"} as Record<ViaLanguage,string>)[language]}</p>}
+      <div style={{margin:"14px 0"}}><ViaGlobe /></div>
       <div style={{display:"flex",flexWrap:"wrap",alignItems:"center",gap:"12px 24px",padding:"12px 16px",marginTop:14,borderRadius:16,background:"linear-gradient(115deg,rgba(42,98,68,.27),rgba(151,120,54,.11))",border:"1px solid rgba(178,170,103,.30)",boxShadow:"inset 0 1px rgba(255,255,255,.08)"}}>
         <div style={{display:"flex",flexWrap:"wrap",alignItems:"center",gap:"8px 18px"}}>
       <label style={{display:"flex",alignItems:"center",gap:12,flexWrap:"wrap",marginTop:0}}>{ui.continent}
