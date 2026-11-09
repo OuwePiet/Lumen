@@ -1,10 +1,6 @@
 "use client"
 
 import { useEffect, useMemo, useState } from "react"
-import { approvedEventDaysForMonth } from "./approved-event-days"
-import ViaInformationTower from "./via-information-tower"
-import ViaGlobe from "./via-globe"
-import approvedEventsData from "./calendar-approved.json"
 import { VIA_INTERNATIONAL_DAYS } from "../via-international-calendar"
 import { PAPAL_JOURNEY_2026, PAPAL_ITINERARY_SOURCE } from "../via-papal-calendar"
 import { viaOfflineLunarDates } from "../via-calendar-offline-dates"
@@ -214,17 +210,7 @@ export default function WereldkalenderPage() {
   }))
   const papalJourney = year===2026 && month===10 ? PAPAL_JOURNEY_2026.filter(d=>selectedRegion==="world" || selectedRegion===d.country).map(d=>({id:`pope-leo-2026-${d.day}-${d.country}`,nameNl:`Paus Leo XIV · ${d.place}`,month:11,day:d.day,country:d.country,scope:"cultural" as const,status:"scheduled" as const,papalDetail:d.detail,papalSource:PAPAL_ITINERARY_SOURCE})) : []
   const urbiEtOrbi = (month===11 ? [{id:"urbi-et-orbi-christmas",nameNl:"Urbi et Orbi · Kerstmis · Vaticaanstad",month:12,day:25,scope:"cultural" as const,status:"scheduled" as const,papalSource:"https://www.vatican.va/content/vatican/en.html"}] : easter.month===month+1 ? [{id:"urbi-et-orbi-easter",nameNl:"Urbi et Orbi · Pasen · Vaticaanstad",month:easter.month,day:easter.day,scope:"cultural" as const,status:"scheduled" as const,papalSource:"https://www.vatican.va/content/vatican/en.html"}] : [])
-  // Repository-reviewed dataset only; submitted drafts never appear publicly.
-  const approvedEvents = approvedEventDaysForMonth(approvedEventsData, year, month, selectedRegion).map(({event,day})=>({
-    id:`approved-${event.id}-${day}`,
-    nameNl:event.title,
-    month:month+1,
-    day,
-    country:event.country,
-    scope:"cultural" as const,
-    status:"scheduled" as const,
-  }))
-  const monthEventsRaw=[...approvedEvents,...papalJourney,...urbiEtOrbi,...days,...offlineLunar.filter(d=>d.month===month+1),...calculatedHolidays.map(d=>({...d,scope:"cultural" as const,status:"scheduled" as const})),...countryDays.filter(d=>holidayDataAvailable!==true || holidayCoverage?.unavailableCountries.includes(d.country)).map(d=>({...d,scope:"regional" as const,status:"scheduled" as const})),...sourceHolidays]
+  const monthEventsRaw=[...papalJourney,...urbiEtOrbi,...days,...offlineLunar.filter(d=>d.month===month+1),...calculatedHolidays.map(d=>({...d,scope:"cultural" as const,status:"scheduled" as const})),...countryDays.filter(d=>holidayDataAvailable!==true || holidayCoverage?.unavailableCountries.includes(d.country)).map(d=>({...d,scope:"regional" as const,status:"scheduled" as const})),...sourceHolidays]
   const monthEvents=Array.from(new Map(monthEventsRaw.map(d=>[`${d.month}|${d.day}|${"country" in d ? d.country : ""}|${d.nameNl.trim().toLowerCase()}`,d])).values()).sort((a,b)=>(a.day??0)-(b.day??0) || a.nameNl.localeCompare(b.nameNl,locale))
   const offset=(new Date(year,month,1).getDay()+6)%7
   const length=new Date(year,month+1,0).getDate()
@@ -296,7 +282,6 @@ export default function WereldkalenderPage() {
       <div style={{display:"flex",alignItems:"center",gap:16,flexWrap:"wrap",marginBottom:14}}><span aria-hidden="true" style={{fontSize:"clamp(36px,7vw,56px)",display:"inline-flex",alignItems:"center",justifyContent:"center",width:78,height:78,borderRadius:22,background:"linear-gradient(145deg,rgba(53,146,93,.40),rgba(212,173,85,.28))",border:"1px solid rgba(199,184,110,.5)",boxShadow:"0 10px 24px rgba(0,0,0,.2),inset 0 1px rgba(255,255,255,.2)"}}>🌍</span><div><h1 style={{fontSize:"clamp(25px,5vw,38px)",fontWeight:750,letterSpacing:"-.025em",margin:"2px 0",textShadow:"0 3px 16px rgba(57,135,94,.25)"}}>{ui.title}</h1></div></div>
       <p>{ui.intro}</p>
       {visualTestReady && <p style={{fontSize:12,opacity:.78,marginTop:8}}>{({Dutch:"VIA kalender · voorbeeldweergave: controleer de opmaak en navigatie. Niet alle variabele feestdagen zijn officieel bevestigd.",English:"VIA calendar · preview: check layout and navigation. Not all variable holiday dates are officially confirmed.",French:"Calendrier VIA · aperçu : vérifiez la mise en page et la navigation. Certaines dates restent à confirmer.",Spanish:"Calendario VIA · vista previa: compruebe el diseño y la navegación. Algunas fechas aún requieren confirmación.",Chinese:"VIA 日历 · 预览：请检查布局与导航。部分节日日期尚未正式确认。",Hindi:"VIA कैलेंडर · पूर्वावलोकन: लेआउट और नेविगेशन जाँचें। कुछ त्योहारों की तिथियाँ अभी अपुष्ट हैं।"} as Record<ViaLanguage,string>)[language]}</p>}
-      <div style={{margin:"14px 0"}}><ViaGlobe /></div>
       <div style={{display:"flex",flexWrap:"wrap",alignItems:"center",gap:"12px 24px",padding:"12px 16px",marginTop:14,borderRadius:16,background:"linear-gradient(115deg,rgba(42,98,68,.27),rgba(151,120,54,.11))",border:"1px solid rgba(178,170,103,.30)",boxShadow:"inset 0 1px rgba(255,255,255,.08)"}}>
         <div style={{display:"flex",flexWrap:"wrap",alignItems:"center",gap:"8px 18px"}}>
       <label style={{display:"flex",alignItems:"center",gap:12,flexWrap:"wrap",marginTop:0}}>{ui.continent}
@@ -332,14 +317,6 @@ export default function WereldkalenderPage() {
             <span style={{fontWeight:600}}>{day}</span>{events.length>0&&<span aria-hidden="true" style={{display:"flex",alignItems:"center",gap:5,flexWrap:"wrap",marginTop:5,fontSize:"clamp(25px,3.6vw,34px)",lineHeight:1.15}}>{events.slice(0,3).map(event=><span key={event.id} title={holidayName(event.id,event.nameNl)}>{event.id.startsWith("pope-leo-") ? "✝️" : event.id.startsWith("urbi-et-orbi-") ? "🕊️" : ("country" in event && typeof event.country==="string") ? flagForCountry(event.country) : holidaySymbol(event.id,event.nameNl)?<HolidayIcon id={event.id} name={event.nameNl}/>:holidayEmoji(event.id,event.nameNl)}</span>)}{events.length>3&&<span style={{fontSize:10,opacity:.8}}>+{events.length-3}</span>}</span>}
           </button>
         })}
-      </div>
-      <div style={{marginTop:14}}>
-        <ViaInformationTower
-          events={monthEvents.map(d=>({id:d.id,day:d.day,title:holidayName(d.id,d.nameNl),country:"country" in d && typeof d.country==="string"?d.country:undefined}))}
-          selectedDay={selected}
-          onSelectDay={day=>{setSelected(day);setEventPage(0)}}
-          language={language}
-        />
       </div>
       {holidayLoading && <p role="status" aria-live="polite" style={{fontSize:12,opacity:.8}}>{({Dutch:"Feestdagen worden opgehaald…",English:"Loading holiday data…",French:"Chargement des jours fériés…",Spanish:"Cargando festivos…",Chinese:"正在加载节日数据…",Hindi:"छुट्टियों का डेटा लोड हो रहा है…"} as Record<ViaLanguage,string>)[language]}</p>}
       {holidayCoverage && <details style={{marginTop:12,padding:"10px 12px",border:"1px solid rgba(162,185,126,.35)",borderRadius:10,fontSize:12}}>
