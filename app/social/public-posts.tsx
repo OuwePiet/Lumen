@@ -122,7 +122,8 @@ export default function PublicPosts() {
     return () => controller.abort()
   }, [replyingTo, commentsRefresh, session?.publicKey])
   const [actionLoginPost, setActionLoginPost] = useState<string | null>(null)
-  const [sharedPostView, setSharedPostView] = useState(false)
+  const [sharedPostHash, setSharedPostHash] = useState<string | null>()
+  const sharedPostView = Boolean(sharedPostHash)
   const [translationPost, setTranslationPost] = useState<string | null>(null)
   const [translationLanguage, setTranslationLanguage] = useState("en")
   const [translatedText, setTranslatedText] = useState("")
@@ -156,35 +157,8 @@ export default function PublicPosts() {
       if (media === "image" || media === "video" || media === "nft") setMediaFilter(media)
 
       const sharedPost = params.get("post")?.trim().toLowerCase() ?? ""
-      if (/^[0-9a-f]{64}$/.test(sharedPost)) {
-        setSharedPostView(true)
-        setHasMore(false)
-        const controller = new AbortController()
-        requestController.current?.abort()
-        requestController.current = controller
-        setLoading(true)
-        setMessage("Loading shared post…")
-        void viaModernIdentity.currentUser().then((activeSession) => fetch(`/api/via/post?hash=${encodeURIComponent(sharedPost)}&reader=${encodeURIComponent(activeSession?.publicKey ?? "")}`, { signal: controller.signal }))
-          .then(async (response) => {
-            const data = (await response.json()) as SinglePostResponse
-            if (!response.ok || !data.ok || !data.post) throw new Error("POST_UNAVAILABLE")
-            setPosts([data.post])
-            setMessage("Shared post loaded.")
-          })
-          .catch((error) => {
-            if (!(error instanceof DOMException && error.name === "AbortError")) {
-              setPosts([])
-              setMessage("This shared post is unavailable.")
-            }
-          })
-          .finally(() => {
-            if (requestController.current === controller) {
-              requestController.current = null
-              setLoading(false)
-            }
-          })
-      }
-    } catch {}
+      setSharedPostHash(/^[0-9a-f]{64}$/.test(sharedPost) ? sharedPost : null)
+    } catch { setSharedPostHash(null) }
   }, [])
 
   useEffect(() => {
@@ -222,7 +196,7 @@ export default function PublicPosts() {
       requestController.current?.abort()
       requestController.current = null
       setFeedChoice(choice)
-      setSharedPostView(false)
+      setSharedPostHash(null)
       setHasMore(true)
       setPosts([])
       setMediaFilter("all")
@@ -320,21 +294,33 @@ export default function PublicPosts() {
 
   async function loadPosts(event?: FormEvent) {
     event?.preventDefault()
+    if (sharedPostHash === undefined) return
     requestController.current?.abort()
     const controller = new AbortController()
     requestController.current = controller
 
-    if (feedChoice === "following" && !session) {
+    if (!sharedPostHash && feedChoice === "following" && !session) {
       setPosts([])
       setMessage("Log in with DeSo to open Following.")
       requestController.current = null
+      setLoading(false)
       return
     }
 
     setLoading(true)
-    setHasMore(true)
-    setMessage("Loading…")
+    setHasMore(!sharedPostHash)
+    setMessage(sharedPostHash ? "Loading shared post…" : "Loading…")
     try {
+      if (sharedPostHash) {
+        const reader = encodeURIComponent(session?.publicKey ?? "")
+        const response = await fetch(`/api/via/post?hash=${sharedPostHash}&reader=${reader}`, { signal: controller.signal })
+        const data = (await response.json()) as SinglePostResponse
+        if (controller.signal.aborted || requestController.current !== controller) return
+        if (!response.ok || !data.ok || !data.post) throw new Error("POST_UNAVAILABLE")
+        setPosts([data.post])
+        setMessage("Shared post loaded.")
+        return
+      }
       const endpoint = feedChoice === "following"
         ? `/api/via/following?identity=${encodeURIComponent(session?.publicKey ?? "")}`
         : feedChoice === "hot"
@@ -348,9 +334,9 @@ export default function PublicPosts() {
       setPosts(nextPosts)
       setMessage(nextPosts.length ? `${nextPosts.length} posts loaded.` : "No posts found.")
     } catch (error) {
-      if (!(error instanceof DOMException && error.name === "AbortError")) {
+      if (!controller.signal.aborted && requestController.current === controller) {
         setPosts([])
-        setMessage("Posts are temporarily unavailable.")
+        setMessage(sharedPostHash ? "This shared post is unavailable." : "Posts are temporarily unavailable.")
       }
     } finally {
       if (requestController.current === controller) {
@@ -362,13 +348,13 @@ export default function PublicPosts() {
 
   useEffect(() => {
     void loadPosts()
-  }, [feedChoice, session?.publicKey, feedRevision])
+  }, [feedChoice, session?.publicKey, feedRevision, sharedPostHash])
 
   useEffect(() => {
     const refresh = () => { void loadPosts(); if (replyingTo) setCommentsRefresh((value) => value + 1) }
     window.addEventListener("via:social:post-published", refresh)
     return () => window.removeEventListener("via:social:post-published", refresh)
-  }, [feedChoice, session?.publicKey, replyingTo])
+  }, [feedChoice, session?.publicKey, replyingTo, sharedPostHash])
 
   async function loadMorePosts() {
     if (loading || feedChoice === "following" || posts.length === 0) return
