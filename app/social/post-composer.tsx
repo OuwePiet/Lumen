@@ -176,8 +176,10 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
       attached.splice(index, 1)
       return attached.length ? [...attached, ""].slice(0, MAX_IMAGES) : [""]
     })
-    setImageUploadStatus("idle")
-    setImageUploadMessage("")
+    if (!uploadingImageRef.current) {
+      setImageUploadStatus("idle")
+      setImageUploadMessage("")
+    }
   }
 
   async function uploadImage(file: File | null) {

@@ -10,19 +10,26 @@ const ts = require('typescript')
 function fixture({ parent = '', switchAt, submitTimeout = false, guest = false, failUpload = false } = {}) {
   let activeKey = 'account-A'
   let index = 0
+  let refIndex = 0
   const states = []
+  const refs = []
   const requests = []
   const signed = []
   const revoked = []
   const react = {
     useState(initial) {
       const slot = index++
-      states[slot] = slot === 0 ? (guest ? null : { publicKey: activeKey })
-        : slot === 1 ? 'Text with a photo' : slot === 2 ? ['https://images.deso.org/example.webp'] : initial
+      if (!(slot in states)) {
+        states[slot] = slot === 0 ? (guest ? null : { publicKey: activeKey })
+          : slot === 1 ? 'Text with a photo' : slot === 2 ? ['https://images.deso.org/example.webp'] : initial
+      }
       return [states[slot], (value) => { states[slot] = typeof value === 'function' ? value(states[slot]) : value }]
     },
     useEffect() {},
-    useRef: () => ({ current: null }),
+    useRef: (initial) => {
+      const slot = refIndex++
+      return refs[slot] ??= { current: initial }
+    },
     useMemo: (fn) => fn(),
   }
   const identity = {
@@ -53,7 +60,8 @@ function fixture({ parent = '', switchAt, submitTimeout = false, guest = false, 
       if (url === '/api/via/social/image-upload') {
         requests.push({ url, body: options.body })
         if (switchAt === 'upload') activeKey = 'account-B'
-        return { ok: !failUpload, json: async () => ({ ok: !failUpload, imageUrl: 'https://images.deso.org/new.webp' }) }
+        const filename = options.body.get('file').name
+        return { ok: !failUpload, json: async () => ({ ok: !failUpload, imageUrl: `https://images.deso.org/${filename}` }) }
       }
       const body = JSON.parse(options.body)
       requests.push({ url, body })
@@ -70,26 +78,55 @@ function fixture({ parent = '', switchAt, submitTimeout = false, guest = false, 
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020, jsx: ts.JsxEmit.ReactJSX },
   }).outputText
   vm.runInNewContext(compiled, context)
-  const tree = context.exports.default({ parentStakeID: parent })
-  const nodes = []
-  function walk(value) {
-    if (Array.isArray(value)) return value.forEach(walk)
-    if (!value || typeof value !== 'object') return
-    nodes.push(value)
-    walk(value.props?.children)
+  function render() {
+    index = 0
+    refIndex = 0
+    const nodes = []
+    function walk(value) {
+      if (Array.isArray(value)) return value.forEach(walk)
+      if (!value || typeof value !== 'object') return
+      nodes.push(value)
+      walk(value.props?.children)
+    }
+    walk(context.exports.default({ parentStakeID: parent }))
+    return nodes
   }
-  walk(tree)
-  const send = nodes.find((node) => node.type === 'button' && node.props.children === (parent ? 'Reply' : 'Send'))
+  const findSend = (nodes) => nodes.find((node) => node.type === 'button' && node.props.children === (parent ? 'Reply' : 'Send'))
+  const send = findSend(render())
   assert.ok(send)
   if (switchAt === 'before') activeKey = 'account-B'
-  const photo = nodes.find((node) => node.type === 'input' && node.props.type === 'file')
-  function selectPhoto(type = 'image/png') {
-    const input = { files: [new File(['fixture'], 'photo.png', { type })], value: 'photo.png' }
+  function selectPhoto(type = 'image/webp', filename = 'new.webp') {
+    const photo = render().find((node) => node.type === 'input' && node.props.type === 'file')
+    const input = { files: [new File(['fixture'], filename, { type })], value: filename }
     photo.props.onChange({ target: input, currentTarget: input })
     return new Promise((resolve) => setImmediate(resolve))
   }
-  return { send: () => send.props.onClick(), selectPhoto, disabled: send.props.disabled, requests, signed, states, revoked }
+  function removePhoto(number) {
+    render().find((node) => node.props?.['aria-label'] === `Remove attached image ${number}`).props.onClick()
+  }
+  return {
+    send: () => send.props.onClick(),
+    sendAfterRender: () => findSend(render()).props.onClick(),
+    selectPhoto, removePhoto, disabled: send.props.disabled, requests, signed, states, revoked,
+  }
 }
+
+test('multiple uploads keep only the remaining attachments in the signed post', async () => {
+  const flow = fixture()
+  await flow.selectPhoto('image/png', 'second.png')
+  const pending = flow.selectPhoto('image/jpeg', 'third.jpg')
+  flow.removePhoto(2)
+  assert.equal(flow.states[12], 'jwt')
+  await pending
+  await flow.sendAfterRender()
+  const prepare = flow.requests.find(({ body }) => body.action === 'prepare')
+  assert.deepEqual(prepare.body.imageUrls, [
+    'https://images.deso.org/example.webp',
+    'https://images.deso.org/third.jpg',
+  ])
+  assert.deepEqual(flow.signed, ['prepared-hex'])
+  assert.equal(flow.requests.filter(({ body }) => body.action === 'submit').length, 1)
+})
 
 test('rapid photo selections send a single upload and leave one confirmed attachment', async () => {
   const flow = fixture()
