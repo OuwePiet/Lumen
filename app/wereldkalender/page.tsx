@@ -218,10 +218,14 @@ export default function WereldkalenderPage() {
     e.endDate.slice(0, 7) >= `${year}-${String(month+1).padStart(2,"0")}` &&
     (selectedRegion==="world" || selectedRegion===e.country)
   ).flatMap(e => {
-    const start = new Date(e.startDate + "T00:00:00Z")
-    const end = new Date(e.endDate + "T00:00:00Z")
+    // Intersect the event period with the visible month. Long-running exhibitions
+    // must still appear in later months; never iterate over their full duration.
+    const monthStart = Date.UTC(year, month, 1)
+    const monthEnd = Date.UTC(year, month + 1, 0)
+    const start = new Date(Math.max(Date.parse(e.startDate + "T00:00:00Z"), monthStart))
+    const end = new Date(Math.min(Date.parse(e.endDate + "T00:00:00Z"), monthEnd))
     const output = []
-    for (let t = start.getTime(), n=0; t <= end.getTime() && n<32; t+=86400000,n++) {
+    for (let t = start.getTime(); t <= end.getTime(); t+=86400000) {
       const d = new Date(t)
       if (d.getUTCFullYear()===year && d.getUTCMonth()===month)
         output.push({id:`approved-${e.id}-${d.getUTCDate()}`,nameNl:e.title,month:month+1,day:d.getUTCDate(),country:e.country,scope:"cultural" as const,status:"scheduled" as const})
