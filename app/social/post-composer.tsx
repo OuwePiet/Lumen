@@ -71,6 +71,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
   const [mediaChoice, setMediaChoice] = useState<"photo" | "video">("photo")
   const [draftMessage, setDraftMessage] = useState("")
   const textareaRef = useRef<HTMLTextAreaElement | null>(null)
+  const publishingRef = useRef(false)
   const isReply = Boolean(parentStakeID)
 
   useEffect(() => {
@@ -238,14 +239,14 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
   }
 
   async function preparePost() {
-    if (!session || !canPrepare) return
-    // Do not open an empty Safari tab on every Send; DeSo opens approval only if required.
-    if (isReply) saveDraft()
+    if (!session || !canPrepare || publishingRef.current) return
+    publishingRef.current = true
     setStatus("preparing")
     setMessage(isReply ? "Preparing your reply…" : "Preparing your post…")
     setFeeNanos(null)
     let submissionStarted = false
     try {
+      if (isReply) saveDraft()
       const activeBeforePrepare = await viaModernIdentity.currentUser()
       if (activeBeforePrepare?.publicKey !== session.publicKey) throw new Error("DESO_ACCOUNT_CHANGED_RECONNECT")
       const { response, data: prepared } = await fetchJsonWithTimeout<PrepareResponse>("/api/via/social/post", {
@@ -306,6 +307,8 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
         : code === "DESO_ACCOUNT_CHANGED_RECONNECT"
         ? "DeSo account changed. Select your account and review your draft before sending. Nothing was submitted."
         : `${isReply ? "The reply" : "The post"} could not be published (${code}). Nothing was submitted.`)
+    } finally {
+      publishingRef.current = false
     }
   }
 

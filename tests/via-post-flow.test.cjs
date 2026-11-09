@@ -94,6 +94,14 @@ test('reply preserves the exact parent hash through the same route', async () =>
   assert.equal(flow.requests[0].body.parentStakeID, parent)
 })
 
+test('two Send activations before a render only sign and submit once', async () => {
+  const flow = fixture()
+  await Promise.all([flow.send(), flow.send()])
+  assert.equal(flow.requests.length, 2)
+  assert.deepEqual(flow.signed, ['prepared-hex'])
+  assert.equal(flow.requests.filter(({ body }) => body.action === 'submit').length, 1)
+})
+
 test('guest Send remains disabled despite valid text and photo', () => {
   assert.equal(fixture({ guest: true }).disabled, true)
 })
