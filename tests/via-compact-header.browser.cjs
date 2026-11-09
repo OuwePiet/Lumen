@@ -17,7 +17,7 @@ const cases=[['laptop',chromium,{viewport:{width:1440,height:1000}}],['iphone',w
  if(route==='/studio')assert.equal((await page.locator('main').innerText()).includes(String.fromCharCode(92)+'n'),false,'no escaped newlines in Mint content'); const header=page.locator('header.via-site-header');await header.waitFor()
  const bounds=await header.boundingBox();assert.ok(bounds.width<=options.viewport.width+1,'header fits viewport')
  const guide=header.locator('.via-global-guides');await guide.getByRole('link',{name:'Home',exact:true}).waitFor()
- for(const name of ['Home','Handboek VIA','VIA Muziek']){const link=guide.getByRole('link',{name,exact:true});const box=await link.boundingBox();assert.ok(box&&box.x>=0&&box.x+box.width<=options.viewport.width+1,'guide link fits');if(options.isMobile)assert.ok(box.height>=44,'touch targets remain 44px')}
+ for(const name of ['Home','Handboek VIA','VIA Play']){const link=guide.getByRole('link',{name,exact:true});const box=await link.boundingBox();assert.ok(box&&box.x>=0&&box.x+box.width<=options.viewport.width+1,'guide link fits');if(options.isMobile)assert.ok(box.height>=44,'touch targets remain 44px')}
  assert.equal(await page.getByRole('button',{name:'VIA language',exact:true}).count(),1,'one central language button')
  assert.equal(await page.locator('.nf-via-language select').count(),0,'no duplicate NFT language selector')
  const logo=await header.locator('.via-site-header-logo').boundingBox();assert.ok(logo.height<=78,'logo is compact')

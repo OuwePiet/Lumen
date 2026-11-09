@@ -103,7 +103,10 @@ export default async function MarketPage({ searchParams }: { searchParams: Promi
       <header className="max-w-3xl">{publicKey && !error ? <PublicAccountLabel publicKey={publicKey} /> : null}
         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8fd4a9]"><MarketLocalizedText kind="marketplace" /></p>
         <h1 className="mt-2 text-3xl font-semibold"><MarketLocalizedText kind="heading" /></h1>
-        <p className="mt-2 text-sm leading-6 text-zinc-400"><MarketLocalizedText kind="intro" /></p>
+        <details className="mt-2 text-sm text-zinc-400">
+          <summary className="min-h-11 cursor-pointer py-3 text-[#a5dfb8]">Info</summary>
+          <p className="leading-6"><MarketLocalizedText kind="intro" /></p>
+        </details>
       </header>
 
       <NFTMarketRail />

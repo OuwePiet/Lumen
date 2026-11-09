@@ -569,14 +569,10 @@ export default async function NFTView({
             <section style={styles.card}>
               <div style={styles.badge}>{mintProvenance ? "Minted via VIA" : "On-chain NFT"}</div>
               {legacyNFTzLinkDetected ? (
-                <div style={styles.warning} role="note">
-                  <strong style={styles.warningTitle}>
-                    Legacy external link detected
-                  </strong>
-                  This on-chain description contains an nftz.me link that may
-                  no longer work. VIA does not open or depend on this link.
-                  NFT data remains available directly from DeSo.
-                </div>
+                <details style={styles.warning}>
+                  <summary style={{ ...styles.warningTitle, cursor: "pointer" }}>Info · oude NFTz-link</summary>
+                  <p>Deze beschrijving bevat een oude NFTz-link. De NFT-gegevens worden rechtstreeks uit DeSo gelezen.</p>
+                </details>
               ) : null}
               <p style={styles.description}>{description}</p>
 
