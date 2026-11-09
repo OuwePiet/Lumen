@@ -93,9 +93,9 @@ function feedReadyMessage(choice: ChoiceId) {
   return "Hot is ready."
 }
 
-export default function PublicPosts() {
+export default function PublicPosts({ initialPost }: { initialPost?: PublicPost | null }) {
   const requestController = useRef<AbortController | null>(null)
-  const [posts, setPosts] = useState<PublicPost[]>([])
+  const [posts, setPosts] = useState<PublicPost[]>(initialPost ? [initialPost] : [])
   const [mediaFilter, setMediaFilter] = useState<"all" | "image" | "video" | "nft">("all")
   const [loading, setLoading] = useState(false)
   const [hasMore, setHasMore] = useState(true)
@@ -310,6 +310,11 @@ export default function PublicPosts() {
     setLoading(true)
     setHasMore(!sharedPostHash)
     setMessage(sharedPostHash ? "Loading shared post…" : "Loading…")
+    const timeout = window.setTimeout(() => {
+      if (requestController.current !== controller) return
+      controller.abort()
+      setMessage(sharedPostHash ? "This shared post is temporarily unavailable." : "Posts are temporarily unavailable.")
+    }, 15000)
     try {
       if (sharedPostHash) {
         const reader = encodeURIComponent(session?.publicKey ?? "")
@@ -335,10 +340,11 @@ export default function PublicPosts() {
       setMessage(nextPosts.length ? `${nextPosts.length} posts loaded.` : "No posts found.")
     } catch (error) {
       if (!controller.signal.aborted && requestController.current === controller) {
-        setPosts([])
+        if (!sharedPostHash) setPosts([])
         setMessage(sharedPostHash ? "This shared post is unavailable." : "Posts are temporarily unavailable.")
       }
     } finally {
+      window.clearTimeout(timeout)
       if (requestController.current === controller) {
         requestController.current = null
         setLoading(false)
