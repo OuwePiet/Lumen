@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { useEffect, useRef, useState } from "react"
-import { Menu, Radio, UsersRound, Wallet, X } from "lucide-react"
+import { Bell, House, Menu, MessageCircle, Radio, UsersRound, Wallet, X } from "lucide-react"
 import {
   clearIdentitySession,
   type ViaIdentitySession,
@@ -332,6 +332,13 @@ export default function ViaSiteHeader() {
     <header style={styles.header} className="via-site-header">
       <button type="button" className="via-mobile-drawer-trigger" aria-label="Open VIA menu" aria-expanded={mobileDrawerOpen} onClick={() => setMobileDrawerOpen(true)}><Menu size={22} /></button>
       {mobileDrawerOpen ? <div className="via-mobile-drawer-overlay" onClick={() => setMobileDrawerOpen(false)}><nav className="via-mobile-drawer" aria-label="VIA mobiel menu" onClick={(event) => event.stopPropagation()}><div className="via-mobile-drawer-heading"><strong>VIA</strong><button type="button" aria-label="Sluit VIA menu" onClick={() => setMobileDrawerOpen(false)}><X size={22} /></button></div>{nav.map(([key, href]) => <Link key={href} href={href} onClick={() => setMobileDrawerOpen(false)}>{t[key]}</Link>)}<Link href="/messages">Berichten</Link><Link href="/bookmarks">Bookmarks</Link><Link href="/profile">{t.profile}</Link><Link href="/wallet">{t.wallet}</Link><Link href="/help">VIA Handboek</Link><Link href="/wereldkalender">Wereldkalender</Link><Link href="/music">VIA Play</Link></nav></div> : null}
+      {pathname !== "/" ? <nav className="via-mobile-social-bar" aria-label="Snelle VIA navigatie">
+        <Link href="/" aria-label="Homepage"><House size={21}/><span>Home</span></Link>
+        <Link href="/social" aria-label="Postkantoor"><Menu size={21}/><span>Posts</span></Link>
+        <Link href="/notifications" aria-label="Meldingen"><Bell size={21}/><span>Meldingen</span></Link>
+        <Link href="/messages" aria-label="Berichten"><MessageCircle size={21}/><span>Berichten</span></Link>
+        <Link href="/wallet" aria-label="Wallet"><Wallet size={21}/><span>Wallet</span></Link>
+      </nav> : null}
       <div style={styles.shell} className="via-site-header-shell">
         <Link href="/" style={styles.brand} className="via-site-header-brand" aria-label="VIA home">
           <img src="/via-logo-original.jpg?v=1" alt="VIA" style={styles.logo} className="via-site-header-logo" />
@@ -699,6 +706,13 @@ export default function ViaSiteHeader() {
 .via-mobile-drawer-heading button { color:#d5f5df; background:transparent; border:1px solid #476b55; border-radius:10px; padding:9px; }
 .via-mobile-drawer > a { display:block; padding:13px 14px; color:#e1f1e5; border-radius:10px; text-decoration:none; min-height:44px; }
 @media (max-width:720px) { .via-site-header { position:relative; } .via-mobile-drawer-trigger { display:flex; align-items:center; justify-content:center; position:absolute; right:10px; top:7px; z-index:5; width:44px; height:44px; border:1px solid #426b50; border-radius:12px; background:#0b2015; color:#b6e5c5; } .via-site-header-nav { padding-right:48px !important; } }
+        .via-mobile-social-bar { display:none; }
+        @media (max-width:720px) {
+          .via-mobile-social-bar { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); position:fixed; left:0; right:0; bottom:0; z-index:850; padding:7px 4px calc(7px + env(safe-area-inset-bottom)); background:#08170e; border-top:1px solid #3a6549; box-shadow:0 -5px 22px #0009; }
+          .via-mobile-social-bar a { min-width:0; min-height:47px; display:flex; flex-direction:column; gap:3px; align-items:center; justify-content:center; color:#c2dfcb; text-decoration:none; font-size:10px; }
+          .via-mobile-social-bar a[aria-current="page"] { color:#90e0ac; }
+          body:has(.via-mobile-social-bar) { padding-bottom:calc(74px + env(safe-area-inset-bottom)); }
+        }
       `}</style>
     </header>
   )
