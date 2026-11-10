@@ -12,6 +12,22 @@ type Props = { postHash: string; receiverPublicKey: string; initialCount: number
 type PrepareResponse = { ok?: boolean; transactionHex?: string; diamondLevel?: number; feeNanos?: number | null; spendAmountNanos?: number | null; error?: string }
 type DiamondLevelsResponse = { ok?: boolean; diamondLevelMap?: Record<string, number> }
 
+/**
+ * Fail closed if DeSo Identity never answers (notably on mobile Safari).
+ * A late permission/signing response cannot resume this payment chain:
+ * Promise.race has already rejected and the caller exits via catch.
+ * No transaction is submitted or retried on timeout.
+ */
+function awaitIdentityResponse<T>(operation: Promise<T>, timeoutMs: number): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timer = window.setTimeout(() => reject(new Error("DESO_IDENTITY_NO_RESPONSE")), timeoutMs)
+    operation.then(
+      value => { window.clearTimeout(timer); resolve(value) },
+      error => { window.clearTimeout(timer); reject(error) },
+    )
+  })
+}
+
 export default function DiamondButton({ postHash, receiverPublicKey, initialCount, variant = "default" }: Props) {
   const [level, setLevel] = useState(1)
   const [count, setCount] = useState(initialCount)
@@ -104,9 +120,10 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
         if (!Number.isSafeInteger(cost) || cost < 1) throw new Error("INVALID_DESO_SPEND_LIMIT")
         setFeeNanos(data.feeNanos)
         setStatus("approval"); setMessage("Confirm the Diamond permission with DeSo Identity if requested…")
-        await ensureDiamondPermission(viaModernIdentity, cost)
+        await awaitIdentityResponse(ensureDiamondPermission(viaModernIdentity, cost), 20000)
         await assertAccount()
-        const signedTransactionHex = await viaModernIdentity.signTx(data.transactionHex)
+        setMessage("DeSo Identity is signing your Diamond…")
+        const signedTransactionHex = await awaitIdentityResponse(viaModernIdentity.signTx(data.transactionHex), 20000)
         await assertAccount()
         const submission = { publicKey: session.publicKey, intent, amountNanos: cost, startedAt: Date.now() }
         markFinancialPending(submission)
@@ -131,7 +148,7 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
       })
     } catch (error) {
       setStatus(accepted ? "done" : "error")
-      setMessage(accepted ? "DeSo received the Diamond. Recovery storage could not be updated; check DeSo before any new payment." : sent ? "The Diamond outcome is uncertain. Do not resend; check DeSo." : error instanceof Error ? error.message : "Diamond preparation stopped. Nothing was submitted.")
+      setMessage(accepted ? "DeSo received the Diamond. Recovery storage could not be updated; check DeSo before any new payment." : sent ? "The Diamond outcome is uncertain. Do not resend; check DeSo." : error instanceof Error && error.message === "DESO_IDENTITY_NO_RESPONSE" ? "DeSo Identity reageert niet. Er is vanuit VIA geen diamant verzonden. Controleer de DeSo-machtiging voordat je opnieuw probeert." : error instanceof Error ? error.message : "Diamond preparation stopped. Nothing was submitted.")
     } finally {
       window.removeEventListener(VIA_IDENTITY_EVENT, onIdentity)
       window.removeEventListener("storage", onIdentity)
