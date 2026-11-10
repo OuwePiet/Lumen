@@ -44,6 +44,33 @@ export default function AdvertisingPage() {
           <p style={{ margin: "10px 0 0", color: "#78867e", lineHeight: 1.5, fontSize: 12 }}>Dit is statusinformatie, geen checkout. VIA toont geen schijnbare DESO/$-wissel zolang die betaalroute niet veilig is aangesloten.</p>
         </section>
 
+        <section aria-labelledby="via-ad-packages" style={{ ...card, marginTop: 18 }}>
+          <p style={{ margin: 0, color: "#8fd4a9", fontSize: 12, fontWeight: 800, letterSpacing: ".1em" }}>VIA SPONSORGALERIJ · VOORSTEL</p>
+          <h2 id="via-ad-packages" style={{ margin: "7px 0 0", fontSize: 22 }}>Kleine advertenties, heldere prijzen</h2>
+          <p style={{ margin: "8px 0 16px", color: "#aebbb4", fontSize: 13, lineHeight: 1.6 }}>
+            Proefprijzen ter beoordeling. Nog geen aanbod of betaalmogelijkheid: plaatsing begint pas na goedkeuring en een gecontroleerde betaalroute.
+          </p>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(170px, 1fr))", gap: 10 }}>
+            {[
+              { name: "Kleine kaart", price: "€1", duration: "7 dagen", detail: "Een kaart in de reclamegalerij." },
+              { name: "Standaard", price: "€3", duration: "30 dagen", detail: "Een kaart voor een volledige maand." },
+              { name: "Voorkeursplaats", price: "€5", duration: "30 dagen", detail: "Pagina 1, zolang er plaats is; eerlijke rotatie." },
+              { name: "Homepage", price: "€10", duration: "30 dagen", detail: "Een van maximaal vier roterende plaatsen." },
+              { name: "Bedrijfspartner", price: "vanaf €15", duration: "30 dagen", detail: "Uitgebreidere presentatie; voorwaarden nog te bepalen." },
+            ].map((plan) => (
+              <article key={plan.name} style={{ border: "1px solid rgba(143,212,169,.22)", borderRadius: 12, background: "rgba(3,12,7,.65)", padding: 14 }}>
+                <h3 style={{ margin: 0, fontSize: 14, color: "#e2f4e8" }}>{plan.name}</h3>
+                <p style={{ margin: "9px 0 0", fontSize: 25, fontWeight: 800, color: "#9adbb2" }}>{plan.price}</p>
+                <p style={{ margin: "2px 0 9px", fontSize: 12, color: "#c4d1c8" }}>{plan.duration}</p>
+                <p style={{ margin: 0, fontSize: 12, lineHeight: 1.5, color: "#9eaaa2" }}>{plan.detail}</p>
+              </article>
+            ))}
+          </div>
+          <p style={{ margin: "14px 0 0", color: "#89968e", fontSize: 12, lineHeight: 1.6 }}>
+            Prijzen zijn indicatief, niet definitief en niet te betalen op deze pagina. Er worden geen advertentieaanvragen of betalingen verwerkt.
+          </p>
+        </section>
+
         <AdvertisingDirectory />
 
         <nav style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 26 }}>
