@@ -489,7 +489,7 @@ export default function PublicPosts({ initialPost }: { initialPost?: PublicPost 
                 </div>
 
                 {post.body ? <div className="mt-3 min-w-0">
-                  <p className="whitespace-pre-wrap break-words [overflow-wrap:anywhere] text-sm leading-6 text-zinc-200">{linkedPostText(post.body.length > 420 && !expandedPosts[post.postHash] ? `${post.body.slice(0, 420).trimEnd()}…` : post.body)}</p>
+                  <p data-via-user-content className="whitespace-pre-wrap break-words [overflow-wrap:anywhere] text-sm leading-6 text-zinc-200">{linkedPostText(post.body.length > 420 && !expandedPosts[post.postHash] ? `${post.body.slice(0, 420).trimEnd()}…` : post.body)}</p>
                   {post.body.length > 420 ? <button type="button" onClick={() => setExpandedPosts((current) => ({ ...current, [post.postHash]: !current[post.postHash] }))} aria-expanded={Boolean(expandedPosts[post.postHash])} className="mt-1 text-sm font-semibold text-[#9adbb2] hover:underline">{expandedPosts[post.postHash] ? "Minder tonen" : "Lees verder …"}</button> : null}
                 </div> : <p className="mt-3 text-sm text-zinc-500">Media post</p>}
                 {postedViaVIA ? <PostSource extra={post.postExtraData} reply={Boolean(post.parentStakeID)} /> : null}
