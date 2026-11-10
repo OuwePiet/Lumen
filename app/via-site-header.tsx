@@ -443,7 +443,7 @@ export default function ViaSiteHeader() {
           .via-site-header-search-notifications .via-site-header-search-label { display: none !important; }
           .via-notifications-radio-top { display: inline-grid !important; place-items: center !important; border: 1px solid rgba(143,212,169,.22) !important; background: rgba(5,11,8,.76) !important; color: #b8ddc5 !important; text-decoration: none !important; font-size: 16px !important; line-height: 1 !important; }
           .via-site-header-wallet-notifications { display: none !important; }
-          .via-site-header-nav-compact-mobile { display: none !important; }
+          .via-site-header-nav-compact-mobile { display: flex !important; }
           .via-site-header-account-menu { top: 44px !important; right: 0 !important; width: min(280px, calc(100vw - 20px)) !important; }
           .via-site-header-tools-notifications .via-site-header-account-wrap {
             position: relative !important;
