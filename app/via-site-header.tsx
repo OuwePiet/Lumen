@@ -429,7 +429,7 @@ export default function ViaSiteHeader() {
           .via-site-header-logo { width: 68px !important; height: 52px !important; margin-left: -3px !important; }
           .via-site-header-top { grid-column: 2 !important; grid-row: 1 !important; padding-right: 46px !important; }
           .via-site-header-nav { justify-content: flex-start !important; overflow-x: auto !important; scrollbar-width: none !important; }
-          .via-site-header-nav-compact-mobile { display: none !important; }
+          .via-site-header-nav-compact-mobile { display: flex !important; }
           .via-site-header-nav::-webkit-scrollbar, .via-site-header-tools::-webkit-scrollbar { display: none; }
           .via-site-header-link { padding: 18px 8px 15px !important; font-size: 11px !important; }
           .via-site-header-tools { grid-column: 1 / span 2 !important; grid-row: 2 !important; justify-content: flex-start !important; overflow-x: auto !important; overflow-y: hidden !important; gap: 6px !important; padding: 6px 8px !important; }
