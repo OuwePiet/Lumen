@@ -7,5 +7,5 @@ export default function PostSource({ extra, reply = false }: { extra?: Record<st
   const [language, setLanguage] = useState<ViaLanguage>("English")
   useEffect(() => { const sync = () => setLanguage(readViaLocalSettings().interfaceLanguage); sync(); window.addEventListener(VIA_SETTINGS_EVENT, sync); return () => window.removeEventListener(VIA_SETTINGS_EVENT, sync) }, [])
   if (extra?.ViaClient !== "viadeso.online") return null
-  return <span data-via-native-i18n className="inline-flex items-center gap-1 text-[11px] text-zinc-400"><img src="/via-leaf.svg" alt="" aria-hidden="true" width={15} height={14} className="inline-block shrink-0 object-contain" />{reply ? REPLY[language] : LABEL[language]}</span>
+  return <span data-via-native-i18n className="inline-flex items-center gap-1 text-[11px] text-zinc-400"><img src="/via-leaf.svg" alt="" aria-hidden="true" width={19} height={18} className="inline-block shrink-0 object-contain" />{reply ? REPLY[language] : LABEL[language]}</span>
 }
