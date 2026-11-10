@@ -121,7 +121,7 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
         // DeSo permissions are granted at homepage login; never open a second
         // permission request from a diamond click. Fail closed if the grant is absent.
         setStatus("approval"); setMessage("Checking the DeSo permission granted at login…")
-        const permitted = await awaitIdentityResponse(viaModernIdentity.hasPermissions({ GlobalDESOLimit: cost, TransactionCountLimitMap: { BASIC_TRANSFER: 1 } }), 20000)
+        const permitted = await awaitIdentityResponse(Promise.resolve(viaModernIdentity.hasPermissions({ GlobalDESOLimit: cost, TransactionCountLimitMap: { BASIC_TRANSFER: 1 } })), 20000)
         if (!permitted) throw new Error("DeSo diamantmachtiging ontbreekt in deze sessie. Meld je opnieuw aan via de VIA-homepage om de eenmalige toestemming te verlenen.")
         await assertAccount()
         setMessage("DeSo Identity is signing your Diamond…")
