@@ -361,6 +361,11 @@ function translateRoot(root: HTMLElement, language: ViaLanguage | "Hindi") {
   let node = walker.nextNode()
   while (node) {
     const textNode = node as Text
+    const parent = textNode.parentElement
+    if (parent?.closest("[data-via-user-content], textarea, input, [contenteditable]")) {
+      node = walker.nextNode()
+      continue
+    }
     const current = textNode.nodeValue ?? ""
     const trimmed = current.trim()
     if (trimmed) {
