@@ -173,7 +173,11 @@ export default function ViaSiteHeader() {
   }
 
   useEffect(() => {
-    const syncSettings = () => setLanguage(readViaLocalSettings().interfaceLanguage)
+    const syncSettings = () => {
+      const next = readViaLocalSettings().interfaceLanguage
+      document.documentElement.lang = ({ Dutch: "nl", English: "en", French: "fr", Spanish: "es", Chinese: "zh", Hindi: "hi" } as const)[next]
+      setLanguage(next)
+    }
     syncSettings()
     const unsubscribeIdentity = viaModernIdentity.subscribe((user) => {
       setSession(user ? { ...user, accessLevel: 3, signedUp: false } : null)
@@ -262,6 +266,7 @@ export default function ViaSiteHeader() {
 
   function changeLanguage(next: ViaLanguage) {
     saveViaLocalSettings({ interfaceLanguage: next })
+    document.documentElement.lang = ({ Dutch: "nl", English: "en", French: "fr", Spanish: "es", Chinese: "zh", Hindi: "hi" } as const)[next]
     setLanguage(next)
   }
 
