@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from "react"
 import { Gem } from "lucide-react"
-import { ensureDiamondPermission } from "./diamond-permissions"
 import { restoreIdentitySession, VIA_IDENTITY_EVENT } from "../deso-identity-session"
 import { financialSubmissionBlock, markFinancialPending, markFinancialSubmitted, withFinancialAccountLock } from "../financial-submission"
 import { viaModernIdentity } from "../deso-identity-modern"
@@ -119,8 +118,11 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
         const cost = data.spendAmountNanos + data.feeNanos
         if (!Number.isSafeInteger(cost) || cost < 1) throw new Error("INVALID_DESO_SPEND_LIMIT")
         setFeeNanos(data.feeNanos)
-        setStatus("approval"); setMessage("Confirm the Diamond permission with DeSo Identity if requested…")
-        await awaitIdentityResponse(ensureDiamondPermission(viaModernIdentity, cost), 20000)
+        // DeSo permissions are granted at homepage login; never open a second
+        // permission request from a diamond click. Fail closed if the grant is absent.
+        setStatus("approval"); setMessage("Checking the DeSo permission granted at login…")
+        const permitted = await awaitIdentityResponse(viaModernIdentity.hasPermissions({ GlobalDESOLimit: cost, TransactionCountLimitMap: { BASIC_TRANSFER: 1 } }), 20000)
+        if (!permitted) throw new Error("DeSo diamantmachtiging ontbreekt in deze sessie. Meld je opnieuw aan via de VIA-homepage om de eenmalige toestemming te verlenen.")
         await assertAccount()
         setMessage("DeSo Identity is signing your Diamond…")
         const signedTransactionHex = await awaitIdentityResponse(viaModernIdentity.signTx(data.transactionHex), 20000)
