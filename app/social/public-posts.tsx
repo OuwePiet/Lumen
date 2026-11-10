@@ -110,6 +110,8 @@ function feedReadyMessage(choice: ChoiceId) {
 
 export default function PublicPosts({ initialPost }: { initialPost?: PublicPost | null }) {
   const requestController = useRef<AbortController | null>(null)
+  // Preserve the last successfully rendered feed while a new DeSo request is pending.
+  const lastSuccessfulFeed = useRef<{ choice: ChoiceId; posts: PublicPost[] } | null>(null)
   const [posts, setPosts] = useState<PublicPost[]>(initialPost ? [initialPost] : [])
   const [mediaFilter, setMediaFilter] = useState<"all" | "image" | "video" | "nft">("all")
   const [loading, setLoading] = useState(false)
@@ -213,7 +215,7 @@ export default function PublicPosts({ initialPost }: { initialPost?: PublicPost 
       setFeedChoice(choice)
       setSharedPostHash(null)
       setHasMore(true)
-      setPosts([])
+      // Keep the existing posts visible until the next feed has loaded.
       setMediaFilter("all")
       setLoading(false)
       setReplyingTo(null)
@@ -315,8 +317,7 @@ export default function PublicPosts({ initialPost }: { initialPost?: PublicPost 
     requestController.current = controller
 
     if (!sharedPostHash && feedChoice === "following" && !session) {
-      setPosts([])
-      setMessage("Log in with DeSo to open Following.")
+      setMessage("Log in with DeSo to open Following. Previous posts remain visible.")
       requestController.current = null
       setLoading(false)
       return
@@ -351,12 +352,12 @@ export default function PublicPosts({ initialPost }: { initialPost?: PublicPost 
       if (controller.signal.aborted || requestController.current !== controller) return
       if (!response.ok || !data.ok || !Array.isArray(data.posts)) throw new Error("FEED_UNAVAILABLE")
       const nextPosts = data.posts
+      lastSuccessfulFeed.current = { choice: feedChoice, posts: nextPosts }
       setPosts(nextPosts)
       setMessage(nextPosts.length ? `${nextPosts.length} posts loaded.` : "No posts found.")
     } catch (error) {
       if (!controller.signal.aborted && requestController.current === controller) {
-        if (!sharedPostHash) setPosts([])
-        setMessage(sharedPostHash ? "This shared post is unavailable." : "Posts are temporarily unavailable.")
+        setMessage(sharedPostHash ? "This shared post is unavailable." : "Posts are temporarily unavailable. Previous posts remain visible.")
       }
     } finally {
       window.clearTimeout(timeout)
