@@ -708,6 +708,11 @@ export default function ViaSiteHeader() {
 @media (max-width:720px) { .via-site-header { position:relative; } .via-mobile-drawer-trigger { display:flex; align-items:center; justify-content:center; position:absolute; right:10px; top:7px; z-index:5; width:44px; height:44px; border:1px solid #426b50; border-radius:12px; background:#0b2015; color:#b6e5c5; } .via-site-header-nav { padding-right:48px !important; } }
         .via-mobile-social-bar { display:none; }
         @media (max-width:720px) {
+          /* Mobile uses the drawer instead of a second, horizontally scrolling page navigation. */
+          .via-site-header-nav, .via-site-header-nav-compact-mobile { display:none !important; }
+          .via-site-header-top { pointer-events:none; }
+        }
+        @media (max-width:720px) {
           .via-mobile-social-bar { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); position:fixed; left:0; right:0; bottom:0; z-index:850; padding:7px 4px calc(7px + env(safe-area-inset-bottom)); background:#08170e; border-top:1px solid #3a6549; box-shadow:0 -5px 22px #0009; }
           .via-mobile-social-bar a { min-width:0; min-height:47px; display:flex; flex-direction:column; gap:3px; align-items:center; justify-content:center; color:#c2dfcb; text-decoration:none; font-size:10px; }
           .via-mobile-social-bar a[aria-current="page"] { color:#90e0ac; }
