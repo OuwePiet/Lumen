@@ -333,11 +333,11 @@ export default function ViaSiteHeader() {
       <button type="button" className="via-mobile-drawer-trigger" aria-label="Open VIA menu" aria-expanded={mobileDrawerOpen} onClick={() => setMobileDrawerOpen(true)}><Menu size={22} /></button>
       {mobileDrawerOpen ? <div className="via-mobile-drawer-overlay" onClick={() => setMobileDrawerOpen(false)}><nav className="via-mobile-drawer" aria-label="VIA mobiel menu" onClick={(event) => event.stopPropagation()}><div className="via-mobile-drawer-heading"><strong>VIA</strong><button type="button" aria-label="Sluit VIA menu" onClick={() => setMobileDrawerOpen(false)}><X size={22} /></button></div>{nav.map(([key, href]) => <Link key={href} href={href} onClick={() => setMobileDrawerOpen(false)}>{t[key]}</Link>)}<Link href="/messages" onClick={() => setMobileDrawerOpen(false)}>Berichten</Link><Link href="/bookmarks" onClick={() => setMobileDrawerOpen(false)}>Bookmarks</Link><Link href="/profile" onClick={() => setMobileDrawerOpen(false)}>{t.profile}</Link><Link href="/wallet" onClick={() => setMobileDrawerOpen(false)}>{t.wallet}</Link><Link href="/help" onClick={() => setMobileDrawerOpen(false)}>VIA Handboek</Link><Link href="/wereldkalender" onClick={() => setMobileDrawerOpen(false)}>Wereldkalender</Link><Link href="/music" onClick={() => setMobileDrawerOpen(false)}>VIA Play</Link></nav></div> : null}
       {pathname !== "/" ? <nav className="via-mobile-social-bar" aria-label="Snelle VIA navigatie">
-        <Link href="/" aria-label="Homepage"><House size={21}/><span>Home</span></Link>
-        <Link href="/social" aria-label="Postkantoor"><Menu size={21}/><span>Posts</span></Link>
-        <Link href="/notifications" aria-label="Meldingen"><Bell size={21}/><span>Meldingen</span></Link>
-        <Link href="/messages" aria-label="Berichten"><MessageCircle size={21}/><span>Berichten</span></Link>
-        <Link href="/wallet" aria-label="Wallet"><Wallet size={21}/><span>Wallet</span></Link>
+        <Link href="/" aria-label="Homepage" aria-current={pathname === "/" ? "page" : undefined}><House size={21}/><span>Home</span></Link>
+        <Link href="/social" aria-label="Postkantoor" aria-current={pathname.startsWith("/social") ? "page" : undefined}><Menu size={21}/><span>Posts</span></Link>
+        <Link href="/notifications" aria-label="Meldingen" aria-current={pathname.startsWith("/notifications") ? "page" : undefined}><Bell size={21}/><span>Meldingen</span></Link>
+        <Link href="/messages" aria-label="Berichten" aria-current={pathname.startsWith("/messages") ? "page" : undefined}><MessageCircle size={21}/><span>Berichten</span></Link>
+        <Link href="/wallet" aria-label="Wallet" aria-current={pathname.startsWith("/wallet") ? "page" : undefined}><Wallet size={21}/><span>Wallet</span></Link>
       </nav> : null}
       <div style={styles.shell} className="via-site-header-shell">
         <Link href="/" style={styles.brand} className="via-site-header-brand" aria-label="VIA home">
