@@ -718,6 +718,8 @@ export default function ViaSiteHeader() {
           .via-mobile-social-bar { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); position:fixed; left:0; right:0; bottom:0; z-index:850; padding:7px 4px calc(7px + env(safe-area-inset-bottom)); background:#08170e; border-top:1px solid #3a6549; box-shadow:0 -5px 22px #0009; }
           .via-mobile-social-bar a { min-width:0; min-height:47px; display:flex; flex-direction:column; gap:3px; align-items:center; justify-content:center; color:#c2dfcb; text-decoration:none; font-size:10px; }
           .via-mobile-social-bar a[aria-current="page"] { color:#90e0ac; }
+          .via-mobile-social-bar a:focus-visible, .via-mobile-drawer a:focus-visible, .via-mobile-drawer button:focus-visible, .via-mobile-drawer-trigger:focus-visible { outline:2px solid #a5f5bd; outline-offset:2px; border-radius:8px; }
+          @media (orientation:landscape) and (max-height:500px) { .via-mobile-social-bar { padding-top:2px; padding-bottom:calc(2px + env(safe-area-inset-bottom)); } .via-mobile-social-bar a { min-height:40px; } }
           body:has(.via-mobile-social-bar) { padding-bottom:calc(74px + env(safe-area-inset-bottom)); }
         }
       `}</style>
