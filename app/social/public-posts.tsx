@@ -110,8 +110,6 @@ function feedReadyMessage(choice: ChoiceId) {
 
 export default function PublicPosts({ initialPost }: { initialPost?: PublicPost | null }) {
   const requestController = useRef<AbortController | null>(null)
-  // Preserve the last successfully rendered feed while a new DeSo request is pending.
-  const lastSuccessfulFeed = useRef<{ choice: ChoiceId; posts: PublicPost[] } | null>(null)
   const [posts, setPosts] = useState<PublicPost[]>(initialPost ? [initialPost] : [])
   const [mediaFilter, setMediaFilter] = useState<"all" | "image" | "video" | "nft">("all")
   const [loading, setLoading] = useState(false)
@@ -352,7 +350,6 @@ export default function PublicPosts({ initialPost }: { initialPost?: PublicPost 
       if (controller.signal.aborted || requestController.current !== controller) return
       if (!response.ok || !data.ok || !Array.isArray(data.posts)) throw new Error("FEED_UNAVAILABLE")
       const nextPosts = data.posts
-      lastSuccessfulFeed.current = { choice: feedChoice, posts: nextPosts }
       setPosts(nextPosts)
       setMessage(nextPosts.length ? `${nextPosts.length} posts loaded.` : "No posts found.")
     } catch (error) {
