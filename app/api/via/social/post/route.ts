@@ -124,7 +124,13 @@ export async function POST(request: Request) {
       : DEFAULT_MIN_FEE_RATE_NANOS_PER_KB
 
     try {
-      const postExtraData: Record<string, string> = { ViaClient: "viadeso.online" }
+      // TEST BRANCH ONLY: Node 56 is not yet registered (deso-protocol/core#1478).
+      // Never merge this experiment to production before approval and verification.
+      const postExtraData: Record<string, string> = {
+        ViaClient: "viadeso.online",
+        app: "VIA",
+        Node: "56",
+      }
       if (nftCollection) await assertNFTCollectionItems(nftCollection)
       if (nftCollection) postExtraData[NFT_COLLECTION_EXTRA_KEY] = JSON.stringify(nftCollection)
       if (pollOptions.length >= 2) postExtraData.PollOptions = JSON.stringify(pollOptions)
