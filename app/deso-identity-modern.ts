@@ -47,6 +47,9 @@ export const VIA_BASE_SPENDING_LIMITS: Parameters<typeof identity.hasPermissions
     CREATE_POST_ASSOCIATION: "UNLIMITED",
     NEW_MESSAGE: "UNLIMITED",
     CREATE_NFT: "UNLIMITED",
+    // DeSo diamonds use BASIC_TRANSFER. Request this with the single homepage
+    // Identity approval, under the existing finite GlobalDESOLimit ceiling.
+    BASIC_TRANSFER: 100,
   },
 }
 
