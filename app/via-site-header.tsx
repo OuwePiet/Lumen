@@ -336,7 +336,7 @@ export default function ViaSiteHeader() {
 
         <div style={styles.topRow} className="via-site-header-top">
           <nav style={styles.nav} className={`via-site-header-nav ${pathname === "/notifications" || pathname === "/radio" || pathname === "/messages" || pathname === "/profile" ? "via-site-header-nav-compact-mobile" : ""}`} aria-label="VIA main navigation">
-            {nav.filter(([key]) => key !== "home").map(([key, href]) => {
+            {nav.map(([key, href]) => {
               const active = href === "/collection" ? isNFTWorkspace(pathname) : href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`)
               return <Link key={href} href={href} className="via-site-header-link" style={{ ...styles.link, ...(active ? styles.activeLink : {}) }}>{t[key]}{active ? <span style={styles.activeLine} aria-hidden="true" /> : null}</Link>
             })}
@@ -355,7 +355,7 @@ export default function ViaSiteHeader() {
               </button>)}
             </div> : null}
           </div>
-          {pathname === "/notifications" || pathname === "/radio" || pathname === "/messages" || pathname === "/profile" ? <Link href="/" className="via-notifications-home-top" aria-label="Home" title="Home"><span className="via-notifications-home-label">Home</span></Link> : null}
+          
           {pathname === "/messages" ? <Link href="/radio" className="via-notifications-radio-top" aria-label="World Radio" title="World Radio"><Radio className="h-4 w-4" aria-hidden="true" /><span className="via-radio-top-label">Radio</span></Link> : null}
           {!session && !isHomepage && pathname !== "/messages" ? <button className="via-site-header-public-entry" type="button" onClick={enterPublicMode} style={{ ...pill, cursor: "pointer" }}>{t.publicEntrance}</button> : null}
           {!session && !isHomepage && pathname !== "/messages" ? <button type="button" onClick={() => void loginWithDeSo()} style={styles.login}>{t.login}</button> : null}
