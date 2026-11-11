@@ -32,43 +32,44 @@ const nav = [
   ["games", "/quest"],
   ["communities", "/communities"],
   ["world", "/world"],
+  ["wereldspiegel", "/wereldspiegel"],
   ["myVia", "/my-via"],
 ] as const
 
 type HeaderCopy = {
-  home: string; feed: string; discover: string; nfts: string; live: string; games: string; communities: string; world: string; myVia: string;
+  home: string; feed: string; discover: string; nfts: string; live: string; games: string; communities: string; world: string; wereldspiegel: string; myVia: string;
   search: string; publicEntrance: string; login: string; wallet: string; notifications: string; connected: string;
   profile: string; saved: string; drafts: string; settings: string; switchAccount: string; desoAccount: string; addAccount: string; logout: string;
 }
 
 const headerCopy: Record<ViaLanguage | "Hindi", HeaderCopy> = {
   Dutch: {
-    home: "Home", feed: "Postkantoor", discover: "Ontdekken", nfts: "NFT's", live: "Live", games: "Spellen", communities: "Community's", world: "Wereld", myVia: "Mijn VIA",
+    home: "Home", feed: "Postkantoor", discover: "Ontdekken", nfts: "NFT's", live: "Live", games: "Spellen", communities: "Community's", world: "Wereld", wereldspiegel: "De WereldSpiegel", myVia: "Mijn VIA",
     search: "Zoek leden", publicEntrance: "Publieke ingang", login: "DeSo Login", wallet: "Mijn Wallet", notifications: "Meldingen", connected: "DeSo verbonden",
     profile: "Mijn profiel", saved: "Bookmarks", drafts: "Concepten", settings: "Instellingen", switchAccount: "Wissel account", desoAccount: "DeSo-account", addAccount: "DeSo-account toevoegen", logout: "Uitloggen uit VIA",
   },
   English: {
-    home: "Home", feed: "Post Office", discover: "Discover", nfts: "NFTs", live: "Live", games: "Games", communities: "Communities", world: "World", myVia: "My VIA",
+    home: "Home", feed: "Post Office", discover: "Discover", nfts: "NFTs", live: "Live", games: "Games", communities: "Communities", world: "World", wereldspiegel: "De WereldSpiegel", myVia: "My VIA",
     search: "Search members", publicEntrance: "Public Entrance", login: "DeSo Login", wallet: "My Wallet", notifications: "Notifications", connected: "DeSo connected",
     profile: "My Profile", saved: "Bookmarks", drafts: "Drafts", settings: "Settings", switchAccount: "Switch account", desoAccount: "DeSo account", addAccount: "Add DeSo account", logout: "Logout from VIA",
   },
   French: {
-    home: "Accueil", feed: "Bureau de poste", discover: "Découvrir", nfts: "NFT", live: "Live", games: "Jeux", communities: "Communautés", world: "Monde", myVia: "Mon VIA",
+    home: "Accueil", feed: "Bureau de poste", discover: "Découvrir", nfts: "NFT", live: "Live", games: "Jeux", communities: "Communautés", world: "Monde", wereldspiegel: "De WereldSpiegel", myVia: "Mon VIA",
     search: "Rechercher des membres", publicEntrance: "Entrée publique", login: "Connexion DeSo", wallet: "Mon Wallet", notifications: "Notifications", connected: "DeSo connecté",
     profile: "Mon profil", saved: "Favoris", drafts: "Brouillons", settings: "Paramètres", switchAccount: "Changer de compte", desoAccount: "Compte DeSo", addAccount: "Ajouter un compte DeSo", logout: "Se déconnecter de VIA",
   },
   Spanish: {
-    home: "Inicio", feed: "Oficina de correos", discover: "Descubrir", nfts: "NFT", live: "Live", games: "Juegos", communities: "Comunidades", world: "Mundo", myVia: "Mi VIA",
+    home: "Inicio", feed: "Oficina de correos", discover: "Descubrir", nfts: "NFT", live: "Live", games: "Juegos", communities: "Comunidades", world: "Mundo", wereldspiegel: "De WereldSpiegel", myVia: "Mi VIA",
     search: "Buscar miembros", publicEntrance: "Entrada pública", login: "Acceso DeSo", wallet: "Mi Wallet", notifications: "Notificaciones", connected: "DeSo conectado",
     profile: "Mi perfil", saved: "Guardados", drafts: "Borradores", settings: "Ajustes", switchAccount: "Cambiar cuenta", desoAccount: "Cuenta DeSo", addAccount: "Añadir cuenta DeSo", logout: "Cerrar sesión en VIA",
   },
   Chinese: {
-    home: "首页", feed: "邮局", discover: "发现", nfts: "NFT", live: "直播", games: "游戏", communities: "社区", world: "世界", myVia: "我的 VIA",
+    home: "首页", feed: "邮局", discover: "发现", nfts: "NFT", live: "直播", games: "游戏", communities: "社区", world: "世界", wereldspiegel: "De WereldSpiegel", myVia: "我的 VIA",
     search: "搜索成员", publicEntrance: "公开入口", login: "DeSo 登录", wallet: "我的钱包", notifications: "通知", connected: "DeSo 已连接",
     profile: "我的资料", saved: "书签", drafts: "草稿", settings: "设置", switchAccount: "切换账户", desoAccount: "DeSo 账户", addAccount: "添加 DeSo 账户", logout: "退出 VIA",
   },
   Hindi: {
-    home: "होम", feed: "डाकघर", discover: "खोजें", nfts: "NFT", live: "लाइव", games: "गेम्स", communities: "समुदाय", world: "दुनिया", myVia: "मेरा VIA",
+    home: "होम", feed: "डाकघर", discover: "खोजें", nfts: "NFT", live: "लाइव", games: "गेम्स", communities: "समुदाय", world: "दुनिया", wereldspiegel: "De WereldSpiegel", myVia: "मेरा VIA",
     search: "सदस्य खोजें", publicEntrance: "सार्वजनिक प्रवेश", login: "DeSo लॉगिन", wallet: "मेरा वॉलेट", notifications: "सूचनाएँ", connected: "DeSo जुड़ा है",
     profile: "मेरी प्रोफ़ाइल", saved: "बुकमार्क", drafts: "ड्राफ्ट", settings: "सेटिंग्स", switchAccount: "खाता बदलें", desoAccount: "DeSo खाता", addAccount: "DeSo खाता जोड़ें", logout: "VIA से लॉग आउट",
   },
@@ -287,7 +288,7 @@ export default function ViaSiteHeader() {
 
   if (pathname === "/wereldkalender") {
     const calendarLinks = [
-      [t.home, "/"], ["Handboek VIA", "/help"], ["VIA Muziek", "/music"],
+      [t.home, "/"], ["Handboek VIA", "/help"], ["VIA Play", "/music"], ["De WereldSpiegel", "/wereldspiegel"],
     ] as const
     return (
       <header className="via-site-header via-calendar-header" style={{ ...styles.header, padding: "7px 10px",background:"linear-gradient(90deg,rgba(8,22,15,.97),rgba(19,42,29,.97) 50%,rgba(31,35,19,.97))",borderBottom:"1px solid rgba(181,157,91,.30)",boxShadow:"0 6px 22px rgba(0,0,0,.22)" }}>
