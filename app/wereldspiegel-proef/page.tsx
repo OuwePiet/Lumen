@@ -15,7 +15,25 @@ const step=wide?2:1;const start=wide?Math.floor(page/2)*2:page;const index=Math.
 useEffect(()=>{setPage(0)},[country]);
 const move=(delta:number)=>setPage(p=>Math.max(0,Math.min(p+delta*(wide?2:1),wide?Math.floor((pages.length-1)/2)*2:pages.length-1)));
 useEffect(()=>{const key=(e:KeyboardEvent)=>{if(["INPUT","SELECT","TEXTAREA"].includes((document.activeElement?.tagName||"")))return;if(e.key==="ArrowRight")move(1);if(e.key==="ArrowLeft")move(-1)};document.addEventListener("keydown",key);return()=>document.removeEventListener("keydown",key)},[wide,pages.length]);
-function startVoiceSearch(){setToolsOpen(true);setMicMessage("");const W=window as Window & {SpeechRecognition?:new()=>any;webkitSpeechRecognition?:new()=>any};const Engine=W.SpeechRecognition||W.webkitSpeechRecognition;if(!Engine){setMicMessage("Spraakherkenning is niet beschikbaar in deze browser. Gebruik de zoekbalk.");return}try{const recognition=new Engine();recognition.lang="nl-NL";recognition.interimResults=false;recognition.onresult=(event)=>{const spoken=event.results[0]?.[0]?.transcript?.trim();if(spoken){setQuery(spoken);setChosen("");setMicMessage("Gehoord: "+spoken)}};recognition.onerror=(event)=>{setMicMessage(event.error==="not-allowed"?"Microfoontoegang geweigerd. Controleer Safari-instellingen.":"Spraakherkenning niet gelukt; typ je zoekopdracht.");setListening(false)};recognition.onend=()=>setListening(false);setListening(true);recognition.start()}catch{setListening(false);setMicMessage("De microfoon kon niet worden gestart.")}}
+async function startVoiceSearch(){
+setToolsOpen(true);setMicMessage("");
+if(!window.isSecureContext){setMicMessage("Voor microfoontoegang is een beveiligde HTTPS-verbinding nodig.");return}
+const W=window as Window & {SpeechRecognition?:new()=>any;webkitSpeechRecognition?:new()=>any};
+const Engine=W.SpeechRecognition||W.webkitSpeechRecognition;
+if(!Engine){setMicMessage("Deze browser ondersteunt spraakherkenning niet. Gebruik de zoekbalk of Safari.");return}
+if(!navigator.mediaDevices?.getUserMedia){setMicMessage("Deze browser biedt geen microfoontoegang aan websites. Gebruik de zoekbalk.");return}
+setMicMessage("Microfoontoegang aanvragen…");
+let stream:MediaStream;
+try{stream=await navigator.mediaDevices.getUserMedia({audio:true})}
+catch(error){const name=error instanceof DOMException?error.name:"onbekend";setMicMessage(name==="NotAllowedError"||name==="PermissionDeniedError"?"Microfoontoegang is niet toegestaan. Sta microfoongebruik toe in de browserinstellingen.":name==="NotFoundError"?"Geen microfoon gevonden op dit apparaat.": "Microfoontoegang mislukt ("+name+"). Gebruik de zoekbalk.");return}
+stream.getTracks().forEach(track=>track.stop());
+try{
+const recognition=new Engine();recognition.lang="nl-NL";recognition.interimResults=false;
+recognition.onresult=(event)=>{const spoken=event.results[0]?.[0]?.transcript?.trim();if(spoken){setQuery(spoken);setChosen("");setMicMessage("Gehoord: "+spoken)}};
+recognition.onerror=(event)=>{const code=String(event.error||"onbekend");const detail:Record<string,string>={"not-allowed":"Spraakherkenning is door de browser geweigerd.","service-not-allowed":"De spraakherkenningsdienst is niet toegestaan.","audio-capture":"De microfoon kan niet worden gebruikt.","network":"De spraakherkenningsdienst is niet bereikbaar.","no-speech":"Geen spraak gehoord. Probeer het opnieuw.","language-not-supported":"Deze browser ondersteunt de gekozen spreektaal niet.","aborted":"Spraakherkenning afgebroken."};setMicMessage((detail[code]||"Spraakherkenning mislukt.")+" (code: "+code+"). Je kunt blijven typen.");setListening(false)};
+recognition.onend=()=>setListening(false);setListening(true);setMicMessage("Luisteren…");recognition.start()
+}catch(error){setListening(false);setMicMessage("Spraakherkenning kon niet starten ("+(error instanceof Error?error.name:"onbekend")+"). Gebruik de zoekbalk.")}
+}
 const filtered=places.filter(p=>p.join(" ").toLowerCase().includes(query.toLowerCase())).slice(0,5);
 return <main className={`wereldspiegel-proef-root ${showViaHeader?"ws-show-via-header":""}`} style={{minHeight:"100vh",background:"#fbf9f5",color:"#25372b",fontFamily:"system-ui, sans-serif",padding:"18px"}}>
 <style>{` body:has(.wereldspiegel-proef-root):not(:has(.ws-show-via-header)) .via-site-header{display:none!important} body:has(.wereldspiegel-proef-root){background:#fbf9f5!important;color:#25372b!important} .ws-btn,.ws-select,.ws-input{font:inherit;border:1px solid #bac5b6;background:white;border-radius:9px;padding:10px 13px;color:#24382e}.ws-btn{cursor:pointer}.ws-btn:disabled{opacity:.4}.ws-paper{background:#fffefb;border:1px solid #e0ddd4;border-radius:14px;padding:clamp(18px,3vw,34px);min-height:390px;box-shadow:0 5px 18px #28372a0a;overflow-wrap:anywhere}.ws-btn:focus-visible,.ws-select:focus-visible,.ws-input:focus-visible{outline:3px solid #a96d47}`}</style>
