@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import {useEffect,useMemo,useState} from "react";
 type Story={title:string;summary:string;country:string;place:string;source:string};
 const stories:Story[]=[
@@ -22,6 +23,7 @@ return <main className="wereldspiegel-proef-root" style={{minHeight:"100vh",back
 <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,flexWrap:"wrap"}}>
 <div><div style={{fontSize:10,letterSpacing:1.7,color:"#60705f"}}>VIA · BESCHERMDE LEESPROEF</div><h1 style={{fontFamily:"Georgia,serif",fontWeight:400,fontSize:"clamp(25px,3vw,36px)",lineHeight:1.1,margin:"3px 0"}}>De WereldSpiegel</h1></div>
 <div style={{display:"flex",gap:7,alignItems:"center",flexWrap:"wrap"}}>
+<Link className="ws-btn" href="/" aria-label="Sluit De WereldSpiegel en ga terug naar VIA" title="Sluit De WereldSpiegel" style={{textDecoration:"none",display:"inline-flex",alignItems:"center",gap:5}}>✕ Sluiten</Link>
 <button className="ws-btn" onClick={()=>setToolsOpen(v=>!v)} aria-expanded={toolsOpen} aria-controls="ws-tools">{toolsOpen?"Sluit instellingen":"Zoeken en instellingen"}</button>
 <button className="ws-btn" aria-pressed={focus} onClick={()=>setFocus(f=>!f)}>{focus?"Normaal":"Leesrust"}</button>
 </div></div>
