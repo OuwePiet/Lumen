@@ -6,7 +6,7 @@ import { BookOpen, Music2 } from "lucide-react"
 
 export default function ViaHelpButton() {
   const pathname = usePathname()
-  if (pathname === "/social" || pathname === "/wereldkalender") return null
+  if (pathname === "/social" || pathname === "/wereldkalender" || pathname === "/wereldspiegel-proef") return null
 
   return (
     <nav className="via-global-guides" aria-label="VIA handbook and music">
@@ -14,9 +14,9 @@ export default function ViaHelpButton() {
         <BookOpen className="h-4 w-4" aria-hidden="true" />
         <span>Handboek VIA</span>
       </Link>
-      <Link href="/music" aria-label="VIA Muziek" title="VIA Muziek" className="via-global-guide-link">
+      <Link href="/music" aria-label="VIA Play" title="VIA Play" className="via-global-guide-link">
         <Music2 className="h-4 w-4" aria-hidden="true" />
-        <span>VIA Muziek</span>
+        <span>VIA Play</span>
       </Link>
       <style>{`
         .via-global-guides {
