@@ -27,10 +27,11 @@ let stream:MediaStream;
 try{stream=await navigator.mediaDevices.getUserMedia({audio:true})}
 catch(error){const name=error instanceof DOMException?error.name:"onbekend";setMicMessage(name==="NotAllowedError"||name==="PermissionDeniedError"?"Microfoontoegang is niet toegestaan. Sta microfoongebruik toe in de browserinstellingen.":name==="NotFoundError"?"Geen microfoon gevonden op dit apparaat.": "Microfoontoegang mislukt ("+name+"). Gebruik de zoekbalk.");return}
 stream.getTracks().forEach(track=>track.stop());
+setMicMessage("Microfoontoegang verleend. Spraakherkenning starten…");
 try{
 const recognition=new Engine();recognition.lang="nl-NL";recognition.interimResults=false;
 recognition.onresult=(event)=>{const spoken=event.results[0]?.[0]?.transcript?.trim();if(spoken){setQuery(spoken);setChosen("");setMicMessage("Gehoord: "+spoken)}};
-recognition.onerror=(event)=>{const code=String(event.error||"onbekend");const detail:Record<string,string>={"not-allowed":"Spraakherkenning is door de browser geweigerd.","service-not-allowed":"De spraakherkenningsdienst is niet toegestaan.","audio-capture":"De microfoon kan niet worden gebruikt.","network":"De spraakherkenningsdienst is niet bereikbaar.","no-speech":"Geen spraak gehoord. Probeer het opnieuw.","language-not-supported":"Deze browser ondersteunt de gekozen spreektaal niet.","aborted":"Spraakherkenning afgebroken."};setMicMessage((detail[code]||"Spraakherkenning mislukt.")+" (code: "+code+"). Je kunt blijven typen.");setListening(false)};
+recognition.onerror=(event)=>{const code=String(event.error||"onbekend");const detail:Record<string,string>={"not-allowed":"Microfoontoegang was verleend, maar de browser weigert de afzonderlijke spraakherkenning.","service-not-allowed":"Microfoontoegang was verleend, maar Safari staat de spraakherkenningsdienst niet toe.","audio-capture":"Microfoontoegang was verleend, maar de spraakherkenning kan geen audio ontvangen.","network":"De spraakherkenningsdienst is niet bereikbaar.","no-speech":"Geen spraak gehoord. Probeer het opnieuw.","language-not-supported":"Deze browser ondersteunt de gekozen spreektaal niet.","aborted":"Spraakherkenning afgebroken."};setMicMessage((detail[code]||"Spraakherkenning mislukt.")+" (code: "+code+"). Je kunt blijven typen.");setListening(false)};
 recognition.onend=()=>setListening(false);setListening(true);setMicMessage("Luisteren…");recognition.start()
 }catch(error){setListening(false);setMicMessage("Spraakherkenning kon niet starten ("+(error instanceof Error?error.name:"onbekend")+"). Gebruik de zoekbalk.")}
 }
