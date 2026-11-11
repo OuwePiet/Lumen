@@ -44,12 +44,12 @@ return <main className={`wereldspiegel-proef-root ${showViaHeader?"ws-show-via-h
 <h2 style={{fontFamily:"Georgia,serif",fontSize:27,margin:"0 0 14px"}}>VIA</h2>
 <nav style={{display:"grid",gap:7}}>{[["Home","/"],["Postkantoor","/social"],["Ontdekken","/discover"],["NFT's","/collection"],["Live","/live"],["Spellen","/quest"],["Community's","/communities"],["Wereld","/world"],["Mijn VIA","/my-via"],["Wallet","/wallet"],["Meldingen","/notifications"],["Handboek VIA","/help"],["VIA Play","/music"],["De WereldSpiegel","/wereldspiegel"]].map(([name,url])=><Link key={url} href={url} className="ws-btn" style={{textDecoration:"none"}}>{name}</Link>)}</nav>
 <button className="ws-btn" style={{width:"100%",marginTop:14}} onClick={()=>{setShowViaHeader(v=>!v);setNavOpen(false)}}>{showViaHeader?"Verberg originele VIA-balk":"Toon originele VIA-balk (login en account)"}</button>
-<p style={{fontSize:12,lineHeight:1.6,color:"#627165"}}>De originele VIA-balk blijft beschikbaar voor accountfuncties. De microfoon is nog niet bevestigd als aangesloten functie.</p>
+<p style={{fontSize:12,lineHeight:1.6,color:"#627165"}}>De WereldSpiegel is openbaar. Accountfuncties blijven onderdeel van de bestaande VIA-navigatie. Spraakherkenning is niet op alle apparaten beschikbaar.</p>
 </aside></>}
 <div style={{maxWidth:1200,margin:"auto"}}>
 <header style={{borderBottom:"1px solid #ddd9cd",paddingBottom:9}}>
 <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,flexWrap:"wrap"}}>
-<div><div style={{fontSize:10,letterSpacing:1.7,color:"#60705f"}}>VIA · BESCHERMDE LEESPROEF</div><h1 style={{fontFamily:"Georgia,serif",fontWeight:400,fontSize:"clamp(25px,3vw,36px)",lineHeight:1.1,margin:"3px 0"}}>De WereldSpiegel</h1></div>
+<div><div style={{fontSize:10,letterSpacing:1.7,color:"#60705f"}}>VIA · OPENBARE LEESPROEF</div><h1 style={{fontFamily:"Georgia,serif",fontWeight:400,fontSize:"clamp(25px,3vw,36px)",lineHeight:1.1,margin:"3px 0"}}>De WereldSpiegel</h1></div>
 <div style={{display:"flex",gap:7,alignItems:"center",flexWrap:"wrap"}}>
 <Link className="ws-btn" href="/" aria-label="Sluit De WereldSpiegel en ga terug naar VIA" title="Sluit De WereldSpiegel" style={{textDecoration:"none",display:"inline-flex",alignItems:"center",gap:5}}>✕ Sluiten</Link>
 <button className="ws-btn" onClick={startVoiceSearch} aria-label="Zoek met microfoon" title="Zoek met microfoon" aria-busy={listening}>🎤 {listening?"Luistert…":"Microfoon"}</button>
@@ -71,7 +71,7 @@ return <main className={`wereldspiegel-proef-root ${showViaHeader?"ws-show-via-h
 {pages.slice(index,index+step).map((s,i)=><article key={index+i} className="ws-paper" style={{fontSize:font}}><p style={{color:"#946a4e",fontSize:12,letterSpacing:1.2}}>WERELDSPIEGEL · {s.place}</p><h2 style={{fontFamily:"Georgia,serif",fontWeight:400,fontSize:"1.7em",lineHeight:1.2,margin:"18px 0"}}>{s.title}</h2><p style={{lineHeight:1.8}}>{s.summary}</p><p style={{color:"#69736d",fontSize:13,marginTop:28}}>Bron: {s.source} · Fictieve proeftekst</p></article>)}
 </div>
 <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:8,flexWrap:"wrap",margin:"16px 0"}}><button className="ws-btn" disabled={index===0} onClick={()=>move(-1)}>← Vorige pagina</button><span style={{fontSize:13,color:"#69736d"}}>Pagina {index+1}{wide&&index+1<pages.length?"–"+(index+2):""} van {pages.length}</span><button className="ws-btn" disabled={index+step>=pages.length} onClick={()=>move(1)}>Volgende pagina →</button></div>
-<aside style={{borderLeft:"3px solid #819b82",background:"#f1f3ed",padding:"12px 16px",lineHeight:1.6,fontSize:14}}><strong>Proefsite, geen actuele krant.</strong> Er zijn nog geen live nieuwsfeeds, echte foto's of advertenties aangesloten. Deze preview gebruikt geen DeSo-login, wallets of ondertekening.</aside>
+<aside style={{borderLeft:"3px solid #819b82",background:"#f1f3ed",padding:"12px 16px",lineHeight:1.6,fontSize:14}}><strong>Proefsite, geen actuele krant.</strong> Er zijn nog geen live nieuwsfeeds, echte foto's of advertenties aangesloten. Deze krantpagina gebruikt geen DeSo-login, wallets of ondertekening. De volledige beveiligingscontrole en echte nieuwsvoorziening zijn nog niet afgerond.</aside>
 <footer style={{padding:"25px 0",fontSize:12,color:"#69736d"}}>De WereldSpiegel · gratis leesconcept · geen login of betaalmuur</footer>
 </div></main>;
 }
