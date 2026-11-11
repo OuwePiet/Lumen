@@ -15,7 +15,7 @@ export default async function AppleIcon() {
       <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", background: "#050807" }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={src} alt="VIA" width={162} height={111} style={{ objectFit: "contain" }} />
-        <div style={{ color: "#ffffff", fontSize: 13, letterSpacing: 1.2, marginTop: 5 }}>viadeso.online</div>
+        <div style={{ color: "#ffffff", fontSize: 17, fontWeight: 700, letterSpacing: 0, marginTop: 5 }}>viadeso.online</div>
       </div>
     ),
     size,
