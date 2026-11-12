@@ -45,7 +45,7 @@ export function validateStory(input: unknown, now = Date.now()): VerifiedStory |
       sourceUrl.hostname.endsWith(".internal") || sourceUrl.hostname.startsWith("[") ||
       /^[0-9.]+$/.test(sourceUrl.hostname)) return null
   if (typeof item.publishedAt !== "string" || item.publishedAt.length > 40) return null
-  if (!/^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,3})?(?:Z|[+-]\\d{2}:\\d{2})$/.test(item.publishedAt)) return null
+  if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?(?:Z|[+-]\d{2}:\d{2})$/.test(item.publishedAt)) return null
   const published = Date.parse(item.publishedAt)
   if (!Number.isFinite(published) || published > now + 5 * 60_000 ||
       published < now - MAX_AGE_DAYS * 86_400_000) return null
