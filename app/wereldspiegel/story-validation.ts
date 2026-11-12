@@ -39,9 +39,14 @@ export function validateStory(input: unknown, now = Date.now()): VerifiedStory |
   if (typeof item.sourceUrl !== "string" || item.sourceUrl.length > MAX_URL) return null
   let sourceUrl: URL
   try { sourceUrl = new URL(item.sourceUrl) } catch { return null }
-  if (sourceUrl.protocol !== "https:" || sourceUrl.username || sourceUrl.password ||\n      sourceUrl.port || sourceUrl.hash || sourceUrl.hostname === "localhost" ||\n      sourceUrl.hostname.endsWith(".localhost") || sourceUrl.hostname.endsWith(".local") ||\n      sourceUrl.hostname.endsWith(".internal") || sourceUrl.hostname.startsWith("[") ||\n      /^[0-9.]+$/.test(sourceUrl.hostname)) return null
+  if (sourceUrl.protocol !== "https:" || sourceUrl.username || sourceUrl.password ||
+      sourceUrl.port || sourceUrl.hash || sourceUrl.hostname === "localhost" ||
+      sourceUrl.hostname.endsWith(".localhost") || sourceUrl.hostname.endsWith(".local") ||
+      sourceUrl.hostname.endsWith(".internal") || sourceUrl.hostname.startsWith("[") ||
+      /^[0-9.]+$/.test(sourceUrl.hostname)) return null
   if (typeof item.publishedAt !== "string" || item.publishedAt.length > 40) return null
-  if (!/^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,3})?(?:Z|[+-]\\d{2}:\\d{2})$/.test(item.publishedAt)) return null\n  const published = Date.parse(item.publishedAt)
+  if (!/^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,3})?(?:Z|[+-]\\d{2}:\\d{2})$/.test(item.publishedAt)) return null
+  const published = Date.parse(item.publishedAt)
   if (!Number.isFinite(published) || published > now + 5 * 60_000 ||
       published < now - MAX_AGE_DAYS * 86_400_000) return null
   // Only an independently verified place identifier is accepted.
