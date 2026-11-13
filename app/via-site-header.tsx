@@ -436,6 +436,13 @@ export default function ViaSiteHeader() {
         .via-site-header-language-menu { position: absolute; top: 44px; left: 0; z-index: 220; width: 118px; max-height: min(330px, calc(100vh - 90px)); overflow-y: auto; padding: 5px; border: 1px solid rgba(143,212,169,.22); border-radius: 12px; background: rgba(5,10,7,.99); box-shadow: 0 14px 34px rgba(0,0,0,.42); }
         .via-site-header-language-menu button { width: 100%; display: flex; align-items: center; gap: 8px; padding: 7px 9px; border: 0; border-radius: 8px; background: transparent; color: #cfd9d3; font-size: 12px; cursor: pointer; text-align: left; }
         .via-site-header-language-menu button:hover, .via-site-header-language-menu button:focus-visible, .via-site-header-language-menu button.is-active { background: rgba(40,95,64,.58); color: white; outline: none; }
+        @media (min-width: 721px) and (max-width: 1100px) {
+          .via-site-header-shell { width: calc(100% - 24px) !important; grid-template-columns: 150px minmax(0, 1fr) !important; column-gap: 10px !important; }
+          .via-site-header-nav { justify-content: flex-start !important; overflow-x: auto !important; scrollbar-width: none !important; }
+          .via-site-header-tools { justify-content: flex-start !important; overflow-x: auto !important; overflow-y: hidden !important; scrollbar-width: none !important; }
+          .via-site-header-nav::-webkit-scrollbar, .via-site-header-tools::-webkit-scrollbar { display: none; }
+          .via-site-header-link, .via-site-header-utility { flex: 0 0 auto !important; }
+        }
         @media (max-width: 720px) {
           .via-site-header-shell { width: 100% !important; padding: 0 12px 0 6px !important; box-sizing: border-box !important; grid-template-columns: 72px minmax(0, 1fr) !important; grid-template-rows: 58px 50px !important; column-gap: 6px !important; }
           .via-site-header-shell:has(.via-site-header-tools-notifications) { grid-template-rows: 52px !important; }
