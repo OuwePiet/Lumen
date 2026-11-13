@@ -1,5 +1,6 @@
-import { ViaPostActionBar } from "../social/via-post-action-bar"
 "use client"
+
+import { ViaPostActionBar } from "../social/via-post-action-bar"
 
 import Link from "next/link"
 import { useEffect, useState } from "react"
