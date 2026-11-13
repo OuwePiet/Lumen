@@ -78,7 +78,7 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
   function diamondUsd(nanos: number) {
     if (!Number.isFinite(nanos) || !desoUsd) return null
     const usd = (nanos / 1_000_000_000) * desoUsd
-    return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", minimumFractionDigits: usd < 1 ? 2 : 0, maximumFractionDigits: usd < 1 ? 2 : 0 }).format(Math.max(0.01, usd))
+    return usd < 1 ? "<$1" : new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(usd)
   }
 
   useEffect(() => {
@@ -212,12 +212,12 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
               {retryLevels}
               {!diamondValues && !levelsFailed ? <span role="status" className="px-1 text-xs text-zinc-400">Prijzen laden…</span> : null}
               {(diamondValues ?? []).map(({ level, nanos }) => {
-                const price = diamondUsd(nanos) ?? (nanos / 1_000_000_000) + " DESO"
+                const price = diamondUsd(nanos)
                 return (
                   <button key={level} type="button" disabled={busy || (previousLevel !== null && level <= previousLevel)}
-                    onClick={() => void prepare(level)} aria-label={"Verstuur diamantniveau " + level + " · " + price}
+                    onClick={() => void prepare(level)} aria-label={"Verstuur diamantniveau " + level + (price ? " · " + price : "")}
                     className="flex min-h-11 min-w-8 flex-col items-center justify-center gap-0.5 rounded-lg px-0.5 text-[#a8e5bd] hover:bg-[#285f40] hover:text-white disabled:opacity-40">
-                    <span className="rounded-full bg-[#234131] px-0.5 text-[10px] leading-3 text-white">{price}</span>
+                    <span className="rounded-full bg-[#234131] px-0.5 text-[10px] leading-3 text-white">{price ?? "–"}</span>
                     <Gem className="size-5" aria-hidden="true" />
                   </button>
                 )
