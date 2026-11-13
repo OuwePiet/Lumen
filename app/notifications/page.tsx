@@ -21,6 +21,7 @@ const COPY: Record<ViaLanguage | "Hindi", PageCopy> = {
 }
 
 export default function NotificationsPage() {
+  const [reading, setReading] = useState(false)
   const [language, setLanguage] = useState<ViaLanguage>("English")
   const [session, setSession] = useState<ViaModernIdentityUser | null>(null)
   const [unreadCount, setUnreadCount] = useState<number | null>(null)
@@ -74,15 +75,19 @@ export default function NotificationsPage() {
   const title = <span className="inline-flex min-w-0 items-center gap-2">{copy.title}{unreadCount !== null ? <span className="inline-flex shrink-0 items-center gap-1 rounded-full border border-emerald-500/40 bg-emerald-950/60 px-2 py-0.5 text-sm font-semibold text-emerald-300" aria-label={String(unreadCount) + " ongelezen meldingen"}><span aria-hidden="true" className="h-2 w-2 rounded-full bg-emerald-400" />{unreadCount}</span> : null}</span>
 
   return (
-    <main className={`${styles.page} min-h-screen bg-black px-0 pb-28 pt-0 text-white sm:px-8 sm:py-8 lg:px-12`}>
+    <main data-notification-reading={reading} className={`${styles.page} min-h-screen bg-black px-0 pb-8 pt-0 text-white sm:px-8 sm:py-2 lg:px-12`}>
       <div className="mx-auto grid max-w-7xl gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
         <div className="min-w-0">
-        <header className="mb-0 flex flex-wrap items-center justify-between gap-1 border-b border-white/10 px-4 pb-2 pt-1 sm:mb-6 sm:gap-4 sm:px-0 sm:pt-0 sm:pb-5 max-sm:border-b-0">
+        <header className="sticky top-0 z-30 mb-2 flex flex-wrap items-center justify-between gap-2 border-b border-white/10 bg-black px-4 py-1 sm:px-0">
           <div className="block">
-            <h1 className="text-base font-semibold tracking-tight sm:text-4xl">{title}</h1>
-            <p className="mt-2 hidden text-sm text-zinc-500 sm:block">{copy.intro}</p>
+            <h1 className="text-base font-semibold tracking-tight sm:text-2xl">{title}</h1>
           </div>
-          <div className="hidden w-full flex-nowrap items-center justify-end gap-2 py-1 sm:flex sm:w-auto sm:flex-wrap sm:justify-start sm:gap-2 sm:py-0"><div className="relative [&>button]:!grid [&>button]:!h-12 [&>button]:!w-12 [&>button]:!min-h-0 [&>button]:!place-items-center [&>button]:!rounded-full [&>button]:!p-0 [&>button]:!text-[0] sm:[&>button]:!inline-flex sm:[&>button]:!h-auto sm:[&>button]:!w-auto sm:[&>button]:!min-h-[38px] sm:[&>button]:!px-4 sm:[&>button]:!py-2 sm:[&>button]:!text-sm"><SponsorPlatform compact /><span className="pointer-events-none absolute inset-0 grid place-items-center text-xl leading-none text-[#9adbb2] sm:hidden" aria-hidden="true">💵</span></div><Link href="/social" aria-label={copy.back} title={copy.back} className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-[#8fd4a9]/35 bg-[#050b08]/80 p-0 text-[#9adbb2] hover:border-[#8fd4a9]/60 hover:bg-[#0c1711]/55 sm:h-auto sm:w-auto sm:min-h-[38px] sm:px-4 sm:py-2 sm:text-sm"><span className="text-3xl font-light leading-none sm:hidden" aria-hidden="true">←</span><span className="hidden sm:inline">{copy.back}</span></Link></div>
+          <div data-notification-controls className="hidden w-full flex-nowrap items-center justify-end gap-2 py-1 sm:flex sm:w-auto sm:flex-wrap sm:justify-start sm:gap-2 sm:py-0"><div className="relative [&>button]:!grid [&>button]:!h-12 [&>button]:!w-12 [&>button]:!min-h-0 [&>button]:!place-items-center [&>button]:!rounded-full [&>button]:!p-0 [&>button]:!text-[0] sm:[&>button]:!inline-flex sm:[&>button]:!h-auto sm:[&>button]:!w-auto sm:[&>button]:!min-h-[38px] sm:[&>button]:!px-4 sm:[&>button]:!py-2 sm:[&>button]:!text-sm"><SponsorPlatform compact /><span className="pointer-events-none absolute inset-0 grid place-items-center text-xl leading-none text-[#9adbb2] sm:hidden" aria-hidden="true">💵</span></div><Link href="/social" aria-label={copy.back} title={copy.back} className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-[#8fd4a9]/35 bg-[#050b08]/80 p-0 text-[#9adbb2] hover:border-[#8fd4a9]/60 hover:bg-[#0c1711]/55 sm:h-auto sm:w-auto sm:min-h-[38px] sm:px-4 sm:py-2 sm:text-sm"><span className="text-3xl font-light leading-none sm:hidden" aria-hidden="true">←</span><span className="hidden sm:inline">{copy.back}</span></Link></div>
+          <button type="button" aria-expanded={!reading} aria-controls="notification-controls"
+            onClick={() => setReading(value => !value)}
+            className="min-h-11 rounded-lg px-3 text-sm text-[#9adbb2] hover:bg-[#10251a]">
+            {({ Dutch: ["Knoppen inklappen", "Knoppen tonen"], English: ["Hide controls", "Show controls"], French: ["Masquer les commandes", "Afficher les commandes"], Spanish: ["Ocultar controles", "Mostrar controles"], Chinese: ["收起控件", "显示控件"], Hindi: ["नियंत्रण छिपाएँ", "नियंत्रण दिखाएँ"] })[language][reading ? 1 : 0]}
+          </button>
         </header>
 
         <NotificationCenter language={language} />

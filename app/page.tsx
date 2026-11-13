@@ -5,7 +5,7 @@ import ViaHomeEarth from "./via-home-earth"
 import ViaSeasonal from "./via-seasonal"
 import ViaNewYear from "./via-new-year"
 import ViaWorldClock from "./via-world-clock"
-import { getFeaturedCities } from "./api/via/featured-cities/route"
+import { getFeaturedCities } from "../lib/via/featured-cities"
 
 export default async function Home() {
   const featured = await getFeaturedCities()
