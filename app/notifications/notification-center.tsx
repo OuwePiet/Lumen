@@ -495,7 +495,8 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
   const [rewardMessage, setRewardMessage] = useState("")
   const [rewardBusy, setRewardBusy] = useState(false)
   async function sendReward(post: PublicPost) {
-    if (!session || rewardBusy) return
+    if (!session || rewardBusy || session.publicKey === post.publicKey) return
+    const senderPublicKey = session.publicKey
     const usd = Number(rewardUsd)
     if (!Number.isFinite(usd) || usd <= 0) { setRewardMessage(copy.rewardFailed); return }
     setRewardBusy(true)
@@ -505,10 +506,12 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
       if (isViaRateStale(rates.checkedAt) || !rates.rates?.USD || rates.rates.USD <= 0) throw new Error("RATE")
       const amountNanos = Math.round((usd / rates.rates.USD) * 1_000_000_000)
       if (!Number.isSafeInteger(amountNanos) || amountNanos < 1) throw new Error("AMOUNT")
-      const response = await fetch("/api/via/social/reward", { method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store", body: JSON.stringify({ action: "prepare", senderPublicKey: session.publicKey, recipientPublicKey: post.publicKey, amountNanos, confirmed: true }) })
+      const response = await fetch("/api/via/social/reward", { method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store", body: JSON.stringify({ action: "prepare", senderPublicKey, recipientPublicKey: post.publicKey, amountNanos, confirmed: true }) })
       const result = await response.json() as { ok?: boolean; transactionHex?: string }
       if (!response.ok || !result.ok || !result.transactionHex) throw new Error("PREPARE")
+      if ((await viaModernIdentity.currentUser())?.publicKey !== senderPublicKey) throw new Error("DESO_ACCOUNT_CHANGED")
       const signedTransactionHex = await viaModernIdentity.signTx(result.transactionHex)
+      if ((await viaModernIdentity.currentUser())?.publicKey !== senderPublicKey) throw new Error("DESO_ACCOUNT_CHANGED")
       const submitResponse = await fetch("/api/via/social/reward", { method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store", body: JSON.stringify({ action: "submit", signedTransactionHex }) })
       const submitResult = await submitResponse.json() as { ok?: boolean }
       if (!submitResponse.ok || !submitResult.ok) throw new Error("SUBMIT")
