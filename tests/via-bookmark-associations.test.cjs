@@ -101,3 +101,11 @@ test("Post Office More menu overlays posts without changing document flow", () =
   assert.match(posts, /max-w-\[calc\(100vw-2rem\)\]/)
   assert.match(posts, /aria-label="Meer postacties"/)
 })
+
+test("Notification rewards block self-payments and verify account before signing and submitting", () => {
+  const notifications = read("app/notifications/notification-center.tsx")
+  assert.match(notifications, /session\.publicKey === post\.publicKey/)
+  assert.match(notifications, /const senderPublicKey = session\.publicKey/)
+  assert.match(notifications, /DESO_ACCOUNT_CHANGED/)
+  assert.match(notifications, /viaModernIdentity\.signTx\(result\.transactionHex\)/)
+})
