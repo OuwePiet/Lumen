@@ -1,3 +1,4 @@
+import { ViaPostActionBar } from "./via-post-action-bar"
 "use client"
 
 import Link from "next/link"
@@ -528,7 +529,7 @@ export default function PublicPosts({ initialPost }: { initialPost?: PublicPost 
                   </div>
                 ) : null}
 
-                <div data-via-post-actions className="mt-4 flex flex-wrap items-start gap-2 border-t border-white/[0.06] pt-3 text-xs text-zinc-500">
+                <ViaPostActionBar className="mt-4 border-t border-white/[0.06] pt-3 text-zinc-500">
                   <button type="button" onClick={() => (setReplyParent(null), setReplyingTo(isReplying ? null : post.postHash))} title="Reply" aria-label={`Reply · ${post.commentCount}`} className="inline-flex h-9 min-w-9 items-center justify-center gap-1 rounded-full border border-zinc-800 px-2 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2]"><MessageSquare aria-hidden="true" className="h-4 w-4" /><span>{post.commentCount}</span></button>
                   {session ? <RepostButton quotedPost={post} postHash={post.postHash} initialCount={totalReposts} variant="icon" /> : <button type="button" title="Repost (DeSo login required)" onClick={() => setActionLoginPost(post.postHash)} className="inline-flex h-9 min-w-9 items-center justify-center gap-1 rounded-full border border-zinc-800 px-2 text-xs text-zinc-300">Repost · {totalReposts}</button>}
                   {session ? <DiamondButton postHash={post.postHash} receiverPublicKey={post.publicKey} initialCount={post.diamondCount} variant="icon" /> : <button type="button" title="Diamond (DeSo login required)" onClick={() => setActionLoginPost(post.postHash)} className="inline-flex h-9 min-w-9 items-center justify-center gap-1 rounded-full border border-zinc-800 px-2 text-xs text-zinc-300">Diamond · {post.diamondCount}</button>}
@@ -567,7 +568,7 @@ ${url}`
                     </div>
                   </details>
                   {isOwnPost ? <Link href={`/edit-post?post=${encodeURIComponent(post.postHash)}`} className="rounded-full border border-[#8fd4a9]/45 px-3 py-1 text-[#9adbb2]">Edit</Link> : null}
-                </div>
+                </ViaPostActionBar>
 
                 {actionLoginPost === post.postHash && !session ? (
                   <div role="status" className="mt-2 flex flex-wrap items-center gap-2 rounded-lg border border-[#8fd4a9]/35 p-3 text-sm text-zinc-300">
