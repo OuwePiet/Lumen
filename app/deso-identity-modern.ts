@@ -45,6 +45,7 @@ export const VIA_BASE_SPENDING_LIMITS: Parameters<typeof identity.hasPermissions
     FOLLOW: "UNLIMITED",
     UPDATE_PROFILE: "UNLIMITED",
     CREATE_POST_ASSOCIATION: "UNLIMITED",
+    DELETE_POST_ASSOCIATION: "UNLIMITED",
     NEW_MESSAGE: "UNLIMITED",
     CREATE_NFT: "UNLIMITED",
     // DeSo diamonds use BASIC_TRANSFER. Request this with the single homepage
