@@ -1,3 +1,4 @@
+import { ViaPostActionBar } from "../social/via-post-action-bar"
 "use client"
 
 import Link from "next/link"
@@ -931,7 +932,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
                   </> : null}
                   {post.imageUrls?.length ? <div className="mt-3 grid gap-2 sm:grid-cols-2">{post.imageUrls.slice(0, 4).map((url) => <img key={url} src={url} alt="" loading="lazy" className="max-h-72 w-full rounded-xl object-contain" />)}</div> : null}
                   {post.videoUrls?.length ? <div className="mt-3 space-y-2">{post.videoUrls.slice(0, 2).filter(url => { try { return new URL(url).protocol === "https:" } catch { return false } }).map(url => <PostVideo key={url} url={url} />)}</div> : null}
-                  <div data-via-post-actions className="mt-1 flex flex-wrap items-start gap-1 pt-1">
+                  <ViaPostActionBar className="mt-1 pt-1">
                     <button
                       type="button"
                       onClick={() => setReplyingTo((current) => current === post.postHash ? null : post.postHash)}
@@ -963,7 +964,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
                         <button type="button" onClick={(event) => event.currentTarget.closest("details")?.removeAttribute("open")} className="mt-1 w-full rounded-lg border border-zinc-800 px-3 py-2 text-left text-xs text-zinc-400 hover:border-[#8fd4a9]/45 hover:text-white">{copy.close}</button>
                       </div>
                     </details>
-                  </div>
+                  </ViaPostActionBar>
                   {rewardPost === post.postHash ? <div className="mt-3 rounded-xl border border-[#285f40]/70 bg-[#07110b] p-3">
                     <div className="flex flex-wrap items-center gap-2">
                       <label className="text-xs text-zinc-400" htmlFor={`reward-${post.postHash}`}>{copy.rewardAmount}</label>
