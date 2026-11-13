@@ -1,12 +1,13 @@
 "use client"
 
 import { ViaPostActionBar } from "../social/via-post-action-bar"
+import ViaRewardButton from "../social/via-reward-button"
 
 import Link from "next/link"
 import styles from "./notification-center.module.css"
 import { acknowledgeNotificationVisit, validNotificationIndex } from "../notification-indicator"
 import { useEffect, useMemo, useRef, useState } from "react"
-import { ArrowUpRight, AtSign, Badge, Check, CheckCircle2, CircleDot, CircleDollarSign, Gem, Heart, Link2, MessageSquare, RefreshCw, Repeat2, ShieldCheck, ShieldOff, Smile, UserPlus, UserRound, LayoutGrid } from "lucide-react"
+import { AtSign, Badge, Check, CheckCircle2, CircleDot, CircleDollarSign, Gem, Heart, Link2, MessageSquare, RefreshCw, Repeat2, ShieldCheck, ShieldOff, Smile, UserPlus, UserRound, LayoutGrid } from "lucide-react"
 
 const QUALITY_SHIELD_STORAGE_KEY = "via:notifications:quality-shield"
 const BODY_LABELS = {
@@ -18,7 +19,6 @@ const BODY_LABELS = {
   Hindi: { more: "और पढ़ें…", less: "कम दिखाएँ" },
 }
 import { viaModernIdentity, type ViaModernIdentityUser } from "../deso-identity-modern"
-import { fetchViaRates, isViaRateStale } from "../via-live-rates"
 import type { ViaLanguage } from "../via-local-settings"
 import LikeButton from "../social/like-button"
 import PostComposer from "../social/post-composer"
@@ -490,45 +490,6 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
   const [postCache, setPostCache] = useState<Record<string, PublicPost | null>>({})
   const [replyingTo, setReplyingTo] = useState<string | null>(null)
   const [copiedPost, setCopiedPost] = useState<string | null>(null)
-  const [rewardPost, setRewardPost] = useState<string | null>(null)
-  const [rewardUsd, setRewardUsd] = useState("1.00")
-  const [rewardMessage, setRewardMessage] = useState("")
-  const [rewardBusy, setRewardBusy] = useState(false)
-  async function sendReward(post: PublicPost) {
-    if (!session || rewardBusy || session.publicKey === post.publicKey) return
-    const senderPublicKey = session.publicKey
-    const usd = Number(rewardUsd)
-    if (!Number.isFinite(usd) || usd <= 0) { setRewardMessage(copy.rewardFailed); return }
-    if (!window.confirm(`Reward voorbereiden voor @${post.username?.replace(/^@/, "") || post.publicKey} van ${usd.toFixed(2)}? De definitieve DESO-waarde en netwerkkosten volgen ter bevestiging vóór ondertekening.`)) return
-    setRewardBusy(true)
-    setRewardMessage(copy.rewardSending)
-    try {
-      const rates = await fetchViaRates()
-      if (isViaRateStale(rates.checkedAt) || !rates.rates?.USD || rates.rates.USD <= 0) throw new Error("RATE")
-      const amountNanos = Math.round((usd / rates.rates.USD) * 1_000_000_000)
-      if (!Number.isSafeInteger(amountNanos) || amountNanos < 1) throw new Error("AMOUNT")
-      const response = await fetch("/api/via/social/reward", { method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store", body: JSON.stringify({ action: "prepare", senderPublicKey, recipientPublicKey: post.publicKey, amountNanos, confirmed: true }) })
-      const result = await response.json() as { ok?: boolean; transactionHex?: string; feeNanos?: number | null }
-      if (!response.ok || !result.ok || !result.transactionHex) throw new Error("PREPARE")
-      const feeText = typeof result.feeNanos === "number" && Number.isFinite(result.feeNanos)
-        ? `${(result.feeNanos / 1_000_000_000).toFixed(9)} DESO`
-        : "niet beschikbaar"
-      const confirmedByUser = window.confirm(`VIA Reward bevestigen?\\nOntvanger: @${post.username?.replace(/^@/, "") || post.publicKey}\\nBedrag: ${usd.toFixed(2)} (ongeveer ${(amountNanos / 1_000_000_000).toFixed(9)} DESO)\\nNetwerkkosten: ${feeText}\\nDit is een echte blockchainbetaling en kan niet worden teruggedraaid.`)
-      if (!confirmedByUser) { setRewardBusy(false); setRewardMessage(""); return }
-      if ((await viaModernIdentity.currentUser())?.publicKey !== senderPublicKey) throw new Error("DESO_ACCOUNT_CHANGED")
-      const signedTransactionHex = await viaModernIdentity.signTx(result.transactionHex)
-      if ((await viaModernIdentity.currentUser())?.publicKey !== senderPublicKey) throw new Error("DESO_ACCOUNT_CHANGED")
-      const submitResponse = await fetch("/api/via/social/reward", { method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store", body: JSON.stringify({ action: "submit", signedTransactionHex }) })
-      const submitResult = await submitResponse.json() as { ok?: boolean }
-      if (!submitResponse.ok || !submitResult.ok) throw new Error("SUBMIT")
-      setRewardBusy(false)
-      setRewardMessage(copy.rewardSent)
-    } catch (error) {
-      setRewardBusy(false)
-      setRewardMessage(error instanceof Error && error.message === "RATE" ? copy.rewardRateUnavailable : copy.rewardFailed)
-    }
-  }
-
   useEffect(() => {
     try {
       setQualityShield(window.localStorage.getItem(QUALITY_SHIELD_STORAGE_KEY) === "on")
@@ -956,7 +917,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
                     <RepostButton quotedPost={post} postHash={post.postHash} initialCount={0} variant="icon" />
                     <DiamondButton postHash={post.postHash} receiverPublicKey={post.publicKey} initialCount={post.diamondCount} variant="icon" />
                      <LikeButton postHash={post.postHash} initialCount={post.likeCount} variant="icon" />
-                     <button type="button" onClick={() => { setRewardPost((current) => current === post.postHash ? null : post.postHash); setRewardMessage("") }} aria-label={copy.rewardAction} title={copy.rewardAction} aria-expanded={rewardPost === post.postHash} className="inline-flex h-9 min-w-9 items-center justify-center rounded-full border border-zinc-800 px-2 text-xs text-zinc-300 hover:border-[#8fd4a9] hover:text-white"><ArrowUpRight className="h-4 w-4" aria-hidden="true" /></button>
+                     <ViaRewardButton recipientPublicKey={post.publicKey} username={post.username} />
                      <details className="relative">
                       <summary className="grid h-9 w-9 cursor-pointer list-none place-items-center rounded-full border border-zinc-800 text-zinc-300 transition hover:border-[#8fd4a9] hover:text-white" aria-label="More actions">•••</summary>
                       <div className="absolute left-0 z-30 mt-2 min-w-44 rounded-xl border border-zinc-700 bg-[#080b09] p-2 shadow-2xl">
@@ -975,20 +936,6 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
                       </div>
                     </details>
                   </ViaPostActionBar>
-                  {rewardPost === post.postHash ? <div className="mt-3 rounded-xl border border-[#285f40]/70 bg-[#07110b] p-3">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <label className="text-xs text-zinc-400" htmlFor={`reward-${post.postHash}`}>{copy.rewardAmount}</label>
-                      <div className="flex items-center rounded-lg border border-zinc-700 bg-black/30 px-2">
-                        <span className="text-sm text-zinc-400">$</span>
-                        <input id={`reward-${post.postHash}`} value={rewardUsd} onChange={(event) => setRewardUsd(event.target.value)} inputMode="decimal" className="w-20 bg-transparent px-1.5 py-1.5 text-sm text-white outline-none" aria-label={copy.rewardAmount} />
-                      </div>
-                      <span className="min-w-0 truncate text-[11px] text-zinc-500">@{post.username?.replace(/^@/, "") || shortKey(post.publicKey, copy.actor)}</span>
-                      <button type="button" disabled={rewardBusy} onClick={() => void sendReward(post)} title={copy.rewardSend} aria-label={copy.rewardSend} className="inline-flex h-8 items-center gap-1 rounded-full border border-[#8fd4a9] bg-[#285f40] px-3 text-xs font-semibold text-white disabled:opacity-50">
-                        <ArrowUpRight className="h-3.5 w-3.5" /><span>{rewardUsd ? `${rewardUsd}` : "$"}</span>
-                      </button>
-                    </div>
-                    {rewardMessage ? <p className="mt-2 text-[11px] text-zinc-400" role="status">{rewardMessage}</p> : null}
-                  </div> : null}
                   {replyingTo === post.postHash ? <div className="mt-3"><PostComposer parentStakeID={post.postHash} compact onDone={() => setReplyingTo(null)} /></div> : null}
                 </> : <p className="text-xs text-zinc-500">{copy.postUnavailable}</p>}
               </div> : expanded && destination ? <div className="mt-3 rounded-xl border border-zinc-800 bg-black/25 p-3 text-xs text-zinc-500">{destination}</div> : null}
