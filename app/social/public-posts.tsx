@@ -418,7 +418,7 @@ export default function PublicPosts({ initialPost }: { initialPost?: PublicPost 
   }, [sharedPostView, feedChoice, hasMore, loading, posts.length])
 
   return (
-    <section className="rounded-b-2xl border border-t-0 border-white/10 bg-black/35 p-3" aria-labelledby="public-posts-heading">
+    <section className="rounded-b-2xl border border-t-0 border-white/10 bg-black/35 p-2" aria-labelledby="public-posts-heading">
       <div className="flex flex-wrap items-center justify-end gap-3">
         <h2 id="public-posts-heading" className="sr-only">Posts</h2>
         <div className="flex w-full gap-2 overflow-x-auto pb-1 sm:w-auto sm:flex-wrap sm:overflow-visible sm:pb-0" aria-label="Filter posts">
@@ -473,7 +473,7 @@ export default function PublicPosts({ initialPost }: { initialPost?: PublicPost 
             const creatorPic = creator?.profilePic ? safeHttps(creator.profilePic) : null
 
             return (
-              <article key={post.postHash} className="rounded-2xl border border-zinc-800/80 bg-[#050806]/80 p-4 sm:p-5">
+              <article key={post.postHash} className="rounded-2xl border border-zinc-800/80 bg-[#050806]/80 p-3 sm:p-4">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="flex min-w-0 items-center gap-2.5">
                     <Link href={`/profile/${encodeURIComponent(post.publicKey)}`} aria-label={`Open creator profile ${creatorUsername ? `@${creatorUsername}` : shortPublicKey(post.publicKey)}`} className="block h-9 w-9 shrink-0 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#8fd4a9]">{creatorPic ? <img src={creatorPic} alt="" loading="lazy" className="h-9 w-9 rounded-full object-cover" /> : <span aria-hidden="true" className="block h-9 w-9 rounded-full border border-zinc-800 bg-black/30" />}</Link>
