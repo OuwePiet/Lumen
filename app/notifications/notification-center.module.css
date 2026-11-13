@@ -132,7 +132,7 @@
 .filter::before {
   content: "";
   position: absolute;
-  inset: 7px 2px;
+  inset: 9px 4px;
   border: 1px solid #343d38;
   border-radius: 18px;
   background: #111814;
@@ -142,7 +142,7 @@
   color: white;
 }
 .filter[aria-pressed="true"]::before { border-color: #087dff; background: #087dff; }
-.filter svg { width: 20px; height: 20px; }
+.filter svg { width: 16px; height: 16px; }
 .filter:focus-visible { outline: 2px solid white; outline-offset: -4px; }
 .filter:hover::before { border-color: #78b9ff; }
 
@@ -150,4 +150,9 @@
 .page[data-notification-reading="true"] [data-notification-controls],
 :global(body):has(.page) :global(.via-global-guides a[href="/"]) {
   display: none !important;
+}
+
+@media (pointer: fine) and (min-width: 640px) {
+  .filter { min-width: 34px; height: 34px; padding-inline: 7px; }
+  .filter::before { inset: 5px 2px; }
 }
