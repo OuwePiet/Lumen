@@ -1,19 +1,15 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { useAnalyticsSnapshot } from "./use-analytics-snapshot"
+import { measuredCount } from "../lib/via/analytics-counts"
 import { readViaLocalSettings, VIA_SETTINGS_EVENT, type ViaLanguage } from "./via-local-settings"
 
-type VisitorAnalyticsResponse = {
-  ok?: boolean
-  visitors?: { today?: number; month?: number; year?: number }
-  countries?: Array<{ country?: string; visitors?: number }>
-}
+type SnapshotMetadata = { ok?: boolean; measuredAt?: string; error?: string | null }
+type VisitorAnalyticsResponse = SnapshotMetadata & { visitors?: { today?: number | null; month?: number | null; year?: number | null }; activeNow?: number | null; countries?: Array<{ country: string; visitors: number }>; countriesAvailable?: boolean; countriesComplete?: boolean; warnings?: string[]; periods?: { today?: { since: string }; month?: { since: string }; active?: { since: string } } }
+type ActivityAnalyticsResponse = SnapshotMetadata & { scope?: string; sampledPosts?: number; activity?: { posts?: number; creators?: number; nftPosts?: number }; trends?: Array<{ tag: string; count: number }>; recentCreators?: Array<{ publicKey: string; username: string }> }
 
-type ActivityAnalyticsResponse = {
-  ok?: boolean
-  scope?: string
-  activity?: { posts?: number; creators?: number; nftPosts?: number }
-}
+const META = {"Dutch":{"refresh":"Verversen","loading":"Verversen…","updated":"Bijgewerkt","unavailable":"Bron niet beschikbaar","stale":"Laatste geldige meting; verversen mislukt.","notMeasured":"Nog geen betrouwbare meetbron voor dit gegeven.","activeWindow":"Bezoekers in de laatste 5 minuten","sample":"Steekproef","timezone":"Meetperiode: UTC","emptyTrends":"Geen hashtags in deze steekproef.","firstUnknown":"Eerste posts zijn niet vast te stellen uit deze steekproef.","conflict":"De broncijfers spreken elkaar tegen; onzekere waarden blijven leeg.","accessDenied":"De bezoekersbron weigert toegang (403).","recentCreators":"Recente VIA-makers"},"English":{"refresh":"Refresh","loading":"Refreshing…","updated":"Updated","unavailable":"Source unavailable","stale":"Last valid measurement; refresh failed.","notMeasured":"No reliable measurement source for this field yet.","activeWindow":"Visitors in the last 5 minutes","sample":"Sample","timezone":"Measurement window: UTC","emptyTrends":"No hashtags in this sample.","firstUnknown":"First posts cannot be established from this sample.","conflict":"Source counts conflict; uncertain values remain unavailable.","accessDenied":"Visitor source access denied (403).","recentCreators":"Recent VIA creators"},"French":{"refresh":"Actualiser","loading":"Actualisation…","updated":"Mis à jour","unavailable":"Source indisponible","stale":"Dernière mesure valide ; actualisation échouée.","notMeasured":"Aucune source fiable pour cette mesure.","activeWindow":"Visiteurs des 5 dernières minutes","sample":"Échantillon","timezone":"Période de mesure : UTC","emptyTrends":"Aucun hashtag dans cet échantillon.","firstUnknown":"Cet échantillon ne permet pas d’identifier les premières publications.","conflict":"Les chiffres se contredisent ; les valeurs incertaines restent vides.","accessDenied":"Accès aux statistiques refusé (403).","recentCreators":"Créateurs VIA récents"},"Spanish":{"refresh":"Actualizar","loading":"Actualizando…","updated":"Actualizado","unavailable":"Fuente no disponible","stale":"Última medición válida; actualización fallida.","notMeasured":"Aún no hay una fuente fiable para este dato.","activeWindow":"Visitantes en los últimos 5 minutos","sample":"Muestra","timezone":"Periodo de medición: UTC","emptyTrends":"Sin etiquetas en esta muestra.","firstUnknown":"La muestra no permite identificar las primeras publicaciones.","conflict":"Las cifras no coinciden; los valores dudosos quedan vacíos.","accessDenied":"Acceso a estadísticas denegado (403).","recentCreators":"Creadores VIA recientes"},"Chinese":{"refresh":"刷新","loading":"正在刷新…","updated":"更新时间","unavailable":"数据源不可用","stale":"显示上次有效测量；刷新失败。","notMeasured":"该数据尚无可靠的测量来源。","activeWindow":"最近5分钟的访客","sample":"样本","timezone":"统计时段：UTC","emptyTrends":"此样本中没有话题标签。","firstUnknown":"此样本无法确定首次发帖。","conflict":"来源数据不一致；不确定的数值留空。","accessDenied":"访客数据访问被拒绝（403）。","recentCreators":"近期VIA创作者"},"Hindi":{"refresh":"रीफ़्रेश करें","loading":"रीफ़्रेश हो रहा है…","updated":"अपडेट","unavailable":"स्रोत उपलब्ध नहीं","stale":"पिछला मान्य माप; रीफ़्रेश विफल हुआ।","notMeasured":"इस आँकड़े के लिए विश्वसनीय स्रोत अभी नहीं है।","activeWindow":"पिछले 5 मिनट के आगंतुक","sample":"नमूना","timezone":"मापन अवधि: UTC","emptyTrends":"इस नमूने में कोई हैशटैग नहीं।","firstUnknown":"इस नमूने से पहली पोस्ट तय नहीं की जा सकती।","conflict":"स्रोत के आँकड़े अलग हैं; अनिश्चित मान खाली हैं।","accessDenied":"आगंतुक स्रोत तक पहुँच अस्वीकृत (403)।","recentCreators":"हालिया VIA क्रिएटर"}} as const
 
 type PanelCopy = {
   live: string
@@ -84,7 +80,7 @@ function countryFlag(code: string) {
 
 function Panel({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="rounded-2xl border border-[#285f40]/70 bg-[#050806]/90 p-4 shadow-[0_10px_30px_rgba(0,0,0,0.28)]">
+    <section className="rounded-2xl border border-[#285f40]/70 bg-[#050806]/90 p-3 shadow-[0_10px_30px_rgba(0,0,0,0.28)]">
       <h2 className="text-sm font-semibold tracking-wide text-[#9adbb2]">{title}</h2>
       <div className="mt-3 space-y-2 text-xs text-zinc-400">{children}</div>
     </section>
@@ -118,14 +114,18 @@ function PendingMetric({ label, note }: { label: string; note: string }) {
 export default function ViaRightPanels() {
   const [language, setLanguage] = useState<ViaLanguage>("English")
   const [countriesExpanded, setCountriesExpanded] = useState(false)
-  const [visitorToday, setVisitorToday] = useState<number | null>(null)
-  const [visitorMonth, setVisitorMonth] = useState<number | null>(null)
-  const [visitorYear, setVisitorYear] = useState<number | null>(null)
-  const [visitorCountries, setVisitorCountries] = useState<Array<{ country: string; visitors: number }>>([])
-  const [activityPosts, setActivityPosts] = useState<number | null>(null)
-  const [activityCreators, setActivityCreators] = useState<number | null>(null)
-  const [activityNfts, setActivityNfts] = useState<number | null>(null)
-
+  const visitorRead = useAnalyticsSnapshot<VisitorAnalyticsResponse>("/api/via/analytics/visitors", 300000)
+  const activityRead = useAnalyticsSnapshot<ActivityAnalyticsResponse>("/api/via/analytics/activity", 60000)
+  const visitors = visitorRead.snapshot, activity = activityRead.snapshot
+  const now = new Date(), utcDay = now.toISOString().slice(0, 10), utcMonth = utcDay.slice(0, 7)
+  const sameDay = visitors?.periods?.today?.since?.slice(0, 10) === utcDay
+  const sameMonth = visitors?.periods?.month?.since?.slice(0, 7) === utcMonth
+  const visitorToday = sameDay ? measuredCount(visitors?.visitors?.today) : null
+  const visitorMonth = sameMonth ? measuredCount(visitors?.visitors?.month) : null
+  const visitorYear = measuredCount(visitors?.visitors?.year)
+  const visitorCountries = sameDay ? (visitors?.countries ?? []).filter(row => typeof row.country === "string" && measuredCount(row.visitors) !== null) : []
+  const activityPosts = measuredCount(activity?.activity?.posts), activityCreators = measuredCount(activity?.activity?.creators), activityNfts = measuredCount(activity?.activity?.nftPosts)
+  const activeNow = visitors?.measuredAt && Date.now() - Date.parse(visitors.measuredAt) <= 300000 ? measuredCount(visitors.activeNow) : null
   useEffect(() => {
     const sync = () => setLanguage(readViaLocalSettings().interfaceLanguage)
     sync()
@@ -137,65 +137,25 @@ export default function ViaRightPanels() {
     }
   }, [])
 
-  useEffect(() => {
-    const controller = new AbortController()
-    void fetch("/api/via/analytics/visitors", {
-      cache: "no-store",
-      signal: controller.signal,
-      headers: { Accept: "application/json" },
-    })
-      .then(async (response) => {
-        const data = await response.json() as VisitorAnalyticsResponse
-        if (!response.ok || !data.ok || !data.visitors) return
-        if (typeof data.visitors.today === "number" && Number.isFinite(data.visitors.today)) setVisitorToday(data.visitors.today)
-        if (typeof data.visitors.month === "number" && Number.isFinite(data.visitors.month)) setVisitorMonth(data.visitors.month)
-        if (typeof data.visitors.year === "number" && Number.isFinite(data.visitors.year)) setVisitorYear(data.visitors.year)
-        if (Array.isArray(data.countries)) {
-          setVisitorCountries(data.countries
-            .filter((entry): entry is { country: string; visitors: number } => Boolean(entry && typeof entry.country === "string" && typeof entry.visitors === "number" && Number.isFinite(entry.visitors)))
-             )
-        }
-      })
-      .catch(() => {})
-
-    return () => controller.abort()
-  }, [])
-
-
-  useEffect(() => {
-    const controller = new AbortController()
-    void fetch("/api/via/analytics/activity", {
-      signal: controller.signal,
-      headers: { Accept: "application/json" },
-    })
-      .then(async (response) => {
-        if (!response.ok) return
-        const data = await response.json() as ActivityAnalyticsResponse
-        if (!data.ok || data.scope !== "bounded-recent-via-posts") return
-        if (typeof data.activity?.posts === "number") setActivityPosts(data.activity.posts)
-        if (typeof data.activity?.creators === "number") setActivityCreators(data.activity.creators)
-        if (typeof data.activity?.nftPosts === "number") setActivityNfts(data.activity.nftPosts)
-      })
-      .catch(() => {})
-    return () => controller.abort()
-  }, [])
-
   const copy = COPY[language]
+  const info = META[language]
+  const stamp = (value?: string) => value && Number.isFinite(Date.parse(value)) ? new Date(value).toLocaleString(({ Dutch:"nl-NL", English:"en-GB", French:"fr-FR", Spanish:"es-ES", Chinese:"zh-CN", Hindi:"hi-IN" })[language]) : "—"
 
   return (
-    <aside className="space-y-3" aria-label="VIA live and activity panels">
+    <aside className="space-y-3" aria-label="VIA live and activity panels" data-via-information-tower>
+      <button type="button" className="text-xs text-[#9adbb2]" disabled={visitorRead.refreshing || activityRead.refreshing} onClick={() => { void visitorRead.refresh(true); void activityRead.refresh(true) }}>{visitorRead.refreshing || activityRead.refreshing ? info.loading : info.refresh}</button>
       <Panel title={copy.live}>
-        <PendingMetric label={copy.activeNow} note={copy.sourcePending} />
-        <PendingMetric label={copy.desoAccounts} note={copy.sourcePending} />
-        <PendingMetric label={copy.guests} note={copy.sourcePending} />
-        {visitorCountries.length ? (
+        <Metric label={info.activeWindow} value={activeNow} note={info.notMeasured} />
+        <PendingMetric label={copy.desoAccounts} note={info.notMeasured} />
+        <PendingMetric label={copy.guests} note={info.notMeasured} />
+        {sameDay && visitors?.countriesAvailable ? (
           <div className="rounded-xl border border-zinc-800 bg-black/25">
             <button type="button" aria-expanded={countriesExpanded} aria-controls="via-countries-list"
               onClick={() => setCountriesExpanded((open) => !open)}
               className="flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2 text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#9adbb2]">
               <span className="text-zinc-300">{copy.countries}</span>
               <span className="flex items-center gap-2 text-[#9adbb2]">
-                {visitorCountries.length} {copy.countryCount}
+                {visitorCountries.length}{visitors?.countriesComplete === false ? "+" : ""} {copy.countryCount}
                 <span aria-hidden="true">{countriesExpanded ? "⌃" : "⌄"}</span>
               </span>
             </button>
@@ -210,24 +170,32 @@ export default function ViaRightPanels() {
               </div>
             ) : null}
           </div>
-        ) : <PendingMetric label={copy.countries} note={copy.sourcePending} />}
+        ) : <PendingMetric label={copy.countries} note={info.notMeasured} />}
       </Panel>
 
       <Panel title={copy.visitors}>
-        <Metric label={copy.today} value={visitorToday} note={copy.sourcePending} />
-        <Metric label={copy.month} value={visitorMonth} note={copy.sourcePending} />
-        <Metric label={copy.year} value={visitorYear} note={copy.sourcePending} />
+        <p className="text-[10px] text-zinc-500">Vercel Web Analytics · {info.timezone}</p>
+        {visitorRead.error ? <p role="status" className="text-xs text-amber-200">{visitorRead.error === "ANALYTICS_ACCESS_DENIED" ? info.accessDenied : info.unavailable}{visitors ? " · " + info.stale : ""}</p> : null}
+        {visitors?.warnings?.length ? <p role="status" className="text-xs text-amber-200">{info.conflict}</p> : null}
+        <Metric label={copy.today} value={visitorToday} note={info.notMeasured} />
+        <Metric label={copy.month} value={visitorMonth} note={info.notMeasured} />
+        <Metric label={copy.year} value={visitorYear} note={info.notMeasured} />
+        <p className="text-[10px] text-zinc-500">{info.updated}: {stamp(visitors?.measuredAt)}</p>
       </Panel>
 
       <Panel title={copy.activity}>
-        <Metric label={copy.posts} value={activityPosts} note={copy.sourcePending} />
-        <Metric label={copy.creators} value={activityCreators} note={copy.sourcePending} />
-        <PendingMetric label={copy.trends} note={copy.sourcePending} />
-        <Metric label={copy.nftActivity} value={activityNfts} note={copy.sourcePending} />
+        <p className="text-[10px] text-zinc-500">DeSo · {info.sample}: {activity?.sampledPosts ?? "—"} posts</p>
+        {activityRead.error ? <p role="status" className="text-xs text-amber-200">{info.unavailable}{activity ? " · " + info.stale : ""}</p> : null}
+        <Metric label={copy.posts} value={activityPosts} note={info.notMeasured} />
+        <Metric label={copy.creators} value={activityCreators} note={info.notMeasured} />
+        <div className="rounded-xl border border-zinc-800 px-3 py-2"><p className="text-zinc-300">{copy.trends}</p>{activity ? activity.trends?.length ? <ul className="mt-1 space-y-1">{activity.trends.map(row => <li key={row.tag} className="flex justify-between gap-2"><span>#{row.tag}</span><span>{row.count}</span></li>)}</ul> : <p className="mt-1 text-[10px] text-zinc-500">{info.emptyTrends}</p> : <span>—</span>}</div>
+        <Metric label={copy.nftActivity} value={activityNfts} note={info.notMeasured} />
+        <p className="text-[10px] text-zinc-500">{info.updated}: {stamp(activity?.measuredAt)}</p>
       </Panel>
 
       <Panel title={copy.community}>
-        <PendingMetric label={copy.welcome} note={copy.sourcePending} />
+        <PendingMetric label={copy.welcome} note={info.firstUnknown} />
+        {activity?.recentCreators?.length ? <div className="text-xs"><p>{info.recentCreators}</p>{activity.recentCreators.map(row => <a key={row.publicKey} href={"/profile/" + encodeURIComponent(row.publicKey)} className="mt-1 block text-[#9adbb2]">{row.username ? "@" + row.username : row.publicKey.slice(0, 8) + "…"}</a>)}</div> : null}
       </Panel>
     </aside>
   )

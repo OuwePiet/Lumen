@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react"
 import { Popover } from "@base-ui/react/popover"
-import { Gem } from "lucide-react"
+import { Gem, TrendingUp } from "lucide-react"
 import { restoreIdentitySession, VIA_IDENTITY_EVENT } from "../deso-identity-session"
 import { financialSubmissionBlock, markFinancialPending, markFinancialSubmitted, withFinancialAccountLock } from "../financial-submission"
 import { viaModernIdentity } from "../deso-identity-modern"
@@ -115,6 +115,28 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
   }
 
   const busy = status === "preparing" || status === "approval" || status === "submitting"
+  const [earnings, setEarnings] = useState<number[] | "error" | null>(null)
+  async function loadEarnings() {
+    setEarnings(null)
+    try {
+      const response = await fetch("/api/via/social/diamond", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "received-levels", postHash }),
+      })
+      const data = await response.json() as { ok?: boolean; levels?: number[] }
+      setEarnings(response.ok && data.ok && Array.isArray(data.levels) ? data.levels : "error")
+    } catch {
+      setEarnings("error")
+    }
+  }
+
+  const earningsNanos = Array.isArray(earnings)
+    ? earnings.reduce((total, level) => total + (diamondValues?.find(option => option.level === level)?.nanos ?? NaN), 0)
+    : NaN
+  const earningsLabel = earningsNanos === 0 ? "$0" : Number.isSafeInteger(earningsNanos)
+    ? diamondUsd(earningsNanos) ?? (earningsNanos / 1_000_000_000) + " DESO" : null
+
   const sendLock = useRef(false)
   async function prepare(chosenLevel: number) {
     if (sendLock.current || (previousLevel !== null && chosenLevel <= previousLevel) || !diamondValues?.some(item => item.level === chosenLevel)) return
@@ -170,7 +192,7 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
         if (!submit.ok || !result.ok) throw new Error(result.error || "SUBMIT_FAILED")
         accepted = true
         markFinancialSubmitted(submission, result.transaction?.TxnHashHex ?? result.transaction?.TransactionHashHex)
-        setStatus("done"); changeMenu(false); setMessage("Diamond received by DeSo. Final confirmation is not yet verified.")
+        setStatus("done"); setEarnings(null); changeMenu(false); setMessage("Diamond received by DeSo. Final confirmation is not yet verified.")
         setCelebrate(true); window.setTimeout(() => setCelebrate(false), 3200)
         window.dispatchEvent(new Event("via:social:post-published"))
         await viaModernIdentity.refreshSpendingLimits().catch(() => {})
@@ -232,6 +254,25 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
         </Popover.Positioner>
       </Popover.Portal>
     </Popover.Root>
+    {variant === "icon" ? (
+      <Popover.Root onOpenChange={open => { if (open) void loadEarnings() }}>
+        <Popover.Trigger type="button" aria-label="Diamantopbrengst van dit bericht" title="Diamantopbrengst van dit bericht"
+          className="inline-flex h-9 min-w-9 items-center justify-center gap-1 rounded-full border border-zinc-800 px-2 text-xs text-zinc-300 hover:border-[#8fd4a9]">
+          <TrendingUp className="size-4" aria-hidden="true" />{earningsLabel ?? (count === 0 ? "$0" : null)}
+        </Popover.Trigger>
+        <Popover.Portal>
+          <Popover.Positioner side="top" sideOffset={6} collisionPadding={8} className="z-50">
+            <Popover.Popup aria-label="Diamantopbrengst" className="max-w-[calc(100vw-1rem)] rounded-xl border border-[#376047] bg-[#0d1c14] px-3 py-2 text-xs text-zinc-100 shadow-xl">
+              <div className="flex flex-wrap items-center gap-1">
+                <PublicAccountLabel key={receiverPublicKey} publicKey={receiverPublicKey} />
+                <span role="status">{earnings === null || (!diamondValues && !levelsFailed && earnings !== "error" && !earningsLabel)
+                  ? "· Opbrengst laden…" : earningsLabel ? "· Geschatte diamantopbrengst " + earningsLabel : "· Opbrengst niet beschikbaar"}</span>
+              </div>
+            </Popover.Popup>
+          </Popover.Positioner>
+        </Popover.Portal>
+      </Popover.Root>
+    ) : null}
     {leafRain}
     {message ? <span className="order-last w-full basis-full text-xs text-amber-200" role="status">{message}</span> : null}
   </>
