@@ -24,18 +24,18 @@ function countryRows(input: unknown) {
   const rawRows = Array.isArray(input) ? input : ["data", "rows", "results", "items"].map(key => data[key]).find(Array.isArray)
   const rows: unknown[] = rawRows ?? []
   const countries: Array<{ country: string; visitors: number }> = []
-  let complete = rows.length < 100
+  let complete = Array.isArray(rawRows) && rows.length < 100
   const seen = new Set<string>()
   for (const item of rows) {
-    if (!item || typeof item !== "object") continue
+    if (!item || typeof item !== "object") { complete = false; continue }
     const row = item as Record<string, unknown>
     const code = [row.country, row.Country, row.requestCountry, row.request_country, row.key, row.name].find(value => typeof value === "string") as string | undefined
     if (!code || !/^[A-Za-z]{2,3}$/.test(code)) { complete = false; continue }
     const visitors = [row.visitors, row.count, row.total, row.value].map(measuredCount).find(value => value !== null)
-    if (visitors === undefined || visitors === null || seen.has(code.toUpperCase())) continue
+    if (visitors === undefined || visitors === null || seen.has(code.toUpperCase())) { complete = false; continue }
     seen.add(code.toUpperCase()); countries.push({ country: code.toUpperCase(), visitors })
   }
-  return { countries: countries.sort((a, b) => b.visitors - a.visitors), complete, available: Array.isArray(rawRows) }
+  return { countries: countries.sort((a, b) => b.visitors - a.visitors), complete, available: Array.isArray(rawRows) && (rows.length === 0 || countries.length > 0) }
 }
 async function calculate() {
   const now = new Date()
