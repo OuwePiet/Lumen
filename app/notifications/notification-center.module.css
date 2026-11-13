@@ -55,53 +55,7 @@
     border-radius: 10px;
     background: transparent;
   }
-  .filters {
-    top: 52px;
-    padding: 6px 0;
-    background: #080d0b;
-    border-color: #202622;
-  }
-  .filterRow {
-    display: flex;
-    flex-wrap: nowrap;
-    justify-content: flex-start;
-    gap: 6px;
-    overflow-x: auto;
-    overflow-y: hidden;
-    padding: 0 12px;
-    scrollbar-width: thin;
-    scrollbar-color: #37453c transparent;
-    overscroll-behavior-x: contain;
-    scroll-padding-inline: 12px;
-  }
-  .filter {
-    width: auto;
-    min-width: 44px;
-    height: 44px;
-    flex: 0 0 auto;
-    padding: 0 10px;
-    border: 0;
-    border-radius: 22px;
-    color: #9eaba3;
-    background: transparent;
-    scroll-snap-align: start;
-  }
-  .filter::before {
-    content: "";
-    position: absolute;
-    inset: 7px 2px;
-    border: 1px solid #343d38;
-    border-radius: 18px;
-    background: #111814;
-  }
-  .filter > span { position: relative; }
-  .filter[aria-pressed="true"] {
-    color: white;
-  }
-  .filter[aria-pressed="true"]::before { border-color: #087dff; background: #087dff; }
-  .filter svg { width: 20px; height: 20px; }
-  .filter:focus-visible { outline: 2px solid white; outline-offset: -4px; }
-  .filter:hover::before { border-color: #78b9ff; }
+  .filters { top: 52px; }
   .row {
     margin: 0;
     padding: 14px 16px;
@@ -144,3 +98,50 @@
   }
   .readMore:focus-visible { outline: 2px solid #65afff; outline-offset: 3px; }
 }
+
+.filters {
+  padding: 6px 0;
+  background: #080d0b;
+  border-color: #202622;
+}
+.filterRow {
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: flex-start;
+  gap: 6px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0 12px;
+  scrollbar-width: thin;
+  scrollbar-color: #37453c transparent;
+  overscroll-behavior-x: contain;
+  scroll-padding-inline: 12px;
+}
+.filter {
+  width: auto;
+  min-width: 44px;
+  height: 44px;
+  flex: 0 0 auto;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 22px;
+  color: #9eaba3;
+  background: transparent;
+  scroll-snap-align: start;
+}
+.filter::before {
+  content: "";
+  position: absolute;
+  inset: 7px 2px;
+  border: 1px solid #343d38;
+  border-radius: 18px;
+  background: #111814;
+}
+.filter > span { position: relative; }
+.filter[aria-pressed="true"] {
+  color: white;
+}
+.filter[aria-pressed="true"]::before { border-color: #087dff; background: #087dff; }
+.filter svg { width: 20px; height: 20px; }
+.filter:focus-visible { outline: 2px solid white; outline-offset: -4px; }
+.filter:hover::before { border-color: #78b9ff; }

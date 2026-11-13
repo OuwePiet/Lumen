@@ -27,9 +27,14 @@ export async function GET() {
     const creators = new Set(viaPosts.map((post) => post.publicKey).filter(Boolean))
     const nftPosts = viaPosts.filter((post) => post.isNft)
 
+    const tags = new Map<string, number>()
+    for (const post of viaPosts) { for (const tag of new Set((post.body.match(/#[\p{L}\p{N}_]{1,40}/gu) ?? []).map(value => value.slice(1).toLocaleLowerCase()))) tags.set(tag, (tags.get(tag) ?? 0) + 1) }
+    const trends = [...tags].sort((a, b) => b[1] - a[1]).slice(0, 5).map(([tag, count]) => ({ tag, count }))
+    const recentCreators = [...new Map(viaPosts.filter(post => /^[1-9A-HJ-NP-Za-km-z]{40,128}$/.test(post.publicKey)).map(post => [post.publicKey, { publicKey: post.publicKey, username: post.username }])).values()].slice(0, 5)
     return NextResponse.json(
       {
         ok: true,
+        measuredAt: new Date().toISOString(), trends, recentCreators,
         source: "deso-new-feed",
         scope: "bounded-recent-via-posts",
         sampledPosts: posts.length,

@@ -51,6 +51,29 @@ export async function POST(request: Request) {
     }
   }
 
+  if (body.action === "received-levels") {
+    if (!validPostHash(body.postHash)) return noStore({ ok: false, error: "INVALID_POST_HASH" }, 400)
+    try {
+      const levels: number[] = []
+      const limit = 100
+      for (let offset = 0; offset < 1000; offset += limit) {
+        const response = await fetchDeSo("get-diamonds-for-post", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ PostHashHex: body.postHash, Offset: offset, Limit: limit }),
+        })
+        if (!response.ok) break
+        const data = await response.json() as { DiamondSenders?: { DiamondLevel?: number }[] | null }
+        const senders = data.DiamondSenders ?? []
+        const page = senders.map(sender => sender?.DiamondLevel)
+        if (!page.every((level): level is number => typeof level === "number" && Number.isSafeInteger(level) && level > 0)) break
+        levels.push(...page)
+        if (senders.length < limit) return noStore({ ok: true, levels })
+      }
+    } catch { /* A partial result cannot be used as the total. */ }
+    return noStore({ ok: false, error: "DIAMOND_EARNINGS_UNAVAILABLE" }, 502)
+  }
+
   if (body.action === "prepare") {
     const senderPublicKey = body.senderPublicKey
     const receiverPublicKey = body.receiverPublicKey

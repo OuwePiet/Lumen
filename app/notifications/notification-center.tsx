@@ -20,6 +20,8 @@ import { fetchViaRates, isViaRateStale } from "../via-live-rates"
 import type { ViaLanguage } from "../via-local-settings"
 import LikeButton from "../social/like-button"
 import PostComposer from "../social/post-composer"
+import PostVideo from "../social/post-video"
+import PostSource from "../post-source"
 import RepostButton from "../social/repost-button"
 import DiamondButton from "../social/diamond-button"
 import SponsorPlatform from "../sponsor-platform"
@@ -50,11 +52,13 @@ type ProfileResponse = {
 }
 
 type PublicPost = {
+  postExtraData?: Record<string, string>
   postHash: string
   publicKey: string
   username: string
   body: string
   imageUrls: string[]
+  videoUrls?: string[]
   timestampNanos: number
   likeCount: number
   diamondCount: number
@@ -812,7 +816,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
 
   return (
     <section className={`${styles.center} ${expandedView ? "max-h-[calc(100vh-6rem)]" : "max-h-[88vh]"} min-w-0 w-full max-w-full overflow-x-hidden overflow-y-auto rounded-2xl border border-zinc-800 bg-zinc-950/60`} aria-labelledby="notification-center-heading">
-      <div className={`${styles.toolbar} sticky top-0 z-20 flex flex-nowrap items-center justify-between gap-1 border-b border-zinc-800 bg-zinc-950/95 px-2 py-1 backdrop-blur max-sm:items-stretch sm:flex-wrap sm:gap-3 sm:px-5 sm:py-4`}>
+      <div className={`${styles.toolbar} sticky top-0 z-20 flex flex-nowrap items-center justify-between gap-1 border-b border-zinc-800 bg-zinc-950/95 px-2 py-1 backdrop-blur max-sm:items-stretch sm:flex-wrap sm:gap-3 sm:px-4 sm:py-2`}>
         <div className="hidden sm:block">
           <h2 id="notification-center-heading" className="whitespace-nowrap text-xl font-semibold text-white">{copy.heading}</h2>
           <p className="mt-1 text-xs text-zinc-500">{copy.active}: {shortKey(session.publicKey, copy.actor)}</p>
@@ -859,8 +863,8 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
         </div>
       </div>
 
-      <div className={`${styles.filters} sticky top-[36px] z-20 border-b border-zinc-800 bg-zinc-950/95 px-1 py-1 backdrop-blur sm:top-[73px] sm:px-4 sm:py-3`} aria-label={copy.filters}>
-        <div className={`${styles.filterRow} grid min-w-0 grid-cols-5 justify-items-center gap-1 overflow-hidden px-0 pb-3 pt-0.5 sm:flex sm:flex-wrap sm:justify-start sm:justify-items-stretch sm:gap-2 sm:px-0 sm:pt-0 sm:pb-0`}>
+      <div className={`${styles.filters} sticky top-[36px] z-20 border-b border-zinc-800 bg-zinc-950/95 px-1 py-1 backdrop-blur sm:top-[59px] sm:px-4 sm:py-3`} aria-label={copy.filters}>
+        <div className={`${styles.filterRow} min-w-0`}>
           {([
             { id: "reaction", label: copy.categories.reaction, ids: ["reaction"] },
             { id: "diamond1", label: copy.categories.diamond1, ids: ["diamond1"] },
@@ -878,8 +882,8 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
                 const allActive = option.ids.every((id) => current.includes(id))
                 return allActive ? current.filter((id) => !option.ids.includes(id)) : Array.from(new Set([...current, ...option.ids]))
               })
-            }} title={option.label} aria-label={option.label} className={`${styles.filter} relative inline-flex h-8 w-8 min-w-0 items-center justify-center rounded-full border p-0 text-[11px] font-semibold transition sm:h-auto sm:w-auto sm:min-h-9 sm:gap-2 sm:rounded-xl sm:px-3 sm:py-1.5 sm:text-xs ${active ? "border-[#8fd4a9]/70 bg-[#10251a] text-white" : "border-zinc-800 bg-[#111214] text-zinc-300 hover:border-[#8fd4a9]/45"}`}>
-              <span className="sm:hidden" aria-hidden="true"><CategoryIcon category={option.id} className="h-3 w-3" /></span><span className="hidden sm:inline">{option.label}</span>
+            }} title={option.label} aria-label={option.label} className={`${styles.filter} relative inline-flex items-center justify-center text-[11px] font-semibold transition`}>
+              <span aria-hidden="true"><CategoryIcon category={option.id} className="h-5 w-5" /></span>
             </button>
           })}
         </div>
@@ -920,13 +924,14 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
               {destination && index >= 8 ? <button type="button" onClick={() => void toggleExpanded(item, rowKey)} className="mt-1 inline-flex rounded-full border border-zinc-700 px-1.5 py-0.5 text-[9px] leading-none text-zinc-300 transition hover:border-[#8fd4a9] hover:text-white sm:mt-2 sm:px-2.5 sm:py-1 sm:text-[11px] sm:leading-normal">{expanded ? copy.close : copy.open}</button> : null}
               {expanded && postHash ? <div className={`${styles.post} mt-3 rounded-xl border border-zinc-800 bg-black/25 p-3`}>
                 {post === undefined ? <p className="text-xs text-zinc-500">{copy.loading}</p> : post ? <>
-                  <p className="text-xs font-semibold text-zinc-300">@{post.username?.replace(/^@/, "") || shortKey(post.publicKey, copy.actor)}</p>
-                  {post.body ? <>
+                  <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1"><p className="min-w-0 break-words text-xs font-semibold text-zinc-300">@{post.username?.replace(/^@/, "") || shortKey(post.publicKey, copy.actor)}</p>{Number.isFinite(post.timestampNanos) && post.timestampNanos > 0 && Number.isFinite(new Date(post.timestampNanos / 1_000_000).getTime()) ? <time data-via-post-time dateTime={new Date(post.timestampNanos / 1_000_000).toISOString()} title={language === "Dutch" ? "Geplaatst op (lokale tijd)" : "Posted at (local time)"} className="text-xs tabular-nums text-zinc-400">{new Date(post.timestampNanos / 1_000_000).toLocaleString(language === "Dutch" ? "nl-NL" : language === "French" ? "fr-FR" : language === "Spanish" ? "es-ES" : language === "Chinese" ? "zh-CN" : language === "Hindi" ? "hi-IN" : "en-GB", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}</time> : null}</div>
+                  {post.postExtraData ? <PostSource extra={post.postExtraData} /> : null}{post.body ? <>
                     <p id={`notification-body-${rowKey}`} className={`${expandedBodies[rowKey] ? "" : styles.bodyPreview} mt-2 whitespace-pre-wrap text-sm leading-6 text-zinc-200`}>{post.body}</p>
                     {post.body.length > 240 || post.body.split("\n").length > 5 ? <button type="button" className={styles.readMore} aria-expanded={Boolean(expandedBodies[rowKey])} aria-controls={`notification-body-${rowKey}`} onClick={() => setExpandedBodies(current => ({ ...current, [rowKey]: !current[rowKey] }))}>{expandedBodies[rowKey] ? BODY_LABELS[language].less : BODY_LABELS[language].more}</button> : null}
                   </> : null}
                   {post.imageUrls?.length ? <div className="mt-3 grid gap-2 sm:grid-cols-2">{post.imageUrls.slice(0, 4).map((url) => <img key={url} src={url} alt="" loading="lazy" className="max-h-72 w-full rounded-xl object-contain" />)}</div> : null}
-                  <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-zinc-800/70 pt-3">
+                  {post.videoUrls?.length ? <div className="mt-3 space-y-2">{post.videoUrls.slice(0, 2).filter(url => { try { return new URL(url).protocol === "https:" } catch { return false } }).map(url => <PostVideo key={url} url={url} />)}</div> : null}
+                  <div data-via-post-actions className="mt-3 flex flex-wrap items-start gap-2 border-t border-zinc-800/70 pt-3">
                     <button
                       type="button"
                       onClick={() => setReplyingTo((current) => current === post.postHash ? null : post.postHash)}
@@ -959,7 +964,6 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
                         <button type="button" onClick={(event) => event.currentTarget.closest("details")?.removeAttribute("open")} className="mt-1 w-full rounded-lg border border-zinc-800 px-3 py-2 text-left text-xs text-zinc-400 hover:border-[#8fd4a9]/45 hover:text-white">{copy.close}</button>
                       </div>
                     </details>
-                    {Number.isFinite(post.timestampNanos) && post.timestampNanos > 0 ? <span className="ml-auto self-center whitespace-nowrap text-[11px] text-zinc-600">{new Date(post.timestampNanos / 1_000_000).toLocaleString()}</span> : null}
                   </div>
                   {rewardPost === post.postHash ? <div className="mt-3 rounded-xl border border-[#285f40]/70 bg-[#07110b] p-3">
                     <div className="flex flex-wrap items-center gap-2">

@@ -2,7 +2,7 @@
 const { chromium, webkit, devices } = require('playwright')
 const assert = require('node:assert/strict')
 const fs = require('node:fs'), path = require('node:path')
-const base = process.env.VIA_TEST_BASE || 'http://127.0.0.1:3026'
+const base = process.env.VIA_TEST_BASE || 'http://localhost:3026'
 const out = process.env.VIA_TEST_OUTPUT || path.resolve(__dirname, '../../../outputs/VIA-meldingen-lampje-browserbewijs-2026-10-17')
 fs.mkdirSync(out, { recursive: true })
 const A='A'.repeat(48), B='B'.repeat(48), results=[]
@@ -20,6 +20,7 @@ async function run(name, engine, options) {
       if(!url.pathname.startsWith('/api/'))return route.continue()
       let data={ok:true,items:[],posts:[],notifications:[]}
       if(url.pathname==='/api/via/social/diamond' && req.method()==='POST' && req.postDataJSON()?.action==='levels')return route.fulfill({json:{ok:true,diamondLevelMap:{1:1000}}})
+      if(url.pathname==='/api/via/social/diamond' && req.method()==='POST' && req.postDataJSON()?.action==='received-levels')return route.fulfill({json:{ok:true,levels:[1,1]}})
       if(url.pathname==='/api/via/social/notifications') {
         const body=req.postDataJSON()
         if(!['unread',undefined].includes(body.action)){forbidden.push(body.action);return route.fulfill({status:403,json:{ok:false}})}
@@ -42,6 +43,12 @@ async function run(name, engine, options) {
     await page.getByText('1 recent notifications loaded.',{exact:true}).waitFor()
     await page.getByText('Een rustigere meldingenpagina',{exact:false}).waitFor()
     assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth+1),true,'no horizontal page overflow')
+    await page.getByRole('button',{name:'Diamantopbrengst van dit bericht'}).click()
+    await page.getByText(/Geschatte diamantopbrengst/).waitFor()
+    await page.keyboard.press('Escape')
+    const filterRows=await page.locator('[aria-label="Notification filters"] button').evaluateAll(buttons=>buttons.map(button=>button.getBoundingClientRect().y))
+    assert.equal(filterRows.length,9)
+    assert.equal(new Set(filterRows).size,1,'filters stay on one row at every width')
     if((options.viewport?.width||0)<640){
       const filters=page.locator('[aria-label="Notification filters"] button')
       assert.equal(await filters.count(),9)
@@ -68,7 +75,7 @@ async function run(name, engine, options) {
     await page.locator('section[aria-labelledby="notification-center-heading"] article').waitFor()
     await page.screenshot({path:path.join(out,name+'-meldingen-rustiger.png'),fullPage:true})
     assert.equal(await page.evaluate(A=>localStorage.getItem('via:notifications:seen-index:'+A),A),null,'view is acknowledged on departure, not unread counter load')
-    await page.getByRole('link',{name:'Home',exact:true}).filter({visible:true}).first().click(); await page.getByRole('button',{name:'Switch account',exact:true}).waitFor()
+    await page.getByRole('link',{name:/^Home(?:page)?$/i}).filter({visible:true}).first().click(); await page.getByRole('button',{name:'Switch account',exact:true}).waitFor()
     await page.waitForLoadState('networkidle')
     assert.equal(await lamp().count(),0)
     assert.equal(await page.evaluate(A=>localStorage.getItem('via:notifications:seen-index:'+A),A),'100')
@@ -81,13 +88,13 @@ async function run(name, engine, options) {
     failFeed=true
     await page.locator('.via-home-controls a[href="/notifications"]').click()
     await page.getByText('Notifications are temporarily unavailable.',{exact:true}).waitFor()
-    await page.getByRole('link',{name:'Home',exact:true}).filter({visible:true}).first().click(); await page.getByRole('button',{name:'Switch account',exact:true}).waitFor()
+    await page.getByRole('link',{name:/^Home(?:page)?$/i}).filter({visible:true}).first().click(); await page.getByRole('button',{name:'Switch account',exact:true}).waitFor()
     await lamp().waitFor()
     assert.equal(await page.evaluate(A=>localStorage.getItem('via:notifications:seen-index:'+A),A),'100','failed feed never acknowledges index 101')
     failFeed=false
     await page.locator('.via-home-controls a[href="/notifications"]').click()
     await page.getByText('1 recent notifications loaded.',{exact:true}).waitFor()
-    await page.getByRole('link',{name:'Home',exact:true}).filter({visible:true}).first().click(); await page.getByRole('button',{name:'Switch account',exact:true}).waitFor()
+    await page.getByRole('link',{name:/^Home(?:page)?$/i}).filter({visible:true}).first().click(); await page.getByRole('button',{name:'Switch account',exact:true}).waitFor()
     await page.waitForLoadState('networkidle')
     assert.equal(await lamp().count(),0)
     await page.screenshot({path:path.join(out,name+'-bekeken-lampje-uit.png')})
