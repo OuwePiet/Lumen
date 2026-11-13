@@ -6,6 +6,12 @@ import { readViaLocalSettings, VIA_SETTINGS_EVENT, type ViaLanguage } from "../v
 type Copy = Record<string, string>
 
 const dutch: Copy = {
+  "Station name": "Zendernaam",
+  "Station, e.g. Radio 538": "Zender, bijv. Radio 538",
+  "Genre": "Genre",
+  "Genre, e.g. jazz": "Genre, bijv. jazz",
+  "Stop": "Stoppen",
+  "World Radio station discovery": "Wereldradiozenders zoeken",
   "Back to VIA": "Terug naar VIA",
   "World Radio": "Wereldradio",
   "Listen around the world.": "Luister de wereld rond.",
@@ -29,6 +35,12 @@ const dutch: Copy = {
 }
 
 const french: Copy = {
+  "Station name": "Nom de la station",
+  "Station, e.g. Radio 538": "Station, par ex. Radio 538",
+  "Genre": "Genre",
+  "Genre, e.g. jazz": "Genre, par ex. jazz",
+  "Stop": "Arrêter",
+  "World Radio station discovery": "Recherche de stations de radio",
   "Back to VIA": "Retour à VIA",
   "World Radio": "Radio mondiale",
   "Listen around the world.": "Écoutez le monde entier.",
@@ -46,6 +58,12 @@ const french: Copy = {
 }
 
 const spanish: Copy = {
+  "Station name": "Nombre de la emisora",
+  "Station, e.g. Radio 538": "Emisora, p. ej. Radio 538",
+  "Genre": "Género",
+  "Genre, e.g. jazz": "Género, p. ej. jazz",
+  "Stop": "Detener",
+  "World Radio station discovery": "Buscar emisoras de radio",
   "Back to VIA": "Volver a VIA",
   "World Radio": "Radio mundial",
   "Listen around the world.": "Escucha alrededor del mundo.",
@@ -63,6 +81,12 @@ const spanish: Copy = {
 }
 
 const chinese: Copy = {
+  "Station name": "电台名称",
+  "Station, e.g. Radio 538": "电台，例如 Radio 538",
+  "Genre": "类型",
+  "Genre, e.g. jazz": "类型，例如爵士乐",
+  "Stop": "停止",
+  "World Radio station discovery": "搜索广播电台",
   "Back to VIA": "返回 VIA",
   "World Radio": "世界电台",
   "Listen around the world.": "聆听世界各地。",
@@ -80,6 +104,12 @@ const chinese: Copy = {
 }
 
 const hindi: Copy = {
+  "Station name": "स्टेशन का नाम",
+  "Station, e.g. Radio 538": "स्टेशन, जैसे रेडियो 538",
+  "Genre": "शैली",
+  "Genre, e.g. jazz": "शैली, जैसे जैज़",
+  "Stop": "रोकें",
+  "World Radio station discovery": "रेडियो स्टेशन खोजें",
   "Back to VIA": "VIA पर वापस जाएँ",
   "World Radio": "विश्व रेडियो",
   "Listen around the world.": "दुनिया भर के रेडियो सुनें।",
