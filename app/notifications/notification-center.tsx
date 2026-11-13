@@ -507,8 +507,13 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
       const amountNanos = Math.round((usd / rates.rates.USD) * 1_000_000_000)
       if (!Number.isSafeInteger(amountNanos) || amountNanos < 1) throw new Error("AMOUNT")
       const response = await fetch("/api/via/social/reward", { method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store", body: JSON.stringify({ action: "prepare", senderPublicKey, recipientPublicKey: post.publicKey, amountNanos, confirmed: true }) })
-      const result = await response.json() as { ok?: boolean; transactionHex?: string }
+      const result = await response.json() as { ok?: boolean; transactionHex?: string; feeNanos?: number | null }
       if (!response.ok || !result.ok || !result.transactionHex) throw new Error("PREPARE")
+      const feeText = typeof result.feeNanos === "number" && Number.isFinite(result.feeNanos)
+        ? `${(result.feeNanos / 1_000_000_000).toFixed(9)} DESO`
+        : "niet beschikbaar"
+      const confirmedByUser = window.confirm(`VIA Reward bevestigen?\\nOntvanger: @${post.username?.replace(/^@/, "") || post.publicKey}\\nBedrag: ${usd.toFixed(2)} (ongeveer ${(amountNanos / 1_000_000_000).toFixed(9)} DESO)\\nNetwerkkosten: ${feeText}\\nDit is een echte blockchainbetaling en kan niet worden teruggedraaid.`)
+      if (!confirmedByUser) { setRewardBusy(false); setRewardMessage(""); return }
       if ((await viaModernIdentity.currentUser())?.publicKey !== senderPublicKey) throw new Error("DESO_ACCOUNT_CHANGED")
       const signedTransactionHex = await viaModernIdentity.signTx(result.transactionHex)
       if ((await viaModernIdentity.currentUser())?.publicKey !== senderPublicKey) throw new Error("DESO_ACCOUNT_CHANGED")
