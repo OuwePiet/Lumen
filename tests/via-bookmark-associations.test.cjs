@@ -126,3 +126,10 @@ test("Post Office and Bookmarks share the same confirmed Reward component", () =
   assert.match(reward, /window\.confirm/)
   assert.match(reward, /ACCOUNT_CHANGED/)
 })
+
+test("Shared Reward refuses signing when network fee is unknown and shows feedback", () => {
+  const reward = read("app/social/via-reward-button.tsx")
+  assert.match(reward, /if \(feeText === "onbekend"\) throw new Error\("FEE_UNKNOWN"\)/)
+  assert.match(reward, /role="status" aria-live="polite"/)
+  assert.doesNotMatch(reward, /className="sr-only"\>\{message\}/)
+})
