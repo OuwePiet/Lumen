@@ -15,6 +15,7 @@ const SAFE_POST_RETRY_ENDPOINTS = new Set([
   "get-hot-feed",
   "get-users-stateless",
   "get-nft-entries-for-nft-post",
+  "get-nft-showcase",
   "post-associations/query",
 ])
 

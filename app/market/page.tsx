@@ -3,9 +3,10 @@ import Link from "next/link"
 import { fetchDeSo } from "../deso-api"
 import MarketLocalizedText from "./market-localized-text"
 import MarketIdentityRedirect from "./market-identity-redirect"
+import PublicShowcase from "./public-showcase"
 export const metadata: Metadata = {
-  title: "NFT Market",
-  description: "Browse DeSo NFT listings, sale offers, bids and transfers through the VIA marketplace.",
+  title: "VIA-Emporium",
+  description: "Browse a public DeSo NFT selection and account-specific listings through VIA-Emporium.",
 }
 
 
@@ -99,13 +100,15 @@ export default async function MarketPage({ searchParams }: { searchParams: Promi
         <p className="mt-2 text-sm leading-6 text-zinc-400"><MarketLocalizedText kind="intro" /></p>
       </header>
 
-      <nav aria-label="Marketplace sections" className="mt-6 flex flex-wrap gap-2">
+      <nav aria-label="VIA-Emporium sections" className="mt-6 flex flex-wrap gap-2">
         <Link href="/collection" className="rounded-lg border border-zinc-800 px-3 py-2 text-sm text-zinc-300"><MarketLocalizedText kind="collection" /></Link>
         <Link href={"/market/received-bids" + query} className="rounded-lg border border-zinc-800 px-3 py-2 text-sm text-zinc-300"><MarketLocalizedText kind="receivedBids" /></Link>
         <Link href={"/market/my-bids" + query} className="rounded-lg border border-zinc-800 px-3 py-2 text-sm text-zinc-300"><MarketLocalizedText kind="myBids" /></Link>
         <a href="#listings" className="rounded-lg border border-zinc-800 px-3 py-2 text-sm text-zinc-300"><MarketLocalizedText kind="listings" /></a>
         <a href="#transfers" className="rounded-lg border border-zinc-800 px-3 py-2 text-sm text-zinc-300"><MarketLocalizedText kind="transfers" /></a>
       </nav>
+
+      <PublicShowcase />
 
       {!publicKey ? (
         <><MarketIdentityRedirect /><section className="mt-8 rounded-xl border border-zinc-800 bg-black/20 p-4" aria-labelledby="market-account-heading">
