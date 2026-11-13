@@ -42,7 +42,8 @@ export default function ViaRewardButton({ recipientPublicKey, username, disabled
       if (!response.ok || !prepared.ok || !prepared.transactionHex) throw new Error("PREPARE")
       const feeText = typeof prepared.feeNanos === "number" && Number.isFinite(prepared.feeNanos)
         ? `${(prepared.feeNanos / 1_000_000_000).toFixed(9)} DESO` : "onbekend"
-      if (!window.confirm(`Reward definitief verzenden?\\nOntvanger: ${recipient}\\nBedrag: $${amountUsd.toFixed(2)} (ongeveer ${(amountNanos / 1_000_000_000).toFixed(9)} DESO)\\nNetwerkkosten: ${feeText}\\nBlockchainbetalingen zijn onomkeerbaar.`)) {
+      if (feeText === "onbekend") throw new Error("FEE_UNKNOWN")
+      if (!window.confirm(`Reward definitief verzenden?\nOntvanger: ${recipient}\nBedrag: $${amountUsd.toFixed(2)} (ongeveer ${(amountNanos / 1_000_000_000).toFixed(9)} DESO)\\nNetwerkkosten: ${feeText}\nBlockchainbetalingen zijn onomkeerbaar.`)) {
         setMessage("Reward geannuleerd.")
         return
       }
@@ -57,8 +58,8 @@ export default function ViaRewardButton({ recipientPublicKey, username, disabled
       if (!submitted.ok || !result.ok) throw new Error("SUBMIT")
       setMessage("Reward verzonden via DeSo.")
       setOpen(false)
-    } catch {
-      setMessage("Reward niet verzonden. Controleer DeSo en je machtigingen.")
+    } catch (error) {
+      setMessage(error instanceof Error && error.message === "FEE_UNKNOWN" ? "DeSo heeft geen controleerbare netwerkkosten teruggegeven. Er is niets ondertekend." : "Reward niet verzonden. Controleer DeSo en je machtigingen.")
     } finally {
       setBusy(false)
     }
@@ -79,6 +80,6 @@ export default function ViaRewardButton({ recipientPublicKey, username, disabled
         {busy ? "Bezig…" : "Reward controleren"}
       </button>
     </span> : null}
-    {message ? <span role="status" aria-live="polite" className="sr-only">{message}</span> : null}
+    {message ? <span role="status" aria-live="polite" className="max-w-56 text-xs text-zinc-300">{message}</span> : null}
   </span>
 }
