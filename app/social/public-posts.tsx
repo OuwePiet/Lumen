@@ -117,7 +117,7 @@ export default function PublicPosts({ initialPost }: { initialPost?: PublicPost 
   const [message, setMessage] = useState("Choose a feed and load posts.")
   const [feedRevision, setFeedRevision] = useState(0)
   const [feedChoice, setFeedChoice] = useState<ChoiceId>("hot")
-  const [session, setSession] = useState<ViaModernIdentityUser | null>(null)
+  const [session, setSession] = useState<ViaModernIdentityUser | null | undefined>(undefined)
   const [replyingTo, setReplyingTo] = useState<string | null>(null)
   const [expandedPosts, setExpandedPosts] = useState<Record<string, boolean>>({})
   const [replyParent, setReplyParent] = useState<string | null>(null)
@@ -313,6 +313,12 @@ export default function PublicPosts({ initialPost }: { initialPost?: PublicPost 
     const controller = new AbortController()
     requestController.current = controller
 
+    if (!sharedPostHash && feedChoice === "following" && session === undefined) {
+      requestController.current = null
+      setMessage("Loading Following…")
+      return
+    }
+
     if (!sharedPostHash && feedChoice === "following" && !session) {
       setMessage("Log in with DeSo to open Following. Previous posts remain visible.")
       requestController.current = null
@@ -454,6 +460,14 @@ export default function PublicPosts({ initialPost }: { initialPost?: PublicPost 
 
       {posts.length > 0 && visiblePosts.length === 0 ? (
         <p className="mt-5 rounded-xl border border-zinc-800 bg-black/25 p-4 text-sm text-zinc-500">No loaded posts match this filter.</p>
+      ) : null}
+
+      {posts.length === 0 && (loading || sharedPostHash === undefined || (feedChoice === "following" && session === undefined)) ? (
+        <div aria-hidden="true" className="mt-2 space-y-2 rounded-xl border border-white/10 p-3">
+          <div className="h-3 w-28 rounded bg-white/10" />
+          <div className="h-3 w-3/4 rounded bg-white/5" />
+          <div className="h-3 w-1/2 rounded bg-white/5" />
+        </div>
       ) : null}
 
       {visiblePosts.length > 0 ? (
