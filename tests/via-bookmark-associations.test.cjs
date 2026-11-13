@@ -77,3 +77,20 @@ test("Shared VIA controls provide touch targets and constrain menus on narrow sc
   assert.match(shared, /flex-wrap/)
   assert.match(shared, /max-w-\[calc\(100vw-2rem\)\]/)
 })
+
+test("Shared action bar retains a touch-friendly menu and never hides actions on mobile", () => {
+  const shared = read("app/social/via-post-action-bar.tsx")
+  assert.match(shared, /flex-wrap/)
+  assert.match(shared, /min-h-11 min-w-11/)
+  assert.match(shared, /max-w-\[calc\(100vw-2rem\)\]/)
+})
+
+test("No modified client surface places an import ahead of use client", () => {
+  for (const file of [
+    "app/social/public-posts.tsx",
+    "app/notifications/notification-center.tsx",
+    "app/profile/page.tsx",
+  ]) {
+    assert.ok(read(file).startsWith('"use client"'), file)
+  }
+})
