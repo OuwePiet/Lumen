@@ -1,7 +1,9 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import { Repeat2 } from "lucide-react"
+import { Dialog } from "@base-ui/react/dialog"
+import { Popover } from "@base-ui/react/popover"
+import { ImagePlus, Quote, Repeat2, Smile, Video, X } from "lucide-react"
 import { viaModernIdentity, type ViaModernIdentityUser } from "../deso-identity-modern"
 import VideoUploadControl from "./video-upload-control"
 
@@ -14,6 +16,7 @@ const ALLOWED_IMAGE_TYPES = new Set(["image/gif", "image/jpeg", "image/png", "im
 type Props = {
   postHash: string
   initialCount: number
+  quotedPost?: { username?: string; body: string }
   variant?: "default" | "icon"
 }
 
@@ -30,14 +33,14 @@ function httpsUrl(value: string) {
   } catch { return null }
 }
 
-export default function RepostButton({ postHash, initialCount, variant = "default" }: Props) {
+export default function RepostButton({ postHash, initialCount, quotedPost, variant = "default" }: Props) {
   const [session, setSession] = useState<ViaModernIdentityUser | null>(null)
   const [count, setCount] = useState(initialCount)
   const [busy, setBusy] = useState(false)
   const [quoteOpen, setQuoteOpen] = useState(false)
   const [repostMenuOpen, setRepostMenuOpen] = useState(false)
   const [quote, setQuote] = useState("")
-  const [emojiOpen, setEmojiOpen] = useState(false)
+  const [tool, setTool] = useState<"emoji" | "photo" | "video" | null>(null)
   const [imageInputs, setImageInputs] = useState([""])
   const [videoInput, setVideoInput] = useState("")
   const [imageUploadStatus, setImageUploadStatus] = useState<"idle" | "jwt" | "uploading" | "error">("idle")
@@ -173,7 +176,7 @@ export default function RepostButton({ postHash, initialCount, variant = "defaul
       window.dispatchEvent(new Event("via:social:post-published"))
       setMessage(asQuote ? "Quote Repost submitted to DeSo." : "Reposted on DeSo.")
       setQuote("")
-      setEmojiOpen(false)
+      setTool(null)
       setImageInputs([""])
       setVideoInput("")
       setImageUploadStatus("idle")
@@ -191,10 +194,9 @@ export default function RepostButton({ postHash, initialCount, variant = "defaul
 
   return (
     <div className="inline-flex flex-wrap items-center gap-2">
-      {variant === "icon" ? <div className="relative">
-        <button
+      {variant === "icon" ? <Popover.Root open={repostMenuOpen} onOpenChange={setRepostMenuOpen}>
+        <Popover.Trigger
           type="button"
-          onClick={() => setRepostMenuOpen((open) => !open)}
           disabled={busy}
           title="Repost"
           aria-label={`Repost · ${count}`}
@@ -203,30 +205,47 @@ export default function RepostButton({ postHash, initialCount, variant = "defaul
         >
           <Repeat2 className="h-4 w-4" aria-hidden="true" />
           <span>{count}</span>
-        </button>
-        {repostMenuOpen ? <div className="absolute left-0 top-11 z-20 min-w-32 rounded-xl border border-zinc-800 bg-zinc-950 p-1.5 shadow-xl">
-          <button type="button" onClick={() => { setRepostMenuOpen(false); void prepareRepost(false) }} className="block w-full rounded-lg px-3 py-2 text-left text-xs text-zinc-200 hover:bg-zinc-900">Repost</button>
-          <button type="button" onClick={() => { setRepostMenuOpen(false); setQuoteOpen(true) }} className="block w-full rounded-lg px-3 py-2 text-left text-xs text-zinc-200 hover:bg-zinc-900">Quote</button>
-          <button type="button" onClick={() => setRepostMenuOpen(false)} className="mt-1 block w-full border-t border-zinc-800 px-3 py-2 text-left text-[11px] text-zinc-500 hover:text-zinc-300">Sluiten</button>
-        </div> : null}
-      </div> : <>
+        </Popover.Trigger>
+        <Popover.Portal>
+          <Popover.Positioner sideOffset={4} className="z-50">
+          <Popover.Popup aria-label="Repost options" className="min-w-28 rounded-xl border border-zinc-800 bg-zinc-950 p-1 shadow-xl">
+          <button type="button" onClick={() => { setRepostMenuOpen(false); void prepareRepost(false) }} className="flex min-h-10 w-full items-center gap-2 rounded-lg px-2 text-left text-xs text-zinc-200 hover:bg-zinc-900"><Repeat2 size={15} aria-hidden="true" />Repost</button>
+          <button type="button" onClick={() => { setRepostMenuOpen(false); setTool(null); setMessage(""); setQuoteOpen(true) }} className="flex min-h-10 w-full items-center gap-2 rounded-lg px-2 text-left text-xs text-zinc-200 hover:bg-zinc-900"><Quote size={15} aria-hidden="true" />Quote</button>
+          </Popover.Popup>
+          </Popover.Positioner>
+        </Popover.Portal>
+      </Popover.Root> : <>
         <button type="button" onClick={() => void prepareRepost(false)} disabled={busy} className="rounded-full border border-[#285f40]/70 px-3 py-1 text-[#9adbb2] hover:border-[#8fd4a9]/55 disabled:cursor-wait disabled:opacity-60">{busy && !pendingQuote.current ? "Waiting…" : `Repost · ${count}`}</button>
-        <button type="button" onClick={() => setQuoteOpen((open) => !open)} disabled={busy} className="rounded-full border border-zinc-800 px-3 py-1 text-zinc-300 hover:border-zinc-700 disabled:opacity-60">Quote</button>
+        <button type="button" onClick={() => { setTool(null); setMessage(""); setQuoteOpen(true) }} disabled={busy} className="rounded-full border border-zinc-800 px-3 py-1 text-zinc-300 hover:border-zinc-700 disabled:opacity-60">Quote</button>
       </>}
 
-      {quoteOpen ? <div className="basis-full rounded-xl border border-zinc-800 bg-black/30 p-3">
+      <Dialog.Root open={quoteOpen} onOpenChange={open => { if (open || !(busy || imageUploading || videoUploading)) setQuoteOpen(open) }}>
+        <Dialog.Portal>
+          <Dialog.Backdrop className="fixed inset-0 z-[950] bg-black/70" />
+          <Dialog.Popup initialFocus={quoteRef} className="fixed inset-x-3 top-1/2 z-[951] mx-auto max-h-[calc(100dvh-1.5rem)] max-w-xl -translate-y-1/2 overflow-y-auto rounded-2xl border border-zinc-700 bg-[#0b100d] p-3 text-sm text-zinc-100 shadow-xl sm:p-4">
+        <div className="mb-2 flex items-center justify-between gap-2">
+          <Dialog.Title className="font-semibold">Quote{quotedPost?.username ? " @" + quotedPost.username.replace(/^@/, "") : ""}</Dialog.Title>
+          <Dialog.Close aria-label="Close quote" disabled={busy || imageUploading || videoUploading} className="grid size-10 place-items-center rounded-full hover:bg-white/10"><X size={18} /></Dialog.Close>
+        </div>
+        {quotedPost?.body ? <blockquote className="mb-2 line-clamp-2 break-words border-l border-[#285f40] pl-2 text-xs text-zinc-400">{quotedPost.body}</blockquote> : null}
         <label className="sr-only" htmlFor={`via-quote-${postHash}`}>Quote Repost text</label>
         <textarea ref={quoteRef} id={`via-quote-${postHash}`} value={quote} onChange={(event) => setQuote(event.target.value)} maxLength={MAX_QUOTE_LENGTH} rows={3} placeholder="Add your public quote…" className="w-full rounded-lg border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm text-zinc-100 outline-none focus:border-[#8fd4a9]/55" />
-        <div className="mt-2 flex flex-wrap items-center gap-2">
-          <button type="button" onClick={() => setEmojiOpen((open) => !open)} aria-expanded={emojiOpen} className="rounded-full border border-zinc-800 px-3 py-1 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2]">Emoji</button>
-          <span className="text-[11px] text-zinc-600">{MAX_QUOTE_LENGTH - quote.length} characters left</span>
+        <div className="mt-1 flex flex-wrap items-center gap-1">
+          {([{ id: "emoji", label: "Emoji", Icon: Smile }, { id: "photo", label: "Photo", Icon: ImagePlus }, { id: "video", label: "Video", Icon: Video }] as const).map(({ id, label, Icon }) => (
+            <button key={id} type="button" aria-label={label} title={label} aria-expanded={tool === id}
+              onClick={() => setTool(current => current === id ? null : id)}
+              className="grid size-11 place-items-center rounded-lg text-zinc-300 hover:bg-white/10 aria-expanded:bg-[#285f40]">
+              <Icon size={18} aria-hidden="true" />
+            </button>
+          ))}
+          <span className="text-xs tabular-nums text-zinc-400">{quote.length} / {MAX_QUOTE_LENGTH}</span>
+          <button type="button" onClick={() => void prepareRepost(true)} disabled={busy || !quote.trim() || mediaInvalid || imageUploading || videoUploading} className="ml-auto min-h-11 rounded-lg bg-[#285f40] px-3 text-xs font-semibold text-white disabled:opacity-50">Post quote</button>
         </div>
-        {emojiOpen ? <div className="mt-2 flex flex-wrap gap-1.5 rounded-lg border border-zinc-800 bg-zinc-950/80 p-2" aria-label="Quote emoji picker">
+        {tool === "emoji" ? <div className="mt-2 flex flex-wrap gap-1.5 rounded-lg border border-zinc-800 bg-zinc-950/80 p-2" aria-label="Quote emoji picker">
           {QUOTE_EMOJI.map((emoji) => <button key={emoji} type="button" onClick={() => insertEmoji(emoji)} className="grid h-8 w-8 place-items-center rounded-md border border-zinc-800 text-base hover:border-[#8fd4a9]/45" aria-label={`Insert ${emoji}`}>{emoji}</button>)}
         </div> : null}
 
-        <div className="mt-3 rounded-xl border border-zinc-800 bg-zinc-950/70 p-3">
-          <p className="text-xs font-medium text-zinc-300">Photo</p>
+        <div hidden={tool !== "photo"} className="mt-2 border-t border-zinc-800 pt-2">
           {imageUrls.length < MAX_IMAGES ? <label className="mt-2 inline-flex cursor-pointer items-center rounded-lg border border-[#285f40] px-3 py-2 text-xs font-semibold text-[#9adbb2]">
             {imageUploading ? "Working with DeSo…" : "Choose image"}
             <input type="file" accept="image/gif,image/jpeg,image/png,image/webp" className="sr-only" disabled={imageUploading} onChange={(event) => { const file = event.target.files?.[0] ?? null; event.currentTarget.value = ""; void uploadImage(file) }} />
@@ -237,8 +256,7 @@ export default function RepostButton({ postHash, initialCount, variant = "defaul
           {imageInputs.length < MAX_IMAGES ? <button type="button" onClick={() => setImageInputs((current) => [...current, ""])} className="mt-2 text-xs text-[#9adbb2]">+ Add image URL</button> : null}
         </div>
 
-        <div className="mt-3 rounded-xl border border-zinc-800 bg-zinc-950/70 p-3">
-          <p className="text-xs font-medium text-zinc-300">Video</p>
+        <div hidden={tool !== "video"} className="mt-2 border-t border-zinc-800 pt-2">
           <VideoUploadControl onReady={setVideoInput} onBusyChange={setVideoUploading} />
           <label htmlFor={`via-quote-youtube-${postHash}`} className="mt-3 block text-xs text-zinc-400">Or paste a YouTube link</label>
           <input id={`via-quote-youtube-${postHash}`} type="url" inputMode="url" value={videoUploading ? "" : videoInput} onChange={(event) => setVideoInput(event.target.value)} disabled={videoUploading} placeholder="https://www.youtube.com/watch?v=…" className="mt-2 w-full rounded-lg border border-zinc-800 bg-black/40 px-3 py-2 text-xs text-zinc-300 outline-none focus:border-[#8fd4a9]/55 disabled:opacity-50" />
@@ -246,12 +264,10 @@ export default function RepostButton({ postHash, initialCount, variant = "defaul
         </div>
 
         {mediaInvalid ? <p className="mt-2 text-xs text-amber-300">Use valid HTTPS media URLs only.</p> : null}
-        <div className="mt-3 flex flex-wrap gap-2">
-          <button type="button" onClick={() => void prepareRepost(true)} disabled={busy || !quote.trim() || mediaInvalid || imageUploading || videoUploading} className="rounded-lg border border-[#285f40] px-3 py-1.5 text-xs font-medium text-[#9adbb2] disabled:border-zinc-800 disabled:text-zinc-600">Review Quote Repost in DeSo</button>
-          <button type="button" onClick={() => setQuoteOpen(false)} disabled={busy || imageUploading || videoUploading} className="rounded-lg border border-zinc-800 px-3 py-1.5 text-xs text-zinc-400 hover:border-zinc-700 hover:text-zinc-200 disabled:opacity-60">Sluiten</button>
-        </div>
         {message ? <p className="mt-2 text-xs text-zinc-500" role="status" aria-live="polite">{message}</p> : null}
-      </div> : null}
+          </Dialog.Popup>
+        </Dialog.Portal>
+      </Dialog.Root>
 
       {!quoteOpen && message ? <span className="sr-only" role="status" aria-live="polite">{message}</span> : null}
     </div>
