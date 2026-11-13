@@ -937,7 +937,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
                     >
                       <MessageSquare className="h-4 w-4" />
                     </button>
-                    <RepostButton postHash={post.postHash} initialCount={0} variant="icon" />
+                    <RepostButton quotedPost={post} postHash={post.postHash} initialCount={0} variant="icon" />
                     <LikeButton postHash={post.postHash} initialCount={post.likeCount} variant="icon" />
                     <DiamondButton postHash={post.postHash} receiverPublicKey={post.publicKey} initialCount={post.diamondCount} variant="icon" />
                     <details className="relative">
