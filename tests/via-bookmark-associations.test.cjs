@@ -102,21 +102,15 @@ test("Post Office More menu overlays posts without changing document flow", () =
   assert.match(posts, /aria-label="Meer postacties"/)
 })
 
-test("Notification rewards block self-payments and verify account before signing and submitting", () => {
+test("Notifications uses the shared Reward control without a second payment implementation", () => {
   const notifications = read("app/notifications/notification-center.tsx")
-  assert.match(notifications, /session\.publicKey === post\.publicKey/)
-  assert.match(notifications, /const senderPublicKey = session\.publicKey/)
-  assert.match(notifications, /DESO_ACCOUNT_CHANGED/)
-  assert.match(notifications, /viaModernIdentity\.signTx\(result\.transactionHex\)/)
-})
-
-test("Rewards require explicit approval before preparation and a second fee-aware approval before signing", () => {
-  const notifications = read("app/notifications/notification-center.tsx")
-  assert.match(notifications, /Reward voorbereiden/)
-  assert.match(notifications, /Netwerkkosten:/)
-  assert.match(notifications, /window\.confirm/)
-  assert.match(notifications, /if \(!confirmedByUser\)/)
-  assert.match(notifications, /viaModernIdentity\.signTx\(result\.transactionHex\)/)
+  const reward = read("app/social/via-reward-button.tsx")
+  assert.match(notifications, /<ViaRewardButton recipientPublicKey=\{post\.publicKey\}/)
+  assert.doesNotMatch(notifications, /async function sendReward/)
+  assert.match(reward, /session\.publicKey === recipientPublicKey/)
+  assert.match(reward, /viaModernIdentity\.signTx/)
+  assert.match(reward, /Netwerkkosten:/)
+  assert.match(reward, /window\.confirm/)
 })
 
 test("Post Office and Bookmarks share the same confirmed Reward component", () => {
