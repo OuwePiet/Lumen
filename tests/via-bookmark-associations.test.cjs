@@ -70,3 +70,10 @@ test("Every VIA post surface uses the shared action row", () => {
     assert.match(source, /<\/ViaPostActionBar>/, file)
   }
 })
+
+test("Shared VIA controls provide touch targets and constrain menus on narrow screens", () => {
+  const shared = read("app/social/via-post-action-bar.tsx")
+  assert.match(shared, /min-h-11 min-w-11/)
+  assert.match(shared, /flex-wrap/)
+  assert.match(shared, /max-w-\[calc\(100vw-2rem\)\]/)
+})
