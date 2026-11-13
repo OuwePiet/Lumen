@@ -6,6 +6,7 @@ import { restoreIdentitySession, VIA_IDENTITY_EVENT } from "../deso-identity-ses
 import { financialSubmissionBlock, markFinancialPending, markFinancialSubmitted, withFinancialAccountLock } from "../financial-submission"
 import { viaModernIdentity } from "../deso-identity-modern"
 import { fetchViaRates } from "../via-live-rates"
+import PublicAccountLabel from "../public-account-label"
 
 type Props = { postHash: string; receiverPublicKey: string; initialCount: number; variant?: "default" | "icon" }
 type PrepareResponse = { ok?: boolean; transactionHex?: string; diamondLevel?: number; feeNanos?: number | null; spendAmountNanos?: number | null; error?: string }
@@ -54,6 +55,7 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
   const [desoUsd, setDesoUsd] = useState<number | null>(null)
   const [levelsFailed, setLevelsFailed] = useState(false)
   const [levelsAttempt, setLevelsAttempt] = useState(0)
+  const [recipientOpen, setRecipientOpen] = useState(false)
 
   useEffect(() => {
     const controller = new AbortController()
@@ -95,6 +97,18 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
       Prijzen niet beschikbaar · Opnieuw laden
     </button>
   ) : null
+
+  const recipientInfo = (
+    <details className="min-w-0" onToggle={(event) => setRecipientOpen(event.currentTarget.open)}>
+      <summary aria-label="Toon ontvanger" title="Toon ontvanger"
+        className="flex min-h-11 min-w-11 cursor-pointer list-none items-center justify-center text-[#9adbb2]">
+        <span aria-hidden="true" className="flex size-6 items-center justify-center rounded-full border border-current text-sm font-semibold">i</span>
+      </summary>
+      <div className="flex flex-wrap items-center gap-1 text-xs text-zinc-300">
+        Ontvanger {recipientOpen ? <PublicAccountLabel key={receiverPublicKey} publicKey={receiverPublicKey} /> : null}
+      </div>
+    </details>
+  )
 
   const sendLock = useRef(false)
   async function prepare(chosenLevel = level) {
@@ -195,6 +209,7 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
               <Gem className="mx-auto h-4 w-4" aria-hidden="true" /><span className="block">{entry.level}</span>
             </button>
           ))}
+          {recipientInfo}
         </div>
         <div className="mt-2 flex flex-wrap gap-2">
           <button type="button" onClick={() => { setCompactOpen(false) }} disabled={status === "preparing" || status === "approval" || status === "submitting"} className="h-9 rounded-full border border-zinc-700 px-3 text-xs text-zinc-300 disabled:opacity-60">Sluiten</button>
@@ -213,6 +228,7 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
         {retryLevels}
         {!diamondValues && !levelsFailed ? <span role="status" className="text-xs text-zinc-400">Prijzen laden…</span> : null}
         {(diamondValues ?? []).map((entry) => <button key={entry.level} type="button" onClick={() => { if (!Number.isFinite(entry.nanos) || status === "preparing" || status === "approval" || status === "submitting") return; setLevel(entry.level); void prepare(entry.level) }} aria-pressed={level === entry.level} className={`rounded-lg border px-2 py-2 text-xs ${level === entry.level ? "border-[#8fd4a9] bg-[#285f40] text-white" : "border-zinc-800 text-zinc-300 hover:border-[#8fd4a9]"}`}><span className="block text-[11px] text-amber-300">{diamondUsd(entry.nanos) ?? `${entry.nanos / 1_000_000_000} DESO`}</span><span className="block">{entry.level} 💎</span></button>)}
+        <div className="col-span-2 flex items-start justify-end">{recipientInfo}</div>
         <button type="button" onClick={(event) => { (event.currentTarget.closest("details") as HTMLDetailsElement | null)?.removeAttribute("open") }} className="col-span-2 rounded-lg border border-zinc-700 px-2 py-2 text-xs text-zinc-300 hover:border-[#8fd4a9]">Sluiten</button>
       </div>
     </details>
