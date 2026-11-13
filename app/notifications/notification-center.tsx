@@ -499,6 +499,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
     const senderPublicKey = session.publicKey
     const usd = Number(rewardUsd)
     if (!Number.isFinite(usd) || usd <= 0) { setRewardMessage(copy.rewardFailed); return }
+    if (!window.confirm(`Reward voorbereiden voor @${post.username?.replace(/^@/, "") || post.publicKey} van ${usd.toFixed(2)}? De definitieve DESO-waarde en netwerkkosten volgen ter bevestiging vóór ondertekening.`)) return
     setRewardBusy(true)
     setRewardMessage(copy.rewardSending)
     try {
