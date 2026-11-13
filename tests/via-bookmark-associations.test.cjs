@@ -44,3 +44,29 @@ test("VIA Bookmarks uses shared action row and More menu", () => {
   assert.match(bookmarks, /<ViaPostActionBar/)
   assert.match(bookmarks, /<ViaMoreActions>/)
 })
+
+test("Next.js client directives precede imports in every modified client component", () => {
+  for (const file of [
+    "app/social/public-posts.tsx",
+    "app/notifications/notification-center.tsx",
+    "app/profile/page.tsx",
+    "app/saved/deso-saved-posts.tsx",
+    "app/social/local-save-button.tsx",
+    "app/social/via-post-action-bar.tsx",
+  ]) {
+    assert.match(read(file), /^"use client"\s*\n/, file)
+  }
+})
+
+test("Every VIA post surface uses the shared action row", () => {
+  for (const file of [
+    "app/social/public-posts.tsx",
+    "app/notifications/notification-center.tsx",
+    "app/profile/page.tsx",
+    "app/saved/deso-saved-posts.tsx",
+  ]) {
+    const source = read(file)
+    assert.match(source, /<ViaPostActionBar\b/, file)
+    assert.match(source, /<\/ViaPostActionBar>/, file)
+  }
+})
