@@ -31,6 +31,7 @@ export async function POST(request: Request) {
   const key = body.publicKey
   if (body.action === "query") {
     if (!publicKey(key)) return reply({ ok: false, error: "INVALID_PUBLIC_KEY" }, 400)
+    if (body.postHash !== undefined && !hash(body.postHash)) return reply({ ok: false, error: "INVALID_POST_HASH" }, 400)
     const lastSeen = body.lastSeenAssociationID
     if (lastSeen !== undefined && !hash(lastSeen)) return reply({ ok: false, error: "INVALID_CURSOR" }, 400)
     try {
@@ -38,6 +39,7 @@ export async function POST(request: Request) {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           TransactorPublicKeyBase58Check: key,
+          ...(body.postHash ? { PostHashHex: body.postHash } : {}),
           AssociationType: ASSOCIATION_TYPE, AssociationValue: ASSOCIATION_VALUE,
           Limit: 100, SortDescending: true, IncludePostEntry: true,
           ...(lastSeen ? { LastSeenAssociationID: lastSeen } : {}),
