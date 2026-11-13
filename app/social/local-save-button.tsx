@@ -1,103 +1,102 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { SAVED_KEY, type SavedItem } from "../saved/save-button"
+import { Bookmark } from "lucide-react"
+import { viaModernIdentity } from "../deso-identity-modern"
+import { useViaIdentitySession } from "../use-via-identity-session"
 
-const SAVE_EVENT = "via:saved:changed"
+type Props = { postHash: string; body: string; publicKey: string; timestampNanos: number }
+type Association = { AssociationID: string; PostHashHex: string }
+type QueryResult = { ok?: boolean; result?: { Associations?: Association[] }; error?: string }
+type PrepareResult = { ok?: boolean; transactionHex?: string; error?: string }
+const ENDPOINT = "/api/via/social/bookmark"
 
-type Props = {
-  postHash: string
-  body: string
-  publicKey: string
-  timestampNanos: number
+async function request(body: Record<string, unknown>) {
+  const response = await fetch(ENDPOINT, { method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store", body: JSON.stringify(body) })
+  const result = await response.json()
+  if (!response.ok || !result.ok) throw new Error(result.error || "DESO_BOOKMARK_UNAVAILABLE")
+  return result
 }
 
-function postHref(postHash: string) {
-  return `/social?post=${encodeURIComponent(postHash)}`
-}
-
-function postTitle(body: string, publicKey: string) {
-  const text = body.trim().replace(/\s+/g, " ")
-  if (text) return text.length > 72 ? `${text.slice(0, 69)}...` : text
-  const account = publicKey.length > 18 ? `${publicKey.slice(0, 10)}…${publicKey.slice(-6)}` : publicKey
-  return `DeSo post · ${account}`
-}
-
-function readSaved(): SavedItem[] {
-  try {
-    const raw = window.localStorage.getItem(SAVED_KEY)
-    const parsed = raw ? JSON.parse(raw) : []
-    if (!Array.isArray(parsed)) return []
-    return parsed.filter((item): item is SavedItem =>
-      Boolean(item) &&
-      typeof item.title === "string" &&
-      typeof item.href === "string" &&
-      typeof item.kind === "string" &&
-      typeof item.savedAt === "string"
-    ).slice(0, 100)
-  } catch {
-    return []
+async function findBookmark(account: string, postHash: string): Promise<Association | null> {
+  let cursor: string | undefined
+  const seen = new Set<string>()
+  for (let page = 0; page < 100; page++) {
+    const result = await request({ action: "query", publicKey: account, ...(cursor ? { lastSeenAssociationID: cursor } : {}) }) as QueryResult
+    const associations = result.result?.Associations
+    if (!Array.isArray(associations)) throw new Error("INVALID_ASSOCIATION_RESPONSE")
+    const found = associations.find(item => item.PostHashHex?.toLowerCase() === postHash.toLowerCase())
+    if (found) return found
+    if (associations.length < 100) return null
+    const last = associations[associations.length - 1]?.AssociationID
+    if (!last || seen.has(last)) throw new Error("INVALID_ASSOCIATION_CURSOR")
+    seen.add(last)
+    cursor = last
   }
+  throw new Error("BOOKMARK_QUERY_LIMIT_REACHED")
 }
 
-export default function LocalSaveButton({ postHash, body, publicKey }: Props) {
-  const href = postHref(postHash)
+export default function LocalSaveButton({ postHash }: Props) {
+  const session = useViaIdentitySession()
+  const account = session?.publicKey
   const [saved, setSaved] = useState(false)
+  const [associationID, setAssociationID] = useState<string | null>(null)
+  const [busy, setBusy] = useState(false)
+  const [ready, setReady] = useState(false)
   const [message, setMessage] = useState("")
 
   useEffect(() => {
-    const sync = () => setSaved(readSaved().some((item) => item.href === href))
-    sync()
-    window.addEventListener(SAVE_EVENT, sync)
-    window.addEventListener("storage", sync)
-    return () => {
-      window.removeEventListener(SAVE_EVENT, sync)
-      window.removeEventListener("storage", sync)
-    }
-  }, [href])
+    let active = true
+    setReady(false)
+    setSaved(false)
+    setAssociationID(null)
+    if (!account) return
+    void findBookmark(account, postHash).then(found => {
+      if (!active) return
+      setAssociationID(found?.AssociationID ?? null)
+      setSaved(Boolean(found))
+      setReady(true)
+    }).catch(() => {
+      if (active) { setReady(false); setMessage("DeSo bookmarks tijdelijk niet beschikbaar.") }
+    })
+    return () => { active = false }
+  }, [account, postHash])
 
-  function toggle() {
+  async function toggle() {
+    if (!account || !ready || busy) return
+    setBusy(true)
+    setMessage("")
     try {
-      const current = readSaved()
-      if (current.some((item) => item.href === href)) {
-        const next = current.filter((item) => item.href !== href)
-        window.localStorage.setItem(SAVED_KEY, JSON.stringify(next))
-        setSaved(false)
-        window.dispatchEvent(new Event(SAVE_EVENT))
-        setMessage("Removed from Saved.")
-        return
-      }
-
-      const next: SavedItem[] = [
-        {
-          title: postTitle(body, publicKey),
-          href,
-          kind: "Post",
-          savedAt: new Date().toISOString(),
-        },
-        ...current.filter((item) => item.href !== href),
-      ].slice(0, 100)
-      window.localStorage.setItem(SAVED_KEY, JSON.stringify(next))
-      setSaved(true)
-      window.dispatchEvent(new Event(SAVE_EVENT))
-      setMessage("Saved in VIA Saved on this device.")
+      // Check the chain again immediately before constructing a paid transaction.
+      const existing = await findBookmark(account, postHash)
+      const create = !existing
+      if (!create && !existing?.AssociationID) throw new Error("MISSING_ASSOCIATION_ID")
+      if ((await viaModernIdentity.currentUser())?.publicKey !== account) throw new Error("DESO_ACCOUNT_CHANGED")
+      const prepared = await request(create
+        ? { action: "prepare-create", publicKey: account, postHash }
+        : { action: "prepare-delete", publicKey: account, associationID: existing?.AssociationID }) as PrepareResult
+      if (!prepared.transactionHex) throw new Error("PREPARE_FAILED")
+      if ((await viaModernIdentity.currentUser())?.publicKey !== account) throw new Error("DESO_ACCOUNT_CHANGED")
+      const signedTransactionHex = await viaModernIdentity.signTx(prepared.transactionHex)
+      if ((await viaModernIdentity.currentUser())?.publicKey !== account) throw new Error("DESO_ACCOUNT_CHANGED")
+      await request({ action: "submit", signedTransactionHex })
+      setSaved(create)
+      setAssociationID(create ? null : null)
+      setMessage(create ? "Opgeslagen op DeSo." : "Bookmark verwijderd van DeSo.")
+      window.dispatchEvent(new Event("via:saved:changed"))
     } catch {
-      setMessage("Saving is unavailable on this device.")
-    }
+      setMessage("Bookmark niet gewijzigd. Controleer DeSo of de machtigingen.")
+    } finally { setBusy(false) }
   }
 
-  return (
-    <span className="inline-flex items-center gap-2">
-      <button
-        type="button"
-        onClick={toggle}
-        aria-pressed={saved}
-        className="rounded-full border border-zinc-800 px-3 py-1 text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2]"
-        title="Local VIA save · no blockchain write"
-      >
-        {saved ? "Saved ✓" : "Save"}
-      </button>
-      {message ? <span className="sr-only" role="status" aria-live="polite">{message}</span> : null}
-    </span>
-  )
+  return <span className="inline-flex items-center gap-1">
+    <button type="button" onClick={() => void toggle()} disabled={!account || !ready || busy}
+      aria-label={saved ? "Verwijder DeSo bookmark" : "Bewaar op DeSo"}
+      aria-pressed={saved} title={!account ? "Log in via VIA" : !ready ? "Bookmarks laden…" : "DeSo blockchainbookmark"}
+      className="inline-flex h-9 min-w-9 items-center justify-center gap-1 rounded-full border border-zinc-800 px-2 text-xs text-zinc-300 hover:border-[#8fd4a9] disabled:opacity-50">
+      <Bookmark className={saved ? "h-4 w-4 fill-current" : "h-4 w-4"} aria-hidden="true" />
+      <span>{busy ? "…" : saved ? "Saved" : "Save"}</span>
+    </button>
+    {message ? <span role="status" aria-live="polite" className="sr-only">{message}</span> : null}
+  </span>
 }
