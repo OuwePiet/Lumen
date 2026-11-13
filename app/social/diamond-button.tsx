@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
+import { Popover } from "@base-ui/react/popover"
 import { Gem } from "lucide-react"
 import { restoreIdentitySession, VIA_IDENTITY_EVENT } from "../deso-identity-session"
 import { financialSubmissionBlock, markFinancialPending, markFinancialSubmitted, withFinancialAccountLock } from "../financial-submission"
@@ -30,35 +31,18 @@ function awaitIdentityResponse<T>(operation: Promise<T>, timeoutMs: number): Pro
 }
 
 export default function DiamondButton({ postHash, receiverPublicKey, initialCount, variant = "default" }: Props) {
-  const [level, setLevel] = useState(1)
   const [count, setCount] = useState(initialCount)
   useEffect(() => setCount(initialCount), [initialCount])
-  const [compactOpen, setCompactOpen] = useState(false)
-  const menuRootRef = useRef<HTMLDivElement>(null)
+  const [menuOpen, setMenuOpen] = useState(false)
   const [celebrate, setCelebrate] = useState(false)
-  useEffect(() => {
-    function dismissOnOutsidePointer(event: PointerEvent) {
-      const root = menuRootRef.current
-      if (root && event.target instanceof Node && !root.contains(event.target)) {
-        setCompactOpen(false)
-        root.querySelectorAll("details[open]").forEach((menu) => menu.removeAttribute("open"))
-      }
-    }
-    document.addEventListener("pointerdown", dismissOnOutsidePointer)
-    return () => document.removeEventListener("pointerdown", dismissOnOutsidePointer)
-  }, [])
-
   const leafRain = celebrate ? <div aria-hidden="true" className="pointer-events-none fixed inset-0 z-[90] overflow-hidden">{Array.from({ length: 28 }, (_, i) => <span key={i} className="absolute top-[-12%] animate-[viaLeafFall_3s_ease-in_forwards]" style={{ left: `${(i * 37) % 100}%`, animationDelay: `${(i % 10) * 0.12}s`, transform: `rotate(${i * 41}deg)` }}><img src="/via-leaf.svg" alt="" width="36" height="34" className="h-9 w-9 object-contain" /></span>)}<style>{`@keyframes viaLeafFall { from { translate: 0 -10vh; opacity: 1 } to { translate: 8vw 115vh; opacity: 0 } }`}</style></div> : null
   const [status, setStatus] = useState<"idle" | "preparing" | "approval" | "submitting" | "done" | "error">("idle")
   const [message, setMessage] = useState("")
-  const [feeNanos, setFeeNanos] = useState<number | null>(null)
   const [diamondValues, setDiamondValues] = useState<Array<{ level: number; nanos: number }> | null>(null)
   const [desoUsd, setDesoUsd] = useState<number | null>(null)
   const [levelsFailed, setLevelsFailed] = useState(false)
   const [levelsAttempt, setLevelsAttempt] = useState(0)
   const [recipientOpen, setRecipientOpen] = useState(false)
-  const [detailsOpen, setDetailsOpen] = useState(false)
-  const menuOpen = variant === "icon" ? compactOpen : detailsOpen
   const reader = useViaIdentitySession()?.publicKey
   const [previousDiamond, setPreviousDiamond] = useState<{ reader: string; hash: string; level: number } | null>(null)
   const previousLevel = previousDiamond?.reader === reader && previousDiamond?.hash === postHash ? previousDiamond.level : null
@@ -85,10 +69,6 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
     return () => controller.abort()
   }, [menuOpen, postHash, reader])
 
-  const previousDiamondInfo = previousLevel !== null && previousLevel > 0 ? (
-    <p className="mb-1 text-xs text-zinc-300">Al gegeven op DeSo: niveau {previousLevel}</p>
-  ) : null
-
   useEffect(() => {
     const controller = new AbortController()
     fetchViaRates(controller.signal).then((rates) => setDesoUsd(rates.rates?.USD ?? null)).catch(() => setDesoUsd(null))
@@ -98,7 +78,7 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
   function diamondUsd(nanos: number) {
     if (!Number.isFinite(nanos) || !desoUsd) return null
     const usd = (nanos / 1_000_000_000) * desoUsd
-    return usd < 0.01 ? "< $0.01" : new Intl.NumberFormat(undefined, { style: "currency", currency: "USD", maximumFractionDigits: 2 }).format(usd)
+    return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", minimumFractionDigits: usd < 1 ? 2 : 0, maximumFractionDigits: usd < 1 ? 2 : 0 }).format(Math.max(0.01, usd))
   }
 
   useEffect(() => {
@@ -114,7 +94,6 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
           .sort((a, b) => a.level - b.level)
         if (!values.length) throw new Error("DIAMOND_LEVELS_UNAVAILABLE")
         if (!controller.signal.aborted) {
-          setLevel((selected) => values.some((entry) => entry.level === selected) ? selected : values[0].level)
           setDiamondValues(values)
         }
       }).catch(() => {
@@ -130,21 +109,15 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
     </button>
   ) : null
 
-  const recipientInfo = (
-    <details className="ml-auto min-w-0" onToggle={(event) => setRecipientOpen(event.currentTarget.open)}>
-      <summary aria-label="Toon ontvanger" title="Toon ontvanger"
-        className="flex min-h-11 min-w-11 cursor-pointer list-none items-center justify-center text-[#9adbb2]">
-        <span aria-hidden="true" className="flex size-6 items-center justify-center rounded-full border border-current text-sm font-semibold">i</span>
-      </summary>
-      <div className="flex flex-wrap items-center gap-1 text-xs text-zinc-300">
-        Ontvanger {recipientOpen ? <PublicAccountLabel key={receiverPublicKey} publicKey={receiverPublicKey} /> : null}
-      </div>
-    </details>
-  )
+  function changeMenu(open: boolean) {
+    setMenuOpen(open)
+    setRecipientOpen(false)
+  }
 
+  const busy = status === "preparing" || status === "approval" || status === "submitting"
   const sendLock = useRef(false)
-  async function prepare(chosenLevel = level) {
-    if (sendLock.current || !diamondValues?.some(item => item.level === chosenLevel)) return
+  async function prepare(chosenLevel: number) {
+    if (sendLock.current || (previousLevel !== null && chosenLevel <= previousLevel) || !diamondValues?.some(item => item.level === chosenLevel)) return
     sendLock.current = true
     const session = restoreIdentitySession()
     let invalidated = false, sent = false, accepted = false
@@ -169,7 +142,7 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
         await assertAccount()
         const blocked = financialSubmissionBlock(session.publicKey, intent)
         if (blocked) throw new Error(blocked)
-        setCelebrate(false); setStatus("preparing"); setMessage("Preparing the Diamond and exact DeSo cost…"); setFeeNanos(null)
+        setCelebrate(false); setStatus("preparing"); setMessage("Preparing the Diamond and exact DeSo cost…")
         const response = await fetch("/api/via/social/diamond", { method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store", body: JSON.stringify({ action: "prepare", senderPublicKey: session.publicKey, receiverPublicKey, diamondPostHashHex: postHash, diamondLevel: chosenLevel }) })
         const data = await response.json() as PrepareResponse
         await assertAccount()
@@ -178,7 +151,6 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
             typeof data.spendAmountNanos !== "number" || !Number.isSafeInteger(data.spendAmountNanos) || data.spendAmountNanos < 0) throw new Error(data.error || "INVALID_DESO_TRANSACTION_DATA")
         const cost = data.spendAmountNanos + data.feeNanos
         if (!Number.isSafeInteger(cost) || cost < 1) throw new Error("INVALID_DESO_SPEND_LIMIT")
-        setFeeNanos(data.feeNanos)
         // DeSo permissions are granted at homepage login; never open a second
         // permission request from a diamond click. Fail closed if the grant is absent.
         setStatus("approval"); setMessage("Checking the DeSo permission granted at login…")
@@ -198,7 +170,7 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
         if (!submit.ok || !result.ok) throw new Error(result.error || "SUBMIT_FAILED")
         accepted = true
         markFinancialSubmitted(submission, result.transaction?.TxnHashHex ?? result.transaction?.TransactionHashHex)
-        setStatus("done"); setCompactOpen(false); menuRootRef.current?.querySelectorAll("details[open]").forEach((menu) => menu.removeAttribute("open")); setMessage("Diamond received by DeSo. Final confirmation is not yet verified.")
+        setStatus("done"); changeMenu(false); setMessage("Diamond received by DeSo. Final confirmation is not yet verified.")
         setCelebrate(true); window.setTimeout(() => setCelebrate(false), 3200)
         window.dispatchEvent(new Event("via:social:post-published"))
         await viaModernIdentity.refreshSpendingLimits().catch(() => {})
@@ -219,54 +191,48 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
     }
   }
 
-  if (variant === "icon") {
-    return <div ref={menuRootRef} className="contents">
-      <button
-        type="button"
-        onClick={() => { setCompactOpen((open) => !open) }}
-        title="Diamond"
-        aria-label={`Diamond · ${count}`}
-        aria-expanded={compactOpen}
-        className={`inline-flex h-9 min-w-9 items-center justify-center gap-1 rounded-full border px-2 text-xs transition ${compactOpen ? "border-[#8fd4a9] bg-[#285f40] text-white" : "border-zinc-800 text-zinc-300 hover:border-[#8fd4a9] hover:text-white"}`}
-      >
-        <Gem className="h-4 w-4" aria-hidden="true" /><span>{count}</span>
-      </button>
-      {compactOpen ? <div className="order-last w-full basis-full rounded-xl border border-zinc-800 bg-[#050806] p-2">
-        {previousDiamondInfo}
-        <div className="flex max-w-full flex-wrap items-center gap-1.5" aria-label="Diamond value">
-          {retryLevels}
-        {!diamondValues && !levelsFailed ? <span role="status" className="text-xs text-zinc-400">Prijzen laden…</span> : null}
-        {(diamondValues ?? []).map((entry) => (
-            <button key={entry.level} type="button" disabled={previousLevel !== null && entry.level <= previousLevel} onClick={() => { if (!Number.isFinite(entry.nanos) || status === "preparing" || status === "approval" || status === "submitting") return; setLevel(entry.level); void prepare(entry.level) }} aria-pressed={level === entry.level} className={`min-w-[3.35rem] rounded-xl border px-2 py-1 text-center text-[10px] transition disabled:opacity-40 ${level === entry.level ? "border-[#8fd4a9] bg-[#285f40] text-white" : "border-zinc-800 text-zinc-400 hover:border-[#8fd4a9] hover:text-white"}`}>
-              <span className="mb-1 block rounded-full bg-zinc-800 px-1.5 py-0.5 text-zinc-100">{diamondUsd(entry.nanos) ?? `${entry.nanos / 1_000_000_000} DESO`}</span>
-              <Gem className="mx-auto h-4 w-4" aria-hidden="true" /><span className="block">{entry.level}</span>
-            </button>
-          ))}
-          {recipientInfo}
-        </div>
-        <div className="mt-2 flex flex-wrap gap-2">
-          <button type="button" onClick={() => { setCompactOpen(false) }} disabled={status === "preparing" || status === "approval" || status === "submitting"} className="h-9 rounded-full border border-zinc-700 px-3 text-xs text-zinc-300 disabled:opacity-60">Sluiten</button>
-        </div>
-      </div> : null}
-      {leafRain}
-      {message ? <span className="order-last w-full basis-full text-xs text-amber-200" role="status" aria-live="polite">{message}</span> : null}
-    </div>
-  }
-
-  return <div ref={menuRootRef} className="flex flex-wrap items-center gap-2">
-    <span>{count} Diamonds</span>
-    <details className="relative" onToggle={(event) => setDetailsOpen(event.currentTarget.open)}>
-      <summary className="inline-flex cursor-pointer list-none items-center gap-1 rounded-full border border-zinc-800 px-2 py-1 text-xs text-zinc-300"><Gem className="h-3.5 w-3.5" aria-hidden="true" /> {level} ▾</summary>
-      <div className="absolute top-full left-0 z-30 mt-2 grid w-56 grid-cols-2 gap-1 rounded-xl border border-zinc-800 bg-[#050806] p-2 shadow-xl">
-        <div className="col-span-2">{previousDiamondInfo}</div>
-        {retryLevels}
-        {!diamondValues && !levelsFailed ? <span role="status" className="text-xs text-zinc-400">Prijzen laden…</span> : null}
-        {(diamondValues ?? []).map((entry) => <button key={entry.level} type="button" disabled={previousLevel !== null && entry.level <= previousLevel} onClick={() => { if (!Number.isFinite(entry.nanos) || status === "preparing" || status === "approval" || status === "submitting") return; setLevel(entry.level); void prepare(entry.level) }} aria-pressed={level === entry.level} className={`rounded-lg border px-2 py-2 text-xs ${level === entry.level ? "border-[#8fd4a9] bg-[#285f40] text-white" : "border-zinc-800 text-zinc-300 hover:border-[#8fd4a9]"}`}><span className="block text-[11px] text-amber-300">{diamondUsd(entry.nanos) ?? `${entry.nanos / 1_000_000_000} DESO`}</span><span className="block">{entry.level} 💎</span></button>)}
-        <div className="col-span-2 flex items-start justify-end">{recipientInfo}</div>
-        <button type="button" onClick={(event) => { (event.currentTarget.closest("details") as HTMLDetailsElement | null)?.removeAttribute("open") }} className="col-span-2 rounded-lg border border-zinc-700 px-2 py-2 text-xs text-zinc-300 hover:border-[#8fd4a9]">Sluiten</button>
-      </div>
-    </details>
+  return <>
+    <Popover.Root open={menuOpen} onOpenChange={changeMenu}>
+      <Popover.Trigger type="button" title="Diamanten" aria-label={"Diamanten · " + count}
+        className="inline-flex h-9 min-w-9 items-center justify-center gap-1 rounded-full border border-zinc-800 px-2 text-xs text-zinc-300 hover:border-[#8fd4a9] data-[popup-open]:border-[#8fd4a9] data-[popup-open]:bg-[#285f40]">
+        <Gem className="size-4" aria-hidden="true" />
+        <span>{count}{variant === "default" ? " Diamanten" : ""}</span>
+      </Popover.Trigger>
+      <Popover.Portal>
+        <Popover.Positioner side="top" sideOffset={6} collisionPadding={8} className="z-50">
+          <Popover.Popup aria-label="Diamant geven" className="w-max max-w-[calc(100vw-1rem)] rounded-2xl border border-[#376047] bg-[#0d1c14] p-1.5 text-zinc-100 shadow-xl">
+            {recipientOpen ? (
+              <div className="mb-1 flex flex-wrap items-center gap-x-1 px-1 text-xs">
+                <span>Ontvanger</span>
+                <PublicAccountLabel key={receiverPublicKey} publicKey={receiverPublicKey} />
+                {previousLevel ? <span className="text-zinc-400">· Al gegeven op DeSo · {previousLevel}</span> : null}
+              </div>
+            ) : null}
+            <div className="flex flex-wrap items-center gap-0.5">
+              {retryLevels}
+              {!diamondValues && !levelsFailed ? <span role="status" className="px-1 text-xs text-zinc-400">Prijzen laden…</span> : null}
+              {(diamondValues ?? []).map(({ level, nanos }) => {
+                const price = diamondUsd(nanos) ?? (nanos / 1_000_000_000) + " DESO"
+                return (
+                  <button key={level} type="button" disabled={busy || (previousLevel !== null && level <= previousLevel)}
+                    onClick={() => void prepare(level)} aria-label={"Verstuur diamantniveau " + level + " · " + price}
+                    className="flex min-h-11 min-w-8 flex-col items-center justify-center gap-0.5 rounded-lg px-0.5 text-[#a8e5bd] hover:bg-[#285f40] hover:text-white disabled:opacity-40">
+                    <span className="rounded-full bg-[#234131] px-0.5 text-[10px] leading-3 text-white">{price}</span>
+                    <Gem className="size-5" aria-hidden="true" />
+                  </button>
+                )
+              })}
+              <button type="button" aria-label="Toon ontvanger" aria-expanded={recipientOpen}
+                onClick={() => setRecipientOpen((open) => !open)}
+                className="flex min-h-11 min-w-8 items-center justify-center rounded-lg text-[#a8e5bd] hover:bg-[#285f40]">
+                <span aria-hidden="true" className="flex size-5 items-center justify-center rounded-full border border-current text-xs font-semibold">i</span>
+              </button>
+            </div>
+          </Popover.Popup>
+        </Popover.Positioner>
+      </Popover.Portal>
+    </Popover.Root>
     {leafRain}
-    {message ? <span className={`text-[11px] ${status === "error" ? "text-amber-300" : "text-zinc-500"}`}>{message}</span> : null}
-  </div>
+    {message ? <span className="order-last w-full basis-full text-xs text-amber-200" role="status">{message}</span> : null}
+  </>
 }

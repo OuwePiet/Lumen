@@ -12,7 +12,7 @@ export type ViaPublicPost = {
   likeCount: number
   isLikedByReader: boolean
   diamondCount: number
-  diamondLevelByReader: number | null
+  diamondLevelByReader?: number | null
   commentCount: number
   repostCount: number
   quoteRepostCount: number
