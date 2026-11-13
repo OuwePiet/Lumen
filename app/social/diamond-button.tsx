@@ -197,6 +197,23 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
             typeof data.spendAmountNanos !== "number" || !Number.isSafeInteger(data.spendAmountNanos) || data.spendAmountNanos < 0) throw new Error(data.error || "INVALID_DESO_TRANSACTION_DATA")
         const cost = data.spendAmountNanos + data.feeNanos
         if (!Number.isSafeInteger(cost) || cost < 1) throw new Error("INVALID_DESO_SPEND_LIMIT")
+        const recipientLabel = receiverPublicKey
+        const approvalText = [
+          "Diamant verzenden via DeSo?",
+          "Ontvanger: " + recipientLabel,
+          "Bericht: " + postHash,
+          "Niveau: " + chosenLevel,
+          "Bedrag: " + (data.spendAmountNanos / 1_000_000_000).toFixed(9) + " DESO",
+          "Netwerkkosten: " + (data.feeNanos / 1_000_000_000).toFixed(9) + " DESO",
+          "Totaal: " + (cost / 1_000_000_000).toFixed(9) + " DESO",
+          "Een blockchainbetaling kan niet worden teruggedraaid.",
+        ].join("\\n")
+        if (!window.confirm(approvalText)) {
+          setStatus("idle")
+          setMessage("Diamant geannuleerd. Er is niets ondertekend of verzonden.")
+          return
+        }
+        await assertAccount()
         // DeSo permissions are granted at homepage login; never open a second
         // permission request from a diamond click. Fail closed if the grant is absent.
         setStatus("approval"); setMessage("Checking the DeSo permission granted at login…")
