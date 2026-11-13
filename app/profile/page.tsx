@@ -1,3 +1,4 @@
+import { ViaPostActionBar } from "../social/via-post-action-bar"
 "use client"
 
 import Link from "next/link"
@@ -489,7 +490,7 @@ export default function ProfilePage() {
             <p className="whitespace-pre-wrap text-sm text-zinc-200">{post.body}</p>
             {post.imageUrls?.length ? <div className="mt-3 grid gap-2 sm:grid-cols-2">{post.imageUrls.slice(0, 4).map((url) => <img key={url} src={url} alt="" loading="lazy" referrerPolicy="no-referrer" className="max-h-96 w-full rounded-lg object-cover" />)}</div> : null}
             {post.videoUrls?.length ? <div className="mt-3 space-y-2">{post.videoUrls.slice(0, 2).map((url) => <video key={url} src={url} controls playsInline preload="none" className="max-h-96 w-full" />)}</div> : null}
-            <div className="mt-3 flex flex-wrap items-center gap-2" aria-label="DeSo post actions">
+            <ViaPostActionBar className="mt-3">
               <button type="button" onClick={() => setReplyingToOwnPost(replyingToOwnPost === post.postHash ? null : post.postHash)} className="rounded-full border border-zinc-800 px-3 py-2 text-xs">Reply · {post.commentCount}</button>
               <RepostButton postHash={post.postHash} initialCount={post.repostCount + post.quoteRepostCount} variant="icon" />
               <span className="rounded-full border border-zinc-800 px-3 py-2 text-xs text-zinc-400" title="DeSo does not allow sending Diamonds to yourself">Diamonds · {post.diamondCount}</span>
@@ -504,7 +505,7 @@ export default function ProfilePage() {
                   <Link href={`/social?post=${encodeURIComponent(post.postHash)}`} className="block rounded-lg px-3 py-2 text-xs text-zinc-300 hover:bg-zinc-900 hover:text-white">Open post</Link>
                 </div>
               </details>
-            </div>
+            </ViaPostActionBar>
             {replyingToOwnPost === post.postHash ? (
               <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-2 sm:p-6" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setReplyingToOwnPost(null) }}>
                 <section role="dialog" aria-modal="true" aria-label="Reply to DeSo post" className="relative flex max-h-[94dvh] w-full max-w-2xl flex-col overflow-y-auto rounded-xl border border-zinc-700 bg-[#080b09] p-4 shadow-2xl sm:p-6">
