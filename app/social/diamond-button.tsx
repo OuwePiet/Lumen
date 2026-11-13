@@ -207,7 +207,7 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
           "Netwerkkosten: " + (data.feeNanos / 1_000_000_000).toFixed(9) + " DESO",
           "Totaal: " + (cost / 1_000_000_000).toFixed(9) + " DESO",
           "Een blockchainbetaling kan niet worden teruggedraaid.",
-        ].join("\\n")
+        ].join("\n")
         if (!window.confirm(approvalText)) {
           setStatus("idle")
           setMessage("Diamant geannuleerd. Er is niets ondertekend of verzonden.")
