@@ -816,7 +816,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
 
   return (
     <section className={`${styles.center} ${expandedView ? "max-h-[calc(100vh-6rem)]" : "max-h-[88vh]"} min-w-0 w-full max-w-full overflow-x-hidden overflow-y-auto rounded-2xl border border-zinc-800 bg-zinc-950/60`} aria-labelledby="notification-center-heading">
-      <div className={`${styles.toolbar} sticky top-0 z-20 flex flex-nowrap items-center justify-between gap-1 border-b border-zinc-800 bg-zinc-950/95 px-2 py-1 backdrop-blur max-sm:items-stretch sm:flex-wrap sm:gap-3 sm:px-5 sm:py-4`}>
+      <div className={`${styles.toolbar} sticky top-0 z-20 flex flex-nowrap items-center justify-between gap-1 border-b border-zinc-800 bg-zinc-950/95 px-2 py-1 backdrop-blur max-sm:items-stretch sm:flex-wrap sm:gap-3 sm:px-4 sm:py-2`}>
         <div className="hidden sm:block">
           <h2 id="notification-center-heading" className="whitespace-nowrap text-xl font-semibold text-white">{copy.heading}</h2>
           <p className="mt-1 text-xs text-zinc-500">{copy.active}: {shortKey(session.publicKey, copy.actor)}</p>
@@ -863,8 +863,8 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
         </div>
       </div>
 
-      <div className={`${styles.filters} sticky top-[36px] z-20 border-b border-zinc-800 bg-zinc-950/95 px-1 py-1 backdrop-blur sm:top-[73px] sm:px-4 sm:py-3`} aria-label={copy.filters}>
-        <div className={`${styles.filterRow} grid min-w-0 grid-cols-5 justify-items-center gap-1 overflow-hidden px-0 pb-3 pt-0.5 sm:flex sm:flex-wrap sm:justify-start sm:justify-items-stretch sm:gap-2 sm:px-0 sm:pt-0 sm:pb-0`}>
+      <div className={`${styles.filters} sticky top-[36px] z-20 border-b border-zinc-800 bg-zinc-950/95 px-1 py-1 backdrop-blur sm:top-[59px] sm:px-4 sm:py-3`} aria-label={copy.filters}>
+        <div className={`${styles.filterRow} min-w-0`}>
           {([
             { id: "reaction", label: copy.categories.reaction, ids: ["reaction"] },
             { id: "diamond1", label: copy.categories.diamond1, ids: ["diamond1"] },
@@ -882,8 +882,8 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
                 const allActive = option.ids.every((id) => current.includes(id))
                 return allActive ? current.filter((id) => !option.ids.includes(id)) : Array.from(new Set([...current, ...option.ids]))
               })
-            }} title={option.label} aria-label={option.label} className={`${styles.filter} relative inline-flex h-8 w-8 min-w-0 items-center justify-center rounded-full border p-0 text-[11px] font-semibold transition sm:h-auto sm:w-auto sm:min-h-9 sm:gap-2 sm:rounded-xl sm:px-3 sm:py-1.5 sm:text-xs ${active ? "border-[#8fd4a9]/70 bg-[#10251a] text-white" : "border-zinc-800 bg-[#111214] text-zinc-300 hover:border-[#8fd4a9]/45"}`}>
-              <span className="sm:hidden" aria-hidden="true"><CategoryIcon category={option.id} className="h-3 w-3" /></span><span className="hidden sm:inline">{option.label}</span>
+            }} title={option.label} aria-label={option.label} className={`${styles.filter} relative inline-flex items-center justify-center text-[11px] font-semibold transition`}>
+              <span aria-hidden="true"><CategoryIcon category={option.id} className="h-5 w-5" /></span>
             </button>
           })}
         </div>
