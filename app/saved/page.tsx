@@ -32,14 +32,14 @@ export default function SavedPage() {
 
         <section className="mb-6 rounded-2xl border border-[#285f40]/70 bg-zinc-950 p-5">
           <h2 className="text-lg text-[#9adbb2]">{hindi ? "आपकी पसंद, छिपी profiling नहीं" : "Your choice, not hidden profiling"}</h2>
-          <p className="mt-2 text-sm leading-6 text-zinc-400">{hindi ? "VIA Bookmarks में केवल वही चीज़ें होती हैं जिन्हें आप स्पष्ट रूप से सहेजते हैं। यह पहला working version सूची को केवल इसी browser में स्थानीय रूप से रखता है; इसे VIA को नहीं भेजा जाता, hidden profiling के लिए उपयोग नहीं किया जाता और paid ranking के संकेत के रूप में नहीं माना जाता।" : "VIA Bookmarks only contains things you explicitly save. DeSo bookmarks are public blockchain associations linked to your account. Earlier local saves remain on this device."}</p>
+          <p className="mt-2 text-sm leading-6 text-zinc-400">{hindi ? "VIA Bookmarks में केवल वही चीज़ें होती हैं जिन्हें आप स्पष्ट रूप से सहेजते हैं। DeSo बुकमार्क आपके खाते से जुड़े सार्वजनिक ब्लॉकचेन एसोसिएशन हैं। पहले के स्थानीय सेव इसी डिवाइस पर बने रहते हैं। VIA इनका उपयोग छिपी प्रोफ़ाइलिंग या भुगतान वाली रैंकिंग के लिए नहीं करता।" : "VIA Bookmarks only contains things you explicitly save. DeSo bookmarks are public blockchain associations linked to your account. Earlier local saves remain on this device."}</p>
         </section>
 
         <DeSoSavedPosts />
         <h2 className="mb-3 text-lg font-semibold text-[#9adbb2]">Eerder lokaal opgeslagen</h2>
         <SavedList />
 
-        <p className="mt-8 text-xs leading-5 text-zinc-600">{hindi ? "इस browser का site data साफ़ करने से स्थानीय Bookmarks हट सकते हैं। Account sync पर बाद में तभी विचार किया जा सकता है जब स्पष्ट privacy design और विज़िटर की स्पष्ट पसंद हो।" : "Clearing this browser's site data can remove local Bookmarks. DeSo bookmarks can be viewed from other devices using the same DeSo account."}</p>
+        <p className="mt-8 text-xs leading-5 text-zinc-600">{hindi ? "इस browser का site data साफ़ करने से स्थानीय Bookmarks हट सकते हैं। DeSo बुकमार्क उसी DeSo खाते से अन्य डिवाइस पर देखे जा सकते हैं।" : "Clearing this browser's site data can remove local Bookmarks. DeSo bookmarks can be viewed from other devices using the same DeSo account."}</p>
       </div>
     </main>
   )
