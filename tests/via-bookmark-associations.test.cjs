@@ -109,3 +109,12 @@ test("Notification rewards block self-payments and verify account before signing
   assert.match(notifications, /DESO_ACCOUNT_CHANGED/)
   assert.match(notifications, /viaModernIdentity\.signTx\(result\.transactionHex\)/)
 })
+
+test("Rewards require explicit approval before preparation and a second fee-aware approval before signing", () => {
+  const notifications = read("app/notifications/notification-center.tsx")
+  assert.match(notifications, /Reward voorbereiden/)
+  assert.match(notifications, /Netwerkkosten:/)
+  assert.match(notifications, /window\.confirm/)
+  assert.match(notifications, /if \(!confirmedByUser\)/)
+  assert.match(notifications, /viaModernIdentity\.signTx\(result\.transactionHex\)/)
+})
