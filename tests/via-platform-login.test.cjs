@@ -89,7 +89,7 @@ test('login retains the SDK default finite fee budget instead of an implicit zer
   assert.equal(actual.GlobalDESOLimit, DEFAULT_PERMISSIONS.GlobalDESOLimit)
   assert.ok(actual.GlobalDESOLimit > 0 && Number.isSafeInteger(actual.GlobalDESOLimit))
   assert.equal(actual.IsUnlimited, undefined)
-  assert.equal(actual.TransactionCountLimitMap.BASIC_TRANSFER, undefined)
+  assert.equal(actual.TransactionCountLimitMap.BASIC_TRANSFER, 100)
   assert.equal(actual.TransactionCountLimitMap.NFT_BID, undefined)
   assert.equal(actual.TransactionCountLimitMap.AUTHORIZE_DERIVED_KEY, 1)
 })
