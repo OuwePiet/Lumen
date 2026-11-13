@@ -7,8 +7,18 @@ import { restoreIdentitySession, VIA_IDENTITY_EVENT } from "../deso-identity-ses
 import { financialSubmissionBlock, markFinancialPending, markFinancialSubmitted, withFinancialAccountLock } from "../financial-submission"
 import { viaModernIdentity } from "../deso-identity-modern"
 import { fetchViaRates } from "../via-live-rates"
+import { readViaLocalSettings, VIA_SETTINGS_EVENT, type ViaLanguage } from "../via-local-settings"
 import PublicAccountLabel from "../public-account-label"
 import { useViaIdentitySession } from "../use-via-identity-session"
+
+const RECIPIENT_COPY: Record<ViaLanguage, { recipient: string; show: string; previous: string }> = {
+  Dutch: { recipient: "Ontvanger", show: "Toon ontvanger", previous: "Al gegeven op DeSo" },
+  English: { recipient: "Recipient", show: "Show recipient", previous: "Already given on DeSo" },
+  French: { recipient: "Destinataire", show: "Afficher le destinataire", previous: "Déjà donné sur DeSo" },
+  Spanish: { recipient: "Destinatario", show: "Mostrar destinatario", previous: "Ya enviado en DeSo" },
+  Chinese: { recipient: "收件人", show: "显示收件人", previous: "已在 DeSo 赠送" },
+  Hindi: { recipient: "प्राप्तकर्ता", show: "प्राप्तकर्ता दिखाएँ", previous: "DeSo पर पहले दिया गया" },
+}
 
 type Props = { postHash: string; receiverPublicKey: string; initialCount: number; variant?: "default" | "icon" }
 type PrepareResponse = { ok?: boolean; transactionHex?: string; diamondLevel?: number; feeNanos?: number | null; spendAmountNanos?: number | null; error?: string }
@@ -137,6 +147,20 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
   const earningsLabel = earningsNanos === 0 ? "$0" : Number.isSafeInteger(earningsNanos)
     ? diamondUsd(earningsNanos) ?? (earningsNanos / 1_000_000_000) + " DESO" : null
 
+  const [language, setLanguage] = useState<ViaLanguage>("English")
+  useEffect(() => {
+    if (!menuOpen) return
+    const sync = () => setLanguage(readViaLocalSettings().interfaceLanguage)
+    sync()
+    window.addEventListener(VIA_SETTINGS_EVENT, sync)
+    window.addEventListener("storage", sync)
+    return () => {
+      window.removeEventListener(VIA_SETTINGS_EVENT, sync)
+      window.removeEventListener("storage", sync)
+    }
+  }, [menuOpen])
+  const recipientCopy = RECIPIENT_COPY[language]
+
   const sendLock = useRef(false)
   async function prepare(chosenLevel: number) {
     if (sendLock.current || (previousLevel !== null && chosenLevel <= previousLevel) || !diamondValues?.some(item => item.level === chosenLevel)) return
@@ -225,9 +249,9 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
           <Popover.Popup aria-label="Diamant geven" className="w-max max-w-[calc(100vw-1rem)] rounded-2xl border border-[#376047] bg-[#0d1c14] p-1.5 text-zinc-100 shadow-xl">
             {recipientOpen ? (
               <div className="mb-1 flex flex-wrap items-center gap-x-1 px-1 text-xs">
-                <span>Ontvanger</span>
+                <span>{recipientCopy.recipient}</span>
                 <PublicAccountLabel key={receiverPublicKey} publicKey={receiverPublicKey} />
-                {previousLevel ? <span className="text-zinc-400">· Al gegeven op DeSo · {previousLevel}</span> : null}
+                {previousLevel ? <span className="text-zinc-400">· {recipientCopy.previous} · {previousLevel}</span> : null}
               </div>
             ) : null}
             <div className="flex flex-wrap items-center gap-0.5">
@@ -244,7 +268,7 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
                   </button>
                 )
               })}
-              <button type="button" aria-label="Toon ontvanger" aria-expanded={recipientOpen}
+              <button type="button" aria-label={recipientCopy.show} title={recipientCopy.show} aria-expanded={recipientOpen}
                 onClick={() => setRecipientOpen((open) => !open)}
                 className="flex min-h-11 min-w-8 items-center justify-center rounded-lg text-[#a8e5bd] hover:bg-[#285f40]">
                 <span aria-hidden="true" className="flex size-5 items-center justify-center rounded-full border border-current text-xs font-semibold">i</span>
