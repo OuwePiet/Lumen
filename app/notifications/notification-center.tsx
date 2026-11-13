@@ -482,6 +482,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
   const [hasOlder, setHasOlder] = useState(true)
   const [qualityShield, setQualityShield] = useState(false)
   const [profiles, setProfiles] = useState<Record<string, ActorProfile>>({})
+  const [collapsedRows, setCollapsedRows] = useState<Record<string, boolean>>({})
   const [expandedKey, setExpandedKey] = useState<string | null>(null)
   const [expandedBodies, setExpandedBodies] = useState<Record<string, boolean>>({})
   const [postCache, setPostCache] = useState<Record<string, PublicPost | null>>({})
@@ -564,6 +565,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
       setLastSeenIndex(null)
       setHasOlder(false)
       setExpandedKey(null)
+      setCollapsedRows({})
       setItems([])
       setStatus("idle")
       setMessageKey("")
@@ -577,6 +579,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
       setLastSeenIndex(null)
       setHasOlder(false)
       setExpandedKey(null)
+      setCollapsedRows({})
     }
     const controller = new AbortController()
     async function load() {
@@ -732,9 +735,10 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
     }
   }
 
-  async function toggleExpanded(item: NotificationItem, rowKey: string) {
-    if (expandedKey === rowKey) {
-      setExpandedKey(null)
+  async function toggleExpanded(item: NotificationItem, rowKey: string, expanded: boolean) {
+    setCollapsedRows(current => ({ ...current, [rowKey]: expanded }))
+    if (expanded) {
+      if (expandedKey === rowKey) setExpandedKey(null)
       return
     }
 
@@ -901,7 +905,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
           const username = profile.username?.trim().replace(/^@/, "")
           const actor = username ? `@${username}` : shortKey(actorPublicKey || metadata.TransactorPublicKeyBase58Check, copy.actor)
           const rowKey = `${item.Index ?? "n"}-${index}`
-          const expanded = expandedKey === rowKey || (index < 8 && Boolean(postHashFor(item)))
+          const expanded = !collapsedRows[rowKey] && (expandedKey === rowKey || (index < 8 && Boolean(postHashFor(item))))
           const postHash = postHashFor(item)
           const post = postHash ? postCache[postHash] : undefined
           return <article key={rowKey} className={`${styles.row} mx-1 mb-1 grid grid-cols-[34px_minmax(0,1fr)] gap-2 rounded-xl border px-2 py-1.5 transition sm:mx-0 sm:mb-0 sm:rounded-none sm:border-x-0 sm:border-b-0 sm:grid-cols-[46px_minmax(0,1fr)] sm:gap-3 sm:px-4 sm:py-2 ${unread ? "border-[#285f40]/70 bg-[#0b1510]/70" : "border-zinc-800 bg-black/10"}`}>
@@ -916,9 +920,9 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
                 {unread ? <span className="inline-flex items-center gap-1 rounded-full border border-[#285f40] px-2 py-0.5 text-[10px] text-[#9adbb2]"><span aria-hidden="true" className="h-2 w-2 shrink-0 rounded-full bg-emerald-400" />{copy.fresh}</span> : null}
               </div>
               <p className="mt-0 text-[12px] leading-4 text-zinc-400 sm:mt-1 sm:text-sm sm:leading-5">{copy.descriptions[itemCategory](actor)}</p>
-              {destination && !(expanded && postHash) ? <button type="button" onClick={() => void toggleExpanded(item, rowKey)} className="mt-1 min-h-9 rounded-lg px-2 text-xs text-[#9adbb2] hover:bg-white/10">{expanded ? copy.close : copy.open}</button> : null}
+              {destination && !(expanded && postHash) ? <button type="button" onClick={() => void toggleExpanded(item, rowKey, expanded)} className="mt-1 min-h-9 rounded-lg px-2 text-xs text-[#9adbb2] hover:bg-white/10">{expanded ? copy.close : copy.open}</button> : null}
               {expanded && postHash ? <div className={`${styles.post} relative mt-1 border-t border-zinc-800/70 pt-1`}>
-                <button type="button" title={copy.close} aria-label={copy.close} onClick={() => void toggleExpanded(item, rowKey)} className="absolute right-0 top-0 grid size-9 place-items-center rounded-lg text-zinc-400 hover:bg-white/10"><span aria-hidden="true">×</span></button>
+                <button type="button" title={copy.close} aria-label={copy.close} onClick={() => void toggleExpanded(item, rowKey, expanded)} className="absolute right-0 top-0 grid size-9 place-items-center rounded-lg text-zinc-400 hover:bg-white/10"><span aria-hidden="true">×</span></button>
                 {post === undefined ? <p className="text-xs text-zinc-500">{copy.loading}</p> : post ? <>
                   <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 min-h-9 pr-10"><p className="min-w-0 break-words text-xs font-semibold text-zinc-300">@{post.username?.replace(/^@/, "") || shortKey(post.publicKey, copy.actor)}</p>{Number.isFinite(post.timestampNanos) && post.timestampNanos > 0 && Number.isFinite(new Date(post.timestampNanos / 1_000_000).getTime()) ? <time data-via-post-time dateTime={new Date(post.timestampNanos / 1_000_000).toISOString()} title={language === "Dutch" ? "Geplaatst op (lokale tijd)" : "Posted at (local time)"} className="text-xs tabular-nums text-zinc-400">{new Date(post.timestampNanos / 1_000_000).toLocaleString(language === "Dutch" ? "nl-NL" : language === "French" ? "fr-FR" : language === "Spanish" ? "es-ES" : language === "Chinese" ? "zh-CN" : language === "Hindi" ? "hi-IN" : "en-GB", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}</time> : null}</div>
                   {post.postExtraData ? <PostSource extra={post.postExtraData} /> : null}{post.body ? <>
