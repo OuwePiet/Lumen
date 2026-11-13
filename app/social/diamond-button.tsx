@@ -52,6 +52,8 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
   const [feeNanos, setFeeNanos] = useState<number | null>(null)
   const [diamondValues, setDiamondValues] = useState<Array<{ level: number; nanos: number }> | null>(null)
   const [desoUsd, setDesoUsd] = useState<number | null>(null)
+  const [levelsFailed, setLevelsFailed] = useState(false)
+  const [levelsAttempt, setLevelsAttempt] = useState(0)
 
   useEffect(() => {
     const controller = new AbortController()
@@ -74,12 +76,25 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
         if (!response.ok || !data.ok || !data.diamondLevelMap) throw new Error("DIAMOND_LEVELS_UNAVAILABLE")
         const values = Object.entries(data.diamondLevelMap)
           .map(([key, nanos]) => ({ level: Number(key), nanos }))
-          .filter((entry) => Number.isInteger(entry.level) && entry.level >= 1 && entry.level <= 8 && Number.isFinite(entry.nanos) && entry.nanos > 0)
+          .filter((entry) => Number.isInteger(entry.level) && entry.level >= 1 && entry.level <= 8 && Number.isSafeInteger(entry.nanos) && entry.nanos > 0)
           .sort((a, b) => a.level - b.level)
-        if (values.length) setDiamondValues(values)
-      }).catch(() => setDiamondValues(null))
+        if (!values.length) throw new Error("DIAMOND_LEVELS_UNAVAILABLE")
+        if (!controller.signal.aborted) {
+          setLevel((selected) => values.some((entry) => entry.level === selected) ? selected : values[0].level)
+          setDiamondValues(values)
+        }
+      }).catch(() => {
+        if (!controller.signal.aborted) setLevelsFailed(true)
+      })
     return () => controller.abort()
-  }, [diamondValues])
+  }, [diamondValues, levelsAttempt])
+
+  const retryLevels = levelsFailed ? (
+    <button type="button" onClick={() => { setLevelsFailed(false); setLevelsAttempt((attempt) => attempt + 1) }}
+      className="min-h-9 rounded-lg border border-zinc-700 px-2 text-xs text-amber-200">
+      Prijzen niet beschikbaar · Opnieuw laden
+    </button>
+  ) : null
 
   const sendLock = useRef(false)
   async function prepare(chosenLevel = level) {
@@ -172,9 +187,11 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
       </button>
       {compactOpen ? <div className="order-last w-full basis-full rounded-xl border border-zinc-800 bg-[#050806] p-2">
         <div className="flex max-w-full flex-wrap items-center gap-1.5" aria-label="Diamond value">
-          {(diamondValues ?? Array.from({ length: 8 }, (_, index) => ({ level: index + 1, nanos: NaN }))).map((entry) => (
+          {retryLevels}
+        {!diamondValues && !levelsFailed ? <span role="status" className="text-xs text-zinc-400">Prijzen laden…</span> : null}
+        {(diamondValues ?? []).map((entry) => (
             <button key={entry.level} type="button" onClick={() => { if (!Number.isFinite(entry.nanos) || status === "preparing" || status === "approval" || status === "submitting") return; setLevel(entry.level); void prepare(entry.level) }} aria-pressed={level === entry.level} className={`min-w-[3.35rem] rounded-xl border px-2 py-1 text-center text-[10px] transition ${level === entry.level ? "border-[#8fd4a9] bg-[#285f40] text-white" : "border-zinc-800 text-zinc-400 hover:border-[#8fd4a9] hover:text-white"}`}>
-              <span className="block">{Number.isFinite(entry.nanos) ? (diamondUsd(entry.nanos) ?? "prijs laden…") : "prijs laden…"}</span>
+              <span className="block">{diamondUsd(entry.nanos) ?? `${entry.nanos / 1_000_000_000} DESO`}</span>
               <Gem className="mx-auto h-4 w-4" aria-hidden="true" /><span className="block">{entry.level}</span>
             </button>
           ))}
@@ -193,7 +210,9 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
     <details className="relative">
       <summary className="inline-flex cursor-pointer list-none items-center gap-1 rounded-full border border-zinc-800 px-2 py-1 text-xs text-zinc-300"><Gem className="h-3.5 w-3.5" aria-hidden="true" /> {level} ▾</summary>
       <div className="absolute top-full left-0 z-30 mt-2 grid w-56 grid-cols-2 gap-1 rounded-xl border border-zinc-800 bg-[#050806] p-2 shadow-xl">
-        {(diamondValues ?? Array.from({ length: 8 }, (_, index) => ({ level: index + 1, nanos: NaN }))).map((entry) => <button key={entry.level} type="button" onClick={() => { if (!Number.isFinite(entry.nanos) || status === "preparing" || status === "approval" || status === "submitting") return; setLevel(entry.level); void prepare(entry.level) }} aria-pressed={level === entry.level} className={`rounded-lg border px-2 py-2 text-xs ${level === entry.level ? "border-[#8fd4a9] bg-[#285f40] text-white" : "border-zinc-800 text-zinc-300 hover:border-[#8fd4a9]"}`}><span className="block text-[11px] text-amber-300">{Number.isFinite(entry.nanos) ? (diamondUsd(entry.nanos) ?? "prijs laden…") : "prijs laden…"}</span><span className="block">{entry.level} 💎</span></button>)}
+        {retryLevels}
+        {!diamondValues && !levelsFailed ? <span role="status" className="text-xs text-zinc-400">Prijzen laden…</span> : null}
+        {(diamondValues ?? []).map((entry) => <button key={entry.level} type="button" onClick={() => { if (!Number.isFinite(entry.nanos) || status === "preparing" || status === "approval" || status === "submitting") return; setLevel(entry.level); void prepare(entry.level) }} aria-pressed={level === entry.level} className={`rounded-lg border px-2 py-2 text-xs ${level === entry.level ? "border-[#8fd4a9] bg-[#285f40] text-white" : "border-zinc-800 text-zinc-300 hover:border-[#8fd4a9]"}`}><span className="block text-[11px] text-amber-300">{diamondUsd(entry.nanos) ?? `${entry.nanos / 1_000_000_000} DESO`}</span><span className="block">{entry.level} 💎</span></button>)}
         <button type="button" onClick={(event) => { (event.currentTarget.closest("details") as HTMLDetailsElement | null)?.removeAttribute("open") }} className="col-span-2 rounded-lg border border-zinc-700 px-2 py-2 text-xs text-zinc-300 hover:border-[#8fd4a9]">Sluiten</button>
       </div>
     </details>

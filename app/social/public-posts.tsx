@@ -177,13 +177,12 @@ export default function PublicPosts({ initialPost }: { initialPost?: PublicPost 
   }, [])
 
   useEffect(() => {
-    void viaModernIdentity.currentUser().then(setSession)
     return viaModernIdentity.subscribe((nextSession) => {
       setSession(nextSession)
       if (!nextSession) setReplyingTo(null)
 
     })
-  }, [feedChoice])
+  }, [])
 
   useEffect(() => {
     try {
