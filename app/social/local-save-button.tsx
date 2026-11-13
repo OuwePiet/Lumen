@@ -40,7 +40,6 @@ export default function LocalSaveButton({ postHash }: Props) {
   const session = useViaIdentitySession()
   const account = session?.publicKey
   const [saved, setSaved] = useState(false)
-  const [associationID, setAssociationID] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const [ready, setReady] = useState(false)
   const [message, setMessage] = useState("")
@@ -49,11 +48,9 @@ export default function LocalSaveButton({ postHash }: Props) {
     let active = true
     setReady(false)
     setSaved(false)
-    setAssociationID(null)
     if (!account) return
     void findBookmark(account, postHash).then(found => {
       if (!active) return
-      setAssociationID(found?.AssociationID ?? null)
       setSaved(Boolean(found))
       setReady(true)
     }).catch(() => {
@@ -81,7 +78,6 @@ export default function LocalSaveButton({ postHash }: Props) {
       if ((await viaModernIdentity.currentUser())?.publicKey !== account) throw new Error("DESO_ACCOUNT_CHANGED")
       await request({ action: "submit", signedTransactionHex })
       setSaved(create)
-      setAssociationID(create ? null : existing?.AssociationID ?? null)
       setMessage(create ? "Opgeslagen op DeSo." : "Bookmark verwijderd van DeSo.")
       window.dispatchEvent(new Event("via:saved:changed"))
     } catch {
