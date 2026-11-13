@@ -356,13 +356,15 @@ export default function PublicPosts() {
           : `/api/via/discovery?limit=20&sort=new&reader=${encodeURIComponent(session?.publicKey ?? "")}`
       const response = await fetch(endpoint, { signal: controller.signal })
       const data = (await response.json()) as PostsResponse
-      const nextPosts = response.ok && data.ok && Array.isArray(data.posts) ? data.posts : []
+      if (controller.signal.aborted || requestController.current !== controller) return
+      if (!response.ok || !data.ok || !Array.isArray(data.posts)) throw new Error("FEED_REFRESH_FAILED")
+      const nextPosts = data.posts
       setPosts(nextPosts)
       setMessage(nextPosts.length ? `${nextPosts.length} posts loaded.` : "No posts found.")
     } catch (error) {
       if (!(error instanceof DOMException && error.name === "AbortError")) {
-        setPosts([])
-        setMessage("Posts are temporarily unavailable.")
+        if (requestController.current !== controller) return
+        setMessage("Posts could not be refreshed. Previously loaded posts remain visible; try refreshing later.")
       }
     } finally {
       if (requestController.current === controller) {
