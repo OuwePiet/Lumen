@@ -943,14 +943,13 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
                       <MessageSquare className="h-4 w-4" />
                     </button>
                     <RepostButton quotedPost={post} postHash={post.postHash} initialCount={0} variant="icon" />
-                    <LikeButton postHash={post.postHash} initialCount={post.likeCount} variant="icon" />
                     <DiamondButton postHash={post.postHash} receiverPublicKey={post.publicKey} initialCount={post.diamondCount} variant="icon" />
-                    <details className="relative">
+                     <LikeButton postHash={post.postHash} initialCount={post.likeCount} variant="icon" />
+                     <button type="button" onClick={() => { setRewardPost((current) => current === post.postHash ? null : post.postHash); setRewardMessage("") }} aria-label={copy.rewardAction} title={copy.rewardAction} aria-expanded={rewardPost === post.postHash} className="inline-flex h-9 min-w-9 items-center justify-center rounded-full border border-zinc-800 px-2 text-xs text-zinc-300 hover:border-[#8fd4a9] hover:text-white"><ArrowUpRight className="h-4 w-4" aria-hidden="true" /></button>
+                     <details className="relative">
                       <summary className="grid h-9 w-9 cursor-pointer list-none place-items-center rounded-full border border-zinc-800 text-zinc-300 transition hover:border-[#8fd4a9] hover:text-white" aria-label="More actions">•••</summary>
                       <div className="absolute left-0 z-30 mt-2 min-w-44 rounded-xl border border-zinc-700 bg-[#080b09] p-2 shadow-2xl">
-                        <button type="button" onClick={(event) => { setRewardPost((current) => current === post.postHash ? null : post.postHash); setRewardMessage(""); event.currentTarget.closest("details")?.removeAttribute("open") }} className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs text-zinc-300 hover:bg-zinc-900 hover:text-white">
-                          <ArrowUpRight className="h-4 w-4" /><span>{copy.rewardAction}</span>
-                        </button>
+                        
                         <button type="button" onClick={(event) => {
                           const url = `${window.location.origin}/social?post=${encodeURIComponent(post.postHash)}`
                           void navigator.clipboard?.writeText(url).then(() => {
