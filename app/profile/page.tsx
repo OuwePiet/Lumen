@@ -2,6 +2,7 @@
 
 import { ViaPostActionBar } from "../social/via-post-action-bar"
 
+import ViaRewardButton from "../social/via-reward-button"
 import Link from "next/link"
 import { useEffect, useState } from "react"
 import { Copy, MoreVertical, UserRoundPen, WalletCards } from "lucide-react"
@@ -496,6 +497,7 @@ export default function ProfilePage() {
               <RepostButton postHash={post.postHash} initialCount={post.repostCount + post.quoteRepostCount} variant="icon" />
               <span className="rounded-full border border-zinc-800 px-3 py-2 text-xs text-zinc-400" title="DeSo does not allow sending Diamonds to yourself">Diamonds · {post.diamondCount}</span>
               <LikeButton postHash={post.postHash} initialCount={post.likeCount} variant="icon" />
+              <ViaRewardButton recipientPublicKey={session.publicKey} disabled />
               <details className="relative">
                 <summary className="grid h-9 w-9 cursor-pointer list-none place-items-center rounded-full border border-zinc-800 text-zinc-300" aria-label="More actions">•••</summary>
                 <div className="absolute right-0 z-30 mt-2 min-w-40 rounded-xl border border-zinc-700 bg-[#080b09] p-2 shadow-2xl">
