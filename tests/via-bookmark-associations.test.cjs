@@ -94,3 +94,10 @@ test("Shared row enforces touch targets on direct buttons, links, and More trigg
   assert.match(shared, /\[&>a\]:min-h-11/)
   assert.match(shared, /\[&>details>summary\]:min-h-11/)
 })
+
+test("Post Office More menu overlays posts without changing document flow", () => {
+  const posts = read("app/social/public-posts.tsx")
+  assert.match(posts, /absolute right-0 z-30 mt-2 flex w-max/)
+  assert.match(posts, /max-w-\[calc\(100vw-2rem\)\]/)
+  assert.match(posts, /aria-label="Meer postacties"/)
+})
