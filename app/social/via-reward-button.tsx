@@ -43,7 +43,7 @@ export default function ViaRewardButton({ recipientPublicKey, username, disabled
       const feeText = typeof prepared.feeNanos === "number" && Number.isFinite(prepared.feeNanos)
         ? `${(prepared.feeNanos / 1_000_000_000).toFixed(9)} DESO` : "onbekend"
       if (feeText === "onbekend") throw new Error("FEE_UNKNOWN")
-      if (!window.confirm(`Reward definitief verzenden?\nOntvanger: ${recipient}\nBedrag: $${amountUsd.toFixed(2)} (ongeveer ${(amountNanos / 1_000_000_000).toFixed(9)} DESO)\\nNetwerkkosten: ${feeText}\nBlockchainbetalingen zijn onomkeerbaar.`)) {
+      if (!window.confirm(`Reward definitief verzenden?\nOntvanger: ${recipient}\nBedrag: $${amountUsd.toFixed(2)} (ongeveer ${(amountNanos / 1_000_000_000).toFixed(9)} DESO)\nNetwerkkosten: ${feeText}\nBlockchainbetalingen zijn onomkeerbaar.`)) {
         setMessage("Reward geannuleerd.")
         return
       }
