@@ -4,7 +4,7 @@ import Link from "next/link"
 import styles from "./notification-center.module.css"
 import { acknowledgeNotificationVisit, validNotificationIndex } from "../notification-indicator"
 import { useEffect, useMemo, useRef, useState } from "react"
-import { ArrowUpRight, AtSign, Badge, Check, CheckCircle2, ChevronsRight, CircleDot, CircleDollarSign, Gem, Heart, Link2, MessageSquare, RefreshCw, Repeat2, ShieldCheck, ShieldOff, Smile, UserPlus, UserRound, LayoutGrid } from "lucide-react"
+import { ArrowUpRight, AtSign, Badge, Check, CheckCircle2, CircleDot, CircleDollarSign, Gem, Heart, Link2, MessageSquare, RefreshCw, Repeat2, ShieldCheck, ShieldOff, Smile, UserPlus, UserRound, LayoutGrid } from "lucide-react"
 
 const QUALITY_SHIELD_STORAGE_KEY = "via:notifications:quality-shield"
 const BODY_LABELS = {
@@ -480,7 +480,6 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
   const [refreshToken, setRefreshToken] = useState(0)
   const [loadingOlder, setLoadingOlder] = useState(false)
   const [hasOlder, setHasOlder] = useState(true)
-  const [expandedView, setExpandedView] = useState(false)
   const [qualityShield, setQualityShield] = useState(false)
   const [profiles, setProfiles] = useState<Record<string, ActorProfile>>({})
   const [expandedKey, setExpandedKey] = useState<string | null>(null)
@@ -815,10 +814,11 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
   }
 
   return (
-    <section className={`${styles.center} ${expandedView ? "max-h-[calc(100vh-6rem)]" : "max-h-[88vh]"} min-w-0 w-full max-w-full overflow-x-hidden overflow-y-auto rounded-2xl border border-zinc-800 bg-zinc-950/60`} aria-labelledby="notification-center-heading">
-      <div className={`${styles.toolbar} sticky top-0 z-20 flex flex-nowrap items-center justify-between gap-1 border-b border-zinc-800 bg-zinc-950/95 px-2 py-1 backdrop-blur max-sm:items-stretch sm:flex-wrap sm:gap-3 sm:px-4 sm:py-2`}>
+    <section className={`${styles.center} min-w-0 w-full max-w-full rounded-2xl border border-zinc-800 bg-zinc-950/60`} aria-label={copy.notificationLabel}>
+      <div id="notification-controls" data-notification-controls>
+      <div className={`${styles.toolbar} flex flex-nowrap items-center justify-between gap-1 border-b border-zinc-800 bg-zinc-950/95 px-2 py-1 backdrop-blur max-sm:items-stretch sm:flex-wrap sm:gap-3 sm:px-4 sm:py-2`}>
         <div className="hidden sm:block">
-          <h2 id="notification-center-heading" className="whitespace-nowrap text-xl font-semibold text-white">{copy.heading}</h2>
+          <h2 id="notification-center-heading" className="whitespace-nowrap text-sm font-semibold text-white">{copy.heading}</h2>
           <p className="mt-1 text-xs text-zinc-500">{copy.active}: {shortKey(session.publicKey, copy.actor)}</p>
         </div>
         <div className={`${styles.controls} flex w-full min-w-0 flex-nowrap items-center justify-between gap-1 sm:w-auto sm:flex-wrap sm:justify-start sm:gap-2`}>
@@ -845,9 +845,6 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
           <button type="button" onClick={() => setRefreshToken((value) => value + 1)} disabled={status === "loading"} title={copy.refresh} aria-label={copy.refresh} className="grid h-9 w-9 place-items-center rounded-full border sm:h-9 sm:w-9 border-[#8fd4a9] bg-[#285f40] text-white transition disabled:cursor-wait disabled:opacity-60">
             <RefreshCw className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${status === "loading" ? "animate-spin" : ""}`} />
           </button>
-          <button type="button" onClick={() => setExpandedView((value) => !value)} title={copy.expandView} aria-label={copy.expandView} aria-pressed={expandedView} className={`grid h-7 w-7 place-items-center rounded-full border sm:h-9 sm:w-9 text-white transition ${expandedView ? "border-[#8fd4a9] bg-[#285f40]" : "border-[#8fd4a9]/35 bg-[#050b08]/80"}`}>
-            <ChevronsRight className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-          </button>
           <div className="hidden flex-col items-center gap-0.5 max-sm:flex">
             <div className="relative h-7 w-7 overflow-hidden rounded-full [&>button]:!absolute [&>button]:!inset-0 [&>button]:!z-0 [&>button]:!grid [&>button]:!h-7 [&>button]:!w-7 [&>button]:!min-h-0 [&>button]:!place-items-center [&>button]:!overflow-hidden [&>button]:!rounded-full [&>button]:!p-0 [&>button]:!text-[0] [&>button]:!leading-none [&>button>span]:!hidden [&>button>svg]:!m-0 [&>button>svg]:!h-4 [&>button>svg]:!w-4">
               <SponsorPlatform compact />
@@ -863,7 +860,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
         </div>
       </div>
 
-      <div className={`${styles.filters} sticky top-[36px] z-20 border-b border-zinc-800 bg-zinc-950/95 px-1 py-1 backdrop-blur sm:top-[59px] sm:px-4 sm:py-3`} aria-label={copy.filters}>
+      <div className={`${styles.filters} border-b border-zinc-800 bg-zinc-950/95 px-1 py-1 backdrop-blur sm:px-4 sm:py-0`} aria-label={copy.filters}>
         <div className={`${styles.filterRow} min-w-0`}>
           {([
             { id: "reaction", label: copy.categories.reaction, ids: ["reaction"] },
@@ -889,7 +886,9 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
         </div>
       </div>
 
-      <div className="flex items-baseline gap-2 px-3 pt-1 sm:px-5 sm:pt-3"><span className="text-[9px] font-medium leading-4 text-[#8fd4a9] sm:hidden">{copy.notificationLabel}</span><p className={`text-[9px] leading-4 sm:text-xs sm:leading-normal ${status === "error" ? "text-amber-300" : "text-zinc-500"}`} role="status" aria-live="polite">{message}</p></div>
+      </div>
+
+      <div className="flex items-baseline gap-2 px-3 pt-1 sm:px-5 sm:pt-1"><span className="text-[9px] font-medium leading-4 text-[#8fd4a9] sm:hidden">{copy.notificationLabel}</span><p className={`text-[9px] leading-4 sm:text-xs sm:leading-normal ${status === "error" ? "text-amber-300" : "text-zinc-500"}`} role="status" aria-live="polite">{message}</p></div>
 
       <div className="mt-1 sm:mt-2 sm:divide-y sm:divide-zinc-800">
         {status === "loading" ? <div className="px-4 py-5 text-sm text-zinc-500 sm:px-5">{copy.loading}</div> : null}
@@ -909,7 +908,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
           const expanded = expandedKey === rowKey || (index < 8 && Boolean(postHashFor(item)))
           const postHash = postHashFor(item)
           const post = postHash ? postCache[postHash] : undefined
-          return <article key={rowKey} className={`${styles.row} mx-1 mb-1 grid grid-cols-[34px_minmax(0,1fr)] gap-2 rounded-xl border px-2 py-1.5 transition sm:mx-0 sm:mb-0 sm:rounded-none sm:border-x-0 sm:border-b-0 sm:grid-cols-[46px_minmax(0,1fr)_auto] sm:gap-3 sm:px-5 sm:py-4 ${unread ? "border-[#285f40]/70 bg-[#0b1510]/70" : "border-zinc-800 bg-black/10"}`}>
+          return <article key={rowKey} className={`${styles.row} mx-1 mb-1 grid grid-cols-[34px_minmax(0,1fr)] gap-2 rounded-xl border px-2 py-1.5 transition sm:mx-0 sm:mb-0 sm:rounded-none sm:border-x-0 sm:border-b-0 sm:grid-cols-[46px_minmax(0,1fr)_auto] sm:gap-3 sm:px-4 sm:py-2 ${unread ? "border-[#285f40]/70 bg-[#0b1510]/70" : "border-zinc-800 bg-black/10"}`}>
             <Link href={actorPublicKey ? `/profile/${encodeURIComponent(actorPublicKey)}` : destination || "/notifications"} aria-label={actorPublicKey ? `Open creator profile ${actor}` : copy.actor} className="relative block h-8 w-8 sm:h-11 sm:w-11">
               {profile.profilePic ? <img src={profile.profilePic} alt="" referrerPolicy="no-referrer" className="h-full w-full rounded-full border border-zinc-700 object-cover" /> : <div aria-hidden="true" className={`grid h-full w-full place-items-center rounded-full border text-base font-bold ${unread ? "border-[#8fd4a9] bg-[#285f40] text-white" : "border-[#8e8e8e] bg-[#8e8e8e] text-white"}`}><CategoryIcon category={itemCategory} className="h-5 w-5" /></div>}
               <span aria-hidden="true" className="absolute -bottom-1 -right-1 grid h-4 w-4 sm:h-5 sm:w-5 place-items-center rounded-full border border-zinc-700 bg-black text-white"><CategoryIcon category={itemCategory} className="h-3 w-3" /></span>
@@ -922,7 +921,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
               </div>
               <p className="mt-0 text-[12px] leading-4 text-zinc-400 sm:mt-1 sm:text-sm sm:leading-5">{copy.descriptions[itemCategory](actor)}</p>
               {destination && index >= 8 ? <button type="button" onClick={() => void toggleExpanded(item, rowKey)} className="mt-1 inline-flex rounded-full border border-zinc-700 px-1.5 py-0.5 text-[9px] leading-none text-zinc-300 transition hover:border-[#8fd4a9] hover:text-white sm:mt-2 sm:px-2.5 sm:py-1 sm:text-[11px] sm:leading-normal">{expanded ? copy.close : copy.open}</button> : null}
-              {expanded && postHash ? <div className={`${styles.post} mt-3 rounded-xl border border-zinc-800 bg-black/25 p-3`}>
+              {expanded && postHash ? <div className={`${styles.post} mt-2 rounded-xl border border-zinc-800 bg-black/25 p-2`}>
                 {post === undefined ? <p className="text-xs text-zinc-500">{copy.loading}</p> : post ? <>
                   <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1"><p className="min-w-0 break-words text-xs font-semibold text-zinc-300">@{post.username?.replace(/^@/, "") || shortKey(post.publicKey, copy.actor)}</p>{Number.isFinite(post.timestampNanos) && post.timestampNanos > 0 && Number.isFinite(new Date(post.timestampNanos / 1_000_000).getTime()) ? <time data-via-post-time dateTime={new Date(post.timestampNanos / 1_000_000).toISOString()} title={language === "Dutch" ? "Geplaatst op (lokale tijd)" : "Posted at (local time)"} className="text-xs tabular-nums text-zinc-400">{new Date(post.timestampNanos / 1_000_000).toLocaleString(language === "Dutch" ? "nl-NL" : language === "French" ? "fr-FR" : language === "Spanish" ? "es-ES" : language === "Chinese" ? "zh-CN" : language === "Hindi" ? "hi-IN" : "en-GB", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}</time> : null}</div>
                   {post.postExtraData ? <PostSource extra={post.postExtraData} /> : null}{post.body ? <>
