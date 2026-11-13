@@ -77,9 +77,25 @@ export default function LocalSaveButton({ postHash }: Props) {
       const signedTransactionHex = await viaModernIdentity.signTx(prepared.transactionHex)
       if ((await viaModernIdentity.currentUser())?.publicKey !== account) throw new Error("DESO_ACCOUNT_CHANGED")
       await request({ action: "submit", signedTransactionHex })
-      setSaved(create)
-      setMessage(create ? "Opgeslagen op DeSo." : "Bookmark verwijderd van DeSo.")
+      // A successful submission is not the same as a confirmed chain read.
+      // Do not automatically retry or submit a second paid transaction.
+      setReady(false)
+      setMessage("Transactie ontvangen door DeSo. Blockchainbevestiging wordt gecontroleerd.")
       window.dispatchEvent(new Event("via:saved:changed"))
+      try {
+        const verified = await findBookmark(account, postHash)
+        if ((await viaModernIdentity.currentUser())?.publicKey !== account) throw new Error("DESO_ACCOUNT_CHANGED")
+        setSaved(Boolean(verified))
+        if (Boolean(verified) === create) {
+          setMessage(create ? "Bookmark bevestigd op DeSo." : "Verwijdering bevestigd op DeSo.")
+        } else {
+          setMessage("Transactie verzonden; wijziging nog niet zichtbaar op DeSo. Controleer later opnieuw.")
+        }
+      } catch {
+        setMessage("Transactie verzonden; blockchainstatus kon nog niet worden gecontroleerd.")
+      } finally {
+        setReady(true)
+      }
     } catch {
       setMessage("Bookmark niet gewijzigd. Controleer DeSo of de machtigingen.")
     } finally { setBusy(false) }
