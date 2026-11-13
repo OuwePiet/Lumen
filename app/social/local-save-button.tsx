@@ -81,7 +81,7 @@ export default function LocalSaveButton({ postHash }: Props) {
       if ((await viaModernIdentity.currentUser())?.publicKey !== account) throw new Error("DESO_ACCOUNT_CHANGED")
       await request({ action: "submit", signedTransactionHex })
       setSaved(create)
-      setAssociationID(create ? null : null)
+      setAssociationID(create ? null : existing?.AssociationID ?? null)
       setMessage(create ? "Opgeslagen op DeSo." : "Bookmark verwijderd van DeSo.")
       window.dispatchEvent(new Event("via:saved:changed"))
     } catch {
