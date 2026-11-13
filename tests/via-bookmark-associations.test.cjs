@@ -35,3 +35,12 @@ test("Earlier local bookmarks remain visible alongside account bookmarks", () =>
   assert.match(page, /<DeSoSavedPosts\s*\/>/)
   assert.match(page, /<SavedList\s*\/>/)
 })
+
+test("VIA Bookmarks uses shared action row and More menu", () => {
+  const shared = read("app/social/via-post-action-bar.tsx")
+  const bookmarks = read("app/saved/deso-saved-posts.tsx")
+  assert.match(shared, /export function ViaPostActionBar/)
+  assert.match(shared, /export function ViaMoreActions/)
+  assert.match(bookmarks, /<ViaPostActionBar/)
+  assert.match(bookmarks, /<ViaMoreActions>/)
+})
