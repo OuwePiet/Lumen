@@ -92,7 +92,7 @@ export default function NotificationsPage() {
 
         <NotificationCenter language={language} />
         </div>
-        <aside className="min-w-0 xl:sticky xl:top-6 xl:self-start">
+        <aside className="min-w-0 self-start">
           <ViaRightPanels />
         </aside>
       </div>
