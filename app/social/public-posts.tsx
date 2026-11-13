@@ -1,5 +1,6 @@
-import { ViaPostActionBar } from "./via-post-action-bar"
 "use client"
+
+import { ViaPostActionBar } from "./via-post-action-bar"
 
 import Link from "next/link"
 import { MessageSquare } from "lucide-react"
