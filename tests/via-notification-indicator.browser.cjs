@@ -40,7 +40,7 @@ async function run(name, engine, options) {
     await page.goto(base,{waitUntil:'networkidle'})
     await lamp().waitFor()
     await page.goto(base + '/notifications', { waitUntil: 'domcontentloaded' })
-    await page.getByText('1 recent notifications loaded.',{exact:true}).waitFor()
+    await page.getByText('1 recent notifications loaded.',{exact:true}).waitFor({state:'attached'})
     await page.getByText('Een rustigere meldingenpagina',{exact:false}).waitFor()
     assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth+1),true,'no horizontal page overflow')
     const controls = page.locator('#notification-controls')
@@ -102,7 +102,7 @@ async function run(name, engine, options) {
     assert.equal(await page.evaluate(A=>localStorage.getItem('via:notifications:seen-index:'+A),A),'100','failed feed never acknowledges index 101')
     failFeed=false
     await page.goto(base + '/notifications', { waitUntil: 'domcontentloaded' })
-    await page.getByText('1 recent notifications loaded.',{exact:true}).waitFor()
+    await page.getByText('1 recent notifications loaded.',{exact:true}).waitFor({state:'attached'})
     await page.getByRole('link',{name:/^Home(?:page)?$/i}).filter({visible:true}).first().click(); await page.getByRole('button',{name:'Switch account',exact:true}).waitFor()
     await page.waitForLoadState('networkidle')
     assert.equal(await lamp().count(),0)

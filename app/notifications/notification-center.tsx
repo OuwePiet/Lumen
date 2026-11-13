@@ -815,12 +815,8 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
 
   return (
     <section className={`${styles.center} min-w-0 w-full max-w-full rounded-2xl border border-zinc-800 bg-zinc-950/60`} aria-label={copy.notificationLabel}>
-      <div id="notification-controls" data-notification-controls>
-      <div className={`${styles.toolbar} flex flex-nowrap items-center justify-between gap-1 border-b border-zinc-800 bg-zinc-950/95 px-2 py-1 backdrop-blur max-sm:items-stretch sm:flex-wrap sm:gap-3 sm:px-4 sm:py-2`}>
-        <div className="hidden sm:block">
-          <h2 id="notification-center-heading" className="whitespace-nowrap text-sm font-semibold text-white">{copy.heading}</h2>
-          <p className="mt-1 text-xs text-zinc-500">{copy.active}: {shortKey(session.publicKey, copy.actor)}</p>
-        </div>
+      <div id="notification-controls" data-notification-controls className="flex flex-col border-b border-zinc-800 xl:flex-row-reverse xl:items-center xl:justify-between">
+      <div className={`${styles.toolbar} flex flex-nowrap items-center justify-between gap-1 bg-zinc-950/95 px-2 py-0.5 max-sm:items-stretch sm:px-3`}>
         <div className={`${styles.controls} flex w-full min-w-0 flex-nowrap items-center justify-between gap-1 sm:w-auto sm:flex-wrap sm:justify-start sm:gap-2`}>
           <button
             type="button"
@@ -860,7 +856,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
         </div>
       </div>
 
-      <div className={`${styles.filters} border-b border-zinc-800 bg-zinc-950/95 px-1 py-1 backdrop-blur sm:px-4 sm:py-0`} aria-label={copy.filters}>
+      <div className={`${styles.filters} min-w-0 bg-zinc-950/95 px-1 py-0 sm:px-2`} aria-label={copy.filters}>
         <div className={`${styles.filterRow} min-w-0`}>
           {([
             { id: "reaction", label: copy.categories.reaction, ids: ["reaction"] },
@@ -888,7 +884,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
 
       </div>
 
-      <div className="flex items-baseline gap-2 px-3 pt-1 sm:px-5 sm:pt-1"><span className="text-[9px] font-medium leading-4 text-[#8fd4a9] sm:hidden">{copy.notificationLabel}</span><p className={`text-[9px] leading-4 sm:text-xs sm:leading-normal ${status === "error" ? "text-amber-300" : "text-zinc-500"}`} role="status" aria-live="polite">{message}</p></div>
+      <p className={status === "error" ? "px-3 py-1 text-xs text-amber-300" : "sr-only"} role="status">{message}</p>
 
       <div className="mt-1 sm:mt-2 sm:divide-y sm:divide-zinc-800">
         {status === "loading" ? <div className="px-4 py-5 text-sm text-zinc-500 sm:px-5">{copy.loading}</div> : null}
