@@ -106,9 +106,19 @@ export default function ViaGlobalRadio() {
 
   const copy = COPY[language]
 
-  if (pathname === "/radio" || pathname === "/messages") {
-    return <audio ref={audio} onPause={()=>setPlaying(false)} onPlay={()=>setPlaying(true)} />
-  }
-
-  return <audio ref={audio} onPause={()=>setPlaying(false)} onPlay={()=>setPlaying(true)} />
+  return (
+    <>
+      <audio ref={audio} onPause={() => setPlaying(false)} onPlay={() => setPlaying(true)} />
+      {station && pathname !== "/messages" ? (
+        <aside aria-label={copy.radio} style={{ position: "fixed", bottom: 12, left: 12, right: 12, zIndex: 45, maxWidth: 460, margin: "0 auto", padding: "10px 12px", border: "1px solid #285f40", borderRadius: 14, background: "#07100b", color: "#f4f7f5", display: "flex", alignItems: "center", gap: 10, boxShadow: "0 4px 24px #0009" }}>
+          <div style={{ minWidth: 0, flex: 1 }}>
+            <div style={{ fontSize: 12, color: "#b9ffd4" }}>{copy.radio}</div>
+            <div style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontSize: 14, fontWeight: 700 }} title={station.name}>{station.name}</div>
+          </div>
+          <button type="button" onClick={() => void toggle()} aria-label={playing ? copy.turnOff : copy.turnOn} aria-pressed={playing} style={{ minHeight: 44, minWidth: 58, padding: "8px 12px", borderRadius: 22, border: "1px solid #285f40", background: "#10261a", color: "#b9ffd4", fontWeight: 700 }}>{playing ? copy.off : copy.on}</button>
+          <Link href="/radio" aria-label={copy.chooseAria} style={{ color: "#b9ffd4", fontSize: 13, padding: 8 }}>{copy.choose}</Link>
+        </aside>
+      ) : null}
+    </>
+  )
 }
