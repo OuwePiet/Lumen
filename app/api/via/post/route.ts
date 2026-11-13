@@ -25,7 +25,7 @@ export async function GET(request: Request) {
     }
     return NextResponse.json({ ok: true, post }, {
       status: 200,
-      headers: { "Cache-Control": "public, max-age=0, s-maxage=30, stale-while-revalidate=60" },
+      headers: { "Cache-Control": url.searchParams.has("fresh") ? "no-store" : "public, max-age=0, s-maxage=30, stale-while-revalidate=60" },
     })
   } catch {
     return NextResponse.json({ ok: false, error: "POST_READ_UNAVAILABLE" }, { status: 503, headers: { "Cache-Control": "no-store" } })

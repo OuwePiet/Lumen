@@ -12,6 +12,7 @@ export type ViaPublicPost = {
   likeCount: number
   isLikedByReader: boolean
   diamondCount: number
+  diamondLevelByReader?: number | null
   commentCount: number
   repostCount: number
   quoteRepostCount: number
@@ -30,7 +31,7 @@ type DeSoPost = {
   VideoURLs?: unknown
   TimestampNanos?: unknown
   LikeCount?: unknown
-  PostEntryReaderState?: { LikedByReader?: unknown } | null
+  PostEntryReaderState?: { LikedByReader?: unknown; DiamondLevelBestowed?: unknown } | null
   DiamondCount?: unknown
   CommentCount?: unknown
   RepostCount?: unknown
@@ -82,6 +83,7 @@ function safePostExtraData(value: unknown) {
  * features can inspect it without inventing or mutating a VIA-only format.
  */
 function normalizePublicPost(post: DeSoPost): ViaPublicPost {
+  const level = post.PostEntryReaderState?.DiamondLevelBestowed
   return {
     postHash: text(post.PostHashHex),
     parentStakeID: text(post.ParentStakeID),
@@ -94,6 +96,7 @@ function normalizePublicPost(post: DeSoPost): ViaPublicPost {
     likeCount: count(post.LikeCount),
     isLikedByReader: post.PostEntryReaderState?.LikedByReader === true,
     diamondCount: count(post.DiamondCount),
+    diamondLevelByReader: typeof level === "number" && Number.isSafeInteger(level) && level >= 0 ? level : null,
     commentCount: count(post.CommentCount),
     repostCount: count(post.RepostCount),
     quoteRepostCount: count(post.QuoteRepostCount),

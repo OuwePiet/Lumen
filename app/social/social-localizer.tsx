@@ -12,6 +12,10 @@ const COPY: Record<ViaLanguage | "Hindi", Copy> = {
   English: { exact: {}, patterns: [] },
   Dutch: {
     exact: {
+      "Following": "Volgend",
+      "Hot": "Populair",
+      "Recent": "Recent",
+      "Choose social feed": "Kies berichtenoverzicht",
       "Account": "Account",
       "Geen actief DeSo-account": "Geen actief DeSo-account",
       "DeSo-account toevoegen": "DeSo-account toevoegen",
@@ -85,6 +89,10 @@ const COPY: Record<ViaLanguage | "Hindi", Copy> = {
   },
   French: {
     exact: {
+      "Following": "Abonnements",
+      "Hot": "Populaires",
+      "Recent": "Récents",
+      "Choose social feed": "Choisir le fil",
       "Account": "Compte",
       "Geen actief DeSo-account": "Aucun compte DeSo actif",
       "DeSo-account toevoegen": "Ajouter un compte DeSo",
@@ -141,6 +149,10 @@ const COPY: Record<ViaLanguage | "Hindi", Copy> = {
   },
   Spanish: {
     exact: {
+      "Following": "Siguiendo",
+      "Hot": "Populares",
+      "Recent": "Recientes",
+      "Choose social feed": "Elegir feed",
       "Account": "Cuenta",
       "Geen actief DeSo-account": "No hay una cuenta DeSo activa",
       "DeSo-account toevoegen": "Añadir cuenta DeSo",
@@ -197,6 +209,10 @@ const COPY: Record<ViaLanguage | "Hindi", Copy> = {
   },
   Chinese: {
     exact: {
+      "Following": "关注",
+      "Hot": "热门",
+      "Recent": "最新",
+      "Choose social feed": "选择动态",
       "Account": "账户",
       "Geen actief DeSo-account": "没有活跃的 DeSo 账户",
       "DeSo-account toevoegen": "添加 DeSo 账户",
@@ -253,6 +269,10 @@ const COPY: Record<ViaLanguage | "Hindi", Copy> = {
   },
   Hindi: {
     exact: {
+      "Following": "फ़ॉलोइंग",
+      "Hot": "लोकप्रिय",
+      "Recent": "हालिया",
+      "Choose social feed": "फ़ीड चुनें",
       "Account": "खाता",
       "Geen actief DeSo-account": "कोई सक्रिय DeSo खाता नहीं",
       "DeSo-account toevoegen": "DeSo खाता जोड़ें",
@@ -322,6 +342,7 @@ const COPY: Record<ViaLanguage | "Hindi", Copy> = {
 }
 
 const originalText = new WeakMap<Text, string>()
+const appliedText = new WeakMap<Text, string>()
 const originalAttributes = new WeakMap<Element, Map<string, string>>()
 
 function translated(source: string, copy: Copy) {
@@ -340,14 +361,19 @@ function translateRoot(root: HTMLElement, language: ViaLanguage | "Hindi") {
   let node = walker.nextNode()
   while (node) {
     const textNode = node as Text
+    const parent = textNode.parentElement
+    if (parent?.closest("[data-via-user-content], textarea, input, [contenteditable]")) {
+      node = walker.nextNode()
+      continue
+    }
     const current = textNode.nodeValue ?? ""
     const trimmed = current.trim()
     if (trimmed) {
-      const dynamic = textNode.parentElement?.hasAttribute("data-via-dynamic-text") === true
-      if (dynamic) originalText.set(textNode, trimmed)
+      const previous = appliedText.get(textNode)
+      if (!originalText.has(textNode) || (previous !== undefined && trimmed !== previous)) originalText.set(textNode, trimmed)
       const source = originalText.get(textNode) ?? trimmed
-      if (!originalText.has(textNode)) originalText.set(textNode, source)
       const next = language === "English" ? source : translated(source, copy)
+      appliedText.set(textNode, next)
       if (next !== trimmed) {
         const leading = current.slice(0, current.length - current.trimStart().length)
         const trailing = current.slice(current.trimEnd().length)

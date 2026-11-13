@@ -1,39 +1,73 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
+import { Popover } from "@base-ui/react/popover"
 import { Gem } from "lucide-react"
+import { restoreIdentitySession, VIA_IDENTITY_EVENT } from "../deso-identity-session"
+import { financialSubmissionBlock, markFinancialPending, markFinancialSubmitted, withFinancialAccountLock } from "../financial-submission"
 import { viaModernIdentity } from "../deso-identity-modern"
 import { fetchViaRates } from "../via-live-rates"
+import PublicAccountLabel from "../public-account-label"
+import { useViaIdentitySession } from "../use-via-identity-session"
 
 type Props = { postHash: string; receiverPublicKey: string; initialCount: number; variant?: "default" | "icon" }
 type PrepareResponse = { ok?: boolean; transactionHex?: string; diamondLevel?: number; feeNanos?: number | null; spendAmountNanos?: number | null; error?: string }
 type DiamondLevelsResponse = { ok?: boolean; diamondLevelMap?: Record<string, number> }
 
+/**
+ * Fail closed if DeSo Identity never answers (notably on mobile Safari).
+ * A late permission/signing response cannot resume this payment chain:
+ * Promise.race has already rejected and the caller exits via catch.
+ * No transaction is submitted or retried on timeout.
+ */
+function awaitIdentityResponse<T>(operation: Promise<T>, timeoutMs: number): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timer = window.setTimeout(() => reject(new Error("DESO_IDENTITY_NO_RESPONSE")), timeoutMs)
+    operation.then(
+      value => { window.clearTimeout(timer); resolve(value) },
+      error => { window.clearTimeout(timer); reject(error) },
+    )
+  })
+}
+
 export default function DiamondButton({ postHash, receiverPublicKey, initialCount, variant = "default" }: Props) {
-  const [level, setLevel] = useState(1)
   const [count, setCount] = useState(initialCount)
   useEffect(() => setCount(initialCount), [initialCount])
-  const [compactOpen, setCompactOpen] = useState(false)
-  const menuRootRef = useRef<HTMLDivElement>(null)
+  const [menuOpen, setMenuOpen] = useState(false)
   const [celebrate, setCelebrate] = useState(false)
-  useEffect(() => {
-    function dismissOnOutsidePointer(event: PointerEvent) {
-      const root = menuRootRef.current
-      if (root && event.target instanceof Node && !root.contains(event.target)) {
-        setCompactOpen(false)
-        root.querySelectorAll("details[open]").forEach((menu) => menu.removeAttribute("open"))
-      }
-    }
-    document.addEventListener("pointerdown", dismissOnOutsidePointer)
-    return () => document.removeEventListener("pointerdown", dismissOnOutsidePointer)
-  }, [])
-
   const leafRain = celebrate ? <div aria-hidden="true" className="pointer-events-none fixed inset-0 z-[90] overflow-hidden">{Array.from({ length: 28 }, (_, i) => <span key={i} className="absolute top-[-12%] animate-[viaLeafFall_3s_ease-in_forwards]" style={{ left: `${(i * 37) % 100}%`, animationDelay: `${(i % 10) * 0.12}s`, transform: `rotate(${i * 41}deg)` }}><img src="/via-leaf.svg" alt="" width="36" height="34" className="h-9 w-9 object-contain" /></span>)}<style>{`@keyframes viaLeafFall { from { translate: 0 -10vh; opacity: 1 } to { translate: 8vw 115vh; opacity: 0 } }`}</style></div> : null
   const [status, setStatus] = useState<"idle" | "preparing" | "approval" | "submitting" | "done" | "error">("idle")
   const [message, setMessage] = useState("")
-  const [feeNanos, setFeeNanos] = useState<number | null>(null)
   const [diamondValues, setDiamondValues] = useState<Array<{ level: number; nanos: number }> | null>(null)
   const [desoUsd, setDesoUsd] = useState<number | null>(null)
+  const [levelsFailed, setLevelsFailed] = useState(false)
+  const [levelsAttempt, setLevelsAttempt] = useState(0)
+  const [recipientOpen, setRecipientOpen] = useState(false)
+  const reader = useViaIdentitySession()?.publicKey
+  const [previousDiamond, setPreviousDiamond] = useState<{ reader: string; hash: string; level: number } | null>(null)
+  const previousLevel = previousDiamond?.reader === reader && previousDiamond?.hash === postHash ? previousDiamond.level : null
+
+  useEffect(() => {
+    if (!menuOpen) return
+    const controller = new AbortController()
+    setPreviousDiamond(null)
+    const params = new URLSearchParams({ hash: postHash, fresh: "1", reader: reader ?? "" })
+    void fetch("/api/via/post?" + params, { cache: "no-store", signal: controller.signal })
+      .then(async (response) => {
+        if (!response.ok) return
+        const data = await response.json() as { ok?: boolean; post?: { diamondCount?: number; diamondLevelByReader?: number | null } }
+        const latestCount = data.post?.diamondCount
+        const latestLevel = data.post?.diamondLevelByReader
+        if (!controller.signal.aborted && data.ok && reader && typeof latestLevel === "number" && Number.isSafeInteger(latestLevel) && latestLevel >= 0) {
+          setPreviousDiamond({ reader, hash: postHash, level: latestLevel })
+        }
+        if (!controller.signal.aborted && data.ok && typeof latestCount === "number" && Number.isSafeInteger(latestCount) && latestCount >= 0) {
+          setCount(latestCount)
+        }
+      })
+      .catch(() => {})
+    return () => controller.abort()
+  }, [menuOpen, postHash, reader])
 
   useEffect(() => {
     const controller = new AbortController()
@@ -44,7 +78,7 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
   function diamondUsd(nanos: number) {
     if (!Number.isFinite(nanos) || !desoUsd) return null
     const usd = (nanos / 1_000_000_000) * desoUsd
-    return usd < 1 ? `${Math.max(usd, 0.01).toFixed(2)}` : `${usd.toLocaleString(undefined, { maximumFractionDigits: 0 })}`
+    return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", minimumFractionDigits: usd < 1 ? 2 : 0, maximumFractionDigits: usd < 1 ? 2 : 0 }).format(Math.max(0.01, usd))
   }
 
   useEffect(() => {
@@ -56,102 +90,149 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
         if (!response.ok || !data.ok || !data.diamondLevelMap) throw new Error("DIAMOND_LEVELS_UNAVAILABLE")
         const values = Object.entries(data.diamondLevelMap)
           .map(([key, nanos]) => ({ level: Number(key), nanos }))
-          .filter((entry) => Number.isInteger(entry.level) && entry.level >= 1 && entry.level <= 8 && Number.isFinite(entry.nanos) && entry.nanos > 0)
+          .filter((entry) => Number.isInteger(entry.level) && entry.level >= 1 && entry.level <= 8 && Number.isSafeInteger(entry.nanos) && entry.nanos > 0)
           .sort((a, b) => a.level - b.level)
-        if (values.length) setDiamondValues(values)
-      }).catch(() => setDiamondValues(null))
-    return () => controller.abort()
-  }, [diamondValues])
-
-  async function prepare(chosenLevel = level) {
-    const session = await viaModernIdentity.currentUser()
-    if (!session || !diamondValues?.some((item) => item.level === chosenLevel) || status === "preparing" || status === "approval" || status === "submitting") return
-    setCelebrate(false); setStatus("preparing"); setMessage("Preparing the exact value-transfer transaction…"); setFeeNanos(null)
-    try {
-      const response = await fetch("/api/via/social/diamond", { method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store", body: JSON.stringify({ action: "prepare", senderPublicKey: session.publicKey, receiverPublicKey, diamondPostHashHex: postHash, diamondLevel: chosenLevel }) })
-      const data = await response.json() as PrepareResponse
-      if (!response.ok || !data.ok || !data.transactionHex) throw new Error(data.error || "PREPARE_FAILED")
-      const selected = diamondValues?.find((item) => item.level === chosenLevel)
-      if (!selected || data.diamondLevel !== chosenLevel || typeof data.feeNanos !== "number" || !Number.isFinite(data.feeNanos) || data.feeNanos < 0 || typeof data.spendAmountNanos !== "number" || !Number.isFinite(data.spendAmountNanos) || data.spendAmountNanos < 0) throw new Error("INVALID_DESO_TRANSACTION_DATA")
-      setFeeNanos(data.feeNanos)
-      const diamondSpendLimit = data.spendAmountNanos + data.feeNanos
-      if (!Number.isSafeInteger(diamondSpendLimit) || diamondSpendLimit < 0) throw new Error("INVALID_DESO_SPEND_LIMIT")
-      const currentSpendingLimits = await viaModernIdentity.spendingLimits()
-      const currentGlobalDESOLimit = currentSpendingLimits?.GlobalDESOLimit ?? 0
-      if (!Number.isSafeInteger(currentGlobalDESOLimit) || currentGlobalDESOLimit < 0) throw new Error("INVALID_DESO_SPENDING_LIMITS")
-      const requiredPermissions = {
-        GlobalDESOLimit: currentGlobalDESOLimit + diamondSpendLimit,
-        TransactionCountLimitMap: { BASIC_TRANSFER: 1 },
-      }
-      if (!viaModernIdentity.hasPermissions(requiredPermissions)) {
-        setStatus("approval"); setMessage("Confirm this Diamond spending permission with DeSo Identity…")
-        await viaModernIdentity.requestPermissions(requiredPermissions)
-      }
-      setStatus("approval"); setMessage("Signing the confirmed Diamond with your VIA DeSo session…")
-      const signedTransactionHex = await viaModernIdentity.signTx(data.transactionHex)
-      setStatus("submitting"); setMessage("Submitting your confirmed Diamond to DeSo…")
-      const submitResponse = await fetch("/api/via/social/diamond", { method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store", body: JSON.stringify({ action: "submit", signedTransactionHex }) })
-      const submitData = await submitResponse.json() as { ok?: boolean; error?: string }
-      if (!submitResponse.ok || !submitData.ok) throw new Error(submitData.error || "SUBMIT_FAILED")
-      await viaModernIdentity.refreshSpendingLimits()
-      setStatus("done"); setMessage(`Diamond level ${chosenLevel} submitted to DeSo. Awaiting the DeSo count.`)
-      setCelebrate(true)
-      window.setTimeout(() => setCelebrate(false), 3200)
-      window.dispatchEvent(new Event("via:social:post-published"))
-      // Refresh the displayed total from the official DeSo post; never infer a count from the chosen level.
-      try {
-        const postResponse = await fetch(`/api/via/post?hash=${encodeURIComponent(postHash)}&reader=${encodeURIComponent(session.publicKey)}`, { cache: "no-store" })
-        const postData = await postResponse.json() as { ok?: boolean; post?: { diamondCount?: number } }
-        const officialCount = postData.post?.diamondCount
-        if (postResponse.ok && postData.ok && typeof officialCount === "number" && Number.isSafeInteger(officialCount) && officialCount >= 0) {
-          setCount(officialCount)
+        if (!values.length) throw new Error("DIAMOND_LEVELS_UNAVAILABLE")
+        if (!controller.signal.aborted) {
+          setDiamondValues(values)
         }
-      } catch {
-        // A read failure must never trigger a second financial transaction.
+      }).catch(() => {
+        if (!controller.signal.aborted) setLevelsFailed(true)
+      })
+    return () => controller.abort()
+  }, [diamondValues, levelsAttempt])
+
+  const retryLevels = levelsFailed ? (
+    <button type="button" onClick={() => { setLevelsFailed(false); setLevelsAttempt((attempt) => attempt + 1) }}
+      className="min-h-9 rounded-lg border border-zinc-700 px-2 text-xs text-amber-200">
+      Prijzen niet beschikbaar · Opnieuw laden
+    </button>
+  ) : null
+
+  function changeMenu(open: boolean) {
+    setMenuOpen(open)
+    setRecipientOpen(false)
+  }
+
+  const busy = status === "preparing" || status === "approval" || status === "submitting"
+  const sendLock = useRef(false)
+  async function prepare(chosenLevel: number) {
+    if (sendLock.current || (previousLevel !== null && chosenLevel <= previousLevel) || !diamondValues?.some(item => item.level === chosenLevel)) return
+    sendLock.current = true
+    const session = restoreIdentitySession()
+    let invalidated = false, sent = false, accepted = false
+    const onIdentity = (event: Event) => {
+      if (event.type === "storage") {
+        const changed = event as StorageEvent
+        if (changed.key === null || changed.key === "desoIdentityUsers" || (changed.key === "desoActivePublicKey" && changed.newValue !== session?.publicKey)) invalidated = true
       }
-    } catch { setStatus("error"); setMessage("DeSo did not confirm completion. Check the transaction on DeSo before trying again.") }
+      if (restoreIdentitySession()?.publicKey !== session?.publicKey) invalidated = true
+    }
+    const assertAccount = async () => {
+      if (!session || invalidated || restoreIdentitySession()?.publicKey !== session.publicKey) throw new Error("ACCOUNT_CHANGED")
+      const current = await viaModernIdentity.currentUser()
+      if (invalidated || current?.publicKey !== session.publicKey) throw new Error("ACCOUNT_CHANGED")
+    }
+    window.addEventListener(VIA_IDENTITY_EVENT, onIdentity)
+    window.addEventListener("storage", onIdentity)
+    try {
+      if (!session) throw new Error("DESO_LOGIN_REQUIRED")
+      const intent = "diamond:" + postHash + ":" + receiverPublicKey + ":" + chosenLevel
+      await withFinancialAccountLock(session.publicKey, async () => {
+        await assertAccount()
+        const blocked = financialSubmissionBlock(session.publicKey, intent)
+        if (blocked) throw new Error(blocked)
+        setCelebrate(false); setStatus("preparing"); setMessage("Preparing the Diamond and exact DeSo cost…")
+        const response = await fetch("/api/via/social/diamond", { method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store", body: JSON.stringify({ action: "prepare", senderPublicKey: session.publicKey, receiverPublicKey, diamondPostHashHex: postHash, diamondLevel: chosenLevel }) })
+        const data = await response.json() as PrepareResponse
+        await assertAccount()
+        if (!response.ok || !data.ok || !data.transactionHex || data.diamondLevel !== chosenLevel ||
+            typeof data.feeNanos !== "number" || !Number.isSafeInteger(data.feeNanos) || data.feeNanos < 0 ||
+            typeof data.spendAmountNanos !== "number" || !Number.isSafeInteger(data.spendAmountNanos) || data.spendAmountNanos < 0) throw new Error(data.error || "INVALID_DESO_TRANSACTION_DATA")
+        const cost = data.spendAmountNanos + data.feeNanos
+        if (!Number.isSafeInteger(cost) || cost < 1) throw new Error("INVALID_DESO_SPEND_LIMIT")
+        // DeSo permissions are granted at homepage login; never open a second
+        // permission request from a diamond click. Fail closed if the grant is absent.
+        setStatus("approval"); setMessage("Checking the DeSo permission granted at login…")
+        const permitted = await awaitIdentityResponse(Promise.resolve(viaModernIdentity.hasPermissions({ GlobalDESOLimit: cost, TransactionCountLimitMap: { BASIC_TRANSFER: 1 } })), 20000)
+        if (!permitted) throw new Error("DeSo diamantmachtiging ontbreekt in deze sessie. Meld je opnieuw aan via de VIA-homepage om de eenmalige toestemming te verlenen.")
+        await assertAccount()
+        setMessage("DeSo Identity is signing your Diamond…")
+        const signedTransactionHex = await awaitIdentityResponse(viaModernIdentity.signTx(data.transactionHex), 20000)
+        await assertAccount()
+        const submission = { publicKey: session.publicKey, intent, amountNanos: cost, startedAt: Date.now() }
+        markFinancialPending(submission)
+        if (invalidated || restoreIdentitySession()?.publicKey !== session.publicKey) throw new Error("ACCOUNT_CHANGED")
+        setStatus("submitting"); setMessage("Submitting your Diamond to DeSo…")
+        sent = true
+        const submit = await fetch("/api/via/social/diamond", { method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store", body: JSON.stringify({ action: "submit", signedTransactionHex }) })
+        const result = await submit.json() as { ok?: boolean; error?: string; transaction?: { TxnHashHex?: string; TransactionHashHex?: string } }
+        if (!submit.ok || !result.ok) throw new Error(result.error || "SUBMIT_FAILED")
+        accepted = true
+        markFinancialSubmitted(submission, result.transaction?.TxnHashHex ?? result.transaction?.TransactionHashHex)
+        setStatus("done"); changeMenu(false); setMessage("Diamond received by DeSo. Final confirmation is not yet verified.")
+        setCelebrate(true); window.setTimeout(() => setCelebrate(false), 3200)
+        window.dispatchEvent(new Event("via:social:post-published"))
+        await viaModernIdentity.refreshSpendingLimits().catch(() => {})
+        try {
+          const response = await fetch("/api/via/post?fresh=1&hash=" + encodeURIComponent(postHash) + "&reader=" + encodeURIComponent(session.publicKey), { cache: "no-store" })
+          const data = await response.json() as { ok?: boolean; post?: { diamondCount?: number } }
+          const count = data.post?.diamondCount
+          if (!invalidated && response.ok && data.ok && typeof count === "number" && Number.isSafeInteger(count) && count >= 0) setCount(count)
+        } catch { /* Read failures never resend or clear recovery state. */ }
+      })
+    } catch (error) {
+      setStatus(accepted ? "done" : "error")
+      setMessage(accepted ? "DeSo received the Diamond. Recovery storage could not be updated; check DeSo before any new payment." : sent ? "The Diamond outcome is uncertain. Do not resend; check DeSo." : error instanceof Error && error.message === "DESO_IDENTITY_NO_RESPONSE" ? "DeSo Identity reageert niet. Er is vanuit VIA geen diamant verzonden. Controleer de DeSo-machtiging voordat je opnieuw probeert." : error instanceof Error ? error.message : "Diamond preparation stopped. Nothing was submitted.")
+    } finally {
+      window.removeEventListener(VIA_IDENTITY_EVENT, onIdentity)
+      window.removeEventListener("storage", onIdentity)
+      sendLock.current = false
+    }
   }
 
-  if (variant === "icon") {
-    return <div ref={menuRootRef} className="inline-flex flex-wrap items-center gap-2">
-      <button
-        type="button"
-        onClick={() => { setCompactOpen((open) => !open) }}
-        title="Diamond"
-        aria-label={`Diamond · ${count}`}
-        aria-expanded={compactOpen}
-        className={`inline-flex h-9 min-w-9 items-center justify-center gap-1 rounded-full border px-2 text-xs transition ${compactOpen ? "border-[#8fd4a9] bg-[#285f40] text-white" : "border-zinc-800 text-zinc-300 hover:border-[#8fd4a9] hover:text-white"}`}
-      >
-        <Gem className="h-4 w-4" aria-hidden="true" /><span>{count}</span>
-      </button>
-      {compactOpen ? <div className="basis-full rounded-xl border border-zinc-800 bg-[#050806] p-2">
-        <div className="flex max-w-full flex-wrap items-center gap-1.5" aria-label="Diamond value">
-          {(diamondValues ?? Array.from({ length: 8 }, (_, index) => ({ level: index + 1, nanos: NaN }))).map((entry) => (
-            <button key={entry.level} type="button" onClick={() => { if (!Number.isFinite(entry.nanos) || status === "preparing" || status === "approval" || status === "submitting") return; setLevel(entry.level) }} aria-pressed={level === entry.level} className={`min-w-[3.35rem] rounded-xl border px-2 py-1 text-center text-[10px] transition ${level === entry.level ? "border-[#8fd4a9] bg-[#285f40] text-white" : "border-zinc-800 text-zinc-400 hover:border-[#8fd4a9] hover:text-white"}`}>
-              <span className="block">{Number.isFinite(entry.nanos) ? (diamondUsd(entry.nanos) ?? "prijs laden…") : "prijs laden…"}</span>
-              <Gem className="mx-auto h-4 w-4" aria-hidden="true" /><span className="block">{entry.level}</span>
-            </button>
-          ))}
-        </div>
-        <div className="mt-2 flex flex-wrap gap-2">
-          <button type="button" onClick={() => void prepare(level)} disabled={!diamondValues?.some((item) => item.level === level) || status === "preparing" || status === "approval" || status === "submitting"} className="h-9 rounded-full border border-[#8fd4a9] px-3 text-xs text-[#9adbb2] disabled:opacity-60">Bevestig 💎 {level}</button><button type="button" onClick={() => { setCompactOpen(false) }} disabled={status === "preparing" || status === "approval" || status === "submitting"} className="h-9 rounded-full border border-zinc-700 px-3 text-xs text-zinc-300 disabled:opacity-60">Sluiten</button>
-        </div>
-      </div> : null}
-      {leafRain}
-      {message ? <span className="sr-only" role="status" aria-live="polite">{message}</span> : null}
-    </div>
-  }
-
-  return <div ref={menuRootRef} className="flex flex-wrap items-center gap-2">
-    <span>{count} Diamonds</span>
-    <details className="relative">
-      <summary className="inline-flex cursor-pointer list-none items-center gap-1 rounded-full border border-zinc-800 px-2 py-1 text-xs text-zinc-300"><Gem className="h-3.5 w-3.5" aria-hidden="true" /> {level} ▾</summary>
-      <div className="absolute bottom-full left-0 z-30 mb-2 grid w-56 grid-cols-2 gap-1 rounded-xl border border-zinc-800 bg-[#050806] p-2 shadow-xl">
-        {(diamondValues ?? Array.from({ length: 8 }, (_, index) => ({ level: index + 1, nanos: NaN }))).map((entry) => <button key={entry.level} type="button" onClick={() => { if (!Number.isFinite(entry.nanos) || status === "preparing" || status === "approval" || status === "submitting") return; setLevel(entry.level) }} aria-pressed={level === entry.level} className={`rounded-lg border px-2 py-2 text-xs ${level === entry.level ? "border-[#8fd4a9] bg-[#285f40] text-white" : "border-zinc-800 text-zinc-300 hover:border-[#8fd4a9]"}`}><span className="block text-[11px] text-amber-300">{Number.isFinite(entry.nanos) ? (diamondUsd(entry.nanos) ?? "prijs laden…") : "prijs laden…"}</span><span className="block">{entry.level} 💎</span></button>)}
-        <button type="button" onClick={() => void prepare(level)} disabled={!diamondValues?.some((item) => item.level === level) || status === "preparing" || status === "approval" || status === "submitting"} className="col-span-2 rounded-lg border border-[#8fd4a9] px-2 py-2 text-xs text-[#9adbb2] disabled:opacity-60">Bevestig 💎 {level}</button><button type="button" onClick={(event) => { (event.currentTarget.closest("details") as HTMLDetailsElement | null)?.removeAttribute("open") }} className="col-span-2 rounded-lg border border-zinc-700 px-2 py-2 text-xs text-zinc-300 hover:border-[#8fd4a9]">Sluiten</button>
-      </div>
-    </details>
+  return <>
+    <Popover.Root open={menuOpen} onOpenChange={changeMenu}>
+      <Popover.Trigger type="button" title="Diamanten" aria-label={"Diamanten · " + count}
+        className="inline-flex h-9 min-w-9 items-center justify-center gap-1 rounded-full border border-zinc-800 px-2 text-xs text-zinc-300 hover:border-[#8fd4a9] data-[popup-open]:border-[#8fd4a9] data-[popup-open]:bg-[#285f40]">
+        <Gem className="size-4" aria-hidden="true" />
+        <span>{count}{variant === "default" ? " Diamanten" : ""}</span>
+      </Popover.Trigger>
+      <Popover.Portal>
+        <Popover.Positioner side="top" sideOffset={6} collisionPadding={8} className="z-50">
+          <Popover.Popup aria-label="Diamant geven" className="w-max max-w-[calc(100vw-1rem)] rounded-2xl border border-[#376047] bg-[#0d1c14] p-1.5 text-zinc-100 shadow-xl">
+            {recipientOpen ? (
+              <div className="mb-1 flex flex-wrap items-center gap-x-1 px-1 text-xs">
+                <span>Ontvanger</span>
+                <PublicAccountLabel key={receiverPublicKey} publicKey={receiverPublicKey} />
+                {previousLevel ? <span className="text-zinc-400">· Al gegeven op DeSo · {previousLevel}</span> : null}
+              </div>
+            ) : null}
+            <div className="flex flex-wrap items-center gap-0.5">
+              {retryLevels}
+              {!diamondValues && !levelsFailed ? <span role="status" className="px-1 text-xs text-zinc-400">Prijzen laden…</span> : null}
+              {(diamondValues ?? []).map(({ level, nanos }) => {
+                const price = diamondUsd(nanos) ?? (nanos / 1_000_000_000) + " DESO"
+                return (
+                  <button key={level} type="button" disabled={busy || (previousLevel !== null && level <= previousLevel)}
+                    onClick={() => void prepare(level)} aria-label={"Verstuur diamantniveau " + level + " · " + price}
+                    className="flex min-h-11 min-w-8 flex-col items-center justify-center gap-0.5 rounded-lg px-0.5 text-[#a8e5bd] hover:bg-[#285f40] hover:text-white disabled:opacity-40">
+                    <span className="rounded-full bg-[#234131] px-0.5 text-[10px] leading-3 text-white">{price}</span>
+                    <Gem className="size-5" aria-hidden="true" />
+                  </button>
+                )
+              })}
+              <button type="button" aria-label="Toon ontvanger" aria-expanded={recipientOpen}
+                onClick={() => setRecipientOpen((open) => !open)}
+                className="flex min-h-11 min-w-8 items-center justify-center rounded-lg text-[#a8e5bd] hover:bg-[#285f40]">
+                <span aria-hidden="true" className="flex size-5 items-center justify-center rounded-full border border-current text-xs font-semibold">i</span>
+              </button>
+            </div>
+          </Popover.Popup>
+        </Popover.Positioner>
+      </Popover.Portal>
+    </Popover.Root>
     {leafRain}
-    {message ? <span className={`text-[11px] ${status === "error" ? "text-amber-300" : "text-zinc-500"}`}>{message}</span> : null}
-  </div>
+    {message ? <span className="order-last w-full basis-full text-xs text-amber-200" role="status">{message}</span> : null}
+  </>
 }

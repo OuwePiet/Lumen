@@ -42,8 +42,10 @@ export default function LikeButton({ postHash, initialCount, initialLiked = fals
       })
       const data = await response.json() as PrepareResponse
       if (!response.ok || !data.ok || !data.transactionHex) throw new Error(data.error || "PREPARE_FAILED")
+      if ((await viaModernIdentity.currentUser())?.publicKey !== session.publicKey) throw new Error("DESO_ACCOUNT_CHANGED")
       setMessage("Signing this like with your DeSo Identity session…")
       const signedTransactionHex = await viaModernIdentity.signTx(data.transactionHex)
+      if ((await viaModernIdentity.currentUser())?.publicKey !== session.publicKey) throw new Error("DESO_ACCOUNT_CHANGED")
       const submitResponse = await fetch("/api/via/social/like", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

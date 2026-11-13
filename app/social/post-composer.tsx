@@ -71,6 +71,8 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
   const [mediaChoice, setMediaChoice] = useState<"photo" | "video">("photo")
   const [draftMessage, setDraftMessage] = useState("")
   const textareaRef = useRef<HTMLTextAreaElement | null>(null)
+  const publishingRef = useRef(false)
+  const uploadingImageRef = useRef(false)
   const isReply = Boolean(parentStakeID)
 
   useEffect(() => {
@@ -174,20 +176,18 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
       attached.splice(index, 1)
       return attached.length ? [...attached, ""].slice(0, MAX_IMAGES) : [""]
     })
-    setImageUploadStatus("idle")
-    setImageUploadMessage("")
-  }
-
-  function clearImagePreviews() {
-    setImagePreviews((current) => { current.forEach((url) => URL.revokeObjectURL(url)); return [] })
+    if (!uploadingImageRef.current) {
+      setImageUploadStatus("idle")
+      setImageUploadMessage("")
+    }
   }
 
   async function uploadImage(file: File | null) {
-    if (!session || !file || imageUrls.length >= MAX_IMAGES || imageUploading) return
+    if (!session || !file || imageUrls.length >= MAX_IMAGES || uploadingImageRef.current || publishingRef.current) return
 
-    if (!file.type.startsWith("image/")) {
+    if (!ALLOWED_IMAGE_TYPES.has(file.type)) {
       setImageUploadStatus("error")
-      setImageUploadMessage("Choose an image from your photo library.")
+      setImageUploadMessage("Choose a GIF, JPEG, PNG or WebP image.")
       return
     }
     if (file.size <= 0 || file.size >= MAX_IMAGE_BYTES) {
@@ -197,12 +197,17 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
     }
 
     const previewUrl = URL.createObjectURL(file)
-    setImagePreviews((current) => [...current, previewUrl].slice(-MAX_IMAGES))
+    uploadingImageRef.current = true
+    setImagePreviews([previewUrl])
 
     try {
       setImageUploadStatus("jwt")
       setImageUploadMessage("Preparing image upload approval…")
+      const uploadUser = await viaModernIdentity.currentUser()
+      if (uploadUser?.publicKey !== session.publicKey) throw new Error("DESO_ACCOUNT_CHANGED_RECONNECT")
       const jwt = await viaModernIdentity.jwt()
+      const userAfterJwt = await viaModernIdentity.currentUser()
+      if (userAfterJwt?.publicKey !== session.publicKey) throw new Error("DESO_ACCOUNT_CHANGED_RECONNECT")
 
       setImageUploadStatus("uploading")
       setImageUploadMessage("Uploading image…")
@@ -214,29 +219,39 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
       const response = await fetch("/api/via/social/image-upload", { method: "POST", body: form, cache: "no-store" })
       const data = await response.json() as UploadResponse
       if (!response.ok || !data.ok || !data.imageUrl) throw new Error(data.error || "IMAGE_UPLOAD_FAILED")
+      const userAfterUpload = await viaModernIdentity.currentUser()
+      if (userAfterUpload?.publicKey !== session.publicKey) throw new Error("DESO_ACCOUNT_CHANGED_RECONNECT")
 
       addUploadedImage(data.imageUrl)
       setMediaOpen(false)
       setImageUploadStatus("idle")
       setImageUploadMessage("Image attached. Your post has not been published yet.")
-      setImagePreviews((current) => { current.forEach((url) => URL.revokeObjectURL(url)); return [] })
     } catch (error) {
       setImageUploadStatus("error")
       const code = error instanceof Error ? error.message : "IMAGE_UPLOAD_FAILED"
       setImageUploadMessage(code === "IDENTITY_REAUTHORIZE_REQUIRED"
         ? "Image upload approval expired. Reconnect and try again."
+        : code === "DESO_ACCOUNT_CHANGED_RECONNECT"
+        ? "DeSo account changed. Select your account and attach the photo again."
         : "The image was not attached. No post was published.")
+    } finally {
+      URL.revokeObjectURL(previewUrl)
+      setImagePreviews([])
+      uploadingImageRef.current = false
     }
   }
 
   async function preparePost() {
-    if (!session || !canPrepare) return
-    // Do not open an empty Safari tab on every Send; DeSo opens approval only if required.
-    if (isReply) saveDraft()
+    if (!session || !canPrepare || publishingRef.current || uploadingImageRef.current) return
+    publishingRef.current = true
     setStatus("preparing")
     setMessage(isReply ? "Preparing your reply…" : "Preparing your post…")
     setFeeNanos(null)
+    let submissionStarted = false
     try {
+      if (isReply) saveDraft()
+      const activeBeforePrepare = await viaModernIdentity.currentUser()
+      if (activeBeforePrepare?.publicKey !== session.publicKey) throw new Error("DESO_ACCOUNT_CHANGED_RECONNECT")
       const { response, data: prepared } = await fetchJsonWithTimeout<PrepareResponse>("/api/via/social/post", {
         method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store",
         body: JSON.stringify({
@@ -256,9 +271,14 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
       setFeeNanos(typeof prepared.feeNanos === "number" ? prepared.feeNanos : null)
       setStatus("awaiting-approval")
       setMessage(isReply ? "Signing your reply with your DeSo Identity session…" : "Signing your post with your DeSo Identity session…")
+      const activeBeforeSigning = await viaModernIdentity.currentUser()
+      if (activeBeforeSigning?.publicKey !== session.publicKey) throw new Error("DESO_ACCOUNT_CHANGED_RECONNECT")
       const signedTransactionHex = await viaModernIdentity.signTx(prepared.transactionHex)
+      const activeBeforeSubmit = await viaModernIdentity.currentUser()
+      if (activeBeforeSubmit?.publicKey !== session.publicKey) throw new Error("DESO_ACCOUNT_CHANGED_RECONNECT")
       setStatus("submitting")
       setMessage(isReply ? "Posting your signed reply…" : "Posting your signed post…")
+      submissionStarted = true
       const { response: submitResponse, data: submitted } = await fetchJsonWithTimeout<SubmitResponse>("/api/via/social/post", {
         method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store",
         body: JSON.stringify({ action: "submit", signedTransactionHex }),
@@ -285,7 +305,13 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
     } catch (error) {
       setStatus("error")
       const code = error instanceof Error ? error.message : "PREPARE_FAILED"
-      setMessage(`${isReply ? "The reply" : "The post"} could not be published (${code}). Nothing was posted.`)
+      setMessage(submissionStarted
+        ? `${isReply ? "Reply" : "Post"} not confirmed (${code}). Check DeSo before retrying; do not send twice.`
+        : code === "DESO_ACCOUNT_CHANGED_RECONNECT"
+        ? "DeSo account changed. Select your account and review your draft before sending. Nothing was submitted."
+        : `${isReply ? "The reply" : "The post"} could not be published (${code}). Nothing was submitted.`)
+    } finally {
+      publishingRef.current = false
     }
   }
 
@@ -295,36 +321,14 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
       <label htmlFor={isReply ? `via-reply-${parentStakeID}` : "via-post-body"} className="sr-only">{isReply ? "Reply" : "Post"}</label>
       {!session ? <p className="mb-2 text-sm text-zinc-500">DeSo login is required to publish. You can prepare your post first.</p> : null}
       <div className="relative mt-2">
-        {!isReply ? <span className="pointer-events-none absolute left-3 top-2 z-10 text-[10px] tracking-[0.08em] text-zinc-600">Gepost via VIA</span> : null}
+        <span className="pointer-events-none absolute left-3 top-2 z-10 text-[10px] tracking-[0.08em] text-zinc-600">{isReply ? "Reply via VIA" : "Post via VIA"}</span>
         <textarea ref={textareaRef} id={isReply ? `via-reply-${parentStakeID}` : "via-post-body"} value={body} onChange={(event) => { setBody(event.target.value); setDraftMessage(""); if (status === "done" || status === "error") { setStatus("idle"); setMessage("") } }} maxLength={MAX_POST_LENGTH} rows={compact ? 3 : 5} placeholder={isReply ? "Write a reply…" : "What do you want to share?"} className={`min-h-[8rem] w-full border border-zinc-800 bg-zinc-950 px-3 pb-7 pt-7 text-sm text-zinc-100 outline-none transition-[min-height] focus:min-h-[16rem] focus:border-[#8fd4a9]/55 sm:min-h-0 sm:focus:min-h-0 ${imagePreviews.length || imageUrls.length ? "rounded-t-xl rounded-b-none border-b-0" : "rounded-xl"}`} />
         {!isReply && body.length < 4900 ? <span aria-hidden="true" className="pointer-events-none absolute bottom-2 right-3 text-[10px] text-zinc-700">max. 5000 tekens</span> : null}
         {body.length >= 4900 ? <span className="pointer-events-none absolute bottom-2 right-3 text-[10px] text-zinc-500" aria-live="polite">{body.length.toLocaleString()} / {MAX_POST_LENGTH.toLocaleString()}</span> : null}
         {imagePreviews.length || imageUrls.length ? <div className="flex flex-wrap gap-2 rounded-b-xl border-x border-b border-zinc-800 bg-zinc-950 px-3 pb-3">{imagePreviews.map((url, index) => <div key={`local-${url}`} className="relative h-28 w-28 overflow-hidden rounded-lg border border-zinc-800 bg-black"><img src={url} alt={`Selected image ${index + 1}`} className="h-full w-full object-cover" /></div>)}{imageUrls.map((url, index) => <div key={`attached-${url}`} className="relative h-28 w-28 overflow-hidden rounded-lg border border-zinc-800 bg-black"><img src={url} alt={`Attached image ${index + 1}`} className="h-full w-full object-cover" /><button type="button" onClick={() => removeUploadedImage(index)} aria-label={`Remove attached image ${index + 1}`} className="absolute right-1 top-1 rounded-md bg-black/75 px-1.5 py-0.5 text-[10px] text-zinc-200">×</button></div>)}</div> : null}
       </div>
 
-      {isReply ? <div className="mt-4 flex justify-end gap-2">
-        {onCancel ? <button type="button" onClick={onCancel} disabled={busy} className="rounded-xl border border-zinc-800 px-4 py-2 text-sm text-zinc-400 hover:border-zinc-700 hover:text-zinc-200 disabled:opacity-60">Sluiten</button> : null}
-        <button type="button" onClick={preparePost} disabled={!canPrepare} className="rounded-xl border border-[#8fd4a9]/55 px-4 py-2 text-sm font-semibold text-[#9adbb2] disabled:cursor-not-allowed disabled:border-zinc-800 disabled:text-zinc-600">{status === "preparing" ? "Preparing…" : status === "awaiting-approval" ? "Awaiting approval…" : status === "submitting" ? "Posting…" : "Reply"}</button>
-      </div> : null}
-
-      <div className="mt-3 grid grid-cols-3 gap-2 sm:flex sm:flex-wrap sm:items-center">
-        <button type="button" onClick={() => setEmojiOpen((open) => !open)} disabled={busy} className="min-h-10 rounded-lg border border-zinc-800 px-3 py-1.5 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2] disabled:opacity-50">Emoji</button>
-        {!isReply ? <><label className="flex min-h-10 cursor-pointer items-center justify-center rounded-lg border border-zinc-800 px-3 py-1.5 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2]"><span>{imageUploading ? "Uploading…" : "Photo"}</span><input type="file" accept="image/*" className="sr-only" disabled={busy || imageUploading || imageUrls.length >= MAX_IMAGES} onChange={(event) => { const file = event.target.files?.[0] ?? null; event.currentTarget.value = ""; void uploadImage(file) }} /></label><button type="button" onClick={() => { setMediaChoice("video"); setMediaOpen(true) }} disabled={busy} className="min-h-10 rounded-lg border border-zinc-800 px-3 py-1.5 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2] disabled:opacity-50">Video</button></> : null}
-        {!isReply ? <>
-          <button type="button" onClick={saveDraft} disabled={busy} className="rounded-lg border border-zinc-800 px-3 py-1.5 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2] disabled:opacity-50">Save</button>
-          <button type="button" onClick={() => { setPollOpen((open) => !open); if (pollOpen) setPollOptions(["", ""]) }} disabled={busy} className="rounded-lg border border-zinc-800 px-3 py-1.5 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2] disabled:opacity-50">{pollOpen ? "Remove poll" : "Poll"}</button>
-
-          <button type="button" onClick={preparePost} disabled={!canPrepare} className="rounded-lg border border-[#8fd4a9]/55 px-3 py-1.5 text-xs font-semibold text-[#9adbb2] disabled:cursor-not-allowed disabled:border-zinc-800 disabled:text-zinc-600">{imageUploading ? "Uploading…" : videoUploading ? "Uploading…" : status === "preparing" ? "Preparing…" : status === "awaiting-approval" ? "Awaiting approval…" : status === "submitting" ? "Sending…" : "Send"}</button>
-        </> : null}
-      </div>
-      {!isReply && !canPrepare && hasContent ? <p className="mt-2 text-[11px] text-amber-300" role="status" aria-live="polite">Send unavailable: {sendBlockedReason}</p> : null}
-
-      {emojiOpen ? <div className="mt-2 flex flex-wrap gap-1 rounded-xl border border-zinc-800 bg-zinc-950/70 p-2" aria-label="Insert emoji">
-        {COMPOSER_EMOJI.map((emoji) => <button key={emoji} type="button" onClick={() => insertEmoji(emoji)} disabled={busy || body.length + emoji.length > MAX_POST_LENGTH} className="rounded-lg px-2 py-1 text-lg hover:bg-white/[0.06] disabled:opacity-40" aria-label={`Insert ${emoji}`}>{emoji}</button>)}
-      </div> : null}
-      {!isReply && draftMessage ? <p className="mt-2 text-xs text-zinc-500" role="status" aria-live="polite">{draftMessage}</p> : null}
-
-      {!isReply && pollOpen ? <div className="mt-4 rounded-xl border border-zinc-800 bg-zinc-950/70 p-3">
+      {!isReply && pollOpen ? <div data-via-poll-options className="mt-2 scroll-mt-32 rounded-xl border border-zinc-800 bg-zinc-950/70 p-3">
         <p className="text-sm font-medium text-zinc-200">Poll options</p>
         <p className="mt-1 hidden text-xs text-zinc-500 sm:block">Add 2–5 unique choices.</p>
         <div className="mt-3 space-y-2">
@@ -337,12 +341,38 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
         {!pollValid ? <p className="mt-2 text-xs text-amber-300">Use at least two different, non-empty poll options.</p> : null}
       </div> : null}
 
+      {isReply ? <div className="mt-4 flex justify-end gap-2">
+        {onCancel ? <button type="button" onClick={onCancel} disabled={busy} className="rounded-xl border border-zinc-800 px-4 py-2 text-sm text-zinc-400 hover:border-zinc-700 hover:text-zinc-200 disabled:opacity-60">Sluiten</button> : null}
+        <button type="button" onClick={preparePost} disabled={!canPrepare} className="rounded-xl border border-[#8fd4a9]/55 px-4 py-2 text-sm font-semibold text-[#9adbb2] disabled:cursor-not-allowed disabled:border-zinc-800 disabled:text-zinc-600">{status === "preparing" ? "Preparing…" : status === "awaiting-approval" ? "Awaiting approval…" : status === "submitting" ? "Posting…" : "Reply"}</button>
+      </div> : null}
+
+      <div className="mt-3 grid grid-cols-3 gap-2 sm:flex sm:flex-wrap sm:items-center">
+        <button type="button" onClick={() => setEmojiOpen((open) => !open)} disabled={busy} className="min-h-10 rounded-lg border border-zinc-800 px-3 py-1.5 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2] disabled:opacity-50">Emoji</button>
+        {!isReply ? <><label className="flex min-h-10 cursor-pointer items-center justify-center rounded-lg border border-zinc-800 px-3 py-1.5 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2]"><span>{imageUploading ? "Uploading…" : "Photo"}</span><input type="file" accept="image/*" className="sr-only" disabled={busy || imageUploading || imageUrls.length >= MAX_IMAGES} onChange={(event) => { const file = event.target.files?.[0] ?? null; event.currentTarget.value = ""; void uploadImage(file) }} /></label><button type="button" onClick={() => { setMediaChoice("video"); setMediaOpen(true) }} disabled={busy} className="min-h-10 rounded-lg border border-zinc-800 px-3 py-1.5 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2] disabled:opacity-50">Video</button></> : null}
+        {!isReply ? <>
+          <button type="button" onClick={saveDraft} disabled={busy} className="rounded-lg border border-zinc-800 px-3 py-1.5 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2] disabled:opacity-50">Save</button>
+          <button type="button" onClick={() => { setPollOpen((open) => !open); if (pollOpen) setPollOptions(["", ""]); else requestAnimationFrame(() => { const panel = document.querySelector<HTMLElement>("[data-via-poll-options]"); panel?.scrollIntoView({ behavior: "smooth", block: "center" }); panel?.querySelector("input")?.focus({ preventScroll: true }) }) }} disabled={busy} className="rounded-lg border border-zinc-800 px-3 py-1.5 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2] disabled:opacity-50">{pollOpen ? "Remove poll" : "Poll"}</button>
+
+          <button type="button" onClick={preparePost} disabled={!canPrepare} className="rounded-lg border border-[#8fd4a9]/55 px-3 py-1.5 text-xs font-semibold text-[#9adbb2] disabled:cursor-not-allowed disabled:border-zinc-800 disabled:text-zinc-600">{imageUploading ? "Uploading…" : videoUploading ? "Uploading…" : status === "preparing" ? "Preparing…" : status === "awaiting-approval" ? "Awaiting approval…" : status === "submitting" ? "Sending…" : "Send"}</button>
+        </> : null}
+      </div>
+      {!isReply && !canPrepare && hasContent ? <p className="mt-2 text-[11px] text-amber-300" role="status" aria-live="polite">Send unavailable: {sendBlockedReason}</p> : null}
+
+      {emojiOpen ? <div className="mt-2 flex flex-wrap gap-1 rounded-xl border border-zinc-800 bg-zinc-950/70 p-2" aria-label="Insert emoji">
+        {COMPOSER_EMOJI.map((emoji) => <button key={emoji} type="button" onClick={() => insertEmoji(emoji)} disabled={busy || body.length + emoji.length > MAX_POST_LENGTH} className="rounded-lg px-2 py-1 text-lg hover:bg-white/[0.06] disabled:opacity-40" aria-label={`Insert ${emoji}`}>{emoji}</button>)}
+      </div> : null}
+      {!isReply && draftMessage ? <p className="mt-2 text-xs text-zinc-500" role="status" aria-live="polite">{draftMessage}</p> : null}
+
+
+
       {!isReply ? <label className="mt-2 inline-flex items-center gap-1.5 text-[11px] text-zinc-600"><input type="checkbox" checked={sensitiveContent} onChange={(event)=>setSensitiveContent(event.target.checked)} className="h-3.5 w-3.5 accent-[#8fd4a9]" /><span>Sensitive content</span></label> : null}
 
       {isReply ? <div className="mt-3 flex flex-wrap gap-2">
         <button type="button" onClick={() => { setMediaChoice("photo"); setMediaOpen(true) }} disabled={busy || imageUploading} className="min-h-10 rounded-lg border border-zinc-800 px-3 py-1.5 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2] disabled:opacity-50">{imageUploading ? "Uploading…" : "Photo"}</button>
         <button type="button" onClick={() => { setMediaChoice("video"); setMediaOpen(true) }} disabled={busy} className="min-h-10 rounded-lg border border-zinc-800 px-3 py-1.5 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2] disabled:opacity-50">Video</button>
       </div> : null}
+
+      {imageUploadMessage ? <p role="status" className={`mt-2 text-xs ${imageUploadStatus === "error" ? "text-amber-300" : "text-zinc-400"}`}>{imageUploadMessage}</p> : null}
 
       {mediaOpen && (isReply || mediaChoice === "video") ? <div className="mt-4 rounded-xl border border-zinc-800 bg-zinc-950/70 p-3"><div className="flex justify-end"><button type="button" onClick={() => setMediaOpen(false)} className="text-xs text-zinc-500 hover:text-zinc-300">Sluiten</button></div>
         {mediaChoice === "photo" ? <>
@@ -354,8 +384,6 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
           <input type="file" accept="image/*" className="sr-only" disabled={imageUploading} onChange={(event) => { const file = event.target.files?.[0] ?? null; event.currentTarget.value = ""; void uploadImage(file) }} />
         </label> : null}
         <p className="mt-2 text-xs text-zinc-600">Up to {MAX_IMAGES} images · maximum 10 MB each.</p>
-        {imagePreviews.length ? <button type="button" onClick={clearImagePreviews} className="mt-2 text-xs text-zinc-500 hover:text-zinc-300">Sluiten</button> : null}
-        {imageUploadMessage ? <p className={`mt-2 text-xs ${imageUploadStatus === "error" ? "text-amber-300" : "text-zinc-400"}`}>{imageUploadMessage}</p> : null}
 
         </>
         : <div>
