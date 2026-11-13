@@ -536,8 +536,8 @@ export default function PublicPosts({ initialPost }: { initialPost?: PublicPost 
                   {session ? <DiamondButton postHash={post.postHash} receiverPublicKey={post.publicKey} initialCount={post.diamondCount} variant="icon" /> : <button type="button" title="Diamond (DeSo login required)" onClick={() => setActionLoginPost(post.postHash)} className="inline-flex h-9 min-w-9 items-center justify-center gap-1 rounded-full border border-zinc-800 px-2 text-xs text-zinc-300">Diamond · {post.diamondCount}</button>}
                   {session ? <LikeButton postHash={post.postHash} initialCount={post.likeCount} initialLiked={post.isLikedByReader} variant="icon" /> : <button type="button" title="Like (DeSo login required)" onClick={() => setActionLoginPost(post.postHash)} className="inline-flex h-9 min-w-9 items-center justify-center gap-1 rounded-full border border-zinc-800 px-2 text-xs text-zinc-300">Like · {post.likeCount}</button>}
                   <details className="relative">
-                    <summary aria-label="Meer postacties" title="Meer postacties" className="cursor-pointer list-none rounded-full border border-zinc-800 px-3 py-1 text-zinc-400">•••</summary>
-                    <div className="mt-2 flex flex-col overflow-hidden rounded-xl border border-zinc-800 bg-[#050806] text-left">
+                    <summary aria-label="Meer postacties" title="Meer postacties" className="grid min-h-11 min-w-11 cursor-pointer list-none place-items-center rounded-full border border-zinc-800 text-zinc-300">•••</summary>
+                    <div className="absolute right-0 z-30 mt-2 flex w-max min-w-44 max-w-[calc(100vw-2rem)] flex-col overflow-hidden rounded-xl border border-zinc-800 bg-[#050806] p-2 text-left shadow-2xl [&_button]:min-h-11 [&_a]:min-h-11">
                       <div className="flex flex-col gap-1 border-b border-zinc-800 p-2 [&_button]:w-full [&_button]:justify-start [&_button]:rounded-lg [&_button]:border-0 [&_button]:text-left">
                   <button type="button" onClick={() => {
                     const url = `${window.location.origin}/social?post=${encodeURIComponent(post.postHash)}`
