@@ -118,3 +118,17 @@ test("Rewards require explicit approval before preparation and a second fee-awar
   assert.match(notifications, /if \(!confirmedByUser\)/)
   assert.match(notifications, /viaModernIdentity\.signTx\(result\.transactionHex\)/)
 })
+
+test("Post Office and Bookmarks share the same confirmed Reward component", () => {
+  const reward = read("app/social/via-reward-button.tsx")
+  const posts = read("app/social/public-posts.tsx")
+  const saved = read("app/saved/deso-saved-posts.tsx")
+  const profile = read("app/profile/page.tsx")
+  assert.match(posts, /<ViaRewardButton recipientPublicKey=\{post\.publicKey\}/)
+  assert.match(saved, /<ViaRewardButton recipientPublicKey=/)
+  assert.match(profile, /<ViaRewardButton recipientPublicKey=\{session\.publicKey\} disabled/)
+  assert.match(reward, /viaModernIdentity\.signTx/)
+  assert.match(reward, /Netwerkkosten:/)
+  assert.match(reward, /window\.confirm/)
+  assert.match(reward, /ACCOUNT_CHANGED/)
+})
