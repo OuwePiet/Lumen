@@ -425,22 +425,26 @@ export default function PublicPosts({ initialPost }: { initialPost?: PublicPost 
 
   return (
     <section className="rounded-b-2xl border border-t-0 border-white/10 bg-black/35 p-2" aria-labelledby="public-posts-heading">
-      <div className="flex flex-wrap items-center justify-end gap-3">
-        <h2 id="public-posts-heading" className="sr-only">Posts</h2>
-        <div className="flex w-full gap-2 overflow-x-auto pb-1 sm:w-auto sm:flex-wrap sm:overflow-visible sm:pb-0" aria-label="Filter posts">
+      <h2 id="public-posts-heading" className="sr-only">Posts</h2>
+      <details className="group mb-1">
+
+        <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between rounded-lg px-2 text-xs text-[#b8ddc5] [&::-webkit-details-marker]:hidden">
+          <span>Filter posts</span><span aria-hidden="true" className="group-open:rotate-180">⌄</span>
+        </summary>
+        <div className="flex flex-wrap gap-1 px-1 pb-1" aria-label="Filter posts">
           {(["all", "image", "video", "nft"] as const).map((filter) => (
             <button
               key={filter}
               type="button"
               aria-pressed={mediaFilter === filter}
               onClick={() => setMediaFilter(filter)}
-              className={`shrink-0 rounded-full border px-3 py-1.5 text-xs ${mediaFilter === filter ? "border-[#8fd4a9]/55 text-[#9adbb2]" : "border-zinc-800 text-zinc-500"}`}
+              className={`shrink-0 min-h-11 rounded-full border px-3 py-1.5 text-xs sm:min-h-9 ${mediaFilter === filter ? "border-[#8fd4a9]/55 text-[#9adbb2]" : "border-zinc-800 text-zinc-500"}`}
             >
               {filter === "all" ? "All" : filter === "nft" ? "NFT" : filter[0].toUpperCase() + filter.slice(1)}
             </button>
           ))}
         </div>
-      </div>
+      </details>
 
       <div className="sr-only">
         <p className="flex-1 self-center text-sm text-zinc-500">
@@ -454,7 +458,7 @@ export default function PublicPosts({ initialPost }: { initialPost?: PublicPost 
         </p>
       </div>
 
-      <p className={`mt-3 text-xs text-zinc-500 ${loading || message.includes("unavailable") || message.includes("Log in") || message.includes("No posts") || message.includes("shared post") ? "" : "hidden sm:block"}`} role="status" aria-live="polite">{message}</p>
+      <p className={`mt-1 text-xs text-zinc-500 ${loading || message.includes("unavailable") || message.includes("Log in") || message.includes("No posts") || message.includes("shared post") ? "" : "hidden sm:block"}`} role="status" aria-live="polite">{message}</p>
 
       {message.includes("unavailable") ? <button type="button" onClick={() => void loadPosts()} className="mt-2 rounded-lg border border-zinc-700 px-3 py-2 text-sm text-[#9adbb2]">Opnieuw laden</button> : null}
 

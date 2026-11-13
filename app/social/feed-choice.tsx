@@ -54,11 +54,11 @@ export default function FeedChoice() {
 
   const active = choices.find((choice) => choice.id === selected) ?? choices[0]
 
-  const inactiveClass = "rounded-full border border-zinc-800 px-4 py-2 text-sm text-zinc-400 transition hover:border-zinc-700 hover:text-zinc-200"
+  const inactiveClass = "min-h-11 sm:min-h-9 rounded-full border border-zinc-800 px-4 py-1.5 text-sm text-zinc-400 transition hover:border-zinc-700 hover:text-zinc-200"
 
   return (
     <section className="rounded-t-2xl border border-b-0 border-white/10 bg-black/35 px-3 py-2" aria-labelledby="feed-choice-heading">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
         <div className="hidden sm:block">
           <h2 id="feed-choice-heading" className="text-sm font-semibold text-zinc-100">{active.title}</h2>
         </div>
@@ -71,7 +71,7 @@ export default function FeedChoice() {
                 type="button"
                 aria-pressed={isActive}
                 onClick={() => choose(choice.id)}
-                className={isActive ? "rounded-full border border-[#8fd4a9]/55 bg-[#102117]/70 px-3 py-2 text-center text-sm text-[#9adbb2] transition sm:px-4" : `${inactiveClass} px-3 text-center sm:px-4`}
+                className={isActive ? "min-h-11 sm:min-h-9 rounded-full border border-[#8fd4a9]/55 bg-[#102117]/70 px-3 py-1.5 text-center text-sm text-[#9adbb2] transition sm:px-4" : `${inactiveClass} px-3 text-center sm:px-4`}
               >
                 {choice.title}
               </button>
