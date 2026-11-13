@@ -42,12 +42,14 @@ export default function LocalSaveButton({ postHash }: Props) {
   const [saved, setSaved] = useState(false)
   const [busy, setBusy] = useState(false)
   const [ready, setReady] = useState(false)
+  const [pendingVerification, setPendingVerification] = useState(false)
   const [message, setMessage] = useState("")
 
   useEffect(() => {
     let active = true
     setReady(false)
     setSaved(false)
+    setPendingVerification(false)
     if (!account) return
     void findBookmark(account, postHash).then(found => {
       if (!active) return
@@ -60,7 +62,7 @@ export default function LocalSaveButton({ postHash }: Props) {
   }, [account, postHash])
 
   async function toggle() {
-    if (!account || !ready || busy) return
+    if (!account || !ready || busy || pendingVerification) return
     setBusy(true)
     setMessage("")
     try {
@@ -80,6 +82,7 @@ export default function LocalSaveButton({ postHash }: Props) {
       // A successful submission is not the same as a confirmed chain read.
       // Do not automatically retry or submit a second paid transaction.
       setReady(false)
+      setPendingVerification(true)
       setMessage("Transactie ontvangen door DeSo. Blockchainbevestiging wordt gecontroleerd.")
       window.dispatchEvent(new Event("via:saved:changed"))
       try {
@@ -87,6 +90,7 @@ export default function LocalSaveButton({ postHash }: Props) {
         if ((await viaModernIdentity.currentUser())?.publicKey !== account) throw new Error("DESO_ACCOUNT_CHANGED")
         setSaved(Boolean(verified))
         if (Boolean(verified) === create) {
+          setPendingVerification(false)
           setMessage(create ? "Bookmark bevestigd op DeSo." : "Verwijdering bevestigd op DeSo.")
         } else {
           setMessage("Transactie verzonden; wijziging nog niet zichtbaar op DeSo. Controleer later opnieuw.")
@@ -102,13 +106,13 @@ export default function LocalSaveButton({ postHash }: Props) {
   }
 
   return <span className="inline-flex items-center gap-1">
-    <button type="button" onClick={() => void toggle()} disabled={!account || !ready || busy}
+    <button type="button" onClick={() => void toggle()} disabled={!account || !ready || busy || pendingVerification}
       aria-label={saved ? "Verwijder DeSo bookmark" : "Bewaar op DeSo"}
-      aria-pressed={saved} title={!account ? "Log in via VIA" : !ready ? "Bookmarks laden…" : "DeSo blockchainbookmark"}
+      aria-pressed={saved} title={!account ? "Log in via VIA" : pendingVerification ? "Transactie verzonden; wacht op bevestiging via DeSo" : !ready ? "Bookmarks laden…" : "DeSo blockchainbookmark"}
       className="inline-flex h-9 min-w-9 items-center justify-center gap-1 rounded-full border border-zinc-800 px-2 text-xs text-zinc-300 hover:border-[#8fd4a9] disabled:opacity-50">
       <Bookmark className={saved ? "h-4 w-4 fill-current" : "h-4 w-4"} aria-hidden="true" />
       <span>{busy ? "…" : saved ? "Saved" : "Save"}</span>
     </button>
-    {message ? <span role="status" aria-live="polite" className="sr-only">{message}</span> : null}
+    {message ? <span role="status" aria-live="polite" className="text-xs text-zinc-400">{message}</span> : null}
   </span>
 }
