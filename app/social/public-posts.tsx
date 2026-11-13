@@ -2,6 +2,7 @@
 
 import { ViaPostActionBar } from "./via-post-action-bar"
 
+import ViaRewardButton from "./via-reward-button"
 import Link from "next/link"
 import { MessageSquare } from "lucide-react"
 import { readViaLocalSettings } from "../via-local-settings"
@@ -535,6 +536,7 @@ export default function PublicPosts({ initialPost }: { initialPost?: PublicPost 
                   {session ? <RepostButton quotedPost={post} postHash={post.postHash} initialCount={totalReposts} variant="icon" /> : <button type="button" title="Repost (DeSo login required)" onClick={() => setActionLoginPost(post.postHash)} className="inline-flex h-9 min-w-9 items-center justify-center gap-1 rounded-full border border-zinc-800 px-2 text-xs text-zinc-300">Repost · {totalReposts}</button>}
                   {session ? <DiamondButton postHash={post.postHash} receiverPublicKey={post.publicKey} initialCount={post.diamondCount} variant="icon" /> : <button type="button" title="Diamond (DeSo login required)" onClick={() => setActionLoginPost(post.postHash)} className="inline-flex h-9 min-w-9 items-center justify-center gap-1 rounded-full border border-zinc-800 px-2 text-xs text-zinc-300">Diamond · {post.diamondCount}</button>}
                   {session ? <LikeButton postHash={post.postHash} initialCount={post.likeCount} initialLiked={post.isLikedByReader} variant="icon" /> : <button type="button" title="Like (DeSo login required)" onClick={() => setActionLoginPost(post.postHash)} className="inline-flex h-9 min-w-9 items-center justify-center gap-1 rounded-full border border-zinc-800 px-2 text-xs text-zinc-300">Like · {post.likeCount}</button>}
+                  <ViaRewardButton recipientPublicKey={post.publicKey} username={post.username} />
                   <details className="relative">
                     <summary aria-label="Meer postacties" title="Meer postacties" className="grid min-h-11 min-w-11 cursor-pointer list-none place-items-center rounded-full border border-zinc-800 text-zinc-300">•••</summary>
                     <div className="absolute right-0 z-30 mt-2 flex w-max min-w-44 max-w-[calc(100vw-2rem)] flex-col overflow-hidden rounded-xl border border-zinc-800 bg-[#050806] p-2 text-left shadow-2xl [&_button]:min-h-11 [&_a]:min-h-11">
