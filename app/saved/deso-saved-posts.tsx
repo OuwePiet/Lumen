@@ -4,6 +4,7 @@ import Link from "next/link"
 import { useEffect, useState } from "react"
 import { useViaIdentitySession } from "../use-via-identity-session"
 import LocalSaveButton from "../social/local-save-button"
+import { ViaPostActionBar, ViaMoreActions } from "../social/via-post-action-bar"
 
 type Association = {
   AssociationID: string
@@ -62,10 +63,13 @@ export default function DeSoSavedPosts() {
     <div className="grid gap-3">
       {items.map(item => <article key={item.AssociationID} className="rounded-xl border border-zinc-800 bg-zinc-950 p-4">
         <p className="whitespace-pre-wrap text-sm text-zinc-200">{item.PostEntry?.Body || "DeSo-bericht"}</p>
-        <div className="mt-3 flex flex-wrap items-center gap-2">
-          <Link className="rounded-full border border-zinc-700 px-3 py-2 text-xs" href={`/social?post=${encodeURIComponent(item.PostHashHex)}`}>Open post</Link>
-          {item.PostEntry?.PosterPublicKeyBase58Check ? <LocalSaveButton postHash={item.PostHashHex} body={item.PostEntry.Body ?? ""} publicKey={item.PostEntry.PosterPublicKeyBase58Check} timestampNanos={item.PostEntry.TimestampNanos ?? 0} /> : null}
-        </div>
+        <ViaPostActionBar className="mt-3">
+          <Link className="inline-flex h-9 items-center rounded-full border border-zinc-800 px-3 text-xs text-zinc-300" href={`/social?post=${encodeURIComponent(item.PostHashHex)}`}>Open post</Link>
+          <ViaMoreActions>
+            {item.PostEntry?.PosterPublicKeyBase58Check ? <div className="[&_button]:w-full [&_button]:justify-start [&_button]:border-0"><LocalSaveButton postHash={item.PostHashHex} body={item.PostEntry.Body ?? ""} publicKey={item.PostEntry.PosterPublicKeyBase58Check} timestampNanos={item.PostEntry.TimestampNanos ?? 0} /></div> : null}
+            <button type="button" className="block w-full rounded-lg px-3 py-2 text-left text-xs text-zinc-300" onClick={() => void navigator.clipboard?.writeText(`${window.location.origin}/social?post=${encodeURIComponent(item.PostHashHex)}`)}>Link to Post</button>
+          </ViaMoreActions>
+        </ViaPostActionBar>
       </article>)}
     </div>
   </section>
