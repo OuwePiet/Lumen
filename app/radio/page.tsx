@@ -86,7 +86,9 @@ export default function WorldRadioPage() {
 
         <p style={styles.eyebrow}>World Radio</p>
         <h1 style={styles.heading} className="via-radio-page-heading">Listen around the world.</h1>
+        <p style={styles.intro} className="via-radio-page-intro">Discover public internet radio by country or genre. Station metadata comes from the Radio Browser directory; when you press Play, audio is requested directly from the station and is not hosted or proxied by VIA.</p>
         <RadioBrowser />
+        <p style={styles.notice} className="via-radio-page-notice">World Radio is separate from VIA LIVE. Radio is for station listening; VIA LIVE is for community conversations and later replays. Availability and rights remain the responsibility of each station or stream provider.</p>
 
         <style>{`\n          @media (max-width: 720px) {\n            .via-radio-page { padding: 14px 16px 96px !important; }
              .via-radio-page-top { margin-bottom: 8px !important; gap: 8px !important; }
