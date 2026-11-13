@@ -7,6 +7,7 @@ import { financialSubmissionBlock, markFinancialPending, markFinancialSubmitted,
 import { viaModernIdentity } from "../deso-identity-modern"
 import { fetchViaRates } from "../via-live-rates"
 import PublicAccountLabel from "../public-account-label"
+import { useViaIdentitySession } from "../use-via-identity-session"
 
 type Props = { postHash: string; receiverPublicKey: string; initialCount: number; variant?: "default" | "icon" }
 type PrepareResponse = { ok?: boolean; transactionHex?: string; diamondLevel?: number; feeNanos?: number | null; spendAmountNanos?: number | null; error?: string }
@@ -58,23 +59,35 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
   const [recipientOpen, setRecipientOpen] = useState(false)
   const [detailsOpen, setDetailsOpen] = useState(false)
   const menuOpen = variant === "icon" ? compactOpen : detailsOpen
+  const reader = useViaIdentitySession()?.publicKey
+  const [previousDiamond, setPreviousDiamond] = useState<{ reader: string; hash: string; level: number } | null>(null)
+  const previousLevel = previousDiamond?.reader === reader && previousDiamond?.hash === postHash ? previousDiamond.level : null
 
   useEffect(() => {
     if (!menuOpen) return
     const controller = new AbortController()
-    const params = new URLSearchParams({ hash: postHash, fresh: "1" })
+    setPreviousDiamond(null)
+    const params = new URLSearchParams({ hash: postHash, fresh: "1", reader: reader ?? "" })
     void fetch("/api/via/post?" + params, { cache: "no-store", signal: controller.signal })
       .then(async (response) => {
         if (!response.ok) return
-        const data = await response.json() as { ok?: boolean; post?: { diamondCount?: number } }
+        const data = await response.json() as { ok?: boolean; post?: { diamondCount?: number; diamondLevelByReader?: number | null } }
         const latestCount = data.post?.diamondCount
+        const latestLevel = data.post?.diamondLevelByReader
+        if (!controller.signal.aborted && data.ok && reader && typeof latestLevel === "number" && Number.isSafeInteger(latestLevel) && latestLevel >= 0) {
+          setPreviousDiamond({ reader, hash: postHash, level: latestLevel })
+        }
         if (!controller.signal.aborted && data.ok && typeof latestCount === "number" && Number.isSafeInteger(latestCount) && latestCount >= 0) {
           setCount(latestCount)
         }
       })
       .catch(() => {})
     return () => controller.abort()
-  }, [menuOpen, postHash])
+  }, [menuOpen, postHash, reader])
+
+  const previousDiamondInfo = previousLevel !== null && previousLevel > 0 ? (
+    <p className="mb-1 text-xs text-zinc-300">Al gegeven op DeSo: niveau {previousLevel}</p>
+  ) : null
 
   useEffect(() => {
     const controller = new AbortController()
@@ -219,11 +232,12 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
         <Gem className="h-4 w-4" aria-hidden="true" /><span>{count}</span>
       </button>
       {compactOpen ? <div className="order-last w-full basis-full rounded-xl border border-zinc-800 bg-[#050806] p-2">
+        {previousDiamondInfo}
         <div className="flex max-w-full flex-wrap items-center gap-1.5" aria-label="Diamond value">
           {retryLevels}
         {!diamondValues && !levelsFailed ? <span role="status" className="text-xs text-zinc-400">Prijzen laden…</span> : null}
         {(diamondValues ?? []).map((entry) => (
-            <button key={entry.level} type="button" onClick={() => { if (!Number.isFinite(entry.nanos) || status === "preparing" || status === "approval" || status === "submitting") return; setLevel(entry.level); void prepare(entry.level) }} aria-pressed={level === entry.level} className={`min-w-[3.35rem] rounded-xl border px-2 py-1 text-center text-[10px] transition ${level === entry.level ? "border-[#8fd4a9] bg-[#285f40] text-white" : "border-zinc-800 text-zinc-400 hover:border-[#8fd4a9] hover:text-white"}`}>
+            <button key={entry.level} type="button" disabled={previousLevel !== null && entry.level <= previousLevel} onClick={() => { if (!Number.isFinite(entry.nanos) || status === "preparing" || status === "approval" || status === "submitting") return; setLevel(entry.level); void prepare(entry.level) }} aria-pressed={level === entry.level} className={`min-w-[3.35rem] rounded-xl border px-2 py-1 text-center text-[10px] transition disabled:opacity-40 ${level === entry.level ? "border-[#8fd4a9] bg-[#285f40] text-white" : "border-zinc-800 text-zinc-400 hover:border-[#8fd4a9] hover:text-white"}`}>
               <span className="mb-1 block rounded-full bg-zinc-800 px-1.5 py-0.5 text-zinc-100">{diamondUsd(entry.nanos) ?? `${entry.nanos / 1_000_000_000} DESO`}</span>
               <Gem className="mx-auto h-4 w-4" aria-hidden="true" /><span className="block">{entry.level}</span>
             </button>
@@ -244,9 +258,10 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
     <details className="relative" onToggle={(event) => setDetailsOpen(event.currentTarget.open)}>
       <summary className="inline-flex cursor-pointer list-none items-center gap-1 rounded-full border border-zinc-800 px-2 py-1 text-xs text-zinc-300"><Gem className="h-3.5 w-3.5" aria-hidden="true" /> {level} ▾</summary>
       <div className="absolute top-full left-0 z-30 mt-2 grid w-56 grid-cols-2 gap-1 rounded-xl border border-zinc-800 bg-[#050806] p-2 shadow-xl">
+        <div className="col-span-2">{previousDiamondInfo}</div>
         {retryLevels}
         {!diamondValues && !levelsFailed ? <span role="status" className="text-xs text-zinc-400">Prijzen laden…</span> : null}
-        {(diamondValues ?? []).map((entry) => <button key={entry.level} type="button" onClick={() => { if (!Number.isFinite(entry.nanos) || status === "preparing" || status === "approval" || status === "submitting") return; setLevel(entry.level); void prepare(entry.level) }} aria-pressed={level === entry.level} className={`rounded-lg border px-2 py-2 text-xs ${level === entry.level ? "border-[#8fd4a9] bg-[#285f40] text-white" : "border-zinc-800 text-zinc-300 hover:border-[#8fd4a9]"}`}><span className="block text-[11px] text-amber-300">{diamondUsd(entry.nanos) ?? `${entry.nanos / 1_000_000_000} DESO`}</span><span className="block">{entry.level} 💎</span></button>)}
+        {(diamondValues ?? []).map((entry) => <button key={entry.level} type="button" disabled={previousLevel !== null && entry.level <= previousLevel} onClick={() => { if (!Number.isFinite(entry.nanos) || status === "preparing" || status === "approval" || status === "submitting") return; setLevel(entry.level); void prepare(entry.level) }} aria-pressed={level === entry.level} className={`rounded-lg border px-2 py-2 text-xs ${level === entry.level ? "border-[#8fd4a9] bg-[#285f40] text-white" : "border-zinc-800 text-zinc-300 hover:border-[#8fd4a9]"}`}><span className="block text-[11px] text-amber-300">{diamondUsd(entry.nanos) ?? `${entry.nanos / 1_000_000_000} DESO`}</span><span className="block">{entry.level} 💎</span></button>)}
         <div className="col-span-2 flex items-start justify-end">{recipientInfo}</div>
         <button type="button" onClick={(event) => { (event.currentTarget.closest("details") as HTMLDetailsElement | null)?.removeAttribute("open") }} className="col-span-2 rounded-lg border border-zinc-700 px-2 py-2 text-xs text-zinc-300 hover:border-[#8fd4a9]">Sluiten</button>
       </div>
