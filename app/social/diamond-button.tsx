@@ -56,6 +56,25 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
   const [levelsFailed, setLevelsFailed] = useState(false)
   const [levelsAttempt, setLevelsAttempt] = useState(0)
   const [recipientOpen, setRecipientOpen] = useState(false)
+  const [detailsOpen, setDetailsOpen] = useState(false)
+  const menuOpen = variant === "icon" ? compactOpen : detailsOpen
+
+  useEffect(() => {
+    if (!menuOpen) return
+    const controller = new AbortController()
+    const params = new URLSearchParams({ hash: postHash, fresh: "1" })
+    void fetch("/api/via/post?" + params, { cache: "no-store", signal: controller.signal })
+      .then(async (response) => {
+        if (!response.ok) return
+        const data = await response.json() as { ok?: boolean; post?: { diamondCount?: number } }
+        const latestCount = data.post?.diamondCount
+        if (!controller.signal.aborted && data.ok && typeof latestCount === "number" && Number.isSafeInteger(latestCount) && latestCount >= 0) {
+          setCount(latestCount)
+        }
+      })
+      .catch(() => {})
+    return () => controller.abort()
+  }, [menuOpen, postHash])
 
   useEffect(() => {
     const controller = new AbortController()
@@ -99,7 +118,7 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
   ) : null
 
   const recipientInfo = (
-    <details className="min-w-0" onToggle={(event) => setRecipientOpen(event.currentTarget.open)}>
+    <details className="ml-auto min-w-0" onToggle={(event) => setRecipientOpen(event.currentTarget.open)}>
       <summary aria-label="Toon ontvanger" title="Toon ontvanger"
         className="flex min-h-11 min-w-11 cursor-pointer list-none items-center justify-center text-[#9adbb2]">
         <span aria-hidden="true" className="flex size-6 items-center justify-center rounded-full border border-current text-sm font-semibold">i</span>
@@ -171,7 +190,7 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
         window.dispatchEvent(new Event("via:social:post-published"))
         await viaModernIdentity.refreshSpendingLimits().catch(() => {})
         try {
-          const response = await fetch("/api/via/post?hash=" + encodeURIComponent(postHash) + "&reader=" + encodeURIComponent(session.publicKey), { cache: "no-store" })
+          const response = await fetch("/api/via/post?fresh=1&hash=" + encodeURIComponent(postHash) + "&reader=" + encodeURIComponent(session.publicKey), { cache: "no-store" })
           const data = await response.json() as { ok?: boolean; post?: { diamondCount?: number } }
           const count = data.post?.diamondCount
           if (!invalidated && response.ok && data.ok && typeof count === "number" && Number.isSafeInteger(count) && count >= 0) setCount(count)
@@ -205,7 +224,7 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
         {!diamondValues && !levelsFailed ? <span role="status" className="text-xs text-zinc-400">Prijzen laden…</span> : null}
         {(diamondValues ?? []).map((entry) => (
             <button key={entry.level} type="button" onClick={() => { if (!Number.isFinite(entry.nanos) || status === "preparing" || status === "approval" || status === "submitting") return; setLevel(entry.level); void prepare(entry.level) }} aria-pressed={level === entry.level} className={`min-w-[3.35rem] rounded-xl border px-2 py-1 text-center text-[10px] transition ${level === entry.level ? "border-[#8fd4a9] bg-[#285f40] text-white" : "border-zinc-800 text-zinc-400 hover:border-[#8fd4a9] hover:text-white"}`}>
-              <span className="block">{diamondUsd(entry.nanos) ?? `${entry.nanos / 1_000_000_000} DESO`}</span>
+              <span className="mb-1 block rounded-full bg-zinc-800 px-1.5 py-0.5 text-zinc-100">{diamondUsd(entry.nanos) ?? `${entry.nanos / 1_000_000_000} DESO`}</span>
               <Gem className="mx-auto h-4 w-4" aria-hidden="true" /><span className="block">{entry.level}</span>
             </button>
           ))}
@@ -222,7 +241,7 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
 
   return <div ref={menuRootRef} className="flex flex-wrap items-center gap-2">
     <span>{count} Diamonds</span>
-    <details className="relative">
+    <details className="relative" onToggle={(event) => setDetailsOpen(event.currentTarget.open)}>
       <summary className="inline-flex cursor-pointer list-none items-center gap-1 rounded-full border border-zinc-800 px-2 py-1 text-xs text-zinc-300"><Gem className="h-3.5 w-3.5" aria-hidden="true" /> {level} ▾</summary>
       <div className="absolute top-full left-0 z-30 mt-2 grid w-56 grid-cols-2 gap-1 rounded-xl border border-zinc-800 bg-[#050806] p-2 shadow-xl">
         {retryLevels}
