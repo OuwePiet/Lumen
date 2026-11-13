@@ -22,7 +22,7 @@ async function findBookmark(account: string, postHash: string): Promise<Associat
   let cursor: string | undefined
   const seen = new Set<string>()
   for (let page = 0; page < 100; page++) {
-    const result = await request({ action: "query", publicKey: account, ...(cursor ? { lastSeenAssociationID: cursor } : {}) }) as QueryResult
+    const result = await request({ action: "query", publicKey: account, postHash, ...(cursor ? { lastSeenAssociationID: cursor } : {}) }) as QueryResult
     const associations = result.result?.Associations
     if (!Array.isArray(associations)) throw new Error("INVALID_ASSOCIATION_RESPONSE")
     const found = associations.find(item => item.PostHashHex?.toLowerCase() === postHash.toLowerCase())
