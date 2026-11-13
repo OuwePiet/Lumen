@@ -8,7 +8,7 @@ import type { ReactNode } from "react"
 export const VIA_ACTION_BUTTON_CLASS = "inline-flex min-h-11 min-w-11 items-center justify-center gap-1 rounded-full border border-zinc-800 px-2 text-xs text-zinc-300 transition hover:border-[#8fd4a9] hover:text-white"
 
 export function ViaPostActionBar({ children, className = "" }: { children: ReactNode; className?: string }) {
-  return <div data-via-post-actions className={`flex min-w-0 flex-wrap items-center gap-2 text-xs ${className}`}>{children}</div>
+  return <div data-via-post-actions className={`flex min-w-0 flex-wrap items-center gap-2 text-xs [&>button]:min-h-11 [&>button]:min-w-11 [&>a]:min-h-11 [&>a]:min-w-11 [&>details>summary]:min-h-11 [&>details>summary]:min-w-11 ${className}`}>{children}</div>
 }
 
 export function ViaMoreActions({ children, label = "Meer postacties" }: { children: ReactNode; label?: string }) {
