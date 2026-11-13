@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { useEffect, useState } from "react"
 import SavedList from "./saved-list"
+import DeSoSavedPosts from "./deso-saved-posts"
 import { readViaLocalSettings, VIA_SETTINGS_EVENT, type ViaLanguage } from "../via-local-settings"
 
 export default function SavedPage() {
@@ -31,12 +32,14 @@ export default function SavedPage() {
 
         <section className="mb-6 rounded-2xl border border-[#285f40]/70 bg-zinc-950 p-5">
           <h2 className="text-lg text-[#9adbb2]">{hindi ? "आपकी पसंद, छिपी profiling नहीं" : "Your choice, not hidden profiling"}</h2>
-          <p className="mt-2 text-sm leading-6 text-zinc-400">{hindi ? "VIA Bookmarks में केवल वही चीज़ें होती हैं जिन्हें आप स्पष्ट रूप से सहेजते हैं। यह पहला working version सूची को केवल इसी browser में स्थानीय रूप से रखता है; इसे VIA को नहीं भेजा जाता, hidden profiling के लिए उपयोग नहीं किया जाता और paid ranking के संकेत के रूप में नहीं माना जाता।" : "VIA Bookmarks only contains things you explicitly save. This first working version stores the list locally in this browser; it is not sent to VIA, used for hidden profiling, or treated as a signal for paid ranking."}</p>
+          <p className="mt-2 text-sm leading-6 text-zinc-400">{hindi ? "VIA Bookmarks में केवल वही चीज़ें होती हैं जिन्हें आप स्पष्ट रूप से सहेजते हैं। यह पहला working version सूची को केवल इसी browser में स्थानीय रूप से रखता है; इसे VIA को नहीं भेजा जाता, hidden profiling के लिए उपयोग नहीं किया जाता और paid ranking के संकेत के रूप में नहीं माना जाता।" : "VIA Bookmarks only contains things you explicitly save. DeSo bookmarks are public blockchain associations linked to your account. Earlier local saves remain on this device."}</p>
         </section>
 
+        <DeSoSavedPosts />
+        <h2 className="mb-3 text-lg font-semibold text-[#9adbb2]">Eerder lokaal opgeslagen</h2>
         <SavedList />
 
-        <p className="mt-8 text-xs leading-5 text-zinc-600">{hindi ? "इस browser का site data साफ़ करने से स्थानीय Bookmarks हट सकते हैं। Account sync पर बाद में तभी विचार किया जा सकता है जब स्पष्ट privacy design और विज़िटर की स्पष्ट पसंद हो।" : "Clearing this browser's site data can remove local Bookmarks. Account sync can be considered later only with a clear privacy design and explicit visitor choice."}</p>
+        <p className="mt-8 text-xs leading-5 text-zinc-600">{hindi ? "इस browser का site data साफ़ करने से स्थानीय Bookmarks हट सकते हैं। Account sync पर बाद में तभी विचार किया जा सकता है जब स्पष्ट privacy design और विज़िटर की स्पष्ट पसंद हो।" : "Clearing this browser's site data can remove local Bookmarks. DeSo bookmarks can be viewed from other devices using the same DeSo account."}</p>
       </div>
     </main>
   )
