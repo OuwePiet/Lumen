@@ -38,7 +38,23 @@ recognition.onerror=(event)=>{const code=String(event.error||"onbekend");const d
 recognition.onend=()=>setListening(false);setListening(true);setMicMessage("Luisteren…");recognition.start()
 }catch(error){setListening(false);setMicMessage("Spraakherkenning kon niet starten ("+(error instanceof Error?error.name:"onbekend")+"). Gebruik de zoekbalk.")}
 }
-const filtered=places.filter(p=>p.join(" ").toLowerCase().includes(query.toLowerCase())).slice(0,5);
+const [placeResults,setPlaceResults]=useState<{name:string;countryCode:string;admin1?:string}[]>([]);
+const [placeStatus,setPlaceStatus]=useState("");
+useEffect(()=>{
+ const value=query.trim();
+ if(value.length<2){setPlaceResults([]);setPlaceStatus("");return}
+ const controller=new AbortController();
+ const timer=setTimeout(async()=>{
+  try{
+   const response=await fetch("/api/wereldspiegel/plaatsen?q="+encodeURIComponent(value),{signal:controller.signal,cache:"no-store"});
+   const body=await response.json();
+   if(!response.ok){setPlaceResults([]);setPlaceStatus(body.error??"Plaatszoeker niet beschikbaar");return}
+   setPlaceResults(Array.isArray(body.places)?body.places:[]);
+   setPlaceStatus(body.places?.length?"":(language==="en"?"No matching locations":"Geen overeenkomende plaatsen"));
+  }catch(error){if(!controller.signal.aborted){setPlaceResults([]);setPlaceStatus("Plaatszoeker tijdelijk niet beschikbaar")}}
+ },250);
+ return()=>{clearTimeout(timer);controller.abort()}
+},[query,language]);
 return <main className={`wereldspiegel-proef-root ${showViaHeader?"ws-show-via-header":""}`} style={{minHeight:"100vh",background:"#fbf9f5",color:"#25372b",fontFamily:"system-ui, sans-serif",padding:"18px"}}>
 <style>{` body:has(.wereldspiegel-proef-root):not(:has(.ws-show-via-header)) .via-site-header{display:none!important} body:has(.wereldspiegel-proef-root){background:#fbf9f5!important;color:#25372b!important} .ws-btn,.ws-select,.ws-input{font:inherit;border:1px solid #bac5b6;background:white;border-radius:9px;padding:10px 13px;color:#946a4e}.ws-btn{cursor:pointer}.ws-btn:disabled{opacity:.4}.ws-paper{background:#fffefb;border:1px solid #e0ddd4;border-radius:14px;padding:clamp(18px,3vw,34px);min-height:390px;box-shadow:0 5px 18px #28372a0a;overflow-wrap:anywhere}.ws-btn:focus-visible,.ws-select:focus-visible,.ws-input:focus-visible{outline:3px solid #a96d47}`}</style>
 
@@ -63,9 +79,9 @@ return <main className={`wereldspiegel-proef-root ${showViaHeader?"ws-show-via-h
 <label htmlFor="ws-place">Zoek een land, stad of dorp</label>
 {micMessage&&<p role="status" style={{fontSize:13,color:"#526d54"}}>{micMessage}</p>}
 <input id="ws-place" className="ws-input" style={{width:"100%",maxWidth:650}} placeholder="Walpolamulla of Riyad" value={query} onChange={e=>{setQuery(e.target.value);setChosen("")}}/>
-<div style={{display:"flex",flexWrap:"wrap",gap:6}}>{query&&filtered.map(p=><button key={p[0]} className="ws-btn" onClick={()=>{setChosen(p.join(" · "));setQuery(p[0])}}>{p[0]} · {p[1]}</button>)}</div>
-{query&&<p style={{fontSize:13,color:"#946a4e"}}>{chosen?chosen+" — nog geen live lokaal nieuws":!filtered.length?"Niet in de kleine proefindex; de plaats kan wel bestaan.":"Kies een locatie uit de proefindex."}</p>}
-<p style={{fontSize:12,color:"#946a4e"}}>De proefindex bevat vijf locaties; de wereldwijde plaatsendatabase is nog niet aangesloten.</p>
+<div style={{display:"flex",flexWrap:"wrap",gap:6}}>{query&&placeResults.map((p,i)=><button key={`${p.countryCode}-${p.name}-${i}`} className="ws-btn" onClick={()=>{setChosen(p.name+" · "+p.countryCode);setQuery(p.name)}}>{p.name} · {p.countryCode}{p.admin1?" · "+p.admin1:""}</button>)}</div>
+{query&&<p role="status" style={{fontSize:13,color:"#946a4e"}}>{chosen?chosen+" — nog geen live lokaal nieuws":placeStatus}</p>}
+<p style={{fontSize:12,color:"#946a4e"}}>Wereldwijde plaatszoeker via VIA; beschikbaar zodra de GeoNames-plaatsendata is geïmporteerd.</p>
 </section>}
 </header>
 {!focus&&<p style={{fontSize:12,letterSpacing:1.2,color:"#946a4e",margin:"10px 0"}}>DEMONSTRATIE · ALLE BERICHTEN FICTIEF</p>}
