@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createReadStream, existsSync } from "node:fs";
+import { createReadStream, existsSync, statSync } from "node:fs";
 import { createInterface } from "node:readline";
 import path from "node:path";
 export const runtime = "nodejs";
@@ -12,6 +12,7 @@ export async function GET(request:NextRequest){
  if(q.length<2||q.length>120|| (country && !/^[A-Z]{2}$/.test(country)))return NextResponse.json({error:"Ongeldige zoekopdracht"},{status:400,headers:{"Cache-Control":"no-store"}});
  const file=path.join(process.cwd(),"data","wereldspiegel","places.ndjson");
  if(!existsSync(file))return NextResponse.json({error:"Wereldwijde plaatsendata is nog niet geïmporteerd",places:[]},{status:503,headers:{"Cache-Control":"no-store"}});
+ if(statSync(file).size>128*1024*1024)return NextResponse.json({error:"De wereldwijde plaatsendatabase is te groot voor deze zoekmethode; er is een index nodig",places:[]},{status:503,headers:{"Cache-Control":"no-store"}});
  const results:Place[]=[];let scanned=0;
  try {
  const lines=createInterface({input:createReadStream(file,{encoding:"utf8"}),crlfDelay:Infinity});
