@@ -216,16 +216,31 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
         if (!submit.ok || !result.ok) throw new Error(result.error || "SUBMIT_FAILED")
         accepted = true
         markFinancialSubmitted(submission, result.transaction?.TxnHashHex ?? result.transaction?.TransactionHashHex)
-        setStatus("done"); setEarnings(null); changeMenu(false); setMessage("Diamond received by DeSo. Final confirmation is not yet verified.")
-        setCelebrate(true); window.setTimeout(() => setCelebrate(false), 3200)
-        window.dispatchEvent(new Event("via:social:post-published"))
-        await viaModernIdentity.refreshSpendingLimits().catch(() => {})
-        try {
-          const response = await fetch("/api/via/post?fresh=1&hash=" + encodeURIComponent(postHash) + "&reader=" + encodeURIComponent(session.publicKey), { cache: "no-store" })
-          const data = await response.json() as { ok?: boolean; post?: { diamondCount?: number } }
-          const count = data.post?.diamondCount
-          if (!invalidated && response.ok && data.ok && typeof count === "number" && Number.isSafeInteger(count) && count >= 0) setCount(count)
-        } catch { /* Read failures never resend or clear recovery state. */ }
+        setEarnings(null)
+        changeMenu(false)
+        setMessage("DeSo heeft de diamant ontvangen. Toekenning wordt gecontroleerd…")
+        void viaModernIdentity.refreshSpendingLimits().catch(() => {})
+        const params = new URLSearchParams({ hash: postHash, fresh: "1", reader: session.publicKey })
+        for (const delay of [0, 750, 1500, 3000]) {
+          if (delay) await new Promise(resolve => window.setTimeout(resolve, delay))
+          if (invalidated) break
+          try {
+            const response = await fetch("/api/via/post?" + params, { cache: "no-store", signal: AbortSignal.timeout(4000) })
+            const data = await response.json() as { ok?: boolean; post?: { diamondCount?: number; diamondLevelByReader?: number } }
+            const confirmedLevel = data.post?.diamondLevelByReader
+            const confirmedCount = data.post?.diamondCount
+            if (invalidated || !response.ok || !data.ok || typeof confirmedLevel !== "number" || !Number.isSafeInteger(confirmedLevel) || confirmedLevel < chosenLevel) continue
+            setPreviousDiamond({ reader: session.publicKey, hash: postHash, level: confirmedLevel })
+            if (typeof confirmedCount === "number" && Number.isSafeInteger(confirmedCount) && confirmedCount >= 0) setCount(confirmedCount)
+            setStatus("done")
+            setMessage("Diamant zichtbaar op DeSo.")
+            setCelebrate(true)
+            window.setTimeout(() => setCelebrate(false), 3200)
+            return
+          } catch { /* Retry the read only. */ }
+        }
+        setStatus("done")
+        setMessage("DeSo heeft de transactie ontvangen. De diamant is nog niet zichtbaar. Controleer later opnieuw.")
       })
     } catch (error) {
       setStatus(accepted ? "done" : "error")
