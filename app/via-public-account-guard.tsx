@@ -46,9 +46,11 @@ function restoreProfileLinks() {
 function hideAccountEntrances() {
   document.querySelectorAll<HTMLAnchorElement>('a[href^="/discover/voices"]').forEach(hideElement)
 
-  const lookupHeading = document.getElementById("account-lookup-heading")
-  const lookupSection = lookupHeading?.closest<HTMLElement>("section")
-  if (lookupSection) hideElement(lookupSection)
+  if (window.location.pathname !== "/collection") {
+    const lookupHeading = document.getElementById("account-lookup-heading")
+    const lookupSection = lookupHeading?.closest<HTMLElement>("section")
+    if (lookupSection) hideElement(lookupSection)
+  }
 
   document.querySelectorAll<HTMLInputElement>('input[name="publicKey"], input[name="account"]').forEach((input) => {
     const form = input.closest<HTMLElement>("form")
@@ -57,7 +59,7 @@ function hideAccountEntrances() {
     else if (form) hideElement(form)
   })
 
-  disableProfileLinks()
+  if (window.location.pathname !== "/collection") disableProfileLinks()
 }
 
 function cleanRestrictedUrl() {
@@ -70,15 +72,6 @@ function cleanRestrictedUrl() {
 
   const params = new URLSearchParams(search)
   let changed = false
-
-  if (pathname === "/collection") {
-    for (const key of ["account", "accountKey"]) {
-      if (params.has(key)) {
-        params.delete(key)
-        changed = true
-      }
-    }
-  }
 
   if (pathname === "/market" && params.has("publicKey")) {
     params.delete("publicKey")
