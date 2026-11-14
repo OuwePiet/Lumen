@@ -44,7 +44,9 @@ export async function GET(request:NextRequest){
  // Offline GeoNames imports are split by country. Never scan a worldwide monolithic
  // file on a serverless request; limit both the candidate files and bytes read.
  if(!country)return NextResponse.json({error:"Selecteer een land voor offline plaatszoeken; wereldwijde index of GeoNames API ontbreekt",places:[],requiresCountry:true},{status:503,headers:{"Cache-Control":"no-store"}});
- const file=path.join(directory,country+".ndjson");
+ const prefix=normalize(q).replace(/[^a-z0-9]+/g," ").trim().slice(0,2);
+ const indexedFile=path.join(process.cwd(),"data","via-geography","index",country,prefix+".ndjson");
+ const file=existsSync(indexedFile)?indexedFile:path.join(directory,country+".ndjson");
  if(!existsSync(file))return NextResponse.json({error:"Plaatsgegevens voor dit land zijn nog niet geïmporteerd",places:[]},{status:503,headers:{"Cache-Control":"no-store"}});
  const MAX_BYTES=32*1024*1024;
  if(statSync(file).size>MAX_BYTES)return NextResponse.json({error:"Plaatsendatabase vereist een zoekindex voor dit land",places:[],requiresIndex:true},{status:503,headers:{"Cache-Control":"no-store"}});
@@ -57,9 +59,9 @@ export async function GET(request:NextRequest){
    if(!line.trim())continue;
    let p:Place;try{p=JSON.parse(line)}catch{continue}
    if(p.countryCode!==country)continue;
-   if([p.name,p.asciiName,...(p.alternates??[])].some(v=>typeof v==="string"&&normalize(v).includes(normalizedQuery)))results.push(p);
+   if([p.name,p.asciiName,...(p.alternates??[])].some(v=>typeof v==="string"&&normalize(v).startsWith(normalizedQuery)))results.push(p);
    if(results.length>=15)break;
   }
  }catch{return NextResponse.json({error:"Plaatsendata niet leesbaar",places:[]},{status:503,headers:{"Cache-Control":"no-store"}})}
- return NextResponse.json({places:results,source:"GeoNames offline",attribution:"GeoNames CC BY 4.0",limited:results.length>=15},{headers:{"Cache-Control":"no-store"}});
+ return NextResponse.json({places:results,source:existsSync(indexedFile)?"GeoNames indexed offline":"GeoNames offline",attribution:"GeoNames CC BY 4.0",limited:results.length>=15},{headers:{"Cache-Control":"no-store"}});
 }
