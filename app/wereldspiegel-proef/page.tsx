@@ -38,6 +38,22 @@ recognition.onerror=(event)=>{const code=String(event.error||"onbekend");const d
 recognition.onend=()=>setListening(false);setListening(true);setMicMessage("Luisteren…");recognition.start()
 }catch(error){setListening(false);setMicMessage("Spraakherkenning kon niet starten ("+(error instanceof Error?error.name:"onbekend")+"). Gebruik de zoekbalk.")}
 }
+const [newsArticles,setNewsArticles]=useState<{title:string;url:string;source:string;publishedAt:string}[]>([]);
+const [newsStatus,setNewsStatus]=useState("");
+const [newsLoading,setNewsLoading]=useState(false);
+async function searchNews(){
+ const term=(chosen.split(" · ")[0]||query).trim();
+ if(term.length<2){setNewsStatus(language==="en"?"Choose a place first":"Kies eerst een plaats");return}
+ setNewsLoading(true);setNewsStatus("");setNewsArticles([]);
+ try{
+  const response=await fetch("/api/wereldspiegel/nieuws?q="+encodeURIComponent(term),{cache:"no-store"});
+  const data=await response.json();
+  if(!response.ok){setNewsStatus(data.error||"Nieuwszoekdienst niet beschikbaar");return}
+  setNewsArticles(Array.isArray(data.articles)?data.articles:[]);
+  if(!data.articles?.length)setNewsStatus(language==="en"?"No recent results found":"Geen recente resultaten gevonden");
+ }catch{setNewsStatus("Nieuwszoekdienst tijdelijk niet bereikbaar")}
+ finally{setNewsLoading(false)}
+}
 const [placeResults,setPlaceResults]=useState<{name:string;countryCode:string;admin1?:string}[]>([]);
 const [placeStatus,setPlaceStatus]=useState("");
 useEffect(()=>{
@@ -84,6 +100,14 @@ return <main className={`wereldspiegel-proef-root ${showViaHeader?"ws-show-via-h
 <p style={{fontSize:12,color:"#946a4e"}}>Wereldwijde plaatszoeker via VIA; beschikbaar zodra de GeoNames-plaatsendata is geïmporteerd.</p>
 </section>}
 </header>
+{!focus&&<section aria-label="Actuele nieuwsverwijzingen" style={{border:"1px solid #d6ded2",padding:16,borderRadius:12,margin:"14px 0",background:"#fffefb"}}>
+<strong>{language==="en"?"Recent news links":"Recente nieuwsverwijzingen"}</strong>
+<p style={{fontSize:13}}>{language==="en"?"Search the selected location. Results link to publishers and are not independently verified.":"Zoek nieuws over de gekozen plaats. Resultaten verwijzen naar de uitgever en zijn niet onafhankelijk geverifieerd."}</p>
+<button className="ws-btn" disabled={newsLoading||!(chosen||query.trim().length>=2)} onClick={searchNews}>{newsLoading?"Zoeken…":language==="en"?"Find recent news":"Zoek recent nieuws"}</button>
+{newsStatus&&<p role="status" style={{fontSize:13}}>{newsStatus}</p>}
+<ul style={{paddingLeft:22}}>{newsArticles.map(a=><li key={a.url} style={{margin:"8px 0"}}><a href={a.url} target="_blank" rel="noopener noreferrer" style={{color:"#305b49"}}>{a.title}</a> <span style={{fontSize:12,color:"#69736d"}}>— {a.source}</span></li>)}</ul>
+<p style={{fontSize:11,color:"#69736d"}}>Bron voor ontdekking: GDELT Project. Artikelen blijven bij de oorspronkelijke uitgevers.</p>
+</section>}
 {!focus&&<p style={{fontSize:12,letterSpacing:1.2,color:"#946a4e",margin:"10px 0"}}>DEMONSTRATIE · ALLE BERICHTEN FICTIEF</p>}
 <div style={{display:"grid",gridTemplateColumns:focus?"1fr":wide&&index+1<pages.length?"repeat(2,minmax(0,1fr))":"1fr",gap:12,maxWidth:focus?760:undefined,margin:focus?"24px auto":"0"}}>
 {(focus?pages.slice(readingIndex,readingIndex+1):pages.slice(index,index+step)).map((s,i)=><article key={index+i} className="ws-paper" style={{fontSize:focus?Math.max(font,20):font,minHeight:focus?"min(65vh,650px)":460,backgroundColor:focus?"#f8f2e6":"#fffefb",backgroundImage:`linear-gradient(#fffefbe8,#fffefbe8),url("${wsHeaderLogo}")`,backgroundRepeat:"no-repeat",backgroundPosition:"center",backgroundSize:"220px auto",padding:focus?"clamp(28px,6vw,64px)":undefined}}><p style={{color:"#946a4e",fontSize:12,letterSpacing:1.2}}>WERELDSPIEGEL · {s.place}</p><h2 style={{fontFamily:"Georgia,serif",fontWeight:400,fontSize:"1.7em",lineHeight:1.2,margin:"18px 0"}}>{s.title}</h2><p style={{lineHeight:1.8}}>{s.summary}</p><p style={{color:"#946a4e",fontSize:13,marginTop:28}}>Bron: {s.source} · Fictieve proeftekst</p></article>)}
