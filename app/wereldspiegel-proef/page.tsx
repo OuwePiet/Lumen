@@ -33,20 +33,21 @@ stream.getTracks().forEach(track=>track.stop());
 setMicMessage("Microfoontoegang verleend. Spraakherkenning starten…");
 try{
 const recognition=new Engine();recognition.lang="nl-NL";recognition.interimResults=false;
-recognition.onresult=(event)=>{const spoken=event.results[0]?.[0]?.transcript?.trim();if(spoken){setQuery(spoken);setChosen("");setMicMessage("Gehoord: "+spoken)}};
+recognition.onresult=(event)=>{const spoken=event.results[0]?.[0]?.transcript?.trim();if(spoken){setQuery(spoken);setChosen("");setSelectedPlace(null);setMicMessage("Gehoord: "+spoken)}};
 recognition.onerror=(event)=>{const code=String(event.error||"onbekend");const detail:Record<string,string>={"not-allowed":"Microfoontoegang was verleend, maar de browser weigert de afzonderlijke spraakherkenning.","service-not-allowed":"Microfoontoegang was verleend, maar Safari staat de spraakherkenningsdienst niet toe.","audio-capture":"Microfoontoegang was verleend, maar de spraakherkenning kan geen audio ontvangen.","network":"De spraakherkenningsdienst is niet bereikbaar.","no-speech":"Geen spraak gehoord. Probeer het opnieuw.","language-not-supported":"Deze browser ondersteunt de gekozen spreektaal niet.","aborted":"Spraakherkenning afgebroken."};setMicMessage((detail[code]||"Spraakherkenning mislukt.")+" (code: "+code+"). Je kunt blijven typen.");setListening(false)};
 recognition.onend=()=>setListening(false);setListening(true);setMicMessage("Luisteren…");recognition.start()
 }catch(error){setListening(false);setMicMessage("Spraakherkenning kon niet starten ("+(error instanceof Error?error.name:"onbekend")+"). Gebruik de zoekbalk.")}
 }
-const [newsArticles,setNewsArticles]=useState<{title:string;url:string;source:string;publishedAt:string}[]>([]);
+const [newsArticles,setNewsArticles]=useState<{title:string;url:string;source:string;publishedAt:string;locationMatch:"title"|"unverified";locationLabel:string;countryCode:string;admin1:string}[]>([]);
 const [newsStatus,setNewsStatus]=useState("");
+const [selectedPlace,setSelectedPlace]=useState<{name:string;countryCode:string;admin1:string}|null>(null);
 const [newsLoading,setNewsLoading]=useState(false);
 async function searchNews(){
- const term=(chosen.split(" · ")[0]||query).trim();
+ const term=(selectedPlace?.name||query).trim();
  if(term.length<2){setNewsStatus(language==="en"?"Choose a place first":"Kies eerst een plaats");return}
  setNewsLoading(true);setNewsStatus("");setNewsArticles([]);
  try{
-  const response=await fetch("/api/wereldspiegel/nieuws?q="+encodeURIComponent(term),{cache:"no-store"});
+  const response=await fetch("/api/wereldspiegel/nieuws?"+new URLSearchParams({q:term,...(selectedPlace?{country:selectedPlace.countryCode,admin1:selectedPlace.admin1}:{country:country==="world"?"":country})}),{cache:"no-store"});
   const data=await response.json();
   if(!response.ok){setNewsStatus(data.error||"Nieuwszoekdienst niet beschikbaar");return}
   setNewsArticles(Array.isArray(data.articles)?data.articles:[]);
@@ -91,21 +92,21 @@ return <main className={`wereldspiegel-proef-root ${showViaHeader?"ws-show-via-h
 <button className="ws-btn" aria-pressed={focus} onClick={()=>{setFocus(f=>!f);setReadingIndex(index);setToolsOpen(false)}}>{focus?(language==="en"?"← Back to paper":"← Terug naar krant"):(language==="en"?"Reading mode":"Leesrust")}</button>
 </div></div>
 {toolsOpen&&!focus&&<section id="ws-tools" style={{padding:"12px 0 3px",display:"grid",gap:10}}>
-<div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}><label>Land <select className="ws-select" value={country} onChange={e=>{setCountry(e.target.value);setChosen("");setPlaceResults([])}}><option value="world">De wereld</option><option value="NL">Nederland</option><option value="JP">Japan</option><option value="CR">Costa Rica</option></select></label><button className="ws-btn" onClick={()=>setFont(f=>Math.min(26,f+2))}>A+ tekst</button><button className="ws-btn" onClick={()=>setFont(f=>Math.max(14,f-2))}>A− tekst</button></div>
+<div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}><label>Land <select className="ws-select" value={country} onChange={e=>{setCountry(e.target.value);setChosen("");setSelectedPlace(null);setNewsArticles([]);setPlaceResults([])}}><option value="world">De wereld</option><option value="NL">Nederland</option><option value="JP">Japan</option><option value="CR">Costa Rica</option></select></label><button className="ws-btn" onClick={()=>setFont(f=>Math.min(26,f+2))}>A+ tekst</button><button className="ws-btn" onClick={()=>setFont(f=>Math.max(14,f-2))}>A− tekst</button></div>
 <label htmlFor="ws-place">Zoek een land, stad of dorp</label>
 {micMessage&&<p role="status" style={{fontSize:13,color:"#526d54"}}>{micMessage}</p>}
-<input id="ws-place" className="ws-input" style={{width:"100%",maxWidth:650}} placeholder="Walpolamulla of Riyad" value={query} onChange={e=>{setQuery(e.target.value);setChosen("")}}/>
-<div style={{display:"flex",flexWrap:"wrap",gap:6}}>{query&&placeResults.map((p,i)=><button key={`${p.countryCode}-${p.name}-${i}`} className="ws-btn" onClick={()=>{setChosen(p.name+" · "+p.countryCode);setQuery(p.name)}}>{p.name} · {p.countryCode}{p.admin1?" · "+p.admin1:""}</button>)}</div>
+<input id="ws-place" className="ws-input" style={{width:"100%",maxWidth:650}} placeholder="Walpolamulla of Riyad" value={query} onChange={e=>{setQuery(e.target.value);setChosen("");setSelectedPlace(null);setNewsArticles([])}}/>
+<div style={{display:"flex",flexWrap:"wrap",gap:6}}>{query&&placeResults.map((p,i)=><button key={`${p.countryCode}-${p.name}-${i}`} className="ws-btn" onClick={()=>{setChosen(p.name+" · "+p.countryCode);setSelectedPlace({name:p.name,countryCode:p.countryCode,admin1:p.admin1??""});setQuery(p.name);setNewsArticles([])}}>{p.name} · {p.countryCode}{p.admin1?" · "+p.admin1:""}</button>)}</div>
 {query&&<p role="status" style={{fontSize:13,color:"#946a4e"}}>{chosen?chosen+" — nog geen live lokaal nieuws":placeStatus}</p>}
 <p style={{fontSize:12,color:"#946a4e"}}>Wereldwijde plaatszoeker via VIA; beschikbaar zodra de GeoNames-plaatsendata is geïmporteerd.</p>
 </section>}
 </header>
 {!focus&&<section aria-label="Actuele nieuwsverwijzingen" style={{border:"1px solid #d6ded2",padding:16,borderRadius:12,margin:"14px 0",background:"#fffefb"}}>
 <strong>{language==="en"?"Recent news links":"Recente nieuwsverwijzingen"}</strong>
-<p style={{fontSize:13}}>{language==="en"?"Search the selected location. Results link to publishers and are not independently verified.":"Zoek nieuws over de gekozen plaats. Resultaten verwijzen naar de uitgever en zijn niet onafhankelijk geverifieerd."}</p>
+<p style={{fontSize:13}}>{language==="en"?"Search the selected location. Results link to publishers and are not independently verified.":"Zoek nieuws over de gekozen plaats. Plaatsnamen in koppen zijn aanwijzingen, geen bevestiging van de berichtlocatie. Resultaten verwijzen naar de uitgever."}</p>
 <button className="ws-btn" disabled={newsLoading||!(chosen||query.trim().length>=2)} onClick={searchNews}>{newsLoading?"Zoeken…":language==="en"?"Find recent news":"Zoek recent nieuws"}</button>
 {newsStatus&&<p role="status" style={{fontSize:13}}>{newsStatus}</p>}
-<ul style={{paddingLeft:22}}>{newsArticles.map(a=><li key={a.url} style={{margin:"8px 0"}}><a href={a.url} target="_blank" rel="noopener noreferrer" style={{color:"#305b49"}}>{a.title}</a> <span style={{fontSize:12,color:"#69736d"}}>— {a.source}</span></li>)}</ul>
+<ul style={{paddingLeft:22}}>{newsArticles.map(a=><li key={a.url} style={{margin:"8px 0"}}><a href={a.url} target="_blank" rel="noopener noreferrer" style={{color:"#305b49"}}>{a.title}</a> <span style={{fontSize:12,color:"#69736d"}}>— {a.source}</span> <span style={{fontSize:11,color:"#69736d"}}>· {a.locationMatch==="title"?(language==="en"?"Place mentioned in title":"Plaats genoemd in kop"):(language==="en"?"Location not verified":"Locatie niet bevestigd")}{a.countryCode?" · "+a.countryCode:""}{a.admin1?" · "+a.admin1:""}</span></li>)}</ul>
 <p style={{fontSize:11,color:"#69736d"}}>Bron voor ontdekking: GDELT Project. Artikelen blijven bij de oorspronkelijke uitgevers.</p>
 </section>}
 {!focus&&<p style={{fontSize:12,letterSpacing:1.2,color:"#946a4e",margin:"10px 0"}}>DEMONSTRATIE · ALLE BERICHTEN FICTIEF</p>}
