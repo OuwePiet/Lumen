@@ -38,7 +38,7 @@ async function fetchJsonWithTimeout<T>(input: RequestInfo | URL, init: RequestIn
 }
 
 type PrepareResponse = { ok?: boolean; transactionHex?: string; feeNanos?: number | null; error?: string }
-type SubmitResponse = { ok?: boolean; transaction?: Record<string, unknown>; error?: string }
+type SubmitResponse = { ok?: boolean; postHashHex?: string | null; transaction?: Record<string, unknown>; error?: string }
 type UploadResponse = { ok?: boolean; imageUrl?: string; error?: string }
 type PostComposerProps = { parentStakeID?: string; compact?: boolean; onDone?: () => void; onCancel?: () => void }
 
@@ -300,7 +300,9 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
       setMediaOpen(false)
       try { window.localStorage.removeItem(isReply ? `${SOCIAL_REPLY_DRAFT_PREFIX}${parentStakeID}` : SOCIAL_DRAFT_STORAGE_KEY) } catch {}
       setDraftMessage(isReply ? "Reply sent; local safety copy cleared." : "Local draft cleared after publishing.")
-      window.dispatchEvent(new Event("via:social:post-published"))
+      window.dispatchEvent(new CustomEvent("via:social:post-published", {
+        detail: !isReply && submitted.postHashHex ? { hash: submitted.postHashHex, publicKey: session.publicKey, text: body.trim() } : undefined,
+      }))
       onDone?.()
     } catch (error) {
       setStatus("error")

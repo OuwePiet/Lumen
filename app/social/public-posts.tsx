@@ -2,8 +2,6 @@
 
 import Link from "next/link"
 import { MessageSquare } from "lucide-react"
-import { readViaLocalSettings } from "../via-local-settings"
-import { translateViaTextLocally } from "../via-local-translation"
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react"
 import { ChoiceId, defaultSocialFeedChoice, VIA_SOCIAL_FEED_EVENT, VIA_SOCIAL_FEED_STORAGE_KEY } from "./feed-choice"
 import PostComposer from "./post-composer"
@@ -18,7 +16,6 @@ import PollVoteControl from "./poll-vote-control"
 import XShareButton from "../x-share-button"
 import { viaModernIdentity, type ViaModernIdentityUser } from "../deso-identity-modern"
 
-const TRANSLATION_LANGUAGES = [{ code: "nl", name: "Nederlands", flag: "nl" }, { code: "en", name: "English", flag: "gb" }, { code: "fr", name: "Français", flag: "fr" }, { code: "es", name: "Español", flag: "es" }, { code: "zh", name: "中文", flag: "cn" }, { code: "hi", name: "हिन्दी", flag: "in" }] as const
 
 type PublicPost = {
   postHash: string
@@ -108,25 +105,10 @@ function feedReadyMessage(choice: ChoiceId) {
   return "Hot is ready."
 }
 
-function ExternalTranslationLink({ body, language }: { body: string; language: string }) {
-  if (!body.trim()) return null
-  const params = new URLSearchParams({
-    sl: "auto",
-    tl: language === "zh" ? "zh-CN" : language,
-    text: body,
-    op: "translate",
-  })
-  return (
-    <a href={`https://translate.google.com/?${params}`} target="_blank" rel="noopener noreferrer"
-      className="mt-2 inline-flex min-h-10 items-center rounded-md border border-zinc-700 px-2 text-[#9adbb2]">
-      Open in Google Translate
-    </a>
-  )
-}
-
 export default function PublicPosts({ initialPost }: { initialPost?: PublicPost | null }) {
   const requestController = useRef<AbortController | null>(null)
   const [posts, setPosts] = useState<PublicPost[]>(initialPost ? [initialPost] : [])
+  const [published, setPublished] = useState<{ hash: string; publicKey: string; text: string; repostedHash?: string }[]>([])
   const [mediaFilter, setMediaFilter] = useState<"all" | "image" | "video" | "nft">("all")
   const [loading, setLoading] = useState(false)
   const [hasMore, setHasMore] = useState(true)
@@ -155,11 +137,6 @@ export default function PublicPosts({ initialPost }: { initialPost?: PublicPost 
   const [actionLoginPost, setActionLoginPost] = useState<string | null>(null)
   const [sharedPostHash, setSharedPostHash] = useState<string | null>()
   const sharedPostView = Boolean(sharedPostHash)
-  const [translationPost, setTranslationPost] = useState<string | null>(null)
-  const [translationLanguage, setTranslationLanguage] = useState("en")
-  const [translatedText, setTranslatedText] = useState("")
-  const [translationMessage, setTranslationMessage] = useState("")
-  const [translationBusy, setTranslationBusy] = useState(false)
   const [creatorProfiles, setCreatorProfiles] = useState<Record<string, CompactProfile>>({})
   const loadMoreSentinelRef = useRef<HTMLDivElement | null>(null)
 
@@ -252,29 +229,6 @@ export default function PublicPosts({ initialPost }: { initialPost?: PublicPost 
     )
   }, [feedChoice, posts, mediaFilter])
 
-  useEffect(() => {
-    if (!translationPost) return
-    document.getElementById(`via-translation-${translationPost}`)?.scrollIntoView({
-      behavior: "smooth",
-      block: "center",
-    })
-  }, [translationPost])
-
-  async function translatePost(post: PublicPost, targetLanguage: string) {
-    setTranslationPost(post.postHash)
-    setTranslationLanguage(targetLanguage)
-    setTranslatedText("")
-    setTranslationMessage("")
-    setTranslationBusy(true)
-    try {
-      const result = await translateViaTextLocally(post.body, targetLanguage)
-      setTranslatedText(result.text)
-      setTranslationMessage(result.message)
-    } finally {
-      setTranslationBusy(false)
-    }
-  }
-
   function ReplyExtraActions({ reply }: { reply: PublicPost }) {
     const url = `${typeof window === "undefined" ? "" : window.location.origin}/social?post=${encodeURIComponent(reply.postHash)}`
     return <>
@@ -286,35 +240,10 @@ export default function PublicPosts({ initialPost }: { initialPost?: PublicPost 
       <details className="relative">
         <summary aria-label="Meer reactieacties" title="Meer reactieacties" className="cursor-pointer list-none">•••</summary>
         <div className="absolute right-0 z-20 mt-1 min-w-44 overflow-hidden rounded-lg border border-zinc-800 bg-[#050806] text-left shadow-xl">
-          <button type="button" onClick={() => {
-            const lang = readViaLocalSettings().interfaceLanguage
-            const target = ({ Dutch: "nl", English: "en", French: "fr", Spanish: "es", Chinese: "zh", Hindi: "hi" } as Record<string, string>)[lang] ?? "en"
-            setTranslationPost(reply.postHash)
-            setTranslationLanguage(target)
-            setTranslatedText("")
-            setTranslationMessage("")
-            void translatePost(reply, target)
-            ;(document.activeElement as HTMLElement | null)?.closest("details")?.removeAttribute("open")
-          }} className="block w-full px-3 py-2 text-left text-zinc-300 hover:bg-white/[0.04]">🌐 Translate / Vertalen</button>
           <button type="button" onClick={() => void navigator.clipboard?.writeText(url)} className="block w-full px-3 py-2 text-left text-zinc-300 hover:bg-white/[0.04]">Link to Post</button>
         </div>
       </details>
     </>
-  }
-
-  function ReplyTranslation({ reply }: { reply: PublicPost }) {
-    if (translationPost !== reply.postHash) return null
-    return <div id={`via-translation-${reply.postHash}`} role="region" aria-label="Reply translation" className="mt-2 rounded-lg border border-[#8fd4a9]/35 bg-black/40 p-2 text-sm text-zinc-300">
-      <div className="flex flex-wrap items-center gap-2">
-        <span>Translate:</span>
-        {TRANSLATION_LANGUAGES.map(({ code, name, flag }) => <button key={code} type="button" aria-label={name} title={name} aria-pressed={translationLanguage === code} disabled={translationBusy} onClick={() => void translatePost(reply, code)} className="rounded-md border border-zinc-700 px-2 py-1 disabled:opacity-50"><img src={"https://flagcdn.com/24x18/" + flag + ".png"} width={24} height={18} alt="" aria-hidden="true" referrerPolicy="no-referrer" className="inline-block align-middle" /> <span>{code.toUpperCase()}</span></button>)}
-        <button type="button" onClick={() => { setTranslationPost(null); setTranslatedText(""); setTranslationMessage("") }} className="ml-auto rounded-md border border-zinc-700 px-2 py-1">Sluiten</button>
-      </div>
-      {translationBusy ? <p className="mt-2">Translating locally…</p> : null}
-      {translatedText ? <p className="mt-2 whitespace-pre-wrap break-words">{translatedText}</p> : null}
-      {translationMessage ? <div><p className="mt-2 text-zinc-400">{translationMessage}</p><ExternalTranslationLink body={reply.body} language={translationLanguage} /></div> : null}
-      <button type="button" onClick={() => void navigator.clipboard?.writeText(reply.body)} className="mt-2 rounded-md border border-zinc-700 px-2 py-1">Copy original text</button>
-    </div>
   }
 
   function ReplyLoginNotice({ replyHash }: { replyHash: string }) {
@@ -391,7 +320,14 @@ export default function PublicPosts({ initialPost }: { initialPost?: PublicPost 
   }, [feedChoice, session?.publicKey, feedRevision, sharedPostHash])
 
   useEffect(() => {
-    const refresh = () => { void loadPosts(); if (replyingTo) setCommentsRefresh((value) => value + 1) }
+    const refresh = (event: Event) => {
+      const detail = (event as CustomEvent<{ hash: string; publicKey: string; text: string; repostedHash?: string }>).detail
+      if (detail && /^[0-9a-f]{64}$/i.test(detail.hash)) {
+        setPublished(current => [detail, ...current.filter(item => item.hash !== detail.hash)].slice(0, 5))
+      }
+      void loadPosts()
+      if (replyingTo) setCommentsRefresh(value => value + 1)
+    }
     window.addEventListener("via:social:post-published", refresh)
     return () => window.removeEventListener("via:social:post-published", refresh)
   }, [feedChoice, session?.publicKey, replyingTo, sharedPostHash])
@@ -490,6 +426,15 @@ export default function PublicPosts({ initialPost }: { initialPost?: PublicPost 
         </div>
       ) : null}
 
+      {!sharedPostView ? published.filter(item => item.publicKey === session?.publicKey && !posts.some(post => post.postHash === item.hash)).map(item => (
+        <article key={item.hash} className="mt-2 rounded-xl border border-[#285f40] p-3 text-sm">
+          <PostSource extra={{ ViaClient: "viadeso.online" }} />
+          {item.text ? <p data-via-user-content className="mt-1 whitespace-pre-wrap break-words">{item.text}</p> : null}
+          {item.repostedHash ? <Link href={"/social?post=" + item.repostedHash} className="mr-2 text-[#9adbb2] hover:underline">Open original post</Link> : null}
+          <Link href={"/social?post=" + item.hash} className="ml-2 text-[#9adbb2] hover:underline">Open on DeSo</Link>
+        </article>
+      )) : null}
+
       {visiblePosts.length > 0 ? (
         <div className="mt-3 space-y-3">
           {visiblePosts.map((post) => {
@@ -523,11 +468,6 @@ export default function PublicPosts({ initialPost }: { initialPost?: PublicPost 
 
                 {post.body ? <div className="mt-3 min-w-0">
                   <p data-via-user-content className="whitespace-pre-wrap break-words [overflow-wrap:anywhere] text-sm leading-6 text-zinc-200">{linkedPostText(post.body.length > 420 && !expandedPosts[post.postHash] ? `${post.body.slice(0, 420).trimEnd()}…` : post.body)}</p>
-                  <button type="button" onClick={() => {
-                    const language = readViaLocalSettings().interfaceLanguage
-                    const target = ({ Dutch: "nl", English: "en", French: "fr", Spanish: "es", Chinese: "zh", Hindi: "hi" } as Record<string, string>)[language] ?? "en"
-                    void translatePost(post, target)
-                  }} disabled={translationBusy && translationPost === post.postHash} aria-label="Translate post to VIA language" className="mt-2 rounded-full border border-[#8fd4a9]/35 px-3 py-1 text-xs text-[#9adbb2] hover:border-[#8fd4a9]/70 disabled:opacity-50">🌐 Vertaal naar VIA-taal</button>
                   {post.body.length > 420 ? <button type="button" onClick={() => setExpandedPosts((current) => ({ ...current, [post.postHash]: !current[post.postHash] }))} aria-expanded={Boolean(expandedPosts[post.postHash])} className="mt-1 text-sm font-semibold text-[#9adbb2] hover:underline">{expandedPosts[post.postHash] ? "Minder tonen" : "Lees verder …"}</button> : null}
                 </div> : <p className="mt-3 text-sm text-zinc-500">Media post</p>}
                 {postedViaVIA ? <PostSource extra={post.postExtraData} reply={Boolean(post.parentStakeID)} /> : null}
@@ -558,16 +498,6 @@ export default function PublicPosts({ initialPost }: { initialPost?: PublicPost 
                   <details className="relative">
                     <summary aria-label="Meer postacties" title="Meer postacties" className="cursor-pointer list-none rounded-full border border-zinc-800 px-3 py-1 text-zinc-400">•••</summary>
                     <div className="mt-2 flex flex-col overflow-hidden rounded-xl border border-zinc-800 bg-[#050806] text-left">
-                      <button type="button" onClick={() => {
-                        const lang = readViaLocalSettings().interfaceLanguage
-                        const target = ({ Dutch: "nl", English: "en", French: "fr", Spanish: "es", Chinese: "zh", Hindi: "hi" } as Record<string, string>)[lang] ?? "en"
-                        setTranslationPost(post.postHash)
-                        setTranslationLanguage(target)
-                        setTranslatedText("")
-                        setTranslationMessage("")
-                        void translatePost(post, target)
-                        ;(document.activeElement as HTMLElement | null)?.closest("details")?.removeAttribute("open")
-                      }} className="px-3 py-2 text-left text-zinc-300 hover:bg-white/[0.04]">🌐 Translate / Vertalen</button>
                       <button type="button" onClick={() => void navigator.clipboard?.writeText(`${window.location.origin}/social?post=${encodeURIComponent(post.postHash)}`)} className="px-3 py-2 text-left text-zinc-300 hover:bg-white/[0.04]">Link to Post</button>
                       <XShareButton href={`/social?post=${encodeURIComponent(post.postHash)}`} text={post.body ? post.body.slice(0, 180) : "VIA · DeSo post"} label="X" className="px-3 py-2 text-left text-zinc-300 hover:bg-white/[0.04]" />
                       {session ? <button type="button" onClick={() => {
@@ -589,26 +519,11 @@ ${url}`
                     <button type="button" onClick={() => setActionLoginPost(null)} className="rounded-full border border-zinc-700 px-3 py-1">Sluiten</button>
                   </div>
                 ) : null}
-                {translationPost === post.postHash ? (
-                  <div id={`via-translation-${post.postHash}`} role="region" aria-label="Post translation" className="mt-3 scroll-mt-28 rounded-xl border border-[#8fd4a9]/35 bg-black/40 p-3 text-sm text-zinc-300">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span>Translate:</span>
-                      {TRANSLATION_LANGUAGES.map(({ code, name, flag }) => (
-                        <button key={code} type="button" aria-label={name} title={name} aria-pressed={translationLanguage === code} disabled={translationBusy} onClick={() => void translatePost(post, code)} className="rounded-md border border-zinc-700 px-2 py-1 disabled:opacity-50"><img src={"https://flagcdn.com/24x18/" + flag + ".png"} width={24} height={18} alt="" aria-hidden="true" referrerPolicy="no-referrer" className="inline-block align-middle" /> <span>{code.toUpperCase()}</span></button>
-                      ))}
-                      <button type="button" onClick={() => { setTranslationPost(null); setTranslatedText(""); setTranslationMessage("") }} className="ml-auto rounded-md border border-zinc-700 px-2 py-1">Sluiten</button>
-                    </div>
-                    {translationBusy ? <p className="mt-2">Translating locally…</p> : null}
-                    {translatedText ? <p className="mt-3 whitespace-pre-wrap break-words">{translatedText}</p> : null}
-                    {translationMessage ? <div><p className="mt-2 text-zinc-400">{translationMessage}</p><ExternalTranslationLink body={post.body} language={translationLanguage} /></div> : null}
-                    <button type="button" onClick={() => void navigator.clipboard?.writeText(post.body)} className="mt-2 rounded-md border border-zinc-700 px-2 py-1">Copy original text</button>
-                  </div>
-                ) : null}
 
                 {options.length >= 2 ? <PollVoteControl postHash={post.postHash} options={options} /> : null}
                 {isReplying ? <section className="mt-3 space-y-3 rounded-xl border border-zinc-700 p-3" aria-label="DeSo replies">
                   <div className="flex items-center justify-between"><strong className="text-sm">DeSo replies</strong><button type="button" onClick={() => { setReplyingTo(null); setReplyParent(null) }} aria-label="Close replies">×</button></div>
-                  {commentsBusy ? <p>Loading replies…</p> : commentsError ? <p role="alert">DeSo replies unavailable. <button type="button" onClick={() => setCommentsRefresh(n => n + 1)}>Retry</button></p> : commentPosts.length === 0 ? <p>No replies returned by DeSo.</p> : commentPosts.map(comment => <div key={comment.postHash} className="rounded-lg border border-zinc-800 p-2 text-sm"><p className="text-zinc-400">{comment.username ? `@${comment.username}` : shortPublicKey(comment.publicKey)}</p><p className="whitespace-pre-wrap break-words">{linkedPostText(comment.body)}</p><PostSource extra={comment.postExtraData} reply />{comment.comments?.map(child => <div key={child.postHash} className="ml-4 mt-2 border-l border-zinc-700 pl-3"><p className="text-zinc-400">{child.username ? `@${child.username}` : shortPublicKey(child.publicKey)}</p><p className="whitespace-pre-wrap break-words">{linkedPostText(child.body)}</p><PostSource extra={child.postExtraData} reply /><div className="mt-2 flex flex-wrap items-start gap-2"><button type="button" onClick={() => setReplyParent(child.postHash)}>Reply</button>{session ? <><RepostButton postHash={child.postHash} initialCount={child.repostCount + child.quoteRepostCount} variant="icon" />{session.publicKey !== child.publicKey ? <DiamondButton postHash={child.postHash} receiverPublicKey={child.publicKey} initialCount={child.diamondCount} variant="icon" /> : <span>Diamonds · {child.diamondCount}</span>}<LikeButton postHash={child.postHash} initialCount={child.likeCount} initialLiked={child.isLikedByReader} variant="icon" /><ReplyExtraActions reply={child} /></> : <><button type="button" title="Repost (DeSo login required)" onClick={() => setActionLoginPost(child.postHash)}>Repost · {child.repostCount + child.quoteRepostCount}</button><button type="button" title="Diamond (DeSo login required)" onClick={() => setActionLoginPost(child.postHash)}>Diamond · {child.diamondCount}</button><button type="button" title="Like (DeSo login required)" onClick={() => setActionLoginPost(child.postHash)}>Like · {child.likeCount}</button><ReplyExtraActions reply={child} /></>}<ReplyLoginNotice replyHash={child.postHash} /><ReplyTranslation reply={child} /></div></div>)}<div className="flex flex-wrap items-start gap-2"><button type="button" onClick={() => setReplyParent(comment.postHash)}>Reply</button>{session ? <><RepostButton postHash={comment.postHash} initialCount={comment.repostCount + comment.quoteRepostCount} variant="icon" />{session.publicKey !== comment.publicKey ? <DiamondButton postHash={comment.postHash} receiverPublicKey={comment.publicKey} initialCount={comment.diamondCount} variant="icon" /> : <span>Diamonds · {comment.diamondCount}</span>}<LikeButton postHash={comment.postHash} initialCount={comment.likeCount} initialLiked={comment.isLikedByReader} variant="icon" /><ReplyExtraActions reply={comment} /></> : <><button type="button" title="Repost (DeSo login required)" onClick={() => setActionLoginPost(comment.postHash)}>Repost · {comment.repostCount + comment.quoteRepostCount}</button><button type="button" title="Diamond (DeSo login required)" onClick={() => setActionLoginPost(comment.postHash)}>Diamond · {comment.diamondCount}</button><button type="button" title="Like (DeSo login required)" onClick={() => setActionLoginPost(comment.postHash)}>Like · {comment.likeCount}</button><ReplyExtraActions reply={comment} /></>}<ReplyLoginNotice replyHash={comment.postHash} /><ReplyTranslation reply={comment} /></div></div>)}
+                  {commentsBusy ? <p>Loading replies…</p> : commentsError ? <p role="alert">DeSo replies unavailable. <button type="button" onClick={() => setCommentsRefresh(n => n + 1)}>Retry</button></p> : commentPosts.length === 0 ? <p>No replies returned by DeSo.</p> : commentPosts.map(comment => <div key={comment.postHash} className="rounded-lg border border-zinc-800 p-2 text-sm"><p className="text-zinc-400">{comment.username ? `@${comment.username}` : shortPublicKey(comment.publicKey)}</p><p className="whitespace-pre-wrap break-words">{linkedPostText(comment.body)}</p><PostSource extra={comment.postExtraData} reply />{comment.comments?.map(child => <div key={child.postHash} className="ml-4 mt-2 border-l border-zinc-700 pl-3"><p className="text-zinc-400">{child.username ? `@${child.username}` : shortPublicKey(child.publicKey)}</p><p className="whitespace-pre-wrap break-words">{linkedPostText(child.body)}</p><PostSource extra={child.postExtraData} reply /><div className="mt-2 flex flex-wrap items-start gap-2"><button type="button" onClick={() => setReplyParent(child.postHash)}>Reply</button>{session ? <><RepostButton postHash={child.postHash} initialCount={child.repostCount + child.quoteRepostCount} variant="icon" />{session.publicKey !== child.publicKey ? <DiamondButton postHash={child.postHash} receiverPublicKey={child.publicKey} initialCount={child.diamondCount} variant="icon" /> : <span>Diamonds · {child.diamondCount}</span>}<LikeButton postHash={child.postHash} initialCount={child.likeCount} initialLiked={child.isLikedByReader} variant="icon" /><ReplyExtraActions reply={child} /></> : <><button type="button" title="Repost (DeSo login required)" onClick={() => setActionLoginPost(child.postHash)}>Repost · {child.repostCount + child.quoteRepostCount}</button><button type="button" title="Diamond (DeSo login required)" onClick={() => setActionLoginPost(child.postHash)}>Diamond · {child.diamondCount}</button><button type="button" title="Like (DeSo login required)" onClick={() => setActionLoginPost(child.postHash)}>Like · {child.likeCount}</button><ReplyExtraActions reply={child} /></>}<ReplyLoginNotice replyHash={child.postHash} /></div></div>)}<div className="flex flex-wrap items-start gap-2"><button type="button" onClick={() => setReplyParent(comment.postHash)}>Reply</button>{session ? <><RepostButton postHash={comment.postHash} initialCount={comment.repostCount + comment.quoteRepostCount} variant="icon" />{session.publicKey !== comment.publicKey ? <DiamondButton postHash={comment.postHash} receiverPublicKey={comment.publicKey} initialCount={comment.diamondCount} variant="icon" /> : <span>Diamonds · {comment.diamondCount}</span>}<LikeButton postHash={comment.postHash} initialCount={comment.likeCount} initialLiked={comment.isLikedByReader} variant="icon" /><ReplyExtraActions reply={comment} /></> : <><button type="button" title="Repost (DeSo login required)" onClick={() => setActionLoginPost(comment.postHash)}>Repost · {comment.repostCount + comment.quoteRepostCount}</button><button type="button" title="Diamond (DeSo login required)" onClick={() => setActionLoginPost(comment.postHash)}>Diamond · {comment.diamondCount}</button><button type="button" title="Like (DeSo login required)" onClick={() => setActionLoginPost(comment.postHash)}>Like · {comment.likeCount}</button><ReplyExtraActions reply={comment} /></>}<ReplyLoginNotice replyHash={comment.postHash} /></div></div>)}
                   <button type="button" onClick={() => setCommentsRefresh(n => n + 1)} disabled={commentsBusy}>Refresh replies</button>
                   {session ? <PostComposer key={replyParent ?? post.postHash} parentStakeID={replyParent ?? post.postHash} compact onCancel={() => setReplyParent(null)} onDone={() => setReplyParent(null)} /> : <p>Sign in with DeSo to reply.</p>}
                 </section> : null}
