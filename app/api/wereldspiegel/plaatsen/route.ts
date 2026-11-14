@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createReadStream, existsSync, statSync } from "node:fs";
+import { createReadStream, existsSync, statSync, readdirSync } from "node:fs";
 import { createInterface } from "node:readline";
 import path from "node:path";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-type Place = {name:string;countryCode:string;admin1?:string;asciiName?:string;alternates?:string[]};
+type Place = {id?:string;name:string;countryCode:string;admin1?:string;featureCode?:string;asciiName?:string;alternates?:string[]};
 const normalize=(s:string)=>s.normalize("NFKD").replace(/\p{M}/gu,"").toLocaleLowerCase().trim();
 export async function GET(request:NextRequest){
  const q=(request.nextUrl.searchParams.get("q")??"").trim();
@@ -41,27 +41,37 @@ export async function GET(request:NextRequest){
   }
  }
  const directory=path.join(process.cwd(),"data","wereldspiegel","countries");
- // Offline GeoNames imports are split by country. Never scan a worldwide monolithic
- // file on a serverless request; limit both the candidate files and bytes read.
- if(!country)return NextResponse.json({error:"Selecteer een land voor offline plaatszoeken; wereldwijde index of GeoNames API ontbreekt",places:[],requiresCountry:true},{status:503,headers:{"Cache-Control":"no-store"}});
- const prefix=normalize(q).replace(/[^a-z0-9]+/g," ").trim().slice(0,2);
- const indexedFile=path.join(process.cwd(),"data","via-geography","index",country,prefix+".ndjson");
- const file=existsSync(indexedFile)?indexedFile:path.join(directory,country+".ndjson");
- if(!existsSync(file))return NextResponse.json({error:"Plaatsgegevens voor dit land zijn nog niet geïmporteerd",places:[]},{status:503,headers:{"Cache-Control":"no-store"}});
- const MAX_BYTES=32*1024*1024;
- if(statSync(file).size>MAX_BYTES)return NextResponse.json({error:"Plaatsendatabase vereist een zoekindex voor dit land",places:[],requiresIndex:true},{status:503,headers:{"Cache-Control":"no-store"}});
- const results:Place[]=[];let scanned=0;
+ const indexRoot=path.join(process.cwd(),"data","via-geography","index");
  const normalizedQuery=normalize(q);
+ const prefix=normalizedQuery.replace(/[^a-z0-9]+/g," ").trim().slice(0,2);
+ if(prefix.length<2)return NextResponse.json({places:[],source:"GeoNames offline",attribution:"GeoNames CC BY 4.0"});
+ // Scan only the matching two-character prefix in each country; never scan the raw worldwide dump.
+ // The indexed files must actually be present in this runtime (local laptop data are not on Vercel).
+ const countries=country?[country]:(existsSync(indexRoot)?readdirSync(indexRoot).filter(c=>/^[A-Z]{2}$/.test(c)):[]);
+ if(!countries.length)return NextResponse.json({error:"Wereldwijde GeoNames-index is nog niet beschikbaar op deze server",places:[],requiresIndex:true},{status:503,headers:{"Cache-Control":"no-store"}});
+ const matches=new Map<string,Place>();
+ const MAX_BYTES=32*1024*1024;
  try{
-  const lines=createInterface({input:createReadStream(file,{encoding:"utf8"}),crlfDelay:Infinity});
-  for await(const line of lines){
-   scanned++;
-   if(!line.trim())continue;
-   let p:Place;try{p=JSON.parse(line)}catch{continue}
-   if(p.countryCode!==country)continue;
-   if([p.name,p.asciiName,...(p.alternates??[])].some(v=>typeof v==="string"&&normalize(v).startsWith(normalizedQuery)))results.push(p);
-   if(results.length>=15)break;
+  for(const cc of countries){
+   const indexedFile=path.join(indexRoot,cc,prefix+".ndjson");
+   const fallback=path.join(directory,cc+".ndjson");
+   const file=existsSync(indexedFile)?indexedFile:(country?fallback:"");
+   if(!file||!existsSync(file))continue;
+   if(statSync(file).size>MAX_BYTES)continue;
+   for await(const line of createInterface({input:createReadStream(file,{encoding:"utf8"}),crlfDelay:Infinity})){
+    let p:Place;try{p=JSON.parse(line)}catch{continue}
+    if(p.countryCode!==cc||!p.name)continue;
+    if(![p.name,p.asciiName,...(p.alternates??[])].some(v=>typeof v==="string"&&normalize(v).startsWith(normalizedQuery)))continue;
+    const key=String(p.id??cc+":"+p.name+":"+p.admin1);
+    matches.set(key,p);
+   }
   }
  }catch{return NextResponse.json({error:"Plaatsendata niet leesbaar",places:[]},{status:503,headers:{"Cache-Control":"no-store"}})}
- return NextResponse.json({places:results,source:existsSync(indexedFile)?"GeoNames indexed offline":"GeoNames offline",attribution:"GeoNames CC BY 4.0",limited:results.length>=15},{headers:{"Cache-Control":"no-store"}});
+ const score=(p:Place)=>{
+  const name=normalize(p.name),exact=name===normalizedQuery;
+  const primary=["PPLC","PPLA","PPLA2","PPLA3","PPL"].includes(p.featureCode??"");
+  return (exact?100:0)+(name.startsWith(normalizedQuery)?20:0)+(primary?15:0)+(p.featureCode==="PPLC"?15:0)-(p.featureCode==="PPLQ"?40:0);
+ };
+ const places=[...matches.values()].sort((a,b)=>score(b)-score(a)||a.name.localeCompare(b.name)).slice(0,20);
+ return NextResponse.json({places,source:"GeoNames indexed offline",attribution:"GeoNames CC BY 4.0",limited:matches.size>20},{headers:{"Cache-Control":"no-store"}});
 }
