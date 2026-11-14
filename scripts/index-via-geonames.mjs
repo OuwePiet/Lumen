@@ -12,10 +12,10 @@ if(!existsSync(source)){console.error("Run import-wereldspiegel-geonames.mjs fir
 const output=join(root,"data","via-geography"),staging=join(output,".index-"+process.pid),target=join(output,"index");
 mkdirSync(staging,{recursive:true});
 const normalize=s=>s.normalize("NFKD").replace(/\p{M}/gu,"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim();
-let count=0;const streams=new Map();
+let count=0;let shards=0;
 try{
  for(const file of readdirSync(source).filter(f=>/^[A-Z]{2}\.ndjson$/.test(f))){
-  const country=file.slice(0,2);
+  const country=file.slice(0,2);const streams=new Map();
   for await(const line of createInterface({input:createReadStream(join(source,file)),crlfDelay:Infinity})){
    let p;try{p=JSON.parse(line)}catch{continue}
    if(!p.name)continue;
@@ -29,12 +29,14 @@ try{
     count++;
    }
   }
+  await Promise.all([...streams.values()].map(s=>new Promise((resolve,reject)=>{s.once("error",reject);s.end(resolve)})));
+  shards+=streams.size;
  }
- await Promise.all([...streams.values()].map(s=>new Promise((resolve,reject)=>{s.once("error",reject);s.end(resolve)})));
+
  if(!count)throw Error("No indexed places");
  const backup=join(output,".index-backup-"+process.pid);
  if(existsSync(target))renameSync(target,backup);
  try{renameSync(staging,target)}catch(error){if(existsSync(backup))renameSync(backup,target);throw error}
  if(existsSync(backup))rmSync(backup,{recursive:true,force:true});
- console.log(JSON.stringify({indexedRecords:count,shards:streams.size,location:target}));
+ console.log(JSON.stringify({indexedRecords:count,shards,location:target}));
 }catch(error){rmSync(staging,{recursive:true,force:true});console.error(error);process.exitCode=1}
