@@ -21,7 +21,7 @@ type Props = {
 }
 
 type PrepareResponse = { ok?: boolean; transactionHex?: string; feeNanos?: number | null; error?: string }
-type SubmitResponse = { ok?: boolean; error?: string }
+type SubmitResponse = { ok?: boolean; postHashHex?: string | null; error?: string }
 type UploadResponse = { ok?: boolean; imageUrl?: string; error?: string }
 
 function httpsUrl(value: string) {
@@ -173,7 +173,9 @@ export default function RepostButton({ postHash, initialCount, quotedPost, varia
       const submitData = await submitResponse.json() as SubmitResponse
       if (!submitResponse.ok || !submitData.ok) throw new Error(submitData.error || "SUBMIT_FAILED")
       setCount((current) => current + 1)
-      window.dispatchEvent(new Event("via:social:post-published"))
+      window.dispatchEvent(new CustomEvent("via:social:post-published", {
+        detail: submitData.postHashHex ? { hash: submitData.postHashHex, publicKey: session.publicKey, text: quoteText, repostedHash: postHash } : undefined,
+      }))
       setMessage(asQuote ? "Quote Repost submitted to DeSo." : "Reposted on DeSo.")
       setQuote("")
       setTool(null)
