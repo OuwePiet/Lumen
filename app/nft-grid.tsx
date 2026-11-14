@@ -180,8 +180,6 @@ export default async function NFTGrid({ initialAccount }: { initialAccount?: str
     <main id="main-content" style={styles.section}>
       <a className={accessibilityStyles.skipLink} href="#collection-controls">Skip to collection controls</a>
       <div style={styles.container}>
-        <h1 style={styles.heading}><CollectionLocalizedText kind="heading" /></h1>
-        <p style={styles.introduction}><CollectionLocalizedText kind="intro" /></p>
         <CollectionBrowser initialAccount={initialAccount}>
           {selectedAccount ? (
             <>

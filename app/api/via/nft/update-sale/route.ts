@@ -1,3 +1,4 @@
+import { assertNFTActionState } from "../../../../nft-action-preflight"
 import { NextResponse } from "next/server"
 import { fetchDeSo } from "../../../../deso-api"
 
@@ -58,6 +59,7 @@ export async function POST(request: Request) {
     const minFeeRate = Number.isFinite(configuredRate) && configuredRate > 0 ? Math.trunc(configuredRate) : DEFAULT_MIN_FEE_RATE_NANOS_PER_KB
 
     try {
+      await assertNFTActionState("update-sale", body)
       const response = await fetchDeSo("update-nft", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

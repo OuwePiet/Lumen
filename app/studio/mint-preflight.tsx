@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react"
 import { viaModernIdentity, type ViaModernIdentityUser } from "../deso-identity-modern"
+import { useNFTAction } from "../use-nft-action"
 
 type MintQuote = {
   resolved?: boolean
@@ -72,18 +73,16 @@ export default function MintPreflight({ initialPostHash = "" }: { initialPostHas
   const [preflightFailed, setPreflightFailed] = useState(false)
   const [mintStatus, setMintStatus] = useState<"idle"|"preparing"|"approval"|"submitting"|"done"|"error">("idle")
   const [mintMessage, setMintMessage] = useState("")
+  const mintRunner = useNFTAction()
 
   useEffect(() => {
     if (initialPostHash && /^[0-9a-fA-F]{64}$/.test(initialPostHash)) setPostHash(initialPostHash)
   }, [initialPostHash])
 
   useEffect(() => {
-    void Promise.all([viaModernIdentity.currentUser(), viaModernIdentity.alternateUsers()]).then(([user, alternates]) => {
-      setSession(user)
-      setMintAccounts(user ? [user, ...alternates.filter((candidate) => candidate.publicKey !== user.publicKey)] : alternates)
-    })
     return viaModernIdentity.subscribe((user) => {
       requestSequence.current += 1
+      mintRunner.current?.invalidate()
       setSession(user)
       void viaModernIdentity.alternateUsers().then((alternates) => setMintAccounts(user ? [user, ...alternates.filter((candidate) => candidate.publicKey !== user.publicKey)] : alternates))
       setMintStatus("idle")
@@ -189,52 +188,20 @@ export default function MintPreflight({ initialPostHash = "" }: { initialPostHas
   }
 
   async function prepareMint() {
-    if (!session || !quoteUsable || mintStatus === "preparing" || mintStatus === "approval" || mintStatus === "submitting") return
-    setMintStatus("preparing")
-    setMintMessage("Refreshing exact DeSo mint transaction for approval…")
-    try {
-      const response = await fetch("/api/via/mint/execute", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        cache: "no-store",
-        body: JSON.stringify({
-          action: "prepare",
-          mint: {
-            updaterPublicKey: session.publicKey,
-            nftPostHashHex: postHash.trim(),
-            numCopies: Number(copies),
-            hasUnlockable: unlockable,
-            isForSale: forSale,
-            minBidAmountNanos: forSale ? Number(minBid) : 0,
-            creatorRoyaltyBasisPoints: Number(creatorRoyalty),
-            coinRoyaltyBasisPoints: Number(coinRoyalty),
-            isBuyNow: forSale && buyNow,
-            buyNowPriceNanos: forSale && buyNow ? Number(buyNowPrice) : 0,
-          },
-        }),
-      })
-      const data = await response.json() as { ok?: boolean; transactionHex?: string; feeNanos?: number | null; spendAmountNanos?: number | null; error?: string }
-      if (!response.ok || !data.ok || !data.transactionHex) throw new Error(data.error || "PREPARE_FAILED")
-      setMintStatus("approval")
-      setMintMessage("Approve the freshly prepared NFT mint with DeSo Identity…")
-      const signedTransactionHex = await viaModernIdentity.signTx(data.transactionHex)
-      setMintStatus("submitting")
-      setMintMessage("Submitting approved mint to DeSo…")
-      const submitResponse = await fetch("/api/via/mint/execute", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        cache: "no-store",
-        body: JSON.stringify({ action: "submit", signedTransactionHex }),
-      })
-      const submitData = await submitResponse.json() as { ok?: boolean; error?: string }
-      if (!submitResponse.ok || !submitData.ok) throw new Error(submitData.error || "SUBMIT_FAILED")
-      setMintStatus("done")
-      setMintMessage("NFT mint submitted to DeSo.")
-      setResult(null)
-    } catch {
-      setMintStatus("error")
-      setMintMessage("The NFT mint could not be approved or submitted. VIA changed nothing.")
-    }
+    if (!session || !quoteUsable || !mintRunner.current) return
+    const result = await mintRunner.current.run({ kind: "mint", publicKey: session.publicKey, postHash: postHash.trim(), body: { mint: {
+      updaterPublicKey: session.publicKey,
+      nftPostHashHex: postHash.trim(),
+      numCopies: Number(copies),
+      hasUnlockable: unlockable,
+      isForSale: forSale,
+      minBidAmountNanos: forSale ? Number(minBid) : 0,
+      creatorRoyaltyBasisPoints: Number(creatorRoyalty),
+      coinRoyaltyBasisPoints: Number(coinRoyalty),
+      isBuyNow: forSale && buyNow,
+      buyNowPriceNanos: forSale && buyNow ? Number(buyNowPrice) : 0,
+    } } }, (status, text) => { setMintStatus(status); setMintMessage(text) })
+    if (result.outcome !== "stopped") setResult(null)
   }
 
   function resetPreflight() {
@@ -251,7 +218,7 @@ export default function MintPreflight({ initialPostHash = "" }: { initialPostHas
   }
 
   return (
-    <section className="mb-4 rounded-[14px] border border-zinc-800/80 bg-zinc-950/55 p-5 sm:p-6" aria-labelledby="mint-preflight-heading">
+    <section onChangeCapture={() => mintRunner.current?.invalidate()} className="mb-4 rounded-[14px] border border-zinc-800/80 bg-zinc-950/55 p-5 sm:p-6" aria-labelledby="mint-preflight-heading">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="max-w-3xl"><p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#8fd4a9]">NFT mint preflight</p><h2 id="mint-preflight-heading" className="mt-2 text-2xl font-semibold tracking-tight text-zinc-100">Set terms. Check live cost. Approve later.</h2><p className="mt-3 text-sm leading-6 text-zinc-400">VIA uses DeSo's native create-nft constructor. This visible step only prepares an unsigned transaction to read the current fee/spend context; it cannot sign, broadcast, charge or mint.</p><p className="mt-3 rounded-[10px] border border-amber-900/40 bg-amber-950/10 px-3 py-2 text-xs leading-5 text-amber-100/80">Sensitive-content rule: if the source post contains nudity, sexual or other explicit media, mark that post as explicit/sensitive before minting. VIA then carries the creator-declared DeSo metadata into NFT display and shields the media by default. VIA does not place the entire platform behind an 18+ gate.</p></div>
         <span className="rounded-[9px] border border-[#8fd4a9]/30 bg-[#0c1711]/40 px-3 py-2 text-xs font-semibold text-[#8fd4a9]">No blockchain write</span>

@@ -70,8 +70,8 @@ function flatten(map?: Record<string, NFTRecord>) {
   return rows
 }
 
-export default async function MarketPage({ searchParams }: { searchParams: Promise<{ publicKey?: string }> }) {
-  const { publicKey } = await searchParams
+export default async function MarketPage({ searchParams }: { searchParams: Promise<{ publicKey?: string; account?: string }> }) {
+  const { publicKey, account } = await searchParams
   let listings: ReturnType<typeof flatten> = []
   let transfers: ReturnType<typeof flatten> = []
   let error = false
@@ -89,10 +89,11 @@ export default async function MarketPage({ searchParams }: { searchParams: Promi
     }
   }
 
-  const query = publicKey ? "?publicKey=" + encodeURIComponent(publicKey) : ""
+  const query = account === "active" || !publicKey ? "?account=active" : "?publicKey=" + encodeURIComponent(publicKey)
 
   return (
-    <main className="mx-auto min-h-screen max-w-6xl px-5 py-10 text-zinc-100">
+    <main data-via-public-nft-reader className="mx-auto min-h-screen max-w-6xl px-5 py-10 text-zinc-100">
+      <MarketIdentityRedirect />
       <header className="max-w-3xl">
         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8fd4a9]"><MarketLocalizedText kind="marketplace" /></p>
         <h1 className="mt-2 text-3xl font-semibold"><MarketLocalizedText kind="heading" /></h1>
@@ -108,7 +109,7 @@ export default async function MarketPage({ searchParams }: { searchParams: Promi
       </nav>
 
       {!publicKey ? (
-        <><MarketIdentityRedirect /><section className="mt-8 rounded-xl border border-zinc-800 bg-black/20 p-4" aria-labelledby="market-account-heading">
+        <><section className="mt-8 rounded-xl border border-zinc-800 bg-black/20 p-4" aria-labelledby="market-account-heading">
           <h2 id="market-account-heading" className="text-sm font-semibold text-zinc-200"><MarketLocalizedText kind="chooseAccount" /></h2>
           <p className="mt-1 text-sm text-zinc-500"><MarketLocalizedText kind="readOnly" /></p>
           <form className="mt-4 flex flex-wrap gap-3">

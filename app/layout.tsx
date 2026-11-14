@@ -8,6 +8,7 @@ import ViaGlobalRadio from './via-global-radio'
 import ViaPublicAccountGuard from './via-public-account-guard'
 import ViaSiteHeader from './via-site-header'
 import WalletLocalizer from './wallet/wallet-localizer'
+import { NFTActionReviewProvider } from './nft-action-review'
 
 const description =
   'VIA is an international DeSo platform for creators, collectors and communities: discover people, social posts, digital art, NFT collections, markets, live culture, games and world discovery.'
@@ -113,7 +114,7 @@ export default async function RootLayout({
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(viaStructuredData) }} />
         <ViaPublicAccountGuard />
         <ViaSiteHeader />
-        {children}
+        <NFTActionReviewProvider>{children}</NFTActionReviewProvider>
         <WalletLocalizer />
         <RadioLocalizer />
         <ViaGlobalRadio />

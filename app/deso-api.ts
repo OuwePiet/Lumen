@@ -45,7 +45,7 @@ const DESO_NODES = Array.from(
 
 function normalizedEndpoint(endpoint: string) {
   const normalized = endpoint.trim().replace(/^\/+/, "")
-  if (!/^[a-z0-9-]+$/.test(normalized)) {
+  if (!/^[a-z0-9-]+$/.test(normalized) && normalized !== "post-associations/query") {
     throw new Error("INVALID_DESO_ENDPOINT")
   }
   return normalized

@@ -25,8 +25,8 @@ function formatDeso(nanos?: number) {
   return new Intl.NumberFormat("en-US", { maximumFractionDigits: 9 }).format(nanos / 1_000_000_000)
 }
 
-export default async function MarketMyBidsPage({ searchParams }: { searchParams: Promise<{ publicKey?: string }> }) {
-  const { publicKey } = await searchParams
+export default async function MarketMyBidsPage({ searchParams }: { searchParams: Promise<{ publicKey?: string; account?: string }> }) {
+  const { publicKey, account } = await searchParams
   let bids: Bid[] = []
   let posts: Record<string, Post> = {}
   let error = ""
@@ -56,10 +56,11 @@ export default async function MarketMyBidsPage({ searchParams }: { searchParams:
     }
   }
 
-  const marketHref = publicKey ? "/market?publicKey=" + encodeURIComponent(publicKey) : "/market"
+  const marketHref = account === "active" || !publicKey ? "/market?account=active" : "/market?publicKey=" + encodeURIComponent(publicKey)
 
   return (
-    <main className="mx-auto min-h-screen max-w-5xl px-5 py-10 text-zinc-100">
+    <main data-via-public-nft-reader className="mx-auto min-h-screen max-w-5xl px-5 py-10 text-zinc-100">
+      <MyBidsIdentityRedirect />
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8fd4a9]">VIA Marketplace</p>
@@ -70,7 +71,7 @@ export default async function MarketMyBidsPage({ searchParams }: { searchParams:
       </div>
 
       {!publicKey ? (
-        <><MyBidsIdentityRedirect /><form className="mt-8 rounded-xl border border-zinc-800 bg-black/20 p-4">
+        <><form className="mt-8 rounded-xl border border-zinc-800 bg-black/20 p-4">
           <label className="text-sm text-zinc-300">DeSo public key
             <input name="publicKey" required placeholder="BC1…" className="mt-2 block w-full rounded-lg border border-zinc-800 bg-black px-3 py-2 text-sm" />
           </label>
