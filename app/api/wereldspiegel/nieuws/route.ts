@@ -36,7 +36,7 @@ export async function GET(request:NextRequest){
    seen.add(link);
    const normalizedTitle=title.normalize("NFKD").replace(/\\p{M}/gu,"").toLocaleLowerCase();
    const normalizedPlace=q.normalize("NFKD").replace(/\\p{M}/gu,"").toLocaleLowerCase();
-   const locationMatch=new RegExp("(^|[^\\\\p{L}\\\\p{N}])"+normalizedPlace.replace(/[.*+?^$\u007b\u007d()|[\\]\\]/g,"\\\\articles.push({title:title.slice(0,240),url:link,source:String(raw.domain??new URL(link).hostname).slice(0,120),publishedAt:String(raw.seendate??""),language:String(raw.language??"")});")+"(?=$|[^\\\\p{L}\\\\p{N}])","u").test(normalizedTitle)?"title":"unverified";
+   const locationMatch=normalizedTitle.includes(normalizedPlace)?"title":"unverified";
    articles.push({title:title.slice(0,240),url:link,source:String(raw.domain??new URL(link).hostname).slice(0,120),publishedAt:String(raw.seendate??""),language:String(raw.language??""),locationMatch,locationLabel:q,countryCode:country,admin1});
   }
   const value:Result={articles,provider:"GDELT Project",disclaimer:"Publisher links only; articles are not independently fact-checked or location-verified",fetchedAt:new Date().toISOString()};
