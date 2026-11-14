@@ -108,6 +108,22 @@ function feedReadyMessage(choice: ChoiceId) {
   return "Hot is ready."
 }
 
+function ExternalTranslationLink({ body, language }: { body: string; language: string }) {
+  if (!body.trim()) return null
+  const params = new URLSearchParams({
+    sl: "auto",
+    tl: language === "zh" ? "zh-CN" : language,
+    text: body,
+    op: "translate",
+  })
+  return (
+    <a href={`https://translate.google.com/?${params}`} target="_blank" rel="noopener noreferrer"
+      className="mt-2 inline-flex min-h-10 items-center rounded-md border border-zinc-700 px-2 text-[#9adbb2]">
+      Open in Google Translate
+    </a>
+  )
+}
+
 export default function PublicPosts({ initialPost }: { initialPost?: PublicPost | null }) {
   const requestController = useRef<AbortController | null>(null)
   const [posts, setPosts] = useState<PublicPost[]>(initialPost ? [initialPost] : [])
@@ -296,7 +312,7 @@ export default function PublicPosts({ initialPost }: { initialPost?: PublicPost 
       </div>
       {translationBusy ? <p className="mt-2">Translating locally…</p> : null}
       {translatedText ? <p className="mt-2 whitespace-pre-wrap break-words">{translatedText}</p> : null}
-      {translationMessage ? <p className="mt-2 text-zinc-400">{translationMessage}</p> : null}
+      {translationMessage ? <div><p className="mt-2 text-zinc-400">{translationMessage}</p><ExternalTranslationLink body={reply.body} language={translationLanguage} /></div> : null}
       <button type="button" onClick={() => void navigator.clipboard?.writeText(reply.body)} className="mt-2 rounded-md border border-zinc-700 px-2 py-1">Copy original text</button>
     </div>
   }
@@ -584,7 +600,7 @@ ${url}`
                     </div>
                     {translationBusy ? <p className="mt-2">Translating locally…</p> : null}
                     {translatedText ? <p className="mt-3 whitespace-pre-wrap break-words">{translatedText}</p> : null}
-                    {translationMessage ? <p className="mt-2 text-zinc-400">{translationMessage}</p> : null}
+                    {translationMessage ? <div><p className="mt-2 text-zinc-400">{translationMessage}</p><ExternalTranslationLink body={post.body} language={translationLanguage} /></div> : null}
                     <button type="button" onClick={() => void navigator.clipboard?.writeText(post.body)} className="mt-2 rounded-md border border-zinc-700 px-2 py-1">Copy original text</button>
                   </div>
                 ) : null}
