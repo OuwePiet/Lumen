@@ -16,15 +16,25 @@ export async function GET(request:NextRequest){
    const url=new URL("https://secure.geonames.org/searchJSON");
    url.searchParams.set("name_startsWith",q);
    url.searchParams.set("maxRows","15");
-   url.searchParams.set("featureClass","P");
+   // Search both populated places and administrative divisions (districts, provinces).
    url.searchParams.set("style","FULL");
    url.searchParams.set("username",geonamesUsername);
    if(country)url.searchParams.set("country",country);
-   const response=await fetch(url,{cache:"no-store",signal:AbortSignal.timeout(8000)});
-   if(!response.ok)throw Error("GeoNames service unavailable");
-   const data=await response.json();
-   if(data.status)throw Error("GeoNames API error");
-   const places=(Array.isArray(data.geonames)?data.geonames:[]).map((p:{name?:string;countryCode?:string;adminName1?:string})=>({name:p.name??"",countryCode:p.countryCode??"",admin1:p.adminName1??""}));
+   const classes=["P","A"];
+   const responses=await Promise.all(classes.map(async featureClass=>{
+    const requestUrl=new URL(url);requestUrl.searchParams.set("featureClass",featureClass);
+    const response=await fetch(requestUrl,{cache:"no-store",signal:AbortSignal.timeout(8000)});
+    if(!response.ok)throw Error("GeoNames service unavailable");
+    const data=await response.json();
+    if(data.status)throw Error("GeoNames API error");
+    return Array.isArray(data.geonames)?data.geonames:[];
+   }));
+   const unique=new Map<string,{name:string;countryCode:string;admin1:string}>();
+   for(const p of responses.flat() as {geonameId?:number;name?:string;countryCode?:string;adminName1?:string}[]){
+    const key=String(p.geonameId??`${p.countryCode}:${p.name}:${p.adminName1}`);
+    if(!unique.has(key))unique.set(key,{name:p.name??"",countryCode:p.countryCode??"",admin1:p.adminName1??""});
+   }
+   const places=[...unique.values()].slice(0,20);
    return NextResponse.json({places,source:"GeoNames",attribution:"GeoNames CC BY 4.0"},{headers:{"Cache-Control":"no-store"}});
   }catch{
    return NextResponse.json({error:"GeoNames is tijdelijk niet bereikbaar",places:[]},{status:503,headers:{"Cache-Control":"no-store"}});
