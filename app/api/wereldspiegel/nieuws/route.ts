@@ -34,8 +34,8 @@ export async function GET(request:NextRequest){
    const link=safeUrl(raw.url),title=String(raw.title??"").trim();
    if(!link||!title||seen.has(link))continue;
    seen.add(link);
-   const normalizedTitle=title.normalize("NFKD").replace(/\\p{M}/gu,"").toLocaleLowerCase();
-   const normalizedPlace=q.normalize("NFKD").replace(/\\p{M}/gu,"").toLocaleLowerCase();
+   const normalizedTitle=title.normalize("NFKD").replace(/\p{M}/gu,"").toLocaleLowerCase();
+   const normalizedPlace=q.normalize("NFKD").replace(/\p{M}/gu,"").toLocaleLowerCase();
    const locationMatch=normalizedTitle.includes(normalizedPlace)?"title":"unverified";
    articles.push({title:title.slice(0,240),url:link,source:String(raw.domain??new URL(link).hostname).slice(0,120),publishedAt:String(raw.seendate??""),language:String(raw.language??""),locationMatch,locationLabel:q,countryCode:country,admin1});
   }
