@@ -11,9 +11,15 @@ function isViaPost(post: Awaited<ReturnType<typeof readDiscoveryPosts>>[number])
 
 export async function GET() {
   try {
-    // Bounded native DeSo read. General DeSo activity is never counted as VIA activity.
-    // One bounded read per cache refresh: no repeated DeSo page polling.
-    const posts = await readDiscoveryPosts(30, true)
+    // Read at most three pages. Some nodes can return overlapping results.
+    const sampled = new Map<string, Awaited<ReturnType<typeof readDiscoveryPosts>>[number]>()
+    for (let page = 0; page < 3; page++) {
+      const batch = await readDiscoveryPosts(30, true, [...sampled.keys()]).catch(() => [])
+      const before = sampled.size
+      for (const post of batch) sampled.set(post.postHash, post)
+      if (sampled.size === before) break
+    }
+    const posts = [...sampled.values()]
     // The public feed normally contains posts. Never report a failed upstream
     // read (which also returns []) as a misleading zero activity count.
     if (posts.length === 0) {
@@ -47,7 +53,7 @@ export async function GET() {
       {
         status: 200,
         headers: {
-          "Cache-Control": "public, max-age=0, s-maxage=30, stale-while-revalidate=60",
+          "Cache-Control": "public, max-age=0, s-maxage=60, stale-while-revalidate=120",
         },
       },
     )
