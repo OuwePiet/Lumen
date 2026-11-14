@@ -40,6 +40,17 @@ function awaitIdentityResponse<T>(operation: Promise<T>, timeoutMs: number): Pro
   })
 }
 
+function diamondErrorMessage(code: string) {
+  switch (code) {
+    case "DIAMOND_PERMISSION_REQUIRED": return "Je DeSo-machtiging dekt deze diamant niet. Meld je opnieuw aan via de homepage."
+    case "DESO_DIAMOND_INSUFFICIENT_BALANCE": return "Je DeSo-saldo is te laag voor deze diamant en de transactiekosten."
+    case "DESO_PREPARE_REJECTED": return "DeSo heeft de diamant geweigerd bij het voorbereiden. Er is niets verstuurd."
+    case "DESO_PREPARE_UNAVAILABLE": return "DeSo kon de diamant niet voorbereiden. Probeer het later opnieuw."
+    case "ACCOUNT_CHANGED": return "Je DeSo-account is gewisseld. De diamant is niet verstuurd."
+    default: return code || "De diamant kon niet worden voorbereid."
+  }
+}
+
 export default function DiamondButton({ postHash, receiverPublicKey, initialCount, variant = "default" }: Props) {
   const [count, setCount] = useState(initialCount)
   useEffect(() => setCount(initialCount), [initialCount])
@@ -48,6 +59,7 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
   const leafRain = celebrate ? <div aria-hidden="true" className="pointer-events-none fixed inset-0 z-[90] overflow-hidden">{Array.from({ length: 28 }, (_, i) => <span key={i} className="absolute top-[-12%] animate-[viaLeafFall_3s_ease-in_forwards]" style={{ left: `${(i * 37) % 100}%`, animationDelay: `${(i % 10) * 0.12}s`, transform: `rotate(${i * 41}deg)` }}><img src="/via-leaf.svg" alt="" width="36" height="34" className="h-9 w-9 object-contain" /></span>)}<style>{`@keyframes viaLeafFall { from { translate: 0 -10vh; opacity: 1 } to { translate: 8vw 115vh; opacity: 0 } }`}</style></div> : null
   const [status, setStatus] = useState<"idle" | "preparing" | "approval" | "submitting" | "done" | "error">("idle")
   const [message, setMessage] = useState("")
+  const [needsPermission, setNeedsPermission] = useState(false)
   const [diamondValues, setDiamondValues] = useState<Array<{ level: number; nanos: number }> | null>(null)
   const [desoUsd, setDesoUsd] = useState<number | null>(null)
   const [levelsFailed, setLevelsFailed] = useState(false)
@@ -165,6 +177,7 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
   async function prepare(chosenLevel: number) {
     if (sendLock.current || (previousLevel !== null && chosenLevel <= previousLevel) || !diamondValues?.some(item => item.level === chosenLevel)) return
     sendLock.current = true
+    setNeedsPermission(false)
     const session = restoreIdentitySession()
     let invalidated = false, sent = false, accepted = false
     const onIdentity = (event: Event) => {
@@ -201,7 +214,7 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
         // permission request from a diamond click. Fail closed if the grant is absent.
         setStatus("approval"); setMessage("Checking the DeSo permission granted at login…")
         const permitted = await awaitIdentityResponse(Promise.resolve(viaModernIdentity.hasPermissions({ GlobalDESOLimit: cost, TransactionCountLimitMap: { BASIC_TRANSFER: 1 } })), 20000)
-        if (!permitted) throw new Error("DeSo diamantmachtiging ontbreekt in deze sessie. Meld je opnieuw aan via de VIA-homepage om de eenmalige toestemming te verlenen.")
+        if (!permitted) throw new Error("DIAMOND_PERMISSION_REQUIRED")
         await assertAccount()
         setMessage("DeSo Identity is signing your Diamond…")
         const signedTransactionHex = await awaitIdentityResponse(viaModernIdentity.signTx(data.transactionHex), 20000)
@@ -243,8 +256,10 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
         setMessage("DeSo heeft de transactie ontvangen. De diamant is nog niet zichtbaar. Controleer later opnieuw.")
       })
     } catch (error) {
+      const code = error instanceof Error ? error.message : ""
+      setNeedsPermission(code === "DIAMOND_PERMISSION_REQUIRED")
       setStatus(accepted ? "done" : "error")
-      setMessage(accepted ? "DeSo received the Diamond. Recovery storage could not be updated; check DeSo before any new payment." : sent ? "The Diamond outcome is uncertain. Do not resend; check DeSo." : error instanceof Error && error.message === "DESO_IDENTITY_NO_RESPONSE" ? "DeSo Identity reageert niet. Er is vanuit VIA geen diamant verzonden. Controleer de DeSo-machtiging voordat je opnieuw probeert." : error instanceof Error ? error.message : "Diamond preparation stopped. Nothing was submitted.")
+      setMessage(accepted ? "DeSo received the Diamond. Recovery storage could not be updated; check DeSo before any new payment." : sent ? "The Diamond outcome is uncertain. Do not resend; check DeSo." : error instanceof Error && error.message === "DESO_IDENTITY_NO_RESPONSE" ? "DeSo Identity reageert niet. Er is vanuit VIA geen diamant verzonden. Controleer de DeSo-machtiging voordat je opnieuw probeert." : diamondErrorMessage(code))
     } finally {
       window.removeEventListener(VIA_IDENTITY_EVENT, onIdentity)
       window.removeEventListener("storage", onIdentity)
@@ -313,6 +328,6 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
       </Popover.Root>
     ) : null}
     {leafRain}
-    {message ? <span className="order-last w-full basis-full text-xs text-amber-200" role="status">{message}</span> : null}
+    {message ? <span className="order-last w-full basis-full text-xs text-amber-200" role="status">{message}{needsPermission ? <a href="/" className="ml-2 underline">Naar de homepage</a> : null}</span> : null}
   </>
 }

@@ -102,7 +102,12 @@ export async function POST(request: Request) {
           TransactionFees: [],
         }),
       })
-      if (!response.ok) return noStore({ ok: false, error: "DESO_PREPARE_REJECTED" }, 502)
+      if (!response.ok) {
+        const data = await response.json().catch(() => null) as { error?: unknown } | null
+        const reason = typeof data?.error === "string" ? data.error : ""
+        const insufficient = /RuleErrorInsufficientBalance|insufficient (?:funds|balance|spendable balance|DESO)|not enough (?:funds|balance|DESO)|Spendable balance .* insufficient/i.test(reason)
+        return noStore({ ok: false, error: insufficient ? "DESO_DIAMOND_INSUFFICIENT_BALANCE" : "DESO_PREPARE_REJECTED" }, insufficient ? 422 : 502)
+      }
       const data = await response.json() as Record<string, unknown>
       const transactionHex = data.TransactionHex
       const feeNanos = data.FeeNanos
