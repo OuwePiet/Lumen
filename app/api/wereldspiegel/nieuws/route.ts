@@ -2,17 +2,29 @@ import {NextRequest,NextResponse} from "next/server";
 export const runtime="nodejs";
 export const dynamic="force-dynamic";
 type Article={title:string;url:string;source:string;publishedAt:string;language:string};
-const safeUrl=(value:unknown)=>{try{const u=new URL(String(value));return u.protocol==="https:"||u.protocol==="http:"?u.toString():null}catch{return null}};
+type Result={articles:Article[];provider:string;disclaimer:string;fetchedAt:string};
+const CACHE_TTL=15*60*1000;
+const COOLDOWN=5500;
+const cache=new Map<string,{value:Result;expires:number}>();
+let nextRequestAt=0;
+const safeUrl=(value:unknown)=>{try{const u=new URL(String(value));return ["https:","http:"].includes(u.protocol)?u.toString():null}catch{return null}};
+function json(data:unknown,status=200){return NextResponse.json(data,{status,headers:{"Cache-Control":"no-store","X-Content-Type-Options":"nosniff"}})}
 export async function GET(request:NextRequest){
- const q=(request.nextUrl.searchParams.get("q")??"").trim();
- if(q.length<2||q.length>100)return NextResponse.json({error:"Zoekterm moet 2–100 tekens zijn",articles:[]},{status:400,headers:{"Cache-Control":"no-store"}});
+ const q=(request.nextUrl.searchParams.get("q")??"").normalize("NFC").trim().replace(/\s+/g," ");
+ if(q.length<2||q.length>100)return json({error:"Zoekterm moet 2–100 tekens zijn",articles:[]},400);
+ const key=q.toLocaleLowerCase();const now=Date.now();
+ const existing=cache.get(key);
+ if(existing&&existing.expires>now)return json({...existing.value,cached:true});
+ if(now<nextRequestAt)return json({error:"Nieuwszoekdienst wordt tijdelijk beperkt; probeer het later opnieuw",articles:[],retryAfterSeconds:Math.ceil((nextRequestAt-now)/1000)},429);
+ nextRequestAt=now+COOLDOWN;
  const url=new URL("https://api.gdeltproject.org/api/v2/doc/doc");
- url.searchParams.set("query",'"'+q.replace(/["\\]/g," ").replace(/\s+/g," ").trim()+'"');
- url.searchParams.set("mode","ArtList");url.searchParams.set("format","json");url.searchParams.set("maxrecords","20");
- url.searchParams.set("timespan","7d");url.searchParams.set("sort","DateDesc");
+ url.searchParams.set("query",'"'+q.replace(/["\\]/g," ").trim()+'"');
+ url.searchParams.set("mode","ArtList");url.searchParams.set("format","json");
+ url.searchParams.set("maxrecords","20");url.searchParams.set("timespan","7d");url.searchParams.set("sort","DateDesc");
  try{
   const response=await fetch(url,{cache:"no-store",signal:AbortSignal.timeout(10000),headers:{"Accept":"application/json"}});
-  if(!response.ok||!(response.headers.get("content-type")??"").includes("json"))throw Error("GDELT unavailable");
+  if(response.status===429){nextRequestAt=Date.now()+60000;return json({error:"GDELT heeft tijdelijk een verzoeklimiet bereikt",articles:[],retryAfterSeconds:60},429)}
+  if(!response.ok||!(response.headers.get("content-type")??"").toLowerCase().includes("json"))throw Error("GDELT unavailable");
   const data=await response.json();
   const seen=new Set<string>();const articles:Article[]=[];
   for(const raw of Array.isArray(data.articles)?data.articles:[]){
@@ -21,6 +33,9 @@ export async function GET(request:NextRequest){
    seen.add(link);
    articles.push({title:title.slice(0,240),url:link,source:String(raw.domain??new URL(link).hostname).slice(0,120),publishedAt:String(raw.seendate??""),language:String(raw.language??"")});
   }
-  return NextResponse.json({articles,provider:"GDELT Project",disclaimer:"Links to original publishers; location relevance and facts are not independently verified"},{headers:{"Cache-Control":"no-store"}});
- }catch{return NextResponse.json({error:"Nieuwszoekdienst tijdelijk niet beschikbaar",articles:[]},{status:503,headers:{"Cache-Control":"no-store"}})}
+  const value:Result={articles,provider:"GDELT Project",disclaimer:"Publisher links only; articles are not independently fact-checked or location-verified",fetchedAt:new Date().toISOString()};
+  if(cache.size>200)cache.clear();
+  cache.set(key,{value,expires:Date.now()+CACHE_TTL});
+  return json(value);
+ }catch{return json({error:"Nieuwszoekdienst tijdelijk niet beschikbaar",articles:[]},503)}
 }
