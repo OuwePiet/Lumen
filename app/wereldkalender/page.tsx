@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useMemo, useState } from "react"
+import ViaGeographySearch from "../via-geography-search"
 import { VIA_INTERNATIONAL_DAYS } from "../via-international-calendar"
 import { PAPAL_JOURNEY_2026, PAPAL_ITINERARY_SOURCE } from "../via-papal-calendar"
 import { viaOfflineLunarDates } from "../via-calendar-offline-dates"
@@ -106,6 +107,7 @@ export default function WereldkalenderPage() {
   const [eventPage,setEventPage] = useState(0)
   const [eventPageSize,setEventPageSize] = useState(16)
   const [region,setRegion] = useState<ViaCalendarRegion>("world")
+  const [geoSelection,setGeoSelection] = useState<{name:string;countryCode:string;admin1?:string}|null>(null)
   const [language,setLanguage] = useState<ViaLanguage>("English")
   useEffect(() => {
     const sync = () => setLanguage(readViaLocalSettings().interfaceLanguage)
@@ -342,6 +344,8 @@ export default function WereldkalenderPage() {
       {unresolved.length>0 && <ul style={{paddingLeft:22}}>{unresolved.map(d=><li key={d.id}>{holidayName(d.id,d.nameNl)}: {guidance.pendingDate}</li>)}</ul>}
       <p style={{marginTop:24,fontSize:13,opacity:.8}}>{({Dutch:"Maandlange vieringen tellen niet als losse dagmeldingen. Nationale en religieuze datums zijn informatief; controleer officiële bronnen voor lokale feestdagen en wettelijke vrije dagen.",English:"Month-long observances are not counted as daily events. National and religious dates are informational; check official sources for local public holidays.",French:"Les célébrations mensuelles ne sont pas comptées comme événements quotidiens. Vérifiez les sources officielles pour les jours fériés locaux.",Spanish:"Las celebraciones de todo el mes no cuentan como eventos diarios. Consulte fuentes oficiales para los festivos locales.",Chinese:"整月纪念活动不计入每日活动。当地法定节假日请以官方资料为准。",Hindi:"पूरे महीने के आयोजन दैनिक कार्यक्रमों में नहीं गिने जाते। स्थानीय सार्वजनिक छुट्टियों के लिए आधिकारिक स्रोत देखें।"} as Record<ViaLanguage,string>)[language]}</p>
       </div></details>
+      <ViaGeographySearch onSelect={place=>{setGeoSelection(place);if(VIA_CALENDAR_REGIONS.some(r=>r.code===place.countryCode)){setContinent("world");setRegion(place.countryCode as ViaCalendarRegion)}}}/>
+      {geoSelection&&<p role="status" style={{fontSize:13,opacity:.85}}>Gekozen locatie: {geoSelection.name} · {geoSelection.countryCode}{geoSelection.admin1?" · "+geoSelection.admin1:""}. {VIA_CALENDAR_REGIONS.some(r=>r.code===geoSelection.countryCode)?"De landkalender is geselecteerd; lokale evenementen zijn nog niet per plaats gekoppeld.":"Voor dit land is nog geen landkalender beschikbaar; de geografische selectie blijft bewaard."}</p>}
       <footer style={{marginTop:30,padding:"16px 14px",borderTop:"1px solid rgba(112,151,119,.3)",borderRadius:12,background:"linear-gradient(100deg,rgba(51,105,75,.10),rgba(190,154,78,.06))",display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,flexWrap:"wrap",fontSize:12,opacity:.85}}><span><strong>VIA</strong> · viadeso.online</span><span>{({Dutch:"VIA Wereldkalender · informatieve uitgave",English:"VIA World Calendar · informational edition",French:"Calendrier mondial VIA · édition informative",Spanish:"Calendario mundial VIA · edición informativa",Chinese:"VIA 世界日历 · 信息版",Hindi:"VIA विश्व कैलेंडर · सूचनात्मक संस्करण"} as Record<ViaLanguage,string>)[language]}</span></footer>
     </main>
   )
