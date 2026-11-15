@@ -72,8 +72,8 @@ export const metadata: Metadata = {
     },
   },
   icons: {
-    icon: '/via-app-icon-192.png',
-    apple: '/apple-icon.png',
+    icon: '/via-app-icon-approved-20261115-192.png',
+    apple: '/via-app-icon-approved-20261115-180.png',
   },
 }
 
