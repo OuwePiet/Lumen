@@ -155,3 +155,9 @@
   .filter { min-width: 34px; height: 34px; padding-inline: 7px; }
   .filter::before { inset: 5px 2px; }
 }
+
+/* Reading mode must hide both the action toolbar and category strip. */
+.page[data-notification-reading="true"] :global(#notification-controls),
+.page[data-notification-reading="true"] :global(#notification-filters) {
+  display: none !important;
+}

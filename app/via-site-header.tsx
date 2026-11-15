@@ -421,7 +421,27 @@ export default function ViaSiteHeader() {
       <style>{`
         @media (min-width: 721px) { .via-notifications-home-top { display: none !important; } .via-notifications-future-mark { display:inline-flex; align-items:center; min-height:32px; padding:4px 10px; border:1px solid rgba(143,212,169,.3); border-radius:999px; background:rgba(40,95,64,.15); color:#b8ddc5; font-size:10px; font-weight:700; line-height:1; letter-spacing:.08em; text-transform:uppercase; white-space:nowrap; } }
 
-        .via-site-header-link:focus:not(:focus-visible) { outline: none; }
+        /* Compact two-column account navigation on phones, including Post Office and Notifications. */
+        @media (max-width: 639px) {
+          .via-site-header-account-menu {
+            display: grid !important;
+            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+            gap: 4px 7px !important;
+            width: min(340px, calc(100vw - 16px)) !important;
+            max-height: min(75dvh, 590px) !important;
+            overflow-y: auto !important;
+          }
+          .via-site-header-account-menu > [role="menuitem"] {
+            min-width: 0 !important;
+            min-height: 44px !important;
+            padding: 9px 7px !important;
+            white-space: normal !important;
+            overflow-wrap: anywhere !important;
+          }
+          .via-site-header-account-menu > :not([role="menuitem"]) {
+            grid-column: 1 / -1 !important;
+          }
+        }        .via-site-header-link:focus:not(:focus-visible) { outline: none; }
         .via-site-header-link:focus-visible { outline: 2px solid #b9ffd4; outline-offset: -4px; border-radius: 7px; }
         .via-site-header-language-wrap { position: relative; flex: 0 0 auto; }
         .via-notifications-top-control { display: contents; }
