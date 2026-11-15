@@ -344,7 +344,7 @@ export default function ViaSiteHeader() {
 
         <div style={styles.topRow} className="via-site-header-top">
           <nav style={styles.nav} className={`via-site-header-nav ${pathname === "/notifications" || pathname === "/radio" || pathname === "/messages" || pathname === "/profile" ? "via-site-header-nav-compact-mobile" : ""}`} aria-label="VIA main navigation">
-            {nav.map(([key, href]) => {
+            {nav.filter(([, href]) => href !== "/").map(([key, href]) => {
               const active = href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`)
               return <Link key={href} href={href} className="via-site-header-link" style={{ ...styles.link, ...(active ? styles.activeLink : {}) }}>{t[key]}{active ? <span style={styles.activeLine} aria-hidden="true" /> : null}</Link>
             })}
