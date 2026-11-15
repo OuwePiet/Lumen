@@ -23,6 +23,8 @@ type DeSoHealthData = {
   nodes?: Array<{ endpoint?: string; role?: string; ok?: boolean; latencyMs?: number }>
 }
 
+type ProtocolStatus = { status: "CURRENT" | "REVIEW" | "UNKNOWN"; installed?: string; published?: string | null; checkedAt?: string }
+
 type LiveStatus = {
   loading: boolean
   via: "OK" | "DEGRADED" | "UNKNOWN"
@@ -84,6 +86,7 @@ export default function OwnerDashboard({ ownerPublicKey }: { ownerPublicKey: str
   const [sessionKey, setSessionKey] = useState<string | null>(null)
   const [ideas, setIdeas] = useState<IdeaItem[]>([])
   const [live, setLive] = useState<LiveStatus>(initialLiveStatus)
+  const [protocol, setProtocol] = useState<ProtocolStatus | null>(null)
   const [centralIdeasConfigured, setCentralIdeasConfigured] = useState<boolean | null>(null)
 
   useEffect(() => {
@@ -145,13 +148,22 @@ export default function OwnerDashboard({ ownerPublicKey }: { ownerPublicKey: str
       }
     }
 
+    async function refreshProtocol() {
+      try {
+        const response = await fetch("/api/via/protocol-status", { cache: "no-store", signal: controller.signal })
+        if (active && response.ok) setProtocol(await response.json() as ProtocolStatus)
+      } catch { if (active && !controller.signal.aborted) setProtocol({ status: "UNKNOWN" }) }
+    }
+    void refreshProtocol()
     void refreshHealth()
     void refreshIdeasStorage()
     const timer = window.setInterval(refreshHealth, 60_000)
+    const protocolTimer = window.setInterval(refreshProtocol, 3_600_000)
     return () => {
       active = false
       controller.abort()
       window.clearInterval(timer)
+      window.clearInterval(protocolTimer)
     }
   }, [])
 
@@ -187,7 +199,7 @@ export default function OwnerDashboard({ ownerPublicKey }: { ownerPublicKey: str
         </p>
         <div style={{ display: "grid", gap: 9, marginTop: 12 }}>
           <StatusCard title="VIA / DeSo bereikbaarheid" value={live.loading ? "CONTROLEREN" : live.deso} detail="Automatische bereikbaarheidstest, geen protocolvalidatie." tone={statusTone(live.deso)} />
-          <StatusCard title="DeSo protocol en Identity wijzigingen" value="NOG NIET GEKOPPELD" detail="Automatische versievergelijking, bronverificatie en wijzigingsmelding moeten nog worden aangesloten." tone={statusTone("attention")} />
+          <StatusCard title="DeSo SDK-versie (npm)" value={protocol?.status === "CURRENT" ? "VERSIE GELIJK" : protocol?.status === "REVIEW" ? "VERSCHIL — CONTROLEREN" : "NIET BEVESTIGD"} detail={protocol?.published ? `VIA: ${protocol.installed} · npm: ${protocol.published}. Alleen SDK-versie; geen protocol- of beveiligingsvalidatie.` : "Versiebron niet bereikbaar of nog niet gecontroleerd. Geen protocol- of beveiligingsvalidatie."} tone={statusTone(protocol?.status === "CURRENT" ? "OK" : protocol?.status === "REVIEW" ? "attention" : "UNKNOWN")} />
           <StatusCard title="Software en beveiligingsupdates" value="GOEDKEURING VEREIST" detail="Nieuwe versies eerst afzonderlijk controleren, bouwen en testen; nooit automatisch live plaatsen." tone={statusTone("attention")} />
         </div>
         <p style={{ color: "#8f9a94", fontSize: 11, marginBottom: 0, lineHeight: 1.5 }}>
@@ -206,7 +218,7 @@ export default function OwnerDashboard({ ownerPublicKey }: { ownerPublicKey: str
         <div style={{ marginTop: 16, display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))", gap: 11 }}>
           <StatusCard title="VIA applicatie" value={live.via} detail="Live healthcheck van de VIA-applicatie." tone={viaTone} />
           <StatusCard title="DeSo verbinding" value={live.deso} detail={live.latencyMs !== null ? `${live.latencyMs} ms responstijd` : "Live DeSo-bereikbaarheid."} tone={desoTone} />
-          <StatusCard title="Actieve DeSo-node" value={live.activeEndpoint ? "ACTIEF" : "ONBEKEND"} detail={live.activeEndpoint ?? "Nog geen actief endpoint bevestigd."} tone={statusTone(live.activeEndpoint ? "OK" : "UNKNOWN")} />
+          <StatusCard title="Bereikbare DeSo-node" value={live.activeEndpoint ? "BEREIKBAAR" : "ONBEKEND"} detail={live.activeEndpoint ? `${live.activeEndpoint} · bereikbaarheidstest, niet bewezen als gebruikte transactienode` : "Geen bereikbare node bevestigd."} tone={statusTone(live.activeEndpoint ? "OK" : "UNKNOWN")} />
         </div>
       </section>
 
