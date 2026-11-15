@@ -336,13 +336,6 @@ export default function ViaSiteHeader() {
     <header style={styles.header} className="via-site-header">
       <button type="button" className="via-mobile-drawer-trigger" aria-label="Open VIA menu" aria-expanded={mobileDrawerOpen} onClick={() => setMobileDrawerOpen(true)}><Menu size={22} /></button>
       {mobileDrawerOpen ? <div className="via-mobile-drawer-overlay" onClick={() => setMobileDrawerOpen(false)}><nav className="via-mobile-drawer" aria-label="VIA mobiel menu" onClick={(event) => event.stopPropagation()}><div className="via-mobile-drawer-heading"><strong>VIA</strong><button type="button" aria-label="Sluit VIA menu" onClick={() => setMobileDrawerOpen(false)}><X size={22} /></button></div>{nav.map(([key, href]) => <Link key={href} href={href} onClick={() => setMobileDrawerOpen(false)}>{t[key]}</Link>)}<Link href="/messages" onClick={() => setMobileDrawerOpen(false)}>Berichten</Link><Link href="/bookmarks" onClick={() => setMobileDrawerOpen(false)}>Bookmarks</Link><Link href="/profile" onClick={() => setMobileDrawerOpen(false)}>{t.profile}</Link><Link href="/wallet" onClick={() => setMobileDrawerOpen(false)}>{t.wallet}</Link><Link href="/help" onClick={() => setMobileDrawerOpen(false)}>VIA Handboek</Link><Link href="/wereldkalender" onClick={() => setMobileDrawerOpen(false)}>Wereldkalender</Link><Link href="/music" onClick={() => setMobileDrawerOpen(false)}>VIA Play</Link><span className="via-mobile-drawer-pending" aria-label="VIA-auto is nog niet beschikbaar">VIA-Auto &amp; Navigatie <small>In voorbereiding</small></span></nav></div> : null}
-      {pathname !== "/" ? <nav className="via-mobile-social-bar" aria-label="Snelle VIA navigatie">
-        <Link href="/" aria-label="Homepage" aria-current={pathname === "/" ? "page" : undefined}><House size={21}/><span>Home</span></Link>
-        <Link href="/social" aria-label="Postkantoor" aria-current={pathname.startsWith("/social") ? "page" : undefined}><Menu size={21}/><span>Posts</span></Link>
-        <Link href="/notifications" aria-label="Meldingen" aria-current={pathname.startsWith("/notifications") ? "page" : undefined}><Bell size={21}/><span>Meldingen</span></Link>
-        <Link href="/messages" aria-label="Berichten" aria-current={pathname.startsWith("/messages") ? "page" : undefined}><MessageCircle size={21}/><span>Berichten</span></Link>
-        <Link href="/wallet" aria-label="Wallet" aria-current={pathname.startsWith("/wallet") ? "page" : undefined}><Wallet size={21}/><span>Wallet</span></Link>
-      </nav> : null}
       <div style={styles.shell} className="via-site-header-shell">
         <Link href="/" style={styles.brand} className="via-site-header-brand" aria-label="VIA home">
           <img src="/via-logo-original.jpg?v=1" alt="VIA" style={styles.logo} className="via-site-header-logo" />
@@ -712,19 +705,19 @@ export default function ViaSiteHeader() {
 .via-mobile-drawer-pending { display:flex; align-items:center; justify-content:space-between; gap:8px; padding:13px 14px; color:#aabbb0; opacity:.8; border:1px dashed #3b5545; border-radius:10px; }
 .via-mobile-drawer-pending small { font-size:10px; text-align:right; }
 @media (max-width:720px) { .via-site-header { position:relative; } .via-mobile-drawer-trigger { display:flex; align-items:center; justify-content:center; position:absolute; right:10px; top:7px; z-index:5; width:44px; height:44px; border:1px solid #426b50; border-radius:12px; background:#0b2015; color:#b6e5c5; } .via-site-header-nav { padding-right:48px !important; } }
-        .via-mobile-social-bar { display:none; }
         @media (max-width:720px) {
-          /* Mobile uses the drawer instead of a second, horizontally scrolling page navigation. */
+          /* One mobile navigation: left drawer. No duplicated five-button bar. */
           .via-site-header-nav, .via-site-header-nav-compact-mobile { display:none !important; }
-          .via-site-header-top { pointer-events:none; }
-        }
-        @media (max-width:720px) {
-          .via-mobile-social-bar { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); position:fixed; left:0; right:0; bottom:0; z-index:850; padding:7px 4px calc(7px + env(safe-area-inset-bottom)); background:#08170e; border-top:1px solid #3a6549; box-shadow:0 -5px 22px #0009; }
-          .via-mobile-social-bar a { min-width:0; min-height:47px; display:flex; flex-direction:column; gap:3px; align-items:center; justify-content:center; color:#c2dfcb; text-decoration:none; font-size:10px; }
-          .via-mobile-social-bar a[aria-current="page"] { color:#90e0ac; }
-          .via-mobile-social-bar a:focus-visible, .via-mobile-drawer a:focus-visible, .via-mobile-drawer button:focus-visible, .via-mobile-drawer-trigger:focus-visible { outline:2px solid #a5f5bd; outline-offset:2px; border-radius:8px; }
-          @media (orientation:landscape) and (max-height:500px) { .via-mobile-social-bar { padding-top:2px; padding-bottom:calc(2px + env(safe-area-inset-bottom)); } .via-mobile-social-bar a { min-height:40px; } }
-          body:has(.via-mobile-social-bar) { padding-bottom:calc(74px + env(safe-area-inset-bottom)); }
+          .via-site-header-top { display:none !important; }
+          .via-site-header-shell { grid-template-columns:64px minmax(0,1fr) !important; grid-template-rows:auto !important; align-items:center !important; padding-right:58px !important; min-height:64px !important; }
+          .via-site-header-brand { grid-column:1 !important; grid-row:1 !important; }
+          .via-site-header-logo { width:58px !important; height:46px !important; object-fit:contain !important; }
+          .via-site-header-tools { grid-column:2 !important; grid-row:1 !important; display:flex !important; flex-wrap:nowrap !important; min-width:0 !important; overflow-x:auto !important; gap:5px !important; padding:4px 0 !important; scrollbar-width:none; }
+          .via-site-header-tools::-webkit-scrollbar { display:none; }
+          .via-site-header-tools > * { flex-shrink:0 !important; }
+          .via-site-header-tools .via-notifications-top-label,
+          .via-site-header-tools .via-notifications-future-mark { display:none !important; }
+          .via-mobile-drawer-trigger { top:10px; right:10px; }
         }
       `}</style>
     </header>
