@@ -501,8 +501,9 @@ export default function ViaHomeControls() {
         paddingRight: "4px",
       }}
     >
-      <Link prefetch={false} href="/" aria-label="VIA home" style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "2px", textDecoration: "none" }}>
-        <img src="/via-logo-original.jpg?v=1" alt="VIA" className="via-home-controls-logo" style={{ width: "100%", maxHeight: "108px", objectFit: "contain", display: "block", borderRadius: "14px" }} />
+      <Link prefetch={false} href="/" aria-label="VIA home" style={{ display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "center", gap: "8px", textDecoration: "none" }}>
+        <img src="/via-logo-original.jpg?v=1" alt="VIA" className="via-home-controls-logo" style={{ width: "110px", maxHeight: "78px", objectFit: "contain", display: "block", borderRadius: "8px" }} />
+        <span className="via-home-logo-domain" style={{ color: "#9ed9b5", fontSize: "12px", fontWeight: 700, letterSpacing: ".06em", whiteSpace: "nowrap" }}>viadeso.online</span>
       </Link>
 
       <nav className="via-home-iphone-utility-row" aria-label="VIA iPhone quick controls">
@@ -656,6 +657,7 @@ export default function ViaHomeControls() {
             margin: 0 auto !important;
           }
         }
+        .via-home-logo-domain { font-size: 11px !important; }
         .via-home-iphone-utility-row { display: none; }
         .via-home-iphone-clock-inline { display: none; }
         .via-home-iphone-identity { display: none; }
