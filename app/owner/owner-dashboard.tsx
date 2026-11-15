@@ -23,7 +23,7 @@ type DeSoHealthData = {
   nodes?: Array<{ endpoint?: string; role?: string; ok?: boolean; latencyMs?: number }>
 }
 
-type ProtocolStatus = { status: "CURRENT" | "REVIEW" | "UNKNOWN"; installed?: string; published?: string | null; checkedAt?: string }
+type ProtocolStatus = { status: "CURRENT" | "REVIEW" | "UNKNOWN"; installed?: string; published?: string | null; checkedAt?: string; checks?: Record<string, { status: string; detail: string }> }
 
 type LiveStatus = {
   loading: boolean
@@ -199,7 +199,9 @@ export default function OwnerDashboard({ ownerPublicKey }: { ownerPublicKey: str
         </p>
         <div style={{ display: "grid", gap: 9, marginTop: 12 }}>
           <StatusCard title="VIA / DeSo bereikbaarheid" value={live.loading ? "CONTROLEREN" : live.deso} detail="Automatische bereikbaarheidstest, geen protocolvalidatie." tone={statusTone(live.deso)} />
-          <StatusCard title="DeSo SDK-versie (npm)" value={protocol?.status === "CURRENT" ? "VERSIE GELIJK" : protocol?.status === "REVIEW" ? "VERSCHIL — CONTROLEREN" : "NIET BEVESTIGD"} detail={protocol?.published ? `VIA: ${protocol.installed} · npm: ${protocol.published}. Alleen SDK-versie; geen protocol- of beveiligingsvalidatie.` : "Versiebron niet bereikbaar of nog niet gecontroleerd. Geen protocol- of beveiligingsvalidatie."} tone={statusTone(protocol?.status === "CURRENT" ? "OK" : protocol?.status === "REVIEW" ? "attention" : "UNKNOWN")} />
+          <StatusCard title="DeSo SDK-versie (npm)" value={protocol?.status === "CURRENT" ? "VERSIE GELIJK" : protocol?.status === "REVIEW" ? "VERSCHIL — CONTROLEREN" : "NIET BEVESTIGD"} detail={protocol?.published ? `VIA: ${protocol.installed} · npm: ${protocol.published}. OSV- en Identity-controles hieronder; geen volledige protocolvalidatie.` : "Versiebron niet bereikbaar of nog niet gecontroleerd. Geen protocol- of beveiligingsvalidatie."} tone={statusTone(protocol?.status === "CURRENT" ? "OK" : protocol?.status === "REVIEW" ? "attention" : "UNKNOWN")} />
+          <StatusCard title="SDK-beveiligingsmeldingen (OSV)" value={protocol?.checks?.advisories?.status === "OK" ? "GEEN MELDING GEVONDEN" : protocol?.checks?.advisories?.status === "REVIEW" ? "CONTROLEREN" : "ONBEKEND"} detail={protocol?.checks?.advisories?.detail ?? "Nog geen OSV-controle uitgevoerd."} tone={statusTone(protocol?.checks?.advisories?.status === "OK" ? "OK" : protocol?.checks?.advisories?.status === "REVIEW" ? "attention" : "UNKNOWN")} />
+          <StatusCard title="DeSo Identity-service" value={protocol?.checks?.identity?.status === "OK" ? "BEREIKBAAR" : protocol?.checks?.identity?.status === "REVIEW" ? "CONTROLEREN" : "ONBEKEND"} detail={protocol?.checks?.identity?.detail ?? "Nog geen bereikbaarheidstest uitgevoerd."} tone={statusTone(protocol?.checks?.identity?.status === "OK" ? "OK" : protocol?.checks?.identity?.status === "REVIEW" ? "attention" : "UNKNOWN")} />
           <StatusCard title="Software en beveiligingsupdates" value="GOEDKEURING VEREIST" detail="Nieuwe versies eerst afzonderlijk controleren, bouwen en testen; nooit automatisch live plaatsen." tone={statusTone("attention")} />
         </div>
         <p style={{ color: "#8f9a94", fontSize: 11, marginBottom: 0, lineHeight: 1.5 }}>
