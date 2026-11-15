@@ -464,13 +464,13 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
     if (!indices.length) return
     const publicKey = session.publicKey
     const latestIndex = Math.max(...indices)
-    let viewed = document.visibilityState === "visible"
-    const onVisible = () => { if (document.visibilityState === "visible") viewed = true }
-    document.addEventListener("visibilitychange", onVisible)
-    return () => {
-      document.removeEventListener("visibilitychange", onVisible)
-      if (viewed) acknowledgeNotificationVisit(publicKey, latestIndex)
+    // A loaded, visible list counts as viewed immediately. No DeSo metadata write.
+    const onVisible = () => {
+      if (document.visibilityState === "visible") acknowledgeNotificationVisit(publicKey, latestIndex)
     }
+    onVisible()
+    document.addEventListener("visibilitychange", onVisible)
+    return () => document.removeEventListener("visibilitychange", onVisible)
   }, [session?.publicKey, status, items])
   const [messageKey, setMessageKey] = useState<"loading" | "loaded" | "empty" | "error" | "">("")
   const [lastSeenIndex, setLastSeenIndex] = useState<number | null>(null)
