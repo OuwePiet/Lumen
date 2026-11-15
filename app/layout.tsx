@@ -70,8 +70,8 @@ export const metadata: Metadata = {
     },
   },
   icons: {
-    icon: '/icon.svg',
-    apple: '/apple-icon',
+    icon: '/via-app-icon-192.png',
+    apple: '/apple-icon.png',
   },
 }
 

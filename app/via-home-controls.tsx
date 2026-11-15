@@ -502,7 +502,7 @@ export default function ViaHomeControls() {
       }}
     >
       <Link prefetch={false} href="/" aria-label="VIA home" style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "2px", textDecoration: "none" }}>
-        <img src="/via-logo-original.jpg?v=2" alt="VIA" className="via-home-controls-logo" style={{ width: "100%", maxHeight: "108px", objectFit: "contain", display: "block", borderRadius: "14px" }} />
+        <img src="/via-app-icon-512.png" alt="VIA" className="via-home-controls-logo" style={{ width: "100%", maxHeight: "108px", objectFit: "contain", display: "block", borderRadius: "14px" }} />
         <span style={{ color: "#8fd4a9", fontSize: "10px", fontWeight: 650, letterSpacing: ".14em", lineHeight: 1.2 }}>viadeso.online</span>
       </Link>
 
@@ -529,7 +529,7 @@ export default function ViaHomeControls() {
           {standardNav.map(([key, href]) => key === "home" ? (
             <div ref={accountMenuRef} key={key} className="via-home-grid-account-wrap" style={{ position: "relative", width: "100%" }}>
               <button type="button" onClick={() => { if (!session) { void openDeSoIdentity(); return }; refreshAccounts(); setAccountsOpen((open) => !open) }} disabled={status === "waiting"} aria-label={session ? t.switchAccount : t.login} title={session ? t.switchAccount : t.login} aria-expanded={session ? accountsOpen : undefined} aria-haspopup={session ? "menu" : undefined} style={{ ...buttonStyle, width: "100%", minHeight: "48px", justifyContent: "center", paddingInline: "9px", cursor: "pointer", gap: "7px" }}>
-                {session && avatar ? <img src={avatar} alt="" referrerPolicy="no-referrer" style={{ width: 28, height: 28, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} /> : session ? <UsersRound aria-hidden="true" size={18} /> : <img src="/via-logo-original.jpg?v=2" alt="" aria-hidden="true" style={{ width: 28, height: 28, borderRadius: "50%", objectFit: "contain", flexShrink: 0 }} />}
+                {session && avatar ? <img src={avatar} alt="" referrerPolicy="no-referrer" style={{ width: 28, height: 28, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} /> : session ? <UsersRound aria-hidden="true" size={18} /> : <img src="/via-app-icon-512.png" alt="" aria-hidden="true" style={{ width: 28, height: 28, borderRadius: "50%", objectFit: "contain", flexShrink: 0 }} />}
                 <span>{session ? accountName : t.login}</span>
                 {session ? <ViaIdentityStatusMarks verified={Boolean(profile?.isVerified)} inactive={Boolean(profile?.isInactive)} viaRecognized={Boolean(profile?.viaRecognized)} compact language={language} interactive={false} /> : null}
               </button>
