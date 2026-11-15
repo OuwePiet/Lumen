@@ -7,6 +7,7 @@ import RadioLocalizer from './radio/radio-localizer'
 import ViaGlobalRadio from './via-global-radio'
 import ViaPublicAccountGuard from './via-public-account-guard'
 import ViaSiteHeader from './via-site-header'
+import ViaPwaRegistration from './via-pwa-registration'
 import WalletLocalizer from './wallet/wallet-localizer'
 
 const description =
@@ -112,6 +113,7 @@ export default async function RootLayout({
     <html lang="en" className="dark">
       <body className="antialiased via-session-pending" data-via-provenance="@OuwePiet-2026">
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(viaStructuredData) }} />
+        <ViaPwaRegistration />
         <ViaPublicAccountGuard />
         <ViaSiteHeader />
         {children}
