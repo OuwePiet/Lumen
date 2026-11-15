@@ -6,6 +6,7 @@ import { ShieldCheck } from "lucide-react"
 import { readViaLocalSettings, VIA_SETTINGS_EVENT, type ViaLanguage } from "../via-local-settings"
 
 type Status = "OK" | "DEGRADED" | "FAILED" | "UNKNOWN"
+type Protocol = { checkedAt?: string; checks?: Record<string, { status: string; detail: string }> }
 type Health = { checkedAt?: string; via?: { status?: Status }; deso?: { status?: Status }; mediaUpload?: { status?: Status }; mediaRetrieval?: { status?: Status } }
 const WORDS: Record<ViaLanguage, { title: string; intro: string; status: string; via: string; deso: string; uploads: string; media: string; protocol: string; protocolNote: string; ok: string; bad: string; unknown: string; loading: string; refresh: string; checked: string; failed: string; safety: string; tips: string[]; history: string; historyNote: string; notice: string }> = {
   Dutch: { title:"VIA Vertrouwen", intro:"Openbare informatie over bereikbaarheid en veilig gebruik. Een bereikbare node bewijst niet dat transacties of het DeSo-protocol veilig zijn.", status:"Actuele controles",via:"VIA-statusendpoint",deso:"DeSo-nodebereikbaarheid",uploads:"Media uploaden",media:"Media ophalen",protocol:"DeSo-protocol en Identity",protocolNote:"Automatische protocol- en Identity-verificatie is nog niet gekoppeld.",ok:"Bereikbaar",bad:"Niet bereikbaar / beperkt",unknown:"Niet geverifieerd",loading:"Controleren…",refresh:"Opnieuw controleren",checked:"Gecontroleerd",failed:"Controle mislukt",safety:"Veiligheid voor creators en community",tips:["Deel nooit je herstelzin of privésleutel.","Controleer ontvanger, bedrag, royalties en machtigingen vóór ondertekening.","Wees alert op imitatieprofielen en verdachte links.","Controleer bij een vastgelopen betaling de blockchainstatus vóór opnieuw proberen."],history:"Storingen en onderhoud",historyNote:"Er is nog geen geverifieerde openbare incidenthistorie aangesloten. Afwezigheid van meldingen betekent niet dat er geen incidenten waren.",notice:"Dit is een beperkte bereikbaarheidscontrole, geen beveiligingscertificaat." },
@@ -19,10 +20,11 @@ const WORDS: Record<ViaLanguage, { title: string; intro: string; status: string;
 export default function ViaTrustPage() {
   const [language,setLanguage] = useState<ViaLanguage>("English")
   const [health,setHealth] = useState<Health | null>(null)
+  const [protocol,setProtocol] = useState<Protocol | null>(null)
   const [loading,setLoading] = useState(true)
   const [error,setError] = useState(false)
   const check = useCallback(async () => {
-    setLoading(true);setError(false);setHealth(null)
+    setLoading(true);setError(false);setHealth(null);setProtocol(null)
     const controller = new AbortController()
     const timer = window.setTimeout(() => controller.abort(), 8000)
     try {
@@ -31,6 +33,13 @@ export default function ViaTrustPage() {
       const data = await response.json() as Health
       if (!data.checkedAt || !Number.isFinite(Date.parse(data.checkedAt)) || Math.abs(Date.now()-Date.parse(data.checkedAt))>120000) throw new Error("stale")
       setHealth(data)
+      try {
+        const protocolResponse = await fetch("/api/via/protocol-status", { cache: "no-store", signal: controller.signal })
+        if (protocolResponse.ok) {
+          const protocolData = await protocolResponse.json() as Protocol
+          if (protocolData.checkedAt && Math.abs(Date.now() - Date.parse(protocolData.checkedAt)) < 120000) setProtocol(protocolData)
+        }
+      } catch { /* Independent public source check: unknown if unavailable. */ }
     } catch {setError(true)} finally {window.clearTimeout(timer);setLoading(false)}
   },[])
   useEffect(() => {
@@ -40,16 +49,20 @@ export default function ViaTrustPage() {
     return ()=>{window.removeEventListener(VIA_SETTINGS_EVENT,sync);window.removeEventListener("storage",sync)}
   },[check])
   const t=WORDS[language]
+  const protocolChecks = protocol?.checks
+  const protocolStatus = protocolChecks && Object.keys(protocolChecks).length >= 5 ? Object.values(protocolChecks).some(c => c.status === "REVIEW") ? "DEGRADED" as Status : Object.values(protocolChecks).some(c => c.status !== "OK") ? "UNKNOWN" as Status : "OK" as Status : "UNKNOWN" as Status
+  const checkLabel = (key: string) => ({sdk: language === "Dutch" ? "DeSo SDK-versie" : "DeSo SDK version", advisories: language === "Dutch" ? "SDK-beveiligingsmeldingen" : "SDK security advisories", identity: "DeSo Identity", core: language === "Dutch" ? "Blockchain-broncode" : "Blockchain source", api: "DeSo API"})[key] ?? key
   const state=(value?:Status)=>value==="OK"?t.ok:value==="FAILED"||value==="DEGRADED"?t.bad:t.unknown
   const line=(name:string,value?:Status)=><div className="flex flex-wrap items-center justify-between gap-2 border-b border-zinc-800 py-2 text-sm" key={name}><span>{name}</span><span className={value==="OK"?"text-[#9adbb2]":value==="FAILED"||value==="DEGRADED"?"text-amber-200":"text-zinc-400"}>{state(value)}</span></div>
   return <main className="min-h-screen bg-[#020403] px-4 py-8 text-[#e9f0eb]"><div className="mx-auto w-full max-w-4xl space-y-5">
-    <Link href="/" className="text-sm text-[#9adbb2]">← VIA</Link>
     <header className="flex items-center gap-3"><ShieldCheck aria-hidden="true" className="text-[#9adbb2]"/><h1 className="text-2xl font-semibold">{t.title}</h1></header>
     <p className="text-sm leading-6 text-zinc-300">{t.intro}</p>
     <section className="rounded-xl border border-[#285f40] p-4" aria-label={t.status}><h2 className="font-semibold text-[#9adbb2]">{t.status}</h2>
       {loading?<p role="status" className="mt-2 text-sm">{t.loading}</p>:error?<p role="status" className="mt-2 text-sm text-amber-200">{t.failed}</p>:null}
-      {line(t.via,health?.via?.status)}{line(t.deso,health?.deso?.status)}{line(t.uploads,health?.mediaUpload?.status)}{line(t.media,health?.mediaRetrieval?.status)}{line(t.protocol)}
-      <p className="mt-2 text-xs text-zinc-400">{t.protocolNote}</p>
+      {line(t.via,health?.via?.status)}{line(t.deso,health?.deso?.status)}{line(t.uploads,health?.mediaUpload?.status)}{line(t.media,health?.mediaRetrieval?.status)}
+      {line(t.protocol,protocolStatus)}
+      {(["sdk", "advisories", "identity", "core", "api"] as const).map(key => <div key={key} className="border-b border-zinc-800 py-2 text-xs"><div className="flex justify-between gap-3"><span>{checkLabel(key)}</span><span className={protocolChecks?.[key]?.status === "OK" ? "text-[#9adbb2]" : protocolChecks?.[key]?.status === "REVIEW" ? "text-amber-200" : "text-zinc-400"}>{protocolChecks?.[key]?.status === "OK" ? (language === "Dutch" ? "Broncontrole OK" : "Source check OK") : protocolChecks?.[key]?.status === "REVIEW" ? (language === "Dutch" ? "Beoordelen" : "Review") : t.unknown}</span></div></div>)}
+      <p className="mt-2 text-xs text-zinc-400">{language === "Dutch" ? "Automatische broncontroles zijn aangesloten. Bereikbaarheid en versievergelijking zijn geen volledige protocol- of veiligheidsgarantie." : "Automated source checks are connected. Reachability and version checks do not certify protocol compatibility or security."}</p>
       <p className="mt-2 text-xs text-zinc-400">{t.checked}: {health?.checkedAt?new Date(health.checkedAt).toLocaleString(({Dutch:"nl-NL",English:"en-GB",French:"fr-FR",Spanish:"es-ES",Chinese:"zh-CN",Hindi:"hi-IN"})[language]):"—"}</p>
       <button type="button" onClick={()=>void check()} disabled={loading} className="mt-3 rounded-lg border border-[#285f40] px-3 py-2 text-xs text-[#9adbb2] disabled:opacity-50">{t.refresh}</button>
       <p className="mt-3 text-xs text-zinc-400">{t.notice}</p>
