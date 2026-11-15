@@ -199,13 +199,14 @@ export default function PublicPosts({ initialPost }: { initialPost?: PublicPost 
     function onFeedChoice(event: Event) {
       const choice = (event as CustomEvent<ChoiceId>).detail
       if (choice !== "following" && choice !== "recent" && choice !== "hot") return
-      if (choice === feedChoice && !sharedPostView) { setFeedRevision(value => value + 1); return }
+      if (choice === feedChoice && !sharedPostView) { requestController.current?.abort(); setPosts([]); setFeedRevision(value => value + 1); return }
       requestController.current?.abort()
       requestController.current = null
       setFeedChoice(choice)
       setSharedPostHash(null)
       setHasMore(true)
-      // Keep the existing posts visible until the next feed has loaded.
+      // Never display posts from the previous feed under a newly selected tab.
+      setPosts([])
       setMediaFilter("all")
       setLoading(false)
       setReplyingTo(null)
