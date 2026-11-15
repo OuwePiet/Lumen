@@ -134,12 +134,12 @@ export default function OwnerDashboard({ ownerPublicKey }: { ownerPublicKey: str
     }
 
     // The public endpoint reports configuration without exposing private ideas.
-    // A 401 response means storage is configured but owner authentication is required.
+    // A 401 response requires owner authentication; it does not prove storage is writable.
     async function refreshIdeasStorage() {
       try {
         const response = await fetch("/api/via/ideas", { cache: "no-store", signal: controller.signal })
         if (!active) return
-        if (response.status === 401) { setCentralIdeasConfigured(true); return }
+        if (response.status === 401) { setCentralIdeasConfigured(null); return }
         if (!response.ok) { setCentralIdeasConfigured(null); return }
         const data = await response.json() as { configured?: boolean }
         if (active) setCentralIdeasConfigured(typeof data.configured === "boolean" ? data.configured : null)
@@ -259,7 +259,7 @@ export default function OwnerDashboard({ ownerPublicKey }: { ownerPublicKey: str
             <p style={eyebrowStyle}>Ideas Inbox</p>
             <h2 style={{ margin: "5px 0 0", fontSize: 24 }}>Binnengekomen ideeën</h2>
           </div>
-          <span style={pillStyle}>{sortedIdeas.length} lokaal {sortedIdeas.length === 1 ? "item" : "items"}</span>
+          <a href="#centrale-ideeenbus" style={{ ...pillStyle, textDecoration: "none", color: "#b9ffd4" }}>Open beveiligde centrale inbox ↓</a>
         </div>
 
         <p style={{ color: "#aebbb4", lineHeight: 1.6, marginBottom: 18 }}>
