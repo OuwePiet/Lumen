@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import ViaTrustTowerCard from "./via-trust-tower-card"
 import { useAnalyticsSnapshot } from "./use-analytics-snapshot"
 import { measuredCount } from "../lib/via/analytics-counts"
 import { readViaLocalSettings, VIA_SETTINGS_EVENT, type ViaLanguage } from "./via-local-settings"
@@ -144,6 +145,7 @@ export default function ViaRightPanels() {
   return (
     <aside className="space-y-3" aria-label="VIA live and activity panels" data-via-information-tower>
       <button type="button" className="text-xs text-[#9adbb2]" disabled={visitorRead.refreshing || activityRead.refreshing} onClick={() => { void visitorRead.refresh(true); void activityRead.refresh(true) }}>{visitorRead.refreshing || activityRead.refreshing ? info.loading : info.refresh}</button>
+      <ViaTrustTowerCard language={language} />
       <Panel title={copy.live}>
         <Metric label={info.activeWindow} value={activeNow} note={info.notMeasured} />
         <PendingMetric label={copy.desoAccounts} note={info.notMeasured} />
