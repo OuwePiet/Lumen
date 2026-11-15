@@ -78,8 +78,8 @@ export async function POST(request: Request) {
 
   // Honeypot: legitimate clients leave this hidden field empty.
   if (website) return NextResponse.json({ ok: true, accepted: true }, { status: 202 })
-  if (!name) return NextResponse.json({ ok: false, error: "NAME_REQUIRED" }, { status: 400 })
-  if (!EMAIL_RE.test(email)) return NextResponse.json({ ok: false, error: "EMAIL_INVALID" }, { status: 400 })
+
+  if (email && !EMAIL_RE.test(email)) return NextResponse.json({ ok: false, error: "EMAIL_INVALID" }, { status: 400 })
   if (idea.length < 4) return NextResponse.json({ ok: false, error: "IDEA_TOO_SHORT" }, { status: 400 })
 
   const createdAt = new Date().toISOString()

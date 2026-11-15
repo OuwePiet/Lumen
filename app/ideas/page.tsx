@@ -256,12 +256,13 @@ export default function IdeasPage() {
               {categories.map((category) => <option key={category} value={category}>{t.categories[category]}</option>)}
             </select>
           </label>
-          <label>{t.name}
-            <input name="name" required maxLength={80} autoComplete="name" style={{ display: "block", width: "100%", marginTop: 7, padding: 12, borderRadius: 12, background: "#08100b", color: "#f4f7f5", border: "1px solid #285f40" }} />
+          <label>{language === "Dutch" ? "Naam / DeSo-creatornaam (optioneel)" : language === "English" ? "Name / DeSo creator name (optional)" : t.name}
+            <input name="name" maxLength={80} autoComplete="name" style={{ display: "block", width: "100%", marginTop: 7, padding: 12, borderRadius: 12, background: "#08100b", color: "#f4f7f5", border: "1px solid #285f40" }} />
           </label>
-          <label>{t.email}
-            <input name="email" type="email" required maxLength={254} autoComplete="email" style={{ display: "block", width: "100%", marginTop: 7, padding: 12, borderRadius: 12, background: "#08100b", color: "#f4f7f5", border: "1px solid #285f40" }} />
+          <label>{language === "Dutch" ? "E-mailadres voor antwoord (optioneel)" : language === "English" ? "Email for a reply (optional)" : t.email}
+            <input name="email" type="email" maxLength={254} autoComplete="email" style={{ display: "block", width: "100%", marginTop: 7, padding: 12, borderRadius: 12, background: "#08100b", color: "#f4f7f5", border: "1px solid #285f40" }} />
           </label>
+          <p style={{ color: "#b7c5bd", margin: "0 0 2px", fontSize: 13 }}>{language === "Dutch" ? "Naam en e-mail zijn niet verplicht. Je kunt ook anoniem een idee insturen. Contactgegevens worden niet openbaar gepubliceerd." : "Name and email are optional. You can submit anonymously. Contact details are not published publicly."}</p>
           <label>{t.idea}
             <textarea name="idea" required maxLength={2000} rows={8} placeholder={t.placeholder} style={{ display: "block", width: "100%", marginTop: 7, padding: 12, borderRadius: 12, background: "#08100b", color: "#f4f7f5", border: "1px solid #285f40", resize: "vertical" }} />
           </label>
