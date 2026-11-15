@@ -1,4 +1,3 @@
-import Link from "next/link"
 import { fetchDeSo } from "../deso-api"
 import CentralIdeasInbox from "./central-ideas-inbox"
 import OwnerDashboard from "./owner-dashboard"
@@ -31,7 +30,6 @@ export default async function OwnerPage() {
             <p style={{ color: "#8fd4a9", fontWeight: 800, letterSpacing: ".14em", fontSize: 11, margin: 0 }}>VIA · OWNER</p>
             <h1 style={{ margin: "7px 0 0", fontSize: "clamp(28px, 5vw, 46px)" }}>Personal control room</h1>
           </div>
-          <Link href="/" style={{ color: "#b9ffd4", textDecoration: "none", border: "1px solid #285f40", borderRadius: 999, padding: "9px 13px" }}>← VIA</Link>
         </div>
 
         <OwnerDashboard ownerPublicKey={ownerPublicKey} />
