@@ -2,9 +2,10 @@ import type { MetadataRoute } from "next"
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "VIA — DeSo social, creators & NFTs",
+    name: "VIA - DeSo social, creators and NFTs",
     short_name: "VIA",
     description: "VIA on DeSo: social, creators, communities, digital culture and NFTs.",
+    id: "/",
     start_url: "/",
     scope: "/",
     display: "standalone",
