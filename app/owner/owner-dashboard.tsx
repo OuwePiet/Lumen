@@ -185,6 +185,11 @@ export default function OwnerDashboard({ ownerPublicKey }: { ownerPublicKey: str
     return <Panel title="Private owner area" text="This page is reserved for the verified @OuwePiet DeSo account." />
   }
 
+  const monitoredChecks = protocol?.checks ? Object.values(protocol.checks) : []
+  const hasReview = monitoredChecks.some((check) => check.status === "REVIEW")
+  const hasUnknown = !monitoredChecks.length || monitoredChecks.some((check) => check.status === "UNKNOWN")
+  const updateStatus = hasReview ? "WIJZIGING OF MELDING: BEOORDELEN" : hasUnknown ? "CONTROLE ONVOLLEDIG" : "GEEN ACTIE NODIG"
+  const updateDetail = hasReview ? "Een broncontrole vraagt beoordeling. Geen automatische installatie of publicatie." : hasUnknown ? "Niet alle bronnen zijn bevestigd; geen uitspraak over updates mogelijk." : "Geen afwijking gevonden in de uitgevoerde broncontroles. Nieuwe versies worden nooit automatisch geplaatst."
   const viaTone = statusTone(live.via)
   const desoTone = statusTone(live.deso)
 
@@ -204,10 +209,10 @@ export default function OwnerDashboard({ ownerPublicKey }: { ownerPublicKey: str
           <StatusCard title="DeSo Identity-service" value={protocol?.checks?.identity?.status === "OK" ? "BEREIKBAAR" : protocol?.checks?.identity?.status === "REVIEW" ? "CONTROLEREN" : "ONBEKEND"} detail={protocol?.checks?.identity?.detail ?? "Nog geen bereikbaarheidstest uitgevoerd."} tone={statusTone(protocol?.checks?.identity?.status === "OK" ? "OK" : protocol?.checks?.identity?.status === "REVIEW" ? "attention" : "UNKNOWN")} />
           <StatusCard title="DeSo blockchain-core" value={protocol?.checks?.core?.status === "OK" ? "BRON BEREIKBAAR" : "ONBEKEND"} detail={protocol?.checks?.core?.detail ?? "Nog niet gecontroleerd."} tone={statusTone(protocol?.checks?.core?.status === "OK" ? "OK" : "UNKNOWN")} />
           <StatusCard title="DeSo API-basistest" value={protocol?.checks?.api?.status === "OK" ? "BASISTEST OK" : protocol?.checks?.api?.status === "REVIEW" ? "CONTROLEREN" : "ONBEKEND"} detail={protocol?.checks?.api?.detail ?? "Nog niet gecontroleerd."} tone={statusTone(protocol?.checks?.api?.status === "OK" ? "OK" : protocol?.checks?.api?.status === "REVIEW" ? "attention" : "UNKNOWN")} />
-          <StatusCard title="Software en beveiligingsupdates" value="GOEDKEURING VEREIST" detail="Nieuwe versies eerst afzonderlijk controleren, bouwen en testen; nooit automatisch live plaatsen." tone={statusTone("attention")} />
+          <StatusCard title="Software en beveiligingsupdates" value={updateStatus} detail={updateDetail} tone={statusTone(hasReview ? "attention" : hasUnknown ? "UNKNOWN" : "OK")} />
         </div>
         <p style={{ color: "#8f9a94", fontSize: 11, marginBottom: 0, lineHeight: 1.5 }}>
-          Â© @OuwePiet 2026 Â· Controlekamerstatus; geen automatische installatie of blockchaintransacties.
+          © @OuwePiet 2026 · Controlekamerstatus; geen automatische installatie of blockchaintransacties.
         </p>
       </section>
       <section style={panelStyle}>
