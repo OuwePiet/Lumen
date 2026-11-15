@@ -178,6 +178,22 @@ export default function OwnerDashboard({ ownerPublicKey }: { ownerPublicKey: str
 
   return (
     <div style={{ display: "grid", gap: 18 }}>
+      <section style={panelStyle} aria-label="VIA updates en protocolbewaking">
+        <p style={eyebrowStyle}>Updates en protocolbewaking</p>
+        <h2 style={{ margin: "5px 0 10px", fontSize: 22 }}>Aandacht voor VIA en DeSo</h2>
+        <p style={{ color: "#aebbb4", fontSize: 12, lineHeight: 1.6 }}>
+          De live verbinding wordt hierboven iedere 60 seconden gecontroleerd zolang deze controlekamer open is.
+          Een geslaagde verbinding bewijst niet dat het DeSo-protocol of de beveiliging ongewijzigd is.
+        </p>
+        <div style={{ display: "grid", gap: 9, marginTop: 12 }}>
+          <StatusCard title="VIA / DeSo bereikbaarheid" value={live.loading ? "CONTROLEREN" : live.deso} detail="Automatische bereikbaarheidstest, geen protocolvalidatie." tone={statusTone(live.deso)} />
+          <StatusCard title="DeSo protocol en Identity wijzigingen" value="NOG NIET GEKOPPELD" detail="Automatische versievergelijking, bronverificatie en wijzigingsmelding moeten nog worden aangesloten." tone={statusTone("attention")} />
+          <StatusCard title="Software en beveiligingsupdates" value="GOEDKEURING VEREIST" detail="Nieuwe versies eerst afzonderlijk controleren, bouwen en testen; nooit automatisch live plaatsen." tone={statusTone("attention")} />
+        </div>
+        <p style={{ color: "#8f9a94", fontSize: 11, marginBottom: 0, lineHeight: 1.5 }}>
+          Â© @OuwePiet 2026 Â· Controlekamerstatus; geen automatische installatie of blockchaintransacties.
+        </p>
+      </section>
       <section style={panelStyle}>
         <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
           <div>
