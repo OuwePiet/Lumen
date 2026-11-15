@@ -42,7 +42,7 @@ export default function ViaTrustPage() {
   const t=WORDS[language]
   const state=(value?:Status)=>value==="OK"?t.ok:value==="FAILED"||value==="DEGRADED"?t.bad:t.unknown
   const line=(name:string,value?:Status)=><div className="flex flex-wrap items-center justify-between gap-2 border-b border-zinc-800 py-2 text-sm" key={name}><span>{name}</span><span className={value==="OK"?"text-[#9adbb2]":value==="FAILED"||value==="DEGRADED"?"text-amber-200":"text-zinc-400"}>{state(value)}</span></div>
-  return <main className="min-h-screen bg-[#020403] px-4 py-8 text-[#e9f0eb]"><div className="mx-auto max-w-2xl space-y-5">
+  return <main className="min-h-screen bg-[#020403] px-4 py-8 text-[#e9f0eb]"><div className="mx-auto w-full max-w-4xl space-y-5">
     <Link href="/" className="text-sm text-[#9adbb2]">← VIA</Link>
     <header className="flex items-center gap-3"><ShieldCheck aria-hidden="true" className="text-[#9adbb2]"/><h1 className="text-2xl font-semibold">{t.title}</h1></header>
     <p className="text-sm leading-6 text-zinc-300">{t.intro}</p>
