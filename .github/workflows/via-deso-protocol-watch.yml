@@ -1,4 +1,4 @@
-﻿name: VIA DeSo protocol signal watch
+name: VIA DeSo protocol signal watch
 on:
   schedule:
     - cron: "17 8 * * *"
@@ -23,6 +23,7 @@ jobs:
               { key: 'core', url: 'https://api.github.com/repos/deso-protocol/core/commits?per_page=1', parse: x => Array.isArray(x) ? x[0]?.sha : null },
             ];
             const signals = [];
+            const checks = [];
             for (const source of sources) {
               try {
                 const response = await fetch(source.url, { headers: { 'User-Agent': 'VIA-protocol-watch', Accept: 'application/json' }, signal: AbortSignal.timeout(10000) });
@@ -30,7 +31,7 @@ jobs:
                 const value = source.parse(await response.json());
                 if (!value) throw new Error('missing source value');
                 signals.push({ key: source.key, value, source: source.url });
-              } catch (error) { core.warning(source.key + ': ' + String(error)); }
+              } catch (error) { checks.push(source.key + ': ' + String(error)); core.warning(source.key + ': ' + String(error)); }
             }
             try {
               const response = await fetch('https://api.osv.dev/v1/query', {
@@ -41,7 +42,26 @@ jobs:
               if (!response.ok) throw new Error('HTTP ' + response.status);
               const result = await response.json();
               for (const vuln of result.vulns ?? []) signals.push({ key: 'osv', value: vuln.id, source: 'https://osv.dev/vulnerability/' + encodeURIComponent(vuln.id) });
-            } catch (error) { core.warning('OSV: ' + String(error)); }
+            } catch (error) { checks.push('OSV: ' + String(error)); core.warning('OSV: ' + String(error)); }
+            // Availability and API-shape probes; read-only, no keys, no signing.
+            for (const probe of [
+              { key: 'identity', url: 'https://identity.deso.org', options: { method: 'GET', redirect: 'manual' } },
+              { key: 'api', url: 'https://node.deso.org/api/v0/get-app-state', options: { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' } },
+            ]) {
+              try {
+                const response = await fetch(probe.url, { ...probe.options, signal: AbortSignal.timeout(10000) });
+                if (response.status < 200 || response.status >= 500) throw new Error('HTTP ' + response.status);
+                if (probe.key === 'api') {
+                  if (!response.ok) throw new Error('HTTP ' + response.status);
+                  const body = await response.json();
+                  if (!body || typeof body !== 'object' || Array.isArray(body) || !Object.keys(body).length) throw new Error('unexpected response shape');
+                }
+              } catch (error) {
+                checks.push(probe.key + ': ' + String(error));
+                core.warning(probe.key + ': ' + String(error));
+              }
+            }
+            if (checks.length) core.setFailed('One or more DeSo monitor sources could not be verified: ' + checks.join('; '));
             const { owner, repo } = context.repo;
             const existing = await github.paginate(github.rest.issues.listForRepo, { owner, repo, state: 'all', per_page: 100 });
             for (const signal of signals) {
