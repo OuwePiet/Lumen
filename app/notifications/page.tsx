@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { NOTIFICATION_SEEN_EVENT } from "../notification-indicator"
+import { NOTIFICATION_SEEN_EVENT, readSeenNotificationIndex, validNotificationIndex } from "../notification-indicator"
 import styles from "./notification-center.module.css"
 import { useEffect, useState } from "react"
 import NotificationCenter from "./notification-center"
@@ -30,7 +30,7 @@ export default function NotificationsPage() {
   useEffect(() => {
     const onSeen = (event: Event) => {
       const seenKey = (event as CustomEvent<{ publicKey?: string }>).detail?.publicKey
-      if (seenKey && seenKey === session?.publicKey) setAcknowledged(true)
+      if (seenKey && seenKey === session?.publicKey) setUnreadCount(0)
     }
     window.addEventListener(NOTIFICATION_SEEN_EVENT, onSeen)
     return () => window.removeEventListener(NOTIFICATION_SEEN_EVENT, onSeen)
@@ -40,7 +40,6 @@ export default function NotificationsPage() {
 
   useEffect(() => {
     setUnreadCount(null)
-    setAcknowledged(false)
     if (!session?.publicKey) return
     const publicKey = session.publicKey
     const controller = new AbortController()
@@ -55,10 +54,26 @@ export default function NotificationsPage() {
         })
         if (!response.ok) throw new Error("UNREAD_FAILED")
         const data = await response.json() as { ok?: boolean; unreadCount?: number }
-        if (!controller.signal.aborted) {
-          const count = data.ok && typeof data.unreadCount === "number" && Number.isSafeInteger(data.unreadCount) && data.unreadCount >= 0 ? data.unreadCount : null
-          setUnreadCount(count !== null && count > 0 ? count : null)
+        if (!data.ok || !validNotificationIndex(data.unreadCount)) throw new Error("INVALID_UNREAD_COUNT")
+        const seen = readSeenNotificationIndex(publicKey)
+        if (seen === null || data.unreadCount === 0) {
+          if (!controller.signal.aborted) setUnreadCount(data.unreadCount)
+          return
         }
+        // DeSo's count may remain cumulative until authenticated metadata is updated.
+        // Show only items newer than the boundary actually viewed in this browser.
+        const latestResponse = await fetch("/api/via/social/notifications", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ publicKey, fetchStartIndex: -1, numToFetch: 50 }),
+          cache: "no-store",
+          signal: controller.signal,
+        })
+        if (!latestResponse.ok) throw new Error("NOTIFICATIONS_UNAVAILABLE")
+        const latest = await latestResponse.json() as { ok?: boolean; notifications?: Array<{ Index?: unknown }> }
+        if (!latest.ok || !Array.isArray(latest.notifications)) throw new Error("INVALID_NOTIFICATIONS")
+        const newer = latest.notifications.filter(item => validNotificationIndex(item.Index) && item.Index > seen).length
+        if (!controller.signal.aborted) setUnreadCount(newer)
       } catch {
         if (!controller.signal.aborted) setUnreadCount(null)
       }
@@ -83,7 +98,7 @@ export default function NotificationsPage() {
   }, [])
 
   const copy = COPY[language]
-  const title = <span className="inline-flex min-w-0 items-center gap-2">{copy.title}{unreadCount !== null && !acknowledged ? <span className="inline-flex shrink-0 items-center gap-1 rounded-full border border-emerald-500/40 bg-emerald-950/60 px-2 py-0.5 text-sm font-semibold text-emerald-300" aria-label={String(unreadCount) + " ongelezen meldingen"}><span aria-hidden="true" className="h-2 w-2 rounded-full bg-emerald-400" />{unreadCount}</span> : null}</span>
+  const title = <span className="inline-flex min-w-0 items-center gap-2">{copy.title}{unreadCount !== null && unreadCount > 0 ? <span className="inline-flex shrink-0 items-center gap-1 rounded-full border border-emerald-500/40 bg-emerald-950/60 px-2 py-0.5 text-sm font-semibold text-emerald-300" aria-label={String(unreadCount) + " ongelezen meldingen"}><span aria-hidden="true" className="h-2 w-2 rounded-full bg-emerald-400" />{unreadCount >= 50 ? "50+" : unreadCount}</span> : null}</span>
 
   return (
     <main data-notification-reading={reading} className={`${styles.page} min-h-screen bg-black px-0 pb-8 pt-0 text-white sm:px-8 sm:py-2 lg:px-12`}>
