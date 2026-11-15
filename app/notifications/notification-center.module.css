@@ -147,8 +147,7 @@
 .filter:hover::before { border-color: #78b9ff; }
 
 :global(body):has(.page[data-notification-reading="true"]) :global(.via-site-header),
-.page[data-notification-reading="true"] [data-notification-controls],
-:global(body):has(.page) :global(.via-global-guides a[href="/"]) {
+.page[data-notification-reading="true"] [data-notification-controls] {
   display: none !important;
 }
 

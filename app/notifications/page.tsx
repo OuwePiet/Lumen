@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import { NOTIFICATION_SEEN_EVENT } from "../notification-indicator"
 import styles from "./notification-center.module.css"
 import { useEffect, useState } from "react"
 import NotificationCenter from "./notification-center"
@@ -25,6 +26,12 @@ export default function NotificationsPage() {
   const [language, setLanguage] = useState<ViaLanguage>("English")
   const [session, setSession] = useState<ViaModernIdentityUser | null>(null)
   const [unreadCount, setUnreadCount] = useState<number | null>(null)
+  const [acknowledged, setAcknowledged] = useState(false)
+  useEffect(() => {
+    const onSeen = () => setAcknowledged(true)
+    window.addEventListener(NOTIFICATION_SEEN_EVENT, onSeen)
+    return () => window.removeEventListener(NOTIFICATION_SEEN_EVENT, onSeen)
+  }, [])
 
   useEffect(() => viaModernIdentity.subscribe(setSession), [])
 
@@ -72,7 +79,7 @@ export default function NotificationsPage() {
   }, [])
 
   const copy = COPY[language]
-  const title = <span className="inline-flex min-w-0 items-center gap-2">{copy.title}{unreadCount !== null ? <span className="inline-flex shrink-0 items-center gap-1 rounded-full border border-emerald-500/40 bg-emerald-950/60 px-2 py-0.5 text-sm font-semibold text-emerald-300" aria-label={String(unreadCount) + " ongelezen meldingen"}><span aria-hidden="true" className="h-2 w-2 rounded-full bg-emerald-400" />{unreadCount}</span> : null}</span>
+  const title = <span className="inline-flex min-w-0 items-center gap-2">{copy.title}{unreadCount !== null && !acknowledged ? <span className="inline-flex shrink-0 items-center gap-1 rounded-full border border-emerald-500/40 bg-emerald-950/60 px-2 py-0.5 text-sm font-semibold text-emerald-300" aria-label={String(unreadCount) + " ongelezen meldingen"}><span aria-hidden="true" className="h-2 w-2 rounded-full bg-emerald-400" />{unreadCount}</span> : null}</span>
 
   return (
     <main data-notification-reading={reading} className={`${styles.page} min-h-screen bg-black px-0 pb-8 pt-0 text-white sm:px-8 sm:py-2 lg:px-12`}>

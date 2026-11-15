@@ -420,7 +420,7 @@ export default function ViaSiteHeader() {
       <ViaHelpButton />
       <style>{`
         @media (min-width: 721px) { .via-notifications-home-top { display: none !important; } .via-notifications-future-mark { display:inline-flex; align-items:center; min-height:32px; padding:4px 10px; border:1px solid rgba(143,212,169,.3); border-radius:999px; background:rgba(40,95,64,.15); color:#b8ddc5; font-size:10px; font-weight:700; line-height:1; letter-spacing:.08em; text-transform:uppercase; white-space:nowrap; } }
-        @media (max-width:720px) { .via-site-header:has(.via-site-header-tools-notifications) .via-global-guides a[href="/"] { display:none; } }
+
         .via-site-header-link:focus:not(:focus-visible) { outline: none; }
         .via-site-header-link:focus-visible { outline: 2px solid #b9ffd4; outline-offset: -4px; border-radius: 7px; }
         .via-site-header-language-wrap { position: relative; flex: 0 0 auto; }
