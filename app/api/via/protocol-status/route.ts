@@ -1,4 +1,4 @@
-﻿import { NextResponse } from "next/server"
+import { NextResponse } from "next/server"
 import packageJson from "../../../../package.json"
 
 export const dynamic = "force-dynamic"
@@ -17,13 +17,15 @@ async function checkJson(url: string, init: RequestInit = {}) {
 
 export async function GET() {
   const checkedAt = new Date().toISOString()
-  const [sdk, advisories, identity] = await Promise.allSettled([
+  const [sdk, advisories, identity, core, api] = await Promise.allSettled([
     checkJson("https://registry.npmjs.org/deso-protocol/latest", { headers: { Accept: "application/json" } }),
     checkJson("https://api.osv.dev/v1/query", {
       method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ package: { name: "deso-protocol", ecosystem: "npm" }, version: installed }),
     }),
     fetch("https://identity.deso.org", { method: "GET", cache: "no-store", signal: AbortSignal.timeout(5000), redirect: "manual" }),
+    checkJson("https://api.github.com/repos/deso-protocol/core/commits?per_page=1", { headers: { Accept: "application/vnd.github+json", "User-Agent": "VIA-protocol-monitor" } }),
+    checkJson("https://node.deso.org/api/v0/get-app-state", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" }),
   ])
   const published = sdk.status === "fulfilled" && typeof sdk.value.version === "string" && /^\d+\.\d+\.\d+/.test(sdk.value.version) ? sdk.value.version : null
   const sdkCheck: Check = {
@@ -43,11 +45,28 @@ export async function GET() {
     detail: identity.status !== "fulfilled" ? "Identity-service niet bereikbaar" : `HTTP ${identity.value.status}; alleen bereikbaarheid, geen versie- of inlogtest`,
     source: "https://identity.deso.org", checkedAt,
   }
-  const checks = { sdk: sdkCheck, advisories: advisoryCheck, identity: identityCheck }
+  // Read-only source signal. A recent commit is NOT automatically a protocol change.
+  const coreData = core.status === "fulfilled" ? core.value : null
+  const coreItems = Array.isArray(coreData) ? coreData : null
+  const latestCore = coreItems?.[0] as { sha?: unknown; commit?: { committer?: { date?: unknown } } } | undefined
+  const coreSha = typeof latestCore?.sha === "string" ? latestCore.sha.slice(0, 12) : null
+  const coreCheck: Check = {
+    status: coreSha ? "OK" : "UNKNOWN",
+    detail: coreSha ? `Laatste openbare core-commit: ${coreSha}. Wijzigingsimpact niet automatisch vastgesteld.` : "Core-repository niet bevestigd; geen consensusvalidatie",
+    source: "https://github.com/deso-protocol/core", checkedAt,
+  }
+  // Validate an actual node API response shape without a wallet or login.
+  const appStateValid = api.status === "fulfilled" && api.value !== null && typeof api.value === "object" && !Array.isArray(api.value) && Object.keys(api.value).length > 0
+  const apiCheck: Check = {
+    status: api.status !== "fulfilled" ? "UNKNOWN" : appStateValid ? "OK" : "REVIEW",
+    detail: api.status !== "fulfilled" ? "DeSo get-app-state niet bereikbaar" : appStateValid ? "get-app-state antwoordt met JSON-object; geen volledige API-contracttest" : "Onverwachte get-app-state respons",
+    source: "https://node.deso.org/api/v0/get-app-state", checkedAt,
+  }
+  const checks = { sdk: sdkCheck, advisories: advisoryCheck, identity: identityCheck, core: coreCheck, api: apiCheck }
   const values = Object.values(checks)
   const status = values.some((item) => item.status === "REVIEW") ? "REVIEW" : values.some((item) => item.status === "UNKNOWN") ? "UNKNOWN" : "CURRENT"
   return NextResponse.json({
     status, installed, published, checks, checkedAt,
-    scope: "Automatische bronchecks: npm-versie, OSV-meldingen en Identity-bereikbaarheid. Geen blockchain-consensus-, protocolcompatibiliteits- of volledige beveiligingsaudit.",
+    scope: "Automatische read-only bronchecks: npm, OSV, Identity-bereikbaarheid, core-repository en get-app-state. Geen consensusvalidatie, volledige API-compatibiliteit of beveiligingsaudit.",
   }, { headers: { "Cache-Control": "no-store" } })
 }
