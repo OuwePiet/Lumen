@@ -1,6 +1,5 @@
 "use client"
 
-import ViaTrustTowerCard from "./via-trust-tower-card"
 
 import { useEffect, useState } from "react"
 import { readViaLocalSettings, VIA_SETTINGS_EVENT, type ViaLanguage } from "./via-local-settings"
@@ -383,8 +382,6 @@ export default function ViaFeatured({ initialItems = fallbackCities }: { initial
         <h2 id="via-featured-title" style={{ margin: "0 0 2px", color: "#dce5df", fontSize: "14px", fontWeight: 700, letterSpacing: ".01em" }}>
           {t.featured}
         </h2>
-
-        <ViaTrustTowerCard language={language} />
 
         {sponsorBySlot.get(1) ? <SponsorDisplayCard sponsor={sponsorBySlot.get(1)!} copy={t} /> : items[0] ? <CityCard item={items[0]} copy={t} /> : null}
 
