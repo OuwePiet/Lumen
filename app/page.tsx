@@ -32,6 +32,7 @@ export default async function Home() {
         <ViaHomeCenterActions />
         <ViaFeatured initialItems={featured.items} />
         <ViaWorldClock />
+        <small aria-label="VIA copyright" style={{ position: 'absolute', bottom: 6, left: 12, color: '#a8b9ad', fontSize: 10, opacity: 0.8, pointerEvents: 'none' }}>Â© @OuwePiet 2026</small>
       </main>
     </>
   )

@@ -23,6 +23,7 @@ export const metadata: Metadata = {
   applicationName: 'VIA',
   authors: [{ name: '@OuwePiet' }],
   creator: '@OuwePiet',
+  other: { copyright: 'Â© @OuwePiet 2026' },
   publisher: 'VIA / @OuwePiet',
   manifest: '/manifest.webmanifest',
   appleWebApp: {
