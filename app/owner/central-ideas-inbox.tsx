@@ -32,7 +32,7 @@ export default function CentralIdeasInbox({ ownerPublicKey }: { ownerPublicKey: 
       .then(async (response) => {
         if (!active) return
         if (response.status === 401) {
-          setConfigured(true)
+          setConfigured(null)
           return
         }
         if (!response.ok) {
@@ -105,7 +105,7 @@ export default function CentralIdeasInbox({ ownerPublicKey }: { ownerPublicKey: 
           return
         }
       }
-      setMessage(data.configured ? "Central inbox updated." : "Central storage is not connected yet.")
+      setMessage(data.configured ? "Centrale inbox bijgewerkt." : "Centrale opslag is nog niet aangesloten.")
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Could not verify the Owner session.")
     } finally {

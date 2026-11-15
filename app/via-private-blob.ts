@@ -93,6 +93,7 @@ export async function listPrivateJson(prefix: string, limit = 100) {
   const data = await response.json() as BlobListResponse
   const blobs = Array.isArray(data.blobs) ? data.blobs : []
   const items: unknown[] = []
+  let unreadable = 0
 
   for (const blob of blobs) {
     if (!blob.url) continue
@@ -104,12 +105,14 @@ export async function listPrivateJson(prefix: string, limit = 100) {
         },
         cache: "no-store",
       })
-      if (!itemResponse.ok) continue
+      if (!itemResponse.ok) { unreadable += 1; continue }
       items.push(await itemResponse.json())
     } catch {
-      // Skip a malformed or temporarily unreadable item rather than failing the inbox.
+      // Do not silently report an incomplete private inbox as successfully loaded.
+      unreadable += 1
     }
   }
 
+  if (unreadable > 0 || data.hasMore) return { ok: false as const, reason: "STORAGE_READ_INCOMPLETE" as const, items: [] as unknown[] }
   return { ok: true as const, items }
 }
