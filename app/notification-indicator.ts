@@ -24,6 +24,6 @@ export function acknowledgeNotificationVisit(publicKey: string, latestIndex: num
   try {
     const previous = readSeenNotificationIndex(publicKey)
     window.localStorage.setItem(notificationSeenKey(publicKey), String(Math.max(previous ?? -1, latestIndex)))
-    window.dispatchEvent(new CustomEvent(NOTIFICATION_SEEN_EVENT))
+    window.dispatchEvent(new CustomEvent(NOTIFICATION_SEEN_EVENT, { detail: { publicKey } }))
   } catch { /* Unavailable storage must never fabricate a persisted acknowledgement. */ }
 }

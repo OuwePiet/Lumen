@@ -28,15 +28,19 @@ export default function NotificationsPage() {
   const [unreadCount, setUnreadCount] = useState<number | null>(null)
   const [acknowledged, setAcknowledged] = useState(false)
   useEffect(() => {
-    const onSeen = () => setAcknowledged(true)
+    const onSeen = (event: Event) => {
+      const seenKey = (event as CustomEvent<{ publicKey?: string }>).detail?.publicKey
+      if (seenKey && seenKey === session?.publicKey) setAcknowledged(true)
+    }
     window.addEventListener(NOTIFICATION_SEEN_EVENT, onSeen)
     return () => window.removeEventListener(NOTIFICATION_SEEN_EVENT, onSeen)
-  }, [])
+  }, [session?.publicKey])
 
   useEffect(() => viaModernIdentity.subscribe(setSession), [])
 
   useEffect(() => {
     setUnreadCount(null)
+    setAcknowledged(false)
     if (!session?.publicKey) return
     const publicKey = session.publicKey
     const controller = new AbortController()
