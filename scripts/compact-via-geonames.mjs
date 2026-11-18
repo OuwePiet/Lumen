@@ -13,7 +13,7 @@ let countries=0,entries=0;
 for(const cc of readdirSync(source).filter(n=>/^[A-Z]{2}$/.test(n))){
  const dir=join(source,cc);const seen=new Set();const out=createWriteStream(join(destination,cc+".ndjson"),{encoding:"utf8"});
  for(const filename of readdirSync(dir).filter(n=>n.endsWith(".ndjson"))){
-  for await(const line of createInterface({input:createReadStream(join(dir,filename),crlfDelay:Infinity}))){
+  for await(const line of createInterface({input:createReadStream(join(dir,filename)),crlfDelay:Infinity}))){
    let p;try{p=JSON.parse(line)}catch{continue}
    if(!p.id||!p.name||seen.has(p.id))continue;
    seen.add(p.id);const record={id:p.id,name:p.name,countryCode:p.countryCode,admin1:p.admin1,featureCode:p.featureCode,lat:p.lat,lng:p.lng};
