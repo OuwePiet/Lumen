@@ -1,4 +1,5 @@
 import type { MetadataRoute } from 'next'
+import { welcomeLocales } from './welcome/content'
 
 const baseUrl = 'https://viadeso.online'
 
@@ -25,9 +26,18 @@ const publicRoutes: Array<{
 ]
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  return publicRoutes.map(({ path, changeFrequency, priority }) => ({
+  const pages = publicRoutes.map(({ path, changeFrequency, priority }) => ({
     url: `${baseUrl}${path}`,
     changeFrequency,
     priority,
   }))
+  const localized = welcomeLocales.map(locale => ({
+    url: `${baseUrl}/welcome/${locale}`,
+    changeFrequency: 'monthly' as const,
+    priority: 0.8,
+    alternates: {
+      languages: Object.fromEntries(welcomeLocales.map(lang => [lang, `${baseUrl}/welcome/${lang}`])),
+    },
+  }))
+  return [...pages, ...localized]
 }
