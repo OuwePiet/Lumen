@@ -4,7 +4,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "VIA — DeSo social, creators & NFTs",
     short_name: "VIA",
-    description: "VIA on DeSo: social, creators, communities, digital culture and NFTs.",
+    description: "Discover creators, posts, art, music, communities and NFTs on DeSo. Explore publicly and connect with your DeSo account. Install VIA on your home screen.",
     start_url: "/",
     scope: "/",
     display: "standalone",

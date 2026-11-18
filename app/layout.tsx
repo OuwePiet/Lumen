@@ -82,7 +82,7 @@ const viaStructuredData = {
   alternateName: 'VIA DeSo',
   url: 'https://viadeso.online/',
   description,
-  inLanguage: ['en', 'nl', 'fr', 'es', 'zh'],
+  inLanguage: ['en', 'nl', 'fr', 'es', 'zh', 'hi'],
   publisher: {
     '@type': 'Organization',
     name: 'VIA',
