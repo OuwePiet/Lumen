@@ -6,7 +6,7 @@ import PublicPosts from "./public-posts"
 import ParticipationGate from "../participation-gate"
 import PostComposer from "./post-composer"
 import SocialLocalizer from "./social-localizer"
-import { ViaSettingsContent } from "../settings/page"
+import { ViaSettingsContent } from "../settings/settings-content"
 import { readPublicPostByHash } from "../../lib/via/deso-post-read"
 export const metadata: Metadata = {
   title: "VIA Post Office",

@@ -588,9 +588,11 @@ export default function ViaHomeControls() {
           <Link prefetch={false} href="/help" style={{ ...buttonStyle, width: "100%", justifyContent: "center", paddingInline: "9px" }}>Handboek VIA</Link>
           <Link prefetch={false} href="/wereldkalender" style={{ ...buttonStyle, width: "100%", justifyContent: "center", paddingInline: "9px" }}>{t.calendar}</Link>
         </nav>
+        <nav aria-label="VIA WereldSpiegel" style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "7px" }}>
+          <Link prefetch={false} href="/wereldspiegel" style={{ ...buttonStyle, width: "100%", justifyContent: "center", paddingInline: "9px" }}>De WereldSpiegel</Link>
+        </nav>
         <nav aria-label="VIA toekomstige pagina's" style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "7px" }}>
           {[
-            ["Wereldkrant", "World Newspaper", "Journal mondial", "Periódico mundial", "世界报纸"],
             ["LuisterHoek", "Listening Corner", "Coin écoute", "Rincón de escucha", "聆听角"],
             ["VIA Auto", "VIA Auto", "VIA Auto", "VIA Auto", "VIA 汽车"],
             ["VIA Archief", "VIA Archive", "Archives VIA", "Archivo VIA", "VIA 档案"],

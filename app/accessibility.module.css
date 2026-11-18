@@ -1,17 +1,3 @@
-:global(a:focus),
-:global(button:focus),
-:global(input:focus),
-:global(select:focus),
-:global(summary:focus),
-:global(a:focus-visible),
-:global(button:focus-visible),
-:global(input:focus-visible),
-:global(select:focus-visible),
-:global(summary:focus-visible) {
-  outline: 3px solid #b9ffd4;
-  outline-offset: 4px;
-}
-
 .skipLink {
   position: fixed;
   top: 12px;
