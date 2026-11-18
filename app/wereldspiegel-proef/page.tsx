@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import WorldMirrorTranslate from "./world-mirror-translate";
+import ViaPlaceSearch from "../via-place-search";
 import {useEffect,useMemo,useState} from "react";
 type Story={title:string;summary:string;country:string;place:string;source:string;url?:string};
 const places=[["Walpolamulla","Sri Lanka"],["Shani Shingnapur","India"],["Riyad","Saoedi-Arabië"],["Burundi","Afrika"],["Papoea-Nieuw-Guinea","Oceanië"]];
@@ -63,7 +64,7 @@ return <main className={`wereldspiegel-proef-root ${showViaHeader?"ws-show-via-h
 <input id="ws-place" className="ws-input" style={{width:"100%",maxWidth:650}} placeholder={ui.placeholder} value={query} onChange={e=>{setQuery(e.target.value);setChosen("")}}/>
 <div style={{display:"flex",flexWrap:"wrap",gap:6}}>{query&&filtered.map(p=><button key={p[0]} className="ws-btn" onClick={()=>{setChosen(p.join(" · "));setQuery(p[0])}}>{p[0]} · {p[1]}</button>)}</div>
 {query&&<p style={{fontSize:13,color:"#25372b"}}>{chosen?chosen+" — nog geen live lokaal nieuws":!filtered.length?"Niet in de kleine proefindex; de plaats kan wel bestaan.":"Kies een locatie uit de proefindex."}</p>}
-<p style={{fontSize:12,color:"#25372b"}}>De proefindex bevat vijf locaties; de wereldwijde plaatsendatabase is nog niet aangesloten.</p>
+<ViaPlaceSearch context="newspaper" />
 </section>}
 </header>
 <nav aria-label="Bladeren door De WereldSpiegel" style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:8,flexWrap:"wrap",position:"sticky",top:0,zIndex:30,padding:"2px 6px",margin:"2px 0 5px",background:"#fbf9f5",borderBottom:"1px solid #ddd9cd"}}><button type="button" className="ws-btn" style={{minWidth:160,textAlign:"center"}} disabled={focus?readingIndex===0:index===0} onClick={()=>focus?setReadingIndex(i=>Math.max(0,i-1)):move(-1)}>← Vorige pagina</button><span aria-live="polite" style={{fontSize:13,color:"#69736d"}}>{pages.length ? <>Pagina {focus?readingIndex+1:index+1} van {pages.length}</> : "Nog geen berichten"}</span><button type="button" className="ws-btn" style={{minWidth:160,textAlign:"center"}} disabled={focus?readingIndex>=pages.length-1:index+step>=pages.length} onClick={()=>focus?setReadingIndex(i=>Math.min(pages.length-1,i+1)):move(1)}>Volgende pagina →</button></nav>
