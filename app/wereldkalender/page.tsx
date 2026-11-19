@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react"
 import ViaPlaceSearch from "../via-place-search"
 import { VIA_INTERNATIONAL_DAYS } from "../via-international-calendar"
+import { VIA_DATED_SPORT_EVENTS } from "../via-dated-sport-events"
 import { PAPAL_JOURNEY_2026, PAPAL_ITINERARY_SOURCE } from "../via-papal-calendar"
 import { viaOfflineLunarDates } from "../via-calendar-offline-dates"
 import { VIA_CALENDAR_REGIONS, viaCalendarLocalDate, type ViaCalendarRegion } from "../via-calendar-regions"
@@ -155,7 +156,8 @@ export default function WereldkalenderPage() {
     return VIA_INTERNATIONAL_DAYS.filter(d => d.status==="scheduled" && d.month===month+1)
       .map(d=>({ ...d, day:d.day??null }))
       .concat(easter.month===month+1 ? [{id:"easter",nameNl:"Pasen",month:easter.month,day:easter.day,scope:"cultural" as const,status:"scheduled" as const}]:[])
-  },[year,month])
+      .concat(VIA_DATED_SPORT_EVENTS.filter(d=>d.year===year && d.month===month+1 && (region==="world" || region==="NL")).map(d=>({id:d.id,nameNl:d.nameNl,month:d.month,day:d.day,scope:d.scope,status:d.status})))
+  },[year,month,region])
   const offlineLunar = useMemo(() => viaOfflineLunarDates(year), [year])
   const unresolved = VIA_INTERNATIONAL_DAYS.filter(d=>d.status==="date-required" && d.id!=="easter" && !offlineLunar.some(known=>known.id===d.id || (d.id==="eid" && known.id==="eid-al-fitr")))
   const easter=easterSunday(year)
