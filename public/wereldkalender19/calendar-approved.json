@@ -1,0 +1,1765 @@
+{
+  "version": "legacy-fixed-2026-v1",
+  "events": [
+    {
+      "id": "legacy-new-year-2026",
+      "name": "Nieuwjaarsdag",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2026-01-01",
+      "end": "2026-01-01",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-women-2026",
+      "name": "Internationale Vrouwendag",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2026-03-08",
+      "end": "2026-03-08",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-trans-visibility-2026",
+      "name": "Internationale Dag van Transgendervisibiliteit",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2026-03-31",
+      "end": "2026-03-31",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-earth-2026",
+      "name": "Dag van de Aarde",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2026-04-22",
+      "end": "2026-04-22",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-idahobit-2026",
+      "name": "Internationale Dag tegen Homo-, Bi-, Intersekse- en Transfobie (IDAHOBIT)",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2026-05-17",
+      "end": "2026-05-17",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-peace-2026",
+      "name": "Internationale Dag van de Vrede",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2026-09-21",
+      "end": "2026-09-21",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-animals-2026",
+      "name": "Werelddierendag",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2026-10-04",
+      "end": "2026-10-04",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-coming-out-2026",
+      "name": "Coming Out Day",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2026-10-11",
+      "end": "2026-10-11",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-halloween-2026",
+      "name": "Halloween",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2026-10-31",
+      "end": "2026-10-31",
+      "category": "cultuur",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-children-2026",
+      "name": "Wereldkinderdag",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2026-11-20",
+      "end": "2026-11-20",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-trans-remembrance-2026",
+      "name": "Transgender Day of Remembrance",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2026-11-20",
+      "end": "2026-11-20",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-aids-2026",
+      "name": "Wereld Aids Dag",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2026-12-01",
+      "end": "2026-12-01",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-christmas-eve-2026",
+      "name": "Kerstavond",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2026-12-24",
+      "end": "2026-12-24",
+      "category": "cultuur",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-christmas-2026",
+      "name": "Kerstmis",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2026-12-25",
+      "end": "2026-12-25",
+      "category": "cultuur",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-boxing-day-2026",
+      "name": "Tweede kerstdag",
+      "place": "Regionaal — locatie verschilt",
+      "start": "2026-12-26",
+      "end": "2026-12-26",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-new-years-eve-2026",
+      "name": "Oudejaarsavond",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2026-12-31",
+      "end": "2026-12-31",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-human-rights-2026",
+      "name": "Dag van de Mensenrechten",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2026-12-10",
+      "end": "2026-12-10",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-environment-2026",
+      "name": "Wereldmilieudag",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2026-06-05",
+      "end": "2026-06-05",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-ocean-2026",
+      "name": "Wereldoceanendag",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2026-06-08",
+      "end": "2026-06-08",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-refugees-2026",
+      "name": "Wereldvluchtelingendag",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2026-06-20",
+      "end": "2026-06-20",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-youth-2026",
+      "name": "Internationale Jongerendag",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2026-08-12",
+      "end": "2026-08-12",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-literacy-2026",
+      "name": "Internationale Dag van de Alfabetisering",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2026-09-08",
+      "end": "2026-09-08",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-mental-health-2026",
+      "name": "Werelddag voor de Geestelijke Gezondheid",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2026-10-10",
+      "end": "2026-10-10",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-disabilities-2026",
+      "name": "Internationale Dag van Personen met een Handicap",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2026-12-03",
+      "end": "2026-12-03",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-volunteers-2026",
+      "name": "Internationale Vrijwilligersdag",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2026-12-05",
+      "end": "2026-12-05",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-education-2026",
+      "name": "Internationale Dag van het Onderwijs",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2026-01-24",
+      "end": "2026-01-24",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-water-2026",
+      "name": "Wereldwaterdag",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2026-03-22",
+      "end": "2026-03-22",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-health-2026",
+      "name": "Wereldgezondheidsdag",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2026-04-07",
+      "end": "2026-04-07",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-biodiversity-2026",
+      "name": "Internationale Dag van de Biodiversiteit",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2026-05-22",
+      "end": "2026-05-22",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-indigenous-2026",
+      "name": "Internationale Dag van Inheemse Volkeren",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2026-08-09",
+      "end": "2026-08-09",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-united-nations-2026",
+      "name": "Dag van de Verenigde Naties",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2026-10-24",
+      "end": "2026-10-24",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-press-freedom-2026",
+      "name": "Werelddag van de Persvrijheid",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2026-05-03",
+      "end": "2026-05-03",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-teachers-2026",
+      "name": "Wereldlerarendag",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2026-10-05",
+      "end": "2026-10-05",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-food-2026",
+      "name": "Wereldvoedseldag",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2026-10-16",
+      "end": "2026-10-16",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-tolerance-2026",
+      "name": "Internationale Dag voor Verdraagzaamheid",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2026-11-16",
+      "end": "2026-11-16",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-migrants-2026",
+      "name": "Internationale Migrantendag",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2026-12-18",
+      "end": "2026-12-18",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-social-justice-2026",
+      "name": "Werelddag van Sociale Rechtvaardigheid",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2026-02-20",
+      "end": "2026-02-20",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-mother-language-2026",
+      "name": "Internationale Dag van de Moedertaal",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2026-02-21",
+      "end": "2026-02-21",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-forest-2026",
+      "name": "Internationale Dag van de Bossen",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2026-03-21",
+      "end": "2026-03-21",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-girls-2026",
+      "name": "Internationale Dag van het Meisje",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2026-10-11",
+      "end": "2026-10-11",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-braille-2026",
+      "name": "Wereldbrailledag",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2026-01-04",
+      "end": "2026-01-04",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-holocaust-2026",
+      "name": "Internationale Holocaustherdenkingsdag",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2026-01-27",
+      "end": "2026-01-27",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-wetlands-2026",
+      "name": "Wereldmoerasdag",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2026-02-02",
+      "end": "2026-02-02",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-women-science-2026",
+      "name": "Internationale Dag van Vrouwen en Meisjes in de Wetenschap",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2026-02-11",
+      "end": "2026-02-11",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-radio-2026",
+      "name": "Wereldradiodag",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2026-02-13",
+      "end": "2026-02-13",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-wildlife-2026",
+      "name": "Werelddag van de Wilde Dieren",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2026-03-03",
+      "end": "2026-03-03",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-happiness-2026",
+      "name": "Internationale Dag van het Geluk",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2026-03-20",
+      "end": "2026-03-20",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-poetry-2026",
+      "name": "Wereldpoëziedag",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2026-03-21",
+      "end": "2026-03-21",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-meteorology-2026",
+      "name": "Wereldmeteorologiedag",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2026-03-23",
+      "end": "2026-03-23",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-autism-2026",
+      "name": "Wereldautismebewustzijnsdag",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2026-04-02",
+      "end": "2026-04-02",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-sport-development-2026",
+      "name": "Internationale Dag van Sport voor Ontwikkeling en Vrede",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2026-04-06",
+      "end": "2026-04-06",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-creativity-2026",
+      "name": "Werelddag van Creativiteit en Innovatie",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2026-04-21",
+      "end": "2026-04-21",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-books-copyright-2026",
+      "name": "Wereldboekendag en Auteursrechtendag",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2026-04-23",
+      "end": "2026-04-23",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-jazz-2026",
+      "name": "Internationale Jazzdag",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2026-04-30",
+      "end": "2026-04-30",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-workers-2026",
+      "name": "Dag van de Arbeid",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2026-05-01",
+      "end": "2026-05-01",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-families-2026",
+      "name": "Internationale Dag van het Gezin",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2026-05-15",
+      "end": "2026-05-15",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-bees-2026",
+      "name": "Wereldbijendag",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2026-05-20",
+      "end": "2026-05-20",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-cultural-diversity-2026",
+      "name": "Werelddag voor Culturele Diversiteit",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2026-05-21",
+      "end": "2026-05-21",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-no-tobacco-2026",
+      "name": "Werelddag zonder Tabak",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2026-05-31",
+      "end": "2026-05-31",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-parents-2026",
+      "name": "Werelddag van Ouders",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2026-06-01",
+      "end": "2026-06-01",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-bicycle-2026",
+      "name": "Wereldfietsdag",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2026-06-03",
+      "end": "2026-06-03",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-child-labour-2026",
+      "name": "Werelddag tegen Kinderarbeid",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2026-06-12",
+      "end": "2026-06-12",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-desertification-2026",
+      "name": "Werelddag tegen Woestijnvorming en Droogte",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2026-06-17",
+      "end": "2026-06-17",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-yoga-2026",
+      "name": "Internationale Yogadag",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2026-06-21",
+      "end": "2026-06-21",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-anti-drugs-2026",
+      "name": "Internationale Dag tegen Drugsmisbruik en Illegale Handel",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2026-06-26",
+      "end": "2026-06-26",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-population-2026",
+      "name": "Wereldbevolkingsdag",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2026-07-11",
+      "end": "2026-07-11",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-friendship-2026",
+      "name": "Internationale Dag van de Vriendschap",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2026-07-30",
+      "end": "2026-07-30",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-humanitarian-2026",
+      "name": "Wereldhumanitaire Dag",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2026-08-19",
+      "end": "2026-08-19",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-charity-2026",
+      "name": "Internationale Dag van Liefdadigheid",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2026-09-05",
+      "end": "2026-09-05",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-democracy-2026",
+      "name": "Internationale Dag van de Democratie",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2026-09-15",
+      "end": "2026-09-15",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-ozone-2026",
+      "name": "Internationale Dag voor de Bescherming van de Ozonlaag",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2026-09-16",
+      "end": "2026-09-16",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-sign-languages-2026",
+      "name": "Internationale Dag van Gebarentalen",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2026-09-23",
+      "end": "2026-09-23",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-tourism-2026",
+      "name": "Wereldtoerismedag",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2026-09-27",
+      "end": "2026-09-27",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-older-persons-2026",
+      "name": "Internationale Dag van Ouderen",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2026-10-01",
+      "end": "2026-10-01",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-non-violence-2026",
+      "name": "Internationale Dag van Geweldloosheid",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2026-10-02",
+      "end": "2026-10-02",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-disaster-risk-2026",
+      "name": "Internationale Dag voor Rampenrisicovermindering",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2026-10-13",
+      "end": "2026-10-13",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-rural-women-2026",
+      "name": "Internationale Dag van Plattelandsvrouwen",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2026-10-15",
+      "end": "2026-10-15",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-poverty-2026",
+      "name": "Internationale Dag voor de Uitbanning van Armoede",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2026-10-17",
+      "end": "2026-10-17",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-cities-2026",
+      "name": "Wereldstedendag",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2026-10-31",
+      "end": "2026-10-31",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-science-peace-2026",
+      "name": "Werelddag van Wetenschap voor Vrede en Ontwikkeling",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2026-11-10",
+      "end": "2026-11-10",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-kindness-2026",
+      "name": "Wereldvriendelijkheidsdag",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2026-11-13",
+      "end": "2026-11-13",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-toilets-2026",
+      "name": "Wereldtoiletdag",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2026-11-19",
+      "end": "2026-11-19",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-violence-women-2026",
+      "name": "Internationale Dag tegen Geweld tegen Vrouwen",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2026-11-25",
+      "end": "2026-11-25",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-solidarity-palestinian-2026",
+      "name": "Internationale Dag van Solidariteit met het Palestijnse Volk",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2026-11-29",
+      "end": "2026-11-29",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-slavery-abolition-2026",
+      "name": "Internationale Dag voor de Afschaffing van Slavernij",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2026-12-02",
+      "end": "2026-12-02",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-anti-corruption-2026",
+      "name": "Internationale Dag tegen Corruptie",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2026-12-09",
+      "end": "2026-12-09",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-mountains-2026",
+      "name": "Internationale Bergendag",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2026-12-11",
+      "end": "2026-12-11",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-solidarity-2026",
+      "name": "Internationale Dag van Menselijke Solidariteit",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2026-12-20",
+      "end": "2026-12-20",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-new-year-2027",
+      "name": "Nieuwjaarsdag",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2027-01-01",
+      "end": "2027-01-01",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-women-2027",
+      "name": "Internationale Vrouwendag",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2027-03-08",
+      "end": "2027-03-08",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-trans-visibility-2027",
+      "name": "Internationale Dag van Transgendervisibiliteit",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2027-03-31",
+      "end": "2027-03-31",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-earth-2027",
+      "name": "Dag van de Aarde",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2027-04-22",
+      "end": "2027-04-22",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-idahobit-2027",
+      "name": "Internationale Dag tegen Homo-, Bi-, Intersekse- en Transfobie (IDAHOBIT)",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2027-05-17",
+      "end": "2027-05-17",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-peace-2027",
+      "name": "Internationale Dag van de Vrede",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2027-09-21",
+      "end": "2027-09-21",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-animals-2027",
+      "name": "Werelddierendag",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2027-10-04",
+      "end": "2027-10-04",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-coming-out-2027",
+      "name": "Coming Out Day",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2027-10-11",
+      "end": "2027-10-11",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-halloween-2027",
+      "name": "Halloween",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2027-10-31",
+      "end": "2027-10-31",
+      "category": "cultuur",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-children-2027",
+      "name": "Wereldkinderdag",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2027-11-20",
+      "end": "2027-11-20",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-trans-remembrance-2027",
+      "name": "Transgender Day of Remembrance",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2027-11-20",
+      "end": "2027-11-20",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-aids-2027",
+      "name": "Wereld Aids Dag",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2027-12-01",
+      "end": "2027-12-01",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-christmas-eve-2027",
+      "name": "Kerstavond",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2027-12-24",
+      "end": "2027-12-24",
+      "category": "cultuur",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-christmas-2027",
+      "name": "Kerstmis",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2027-12-25",
+      "end": "2027-12-25",
+      "category": "cultuur",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-boxing-day-2027",
+      "name": "Tweede kerstdag",
+      "place": "Regionaal — locatie verschilt",
+      "start": "2027-12-26",
+      "end": "2027-12-26",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-new-years-eve-2027",
+      "name": "Oudejaarsavond",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2027-12-31",
+      "end": "2027-12-31",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-human-rights-2027",
+      "name": "Dag van de Mensenrechten",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2027-12-10",
+      "end": "2027-12-10",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-environment-2027",
+      "name": "Wereldmilieudag",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2027-06-05",
+      "end": "2027-06-05",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-ocean-2027",
+      "name": "Wereldoceanendag",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2027-06-08",
+      "end": "2027-06-08",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-refugees-2027",
+      "name": "Wereldvluchtelingendag",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2027-06-20",
+      "end": "2027-06-20",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-youth-2027",
+      "name": "Internationale Jongerendag",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2027-08-12",
+      "end": "2027-08-12",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-literacy-2027",
+      "name": "Internationale Dag van de Alfabetisering",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2027-09-08",
+      "end": "2027-09-08",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-mental-health-2027",
+      "name": "Werelddag voor de Geestelijke Gezondheid",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2027-10-10",
+      "end": "2027-10-10",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-disabilities-2027",
+      "name": "Internationale Dag van Personen met een Handicap",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2027-12-03",
+      "end": "2027-12-03",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-volunteers-2027",
+      "name": "Internationale Vrijwilligersdag",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2027-12-05",
+      "end": "2027-12-05",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-education-2027",
+      "name": "Internationale Dag van het Onderwijs",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2027-01-24",
+      "end": "2027-01-24",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-water-2027",
+      "name": "Wereldwaterdag",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2027-03-22",
+      "end": "2027-03-22",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-health-2027",
+      "name": "Wereldgezondheidsdag",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2027-04-07",
+      "end": "2027-04-07",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-biodiversity-2027",
+      "name": "Internationale Dag van de Biodiversiteit",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2027-05-22",
+      "end": "2027-05-22",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-indigenous-2027",
+      "name": "Internationale Dag van Inheemse Volkeren",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2027-08-09",
+      "end": "2027-08-09",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-united-nations-2027",
+      "name": "Dag van de Verenigde Naties",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2027-10-24",
+      "end": "2027-10-24",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-press-freedom-2027",
+      "name": "Werelddag van de Persvrijheid",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2027-05-03",
+      "end": "2027-05-03",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-teachers-2027",
+      "name": "Wereldlerarendag",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2027-10-05",
+      "end": "2027-10-05",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-food-2027",
+      "name": "Wereldvoedseldag",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2027-10-16",
+      "end": "2027-10-16",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-tolerance-2027",
+      "name": "Internationale Dag voor Verdraagzaamheid",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2027-11-16",
+      "end": "2027-11-16",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-migrants-2027",
+      "name": "Internationale Migrantendag",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2027-12-18",
+      "end": "2027-12-18",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-social-justice-2027",
+      "name": "Werelddag van Sociale Rechtvaardigheid",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2027-02-20",
+      "end": "2027-02-20",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-mother-language-2027",
+      "name": "Internationale Dag van de Moedertaal",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2027-02-21",
+      "end": "2027-02-21",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-forest-2027",
+      "name": "Internationale Dag van de Bossen",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2027-03-21",
+      "end": "2027-03-21",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-girls-2027",
+      "name": "Internationale Dag van het Meisje",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2027-10-11",
+      "end": "2027-10-11",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-braille-2027",
+      "name": "Wereldbrailledag",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2027-01-04",
+      "end": "2027-01-04",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-holocaust-2027",
+      "name": "Internationale Holocaustherdenkingsdag",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2027-01-27",
+      "end": "2027-01-27",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-wetlands-2027",
+      "name": "Wereldmoerasdag",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2027-02-02",
+      "end": "2027-02-02",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-women-science-2027",
+      "name": "Internationale Dag van Vrouwen en Meisjes in de Wetenschap",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2027-02-11",
+      "end": "2027-02-11",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-radio-2027",
+      "name": "Wereldradiodag",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2027-02-13",
+      "end": "2027-02-13",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-wildlife-2027",
+      "name": "Werelddag van de Wilde Dieren",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2027-03-03",
+      "end": "2027-03-03",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-happiness-2027",
+      "name": "Internationale Dag van het Geluk",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2027-03-20",
+      "end": "2027-03-20",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-poetry-2027",
+      "name": "Wereldpoëziedag",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2027-03-21",
+      "end": "2027-03-21",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-meteorology-2027",
+      "name": "Wereldmeteorologiedag",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2027-03-23",
+      "end": "2027-03-23",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-autism-2027",
+      "name": "Wereldautismebewustzijnsdag",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2027-04-02",
+      "end": "2027-04-02",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-sport-development-2027",
+      "name": "Internationale Dag van Sport voor Ontwikkeling en Vrede",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2027-04-06",
+      "end": "2027-04-06",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-creativity-2027",
+      "name": "Werelddag van Creativiteit en Innovatie",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2027-04-21",
+      "end": "2027-04-21",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-books-copyright-2027",
+      "name": "Wereldboekendag en Auteursrechtendag",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2027-04-23",
+      "end": "2027-04-23",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-jazz-2027",
+      "name": "Internationale Jazzdag",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2027-04-30",
+      "end": "2027-04-30",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-workers-2027",
+      "name": "Dag van de Arbeid",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2027-05-01",
+      "end": "2027-05-01",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-families-2027",
+      "name": "Internationale Dag van het Gezin",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2027-05-15",
+      "end": "2027-05-15",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-bees-2027",
+      "name": "Wereldbijendag",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2027-05-20",
+      "end": "2027-05-20",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-cultural-diversity-2027",
+      "name": "Werelddag voor Culturele Diversiteit",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2027-05-21",
+      "end": "2027-05-21",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-no-tobacco-2027",
+      "name": "Werelddag zonder Tabak",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2027-05-31",
+      "end": "2027-05-31",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-parents-2027",
+      "name": "Werelddag van Ouders",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2027-06-01",
+      "end": "2027-06-01",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-bicycle-2027",
+      "name": "Wereldfietsdag",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2027-06-03",
+      "end": "2027-06-03",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-child-labour-2027",
+      "name": "Werelddag tegen Kinderarbeid",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2027-06-12",
+      "end": "2027-06-12",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-desertification-2027",
+      "name": "Werelddag tegen Woestijnvorming en Droogte",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2027-06-17",
+      "end": "2027-06-17",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-yoga-2027",
+      "name": "Internationale Yogadag",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2027-06-21",
+      "end": "2027-06-21",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-anti-drugs-2027",
+      "name": "Internationale Dag tegen Drugsmisbruik en Illegale Handel",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2027-06-26",
+      "end": "2027-06-26",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-population-2027",
+      "name": "Wereldbevolkingsdag",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2027-07-11",
+      "end": "2027-07-11",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-friendship-2027",
+      "name": "Internationale Dag van de Vriendschap",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2027-07-30",
+      "end": "2027-07-30",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-humanitarian-2027",
+      "name": "Wereldhumanitaire Dag",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2027-08-19",
+      "end": "2027-08-19",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-charity-2027",
+      "name": "Internationale Dag van Liefdadigheid",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2027-09-05",
+      "end": "2027-09-05",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-democracy-2027",
+      "name": "Internationale Dag van de Democratie",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2027-09-15",
+      "end": "2027-09-15",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-ozone-2027",
+      "name": "Internationale Dag voor de Bescherming van de Ozonlaag",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2027-09-16",
+      "end": "2027-09-16",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-sign-languages-2027",
+      "name": "Internationale Dag van Gebarentalen",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2027-09-23",
+      "end": "2027-09-23",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-tourism-2027",
+      "name": "Wereldtoerismedag",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2027-09-27",
+      "end": "2027-09-27",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-older-persons-2027",
+      "name": "Internationale Dag van Ouderen",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2027-10-01",
+      "end": "2027-10-01",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-non-violence-2027",
+      "name": "Internationale Dag van Geweldloosheid",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2027-10-02",
+      "end": "2027-10-02",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-disaster-risk-2027",
+      "name": "Internationale Dag voor Rampenrisicovermindering",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2027-10-13",
+      "end": "2027-10-13",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-rural-women-2027",
+      "name": "Internationale Dag van Plattelandsvrouwen",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2027-10-15",
+      "end": "2027-10-15",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-poverty-2027",
+      "name": "Internationale Dag voor de Uitbanning van Armoede",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2027-10-17",
+      "end": "2027-10-17",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-cities-2027",
+      "name": "Wereldstedendag",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2027-10-31",
+      "end": "2027-10-31",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-science-peace-2027",
+      "name": "Werelddag van Wetenschap voor Vrede en Ontwikkeling",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2027-11-10",
+      "end": "2027-11-10",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-kindness-2027",
+      "name": "Wereldvriendelijkheidsdag",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2027-11-13",
+      "end": "2027-11-13",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-toilets-2027",
+      "name": "Wereldtoiletdag",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2027-11-19",
+      "end": "2027-11-19",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-violence-women-2027",
+      "name": "Internationale Dag tegen Geweld tegen Vrouwen",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2027-11-25",
+      "end": "2027-11-25",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-solidarity-palestinian-2027",
+      "name": "Internationale Dag van Solidariteit met het Palestijnse Volk",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2027-11-29",
+      "end": "2027-11-29",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-slavery-abolition-2027",
+      "name": "Internationale Dag voor de Afschaffing van Slavernij",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2027-12-02",
+      "end": "2027-12-02",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-anti-corruption-2027",
+      "name": "Internationale Dag tegen Corruptie",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2027-12-09",
+      "end": "2027-12-09",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-mountains-2027",
+      "name": "Internationale Bergendag",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2027-12-11",
+      "end": "2027-12-11",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    },
+    {
+      "id": "legacy-solidarity-2027",
+      "name": "Internationale Dag van Menselijke Solidariteit",
+      "place": "Wereldwijd — geen specifieke locatie",
+      "start": "2027-12-20",
+      "end": "2027-12-20",
+      "category": "feestdagen",
+      "approved": true,
+      "description": "Vaste kalenderdatum uit bestaande VIA-kalender; geen live gebeurtenis."
+    }
+  ]
+}

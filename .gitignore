@@ -1,0 +1,19 @@
+# VIA isolated release worktree: generated data and local secrets must not be committed.
+node_modules/
+.next/
+tsconfig.tsbuildinfo
+next-env.d.ts
+geo-index-proef/
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
+*.sqlite.building
+*.sqlite.previous
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Local-only complete GEO shards; not a Vercel deployment asset.
+# GEO shards included in release
