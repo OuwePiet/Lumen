@@ -29,6 +29,7 @@ export default function MijnAgendaProef() {
   const [imported, setImported] = useState(false)
   const [importedPlace, setImportedPlace] = useState("")
   const [geoCountry, setGeoCountry] = useState("NL")
+  const [geoCountries, setGeoCountries] = useState<string[]>(["NL"])
   const [geoResults, setGeoResults] = useState<ViaGeoPlace[]>([])
   const [selectedGeo, setSelectedGeo] = useState<ViaGeoPlace | null>(null)
   const [passphrase, setPassphrase] = useState("")
@@ -73,6 +74,14 @@ export default function MijnAgendaProef() {
     window.history.replaceState(null, "", window.location.pathname)
   }, [])
   useEffect(() => { setSavedOnDevice(hasPrivateCalendar()) }, [])
+  useEffect(() => {
+    const controller = new AbortController()
+    fetch("/wereldkalender19/geo-countries.json", { credentials: "omit", signal: controller.signal })
+      .then(response => { if (!response.ok) throw new Error("Landenlijst ontbreekt"); return response.json() })
+      .then((codes: unknown) => { if (Array.isArray(codes) && codes.length >= 200 && codes.every(code => typeof code === "string" && /^[A-Z]{2}$/.test(code))) setGeoCountries(codes) })
+      .catch(() => {})
+    return () => controller.abort()
+  }, [])
   const saveEncrypted = async () => {
     setBusy(true)
     try { await savePrivateCalendar(items, passphrase); setSavedOnDevice(true); setNotice("Versleutelde kopie op dit apparaat bewaard. Bewaar je wachtzin zelf.") }
@@ -159,7 +168,7 @@ export default function MijnAgendaProef() {
     </section>    <section aria-label="Afspraak toevoegen" style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "end", marginTop: 24 }}>
       <label style={{ display: "grid", gap: 5 }}>Onderwerp<input style={field} value={title} maxLength={160} onChange={event => setTitle(event.target.value)} /></label>
       <label style={{ display: "grid", gap: 5 }}>Datum<input style={field} type="date" value={date} onChange={event => setDate(event.target.value)} /></label>
-      <label style={{ display: "grid", gap: 5 }}>Plaats (optioneel)<input style={field} value={importedPlace} maxLength={160} onChange={event => { setImportedPlace(event.target.value); setSelectedGeo(null) }} /></label><label style={{ display: "grid", gap: 5 }}>Zoekland<select style={field} value={geoCountry} onChange={event => { setGeoCountry(event.target.value); setSelectedGeo(null) }}>{["NL","BE","DE","FR","GB","US","IN","CN","ES"].map(code => <option key={code} value={code}>{code}</option>)}</select></label><button style={field} type="button" disabled={importedPlace.trim().length < 2} onClick={async () => { try { setGeoResults(await viaSearchGeoShards(geoCountry, importedPlace, 8)); setNotice("Kies de juiste plaats uit de wereldindex.") } catch { setGeoResults([]); setNotice("GEO-zoeken is tijdelijk niet beschikbaar.") } }}>Zoek plaats in wereldindex</button>{geoResults.length > 0 && <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>{geoResults.map(place => <button type="button" key={place.id} style={field} onClick={() => { setImportedPlace(place.name); setSelectedGeo(place); setGeoResults([]); setNotice("GEO-plaats gekozen: " + place.name + " (" + place.countryCode + ", " + place.id + ").") }}>{place.name} ({place.admin1 || place.countryCode})</button>)}</div>}<label style={{ display: "grid", gap: 5 }}>Tijd (optioneel)<input style={field} type="time" value={time} onChange={event => setTime(event.target.value)} /></label>
+      <label style={{ display: "grid", gap: 5 }}>Plaats (optioneel)<input style={field} value={importedPlace} maxLength={160} onChange={event => { setImportedPlace(event.target.value); setSelectedGeo(null); setGeoResults([]) }} /></label><label style={{ display: "grid", gap: 5 }}>Zoekland<select style={field} value={geoCountry} onChange={event => { setGeoCountry(event.target.value); setSelectedGeo(null); setGeoResults([]) }}>{geoCountries.map(code => <option key={code} value={code}>{code}</option>)}</select></label><button style={field} type="button" disabled={importedPlace.trim().length < 2} onClick={async () => { try { setGeoResults(await viaSearchGeoShards(geoCountry, importedPlace, 8)); setNotice("Kies de juiste plaats uit de wereldindex.") } catch { setGeoResults([]); setNotice("GEO-zoeken is tijdelijk niet beschikbaar.") } }}>Zoek plaats in wereldindex</button>{geoResults.length > 0 && <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>{geoResults.map(place => <button type="button" key={place.id} style={field} onClick={() => { setImportedPlace(place.name); setSelectedGeo(place); setGeoResults([]); setNotice("GEO-plaats gekozen: " + place.name + " (" + place.countryCode + ", " + place.id + ").") }}>{place.name} ({place.admin1 || place.countryCode})</button>)}</div>}<label style={{ display: "grid", gap: 5 }}>Tijd (optioneel)<input style={field} type="time" value={time} onChange={event => setTime(event.target.value)} /></label>
       <label style={{ display: "grid", gap: 5 }}>Herhaling<select style={field} value={repeat} onChange={event => setRepeat(event.target.value as Repeat)}><option value="none">Eenmalig</option><option value="daily">Dagelijks</option><option value="weekly">Wekelijks</option><option value="monthly">Maandelijks</option><option value="yearly">Jaarlijks</option></select></label>      <label style={{ display: "flex", gap: 6, alignItems: "center" }}><input type="checkbox" checked={reminder} disabled={!time} onChange={event => setReminder(event.target.checked)} />Herinnering 15 minuten vooraf (bij tijd)</label>
       <button style={field} onClick={add}>Afspraak toevoegen</button>
     </section>
