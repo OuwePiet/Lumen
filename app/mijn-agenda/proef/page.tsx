@@ -14,7 +14,7 @@ import { useEffect, useMemo, useState } from "react"
 import { deletePrivateCalendar, exportEncryptedBackup, hasPrivateCalendar, importEncryptedBackup, loadPrivateCalendar, savePrivateCalendar } from "./private-storage"
 
 type Repeat = "none" | "daily" | "weekly" | "monthly" | "yearly"
-type Appointment = { id: number; title: string; date: string; time: string; repeat: Repeat; reminder: boolean }
+type Appointment = { id: number; title: string; date: string; time: string; repeat: Repeat; reminder: boolean; place?: string }
 
 /** VIA Mijn Agenda: isolated, session-only prototype. No blockchain, backend or external calendar writes. */
 export default function MijnAgendaProef() {
@@ -108,8 +108,8 @@ export default function MijnAgendaProef() {
       setNotice("Deze afspraak staat al op dezelfde datum en tijd in Mijn Agenda.")
       return
     }
-    setItems(previous => [...previous, { id: Date.now() + Math.random(), title: title.trim().slice(0, 160), date, time, repeat, reminder }].sort((a,b) => (a.date+a.time).localeCompare(b.date+b.time)))
-    setTitle(""); setTime(""); setRepeat("none"); setReminder(false); setNotice("Afspraak toegevoegd aan deze tijdelijke sessie.")
+    setItems(previous => [...previous, { id: Date.now() + Math.random(), title: title.trim().slice(0, 160), date, time, repeat, reminder, place: importedPlace.trim().slice(0, 160) }].sort((a,b) => (a.date+a.time).localeCompare(b.date+b.time)))
+    setTitle(""); setTime(""); setRepeat("none"); setReminder(false); setImportedPlace(""); setNotice("Afspraak toegevoegd aan deze tijdelijke sessie.")
   }
   const exportIcs = () => {
     const escape = (value: string) => value.replace(/\\/g, "\\\\").replace(/\n/g, "\\n").replace(/,/g, "\\,").replace(/;/g, "\\;")
@@ -120,7 +120,7 @@ export default function MijnAgendaProef() {
       end.setDate(end.getDate() + 1)
       const nextDate = [end.getFullYear(), String(end.getMonth() + 1).padStart(2, "0"), String(end.getDate()).padStart(2, "0")].join("")
       const repeatRule = item.repeat === "none" ? [] : ["RRULE:FREQ=" + item.repeat.toUpperCase()]
-      rows.push("BEGIN:VEVENT", "UID:via-proef-" + item.id + "@viadeso.online", "DTSTAMP:" + new Date().toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, ""), item.time ? "DTSTART:" + start : "DTSTART;VALUE=DATE:" + start, ...(item.time ? ["DURATION:PT1H"] : ["DTEND;VALUE=DATE:" + nextDate]), ...repeatRule, "SUMMARY:" + escape(item.title), ...(item.reminder && item.time ? ["BEGIN:VALARM", "ACTION:DISPLAY", "DESCRIPTION:" + escape(item.title), "TRIGGER:-PT15M", "END:VALARM"] : []), "END:VEVENT")
+      rows.push("BEGIN:VEVENT", "UID:via-proef-" + item.id + "@viadeso.online", "DTSTAMP:" + new Date().toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, ""), item.time ? "DTSTART:" + start : "DTSTART;VALUE=DATE:" + start, ...(item.time ? ["DURATION:PT1H"] : ["DTEND;VALUE=DATE:" + nextDate]), ...repeatRule, "SUMMARY:" + escape(item.title), ...(item.place ? ["LOCATION:" + escape(item.place)] : []), ...(item.reminder && item.time ? ["BEGIN:VALARM", "ACTION:DISPLAY", "DESCRIPTION:" + escape(item.title), "TRIGGER:-PT15M", "END:VALARM"] : []), "END:VEVENT")
     }
     rows.push("END:VCALENDAR")
     const url = URL.createObjectURL(new Blob([rows.join("\r\n") + "\r\n"], { type: "text/calendar;charset=utf-8" }))
@@ -155,7 +155,7 @@ export default function MijnAgendaProef() {
     </section>    <section aria-label="Afspraak toevoegen" style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "end", marginTop: 24 }}>
       <label style={{ display: "grid", gap: 5 }}>Onderwerp<input style={field} value={title} maxLength={160} onChange={event => setTitle(event.target.value)} /></label>
       <label style={{ display: "grid", gap: 5 }}>Datum<input style={field} type="date" value={date} onChange={event => setDate(event.target.value)} /></label>
-      <label style={{ display: "grid", gap: 5 }}>Tijd (optioneel)<input style={field} type="time" value={time} onChange={event => setTime(event.target.value)} /></label>
+      <label style={{ display: "grid", gap: 5 }}>Plaats (optioneel)<input style={field} value={importedPlace} maxLength={160} onChange={event => setImportedPlace(event.target.value)} /></label><label style={{ display: "grid", gap: 5 }}>Tijd (optioneel)<input style={field} type="time" value={time} onChange={event => setTime(event.target.value)} /></label>
       <label style={{ display: "grid", gap: 5 }}>Herhaling<select style={field} value={repeat} onChange={event => setRepeat(event.target.value as Repeat)}><option value="none">Eenmalig</option><option value="daily">Dagelijks</option><option value="weekly">Wekelijks</option><option value="monthly">Maandelijks</option><option value="yearly">Jaarlijks</option></select></label>      <label style={{ display: "flex", gap: 6, alignItems: "center" }}><input type="checkbox" checked={reminder} disabled={!time} onChange={event => setReminder(event.target.checked)} />Herinnering 15 minuten vooraf (bij tijd)</label>
       <button style={field} onClick={add}>Afspraak toevoegen</button>
     </section>
@@ -174,7 +174,7 @@ export default function MijnAgendaProef() {
       <p>{savedOnDevice ? "Er is een versleutelde kopie aanwezig op dit apparaat." : "Er is nog geen versleutelde kopie op dit apparaat."}</p>
     </section>
     <section aria-label="Mijn afspraken"><h2>Afspraken in deze sessie ({items.length})</h2>
-      {items.length === 0 ? <p>Nog geen afspraken toegevoegd.</p> : <ul>{items.map(item => <li key={item.id} style={{ padding: 8 }}>{item.date} {item.time} — {item.title} {item.repeat !== "none" ? "(" + ({daily:"dagelijks",weekly:"wekelijks",monthly:"maandelijks",yearly:"jaarlijks"} as Record<string,string>)[item.repeat] + ")" : ""} <button style={{ ...field, marginLeft: 12 }} onClick={() => setItems(previous => previous.filter(x => x.id !== item.id))}>Verwijder</button></li>)}</ul>}
+      {items.length === 0 ? <p>Nog geen afspraken toegevoegd.</p> : <ul>{items.map(item => <li key={item.id} style={{ padding: 8 }}>{item.date} {item.time} — {item.title}{item.place ? " — " + item.place : ""} {item.repeat !== "none" ? "(" + ({daily:"dagelijks",weekly:"wekelijks",monthly:"maandelijks",yearly:"jaarlijks"} as Record<string,string>)[item.repeat] + ")" : ""} <button style={{ ...field, marginLeft: 12 }} onClick={() => setItems(previous => previous.filter(x => x.id !== item.id))}>Verwijder</button></li>)}</ul>}
       <button style={field} disabled={items.length === 0} onClick={exportIcs}>Exporteer naar agenda (.ics)</button>
     </section>
     <p style={{ marginTop: 32, fontSize: 13 }}>Vervolg: VIA Identity 3.4.1-toegang, veilige privéopslag, expliciete agenda-toestemming, synchronisatie en tests op alle apparaten. Dit is nog niet de definitieve persoonlijke agenda.</p>
