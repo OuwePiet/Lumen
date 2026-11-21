@@ -7,7 +7,8 @@ const ENDPOINT = "https://api.gdeltproject.org/api/v2/doc/doc?query=Netherlands&
 type Article = { title: string; url: string; domain: string; seenAt: string }
 export async function GET() {
   try {
-    const response = await fetch(ENDPOINT, { signal: AbortSignal.timeout(20000), redirect: "error", next: { revalidate: 900 } })
+    const response = await fetch(ENDPOINT, { signal: AbortSignal.timeout(8000), redirect: "error", cache: "no-store" })
+    if (response.status === 429) return NextResponse.json({ status: "source-rate-limited", provider: "GDELT", articles: [] }, { headers: { "Cache-Control": "no-store" } })
     if (!response.ok || Number(response.headers.get("content-length") || 0) > 100000) throw Error("upstream")
     const text = await response.text()
     if (text.length > 100000) throw Error("size")
@@ -29,8 +30,8 @@ export async function GET() {
       seen.add(url.href)
       articles.push({ title, url: url.href, domain: url.hostname, seenAt: a.seendate })
     }
-    return NextResponse.json({ status: "discovery-unverified", provider: "GDELT", articles }, { headers: { "Cache-Control": "public, max-age=0, s-maxage=900" } })
+    return NextResponse.json({ status: "discovery-unverified", provider: "GDELT", articles }, { headers: { "Cache-Control": "no-store" } })
   } catch {
-    return NextResponse.json({ status: "temporarily-unavailable", provider: "GDELT", articles: [] }, { headers: { "Cache-Control": "public, max-age=0, s-maxage=300" } })
+    return NextResponse.json({ status: "temporarily-unavailable", provider: "GDELT", articles: [] }, { headers: { "Cache-Control": "no-store" } })
   }
 }
