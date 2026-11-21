@@ -26,6 +26,7 @@ export default function MijnAgendaProef() {
   const [notice, setNotice] = useState("")
   const [reminder, setReminder] = useState(false)
   const [imported, setImported] = useState(false)
+  const [importedPlace, setImportedPlace] = useState("")
   const [passphrase, setPassphrase] = useState("")
   const [savedOnDevice, setSavedOnDevice] = useState(false)
   const [busy, setBusy] = useState(false)
@@ -62,6 +63,7 @@ export default function MijnAgendaProef() {
     if (!eventTitle || !/^\d{4}-\d{2}-\d{2}$/.test(eventDate) || Number.isNaN(new Date(eventDate + "T12:00:00").getTime())) return
     setTitle(eventTitle)
     setDate(eventDate)
+    setImportedPlace((params.get("place") || "").trim().slice(0, 160))
     setImported(true)
     setNotice("Gebeurtenis uit de Wereldkalender ingevuld. Controleer de gegevens en kies Afspraak toevoegen.")
     window.history.replaceState(null, "", window.location.pathname)
@@ -157,7 +159,7 @@ export default function MijnAgendaProef() {
       <label style={{ display: "grid", gap: 5 }}>Herhaling<select style={field} value={repeat} onChange={event => setRepeat(event.target.value as Repeat)}><option value="none">Eenmalig</option><option value="daily">Dagelijks</option><option value="weekly">Wekelijks</option><option value="monthly">Maandelijks</option><option value="yearly">Jaarlijks</option></select></label>      <label style={{ display: "flex", gap: 6, alignItems: "center" }}><input type="checkbox" checked={reminder} disabled={!time} onChange={event => setReminder(event.target.checked)} />Herinnering 15 minuten vooraf (bij tijd)</label>
       <button style={field} onClick={add}>Afspraak toevoegen</button>
     </section>
-    <p role="status">{notice}</p>{imported && <p>Dit is een voorstel: er is nog niets opgeslagen of gesynchroniseerd.</p>}
+    <p role="status">{notice}</p>{imported && <p>Dit is een voorstel{importedPlace ? " voor " + importedPlace : ""}: er is nog niets opgeslagen of gesynchroniseerd.</p>}
     <section aria-label="Versleutelde apparaatopslag" style={{ border: "1px solid #bda36d", borderRadius: 12, padding: 14, margin: "18px 0" }}>
       <h2>Privé bewaren op dit apparaat — proef</h2>
       <p>Optioneel: AES-GCM-versleuteling met een eigen wachtzin (minimaal 12 tekens). Zonder wachtzin zijn de afspraken niet terug te halen. De kopie blijft alleen in deze browser; verwijderen van browsergegevens kan de agenda wissen. Geen automatische synchronisatie. Een versleutelde back-up kan handmatig naar een ander apparaat worden overgebracht; de wachtzin blijft nodig.</p>
