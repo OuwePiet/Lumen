@@ -1,5 +1,5 @@
 /** © 2026 @OuwePiet — VIA. Device-local encrypted calendar prototype; not a server sync service. */
-export type PrivateAppointment = { id: number; title: string; date: string; time: string; repeat: "none" | "daily" | "weekly" | "monthly" | "yearly"; reminder: boolean; place?: string }
+export type PrivateAppointment = { id: number; title: string; date: string; time: string; repeat: "none" | "daily" | "weekly" | "monthly" | "yearly"; reminder: boolean; place?: string; geoId?: string; countryCode?: string }
 const KEY = "via:calendar:private-proef:v1"
 const enc = new TextEncoder()
 const dec = new TextDecoder()
@@ -29,7 +29,7 @@ export async function loadPrivateCalendar(passphrase: string): Promise<PrivateAp
   const key = await derive(passphrase, salt)
   const plain = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, key, data)
   const parsed: unknown = JSON.parse(dec.decode(plain))
-  if (!Array.isArray(parsed) || parsed.length > 2000 || !parsed.every(item => item && typeof item === "object" && typeof item.title === "string" && item.title.length <= 160 && typeof item.date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(item.date) && typeof item.time === "string" && /^$|^\d{2}:\d{2}$/.test(item.time) && typeof item.id === "number" && ["none", "daily", "weekly", "monthly", "yearly"].includes(item.repeat) && typeof item.reminder === "boolean" && (item.place === undefined || typeof item.place === "string" && item.place.length <= 160))) throw new Error("Ongeldige agenda-inhoud.")
+  if (!Array.isArray(parsed) || parsed.length > 2000 || !parsed.every(item => item && typeof item === "object" && typeof item.title === "string" && item.title.length <= 160 && typeof item.date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(item.date) && typeof item.time === "string" && /^$|^\d{2}:\d{2}$/.test(item.time) && typeof item.id === "number" && ["none", "daily", "weekly", "monthly", "yearly"].includes(item.repeat) && typeof item.reminder === "boolean" && (item.place === undefined || typeof item.place === "string" && item.place.length <= 160) && (item.geoId === undefined || typeof item.geoId === "string" && /^\d{1,12}$/.test(item.geoId)) && (item.countryCode === undefined || typeof item.countryCode === "string" && /^[A-Z]{2}$/.test(item.countryCode)))) throw new Error("Ongeldige agenda-inhoud.")
   return parsed as PrivateAppointment[]
 }
 export function exportEncryptedBackup() {
