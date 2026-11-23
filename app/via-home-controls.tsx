@@ -118,7 +118,7 @@ const copy: Record<ViaLanguage | "Hindi", HomeText> = {
     bookmarks: "Bookmarks", messages: "Berichten", more: "Meer",
     search: "Zoek leden", publicEntrance: "Publieke ingang", wallet: "Mijn Wallet", notifications: "Meldingen",
     login: "DeSo Login", connecting: "Verbinden…", logout: "Uitloggen", blocked: "DeSo Identity kon niet worden geopend. Probeer opnieuw.",
-    connected: "Verbonden", switchAccount: "Wissel account", addAccount: "DeSo-account toevoegen", inactive90: "90+ dagen inactief", advertising: "Reclame", ideas: "Ideeënbus", storage: "Externe opslag", music: "VIA Muziek",
+    connected: "Verbonden", switchAccount: "Wissel account", addAccount: "DeSo-account toevoegen", inactive90: "90+ dagen inactief", advertising: "Reclame", ideas: "Ideeënbus", storage: "Externe opslag", music: "VIA Play",
   },
   English: {
     standard: "", viaExtra: "", account: "Language", home: "Home",
@@ -508,7 +508,7 @@ export default function ViaHomeControls() {
 
       <nav className="via-home-iphone-utility-row" aria-label="VIA iPhone quick controls">
         <Link prefetch={false} href="/help" aria-label="Handboek VIA" title="Handboek VIA"><CircleHelp aria-hidden="true" /></Link>
-        <Link prefetch={false} href="/music" aria-label="VIA Muziek" title="VIA Muziek"><Music2 aria-hidden="true" /></Link>
+        <Link prefetch={false} href="/music" aria-label="VIA Play" title="VIA Play"><Music2 aria-hidden="true" /></Link>
         <Link prefetch={false} href="/radio" aria-label="World Radio" title="World Radio"><RadioTower aria-hidden="true" /></Link>
         <div className="via-home-iphone-account-wrap">
           <span className="via-home-iphone-utility-account" aria-label={session ? accountName : t.login}>
@@ -590,10 +590,7 @@ export default function ViaHomeControls() {
         </nav>
         <nav aria-label="VIA toekomstige pagina's" style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "7px" }}>
           {[
-            ["Wereldkrant", "World Newspaper", "Journal mondial", "Periódico mundial", "世界报纸"],
-            ["LuisterHoek", "Listening Corner", "Coin écoute", "Rincón de escucha", "聆听角"],
             ["VIA Auto", "VIA Auto", "VIA Auto", "VIA Auto", "VIA 汽车"],
-            ["VIA Archief", "VIA Archive", "Archives VIA", "Archivo VIA", "VIA 档案"],
           ].map((labels, index) => {
             const languageIndex = ({ Dutch: 0, English: 1, French: 2, Spanish: 3, Chinese: 4 } as Record<ViaLanguage, number>)[language]
             return <span key={index} aria-disabled="true" title="Binnenkort" style={{ ...disabledButtonStyle, width: "100%", minWidth: 0, boxSizing: "border-box", flexDirection: "column", justifyContent: "center", padding: "5px 4px", gap: 1, overflow: "hidden", textAlign: "center", lineHeight: 1.2 }}>
