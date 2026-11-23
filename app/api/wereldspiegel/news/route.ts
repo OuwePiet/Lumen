@@ -12,6 +12,7 @@ export async function GET() {
   }
   const results = await Promise.all(APPROVED_NEWS_SOURCES.slice(0,6).map(s=>ingestApprovedJsonFeed(s.id)))
   const stories = deduplicateStories(results.flatMap(result=>result.ok?result.stories:[])).slice(0,60)
-  return NextResponse.json({status:stories.length?"ready":"no-verified-stories",stories,sourceCount:APPROVED_NEWS_SOURCES.length},
+  const sourceUnavailable = results.every(result=>!result.ok)
+  return NextResponse.json({status:stories.length?"ready":sourceUnavailable?"sources-unavailable":"no-verified-stories",stories,sourceCount:APPROVED_NEWS_SOURCES.length},
     {headers:{"Cache-Control":"public, max-age=0, s-maxage=300"}})
 }

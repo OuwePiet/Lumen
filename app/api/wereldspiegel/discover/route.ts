@@ -3,7 +3,9 @@ import { NextResponse } from "next/server"
 // @OuwePiet 2026: GDELT discovers outbound article links only; it does not license or verify articles.
 // A small, bounded query avoids cost and prevents this endpoint from becoming an arbitrary proxy.
 export const dynamic = "force-dynamic"
-const ENDPOINT = "https://api.gdeltproject.org/api/v2/doc/doc?query=Netherlands&mode=ArtList&format=json&maxrecords=12&timespan=1d&sort=DateDesc"
+// Worldwide topic sample, not a Netherlands-only discovery query and not exhaustive global coverage.
+// Discovery is never treated as approved or geographically verified news.
+const ENDPOINT = "https://api.gdeltproject.org/api/v2/doc/doc?query=%28climate%20OR%20science%20OR%20culture%20OR%20health%20OR%20elections%29&mode=ArtList&format=json&maxrecords=12&timespan=1d&sort=DateDesc"
 type Article = { title: string; url: string; domain: string; seenAt: string }
 export async function GET() {
   try {

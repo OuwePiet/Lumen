@@ -67,3 +67,45 @@ export async function viaSearchGeoShards(country:string,query:string,limit=8,sig
   };
   return found.sort((a,b)=>rank(a)-rank(b)||a.name.length-b.name.length||a.name.localeCompare(b.name)).slice(0,limit);
 }
+
+// Exact name/prefix index generated from existing GEO data, shared by VIA applications.
+let nameManifest:Promise<{version:number;names:number;shards:Record<string,string>}>|undefined;
+export async function viaSearchGeoWorld(query:string,limit=8,signal?:AbortSignal):Promise<ViaGeoPlace[]>{
+ const term=normalized(query.trim());if(term.length<3)return [];
+ if(!nameManifest)nameManifest=fetch("/wereldkalender19/geo-name-index/manifest.json",{credentials:"omit",cache:"force-cache"})
+  .then(async r=>{if(!r.ok)throw Error("Wereldwijde plaatsindex ontbreekt");return r.json() as Promise<{version:number;names:number;shards:Record<string,string>}>})
+  .then(v=>{if(v.version!==1||!v.shards)throw Error("Ongeldige wereldwijde plaatsindex");return v}).catch(e=>{nameManifest=undefined;throw e});
+ const manifest=await nameManifest;
+ if(signal?.aborted)throw new DOMException("Zoeken afgebroken","AbortError");
+ const filename=manifest.shards[term.slice(0,2)];if(!filename)return [];
+ if(!/^[0-9a-f]+\.json\.gz$/.test(filename))throw Error("Ongeldige GEO-zoekbestandsnaam");
+ const url="/wereldkalender19/geo-name-index/"+filename;
+ const response=await fetch(url,{credentials:"omit",cache:"force-cache",signal});
+ if(!response.ok)throw Error("GEO-naamindex niet bereikbaar");
+ const raw=new Uint8Array(await response.arrayBuffer());
+ const json=raw.length>=2&&raw[0]===31&&raw[1]===139
+  ?await (async()=>{if(typeof DecompressionStream!=="function")throw Error("Browser ondersteunt GEO-gzip niet");return new Response(new Blob([raw]).stream().pipeThrough(new DecompressionStream("gzip"))).text()})()
+  :new TextDecoder().decode(raw);
+ const rows=JSON.parse(json) as [string,string][];
+ const countries=new Set<string>();
+ const exact=rows.filter(([name])=>name===term);
+ for(const [name,codes] of (exact.length?exact:rows)){if(name.startsWith(term)){for(const code of codes.split(",")){if(/^[A-Z]{2}$/.test(code))countries.add(code)}}}
+ if(!countries.size)return [];
+ if(countries.size>24)throw Error(`Deze plaatsnaam komt in ${countries.size} landen voor. Typ een langere naam of kies een land.`);
+ const found:ViaGeoPlace[]=[];
+ const targets=[...countries].sort();
+ for(let i=0;i<targets.length;i+=4){
+  if(signal?.aborted)throw new DOMException("Zoeken afgebroken","AbortError");
+  const results=await Promise.all(targets.slice(i,i+4).map(c=>viaSearchGeoShards(c,query,limit,signal).catch(e=>{if(signal?.aborted)throw e;return [] as ViaGeoPlace[]})));
+  found.push(...results.flat());
+ }
+ const score=(p:ViaGeoPlace)=>{const n=normalized(p.name);return (n===term?0:n.startsWith(term)?100:200)+(p.featureCode==="PPLC"?-25:p.featureCode==="PPLA"?-20:p.featureCode.startsWith("PPL")?-15:0)};
+ const ranked=found.sort((a,b)=>score(a)-score(b)||a.name.length-b.name.length||a.name.localeCompare(b.name));
+ const unique:ViaGeoPlace[]=[];
+ for(const place of ranked){
+  // Only merge near-identical records in the same country; preserve genuinely different places sharing a name.
+  const duplicate=unique.some(other=>other.countryCode===place.countryCode&&normalized(other.name)===normalized(place.name)&&Math.abs(other.lat-place.lat)<0.01&&Math.abs(other.lng-place.lng)<0.01);
+  if(!duplicate)unique.push(place);
+ }
+ return unique.slice(0,limit);
+}
