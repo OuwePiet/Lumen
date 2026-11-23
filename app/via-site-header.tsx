@@ -335,7 +335,7 @@ export default function ViaSiteHeader() {
   return (
     <header style={styles.header} className="via-site-header">
       <button type="button" className="via-mobile-drawer-trigger" aria-label="Open VIA menu" aria-expanded={mobileDrawerOpen} onClick={() => setMobileDrawerOpen(true)}><Menu size={22} /></button>
-      {mobileDrawerOpen ? <div className="via-mobile-drawer-overlay" onClick={() => setMobileDrawerOpen(false)}><nav className="via-mobile-drawer" aria-label="VIA mobiel menu" onClick={(event) => event.stopPropagation()}><div className="via-mobile-drawer-heading"><strong>VIA</strong><button type="button" aria-label="Sluit VIA menu" onClick={() => setMobileDrawerOpen(false)}><X size={22} /></button></div>{nav.map(([key, href]) => <Link key={href} href={href} onClick={() => setMobileDrawerOpen(false)}>{t[key]}</Link>)}<Link href="/messages" onClick={() => setMobileDrawerOpen(false)}>Berichten</Link><Link href="/bookmarks" onClick={() => setMobileDrawerOpen(false)}>Bookmarks</Link><Link href="/profile" onClick={() => setMobileDrawerOpen(false)}>{t.profile}</Link><Link href="/wallet" onClick={() => setMobileDrawerOpen(false)}>{t.wallet}</Link><Link href="/help" onClick={() => setMobileDrawerOpen(false)}>VIA Handboek</Link><Link href="/wereldkalender" onClick={() => setMobileDrawerOpen(false)}>Wereldkalender</Link><Link href="/music" onClick={() => setMobileDrawerOpen(false)}>VIA Play</Link><span className="via-mobile-drawer-pending" aria-label="VIA-auto is nog niet beschikbaar">VIA-Auto &amp; Navigatie <small>In voorbereiding</small></span></nav></div> : null}
+      {mobileDrawerOpen ? <div className="via-mobile-drawer-overlay" onClick={() => setMobileDrawerOpen(false)}><nav className="via-mobile-drawer" aria-label="VIA mobiel menu" onClick={(event) => event.stopPropagation()}><div className="via-mobile-drawer-heading"><strong>VIA</strong><button type="button" aria-label="Sluit VIA menu" onClick={() => setMobileDrawerOpen(false)}><X size={22} /></button></div>{nav.map(([key, href]) => <Link key={href} href={href} onClick={() => setMobileDrawerOpen(false)}>{t[key]}</Link>)}<Link href="/messages" onClick={() => setMobileDrawerOpen(false)}>Berichten</Link><Link href="/bookmarks" onClick={() => setMobileDrawerOpen(false)}>Bookmarks</Link><Link href="/profile" onClick={() => setMobileDrawerOpen(false)}>{t.profile}</Link><Link href="/wallet" onClick={() => setMobileDrawerOpen(false)}>{t.wallet}</Link><Link href="/help" onClick={() => setMobileDrawerOpen(false)}>VIA Handboek</Link><Link href="/wereldkalender" onClick={() => setMobileDrawerOpen(false)}>Wereldkalender</Link><Link href="/music" onClick={() => setMobileDrawerOpen(false)}>VIA Play</Link><Link href="/radio" onClick={() => setMobileDrawerOpen(false)}>World Radio</Link><Link href="/wereldspiegel" onClick={() => setMobileDrawerOpen(false)}>WereldSpiegel</Link><span className="via-mobile-drawer-pending" aria-label="VIA-auto is nog niet beschikbaar">VIA-Auto &amp; Navigatie <small>In voorbereiding</small></span></nav></div> : null}
       {pathname !== "/" ? <nav className="via-mobile-social-bar" aria-label="Snelle VIA navigatie">
         <Link href="/" aria-label="Homepage" aria-current={pathname === "/" ? "page" : undefined}><House size={21}/><span>Home</span></Link>
         <Link href="/social" aria-label="Postkantoor" aria-current={pathname.startsWith("/social") ? "page" : undefined}><Menu size={21}/><span>Posts</span></Link>
@@ -713,6 +713,37 @@ export default function ViaSiteHeader() {
 .via-mobile-drawer-pending small { font-size:10px; text-align:right; }
 @media (max-width:720px) { .via-site-header { position:relative; } .via-mobile-drawer-trigger { display:flex; align-items:center; justify-content:center; position:absolute; right:10px; top:7px; z-index:5; width:44px; height:44px; border:1px solid #426b50; border-radius:12px; background:#0b2015; color:#b6e5c5; } .via-site-header-nav { padding-right:48px !important; } }
         .via-mobile-social-bar { display:none; }
+        /* On phones use the existing accessible drawer, not a second five-button navigation bar. */
+        @media (max-width: 720px) {
+          .via-mobile-social-bar { display: none !important; }
+          body:has(.via-mobile-social-bar) { padding-bottom: 0 !important; }
+          .via-site-header-shell,
+          .via-site-header-shell:not(:has(.via-site-header-tools-notifications)) {
+            width: 100% !important;
+            min-height: 56px !important;
+            padding: 0 62px 0 12px !important;
+            grid-template-columns: 64px minmax(0,1fr) !important;
+            grid-template-rows: 56px !important;
+            column-gap: 8px !important;
+          }
+          .via-site-header-brand { grid-row: 1 !important; grid-column: 1 !important; overflow: hidden !important; }
+          .via-site-header-logo,
+          .via-site-header-shell:not(:has(.via-site-header-tools-notifications)) .via-site-header-logo {
+            width: 58px !important; height: 48px !important; margin: 0 !important; object-fit: contain !important;
+          }
+          .via-site-header-top { grid-column: 2 !important; grid-row: 1 !important; min-width: 0 !important; }
+          .via-site-header-tools:not(.via-site-header-tools-notifications) {
+            grid-column: 2 !important; grid-row: 1 !important; overflow: hidden !important;
+            justify-content: flex-end !important; gap: 4px !important; padding: 0 !important;
+          }
+          .via-site-header-tools:not(.via-site-header-tools-notifications) > a,
+          .via-site-header-tools:not(.via-site-header-tools-notifications) > button,
+          .via-site-header-tools:not(.via-site-header-tools-notifications) .via-site-header-search,
+          .via-site-header-tools:not(.via-site-header-tools-notifications) .via-site-header-utility {
+            display: none !important;
+          }
+          .via-mobile-drawer-trigger { top: 6px !important; right: 10px !important; }
+        }
         @media (max-width:720px) {
           /* Mobile uses the drawer instead of a second, horizontally scrolling page navigation. */
           .via-site-header-nav, .via-site-header-nav-compact-mobile { display:none !important; }
@@ -726,6 +757,18 @@ export default function ViaSiteHeader() {
           @media (orientation:landscape) and (max-height:500px) { .via-mobile-social-bar { padding-top:2px; padding-bottom:calc(2px + env(safe-area-inset-bottom)); } .via-mobile-social-bar a { min-height:40px; } }
           body:has(.via-mobile-social-bar) { padding-bottom:calc(74px + env(safe-area-inset-bottom)); }
         }
+          @media (max-width:720px) {
+            .via-site-header-shell, .via-site-header-shell:not(:has(.via-site-header-tools-notifications)) { height:56px !important; min-height:56px !important; max-height:56px !important; grid-template-rows:56px !important; overflow:hidden !important; }
+            .via-site-header-top, .via-mobile-social-bar { display:none !important; }
+            .via-site-header-tools { display:flex !important; position:absolute !important; top:5px !important; right:65px !important; left:auto !important; height:44px !important; width:auto !important; max-width:calc(100vw - 145px) !important; padding:0 !important; gap:6px !important; align-items:center !important; overflow:visible !important; }
+            .via-site-header-tools > :not(.via-site-header-language-wrap):not(.via-site-header-account-wrap):not(button) { display:none !important; }
+            .via-site-header-tools .via-site-header-language-wrap { display:flex !important; position:relative !important; width:auto !important; }
+            .via-site-header-tools .via-site-header-account-wrap { display:grid !important; position:relative !important; width:auto !important; }
+            .via-site-header-tools .via-site-header-account-button { width:38px !important; min-width:38px !important; height:38px !important; }
+            .via-site-header-tools .via-site-header-account-label, .via-site-header-tools .via-site-header-account-caret { display:none !important; }
+            .via-mobile-drawer-trigger { z-index:120 !important; }
+            .via-mobile-drawer-overlay { z-index:2000 !important; }
+          }
       `}</style>
     </header>
   )
