@@ -127,7 +127,7 @@ const copy: Record<ViaLanguage | "Hindi", HomeText> = {
     bookmarks: "Bookmarks", messages: "Messages", more: "More",
     search: "Search members", publicEntrance: "Public Entrance", wallet: "My Wallet", notifications: "Notifications",
     login: "DeSo Login", connecting: "Connecting…", logout: "Logout", blocked: "DeSo Identity could not open. Please try again.",
-    connected: "Connected", switchAccount: "Switch account", addAccount: "Add DeSo account", inactive90: "Inactive 90+ days", advertising: "Advertising", ideas: "Ideas Box", storage: "External storage", music: "VIA Music",
+    connected: "Connected", switchAccount: "Switch account", addAccount: "Add DeSo account", inactive90: "Inactive 90+ days", advertising: "Advertising", ideas: "Ideas Box", storage: "External storage", music: "VIA Play",
   },
   French: {
     standard: "", viaExtra: "", account: "Langue", home: "Accueil",
@@ -587,6 +587,7 @@ export default function ViaHomeControls() {
         <nav className="via-home-handbook-row" aria-label="VIA handboek en kalender" style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "7px" }}>
           <Link prefetch={false} href="/help" style={{ ...buttonStyle, width: "100%", justifyContent: "center", paddingInline: "9px" }}>Handboek VIA</Link>
           <Link prefetch={false} href="/wereldkalender" style={{ ...buttonStyle, width: "100%", justifyContent: "center", paddingInline: "9px" }}>{t.calendar}</Link>
+          <Link prefetch={false} href="/wereldspiegel" style={{ ...buttonStyle, width: "100%", justifyContent: "center", paddingInline: "9px" }}>WereldSpiegel</Link>
         </nav>
         <nav aria-label="VIA toekomstige pagina's" style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "7px" }}>
           {[
@@ -658,7 +659,7 @@ export default function ViaHomeControls() {
         .via-home-iphone-clock-inline { display: none; }
         .via-home-iphone-identity { display: none; }
         @media (max-width: 600px) {
-          .via-home-music-grid-button, .via-home-handbook-row { display: none !important; }
+          .via-home-music-grid-button { display: none !important; }
           .via-home-language-section { display: none !important; }
           .via-home-iphone-clock-inline {
             display: block !important;
