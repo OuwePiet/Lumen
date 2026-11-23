@@ -144,9 +144,9 @@ export default function ViaWorldClock({ iphoneInline = false }: { iphoneInline?:
             <strong style={{ color: "#e0e5e1", fontWeight: 600 }}>{clock.time}</strong>
           </span>
         ))}
-        <span className="via-world-clock-deso" style={{ whiteSpace: "nowrap" }} title={stale ? "DESO rate is stale" : rateUnavailable ? "DESO rate is temporarily unavailable" : "Current DESO reference price in USD"}>
-          <span style={{ color: "#b6c0bb" }}>$DESO</span>{" "}
-          <strong style={{ color: usd === null ? "#a4afa9" : "#d2e2d8", fontWeight: 700 }}>
+        <span className="via-world-clock-deso" style={{ whiteSpace: "nowrap", display: "inline-flex", alignItems: "baseline", gap: "5px", fontSize: "12px", fontVariantNumeric: "tabular-nums" }} title={stale ? "DESO rate is stale" : rateUnavailable ? "DESO rate is temporarily unavailable" : "Current DESO reference price in USD"}>
+          <span style={{ color: "#cbded2", fontWeight: 700 }}>$DESO</span>{" "}
+          <strong style={{ color: usd === null ? "#b5c0b9" : "#e2f5e8", fontWeight: 800, fontSize: "13px", letterSpacing: ".015em", fontVariantNumeric: "tabular-nums" }}>
             {usd === null ? "—" : `$${usd.toLocaleString(locale, { maximumFractionDigits: 4 })}`}
           </strong>
         </span>
