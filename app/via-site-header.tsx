@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import { createPortal } from "react-dom"
 import { usePathname, useRouter } from "next/navigation"
 import { useEffect, useRef, useState } from "react"
 import { Bell, House, Menu, MessageCircle, Radio, UsersRound, Wallet, X } from "lucide-react"
@@ -159,6 +160,8 @@ export default function ViaSiteHeader() {
   const [identityError, setIdentityError] = useState("")
   const [menuOpen, setMenuOpen] = useState(false)
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false)
+  const [drawerMounted, setDrawerMounted] = useState(false)
+  useEffect(() => { setDrawerMounted(true) }, [])
   const [language, setLanguage] = useState<ViaLanguage>("Dutch")
   const [languageOpen, setLanguageOpen] = useState(false)
   const [notificationStatusOpen, setNotificationStatusOpen] = useState(false)
@@ -335,7 +338,7 @@ export default function ViaSiteHeader() {
   return (
     <header style={styles.header} className="via-site-header">
       <button type="button" className="via-mobile-drawer-trigger" aria-label="Open VIA menu" aria-expanded={mobileDrawerOpen} onClick={() => setMobileDrawerOpen(true)}><Menu size={22} /></button>
-      {mobileDrawerOpen ? <div className="via-mobile-drawer-overlay" onClick={() => setMobileDrawerOpen(false)}><nav className="via-mobile-drawer" aria-label="VIA mobiel menu" onClick={(event) => event.stopPropagation()}><div className="via-mobile-drawer-heading"><strong>VIA</strong><button type="button" aria-label="Sluit VIA menu" onClick={() => setMobileDrawerOpen(false)}><X size={22} /></button></div>{nav.map(([key, href]) => <Link key={href} href={href} onClick={() => setMobileDrawerOpen(false)}>{t[key]}</Link>)}<Link href="/messages" onClick={() => setMobileDrawerOpen(false)}>Berichten</Link><Link href="/bookmarks" onClick={() => setMobileDrawerOpen(false)}>Bookmarks</Link><Link href="/profile" onClick={() => setMobileDrawerOpen(false)}>{t.profile}</Link><Link href="/wallet" onClick={() => setMobileDrawerOpen(false)}>{t.wallet}</Link><Link href="/help" onClick={() => setMobileDrawerOpen(false)}>VIA Handboek</Link><Link href="/wereldkalender" onClick={() => setMobileDrawerOpen(false)}>Wereldkalender</Link><Link href="/music" onClick={() => setMobileDrawerOpen(false)}>VIA Play</Link><Link href="/radio" onClick={() => setMobileDrawerOpen(false)}>World Radio</Link><Link href="/wereldspiegel" onClick={() => setMobileDrawerOpen(false)}>WereldSpiegel</Link><span className="via-mobile-drawer-pending" aria-label="VIA-auto is nog niet beschikbaar">VIA-Auto &amp; Navigatie <small>In voorbereiding</small></span></nav></div> : null}
+      {mobileDrawerOpen && drawerMounted ? createPortal(<div className="via-mobile-drawer-overlay" onClick={() => setMobileDrawerOpen(false)}><nav className="via-mobile-drawer" aria-label="VIA mobiel menu" onClick={(event) => event.stopPropagation()}><div className="via-mobile-drawer-heading"><strong>VIA</strong><button type="button" aria-label="Sluit VIA menu" onClick={() => setMobileDrawerOpen(false)}><X size={22} /></button></div>{nav.map(([key, href]) => <Link key={href} href={href} onClick={() => setMobileDrawerOpen(false)}>{t[key]}</Link>)}<Link href="/messages" onClick={() => setMobileDrawerOpen(false)}>Berichten</Link><Link href="/bookmarks" onClick={() => setMobileDrawerOpen(false)}>Bookmarks</Link><Link href="/profile" onClick={() => setMobileDrawerOpen(false)}>{t.profile}</Link><Link href="/wallet" onClick={() => setMobileDrawerOpen(false)}>{t.wallet}</Link><Link href="/help" onClick={() => setMobileDrawerOpen(false)}>VIA Handboek</Link><Link href="/wereldkalender" onClick={() => setMobileDrawerOpen(false)}>Wereldkalender</Link><Link href="/music" onClick={() => setMobileDrawerOpen(false)}>VIA Play</Link><Link href="/radio" onClick={() => setMobileDrawerOpen(false)}>World Radio</Link><Link href="/wereldspiegel" onClick={() => setMobileDrawerOpen(false)}>WereldSpiegel</Link><span className="via-mobile-drawer-pending" aria-label="VIA-auto is nog niet beschikbaar">VIA-Auto &amp; Navigatie <small>In voorbereiding</small></span></nav></div>, document.body) : null}
       {pathname !== "/" ? <nav className="via-mobile-social-bar" aria-label="Snelle VIA navigatie">
         <Link href="/" aria-label="Homepage" aria-current={pathname === "/" ? "page" : undefined}><House size={21}/><span>Home</span></Link>
         <Link href="/social" aria-label="Postkantoor" aria-current={pathname.startsWith("/social") ? "page" : undefined}><Menu size={21}/><span>Posts</span></Link>
@@ -704,14 +707,14 @@ export default function ViaSiteHeader() {
           .via-site-header-tools:not(.via-site-header-tools-notifications) .via-site-header-account-button { max-width: 100px; }
         }
 .via-mobile-drawer-trigger { display:none; }
-.via-mobile-drawer-overlay { position:fixed; inset:0; z-index:1000; background:rgba(0,0,0,.72); }
+.via-mobile-drawer-overlay { position:fixed; inset:0; z-index:2147483000; background:rgba(0,0,0,.72); }
 .via-mobile-drawer { position:absolute; top:0; bottom:0; left:0; width:min(86vw,360px); padding:18px 16px calc(20px + env(safe-area-inset-bottom)); overflow-y:auto; background:#07140e; border-right:1px solid #38664b; display:flex; flex-direction:column; gap:3px; box-shadow:12px 0 35px #0008; }
 .via-mobile-drawer-heading { display:flex; align-items:center; justify-content:space-between; color:#d5f5df; font-size:22px; margin-bottom:12px; }
 .via-mobile-drawer-heading button { color:#d5f5df; background:transparent; border:1px solid #476b55; border-radius:10px; padding:9px; }
 .via-mobile-drawer > a { display:block; padding:13px 14px; color:#e1f1e5; border-radius:10px; text-decoration:none; min-height:44px; }
 .via-mobile-drawer-pending { display:flex; align-items:center; justify-content:space-between; gap:8px; padding:13px 14px; color:#aabbb0; opacity:.8; border:1px dashed #3b5545; border-radius:10px; }
 .via-mobile-drawer-pending small { font-size:10px; text-align:right; }
-@media (max-width:720px) { .via-site-header { position:relative; } .via-mobile-drawer-trigger { display:flex; align-items:center; justify-content:center; position:absolute; right:10px; top:7px; z-index:5; width:44px; height:44px; border:1px solid #426b50; border-radius:12px; background:#0b2015; color:#b6e5c5; } .via-site-header-nav { padding-right:48px !important; } }
+@media (max-width:720px) { .via-site-header { position:relative; z-index:100 !important; isolation:isolate; } .via-mobile-drawer-trigger { display:flex; align-items:center; justify-content:center; position:absolute; right:10px; top:7px; z-index:5; width:44px; height:44px; border:1px solid #426b50; border-radius:12px; background:#0b2015; color:#b6e5c5; } .via-site-header-nav { padding-right:48px !important; } }
         .via-mobile-social-bar { display:none; }
         /* On phones use the existing accessible drawer, not a second five-button navigation bar. */
         @media (max-width: 720px) {
@@ -767,7 +770,7 @@ export default function ViaSiteHeader() {
             .via-site-header-tools .via-site-header-account-button { width:38px !important; min-width:38px !important; height:38px !important; }
             .via-site-header-tools .via-site-header-account-label, .via-site-header-tools .via-site-header-account-caret { display:none !important; }
             .via-mobile-drawer-trigger { z-index:120 !important; }
-            .via-mobile-drawer-overlay { z-index:2000 !important; }
+            .via-mobile-drawer-overlay { z-index:2147483000 !important; }
           }
       `}</style>
     </header>
