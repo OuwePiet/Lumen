@@ -1,0 +1,537 @@
+<!-- VIA | @OuwePiet 2026 | Wereldkalender 19 | eigen code; openbare, read-only proef. DeSo Identity 3.4.1 alleen via centrale homepage; geen walletgegevens of automatische betalingen hier. Herkomstmarkering is geen cryptografische handtekening. -->
+<!doctype html><html lang="nl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>VIA Wereldkalender - werkversie 19</title><style>
+:root{font-family:system-ui,-apple-system,sans-serif;color:#eef7ff;background:#05142a}*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 35% 0,#143c68,#05142a 70%)}button,input,select{font:inherit}button{cursor:pointer;color:inherit}button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid #fbd66d;outline-offset:2px}header{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:13px 18px;background:#071d37;border-bottom:1px solid #b48a43;flex-wrap:wrap}.brand{font-size:26px;font-weight:900;color:#f6d78b}.brand small{font-size:12px;display:block;color:#bdd7e9}.heading{flex:1;min-width:180px}.heading h1{margin:0;font-size:23px}.heading small,.subtle{color:#acc5d9}.topcontrols{display:flex;align-items:center;gap:6px;flex-wrap:wrap}.topcontrols button,.topcontrols input{border:1px solid #688ba9;border-radius:10px;padding:9px;background:#102e4c}.topcontrols input{width:200px;color:#fff}.topcontrols button[aria-pressed=true]{border-color:#f7d879;background:#275239}.shell{display:grid;grid-template-columns:155px minmax(0,1fr);min-height:80vh}aside{border-right:1px solid #44617b;background:#081c32;padding:12px 8px}aside a{display:block;color:#d9efff;text-decoration:none;padding:11px 10px;border-radius:9px}aside a.current{background:#11633b;color:#fff;border:1px solid #b7df62}main{min-width:0;padding:12px}.columns{display:grid;grid-template-columns:minmax(300px,1.28fr) minmax(260px,.98fr) minmax(220px,.88fr);gap:12px}.panel{border:1px solid #c19b5d;border-radius:17px;overflow:hidden;background:#09213c;min-width:0;box-shadow:0 0 18px #02152b}.panel h2{font-size:17px;margin:0;padding:12px;border-bottom:1px solid #54708b;color:#f6df9c}.globe-wrap{position:relative}#globe{height:440px;background:radial-gradient(circle,#173d61,#07162b 75%)}#globe canvas{touch-action:none}.globe-tools{position:absolute;left:8px;top:8px;display:grid;gap:7px}.globe-tools button{width:44px;height:42px;background:#102d4bbf;border:1px solid #d0b070;border-radius:10px;font-size:19px}#fallback{position:absolute;inset:0;display:grid;place-content:center;text-align:center;padding:50px;color:#cfe6f7;pointer-events:none}#fallback[hidden]{display:none}.locationbar{display:flex;gap:7px;padding:10px;border-bottom:1px solid #34536e}.locationbar input{width:100%;min-width:0;background:#123655;border:1px solid #678aa4;border-radius:9px;color:#fff;padding:9px}.locationbar button,.bar button,.controls button,.footerbar button,.filters button{border:1px solid #7899b3;background:#113756;border-radius:10px;padding:9px 11px}.locationbar button:hover,.bar button:hover,.controls button:hover,.filters button:hover{border-color:#f5d87d}.details{padding:13px;min-height:102px}.bar,.controls{display:flex;gap:7px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:9px 12px}.bar strong{font-size:18px}.days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px;padding:11px}.weekday{text-align:center;color:#afc9db;font-size:12px}.day{border:1px solid #456b8b;background:#133554;border-radius:7px;min-height:42px}.day.has{box-shadow:inset 0 -4px #e9c469}.day.active{background:#145b43;border-color:#e9cf75}.tower-items{padding:10px;display:grid;gap:8px;max-height:410px;overflow-y:auto;scroll-behavior:smooth}.event{display:block;text-align:left;width:100%;border:1px solid #507d9b;border-radius:11px;background:#123957;padding:12px}.event.active{border-color:#f8d56d;background:#285171}.event small{display:block;color:#b4d2e6;margin-top:5px}.notice{font-size:12px;color:#f3dca1;padding:10px 14px;background:#25354a;border-bottom:1px solid #806e48}.filters,.footerbar{display:flex;gap:8px;flex-wrap:wrap;padding:13px 4px}.filters button[aria-pressed=true]{background:#147744;border-color:#e5d377}.footerbar button{padding:12px 14px}.footerbar button:disabled{opacity:.55;cursor:not-allowed}.status{color:#b8d3e5;font-size:13px;padding:10px}.settings{margin:10px 0;padding:15px;border:1px solid #bc995b;border-radius:12px;background:#102d4b}.settings[hidden]{display:none}.settings label{display:inline-flex;align-items:center;gap:8px;margin:7px 15px 7px 0}.settings select{background:#173d5b;color:white;padding:7px;border:1px solid #8ca7b7;border-radius:8px}.fine{font-size:12px;color:#adc8dc;padding:10px}a{color:#e9d38d}@media(max-width:900px){.shell{grid-template-columns:1fr}aside{display:flex;flex-wrap:wrap;gap:4px}aside a{padding:8px}.columns{grid-template-columns:1.15fr 1fr}.tower{grid-column:1/-1}.tower-items{max-height:230px}}@media(max-width:700px){.columns{grid-template-columns:1fr}.tower{grid-column:auto}#globe{height:360px}.heading h1{font-size:20px}.topcontrols input{width:100%}}@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+
+/* Approved design: compact navigation, three coordinated panels, event feature and full control bar. */
+header{background:linear-gradient(90deg,#07182d,#10345d 68%,#081d35);border-bottom:2px solid #bc9a55}.brand{font-size:30px;letter-spacing:.4px}.heading h1{font-size:24px;color:#fff}.panel{box-shadow:0 0 12px #0a3560, inset 0 0 1px #e6c87c}.panel h2{background:linear-gradient(90deg,#102e51,#071c34);color:#ffe7a2}.globe-tools button{border-color:#e2c27b;box-shadow:0 0 6px #123b64}.filters button,.footerbar button{border-color:#b59757}.filters button[aria-pressed=true],.footerbar button:first-child{background:linear-gradient(#138e43,#07562c);border-color:#d4d96c}.feature{display:flex;gap:16px;align-items:center;margin-top:12px;padding:17px;background:linear-gradient(100deg,#113961,#09213d);border:1px solid #d1ab61;border-radius:17px;min-height:105px;box-shadow:0 0 14px #153c5c}.feature-icon{font-size:40px}.feature div{flex:1}.feature strong{color:#ffe8a4;font-size:18px}.feature p{margin:5px 0;color:#d0e4f1}.feature button{border:1px solid #d0ad67;background:#123d64;padding:10px;border-radius:10px;color:white}.footerbar{border-top:1px solid #6b633e;margin-top:6px}.topcontrols button:disabled{opacity:.55;cursor:not-allowed}.status{min-height:35px}aside{background:linear-gradient(#071b31,#0b3154)}aside a{border-bottom:1px solid #183b56}aside a.current{box-shadow:0 0 9px #37c568} @media(max-width:700px){.feature{flex-wrap:wrap}.feature button{width:100%}}
+.verified p{line-height:1.5;margin:9px 14px}.verified h2{margin:-15px -15px 12px}.verified a{color:#f8d27a}.tower-items{max-height:460px}.day.has{background:linear-gradient(180deg,#184669,#153956);box-shadow:inset 0 -4px #f0c65c}.panel{border-color:#c4a064}.feature{display:flex;gap:15px;align-items:center;padding:16px;margin-top:12px;background:linear-gradient(110deg,#10345c,#09213c);border:1px solid #d0a85d;border-radius:16px}.feature-icon{font-size:34px}.feature div{flex:1}.feature p{margin:5px 0;color:#c6dceb}.feature button{padding:11px;background:#163c62;border:1px solid #c8a667;border-radius:9px;color:white}@media(max-width:1100px){.columns{grid-template-columns:1fr 1fr}.tower{grid-column:1/-1}}@media(max-width:650px){.columns{grid-template-columns:1fr}.feature{flex-wrap:wrap}}
+
+/* Compacte visuele afwerking voor iPad en grotere schermen */
+@media(min-width:1150px){.columns{grid-template-columns:minmax(0,1.35fr) minmax(0,1fr) minmax(0,.92fr)}.globe-wrap{min-height:390px}.tower-items{max-height:410px}}
+@media(min-width:900px){aside{width:165px;flex-shrink:0}.shell{align-items:start}}
+#days .day.has{box-shadow:inset 0 -4px #f5c764}
+.footerbar,.filters{position:relative;z-index:1}
+#globeStatus{min-height:24px}
+
+/* Proef 11: iPad-landscape layout: 3 panels remain side by side */
+@media (min-width: 1000px){
+ .shell{grid-template-columns:clamp(116px,10.5vw,155px) minmax(0,1fr)}
+ aside{width:auto!important;padding:8px 5px}
+ aside a{font-size:13px;padding:9px 6px;overflow-wrap:anywhere}
+ main{padding:9px}
+ .columns{grid-template-columns:minmax(0,1.22fr) minmax(0,1fr) minmax(0,.9fr)!important;gap:9px}
+ .columns>.tower{grid-column:auto!important}
+ .panel h2{font-size:15px;padding:10px}
+ .bar,.controls{padding:7px 6px;gap:4px}
+ .bar button,.controls button{padding:7px 6px;font-size:12px}
+ .bar strong{font-size:15px}
+ .days{gap:3px;padding:6px}
+ .day{min-height:36px;font-size:13px}
+ .tower-items{max-height:480px;gap:5px;padding:7px}
+ .event{padding:9px;font-size:13px}
+ #globe{height:clamp(320px,34vw,490px)}
+ .locationbar{padding:6px;gap:4px}
+ .locationbar input,.locationbar button{font-size:12px;padding:7px}
+ .details{min-height:65px;padding:8px}
+ .feature{margin-top:9px;min-height:75px;padding:10px}
+ header{padding:9px 11px;gap:7px}
+ .brand{font-size:23px}
+ .heading h1{font-size:20px}
+ .topcontrols input{width:155px}
+ .topcontrols button,.topcontrols input{padding:7px;font-size:12px}
+}
+@media (min-width: 1000px) and (max-width: 1200px){.tower-items{max-height:420px}.panel h2{font-size:14px}}
+</style><style>
+#submissionPanel{margin:14px 4px;padding:18px;border:1px solid #d4ad62;border-radius:14px;background:#102d4b}#submissionPanel[hidden]{display:none}#submissionPanel form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}#submissionPanel label{display:grid;gap:5px;color:#dce9f5}#submissionPanel input,#submissionPanel select,#submissionPanel textarea{width:100%;background:#09213c;border:1px solid #6b93b1;border-radius:8px;padding:10px;color:white}#submissionPanel .wide{grid-column:1/-1}#submissionPanel textarea{min-height:90px}#submissionPanel button{background:#11633b;border:1px solid #d6c36e;border-radius:9px;padding:10px;color:white}#submissionPanel .subtle{font-size:13px}@media(max-width:700px){#submissionPanel form{grid-template-columns:1fr}}
+</style>
+<style>
+/* Proef 12: compacte iPad-werkruimte met behouden drie kolommen */
+@media(min-width:1000px){
+.shell{grid-template-columns:142px minmax(0,1fr)!important}
+aside{width:auto!important}
+aside a{font-size:12px;line-height:1.2;overflow-wrap:normal!important;word-break:normal;padding:9px 6px}
+.columns{grid-template-columns:minmax(0,1.28fr) minmax(0,1fr) minmax(0,.96fr)!important;align-items:stretch}
+.columns>.panel{height:610px;display:flex;flex-direction:column}
+#globe{height:355px!important}
+.globe-wrap{min-height:0!important}
+.details{min-height:50px!important;max-height:94px;overflow:auto}
+#globeStatus{margin-top:auto}
+.tower-items{height:420px!important;max-height:420px!important;overflow:auto;scrollbar-width:thin}
+.tower .controls{margin-top:auto}
+.event{font-size:12px!important;padding:8px!important}
+.event small{margin-top:2px}
+.day{min-height:34px!important}
+.feature{min-height:68px!important;padding:9px!important}
+.verified{margin-top:10px}
+.filters,.footerbar{padding:8px 2px;gap:5px}
+.filters button,.footerbar button{padding:8px;font-size:12px}
+}
+@media(min-width:1000px) and (max-width:1199px){.shell{grid-template-columns:120px minmax(0,1fr)!important}.columns>.panel{height:580px}#globe{height:315px!important}}
+</style>
+</head><body><header><div class="brand">🍃 VIA<small>viadeso.online</small></div><div class="heading"><h1>VIA Wereldkalender</h1><small>Wereldwijde feestdagen, evenementen en bijzondere momenten</small></div><div class="topcontrols"><input id="search" aria-label="Zoek gebeurtenis of locatie" placeholder="Zoek in kalender…"><button id="searchBtn">🔎 Zoek</button><button id="voice" title="Spraakzoeken niet beschikbaar" disabled>🎙️</button><button id="login" title="Open VIA voor DeSo-login">◇ Login DeSo</button><select id="lang" aria-label="Kies taal" style="background:#102e4c;color:white;border:1px solid #688ba9;border-radius:10px;padding:9px"><option value="nl">🇳🇱 NL</option><option value="en">🇬🇧 EN</option><option value="fr">🇫🇷 FR</option><option value="es">🇪🇸 ES</option><option value="zh">🇨🇳 ZH</option><option value="hi">🇮🇳 HI</option></select><button id="settingsBtn" aria-expanded="false">⚙️ Instellingen</button></div></header><div class="notice">WERKVERSIE 19 · AFZONDERLIJK · Brongebonden programma pausreis 6–17 november 2026 · gepland, niet live · stadscoördinaten bij benadering · geen DeSo-login of productieaanpassing</div><div class="shell"><aside><a href="https://viadeso.online/">⌂ VIA Home</a><a class="current" href="#">📅 Wereldkalender</a><a href="#" aria-disabled="true">Mijn Agenda (later)</a><a href="#" aria-disabled="true">Postkantoor (via VIA)</a><a href="#" aria-disabled="true">Notificaties (via VIA)</a><a href="#" aria-disabled="true">NFT's (via VIA)</a><a href="#" aria-disabled="true">VIA Play (via VIA)</a><a href="#" aria-disabled="true">Games (via VIA)</a><a href="#" aria-disabled="true">Handboek VIA (later)</a></aside><main><div class="columns"><section class="panel"><h2>🌍 Levende wereldbol</h2><div class="locationbar"><input id="location" placeholder="Zoek plaats: Montevideo, Buenos Aires, Lima…" aria-label="Zoek locatie"><button id="findLocation">📍 Zoek locatie</button></div><div class="globe-wrap"><div id="globe"></div><div id="fallback">3D-aarde wordt geladen…</div><div class="globe-tools"><button id="rotate" title="Draaien of pauzeren" aria-pressed="true">⏸</button><button id="zoomIn" title="Inzoomen">＋</button><button id="zoomOut" title="Uitzoomen">−</button><button id="reset" title="Wereldbol herstellen">◎</button><button id="globeLocate" title="Zoek een locatie">📍</button></div></div><div class="details" id="details" aria-live="polite">Kies een gebeurtenis of lichtpunt.</div><div class="status" id="globeStatus">3D-bibliotheek wordt geladen.</div></section><section class="panel"><h2>📅 Wereldagenda</h2><div class="bar"><button id="prevMonth">❮</button><strong id="monthLabel">November 2026</strong><button id="nextMonth">❯</button><button id="today">Vandaag</button></div><div id="days" class="days"><div class="weekday">Ma</div><div class="weekday">Di</div><div class="weekday">Wo</div><div class="weekday">Do</div><div class="weekday">Vr</div><div class="weekday">Za</div><div class="weekday">Zo</div><span></span><span></span><span></span><span></span><span></span><span></span><button class="day " data-day="1">1</button><button class="day " data-day="2">2</button><button class="day " data-day="3">3</button><button class="day " data-day="4">4</button><button class="day " data-day="5">5</button><button class="day has " data-day="6">6</button><button class="day has " data-day="7">7</button><button class="day has active" data-day="8">8</button><button class="day has " data-day="9">9</button><button class="day has " data-day="10">10</button><button class="day has " data-day="11">11</button><button class="day has " data-day="12">12</button><button class="day has " data-day="13">13</button><button class="day has " data-day="14">14</button><button class="day has " data-day="15">15</button><button class="day has " data-day="16">16</button><button class="day has " data-day="17">17</button><button class="day " data-day="18">18</button><button class="day " data-day="19">19</button><button class="day " data-day="20">20</button><button class="day " data-day="21">21</button><button class="day " data-day="22">22</button><button class="day " data-day="23">23</button><button class="day " data-day="24">24</button><button class="day " data-day="25">25</button><button class="day " data-day="26">26</button><button class="day " data-day="27">27</button><button class="day " data-day="28">28</button><button class="day " data-day="29">29</button><button class="day " data-day="30">30</button></div><div class="status" id="dayStatus">8 november 2026 · 2 geplande reislocaties. Kies een dag om details te zien.</div><div class="fine" style="padding:0 12px 8px">Gouden streep = gebeurtenis op die dag · groen = gekozen dag. Zonder JavaScript blijft het novemberoverzicht zichtbaar.</div><div class="controls"><button id="prevDay">← Vorige dag</button><button id="nextDay">Volgende dag →</button></div></section><section class="panel tower"><h2>📡 Informatietoren VIA</h2><div id="events" class="tower-items"><button class="event" data-id="nov6"><b>6 november · Paus Leo XIV</b><small>Montevideo, Uruguay — gepland</small></button><button class="event" data-id="nov7"><b>7 november · Paus Leo XIV</b><small>Paysandú, Uruguay — gepland</small></button><button class="event" data-id="nov8uy"><b>8 november · Paus Leo XIV</b><small>Florida, Uruguay — gepland</small></button><button class="event" data-id="nov8ar"><b>8 november · Paus Leo XIV</b><small>Buenos Aires, Argentinië — gepland</small></button><button class="event" data-id="nov9"><b>9 november · Paus Leo XIV</b><small>Buenos Aires, Argentinië — gepland</small></button><button class="event" data-id="nov10"><b>10 november · Paus Leo XIV</b><small>Córdoba, Argentinië — gepland</small></button><button class="event" data-id="nov11ar"><b>11 november · Paus Leo XIV</b><small>Luján, Argentinië — gepland</small></button><button class="event" data-id="nov11pe"><b>11 november · Paus Leo XIV</b><small>Lima, Peru — gepland</small></button><button class="event" data-id="nov12"><b>12 november · Paus Leo XIV</b><small>Lima, Peru — gepland</small></button><button class="event" data-id="nov13"><b>13 november · Paus Leo XIV</b><small>Chiclayo, Peru — gepland</small></button><button class="event" data-id="nov14"><b>14 november · Paus Leo XIV</b><small>Chiclayo, Peru — gepland</small></button><button class="event" data-id="nov15"><b>15 november · Paus Leo XIV</b><small>Cusco, Peru — gepland</small></button><button class="event" data-id="nov16"><b>16 november · Paus Leo XIV</b><small>Lima, Peru — gepland</small></button><button class="event" data-id="nov17"><b>17 november · Paus Leo XIV</b><small>Rome, Italië — gepland</small></button></div><div class="controls"><button id="towerPause">⏸ Pauzeer toren</button><button id="toMyAgenda" type="button">Mijn Agenda</button><button id="ics">📅 Zet test in agenda</button></div><div class="fine">Bij werkende JavaScript selecteert een aankondiging dezelfde gebeurtenis op de kalender en aarde.</div></section></div><div class="feature" id="feature"><span class="feature-icon">🌐</span><div><strong id="featureTitle">VIA World — gebeurtenissen wereldwijd</strong><p id="featureText">Kies een dag of een lichtpunt om hier de bijbehorende gebeurtenis te tonen. Reisprogramma is gepland, niet live. Andere kalenderdagen zijn apart gemarkeerd.</p></div><button id="featureMore">Meer informatie ↗</button></div><section class="panel verified" style="margin-top:12px;padding:15px"><h2>🗂️ Gecontroleerde kalenderinformatie</h2><p><b>6–17 november 2026:</b> geplande apostolische reis van paus Leo XIV door Uruguay, Argentinië en Peru, met terugkeer naar Rome. De plaatsaanduidingen op de bol zijn benaderde stadscentra, geen exacte bezoeklocaties.</p><p><b>11 november:</b> Sint-Maarten en de opening van het carnavalsseizoen op verschillende plaatsen; lokale vieringen verschillen per regio.</p><p><b>25 december:</b> Kerstmis. Een speciale Urbi et Orbi-kaart wordt pas gekoppeld aan gecontroleerde officiële aankondigingen.</p><p><a href="https://press.vatican.va/content/leo-xiv/en/travels/2026/documents/uruguay-argentina-peru-6-17novembre2026.html" target="_blank" rel="noopener noreferrer">Officiële Vaticaanse reisbron bekijken ↗</a></p><p class="fine">Geen gegenereerde portretten of onbevestigde foto's. De wereldbol toont voorlopig alleen brongebonden reislocaties. Overige evenementen en wereldwijd zoeken volgen na verificatie.</p></section><div id="settings" class="settings" hidden><strong>⚙️ Wereldkalender-instellingen</strong><div><label>Land/tijdzone <select id="timezone"><option value="Europe/Amsterdam">Nederland</option><option value="Europe/Rome">Italië</option><option value="Asia/Tokyo">Japan</option><option value="UTC">UTC</option></select></label><label>Draaisnelheid <select id="speed"><option value="0.15">Langzaam</option><option value="0.35">Normaal</option><option value="0.7">Sneller</option></select></label><label><input type="checkbox" id="lights" checked> Lichtpunten tonen</label><label><input type="checkbox" id="motion" checked> Automatisch draaien</label></div><div class="fine">Instellingen worden alleen lokaal op dit apparaat opgeslagen, als de browser dat toestaat. De taalkeuze NL is in deze proef vast.</div></div><div class="filters" id="filters"><button data-filter="alles" aria-pressed="true">📅 Alles</button><button data-filter="feestdagen">🎉 Feestdagen</button><button data-filter="evenementen">📅 Evenementen</button><button data-filter="cultuur">🎭 Cultuur</button><button data-filter="sport">🏆 Sport</button><button data-filter="religie">✝ Religie</button><button data-filter="musea">🏛 Musea</button><button data-filter="via">🍃 VIA Events</button></div><div class="footerbar"><button id="submitEvent">📣 Evenement aanmelden</button><button id="apple"> Apple Agenda</button><button id="google">Google Calendar</button><button id="outlook">Outlook</button><button id="updates">🔄 Automatische updates</button><button id="bottomSettings">⚙️ Instellingen</button></div><section id="submissionPanel" hidden aria-label="Evenement aanmelden — concept"><h2>📣 Evenement aanmelden — conceptformulier</h2><p class="subtle">Dit is uitsluitend een lokale conceptproef. Er wordt niets verstuurd, opgeslagen op een server of gepubliceerd. Publicatie vereist later broncontrole en goedkeuring.</p><form id="submissionForm"><label>Naam evenement<input name="title" maxlength="120" required></label><label>Categorie<select name="category" required><option value="cultuur">Cultuur</option><option value="feestdagen">Feestdag</option><option value="sport">Sport</option><option value="religie">Religie</option><option value="musea">Musea</option><option value="via">VIA Event</option></select></label><label>Begindatum<input name="start" type="date" required></label><label>Einddatum (t/m)<input name="end" type="date" required></label><label>Begintijd (optioneel)<input name="startTime" type="time"></label><label>Eindtijd (optioneel)<input name="endTime" type="time"></label><label>Land / regio<input name="country" maxlength="100" required></label><label>Plaats<input name="place" maxlength="120" required></label><label class="wide">Controleerbare bron (https://)<input name="source" type="url" placeholder="https://..." required></label><label class="wide">Omschrijving<textarea name="description" maxlength="1200" required></textarea></label><div class="wide"><button type="submit">📋 Bewaar concept voor beoordeling op dit apparaat</button> <button type="button" id="closeSubmission">Sluiten</button></div><p id="submissionStatus" class="subtle wide" role="status"></p></form><div id="localQueue" class="fine" aria-live="polite"></div></section><div class="status" id="updateStatus" aria-live="polite" role="status" hidden></div><div class="status" id="message" aria-live="polite">Reisprogramma gebaseerd op de Vaticaanse bron; locatiepunten tonen stadscentra bij benadering. Nog geen automatische bronupdates of publicatieformulier.</div></main></div><script>
+'use strict';const entries=[{id:"nov6",day:6,month:10,year:2026,name:"Paus Leo XIV — Montevideo",place:"Montevideo, Uruguay",lat:-34.9011,lng:-56.1645,category:'religie'},{id:"nov7",day:7,month:10,year:2026,name:"Paus Leo XIV — Paysandú",place:"Paysandú, Uruguay",lat:-32.3214,lng:-58.0756,category:'religie'},{id:"nov8uy",day:8,month:10,year:2026,name:"Paus Leo XIV — Florida",place:"Florida, Uruguay",lat:-34.0994,lng:-56.2145,category:'religie'},{id:"nov8ar",day:8,month:10,year:2026,name:"Paus Leo XIV — Buenos Aires",place:"Buenos Aires, Argentinië",lat:-34.6037,lng:-58.3816,category:'religie'},{id:"nov9",day:9,month:10,year:2026,name:"Paus Leo XIV — Buenos Aires",place:"Buenos Aires, Argentinië",lat:-34.6037,lng:-58.3816,category:'religie'},{id:"nov10",day:10,month:10,year:2026,name:"Paus Leo XIV — Córdoba",place:"Córdoba, Argentinië",lat:-31.4201,lng:-64.1888,category:'religie'},{id:"nov11ar",day:11,month:10,year:2026,name:"Paus Leo XIV — Luján",place:"Luján, Argentinië",lat:-34.5703,lng:-59.1050,category:'religie'},{id:"nov11pe",day:11,month:10,year:2026,name:"Paus Leo XIV — Lima",place:"Lima, Peru",lat:-12.0464,lng:-77.0428,category:'religie'},{id:"nov12",day:12,month:10,year:2026,name:"Paus Leo XIV — Lima",place:"Lima, Peru",lat:-12.0464,lng:-77.0428,category:'religie'},{id:"nov13",day:13,month:10,year:2026,name:"Paus Leo XIV — Chiclayo",place:"Chiclayo, Peru",lat:-6.7714,lng:-79.8409,category:'religie'},{id:"nov14",day:14,month:10,year:2026,name:"Paus Leo XIV — Chiclayo",place:"Chiclayo, Peru",lat:-6.7714,lng:-79.8409,category:'religie'},{id:"nov15",day:15,month:10,year:2026,name:"Paus Leo XIV — Cusco",place:"Cusco, Peru",lat:-13.5319,lng:-71.9675,category:'religie'},{id:"nov16",day:16,month:10,year:2026,name:"Paus Leo XIV — Lima",place:"Lima, Peru",lat:-12.0464,lng:-77.0428,category:'religie'},{id:"nov17",day:17,month:10,year:2026,name:"Paus Leo XIV — Rome",place:"Rome, Italië",lat:41.9028,lng:12.4964,category:'religie'}];
+// Voetbal: alleen gecontroleerde kalenderankers; geen live standen of automatische wedstrijdfeed.
+entries.push(
+ {id:'fifa-wc2026-opening',day:11,month:5,year:2026,name:'FIFA WK 2026 - openingswedstrijd',place:'Mexico-Stad, Mexico',lat:19.3029,lng:-99.1505,category:'sport',note:'Historisch kalenderanker. Officiele FIFA-bron: https://www.fifa.com/en/tournaments/mens/worldcup/canadamexicousa2026/articles/fifa-world-cup-26-match-schedule-revealed'},
+ {id:'fifa-wc2026-final',day:19,month:6,year:2026,name:'FIFA WK 2026 - finale',place:'East Rutherford, New Jersey, Verenigde Staten',lat:40.8135,lng:-74.0745,category:'sport',note:'Historisch kalenderanker. Officiele FIFA-bron: https://www.fifa.com/en/tournaments/mens/worldcup/canadamexicousa2026/articles/fifa-world-cup-26-match-schedule-revealed'},
+ {id:'uefa-ucl2026-md5-a',day:24,month:10,year:2026,name:'UEFA Champions League 2026/27 - speelronde 5',place:'Europa - meerdere speelsteden',category:'sport',note:'Wedstrijddag volgens UEFA; exacte wedstrijden en tijden via de officiele UEFA-kalender. https://www.uefa.com/uefachampionsleague/'},
+ {id:'uefa-ucl2026-md5-b',day:25,month:10,year:2026,name:'UEFA Champions League 2026/27 - speelronde 5',place:'Europa - meerdere speelsteden',category:'sport',note:'Wedstrijddag volgens UEFA; exacte wedstrijden en tijden via de officiele UEFA-kalender. https://www.uefa.com/uefachampionsleague/'}
+);// Vaste kalenderdagen: lokaal algemeen bekend, niet gekoppeld aan een externe realtime-feed.
+entries.push(
+ {id:'sintmaarten',day:11,month:10,year:2026,name:'Sint-Maarten',place:'Nederland — regionale vieringen',lat:52.1,lng:5.1,category:'feestdagen',note:'Regionale viering; niet overal in Nederland.'},
+ {id:'carnavalstart',day:11,month:10,year:2026,name:'Opening carnavalsseizoen (11-11)',place:'Nederland — diverse plaatsen',lat:51.6,lng:5.1,category:'cultuur',note:'Lokale vieringen verschillen per plaats.'},
+ {id:'kerstmis',day:25,month:11,year:2026,name:'Kerstmis',place:'Wereldwijd — geen specifieke locatie',lat:null,lng:null,category:'feestdagen',note:'25 december; geen geografisch lichtpunt.'},
+ {id:'museumdag',day:18,month:4,year:2027,name:'Internationale Museumdag',place:'Wereldwijd — geen specifieke locatie',lat:null,lng:null,category:'musea',note:'Jaarlijkse datum 18 mei; hier als voorbeeld voor 2027.'}
+);
+const $=id=>document.getElementById(id);let year=new Date().getFullYear(),month=new Date().getMonth(),day=new Date().getDate(),selected=null,filter='alles',globe=null,auto=true,paused=false,towerPaused=false,hover=false;const names=['januari','februari','maart','april','mei','juni','juli','augustus','september','oktober','november','december'];function matching(e){return filter==='alles'||filter===e.category}function visible(){return entries.filter(e=>matching(e))}function updatePoints(){if(!globe)return;globe.pointsData($('lights').checked?visible().filter(e=>e.year===year&&e.month===month&&e.day===day&&Number.isFinite(e.lat)&&Number.isFinite(e.lng)).map(e=>({...e,color:selected===e.id?'#ffffff':e.day===day&&e.month===month&&e.year===year?'#ffe177':'#5fceff'})):[])}function render(){ $('monthLabel').textContent=names[month][0].toUpperCase()+names[month].slice(1)+' '+year;const offset=(new Date(year,month,1).getDay()+6)%7, count=new Date(year,month+1,0).getDate();$('days').innerHTML=['Ma','Di','Wo','Do','Vr','Za','Zo'].map(s=>'<div class="weekday">'+s+'</div>').join('')+Array.from({length:offset},()=>'<span></span>').join('')+Array.from({length:count},(_,i)=>{const d=i+1,has=visible().some(e=>e.day===d&&e.month===month&&e.year===year);return '<button class="day '+(day===d?'active ':'')+(has?'has':'')+'" data-day="'+d+'" aria-pressed="'+(day===d)+'">'+d+'</button>'}).join('');$('days').querySelectorAll('[data-day]').forEach(b=>b.onclick=()=>{day=Number(b.dataset.day);selected=null;delete $('details').dataset.eventSelected;showDetails();render();const todays=visible().filter(e=>e.day===day&&e.month===month&&e.year===year);if(todays.length===1)choose(todays[0].id);else if(todays.length>1){$('message').textContent=todays.length+' gebeurtenissen op deze datum: kies er één in de informatietoren.';}});const list=visible().filter(e=>e.year===year&&e.month===month).sort((a,b)=>a.day-b.day);$('events').innerHTML=list.length?list.map(e=>'<button class="event '+(selected===e.id?'active':'')+'" data-id="'+e.id+'"><b>'+e.day+' '+names[e.month]+' '+e.year+' · '+e.name+'</b><small>'+e.place+' — '+(e.id.startsWith('nov')?'geplande reis':'kalenderdag')+'</small></button>').join(''):'<div class="fine">Geen testgebeurtenissen in deze categorie. De knop werkt; echte gegevens volgen later.</div>';$('events').querySelectorAll('[data-id]').forEach(b=>b.onclick=()=>choose(b.dataset.id));$('dayStatus').textContent=day+' '+names[month]+' '+year+' · '+list.filter(e=>e.day===day&&e.month===month&&e.year===year).length+' gebeurtenis(sen)';updatePoints()}
+function showDetails(){const e=entries.find(x=>x.id===selected);$('featureTitle').textContent=e?e.name+' — '+e.place:'VIA World — gebeurtenissen wereldwijd';$('featureText').textContent=e?(e.id.startsWith('nov')?'Gepland reisprogramma volgens de Vaticaanse persdienst.':(e.note||'Vaste kalenderdag.'))+' Datum: '+e.day+' '+names[e.month]+' '+e.year+'.':'Kies een dag of een lichtpunt. Reisprogramma 6–17 november 2026; geen live locatiegegevens.';$('details').textContent=e?e.name+' · '+e.place+' · '+e.day+' '+names[e.month]+' '+e.year+'. '+(e.id.startsWith('nov')?'Gepland programma volgens Vaticaanse bron.':(e.note||'')):'Kies een dag of lichtpunt. Reisprogramma: gepland, niet live.'}function choose(id){const e=entries.find(x=>x.id===id);if(!e)return;$('details').dataset.eventSelected='1';selected=id;day=e.day;month=e.month;year=e.year;showDetails();render();if(globe&&Number.isFinite(e.lat)&&Number.isFinite(e.lng))globe.pointOfView({lat:e.lat,lng:e.lng,altitude:1.8},1000)}function changeMonth(delta){const d=new Date(year,month+delta,1);year=d.getFullYear();month=d.getMonth();day=1;selected=null;showDetails();render()}function changeDay(delta){const d=new Date(year,month,day+delta);year=d.getFullYear();month=d.getMonth();day=d.getDate();selected=null;showDetails();render()}
+$('prevMonth').onclick=()=>changeMonth(-1);$('nextMonth').onclick=()=>changeMonth(1);$('prevDay').onclick=()=>changeDay(-1);$('nextDay').onclick=()=>changeDay(1);$('today').onclick=()=>{const d=new Date();year=d.getFullYear();month=d.getMonth();day=d.getDate();selected=null;showDetails();render()};$('filters').querySelectorAll('[data-filter]').forEach(b=>b.onclick=()=>{filter=b.dataset.filter;$('filters').querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));selected=null;showDetails();render()});
+function locate(source){const field=source==='search'?$('search'):$('location');const q=field.value.trim().toLocaleLowerCase('nl');const e=entries.find(e=>[e.place,e.name].some(v=>v.toLocaleLowerCase('nl').includes(q)));if(e&&q){filter='alles';$('filters').querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.filter==='alles')));choose(e.id);$('message').textContent='Gevonden: '+e.place+' (opgenomen kalenderlocatie).'}else $('message').textContent='Zoeken werkt in deze proef alleen op de opgenomen kalenderlocaties. Wereldwijd zoeken volgt later.'} $('findLocation').onclick=()=>locate('location');$('location').addEventListener('keydown',e=>{if(e.key==='Enter')locate('location')});
+$('bottomSettings').onclick=()=>{$('settingsBtn').click();$('settings').scrollIntoView({block:'nearest',behavior:'smooth'})};$('globeLocate').onclick=()=>{$('location').focus()};$('featureMore').onclick=()=>{const e=entries.find(x=>x.id===selected);if(e&&e.id.startsWith('nov'))window.open('https://press.vatican.va/content/leo-xiv/en/travels/2026/documents/uruguay-argentina-peru-6-17novembre2026.html','_blank','noopener');else $('message').textContent='Voor deze kalenderdag is nog geen afzonderlijke gecontroleerde bronlink aangesloten.'};$('login').onclick=()=>{$('message').textContent='DeSo-login loopt uitsluitend via de VIA-homepage. Deze proef logt niet in.'};$('settingsBtn').onclick=()=>{$('settings').hidden=!$('settings').hidden;$('settingsBtn').setAttribute('aria-expanded',String(!$('settings').hidden))};$('speed').onchange=()=>{if(globe)globe.controls().autoRotateSpeed=Number($('speed').value);try{localStorage.setItem('via-globe-speed',$('speed').value)}catch{}};try{const v=localStorage.getItem('via-globe-speed');if(v&&Number.isFinite(Number(v)))$('speed').value=v}catch{};
+$('lights').onchange=()=>{updatePoints();try{localStorage.setItem('via-globe-lights',String($('lights').checked))}catch{}};try{const v=localStorage.getItem('via-globe-lights');if(v!==null)$('lights').checked=v==='true'}catch{};
+function setRotate(value){
+ auto=Boolean(value);$('motion').checked=auto;
+ $('rotate').textContent=auto?'⏸':'▶';$('rotate').setAttribute('aria-pressed',String(auto));
+ if(globe){globe.controls().autoRotate=auto;globe.controls().autoRotateSpeed=Number($('speed').value)}
+ $('globeStatus').textContent='3D-aarde geladen · automatische rotatie '+(auto?'aan':'uit');
+}
+$('rotate').onclick=()=>setRotate(!auto);
+$('motion').onchange=()=>setRotate($('motion').checked);
+$('zoomIn').onclick=()=>{if(globe){const p=globe.pointOfView();globe.pointOfView({...p,altitude:Math.max(.75,p.altitude*.75)},0)}};$('zoomOut').onclick=()=>{if(globe){const p=globe.pointOfView();globe.pointOfView({...p,altitude:Math.min(4,p.altitude*1.3)},0)}};$('reset').onclick=()=>{if(globe)globe.pointOfView({lat:25,lng:5,altitude:2.25},0)};
+function startGlobe(){try{if(typeof Globe!=='function')throw Error('Bibliotheek niet geladen');globe=Globe()($('globe')).globeImageUrl('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg').bumpImageUrl('https://unpkg.com/three-globe/example/img/earth-topology.png').backgroundColor('rgba(0,0,0,0)').pointLat('lat').pointLng('lng').pointColor('color').pointAltitude(.03).pointRadius(.65).pointLabel(e=>e.name+' — '+e.place).onPointClick(e=>choose(e.id));const resize=()=>globe.width($('globe').clientWidth).height($('globe').clientHeight);resize();window.addEventListener('resize',resize);globe.pointOfView({lat:25,lng:5,altitude:2.25});const c=globe.controls();
+c.enableDamping=true;c.autoRotateSpeed=Number($('speed').value);c.enablePan=false;
+// Herstel automatische rotatie na slepen, maar nooit wanneer de bezoeker pauze heeft gekozen.
+let rotationRecovery; c.addEventListener('start',()=>{if(rotationRecovery)clearTimeout(rotationRecovery)});c.addEventListener('end',()=>{if(rotationRecovery)clearTimeout(rotationRecovery);rotationRecovery=setTimeout(()=>{if(auto&&!document.hidden)c.autoRotate=true},1300)});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&auto)c.autoRotate=true});
+// Globe.GL beheert zelf de animatielus. Een aanraakgebaar mag de rotatie
+// tijdelijk onderbreken, maar verandert de expliciete gebruikerskeuze niet.
+c.autoRotate=auto;
+// Een gebruiker kan de rotatie ook bij verminderde bewegingsvoorkeur zelf aanzetten.
+if(window.matchMedia('(prefers-reduced-motion: reduce)').matches){auto=false;c.autoRotate=false;}
+$('motion').checked=auto;
+$('fallback').hidden=true;$('rotate').textContent=auto?'⏸':'▶';$('rotate').setAttribute('aria-pressed',String(auto));$('globeStatus').textContent='3D-aarde geladen · automatische rotatie '+(c.autoRotate?'aan':'uit');updatePoints();if(typeof viaDynamic==='function')viaDynamic()}catch(e){$('fallback').textContent='3D-aarde kon niet worden geladen: '+e.message;$('globeStatus').textContent='Kalender en toren blijven beschikbaar.'}}const s=document.createElement('script');s.src='https://unpkg.com/globe.gl@2.45.0/dist/globe.gl.min.js';s.onload=startGlobe;s.onerror=()=>{const alt=document.createElement('script');alt.src='https://cdn.jsdelivr.net/npm/globe.gl@2.45.0/dist/globe.gl.min.js';alt.onload=()=>{if(!globe)startGlobe()};alt.onerror=()=>{$('fallback').textContent='3D-bibliotheek niet bereikbaar; kalender en informatietoren blijven beschikbaar.'};document.head.appendChild(alt)};document.head.appendChild(s);setTimeout(()=>{if(!globe){$('fallback').textContent='3D-bol niet geladen in deze voorvertoning. Open de proef via HTTPS in Safari; kalender en informatietoren blijven zichtbaar.';$('globeStatus').textContent='3D niet beschikbaar in deze weergave.'}},12000);
+const tower=$('events');['pointerenter','focusin','touchstart'].forEach(n=>tower.addEventListener(n,()=>hover=true,{passive:true}));['pointerleave','focusout','touchend'].forEach(n=>tower.addEventListener(n,()=>hover=false,{passive:true}));$('towerPause').onclick=()=>{towerPaused=!towerPaused;$('towerPause').textContent=towerPaused?'▶ Hervat toren':'⏸ Pauzeer toren'};setInterval(()=>{if(hover||towerPaused||document.hidden||window.matchMedia('(prefers-reduced-motion: reduce)').matches||tower.scrollHeight<=tower.clientHeight)return;tower.scrollTop=tower.scrollTop>=tower.scrollHeight-tower.clientHeight-1?0:tower.scrollTop+1},95);
+function exportIcs(){const e=entries.find(x=>x.id===selected);if(!e){$('message').textContent='Selecteer eerst een gebeurtenis voor agenda-export.';return}const start=String(e.year)+String(e.month+1).padStart(2,'0')+String(e.day).padStart(2,'0');const next=new Date(Date.UTC(e.year,e.month,e.day+1));const end=next.toISOString().slice(0,10).replace(/-/g,'');const lines=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//VIA//Demo//NL','BEGIN:VEVENT','UID:via-papal-'+e.id+'@via.example','DTSTAMP:'+new Date().toISOString().replace(/[-:]/g,'').replace(/\.\d{3}Z$/,'Z'),'DTSTART;VALUE=DATE:'+start,'DTEND;VALUE=DATE:'+end,'SUMMARY:'+e.name+' — '+e.place,'DESCRIPTION:'+(e.id.startsWith('nov')?'Gepland reisprogramma; controleer de officiële Vaticaanse bron. https://press.vatican.va/content/leo-xiv/en/travels/2026/documents/uruguay-argentina-peru-6-17novembre2026.html':'VIA kalenderproef: controleer details vóór toevoegen.'),'END:VEVENT','END:VCALENDAR'];const url=URL.createObjectURL(new Blob([lines.join('\r\n')+'\r\n'],{type:'text/calendar'}));const a=document.createElement('a');a.href=url;a.download='VIA_'+e.id+'.ics';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}$('ics').onclick=exportIcs;['apple','google','outlook'].forEach(id=>$(id).onclick=exportIcs);$('submitEvent').onclick=()=>{$('submissionPanel').hidden=false;$('submissionPanel').scrollIntoView({behavior:'smooth',block:'start'})};$('closeSubmission').onclick=()=>{$('submissionPanel').hidden=true};$('submissionForm').onsubmit=async ev=>{ev.preventDefault();const f=new FormData(ev.currentTarget);if(f.get('end')<f.get('start')){$('submissionStatus').textContent='De einddatum mag niet vóór de begindatum liggen.';return}let u;try{u=new URL(f.get('source'));if(u.protocol!=='https:')throw Error()}catch{$('submissionStatus').textContent='Gebruik een geldige HTTPS-bronlink.';return}const draft='VIA Wereldkalender — NIET GEPUBLICEERD CONCEPT\n'+Array.from(f.entries()).map(([k,v])=>k+': '+v).join('\n');try{await navigator.clipboard.writeText(draft);$('submissionStatus').textContent='Concept gekopieerd. NIET verstuurd of gepubliceerd.'}catch{$('submissionStatus').textContent='Kopiëren niet beschikbaar in deze voorvertoning. Open via HTTPS in Safari.'}};$('updates').onclick=()=>$('message').textContent='Deze proef bevat brongebonden reisgegevens, maar geen automatische live-verversing. Automatische updates worden pas na brontoetsing aangesloten.';document.querySelectorAll('aside a[aria-disabled]').forEach(a=>a.onclick=e=>{e.preventDefault();$('message').textContent='Deze navigatie hoort bij de goedgekeurde vormgeving; niet aangesloten in de geïsoleerde proef.'});render();
+
+const viaTranslations={
+nl:['VIA Wereldkalender','Wereldwijde feestdagen, evenementen en bijzondere momenten','Zoek in kalender…','🔎 Zoek','⚙️ Instellingen','🌍 Levende wereldbol','Zoek plaats: Montevideo, Buenos Aires, Lima…','📍 Zoek locatie','📅 Wereldagenda','Vandaag','📡 Informatietoren VIA','← Vorige dag','Volgende dag →','Evenement aanmelden','Automatische updates','Kies een gebeurtenis of lichtpunt.'],
+en:['VIA World Calendar','Worldwide holidays, events and special moments','Search calendar…','🔎 Search','⚙️ Settings','🌍 Living globe','Find place: Montevideo, Buenos Aires, Lima…','📍 Find location','📅 World calendar','Today','📡 VIA Information Tower','← Previous day','Next day →','Submit an event','Automatic updates','Choose an event or light point.'],
+fr:['Calendrier mondial VIA','Fêtes, événements et moments marquants dans le monde','Rechercher…','🔎 Chercher','⚙️ Paramètres','🌍 Globe vivant','Rechercher une ville…','📍 Localiser','📅 Calendrier mondial',"Aujourd’hui",'📡 Tour d’information VIA','← Jour précédent','Jour suivant →','Proposer un événement','Mises à jour automatiques','Choisissez un événement ou un point lumineux.'],
+es:['Calendario mundial VIA','Fiestas, eventos y momentos especiales del mundo','Buscar…','🔎 Buscar','⚙️ Ajustes','🌍 Globo interactivo','Buscar ciudad…','📍 Buscar lugar','📅 Calendario mundial','Hoy','📡 Torre informativa VIA','← Día anterior','Día siguiente →','Proponer evento','Actualizaciones automáticas','Elige un evento o un punto luminoso.'],
+zh:['VIA 世界日历','全球节日、活动和特别时刻','搜索日历…','🔎 搜索','⚙️ 设置','🌍 互动地球','搜索地点…','📍 搜索地点','📅 世界日历','今天','📡 VIA 信息塔','← 前一天','后一天 →','提交活动','自动更新','请选择活动或光点。'],
+hi:['VIA विश्व कैलेंडर','विश्वभर के त्योहार, आयोजन और खास अवसर','कैलेंडर खोजें…','🔎 खोजें','⚙️ सेटिंग्स','🌍 घूमता ग्लोब','स्थान खोजें…','📍 स्थान खोजें','📅 विश्व कैलेंडर','आज','📡 VIA सूचना टावर','← पिछला दिन','अगला दिन →','कार्यक्रम भेजें','स्वचालित अपडेट','कार्यक्रम या प्रकाश बिंदु चुनें।']
+};
+function applyViaLanguage(code){
+ const t=viaTranslations[code]||viaTranslations.nl;
+ document.documentElement.lang=code;
+ const heading=document.querySelector('.heading h1');if(heading)heading.textContent=t[0];
+ const intro=document.querySelector('.heading small');if(intro)intro.textContent=t[1];
+ const search=$('search');search.placeholder=t[2];$('searchBtn').textContent=t[3];$('settingsBtn').textContent=t[4];
+ const headings=document.querySelectorAll('.panel h2');[5,8,10].forEach((idx,j)=>{if(headings[j])headings[j].textContent=t[idx]});
+ $('location').placeholder=t[6];$('findLocation').textContent=t[7];$('today').textContent=t[9];
+ $('prevDay').textContent=t[11];$('nextDay').textContent=t[12];
+ $('submitEvent').textContent=t[13];$('updates').textContent=t[14];
+ if(!$('details').dataset.eventSelected)$('details').textContent=t[15];
+ try{localStorage.setItem('via-world-calendar-language',code)}catch{}
+ $('message').textContent=code==='nl'?'De bediening is vertaald; officiële namen en bronteksten blijven onveranderd.':'Controls are translated; official names and source texts remain unchanged.';
+}
+$('lang').onchange=()=>applyViaLanguage($('lang').value);
+try{const saved=localStorage.getItem('via-world-calendar-language');if(saved&&viaTranslations[saved])$('lang').value=saved}catch{}
+applyViaLanguage($('lang').value);
+
+// Proef 14: ook de dynamisch opgebouwde kalender en informatietoren lokaliseren.
+const viaLocales={nl:'nl-NL',en:'en-GB',fr:'fr-FR',es:'es-ES',zh:'zh-CN',hi:'hi-IN'};
+const viaTerms={
+ nl:['gepland','kalenderdag','gebeurtenis(sen)','Geen gebeurtenissen in deze categorie','Pauzeer toren','Hervat toren','Zet in agenda','Meer informatie','VIA World — gebeurtenissen wereldwijd','Kies een dag of een lichtpunt.','Automatische rotatie','aan','uit'],
+ en:['planned','calendar day','event(s)','No events in this category','Pause tower','Resume tower','Add to calendar','More information','VIA World — worldwide events','Select a day or a light point.','Automatic rotation','on','off'],
+ fr:['prévu','jour du calendrier','événement(s)','Aucun événement dans cette catégorie','Pause de la tour','Reprendre la tour','Ajouter au calendrier','Plus d’informations','VIA World — événements mondiaux','Choisissez un jour ou un point lumineux.','Rotation automatique','activée','désactivée'],
+ es:['programado','día del calendario','evento(s)','No hay eventos en esta categoría','Pausar torre','Reanudar torre','Añadir al calendario','Más información','VIA World — eventos mundiales','Seleccione un día o un punto luminoso.','Rotación automática','activada','desactivada'],
+ zh:['计划中','日历日期','个事件','此类别暂无事件','暂停公告','继续公告','添加到日历','更多信息','VIA World — 全球活动','选择日期或光点。','自动旋转','开启','关闭'],
+ hi:['नियोजित','कैलेंडर दिवस','कार्यक्रम','इस श्रेणी में कोई कार्यक्रम नहीं','सूचना रोकें','सूचना चलाएँ','कैलेंडर में जोड़ें','अधिक जानकारी','VIA World — विश्व कार्यक्रम','दिन या प्रकाश बिंदु चुनें।','स्वचालित घुमाव','चालू','बंद']};
+function viaDynamic(){
+ const code=$('lang').value,locale=viaLocales[code]||'nl-NL',term=viaTerms[code]||viaTerms.nl;
+ const monthText=new Intl.DateTimeFormat(locale,{month:'long',year:'numeric'}).format(new Date(year,month,1));
+ $('monthLabel').textContent=monthText.charAt(0).toUpperCase()+monthText.slice(1);
+ const week=[...$('days').querySelectorAll('.weekday')];
+ week.forEach((w,i)=>{const d=new Date(2026,10,2+i);w.textContent=new Intl.DateTimeFormat(locale,{weekday:'short'}).format(d)});
+ $('dayStatus').textContent=new Intl.DateTimeFormat(locale,{day:'numeric',month:'long',year:'numeric'}).format(new Date(year,month,day))+' · '+entries.filter(e=>e.day===day&&e.month===month&&e.year===year&&(filter==='alles'||e.category===filter)).length+' '+term[2];
+ const btns=[...$('events').querySelectorAll('.event')];btns.forEach(b=>{const e=entries.find(x=>x.id===b.dataset.id);if(!e)return;const bTitle=b.querySelector('b'),small=b.querySelector('small');if(bTitle)bTitle.textContent=new Intl.DateTimeFormat(locale,{day:'numeric',month:'long'}).format(new Date(e.year,e.month,e.day))+' · '+e.name;if(small)small.textContent=e.place+' — '+(e.id.startsWith('nov')?term[0]:term[1])});
+ $('towerPause').textContent=(towerPaused?'▶ ':'⏸ ')+(towerPaused?term[5]:term[4]);
+ $('ics').textContent='📅 '+term[6];$('featureMore').textContent=term[7]+' ↗';
+ if(!selected){$('featureTitle').textContent=term[8];$('featureText').textContent=term[9];}
+ if(globe)$('globeStatus').textContent='3D · '+term[10]+' '+(auto?term[11]:term[12]);
+}
+const originalRender=render;render=function(){originalRender();viaDynamic()};
+const originalLanguage=applyViaLanguage;applyViaLanguage=function(code){originalLanguage(code);viaDynamic()};
+$('lang').onchange=()=>applyViaLanguage($('lang').value);
+const originalRotate=setRotate;setRotate=function(value){originalRotate(value);viaDynamic()};
+$('towerPause').onclick=()=>{towerPaused=!towerPaused;viaDynamic()};
+viaDynamic();
+// Selecteer bij het openen geen verzonnen live-locatie; bestaande selectie blijft leidend.
+</script>
+<style>
+#searchResults{display:none;position:absolute;top:100%;right:0;z-index:30;max-height:280px;overflow:auto;width:min(480px,90vw);background:#0b2746;border:1px solid #d2ad60;border-radius:9px;box-shadow:0 12px 30px #0009;padding:6px}
+#searchResults:not([hidden]){display:block}#searchResults button{display:block;width:100%;text-align:left;margin:3px 0;background:#143857;border:1px solid #456886;color:#fff;padding:9px;border-radius:7px}
+.topcontrols{position:relative}.accessory{margin:9px 0;display:flex;gap:7px;flex-wrap:wrap}.accessory button{padding:8px 10px;background:#123b61;color:#fff;border:1px solid #b89d66;border-radius:8px}
+#searchResults small{display:block;color:#b5d5ef}#statusNotice{margin:8px 0;color:#f1d78c;min-height:18px}
+</style>
+<script>
+// Isolated enhancement layer. It never writes to VIA, DeSo, or any server.
+window.addEventListener('DOMContentLoaded',()=>{
+ const get=id=>document.getElementById(id), events=()=>typeof entries!=='undefined'?entries:[];
+ const bar=document.querySelector('.topcontrols');const results=document.createElement('div');results.id='searchResults';results.hidden=true;results.setAttribute('role','listbox');bar.appendChild(results);
+ const search=get('search');
+ function findEvents(q){q=(q||'').trim().toLocaleLowerCase();if(!q){results.hidden=true;return false}
+ const found=events().filter(e=>[e.name,e.place,e.category,e.note||'',String(e.year)].join(' ').toLocaleLowerCase().includes(q)).slice(0,30);
+ results.replaceChildren();
+ if(!found.length){const msg=document.createElement('p');msg.textContent='Geen gecontroleerde kalendergebeurtenis gevonden. Wereldwijd zoeken is nog niet aangesloten.';results.append(msg)}
+ found.forEach(e=>{const b=document.createElement('button');b.type='button';const t=document.createElement('strong');t.textContent=e.name;const sub=document.createElement('small');sub.textContent=e.day+'-'+(e.month+1)+'-'+e.year+' · '+e.place;b.append(t,sub);b.onclick=()=>{if(typeof choose==='function')choose(e.id);results.hidden=true};results.append(b)});
+ results.hidden=false;return true;
+ }
+ get('searchBtn').onclick=()=>findEvents(search.value);
+ search.addEventListener('keydown',ev=>{if(ev.key==='Enter'){ev.preventDefault();findEvents(search.value)}if(ev.key==='Escape')results.hidden=true});
+ search.addEventListener('input',()=>{if(!search.value.trim())results.hidden=true});
+ document.addEventListener('pointerdown',ev=>{if(!bar.contains(ev.target))results.hidden=true});
+ const accessories=document.createElement('div');accessories.className='accessory';accessories.innerHTML='<button id="goSelected" type="button">📍 Toon geselecteerde locatie</button><button id="showHelp" type="button">❔ Handleiding</button><button id="copyEvent" type="button">📋 Kopieer gebeurtenis</button>';
+ const feature=document.querySelector('.feature');if(feature)feature.after(accessories);
+ const notice=document.createElement('div');notice.id='statusNotice';accessories.after(notice);
+ function current(){return events().find(e=>e.id===selected)}
+ get('goSelected').onclick=()=>{const e=current();if(!e){notice.textContent='Selecteer eerst een gebeurtenis.';return}if(globe&&e.lat!=null&&e.lng!=null){globe.pointOfView({lat:e.lat,lng:e.lng,altitude:1.55},1100);notice.textContent='De bol toont '+e.place+'.'}else notice.textContent='Geen geografische locatie beschikbaar.'};
+ get('showHelp').onclick=()=>{notice.textContent='Bol: slepen, zoomen, pauzeren. Kies een datum of torenbericht voor dezelfde gebeurtenis. Zoeken doorzoekt alleen de gecontroleerde proefgegevens. Evenement aanmelden maakt uitsluitend een lokaal concept.';notice.scrollIntoView({block:'nearest',behavior:'smooth'})};
+ get('copyEvent').onclick=async()=>{const e=current();if(!e){notice.textContent='Selecteer eerst een gebeurtenis.';return}const txt=e.name+' | '+e.day+'-'+(e.month+1)+'-'+e.year+' | '+e.place;try{await navigator.clipboard.writeText(txt);notice.textContent='Gegevens gekopieerd.'}catch{notice.textContent=txt}};
+ // Calendar service buttons: export a selected event, not a fabricated account integration.
+ function selection(){const e=current();if(!e){notice.textContent='Kies eerst een gebeurtenis in de kalender of informatietoren.';return null}return e}
+ function google(){const e=selection();if(!e)return;const d=new Date(Date.UTC(e.year,e.month,e.day+1));const start=[e.year,String(e.month+1).padStart(2,'0'),String(e.day).padStart(2,'0')].join('');const end=d.toISOString().slice(0,10).replaceAll('-','');const url='https://calendar.google.com/calendar/render?action=TEMPLATE&text='+encodeURIComponent(e.name)+'&dates='+start+'/'+end+'&details='+encodeURIComponent('VIA Wereldkalender: kalendervermelding, geen live tracking.')+'&location='+encodeURIComponent(e.place);window.open(url,'_blank','noopener')}
+ get('google').onclick=google;
+ get('apple').onclick=()=>{if(selection())get('ics').click()};
+ get('outlook').onclick=()=>{const e=selection();if(!e)return;const start=new Date(Date.UTC(e.year,e.month,e.day)).toISOString();const end=new Date(Date.UTC(e.year,e.month,e.day+1)).toISOString();window.open('https://outlook.live.com/calendar/0/deeplink/compose?path=%2Fcalendar%2Faction%2Fcompose&rru=addevent&subject='+encodeURIComponent(e.name)+'&startdt='+encodeURIComponent(start)+'&enddt='+encodeURIComponent(end)+'&allday=true&location='+encodeURIComponent(e.place),'_blank','noopener')};
+ get('voice').disabled=false;get('voice').title='Spraakzoekfunctie: alleen indien browser dit ondersteunt';get('voice').onclick=()=>{const Rec=window.SpeechRecognition||window.webkitSpeechRecognition;if(!Rec){notice.textContent='Spraakherkenning is in deze browser niet beschikbaar. Typ een zoekterm.';return}const r=new Rec();r.lang=({nl:'nl-NL',en:'en-GB',fr:'fr-FR',es:'es-ES',zh:'zh-CN',hi:'hi-IN'})[get('lang').value]||'en-GB';r.onresult=e=>{search.value=e.results[0][0].transcript;findEvents(search.value)};r.onerror=()=>notice.textContent='Spraakzoeken niet beschikbaar of geen toestemming.';r.start()};
+ const settings=get('settings');const hint=settings.querySelector('.fine');if(hint)hint.textContent='Draaisnelheid en lichtpunten kunnen lokaal worden onthouden. Er wordt niets naar VIA verstuurd.';
+ const update=get('updates');update.onclick=()=>{notice.textContent='Automatische wereldwijde updates zijn nog niet aangesloten: deze geïsoleerde proef heeft geen goedgekeurde live-bronfeed.';notice.scrollIntoView({block:'nearest'})};
+});
+</script>
+<script>
+/* VIA werkversie 17: non-destructive completion layer; standalone, no server or production changes. */
+(()=>{'use strict';
+const byId=id=>document.getElementById(id);
+const pad=n=>String(n).padStart(2,'0');
+const dateOnly=(y,m,d)=>`${y}-${pad(m+1)}-${pad(d)}`;
+const startDate=e=>e.start||dateOnly(e.year,e.month,e.day);
+const endDate=e=>e.end||startDate(e);
+const inRange=(e,y,m,d)=>{const x=dateOnly(y,m,d);return startDate(e)<=x&&x<=endDate(e)};
+const fmt=d=>{const [y,m,day]=d.split('-').map(Number);return new Intl.DateTimeFormat(document.documentElement.lang||'nl',{day:'numeric',month:'short',year:'numeric'}).format(new Date(y,m-1,day,12))};
+const period=e=>startDate(e)===endDate(e)?fmt(startDate(e)):`${fmt(startDate(e))} t/m ${fmt(endDate(e))}`;
+const esc=s=>String(s||'').replace(/[\\;,\n\r]/g,c=>({'\\':'\\\\',',':'\\,',';':'\\;','\n':'\\n','\r':''}[c]));
+const icsDate=s=>s.replaceAll('-','');
+const nextDate=s=>{const [y,m,d]=s.split('-').map(Number);return new Date(Date.UTC(y,m-1,d+1)).toISOString().slice(0,10)}
+const validDate=s=>{if(!/^\d{4}-\d{2}-\d{2}$/.test(s))return false;const [y,m,d]=s.split('-').map(Number);return y>=1900&&y<=2100&&new Date(Date.UTC(y,m-1,d)).toISOString().slice(0,10)===s};
+const foldIcs=line=>{const bytes=new TextEncoder();let out='',part='';for(const ch of line){if(bytes.encode(part+ch).length>73){out+=part+'\r\n ';part=ch}else part+=ch}return out+part};;
+const source='https://press.vatican.va/content/leo-xiv/en/travels/2026/documents/uruguay-argentina-peru-6-17novembre2026.html';
+const eById=()=>entries.find(e=>e.id===selected);
+function makeIcs(e){const lines=['BEGIN:VCALENDAR','VERSION:2.0','CALSCALE:GREGORIAN','METHOD:PUBLISH','PRODID:-//VIA//World Calendar//NL','BEGIN:VEVENT',`UID:${esc(e.id)}@viadeso.online`,`DTSTAMP:${new Date().toISOString().replace(/[-:]/g,'').replace(/\.\d{3}Z$/,'Z')}`,`DTSTART;VALUE=DATE:${icsDate(startDate(e))}`,`DTEND;VALUE=DATE:${icsDate(nextDate(endDate(e)))}`,`SUMMARY:${esc(e.name)}`,`LOCATION:${esc(e.place)}`,`DESCRIPTION:${esc((e.note||'VIA Wereldkalender')+' · '+period(e)+(e.id.startsWith('nov')?' · Gepland, geen live tracking. '+source:''))}`,'END:VEVENT','END:VCALENDAR'];return lines.map(foldIcs).join('\r\n')+'\r\n'}
+function downloadIcs(){const e=eById();if(!e){byId('message').textContent='Selecteer eerst een gebeurtenis.';return}const blob=new Blob([makeIcs(e)],{type:'text/calendar;charset=utf-8'}),u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download='VIA-'+String(e.id).replace(/[^a-zA-Z0-9_-]/g,'_')+'.ics';a.click();setTimeout(()=>URL.revokeObjectURL(u),5000)}
+function openCalendar(which){const e=eById();if(!e){byId('message').textContent='Selecteer eerst een gebeurtenis.';return}const s=icsDate(startDate(e)),t=icsDate(nextDate(endDate(e))),title=encodeURIComponent(e.name),detail=encodeURIComponent((e.note||'VIA Wereldkalender')+' · '+period(e)),loc=encodeURIComponent(e.place||'');let u;if(which==='google')u=`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${s}/${t}&details=${detail}&location=${loc}`;else u=`https://outlook.live.com/calendar/0/deeplink/compose?subject=${title}&startdt=${startDate(e)}&enddt=${nextDate(endDate(e))}&body=${detail}&location=${loc}&allday=true`;window.open(u,'_blank','noopener,noreferrer')}
+byId('toMyAgenda').onclick=()=>{const e=eById();if(!e){byId('message').textContent='Selecteer eerst een gebeurtenis.';return}const params=new URLSearchParams({viaSource:'world-calendar',title:String(e.name||'').slice(0,160),date:startDate(e),place:String(e.place||'').slice(0,160),eventId:String(e.id||'').slice(0,80),...(e.geoId?{geoId:String(e.geoId).slice(0,80)}:{}),...(e.countryCode?{countryCode:String(e.countryCode).slice(0,2)}:{})});window.top.location.assign('/mijn-agenda?'+params.toString())};byId('ics').onclick=downloadIcs;byId('apple').onclick=downloadIcs;byId('google').onclick=()=>openCalendar('google');byId('outlook').onclick=()=>openCalendar('outlook');
+// Existing date-based calendar uses a day field. Extend the visible cells and tower with inclusive ranges.
+const oldRender=render;render=function(){oldRender();document.querySelectorAll('#days button[data-day]').forEach(b=>{const d=Number(b.dataset.day);if(entries.some(e=>matching(e)&&inRange(e,year,month,d)))b.classList.add('has')});const list=entries.filter(e=>matching(e)&&startDate(e)<=dateOnly(year,month,new Date(year,month+1,0).getDate())&&endDate(e)>=dateOnly(year,month,1)).sort((a,b)=>startDate(a).localeCompare(startDate(b)));const tower=byId('events');tower.replaceChildren();if(!list.length){tower.textContent='Geen gecontroleerde gebeurtenissen voor deze maand.'}else list.forEach(e=>{const b=document.createElement('button');b.type='button';b.className='event'+(selected===e.id?' active':'');b.dataset.id=e.id;const strong=document.createElement('b');strong.textContent=period(e)+' · '+e.name;const small=document.createElement('small');small.textContent=(e.place||'Wereldwijd')+' · '+(e.id.startsWith('nov')?'gepland programma':'kalendervermelding');b.append(strong,small);b.onclick=()=>choose(e.id);tower.append(b)});byId('dayStatus').textContent=`${day} ${names[month]} ${year} · ${entries.filter(e=>matching(e)&&inRange(e,year,month,day)).length} gebeurtenis(sen)`;viaDynamic()};
+const oldShow=showDetails;showDetails=function(){oldShow();const e=eById();if(e){byId('details').textContent=e.name+' · '+(e.place||'Wereldwijd')+' · '+period(e)+'. '+(e.id.startsWith('nov')?'Gepland programma, niet live.':e.note||'');byId('featureText').textContent=period(e)+' · '+(e.note||'Controleer de bron voor details.')}};
+const localKey='via-calendar-drafts-v17';
+function readDrafts(){try{const v=JSON.parse(localStorage.getItem(localKey)||'[]');return Array.isArray(v)?v.slice(0,30):[]}catch{return []}}
+function saveDrafts(v){try{localStorage.setItem(localKey,JSON.stringify(v.slice(0,30)));return true}catch{return false}}
+function safeLink(s){try{const u=new URL(s);return u.protocol==='https:'&&u.hostname.includes('.')&&!u.username&&!u.password&&!/^(localhost|.*\.localhost|127\.|10\.|192\.168\.|169\.254\.|172\.(1[6-9]|2[0-9]|3[01])\.|0\.|::1$)/i.test(u.hostname)}catch{return false}}
+function duplicate(x,items){return items.some(d=>d.title.toLowerCase()===x.title.toLowerCase()&&d.start===x.start&&d.place.toLowerCase()===x.place.toLowerCase())}
+function drawQueue(){const node=byId('localQueue');node.replaceChildren();const drafts=readDrafts();const heading=document.createElement('h3');heading.textContent=`Lokale concepten (${drafts.length}) — niet gepubliceerd`;node.append(heading);drafts.forEach(d=>{const wrap=document.createElement('div');wrap.className='details';wrap.style.margin='8px 0';const t=document.createElement('strong');t.textContent=d.title;const desc=document.createElement('p');desc.textContent=`${fmt(d.start)}${d.end!==d.start?' t/m '+fmt(d.end):''} · ${d.place}, ${d.country} · status: lokaal concept`;const a=document.createElement('a');a.href=d.source;a.target='_blank';a.rel='noopener noreferrer';a.textContent='Bekijk opgegeven bron ↗';const copy=document.createElement('button');copy.textContent='Kopieer voor controle';copy.type='button';copy.onclick=()=>navigator.clipboard?.writeText(JSON.stringify(d,null,2)).then(()=>byId('submissionStatus').textContent='Concept gekopieerd; niet ingediend.').catch(()=>byId('submissionStatus').textContent='Kopiëren niet toegestaan.');const del=document.createElement('button');del.type='button';del.textContent='Verwijder lokaal';del.onclick=()=>{saveDrafts(readDrafts().filter(x=>x.id!==d.id));drawQueue()};wrap.append(t,desc,a,document.createTextNode(' '),copy,document.createTextNode(' '),del);node.append(wrap)})}
+byId('submissionForm').onsubmit=ev=>{ev.preventDefault();const f=new FormData(ev.currentTarget);const d=Object.fromEntries(f.entries());for(const k of ['title','place','country','description'])d[k]=String(d[k]||'').trim();if(!d.title||!d.place||!d.country||!d.description||!validDate(d.start)||!validDate(d.end)||d.end<d.start){byId('submissionStatus').textContent='Vul titel, locatie, omschrijving en een geldige periode in.';return}if(!safeLink(d.source)){byId('submissionStatus').textContent='Gebruik een geldige HTTPS-bron (niet localhost).';return}const items=readDrafts();if(duplicate(d,items)){byId('submissionStatus').textContent='Dit concept bestaat lokaal al (naam, datum en plaats).';return}d.id='draft-'+Date.now()+'-'+Math.random().toString(36).slice(2,7);d.status='local-draft-not-submitted';d.createdAt=new Date().toISOString();if(saveDrafts([d,...items])){byId('submissionStatus').textContent='Concept lokaal bewaard. Niet verstuurd, niet geverifieerd, niet gepubliceerd.';drawQueue();ev.currentTarget.reset()}else{byId('submissionStatus').textContent='Lokale opslag is geblokkeerd; concept niet opgeslagen.'}};
+drawQueue();
+// Lightweight approved-data refresh: works only when operator provides a same-origin approved feed.
+// No scraping, no automatic publication, no write API. Optional file calendar-approved.json.
+let lastVersion='';let lastChecked=0;let approvedIds=new Set();
+async function refreshApproved(force=false){if(!force&&Date.now()-lastChecked<15*60*1000)return;lastChecked=Date.now();try{const res=await fetch('./calendar-approved.json',{cache:'no-cache',credentials:'omit'});if(!res.ok)throw Error('Geen goedgekeurde feed ('+res.status+')');const raw=await res.text();if(raw.length>500000)throw Error('Feed te groot');const data=JSON.parse(raw);if(!data||typeof data.version!=='string'||!Array.isArray(data.events))throw Error('Onjuist gegevensformaat');if(data.version===lastVersion)return;if(data.version.length>100)throw Error('Ongeldige versie');if(data.events.length>500)throw Error('Te veel gebeurtenissen (maximum 500)');const fresh=[];const seen=new Set();let rejected=0;for(const x of data.events){if(!x||typeof x.id!=='string'||!/^[a-zA-Z0-9_-]{1,80}$/.test(x.id)||typeof x.name!=='string'||x.name.length>160||typeof x.start!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(x.start)||typeof x.end!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(x.end)||x.end<x.start||typeof x.place!=='string'||x.place.length>160||!['feestdagen','evenementen','cultuur','sport','religie','musea','via'].includes(x.category)||x.approved!==true){rejected++;continue;}const [y,m,d]=x.start.split('-').map(Number);if(!validDate(x.start)||!validDate(x.end)||seen.has(x.id)){rejected++;continue;}seen.add(x.id);fresh.push({id:'approved-'+x.id,name:x.name,place:x.place,year:y,month:m-1,day:d,start:x.start,end:x.end,category:x.category,lat:Number.isFinite(x.lat)&&Math.abs(x.lat)<=90?x.lat:undefined,lng:Number.isFinite(x.lng)&&Math.abs(x.lng)<=180?x.lng:undefined,note:typeof x.description==='string'?x.description.slice(0,600):'',geoId:typeof x.geoId==='string'&&/^[0-9]{1,15}$/.test(x.geoId)?x.geoId:undefined,countryCode:typeof x.countryCode==='string'&&/^[A-Z]{2}$/.test(x.countryCode)?x.countryCode:undefined})}if(rejected)throw Error(rejected+' ongeldige of dubbele gebeurtenissen; bestaande feed behouden');for(let i=entries.length-1;i>=0;i--)if(approvedIds.has(entries[i].id))entries.splice(i,1);approvedIds=new Set(fresh.map(e=>e.id));entries.push(...fresh);lastVersion=data.version;render();showDetails();byId('updateStatus').hidden=false;byId('updateStatus').textContent=`Goedgekeurde kalendergegevens geladen · versie ${data.version} · ${fresh.length} evenementen.`}catch(e){const status=byId('updateStatus');status.hidden=false;status.textContent='Automatische updates tijdelijk niet beschikbaar; ingebouwde kalender blijft beschikbaar.'}}
+byId('updates').onclick=()=>{lastChecked=0;refreshApproved(true)};
+window.addEventListener('focus',()=>refreshApproved());document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshApproved()});setInterval(()=>{if(!document.hidden)refreshApproved()},15*60*1000);refreshApproved(true);
+// Reduced motion / touch accessibility for announcement tower.
+const tower=byId('events');tower.setAttribute('aria-label','Aanklikbare wereldwijde aankondigingen');
+render();showDetails();
+})();
+</script>
+<script>
+/* VIA_CALENDAR_HOLIDAYS_BRIDGE_V1: read-only, reuse existing VIA public holiday API. */
+(()=>{
+ 'use strict';
+ const countries={NL:'Nederland',BE:'België',DE:'Duitsland',FR:'Frankrijk',GB:'Verenigd Koninkrijk',ES:'Spanje',US:'Verenigde Staten',CN:'China',IN:'India',JP:'Japan',BR:'Brazilië',AU:'Australië'};
+ const get=id=>document.getElementById(id);
+ const bar=get('location')?.parentElement;
+ if(!bar||!get('days')||!get('events'))return;
+ const wrapper=document.createElement('div');wrapper.style.cssText='display:flex;align-items:center;flex-wrap:wrap;gap:6px;padding:8px 12px;border-bottom:1px solid #34536e';
+ const label=document.createElement('label');label.htmlFor='viaHolidayCountry';label.textContent='Feestdagen per land:';
+ const select=document.createElement('select');select.id='viaHolidayCountry';select.setAttribute('aria-label','Land voor officiële feestdagen');select.style.cssText='background:#123655;color:#fff;border:1px solid #7899b3;border-radius:9px;padding:7px';
+ for(const [code,name] of Object.entries(countries)){const option=document.createElement('option');option.value=code;option.textContent=name;select.append(option)}
+ const status=document.createElement('span');status.id='viaHolidayStatus';status.setAttribute('role','status');status.style.cssText='font-size:12px;color:#c9dbea';
+ wrapper.append(label,select,status);bar.after(wrapper);
+ try{const previous=localStorage.getItem('via-calendar-holiday-country');if(previous&&countries[previous])select.value=previous}catch{}
+ const known=new Map();let requestId=0;let timer=0;
+ const dateValid=s=>{if(!/^\d{4}-\d{2}-\d{2}$/.test(s))return false;const [y,m,d]=s.split('-').map(Number);return new Date(Date.UTC(y,m-1,d)).toISOString().slice(0,10)===s};
+ const currentYear=()=>{const t=get('monthLabel')?.textContent||'';const m=t.match(/\b(20\d{2})\b/);return m?Number(m[1]):new Date().getFullYear()};
+ function clear(){for(const el of known.values())el.remove();known.clear()}
+ async function load(){const id=++requestId;const year=currentYear(),country=select.value;status.textContent='Feestdagen ophalen…';const controller=new AbortController();const timeout=setTimeout(()=>controller.abort(),12000);
+ try{
+  const response=await fetch('/api/via-calendar-holidays?year='+year+'&country='+encodeURIComponent(country),{credentials:'omit',cache:'no-store',signal:controller.signal});
+  if(!response.ok)throw Error('HTTP '+response.status);
+  const data=await response.json();if(!data||!Array.isArray(data.holidays)||data.holidays.length>500)throw Error('Onverwachte feestdagenfeed');
+  const items=data.holidays.filter(x=>x&&x.country===country&&typeof x.date==='string'&&dateValid(x.date)&&typeof x.name==='string'&&x.name.length<=180).slice(0,250);
+  if(id!==requestId)return;
+  clear();
+  for(const x of items){const [y,m,d]=x.date.split('-').map(Number);const key=country+'-'+x.date+'-'+x.name;const el=document.createElement('button');el.type='button';el.className='event via-holiday-event';el.dataset.holiday=key;el.style.marginBottom='6px';const title=document.createElement('b');title.textContent=x.localName||x.name;const meta=document.createElement('small');meta.textContent=x.date+' · '+countries[country]+' · officiële feestdagenbron';el.append(title,meta);el.onclick=()=>{const info=get('featureTitle'),desc=get('featureText');if(info)info.textContent=title.textContent;if(desc)desc.textContent=meta.textContent+' · '+(Array.isArray(x.types)?x.types.join(', '):'');get('details').textContent=title.textContent+' · '+meta.textContent};known.set(key,el)}
+  const tower=get('events');for(const el of known.values())tower.append(el);
+  status.textContent=data.complete===false?'Gedeeltelijke brongegevens: '+items.length+' feestdagen':'Bron gekoppeld: '+items.length+' feestdagen ('+year+')';
+ }catch(e){if(id===requestId)status.textContent='Feestdagenbron niet beschikbaar; bestaande kalender blijft zichtbaar.'}finally{clearTimeout(timeout)}
+ }
+ function schedule(){clearTimeout(timer);timer=setTimeout(load,150)}
+ select.addEventListener('change',()=>{try{localStorage.setItem('via-calendar-holiday-country',select.value)}catch{}schedule()});
+ for(const id of ['prevMonth','nextMonth','today','prevDay','nextDay'])get(id)?.addEventListener('click',schedule);
+ window.addEventListener('focus',schedule);document.addEventListener('visibilitychange',()=>{if(!document.hidden)schedule()});
+ schedule();
+})();
+</script>
+<style>
+/* VIA 20-11-2026: alleen de geselecteerde plaats krijgt een rode prikker. */
+.via-pin{display:flex;align-items:center;gap:5px;pointer-events:none;transform:translate(-12px,-100%);white-space:nowrap;filter:drop-shadow(0 2px 3px #000a)}
+.via-pin-icon{font-size:24px;line-height:1;color:#ec2634;text-shadow:0 0 2px #fff,0 2px 4px #000}
+.via-pin-name{background:#071d37ed;color:#fff5dc;border:1px solid #e9b86b;border-radius:6px;padding:4px 7px;font-size:12px;font-weight:700;max-width:190px;overflow:hidden;text-overflow:ellipsis}
+</style>
+<script>
+/* Non-destructive selected-place overlay; uses the existing Globe.GL instance. */
+(()=>{
+ 'use strict';
+ let marked=null;
+ function showPin(e){
+  if(!globe||!e||!Number.isFinite(e.lat)||!Number.isFinite(e.lng)||typeof globe.htmlElementsData!=='function')return;
+  marked={lat:e.lat,lng:e.lng,name:e.place||e.name||'Locatie'};
+  globe.htmlLat('lat').htmlLng('lng').htmlAltitude(.045).htmlElement(place=>{
+   const node=document.createElement('div');node.className='via-pin';
+   const pin=document.createElement('span');pin.className='via-pin-icon';pin.textContent='📍';
+   const name=document.createElement('span');name.className='via-pin-name';name.textContent=place.name;
+   node.append(pin,name);return node;
+  }).htmlElementsData([marked]);
+ }
+ const previousChoose=choose;
+ choose=function(id){previousChoose(id);const e=entries.find(x=>x.id===id);showPin(e)};
+ const previousUpdate=updatePoints;
+ updatePoints=function(){previousUpdate();if(marked&&globe&&typeof globe.htmlElementsData==='function')globe.htmlElementsData([marked])};
+ const previousStart=startGlobe;
+ startGlobe=function(){previousStart();if(marked)showPin(marked)};
+})();
+</script>
+<style>
+/* VIA @OuwePiet 2026: rustige, optionele voetbal-kijkwijzer; nooit video in VIA-auto. */
+#via-football-watch{margin:10px 0;padding:10px;border:1px solid #b99859;border-radius:9px;background:#081c32;color:#f7e5b7;font-size:13px}
+#via-football-watch[hidden]{display:none}
+#via-football-watch a{display:inline-block;margin:7px 8px 2px 0;padding:8px 11px;border:1px solid #d6b779;border-radius:7px;color:#fff;text-decoration:none;background:#163453}
+#via-football-watch small{display:block;color:#d6d5d2;line-height:1.45}
+</style>
+<script>
+/* Links to official viewing guides only. A free stream is NEVER inferred from a fixture. */
+(()=>{
+ 'use strict';
+ const host=document.getElementById('details');
+ if(!host)return;
+ const panel=document.createElement('section');
+ panel.id='via-football-watch';panel.hidden=true;panel.setAttribute('aria-label','Voetbal kijken');
+ const heading=document.createElement('strong');heading.textContent='⚽ VIA Voetbal — kijkwijzer';
+ const explanation=document.createElement('small');
+ explanation.textContent='Controleer bij de officiële aanbieder of deze wedstrijd gratis en in jouw land te zien is. Geen live-uitzending bevestigd.';
+ const links=[['NOS / NPO Start','https://npo.nl/start'],['Ziggo Sport — programmagids','https://www.ziggosport.nl/gids/']];
+ panel.append(heading,explanation);
+ for(const [name,url] of links){const a=document.createElement('a');a.textContent=name;a.href=url;a.target='_blank';a.rel='noopener noreferrer';panel.append(a)}
+ host.insertAdjacentElement('afterend',panel);
+ function refresh(){const e=entries.find(x=>x.id===selected);panel.hidden=!(e&&e.category==='sport'&&/voetbal|fifa|uefa|champions league|world cup|wk 2026/i.test(e.name))}
+ const original=showDetails;
+ showDetails=function(){original();refresh()};
+ refresh();
+})();
+</script>
+<style>
+#via-geo-card{margin:10px 0;padding:12px;border:1px solid #b99859;border-radius:9px;background:#081c32;color:#f7e5b7}
+#via-geo-card[hidden]{display:none}#via-geo-results{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+#via-geo-results button{padding:7px;border:1px solid #b99859;border-radius:6px;background:#173a58;color:white}
+</style>
+<script>
+/* VIA GEO proof @OuwePiet 2026. No images fetched, no paid service. */
+(()=>{
+'use strict';
+const input=document.getElementById('location'),trigger=document.getElementById('findLocation');
+if(!input||!trigger)return;
+const countryLabel=document.createElement('label');
+countryLabel.textContent='Land: ';
+countryLabel.style.cssText='display:inline-flex;align-items:center;gap:5px;font-size:13px';
+const countrySelect=document.createElement('select');
+countrySelect.id='via-geo-country';
+countrySelect.setAttribute('aria-label','Land voor plaats zoeken');
+countrySelect.style.cssText='background:#102e4c;color:white;border:1px solid #688ba9;border-radius:7px;padding:8px;max-width:150px';
+const language=document.documentElement.lang||'nl';
+const displayNames=typeof Intl.DisplayNames==='function'?new Intl.DisplayNames([language],{type:'region'}):null;
+function fillCountries(codes){
+ const selected=countrySelect.value||'NL';
+ countrySelect.replaceChildren();
+ for(const code of codes){
+  const option=document.createElement('option');option.value=code;
+  option.textContent=(displayNames?displayNames.of(code):code)+' ('+code+')';
+  countrySelect.append(option);
+ }
+ countrySelect.value=codes.includes(selected)?selected:(codes.includes('NL')?'NL':codes[0]);
+}
+fillCountries(['NL']);
+fetch('/wereldkalender19/geo-countries.json',{credentials:'omit'})
+ .then(r=>{if(!r.ok)throw Error('Landenlijst ontbreekt');return r.json()})
+ .then(codes=>{if(!Array.isArray(codes)||codes.length<200||codes.some(x=>typeof x!=='string'||!/^[A-Z]{2}$/.test(x)))throw Error('Ongeldige landenlijst');fillCountries(codes)})
+ .catch(()=>{countrySelect.title='Landenlijst niet beschikbaar; alleen NL in deze proef'});countryLabel.append(countrySelect);input.insertAdjacentElement('beforebegin',countryLabel);
+const previousStartGlobeForGeo=startGlobe;
+startGlobe=function(){
+ previousStartGlobeForGeo();
+ if(globe&&typeof globe.pointRadius==='function'){
+  globe.pointRadius(p=>p.id==='via-geo-selected'?1.6:.65);
+  globe.pointAltitude(p=>p.id==='via-geo-selected'?.09:.03);
+  globe.pointLabel(p=>p.id==='via-geo-selected'?'Geselecteerde plaats: '+p.name:p.name+' - '+p.place);
+ }
+};const originalUpdatePoints=updatePoints;
+updatePoints=function(){
+ const pin=globe&&typeof globe.pointsData==='function'?(globe.pointsData()||[]).find(x=>x.id==='via-geo-selected'):null;
+ originalUpdatePoints();
+ if(pin&&globe)globe.pointsData((globe.pointsData()||[]).concat([pin]));
+};const card=document.createElement('section');card.id='via-geo-card';card.hidden=true;card.setAttribute('aria-live','polite');
+const status=document.createElement('div'),results=document.createElement('div');results.id='via-geo-results';
+const title=document.createElement('strong'),detail=document.createElement('p');
+const source=document.createElement('a');
+source.target='_blank';source.rel='noopener noreferrer';
+source.textContent='Bron: GeoNames (CC BY 4.0)';
+source.style.cssText='display:inline-block;color:#f7e5b7;text-decoration:underline';
+card.append(status,results,title,detail,source);
+document.getElementById('details').insertAdjacentElement('afterend',card);
+function showPlace(p){
+  results.replaceChildren();title.textContent=p.name+' · '+p.countryCode;
+  detail.textContent='Regio '+(p.admin1||'onbekend')+' · GeoNames '+p.id+' · '+p.featureCode+' · GeoNames CC BY 4.0';
+  source.href='https://www.geonames.org/'+encodeURIComponent(p.id)+'/';
+  status.textContent='Geselecteerde plaats';card.hidden=false;
+  if(typeof globe!=='undefined'&&globe&&Number.isFinite(p.lat)&&Number.isFinite(p.lng)){
+    globe.pointOfView({lat:p.lat,lng:p.lng,altitude:1.8},900);
+    const current=globe.pointsData()||[];
+    globe.pointsData(current.filter(x=>x.id!=='via-geo-selected').concat([{
+      id:'via-geo-selected',name:p.name,place:p.name,lat:p.lat,lng:p.lng,color:'#ed2638'
+    }]));  }
+}
+async function search(){
+ const q=input.value.trim();if(q.length<2)return;
+ card.hidden=false;title.textContent='';detail.textContent='';results.replaceChildren();
+ const country=countrySelect.value;
+ status.textContent='Plaatsen zoeken…';
+ try{
+  const query=q.normalize('NFKD').replace(/\p{M}/gu,'').toLocaleLowerCase();
+  const normalize=s=>s.normalize('NFKD').replace(/\p{M}/gu,'').toLocaleLowerCase();
+  const rank=p=>{
+    const n=normalize(p.name);
+    const match=n===query?0:n.startsWith(query)?100:200;
+    const type=p.featureCode==='PPLC'?-25:p.featureCode==='PPLA'?-20:p.featureCode.startsWith('PPL')?-15:p.featureCode.startsWith('ADM')?15:0;
+    return match+type;
+  };
+  const compare=(a,b)=>rank(a)-rank(b)||a.name.length-b.name.length||a.name.localeCompare(b.name);
+  const base='/wereldkalender19/geo/'+encodeURIComponent(country.trim().toUpperCase());
+  const load=async path=>{
+    const response=await fetch(path,{credentials:'omit',cache:'force-cache'});
+    if(!response.ok)throw Error('GEO-bestand ontbreekt: '+response.status);
+    if(path.endsWith('.gz')){
+      const raw=await response.arrayBuffer(),bytes=new Uint8Array(raw);
+      if(bytes.length>=2&&bytes[0]===0x1f&&bytes[1]===0x8b){
+        if(typeof DecompressionStream!=='function')throw Error('Browser ondersteunt gzip-zoekindex niet');
+        return new Response(new Blob([raw]).stream().pipeThrough(new DecompressionStream('gzip'))).json();
+      }
+      return JSON.parse(new TextDecoder().decode(bytes));
+    }
+    return response.json();
+  };
+  let places=[];
+  const collect=index=>{
+    if(index.country!==country||!Array.isArray(index.places))throw Error('GEO-index ongeldig');
+    for(const row of index.places){
+      if(!Array.isArray(row)||typeof row[1]!=='string'||!normalize(row[1]).includes(query))continue;
+      places.push({id:row[0],name:row[1],countryCode:country,admin1:row[2],lat:row[3],lng:row[4],featureCode:row[5]});
+    }
+  };
+  const manifestResponse=await fetch(base+'/manifest.json',{credentials:'omit',cache:'force-cache'});
+  if(manifestResponse.ok&&typeof DecompressionStream==='function'){
+    const manifest=await manifestResponse.json();
+    if(manifest.country!==country||!Array.isArray(manifest.shards)||manifest.shards.some(x=>!/^(?:[a-z0-9]|other)$/.test(x)))throw Error('GEO-shardlijst ongeldig');
+    const first=[...query].find(c=>/[\p{L}\p{N}]/u.test(c))||'_';
+    const key=/[a-z0-9]/.test(first)?first:'other';
+    let candidates=manifest.shards;
+    if(query.length>=2){
+      const routeResponse=await fetch(base+'/grams2.json',{credentials:'omit',cache:'force-cache'});
+      if(routeResponse.ok){
+        const route=await routeResponse.json();
+        if(route.country!==country||!route.grams)throw Error('GEO-zoekrouter ongeldig');
+        let possible=new Set(manifest.shards);
+        for(let i=0;i<query.length-1;i++){
+          const names=(route.grams[query.slice(i,i+2)]||'').split(',').filter(Boolean);
+          possible=new Set([...possible].filter(x=>names.includes(x)));
+        }
+        candidates=manifest.shards.filter(x=>possible.has(x));
+      }
+    }
+    const ordered=[key,...candidates.filter(x=>x!==key)].filter(x=>candidates.includes(x));
+    for(const shard of ordered){
+      collect(await load(base+'/'+shard+'.json.gz'));
+      // Check every candidate shard to preserve exact-match ranking.
+    }
+  }else{
+    try{collect(await load(base+'.json.gz'))}
+    catch{collect(await load(base+'.json'))}
+  }
+  places.sort(compare);
+  places=places.slice(0,20);
+  const data={places};
+  status.textContent=data.places.length?'Kies de juiste plaats:':'Geen plaatsen gevonden';
+  for(const p of data.places){
+   const b=document.createElement('button');b.type='button';b.textContent=p.name+' · '+p.featureCode+' · '+p.countryCode;b.onclick=()=>showPlace(p);results.append(b);
+  }
+ }catch(e){status.textContent=e.message||'GEO tijdelijk niet beschikbaar'}
+}
+trigger.addEventListener('click',e=>{e.stopImmediatePropagation();search()},true);
+input.addEventListener('keydown',e=>{if(e.key==='Enter'){e.stopImmediatePropagation();search()}},true);
+})();
+</script><script>
+/* Public calendar only. No background downloads or private VIA/DeSo data. */
+(function(){
+ const panel=document.createElement('div');
+ panel.style.cssText='position:fixed;bottom:10px;left:10px;z-index:50;background:#102d4b;color:white;padding:7px;border:1px solid #b89d66;border-radius:8px;font:12px system-ui';
+ const button=document.createElement('button');button.textContent='Offline noodpagina bewaren';button.type='button';
+ const clear=document.createElement('button');clear.textContent='Wissen';clear.type='button';clear.style.marginLeft='6px';
+ const status=document.createElement('span');status.setAttribute('role','status');status.style.marginLeft='6px';
+ panel.append(button,clear,status);document.body.append(panel);
+ async function send(kind){
+  if(!('serviceWorker' in navigator)||!('caches' in window)){status.textContent='Niet ondersteund';return;}
+  try{
+   const reg=await navigator.serviceWorker.register('/wereldkalender19/offline-worker.js',{scope:'/wereldkalender19/'});
+   const sw=reg.active||await navigator.serviceWorker.ready.then(ready=>ready.active);
+   if(!sw)throw Error('not ready');
+   const channel=new MessageChannel();channel.port1.onmessage=e=>{status.textContent=e.data&&e.data.ok?(kind==='SAVE_OFFLINE'?'Noodpagina bewaard':'Noodpagina gewist'):'Niet gelukt';};
+   sw.postMessage(kind,[channel.port2]);
+  }catch{status.textContent='Niet gelukt';}
+ }
+ button.onclick=()=>send('SAVE_OFFLINE');clear.onclick=()=>send('REMOVE_OFFLINE');
+})();
+</script><script>
+/* @OuwePiet 2026: reopen the original public calendar event by identifier. */
+(function(){
+ const id=new URLSearchParams(location.search).get('eventId');
+ if(!id||!/^[a-zA-Z0-9_-]{1,80}$/.test(id))return;
+ let attempts=0;
+ const open=()=>{
+  if(typeof entries==='undefined'||typeof choose!=='function')return false;
+  if(!entries.some(e=>e.id===id))return false;
+  choose(id);
+  document.getElementById('details')?.scrollIntoView({block:'nearest'});
+  return true;
+ };
+ if(open())return;
+ const timer=setInterval(()=>{if(open()||++attempts>=20)clearInterval(timer)},500);
+})();
+</script></body></html>
