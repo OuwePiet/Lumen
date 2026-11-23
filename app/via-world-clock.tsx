@@ -115,12 +115,12 @@ export default function ViaWorldClock({ iphoneInline = false }: { iphoneInline?:
           zIndex: 3,
           ...frame,
           bottom: "58px",
-          minHeight: "42px",
-          padding: "9px 12px",
-          border: "1px solid rgba(79,116,98,.15)",
+          minHeight: "50px",
+          padding: "11px 14px",
+          border: "none",
           borderRadius: "999px",
-          background: "rgba(2,7,4,.50)",
-          backdropFilter: "blur(8px)",
+          background: "transparent",
+          backdropFilter: "none",
           display: "flex",
           flexWrap: "nowrap",
           alignItems: "center",
@@ -128,7 +128,7 @@ export default function ViaWorldClock({ iphoneInline = false }: { iphoneInline?:
           gap: "6px 10px",
           overflowX: "auto",
           color: "#93a097",
-          fontSize: "9.5px",
+          fontSize: "10.5px",
           letterSpacing: ".005em",
           scrollbarWidth: "none",
         }}
@@ -229,8 +229,8 @@ export default function ViaWorldClock({ iphoneInline = false }: { iphoneInline?:
         }
         @media (min-width: 768px) and (max-width: 1366px) {
           .via-home-world-clock {
-            background: rgba(2,7,4,.16) !important;
-            backdrop-filter: blur(2px) !important;
+            background: transparent !important;
+            backdrop-filter: none !important;
             position: relative !important;
             left: auto !important;
             right: auto !important;
