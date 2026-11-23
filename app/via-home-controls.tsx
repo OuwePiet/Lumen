@@ -479,6 +479,10 @@ export default function ViaHomeControls() {
 
   const t = copy[language]
   const menuText = accountMenuCopy[language]
+  const menuNames = Object.fromEntries([...standardNav, ...viaExtraNav].map(([key]) => [key, t[key]])) as Record<string, string>
+  Object.assign(menuNames, { sponsor: language === "Dutch" ? "Sponsoring Platform" : "Sponsor Platform", language: language === "Dutch" ? "Taal" : "Language", handbook: "Handboek VIA", calendar: t.calendar, wereldspiegel: "WereldSpiegel", viaAuto: "VIA Auto" })
+  const sortedMenuKeys = [...standardNav.map(([key]) => key), ...viaExtraNav.map(([key]) => key), "sponsor", "language", "handbook", "calendar", "wereldspiegel", "viaAuto"].filter((key) => key !== "home").sort((a, b) => menuNames[a].localeCompare(menuNames[b], language === "Dutch" ? "nl" : "en", { sensitivity: "base" }))
+  const menuOrder = (key: string) => key === "home" ? 0 : sortedMenuKeys.indexOf(key) + 1
   const avatar = safeProfileImage(profile?.profilePic)
   const accountName = profile?.username ? `@${profile.username}` : session ? shortPublicKey(session.publicKey) : "DeSo"
   const otherAccounts = knownAccounts.filter((account) => account.publicKey !== session?.publicKey)
@@ -523,11 +527,12 @@ export default function ViaHomeControls() {
 
       <div className="via-home-iphone-clock-inline"><ViaWorldClock iphoneInline /></div>
 
+      <div className="via-home-menu-unified">
       <section style={{ display: "grid", gap: "6px" }}>
         {t.standard ? <span className="via-home-standard-label" style={sectionLabel}>{t.standard}</span> : null}
         <nav aria-label="VIA standard navigation" style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "7px" }}>
           {standardNav.map(([key, href]) => key === "home" ? (
-            <div ref={accountMenuRef} key={key} className="via-home-grid-account-wrap" style={{ position: "relative", width: "100%" }}>
+            <div ref={accountMenuRef} key={key} className="via-home-grid-account-wrap" style={{ position: "relative", width: "100%", order: menuOrder("home") }}>
               <button type="button" onClick={() => { if (!session) { void openDeSoIdentity(); return }; refreshAccounts(); setAccountsOpen((open) => !open) }} disabled={status === "waiting"} aria-label={session ? t.switchAccount : t.login} title={session ? t.switchAccount : t.login} aria-expanded={session ? accountsOpen : undefined} aria-haspopup={session ? "menu" : undefined} style={{ ...buttonStyle, width: "100%", minHeight: "48px", justifyContent: "center", paddingInline: "9px", cursor: "pointer", gap: "7px" }}>
                 {session && avatar ? <img src={avatar} alt="" referrerPolicy="no-referrer" style={{ width: 28, height: 28, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} /> : session ? <UsersRound aria-hidden="true" size={18} /> : <img src="/via-logo-original.jpg?v=2" alt="" aria-hidden="true" style={{ width: 28, height: 28, borderRadius: "50%", objectFit: "contain", flexShrink: 0 }} />}
                 <span>{session ? accountName : t.login}</span>
@@ -558,12 +563,12 @@ export default function ViaHomeControls() {
               ) : null}
             </div>
           ) : href ? (
-            <Link prefetch={href === "/notifications"} key={key} href={href} style={{ ...buttonStyle, width: "100%", justifyContent: "center", paddingInline: "9px" }}>{key === "social" ? <span aria-hidden="true" style={{ color: "#3f7654", marginRight: "5px", fontSize: "13px" }}>✎</span> : null}{t[key]}{key === "notifications" && hasUnreadNotifications ? <span aria-label="Ongelezen meldingen" title="Ongelezen meldingen" style={{ display: "inline-block", width: "8px", height: "8px", flexShrink: 0, marginLeft: "6px", borderRadius: "50%", background: "#39d98a", boxShadow: "0 0 0 2px rgba(57,217,138,.16)" }} /> : null}</Link>
+            <Link prefetch={href === "/notifications"} key={key} href={href} style={{ ...buttonStyle, width: "100%", justifyContent: "center", paddingInline: "9px", order: menuOrder(key) }}>{key === "social" ? <span aria-hidden="true" style={{ color: "#3f7654", marginRight: "5px", fontSize: "13px" }}>✎</span> : null}{t[key]}{key === "notifications" && hasUnreadNotifications ? <span aria-label="Ongelezen meldingen" title="Ongelezen meldingen" style={{ display: "inline-block", width: "8px", height: "8px", flexShrink: 0, marginLeft: "6px", borderRadius: "50%", background: "#39d98a", boxShadow: "0 0 0 2px rgba(57,217,138,.16)" }} /> : null}</Link>
           ) : (
-            <span key={key} aria-disabled="true" title="Wordt op de eigen Berichten-pagina aangesloten" style={{ ...disabledButtonStyle, width: "100%", justifyContent: "center", paddingInline: "9px" }}>{t[key]}</span>
+            <span key={key} aria-disabled="true" title="Wordt op de eigen Berichten-pagina aangesloten" style={{ ...disabledButtonStyle, width: "100%", justifyContent: "center", paddingInline: "9px", order: menuOrder(key) }}>{t[key]}</span>
           ))}
-          <SponsorPlatform compact showIcon={false} />
-          <div className="via-home-language-control">
+          <div className="via-home-sponsor-control" style={{ order: menuOrder("sponsor") }}><SponsorPlatform compact showIcon={false} /></div>
+          <div className="via-home-language-control" style={{ order: menuOrder("language") }}>
             <button type="button" onClick={() => setLanguageOpen((open) => !open)} aria-label="VIA language" aria-expanded={languageOpen} style={{ ...buttonStyle, minHeight: "34px", padding: "5px 8px", gap: "5px", cursor: "pointer", width: "100%", justifyContent: "center" }}>
               <LanguageFlag language={language} />
               <span>{languageCodes[language]}</span>
@@ -581,18 +586,18 @@ export default function ViaHomeControls() {
         {t.viaExtra ? <span style={sectionLabel}>{t.viaExtra}</span> : null}
         <nav aria-label="VIA extra navigation" style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "7px" }}>
           {viaExtraNav.map(([key, href]) => (
-            <Link prefetch={false} key={href} href={href} className={key === "music" ? "via-home-music-grid-button" : undefined} style={{ ...buttonStyle, width: "100%", justifyContent: "center", paddingInline: "9px" }}>{t[key]}</Link>
+            <Link prefetch={false} key={href} href={href} className={key === "music" ? "via-home-music-grid-button" : undefined} style={{ ...buttonStyle, width: "100%", justifyContent: "center", paddingInline: "9px", order: menuOrder(key) }}>{t[key]}</Link>
           ))}
         </nav>
         <nav className="via-home-handbook-row" aria-label="VIA handboek en kalender" style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "7px" }}>
-          <Link prefetch={false} href="/help" style={{ ...buttonStyle, width: "100%", justifyContent: "center", paddingInline: "9px" }}>Handboek VIA</Link>
-          <Link prefetch={false} href="/wereldkalender" style={{ ...buttonStyle, width: "100%", justifyContent: "center", paddingInline: "9px" }}>{t.calendar}</Link>
-          <Link prefetch={false} href="/wereldspiegel" style={{ ...buttonStyle, width: "100%", justifyContent: "center", paddingInline: "9px" }}>WereldSpiegel</Link>
+          <Link prefetch={false} href="/help" style={{ ...buttonStyle, width: "100%", justifyContent: "center", paddingInline: "9px", order: menuOrder("handbook") }}>Handboek VIA</Link>
+          <Link prefetch={false} href="/wereldkalender" style={{ ...buttonStyle, width: "100%", justifyContent: "center", paddingInline: "9px", order: menuOrder("calendar") }}>{t.calendar}</Link>
+          <Link prefetch={false} href="/wereldspiegel" style={{ ...buttonStyle, width: "100%", justifyContent: "center", paddingInline: "9px", order: menuOrder("wereldspiegel") }}>WereldSpiegel</Link>
           {[
             ["VIA Auto", "VIA Auto", "VIA Auto", "VIA Auto", "VIA 汽车"],
           ].map((labels, index) => {
             const languageIndex = ({ Dutch: 0, English: 1, French: 2, Spanish: 3, Chinese: 4 } as Record<ViaLanguage, number>)[language]
-            return <span key={index} aria-disabled="true" title="Binnenkort" style={{ ...disabledButtonStyle, width: "100%", minWidth: 0, boxSizing: "border-box", flexDirection: "column", justifyContent: "center", padding: "5px 4px", gap: 1, overflow: "hidden", textAlign: "center", lineHeight: 1.2 }}>
+            return <span key={index} aria-disabled="true" title="Binnenkort" style={{ ...disabledButtonStyle, order: menuOrder("viaAuto"), width: "100%", minWidth: 0, boxSizing: "border-box", flexDirection: "column", justifyContent: "center", padding: "5px 4px", gap: 1, overflow: "hidden", textAlign: "center", lineHeight: 1.2 }}>
               <span style={{ display: "block", maxWidth: "100%", fontSize: 10, overflowWrap: "anywhere" }}>{labels[languageIndex]}</span><span style={{ display: "block", fontSize: 8, opacity: .85 }}>Binnenkort</span>
             </span>
           })}
@@ -600,10 +605,17 @@ export default function ViaHomeControls() {
       </section>
 
 
+      </div>
       {status === "waiting" ? <span role="status" style={{ fontSize: "11px" }}>{t.connecting}</span> : null}
       {unfinishedLogin && !session ? <span role="status" style={{ color: "#c6a97b", fontSize: "11px", lineHeight: 1.5 }}>{language === "Dutch" ? "Je DeSo-aanmelding is nog niet afgerond. Kies ‘DeSo Login’ om de toegang opnieuw te verbinden." : "Your DeSo connection has not finished. Use ‘DeSo Login’ to reconnect."}</span> : null}
       {status === "blocked" ? <span style={{ color: "#c6a97b", fontSize: "9px", lineHeight: 1.45 }}>{t.blocked}</span> : null}
       <style>{`
+        .via-home-menu-unified { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; }
+        .via-home-menu-unified > section, .via-home-menu-unified nav { display: contents !important; }
+        .via-home-menu-unified > section > span { display: none !important; }
+        .via-home-sponsor-control { min-width: 0; width: 100%; }
+        .via-home-sponsor-control > button { box-sizing: border-box !important; width: 100% !important; height: 40px !important; min-height: 40px !important; max-height: 40px !important; padding: 4px 6px !important; border-radius: 10px !important; font-size: 11px !important; line-height: 1.1 !important; background: linear-gradient(180deg, rgba(8,20,13,.82), rgba(3,10,6,.72)) !important; color: #d2dcd6 !important; }
+        .via-home-menu-unified nav > a, .via-home-menu-unified nav > span, .via-home-menu-unified .via-home-grid-account-wrap > button, .via-home-menu-unified .via-home-language-control > button { box-sizing: border-box !important; width: 100% !important; height: 40px !important; min-height: 40px !important; max-height: 40px !important; padding: 4px 6px !important; border-radius: 10px !important; font-size: 11px !important; line-height: 1.1 !important; text-align: center !important; }
         /* Equal-size controls across all homepage navigation groups. */
         .via-home-controls nav[aria-label="VIA standard navigation"] > a,
         .via-home-controls nav[aria-label="VIA standard navigation"] > span,
@@ -678,7 +690,7 @@ export default function ViaHomeControls() {
         .via-home-iphone-clock-inline { display: none; }
         .via-home-iphone-identity { display: none; }
         @media (max-width: 600px) {
-          .via-home-music-grid-button { display: none !important; }
+          .via-home-music-grid-button { display: flex !important; }
           .via-home-language-section { display: none !important; }
           .via-home-iphone-clock-inline {
             display: block !important;
