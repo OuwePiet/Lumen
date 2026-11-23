@@ -639,12 +639,12 @@ export default function ViaHomeControls() {
         }
         .via-home-language-control { position: relative; width: 100%; }
          .via-home-grid-account-wrap:has(.via-home-grid-account-menu) { z-index: 200; }
-        .via-home-grid-account-menu { position: absolute !important; left: 0; right: auto; top: calc(100% + 6px); width: min(218px, calc(100vw - 28px)) !important; max-height: 60vh; overflow-y: auto; box-sizing: border-box; padding: 5px !important; border-radius: 12px !important; background: rgba(10,22,15,.96) !important; backdrop-filter: blur(12px) !important; border: 1px solid rgba(143,212,169,.32) !important; box-shadow: 0 18px 44px rgba(0,0,0,.42) !important; }
+        .via-home-grid-account-menu { position: absolute !important; left: 0; right: auto; top: calc(100% + 6px); width: min(218px, calc(100vw - 28px)) !important; max-height: 60vh; overflow-y: auto; box-sizing: border-box; padding: 5px !important; border-radius: 12px !important; background: rgba(4,15,10,.98) !important; backdrop-filter: blur(8px) !important; border: 1px solid rgba(143,212,169,.48) !important; box-shadow: 0 18px 44px rgba(0,0,0,.42) !important; }
         .via-home-account-current { display: grid; gap: 3px; padding: 7px; border-bottom: 1px solid rgba(143,212,169,.18); overflow-wrap: anywhere; }
-        .via-home-account-current > span { color: #95a99b; font-size: 10px; }
+        .via-home-account-current > span { color: #b4cfbd; font-size: 11px; }
         .via-home-account-current > strong { color: #b8edca; font-size: 12px; }
         .via-home-account-menu-heading { color: #8fd4a9; font-size: 10px; padding: 7px 7px 3px; }
-        .via-home-account-empty { margin: 0; padding: 4px 7px 8px; color: #a7b4ac; font-size: 11px; line-height: 1.45; }
+        .via-home-account-empty { margin: 0; padding: 4px 7px 8px; color: #c4d6ca; font-size: 11px; line-height: 1.45; }
         .via-home-grid-account-menu > button { display: flex; align-items: center; gap: 7px; width: 100%; text-align: left; background: transparent; color: #d7e9dd; border: 0; cursor: pointer; }
         .via-home-grid-account-menu > .via-home-account-logout { color: #edc4b6; }
         .via-home-account-menu > button img, .via-home-account-menu > button svg { width: 23px; height: 23px; border-radius: 50%; object-fit: cover; flex: 0 0 auto; }

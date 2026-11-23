@@ -125,27 +125,27 @@ export default function ViaWorldClock({ iphoneInline = false }: { iphoneInline?:
           flexWrap: "nowrap",
           alignItems: "center",
           justifyContent: "center",
-          gap: "6px 10px",
+          gap: "6px 14px",
           overflowX: "auto",
-          color: "#c9d1cd",
-          fontSize: "10.5px",
+          color: "#c4e0ce",
+          fontSize: "11px",
           letterSpacing: ".005em",
           scrollbarWidth: "none",
         }}
       >
-        <span className="via-world-clock-title" style={{ color: "#d5e0d9", fontWeight: 750, letterSpacing: ".08em", textTransform: "uppercase", whiteSpace: "nowrap" }}>{t.clock}</span>
+        <span className="via-world-clock-title" style={{ color: "#b6e1c3", fontWeight: 750, letterSpacing: ".08em", textTransform: "uppercase", whiteSpace: "nowrap" }}>{t.clock}</span>
         <span className="via-world-clock-date" style={{ whiteSpace: "nowrap" }} title={t.date}>
-          <span style={{ color: "#b6c0bb" }}>{t.date}</span>{" "}
-          <strong style={{ color: "#e0e5e1", fontWeight: 600 }}>{localDate}</strong>
+          <span style={{ color: "#a8d2b7" }}>{t.date}</span>{" "}
+          <strong style={{ color: "#e0f0e5", fontWeight: 600 }}>{localDate}</strong>
         </span>
         {clocks.map((clock) => (
           <span className="via-world-clock-city" key={clock.timeZone} style={{ whiteSpace: "nowrap" }}>
-            <span style={{ color: "#b6c0bb" }}>{clock.label}</span>{" "}
-            <strong style={{ color: "#e0e5e1", fontWeight: 600 }}>{clock.time}</strong>
+            <span style={{ color: "#a8d2b7" }}>{clock.label}</span>{" "}
+            <strong style={{ color: "#e0f0e5", fontWeight: 600 }}>{clock.time}</strong>
           </span>
         ))}
         <span className="via-world-clock-deso" style={{ whiteSpace: "nowrap" }} title={stale ? "DESO rate is stale" : rateUnavailable ? "DESO rate is temporarily unavailable" : "Current DESO reference price in USD"}>
-          <span style={{ color: "#b6c0bb" }}>$DESO</span>{" "}
+          <span style={{ color: "#a8d2b7" }}>$DESO</span>{" "}
           <strong style={{ color: usd === null ? "#a4afa9" : "#d2e2d8", fontWeight: 700 }}>
             {usd === null ? "—" : `$${usd.toLocaleString(locale, { maximumFractionDigits: 4 })}`}
           </strong>
