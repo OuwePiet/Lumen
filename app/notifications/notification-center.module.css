@@ -146,7 +146,7 @@
 .filter:focus-visible { outline: 2px solid white; outline-offset: -4px; }
 .filter:hover::before { border-color: #78b9ff; }
 
-:global(body):has(.page[data-notification-reading="true"]) :global(.via-site-header),
+/* Reading mode keeps the compact VIA header and drawer accessible. */
 .page[data-notification-reading="true"] [data-notification-controls],
 :global(body):has(.page) :global(.via-global-guides a[href="/"]) {
   display: none !important;

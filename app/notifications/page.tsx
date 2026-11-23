@@ -22,6 +22,7 @@ const COPY: Record<ViaLanguage | "Hindi", PageCopy> = {
 
 export default function NotificationsPage() {
   const [reading, setReading] = useState(false)
+  useEffect(() => { if (window.matchMedia("(max-width: 720px)").matches) setReading(true) }, [])
   const [language, setLanguage] = useState<ViaLanguage>("English")
   const [session, setSession] = useState<ViaModernIdentityUser | null>(null)
   const [unreadCount, setUnreadCount] = useState<number | null>(null)
