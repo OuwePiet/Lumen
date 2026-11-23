@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import ViaHeaderMicrophone from "./via-header-microphone"
 import { useEffect, useState } from "react"
 import { readViaLocalSettings, VIA_SETTINGS_EVENT, type ViaLanguage } from "./via-local-settings"
 
@@ -20,7 +21,7 @@ const buttonStyle = {
   display: "inline-flex",
   alignItems: "center",
   justifyContent: "center",
-  padding: "8px 18px",
+  padding: "8px 10px",
   border: "1px solid rgba(143,212,169,.44)",
   borderRadius: "999px",
   background: "rgba(4,18,10,.86)",
@@ -30,11 +31,12 @@ const buttonStyle = {
   fontWeight: 800,
   letterSpacing: ".07em",
   textTransform: "uppercase" as const,
-  whiteSpace: "nowrap" as const,
+  whiteSpace: "normal" as const,
 }
 
 export default function ViaHomeCenterActions() {
   const [language, setLanguage] = useState<ViaLanguage>("English")
+  const [spokenQuery, setSpokenQuery] = useState("")
 
   useEffect(() => {
     const sync = () => setLanguage(readViaLocalSettings().interfaceLanguage)
@@ -56,34 +58,23 @@ export default function ViaHomeCenterActions() {
         top: "18px",
         left: "50%",
         transform: "translateX(-50%)",
-        width: "min(430px, calc(100vw - 650px))",
-        minWidth: "320px",
+        width: "min(430px, calc(100vw - 24px))",
+        minWidth: "0",
         padding: "8px 10px 10px",
-        border: "1px solid rgba(143,212,169,.24)",
+        border: "none",
         borderRadius: "18px",
-        background: "rgba(3,12,7,.62)",
-        backdropFilter: "blur(9px)",
-        boxShadow: "0 0 20px rgba(82,177,118,.07)",
+        background: "transparent",
+        backdropFilter: "none",
+        boxShadow: "none",
         textAlign: "center",
       }}
     >
-      <span
-        style={{
-          display: "block",
-          marginBottom: "7px",
-          color: "#8fa89a",
-          fontSize: "9px",
-          fontWeight: 750,
-          letterSpacing: ".11em",
-          textTransform: "uppercase",
-        }}
-      >
-        VIA · {t.title}
-      </span>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) auto minmax(0,1fr)", gap: "6px", alignItems: "center" }}>
         <Link href="/ideas" style={buttonStyle}>{t.ideas}</Link>
+        <ViaHeaderMicrophone onTranscript={setSpokenQuery} onFallback={() => setSpokenQuery((value) => value || " ")} />
         <Link href="/storage" style={{ ...buttonStyle, background: "rgba(3,12,7,.74)", color: "#9adbb2" }}>{t.storage}</Link>
       </div>
+      {spokenQuery && <div style={{ marginTop: 6, display: "flex", gap: 6 }}><input aria-label="Gesproken zoektekst" value={spokenQuery.trim()} onChange={(event) => setSpokenQuery(event.target.value)} placeholder="Zoeken..." style={{ minWidth: 0, flex: 1, background: "#071b15", color: "#fff", border: "1px solid #527b62", borderRadius: 6 }} /><Link href={"/discover?q=" + encodeURIComponent(spokenQuery.trim())} style={{ ...buttonStyle, padding: "6px 9px" }}>Zoek</Link></div>}
     </section>
       <style>{`
         @media (max-width: 1366px) {
@@ -98,7 +89,7 @@ export default function ViaHomeCenterActions() {
           }
         }
         @media (max-width: 600px) {
-          .via-home-center-actions { display: none !important; }
+          .via-home-center-actions { display: block !important; }
         }
       `}</style>
     </>
