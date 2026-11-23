@@ -18,6 +18,7 @@ const FEEDS = [
   { id: "radiotamazuj", name: "Radio Tamazuj", url: "https://www.radiotamazuj.org/en/feed", kind: "rss", editorialCountry: "SS" },
   { id: "khabarlahariya", name: "Khabar Lahariya", url: "https://khabarlahariya.org/feed/", kind: "rss", editorialCountry: "IN" },
   { id: "gaonconnection", name: "Gaon Connection", url: "https://gaonconnection.com/feed/", kind: "rss", editorialCountry: "IN" },
+  { id: "allafrica", name: "AllAfrica", url: "https://allafrica.com/tools/headlines/rdf/latest/headlines.rdf", kind: "rss", editorialRegion: "Afrika" },
   { id: "newhumanitarian", name: "The New Humanitarian", url: "https://www.thenewhumanitarian.org/rss.xml", kind: "rss" },
   { id: "mongabay", name: "Mongabay", url: "https://news.mongabay.com/feed/", kind: "rss" },
   { id: "conversation", name: "The Conversation", url: "https://theconversation.com/global/articles.atom", kind: "atom" },
