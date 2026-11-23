@@ -87,11 +87,11 @@ export default function ViaHomeEarth() {
         .via-nasa-earth-poster-shell,
         .via-nasa-earth-video {
           position: absolute;
-          width: min(1180px, 92vw);
+          width: min(1120px, 88vw);
           height: auto;
           aspect-ratio: 16 / 9;
           left: 50%;
-          top: 50%;
+          top: calc(50% - 18px);
           object-fit: contain;
           object-position: center center;
           transform: translate(-50%, -50%);
