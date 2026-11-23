@@ -588,8 +588,6 @@ export default function ViaHomeControls() {
           <Link prefetch={false} href="/help" style={{ ...buttonStyle, width: "100%", justifyContent: "center", paddingInline: "9px" }}>Handboek VIA</Link>
           <Link prefetch={false} href="/wereldkalender" style={{ ...buttonStyle, width: "100%", justifyContent: "center", paddingInline: "9px" }}>{t.calendar}</Link>
           <Link prefetch={false} href="/wereldspiegel" style={{ ...buttonStyle, width: "100%", justifyContent: "center", paddingInline: "9px" }}>WereldSpiegel</Link>
-        </nav>
-        <nav aria-label="VIA toekomstige pagina's" style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "7px" }}>
           {[
             ["VIA Auto", "VIA Auto", "VIA Auto", "VIA Auto", "VIA 汽车"],
           ].map((labels, index) => {
