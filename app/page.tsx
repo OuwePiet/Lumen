@@ -31,7 +31,6 @@ export default async function Home() {
         <ViaNewYear />
         <ViaHomeControls />
         <ViaHomeCenterActions />
-        <Link href="/wereldspiegel" style={{position:"absolute",zIndex:8,bottom:24,left:24,padding:"10px 16px",borderRadius:20,background:"#123725",color:"#fff",textDecoration:"none",fontWeight:700}}>De WereldSpiegel</Link>
         <ViaFeatured initialItems={featured.items} />
         <ViaWorldClock />
       </main>

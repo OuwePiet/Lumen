@@ -604,6 +604,27 @@ export default function ViaHomeControls() {
       {unfinishedLogin && !session ? <span role="status" style={{ color: "#c6a97b", fontSize: "11px", lineHeight: 1.5 }}>{language === "Dutch" ? "Je DeSo-aanmelding is nog niet afgerond. Kies ‘DeSo Login’ om de toegang opnieuw te verbinden." : "Your DeSo connection has not finished. Use ‘DeSo Login’ to reconnect."}</span> : null}
       {status === "blocked" ? <span style={{ color: "#c6a97b", fontSize: "9px", lineHeight: 1.45 }}>{t.blocked}</span> : null}
       <style>{`
+        /* Equal-size controls across all homepage navigation groups. */
+        .via-home-controls nav[aria-label="VIA standard navigation"] > a,
+        .via-home-controls nav[aria-label="VIA standard navigation"] > span,
+        .via-home-controls nav[aria-label="VIA standard navigation"] > div > button,
+        .via-home-controls nav[aria-label="VIA standard navigation"] > div.via-home-language-control > button,
+        .via-home-controls nav[aria-label="VIA extra navigation"] > a,
+        .via-home-controls nav.via-home-handbook-row > a,
+        .via-home-controls nav.via-home-handbook-row > span {
+          box-sizing: border-box !important;
+          width: 100% !important;
+          height: 38px !important;
+          min-height: 38px !important;
+          max-height: 38px !important;
+          padding: 3px 7px !important;
+          border-radius: 10px !important;
+          font-size: 11px !important;
+          line-height: 1.1 !important;
+          text-align: center !important;
+          align-items: center !important;
+          overflow-wrap: anywhere;
+        }
         .via-home-language-control { position: relative; width: 100%; }
          .via-home-grid-account-wrap:has(.via-home-grid-account-menu) { z-index: 200; }
         .via-home-grid-account-menu { position: absolute !important; left: 0; right: auto; top: calc(100% + 6px); width: min(218px, calc(100vw - 28px)) !important; max-height: 60vh; overflow-y: auto; box-sizing: border-box; padding: 5px !important; border-radius: 12px !important; background: rgba(10,22,15,.96) !important; backdrop-filter: blur(12px) !important; border: 1px solid rgba(143,212,169,.32) !important; box-shadow: 0 18px 44px rgba(0,0,0,.42) !important; }

@@ -105,7 +105,7 @@ export default function ViaHomeEarth() {
           z-index: 2;
           opacity: ${videoReady ? 0 : 1};
           overflow: hidden;
-          background: #000 url("https://svs.gsfc.nasa.gov/vis/a030000/a030000/a030082/frames/1920x1080_16x9_30p/RotatingEarth_00001.png") center / contain no-repeat;
+          background: #000 url("/via-earth-approved.jpg") center / contain no-repeat;
         }
         .via-nasa-earth-video { z-index: 1; opacity: ${videoReady ? 1 : 0}; }
 
