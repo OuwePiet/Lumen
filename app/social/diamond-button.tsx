@@ -183,6 +183,7 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
     window.addEventListener("storage", onIdentity)
     try {
       if (!session) throw new Error("DESO_LOGIN_REQUIRED")
+      if (session.publicKey === receiverPublicKey) throw new Error("SELF_DIAMOND_NOT_ALLOWED")
       const intent = "diamond:" + postHash + ":" + receiverPublicKey + ":" + chosenLevel
       await withFinancialAccountLock(session.publicKey, async () => {
         await assertAccount()
@@ -254,7 +255,7 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
 
   return <>
     <Popover.Root open={menuOpen} onOpenChange={changeMenu}>
-      <Popover.Trigger type="button" title="Diamanten" aria-label={"Diamanten · " + count}
+      <Popover.Trigger type="button" disabled={Boolean(reader && reader === receiverPublicKey)} title="Diamanten" aria-label={"Diamanten · " + count}
         className="inline-flex h-9 min-w-9 items-center justify-center gap-1 rounded-full border border-zinc-800 px-2 text-xs text-zinc-300 hover:border-[#8fd4a9] data-[popup-open]:border-[#8fd4a9] data-[popup-open]:bg-[#285f40]">
         <Gem className="size-4" aria-hidden="true" />
         <span>{count}{variant === "default" ? " Diamanten" : ""}</span>

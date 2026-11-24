@@ -7,6 +7,7 @@ import { viaModernIdentity, type ViaModernIdentityUser } from "../deso-identity-
 import { readViaLocalSettings, VIA_SETTINGS_EVENT, type ViaLanguage } from "../via-local-settings"
 import ViaIdentityStatusMarks from "../via-identity-status"
 import PostComposer from "../social/post-composer"
+import PostComposeShortcut from "../social/post-compose-shortcut"
 import LikeButton from "../social/like-button"
 import RepostButton from "../social/repost-button"
 import DiamondButton from "../social/diamond-button"
@@ -479,7 +480,7 @@ export default function ProfilePage() {
             </div>
           </section>
         ) : null}
-        {session && profile ? <section className="mt-5 rounded-[14px] border border-zinc-800/80 bg-zinc-950/50 p-4 sm:p-5" aria-label="Write a post"><PostComposer /></section> : null}
+        {session && profile ? <><PostComposeShortcut /><details id="via-post-composer" open className="mt-5 rounded-[14px] border border-zinc-800/80 bg-zinc-950/50 p-4 sm:p-5"><summary>Write a post</summary><PostComposer /></details></> : null}
         {session && profile ? <section className="mt-5" aria-label="Your DeSo posts and gallery">
           <div className="mb-5 grid grid-cols-5 gap-1.5 border-t border-zinc-800/70 pt-4 sm:gap-3" aria-label="Profile content">{(["posts", "gallery"] as const).map((tab) => <button key={tab} type="button" role="tab" aria-selected={contentTab === tab} onClick={() => setContentTab(tab)} className={`flex min-w-0 items-center justify-center rounded-xl border px-1 py-2 text-center text-[11px] sm:px-3 sm:text-sm ${contentTab === tab ? "border-[#8fd4a9] bg-[#10271a] text-[#9adbb2]" : "border-zinc-800 text-zinc-400"}`}>{tab === "posts" ? "Posts" : "Gallery"}</button>)}
           <nav aria-label="Other DeSo profile sections" className="contents"><Link href="/profile/coin" className="flex min-w-0 items-center justify-center rounded-xl border border-zinc-800 px-1 py-2 text-center text-[11px] text-zinc-200 sm:px-3 sm:text-sm">Creator Coin</Link><Link href="/wallet" className="flex min-w-0 items-center justify-center rounded-xl border border-zinc-800 px-1 py-2 text-center text-[11px] text-zinc-200 sm:px-3 sm:text-sm">Diamonds</Link><Link href="/collection" className="flex min-w-0 items-center justify-center rounded-xl border border-zinc-800 px-1 py-2 text-center text-[11px] text-zinc-200 sm:px-3 sm:text-sm">NFTs</Link></nav></div>
