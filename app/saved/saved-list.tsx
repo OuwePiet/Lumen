@@ -31,15 +31,20 @@ export default function SavedList() {
   const [ready, setReady] = useState(false)
 
   useEffect(() => {
-    setItems(readSaved())
+    const sync = () => setItems(readSaved())
+    sync()
     setReady(true)
+    window.addEventListener("via:saved:changed", sync)
+    window.addEventListener("storage", sync)
+    return () => { window.removeEventListener("via:saved:changed", sync); window.removeEventListener("storage", sync) }
   }, [])
 
   function remove(href: string) {
     try {
-      const next = items.filter((item) => item.href !== href)
+      const next = readSaved().filter((item) => item.href !== href)
       window.localStorage.setItem(SAVED_KEY, JSON.stringify(next))
       setItems(next)
+      window.dispatchEvent(new Event("via:saved:changed"))
     } catch {
       // Keep the visible list unchanged when local browser storage is unavailable.
     }

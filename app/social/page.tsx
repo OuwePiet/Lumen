@@ -4,7 +4,6 @@ import { ChevronDown, Pencil } from "lucide-react"
 import FeedChoice from "./feed-choice"
 import PublicPosts from "./public-posts"
 import ParticipationGate from "../participation-gate"
-import PostComposer from "./post-composer"
 import PostComposeShortcut from "./post-compose-shortcut"
 import SocialLocalizer from "./social-localizer"
 import { ViaSettingsContent } from "../settings/page"
@@ -35,14 +34,7 @@ export default async function SocialPage({ searchParams }: { searchParams: Promi
           <Link href="/saved" className="rounded-full border border-white/10 px-3 py-1.5 text-sm text-zinc-300">Saved</Link>
         </header>
 
-        <details id="via-post-composer" open className="group scroll-mt-24 rounded-xl border border-white/10 bg-[#0b1a14] px-2 sm:px-3">
-          <summary className="flex min-h-11 cursor-pointer list-none items-center gap-2 rounded-lg px-1 text-sm font-medium text-[#b8ddc5] [&::-webkit-details-marker]:hidden">
-            <Pencil size={15} aria-hidden="true" />
-            <span>Write a post</span>
-            <ChevronDown size={16} aria-hidden="true" className="ml-auto group-open:rotate-180" />
-          </summary>
-          <div className="pb-2"><PostComposer /></div>
-        </details>
+
 
         <div className="mt-2">
           <FeedChoice />

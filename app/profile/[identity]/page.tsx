@@ -3,13 +3,15 @@
 import Link from "next/link"
 import { useParams } from "next/navigation"
 import { useEffect, useState } from "react"
-import { MessageCircle } from "lucide-react"
+import { MessageSquare } from "lucide-react"
 import LikeButton from "../../social/like-button"
 import RepostButton from "../../social/repost-button"
 import DiamondButton from "../../social/diamond-button"
 import ScrollTopButton from "../../social/scroll-top-button"
 import PostComposer from "../../social/post-composer"
 import LocalSaveButton from "../../social/local-save-button"
+import PostShareButton from "../../social/post-share-button"
+import PostActionsMenu from "../../social/post-actions-menu"
 import XShareButton from "../../x-share-button"
 import { viaModernIdentity } from "../../deso-identity-modern"
 import FollowButton from "../../social/follow-button"
@@ -294,26 +296,13 @@ export default function PublicProfilePage() {
                         </div>
                       ) : null}
                       <div data-via-post-actions className="mt-4 flex flex-wrap items-start gap-2 border-t border-zinc-800/70 pt-3 text-xs text-zinc-500"><ScrollTopButton />
-                        {hasSession ? <button type="button" onClick={() => setReplyingTo(replyingTo === post.postHash ? null : post.postHash)} title="Reply" aria-label={`Reply · ${post.commentCount}`} className="inline-flex h-9 min-w-9 items-center justify-center gap-1 rounded-full border border-zinc-800 px-2 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2]"><MessageCircle aria-hidden="true" className="h-4 w-4" /><span>{post.commentCount}</span></button> : <span>Reply · {formatNumber(post.commentCount)}</span>}
+                        {hasSession ? <button type="button" onClick={() => setReplyingTo(replyingTo === post.postHash ? null : post.postHash)} title="Reply" aria-label={`Reply · ${post.commentCount}`} className="inline-flex h-9 min-w-9 items-center justify-center gap-1 rounded-full border border-zinc-800 px-2 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2]"><MessageSquare aria-hidden="true" className="h-4 w-4" /><span>{post.commentCount}</span></button> : <span>Reply · {formatNumber(post.commentCount)}</span>}
                         {hasSession ? <RepostButton postHash={post.postHash} initialCount={post.repostCount + post.quoteRepostCount} variant="icon" /> : <span>Repost · {formatNumber(post.repostCount + post.quoteRepostCount)}</span>}
-                        {hasSession ? <LikeButton postHash={post.postHash} initialCount={post.likeCount} variant="icon" /> : <span>Like · {formatNumber(post.likeCount)}</span>}
                         {hasSession ? <DiamondButton postHash={post.postHash} receiverPublicKey={post.publicKey} initialCount={post.diamondCount} variant="icon" /> : <span>Diamond · {formatNumber(post.diamondCount)}</span>}
-                        <XShareButton href={`/social?post=${encodeURIComponent(post.postHash)}`} text={post.body.slice(0, 180)} label="Share on X" />
+                        {hasSession ? <LikeButton postHash={post.postHash} initialCount={post.likeCount} variant="icon" /> : <span>Like · {formatNumber(post.likeCount)}</span>}
+                        <PostShareButton postHash={post.postHash} />
                         <LocalSaveButton postHash={post.postHash} body={post.body} publicKey={post.publicKey} timestampNanos={post.timestampNanos} />
-                        <Link href={`/social?post=${encodeURIComponent(post.postHash)}`} className="rounded-full border border-zinc-800 px-3 py-1 text-zinc-400 transition hover:border-[#8fd4a9]/45 hover:text-[#9adbb2]">Open post</Link>
-                        <details className="relative">
-                          <summary aria-label="Meer postacties" title="Meer postacties" className="cursor-pointer list-none rounded-full border border-zinc-800 px-3 py-1 text-zinc-400">•••</summary>
-                          <div className="absolute right-0 z-20 mt-1 min-w-44 overflow-hidden rounded-lg border border-zinc-800 bg-[#050806] text-left shadow-xl">
-                            <button type="button" onClick={async () => {
-                              const lang = readViaLocalSettings().interfaceLanguage
-                              const targetLanguage = ({ Dutch: "nl", English: "en", French: "fr", Spanish: "es", Chinese: "zh", Hindi: "hi" } as Record<string, string>)[lang] ?? "en"
-                              const result = await translateViaTextLocally(post.body, targetLanguage)
-                              setTranslation({ hash: post.postHash, ...result })
-                              ;(document.activeElement as HTMLElement | null)?.closest("details")?.removeAttribute("open")
-                            }} className="block w-full px-3 py-2 text-left text-zinc-300 hover:bg-white/[0.04]">🌐 Translate / Vertalen</button>
-                            <button type="button" onClick={() => void navigator.clipboard?.writeText(`${window.location.origin}/social?post=${encodeURIComponent(post.postHash)}`)} className="block w-full px-3 py-2 text-left text-zinc-300 hover:bg-white/[0.04]">Link to Post</button>
-                          </div>
-                        </details>
+                        <PostActionsMenu postHash={post.postHash} body={post.body} publicKey={post.publicKey} authenticated={Boolean(hasSession)} />
                       </div>
                       {translation?.hash === post.postHash ? <div className="mt-3 rounded-xl border border-[#8fd4a9]/35 bg-black/40 p-3 text-sm text-zinc-300"><div className="flex justify-end"><button type="button" onClick={() => setTranslation(null)} className="rounded-md border border-zinc-700 px-2 py-1">Sluiten</button></div><p className="mt-2 whitespace-pre-wrap break-words">{translation.text || translation.message}</p></div> : null}
                       {hasSession && replyingTo === post.postHash ? <div className="mt-3"><PostComposer parentStakeID={post.postHash} compact onDone={() => setReplyingTo(null)} /></div> : null}

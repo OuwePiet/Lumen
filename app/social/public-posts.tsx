@@ -14,6 +14,8 @@ import DiamondButton from "./diamond-button"
 import ScrollTopButton from "./scroll-top-button"
 import LocalSaveButton from "./local-save-button"
 import PollVoteControl from "./poll-vote-control"
+import PostShareButton from "./post-share-button"
+import PostActionsMenu from "./post-actions-menu"
 import XShareButton from "../x-share-button"
 import { viaModernIdentity, type ViaModernIdentityUser } from "../deso-identity-modern"
 
@@ -233,17 +235,9 @@ export default function PublicPosts({ initialPost }: { initialPost?: PublicPost 
   function ReplyExtraActions({ reply }: { reply: PublicPost }) {
     const url = `${typeof window === "undefined" ? "" : window.location.origin}/social?post=${encodeURIComponent(reply.postHash)}`
     return <>
-      <button type="button" onClick={() => {
-        if (navigator.share) void navigator.share({ title: "VIA · DeSo post", url }).catch(() => {})
-        else void navigator.clipboard?.writeText(url)
-      }}>Share</button>
+      <PostShareButton postHash={reply.postHash} />
       {session ? <LocalSaveButton postHash={reply.postHash} body={reply.body} publicKey={reply.publicKey} timestampNanos={reply.timestampNanos} /> : <button type="button" title="Save (DeSo login required)" onClick={() => setActionLoginPost(reply.postHash)}>Save</button>}
-      <details className="relative">
-        <summary aria-label="Meer reactieacties" title="Meer reactieacties" className="cursor-pointer list-none">•••</summary>
-        <div className="absolute right-0 z-20 mt-1 min-w-44 overflow-hidden rounded-lg border border-zinc-800 bg-[#050806] text-left shadow-xl">
-          <button type="button" onClick={() => void navigator.clipboard?.writeText(url)} className="block w-full px-3 py-2 text-left text-zinc-300 hover:bg-white/[0.04]">Link to Post</button>
-        </div>
-      </details>
+      <PostActionsMenu postHash={reply.postHash} body={reply.body} publicKey={reply.publicKey} authenticated={Boolean(session)} />
     </>
   }
 
@@ -490,27 +484,9 @@ export default function PublicPosts({ initialPost }: { initialPost?: PublicPost 
                   {session ? <RepostButton quotedPost={post} postHash={post.postHash} initialCount={totalReposts} variant="icon" /> : <button type="button" title="Repost (DeSo login required)" onClick={() => setActionLoginPost(post.postHash)} className="inline-flex h-9 min-w-9 items-center justify-center gap-1 rounded-full border border-zinc-800 px-2 text-xs text-zinc-300">Repost · {totalReposts}</button>}
                   {session ? <DiamondButton postHash={post.postHash} receiverPublicKey={post.publicKey} initialCount={post.diamondCount} variant="icon" /> : <button type="button" title="Diamond (DeSo login required)" onClick={() => setActionLoginPost(post.postHash)} className="inline-flex h-9 min-w-9 items-center justify-center gap-1 rounded-full border border-zinc-800 px-2 text-xs text-zinc-300">Diamond · {post.diamondCount}</button>}
                   {session ? <LikeButton postHash={post.postHash} initialCount={post.likeCount} initialLiked={post.isLikedByReader} variant="icon" /> : <button type="button" title="Like (DeSo login required)" onClick={() => setActionLoginPost(post.postHash)} className="inline-flex h-9 min-w-9 items-center justify-center gap-1 rounded-full border border-zinc-800 px-2 text-xs text-zinc-300">Like · {post.likeCount}</button>}
-                  <button type="button" onClick={() => {
-                    const url = `${window.location.origin}/social?post=${encodeURIComponent(post.postHash)}`
-                    if (navigator.share) void navigator.share({ title: "VIA · DeSo post", url }).catch(() => {})
-                    else void navigator.clipboard?.writeText(url)
-                  }} className="inline-flex h-9 min-w-9 items-center justify-center rounded-full border border-zinc-800 px-3 text-xs text-zinc-300">Share</button>
+                  <PostShareButton postHash={post.postHash} />
                   {session ? <LocalSaveButton postHash={post.postHash} body={post.body} publicKey={post.publicKey} timestampNanos={post.timestampNanos} /> : <button type="button" title="Save (DeSo login required)" onClick={() => setActionLoginPost(post.postHash)} className="inline-flex h-9 min-w-9 items-center justify-center rounded-full border border-zinc-800 px-3 text-xs text-zinc-300">Save</button>}
-                  <details className="relative">
-                    <summary aria-label="Meer postacties" title="Meer postacties" className="cursor-pointer list-none rounded-full border border-zinc-800 px-3 py-1 text-zinc-400">•••</summary>
-                    <div className="mt-2 flex flex-col overflow-hidden rounded-xl border border-zinc-800 bg-[#050806] text-left">
-                      <button type="button" onClick={() => void navigator.clipboard?.writeText(`${window.location.origin}/social?post=${encodeURIComponent(post.postHash)}`)} className="px-3 py-2 text-left text-zinc-300 hover:bg-white/[0.04]">Link to Post</button>
-                      <XShareButton href={`/social?post=${encodeURIComponent(post.postHash)}`} text={post.body ? post.body.slice(0, 180) : "VIA · DeSo post"} label="X" className="px-3 py-2 text-left text-zinc-300 hover:bg-white/[0.04]" />
-                      {session ? <button type="button" onClick={() => {
-                        const url = `${window.location.origin}/social?post=${encodeURIComponent(post.postHash)}`
-                        const text = `VIA · DeSo post
-${url}`
-                        window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank", "noopener,noreferrer")
-                      }} className="px-3 py-2 text-left text-zinc-300 hover:bg-white/[0.04]">WhatsApp</button> : null}
-                      {session ? <div className="[&_button]:w-full [&_button]:rounded-none [&_button]:border-0 [&_button]:px-3 [&_button]:py-2 [&_button]:text-left"><FollowButton followedPublicKey={post.publicKey} /></div> : null}
-                      <button type="button" onClick={(event) => (event.currentTarget.closest("details") as HTMLDetailsElement | null)?.removeAttribute("open")} className="border-t border-zinc-800 px-3 py-2 text-left text-zinc-400 hover:bg-white/[0.04]">Sluiten</button>
-                    </div>
-                  </details>
+                  <PostActionsMenu postHash={post.postHash} body={post.body} publicKey={post.publicKey} authenticated={Boolean(session)} />
                   {isOwnPost ? <Link href={`/edit-post?post=${encodeURIComponent(post.postHash)}`} className="rounded-full border border-[#8fd4a9]/45 px-3 py-1 text-[#9adbb2]">Edit</Link> : null}
                 </div>
 

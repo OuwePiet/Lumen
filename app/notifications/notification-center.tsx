@@ -24,7 +24,9 @@ import PostVideo from "../social/post-video"
 import PostSource from "../post-source"
 import RepostButton from "../social/repost-button"
 import DiamondButton from "../social/diamond-button"
+import PostShareButton from "../social/post-share-button"
 import ScrollTopButton from "../social/scroll-top-button"
+import PostActionsMenu from "../social/post-actions-menu"
 import LocalSaveButton from "../social/local-save-button"
 import SponsorPlatform from "../sponsor-platform"
 
@@ -948,27 +950,9 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
                     <RepostButton quotedPost={post} postHash={post.postHash} initialCount={0} variant="icon" />
                     <DiamondButton postHash={post.postHash} receiverPublicKey={post.publicKey} initialCount={post.diamondCount} variant="icon" />
                     <LikeButton postHash={post.postHash} initialCount={post.likeCount} variant="icon" />
-                    <button type="button" onClick={() => { const url = window.location.origin + "/social?post=" + encodeURIComponent(post.postHash); if (navigator.share) void navigator.share({url}).catch(() => {}); else void navigator.clipboard?.writeText(url) }} className="inline-flex h-9 min-w-9 items-center justify-center rounded-full border border-zinc-800 px-3 text-xs text-zinc-300">Share</button>
+                    <PostShareButton postHash={post.postHash} />
                     <LocalSaveButton postHash={post.postHash} body={post.body ?? ""} publicKey={post.publicKey} timestampNanos={post.timestampNanos ?? 0} />
-                    <details className="relative">
-                      <summary className="grid h-9 w-9 cursor-pointer list-none place-items-center rounded-full border border-zinc-800 text-zinc-300 transition hover:border-[#8fd4a9] hover:text-white" aria-label="More actions">•••</summary>
-                      <div className="absolute left-0 z-30 mt-2 min-w-44 rounded-xl border border-zinc-700 bg-[#080b09] p-2 shadow-2xl">
-                        <button type="button" onClick={(event) => { setRewardPost((current) => current === post.postHash ? null : post.postHash); setRewardMessage(""); event.currentTarget.closest("details")?.removeAttribute("open") }} className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs text-zinc-300 hover:bg-zinc-900 hover:text-white">
-                          <ArrowUpRight className="h-4 w-4" /><span>{copy.rewardAction}</span>
-                        </button>
-                        <button type="button" onClick={(event) => {
-                          const url = `${window.location.origin}/social?post=${encodeURIComponent(post.postHash)}`
-                          void navigator.clipboard?.writeText(url).then(() => {
-                            setCopiedPost(post.postHash)
-                            window.setTimeout(() => setCopiedPost((current) => current === post.postHash ? null : current), 1400)
-                          }).catch(() => {})
-                          event.currentTarget.closest("details")?.removeAttribute("open")
-                        }} className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs text-zinc-300 hover:bg-zinc-900 hover:text-white">
-                          {copiedPost === post.postHash ? <Check className="h-4 w-4" /> : <Link2 className="h-4 w-4" />}<span>{copiedPost === post.postHash ? copy.linkCopied : copy.copyLink}</span>
-                        </button>
-                        <button type="button" onClick={(event) => event.currentTarget.closest("details")?.removeAttribute("open")} className="mt-1 w-full rounded-lg border border-zinc-800 px-3 py-2 text-left text-xs text-zinc-400 hover:border-[#8fd4a9]/45 hover:text-white">{copy.close}</button>
-                      </div>
-                    </details>
+                    <PostActionsMenu postHash={post.postHash} body={post.body ?? ""} publicKey={post.publicKey} authenticated onReward={() => { setRewardPost(current => current === post.postHash ? null : post.postHash); setRewardMessage("") }} />
                   </div>
                   {rewardPost === post.postHash ? <div className="mt-3 rounded-xl border border-[#285f40]/70 bg-[#07110b] p-3">
                     <div className="flex flex-wrap items-center gap-2">

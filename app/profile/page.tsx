@@ -13,6 +13,8 @@ import RepostButton from "../social/repost-button"
 import DiamondButton from "../social/diamond-button"
 import ScrollTopButton from "../social/scroll-top-button"
 import LocalSaveButton from "../social/local-save-button"
+import PostShareButton from "../social/post-share-button"
+import PostActionsMenu from "../social/post-actions-menu"
 import XShareButton from "../x-share-button"
 import { translateViaTextLocally } from "../via-local-translation"
 
@@ -348,24 +350,9 @@ export default function ProfilePage() {
   function ReplyExtraActions({ reply }: { reply: ReplyComment }) {
     const url = `${typeof window === "undefined" ? "" : window.location.origin}/social?post=${encodeURIComponent(reply.postHash)}`
     return <>
-      <button type="button" onClick={() => {
-        if (navigator.share) void navigator.share({ title: "VIA · DeSo post", url }).catch(() => {})
-        else void navigator.clipboard?.writeText(url)
-      }} className="text-xs text-zinc-300">Share</button>
+      <PostShareButton postHash={reply.postHash} />
       {reply.publicKey ? <LocalSaveButton postHash={reply.postHash} body={reply.body} publicKey={reply.publicKey} timestampNanos={0} /> : null}
-      <details className="relative">
-        <summary className="cursor-pointer list-none text-xs text-zinc-300" aria-label="Meer reactieacties">•••</summary>
-        <div className="absolute right-0 z-20 mt-1 min-w-44 overflow-hidden rounded-lg border border-zinc-800 bg-[#050806] shadow-xl">
-          <button type="button" onClick={async () => {
-            const lang = readViaLocalSettings().interfaceLanguage
-            const target = ({ Dutch: "nl", English: "en", French: "fr", Spanish: "es", Chinese: "zh", Hindi: "hi" } as Record<string, string>)[lang] ?? "en"
-            const result = await translateViaTextLocally(reply.body, target)
-            setReplyTranslation({ hash: reply.postHash, ...result })
-            ;(document.activeElement as HTMLElement | null)?.closest("details")?.removeAttribute("open")
-          }} className="block w-full px-3 py-2 text-left text-xs text-zinc-300 hover:bg-white/[0.04]">🌐 Translate / Vertalen</button>
-          <button type="button" onClick={() => void navigator.clipboard?.writeText(url)} className="block w-full px-3 py-2 text-left text-xs text-zinc-300 hover:bg-white/[0.04]">Link to Post</button>
-        </div>
-      </details>
+      <PostActionsMenu postHash={reply.postHash} body={reply.body} publicKey={reply.publicKey} authenticated={Boolean(true)} />
       {replyTranslation?.hash === reply.postHash ? <span className="basis-full rounded-lg border border-zinc-800 p-2 text-xs text-zinc-300">{replyTranslation.text || replyTranslation.message}</span> : null}
     </>
   }
@@ -481,7 +468,7 @@ export default function ProfilePage() {
             </div>
           </section>
         ) : null}
-        {session && profile ? <><PostComposeShortcut /><details id="via-post-composer" open className="mt-5 rounded-[14px] border border-zinc-800/80 bg-zinc-950/50 p-4 sm:p-5"><summary>Write a post</summary><PostComposer /></details></> : null}
+        {session && profile ? <><PostComposeShortcut /></> : null}
         {session && profile ? <section className="mt-5" aria-label="Your DeSo posts and gallery">
           <div className="mb-5 grid grid-cols-5 gap-1.5 border-t border-zinc-800/70 pt-4 sm:gap-3" aria-label="Profile content">{(["posts", "gallery"] as const).map((tab) => <button key={tab} type="button" role="tab" aria-selected={contentTab === tab} onClick={() => setContentTab(tab)} className={`flex min-w-0 items-center justify-center rounded-xl border px-1 py-2 text-center text-[11px] sm:px-3 sm:text-sm ${contentTab === tab ? "border-[#8fd4a9] bg-[#10271a] text-[#9adbb2]" : "border-zinc-800 text-zinc-400"}`}>{tab === "posts" ? "Posts" : "Gallery"}</button>)}
           <nav aria-label="Other DeSo profile sections" className="contents"><Link href="/profile/coin" className="flex min-w-0 items-center justify-center rounded-xl border border-zinc-800 px-1 py-2 text-center text-[11px] text-zinc-200 sm:px-3 sm:text-sm">Creator Coin</Link><Link href="/wallet" className="flex min-w-0 items-center justify-center rounded-xl border border-zinc-800 px-1 py-2 text-center text-[11px] text-zinc-200 sm:px-3 sm:text-sm">Diamonds</Link><Link href="/collection" className="flex min-w-0 items-center justify-center rounded-xl border border-zinc-800 px-1 py-2 text-center text-[11px] text-zinc-200 sm:px-3 sm:text-sm">NFTs</Link></nav></div>
@@ -496,14 +483,9 @@ export default function ProfilePage() {
               <RepostButton postHash={post.postHash} initialCount={post.repostCount + post.quoteRepostCount} variant="icon" />
               <DiamondButton postHash={post.postHash} receiverPublicKey={post.publicKey} initialCount={post.diamondCount} variant="icon" />
               <LikeButton postHash={post.postHash} initialCount={post.likeCount} variant="icon" />
-              <XShareButton href={`/social?post=${encodeURIComponent(post.postHash)}`} text={post.body.slice(0, 180)} label="Share on X" />
+              <PostShareButton postHash={post.postHash} />
               <LocalSaveButton postHash={post.postHash} body={post.body} publicKey={post.publicKey} timestampNanos={post.timestampNanos} />
-              <details className="relative">
-                <summary className="grid h-9 w-9 cursor-pointer list-none place-items-center rounded-full border border-zinc-800 text-zinc-300" aria-label="More actions">•••</summary>
-                <div className="absolute right-0 z-30 mt-2 min-w-40 rounded-xl border border-zinc-700 bg-[#080b09] p-2 shadow-2xl">
-                  <Link href={`/social?post=${encodeURIComponent(post.postHash)}`} className="block rounded-lg px-3 py-2 text-xs text-zinc-300 hover:bg-zinc-900 hover:text-white">Open post</Link>
-                </div>
-              </details>
+              <PostActionsMenu postHash={post.postHash} body={post.body} publicKey={post.publicKey} authenticated={Boolean(true)} />
             </div>
             {replyingToOwnPost === post.postHash ? (
               <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-2 sm:p-6" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setReplyingToOwnPost(null) }}>

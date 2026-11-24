@@ -5,7 +5,6 @@ import styles from "./notification-center.module.css"
 import { useEffect, useState } from "react"
 import NotificationCenter from "./notification-center"
 import PostComposeShortcut from "../social/post-compose-shortcut"
-import PostComposer from "../social/post-composer"
 import SponsorPlatform from "../sponsor-platform"
 import { readViaLocalSettings, VIA_SETTINGS_EVENT, type ViaLanguage } from "../via-local-settings"
 import ViaRightPanels from "../via-right-panels"
@@ -87,7 +86,7 @@ export default function NotificationsPage() {
 
         </header>
 
-        {session ? <><PostComposeShortcut /><details id="via-post-composer" className="mb-2 rounded-xl border border-zinc-800 p-2"><summary>Write a post</summary><PostComposer /></details></> : null}
+        {session ? <><PostComposeShortcut /></> : null}
         <NotificationCenter language={language} />
         </div>
         <aside className="min-w-0 self-start">
