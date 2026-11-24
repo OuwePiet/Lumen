@@ -16,7 +16,7 @@ const description =
 export const metadata: Metadata = {
   metadataBase: new URL('https://viadeso.online'),
   title: {
-    default: 'VIA — DeSo social, creators & NFTs',
+    default: 'VIA',
     template: '%s | VIA',
   },
   description,
@@ -47,7 +47,7 @@ export const metadata: Metadata = {
     canonical: '/',
   },
   openGraph: {
-    title: 'VIA — DeSo social, creators & NFTs',
+    title: 'VIA',
     description,
     url: '/',
     siteName: 'VIA',
@@ -56,7 +56,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'VIA — DeSo social, creators & NFTs',
+    title: 'VIA',
     description,
     images: ['/via-logo-original.jpg'],
   },
