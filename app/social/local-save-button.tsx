@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { Bookmark } from "lucide-react"; import { useEffect, useState } from "react"
 import { SAVED_KEY, type SavedItem } from "../saved/save-button"
 
 const SAVE_EVENT = "via:saved:changed"
@@ -91,11 +91,11 @@ export default function LocalSaveButton({ postHash, body, publicKey }: Props) {
       <button
         type="button"
         onClick={toggle}
-        aria-pressed={saved}
+        aria-pressed={saved} aria-label={saved ? "Remove bookmark" : "Bookmark"}
         className="rounded-full border border-zinc-800 px-3 py-1 text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2]"
         title="Local VIA save · no blockchain write"
       >
-        {saved ? "Saved ✓" : "Save"}
+        <Bookmark size={16} fill={saved ? "currentColor" : "none"} aria-hidden="true" />
       </button>
       {message ? <span className="sr-only" role="status" aria-live="polite">{message}</span> : null}
     </span>

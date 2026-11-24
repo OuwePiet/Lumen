@@ -2,11 +2,11 @@
 
 import Link from "next/link"
 import { useEffect, useState } from "react"
-import { Copy, MoreVertical, UserRoundPen, WalletCards } from "lucide-react"
+import { MessageSquare, Copy, MoreVertical, UserRoundPen, WalletCards } from "lucide-react"
 import { viaModernIdentity, type ViaModernIdentityUser } from "../deso-identity-modern"
 import { readViaLocalSettings, VIA_SETTINGS_EVENT, type ViaLanguage } from "../via-local-settings"
 import ViaIdentityStatusMarks from "../via-identity-status"
-import PostComposer from "../social/post-composer"
+import PostVideo from "../social/post-video"; import PostComposer from "../social/post-composer"
 import PostComposeShortcut from "../social/post-compose-shortcut"
 import LikeButton from "../social/like-button"
 import RepostButton from "../social/repost-button"
@@ -477,9 +477,10 @@ export default function ProfilePage() {
           {ownPostsLoading ? <p className="text-sm text-zinc-400">Loading DeSo posts…</p> : ownPostsError ? <p className="text-sm text-zinc-400" role="status">DeSo posts are temporarily unavailable.</p> : ownPosts.length === 0 ? <p className="text-sm text-zinc-400">No posts returned for the active DeSo account.</p> : <div className="space-y-3">{ownPosts.map((post) => <article key={post.postHash} className="rounded-[14px] border border-zinc-800/80 bg-zinc-950/50 p-4">
             <p className="whitespace-pre-wrap text-sm text-zinc-200">{post.body}</p>
             {post.imageUrls?.length ? <div className="mt-3 grid gap-2 sm:grid-cols-2">{post.imageUrls.slice(0, 4).map((url) => <img key={url} src={url} alt="" loading="lazy" referrerPolicy="no-referrer" className="max-h-96 w-full rounded-lg object-cover" />)}</div> : null}
+            {post.videoUrls?.filter(url => url.startsWith("https://")).map(url => <PostVideo key={url} url={url} />)}
             {post.videoUrls?.length ? <div className="mt-3 space-y-2">{post.videoUrls.slice(0, 2).map((url) => <video key={url} src={url} controls playsInline preload="none" className="max-h-96 w-full" />)}</div> : null}
             <div className="mt-3 flex flex-wrap items-center gap-2" aria-label="DeSo post actions"><ScrollTopButton />
-              <button type="button" onClick={() => setReplyingToOwnPost(replyingToOwnPost === post.postHash ? null : post.postHash)} className="rounded-full border border-zinc-800 px-3 py-2 text-xs">Reply · {post.commentCount}</button>
+              <button type="button" onClick={() => setReplyingToOwnPost(replyingToOwnPost === post.postHash ? null : post.postHash)} className="rounded-full border border-zinc-800 px-3 py-2 text-xs"><MessageSquare size={16} /> {post.commentCount}</button>
               <RepostButton postHash={post.postHash} initialCount={post.repostCount + post.quoteRepostCount} variant="icon" />
               <DiamondButton postHash={post.postHash} receiverPublicKey={post.publicKey} initialCount={post.diamondCount} variant="icon" />
               <LikeButton postHash={post.postHash} initialCount={post.likeCount} variant="icon" />

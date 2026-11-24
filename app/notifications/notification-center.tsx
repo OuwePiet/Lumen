@@ -823,7 +823,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
 
   return (
     <section className={`${styles.center} min-w-0 w-full max-w-full rounded-2xl border border-zinc-800 bg-zinc-950/60`} aria-label={copy.notificationLabel}>
-      <div id="notification-controls" data-notification-controls className="flex flex-col border-b border-zinc-800 xl:flex-row-reverse xl:items-center xl:justify-between">
+      <div id="notification-controls" data-notification-controls className="sticky top-0 z-20 bg-zinc-950 flex flex-col border-b border-zinc-800 xl:flex-row-reverse xl:items-center xl:justify-between">
       <div className={`${styles.toolbar} flex flex-nowrap items-center justify-between gap-1 bg-zinc-950/95 px-2 py-0.5 max-sm:items-stretch sm:px-3`}>
         <div className={`${styles.controls} flex w-full min-w-0 flex-nowrap items-center justify-between gap-1 sm:w-auto sm:flex-wrap sm:justify-start sm:gap-2`}>
           <button

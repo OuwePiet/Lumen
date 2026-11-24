@@ -252,8 +252,8 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
   }
 
   return <>
-    <Popover.Root open={menuOpen} onOpenChange={changeMenu}>
-      <Popover.Trigger type="button" title="Diamanten" aria-label={"Diamanten · " + count}
+    <Popover.Root open={reader === receiverPublicKey ? false : menuOpen} onOpenChange={open => { if (reader !== receiverPublicKey) changeMenu(open) }}>
+      <Popover.Trigger disabled={Boolean(reader && reader === receiverPublicKey)} type="button" title={reader === receiverPublicKey ? "Own post" : "Diamanten"} aria-label={"Diamanten · " + count}
         className="inline-flex h-9 min-w-9 items-center justify-center gap-1 rounded-full border border-zinc-800 px-2 text-xs text-zinc-300 hover:border-[#8fd4a9] data-[popup-open]:border-[#8fd4a9] data-[popup-open]:bg-[#285f40]">
         <Gem className="size-4" aria-hidden="true" />
         <span>{count}{variant === "default" ? " Diamanten" : ""}</span>

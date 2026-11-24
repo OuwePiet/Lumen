@@ -108,7 +108,7 @@ function feedReadyMessage(choice: ChoiceId) {
   return "Hot is ready."
 }
 
-export default function PublicPosts({ initialPost }: { initialPost?: PublicPost | null }) {
+export default function PublicPosts({ initialPost, bookmarkHashes }: { initialPost?: PublicPost | null; bookmarkHashes?: string[] }) {
   const requestController = useRef<AbortController | null>(null)
   const [posts, setPosts] = useState<PublicPost[]>(initialPost ? [initialPost] : [])
   const [published, setPublished] = useState<{ hash: string; publicKey: string; text: string; repostedHash?: string }[]>([])
@@ -139,7 +139,7 @@ export default function PublicPosts({ initialPost }: { initialPost?: PublicPost 
   }, [replyingTo, commentsRefresh, session?.publicKey])
   const [actionLoginPost, setActionLoginPost] = useState<string | null>(null)
   const [sharedPostHash, setSharedPostHash] = useState<string | null>()
-  const sharedPostView = Boolean(sharedPostHash)
+  const sharedPostView = Boolean(sharedPostHash) || bookmarkHashes !== undefined
   const [creatorProfiles, setCreatorProfiles] = useState<Record<string, CompactProfile>>({})
   const loadMoreSentinelRef = useRef<HTMLDivElement | null>(null)
 
@@ -253,13 +253,13 @@ export default function PublicPosts({ initialPost }: { initialPost?: PublicPost 
     const controller = new AbortController()
     requestController.current = controller
 
-    if (!sharedPostHash && feedChoice === "following" && session === undefined) {
+    if (!bookmarkHashes && !sharedPostHash && feedChoice === "following" && session === undefined) {
       requestController.current = null
       setMessage("Loading Following…")
       return
     }
 
-    if (!sharedPostHash && feedChoice === "following" && !session) {
+    if (!bookmarkHashes && !sharedPostHash && feedChoice === "following" && !session) {
       setMessage("Log in with DeSo to open Following. Previous posts remain visible.")
       requestController.current = null
       setLoading(false)
@@ -275,6 +275,24 @@ export default function PublicPosts({ initialPost }: { initialPost?: PublicPost 
       setMessage(sharedPostHash ? "This shared post is temporarily unavailable." : "Posts are temporarily unavailable.")
     }, 15000)
     try {
+      if (bookmarkHashes) {
+        setHasMore(false)
+        const result: PublicPost[] = []
+        for (let i = 0; i < bookmarkHashes.length; i += 5) {
+          const batch = await Promise.all(bookmarkHashes.slice(i, i + 5).map(async hash => {
+            try {
+              const response = await fetch("/api/via/post?hash=" + hash + "&reader=" + encodeURIComponent(session?.publicKey ?? ""), {signal: controller.signal})
+              const data = await response.json() as SinglePostResponse
+              return response.ok && data.ok ? data.post : undefined
+            } catch { return undefined }
+          }))
+          if (controller.signal.aborted) return
+          result.push(...batch.filter((post): post is PublicPost => Boolean(post)))
+        }
+        setPosts(result)
+        setMessage(result.length === bookmarkHashes.length ? "" : "Some bookmarks are temporarily unavailable.")
+        return
+      }
       if (sharedPostHash) {
         const reader = encodeURIComponent(session?.publicKey ?? "")
         const response = await fetch(`/api/via/post?hash=${sharedPostHash}&reader=${reader}`, { signal: controller.signal })
@@ -312,7 +330,7 @@ export default function PublicPosts({ initialPost }: { initialPost?: PublicPost 
 
   useEffect(() => {
     void loadPosts()
-  }, [feedChoice, session?.publicKey, feedRevision, sharedPostHash])
+  }, [feedChoice, session?.publicKey, feedRevision, sharedPostHash, bookmarkHashes?.join(",")])
 
   useEffect(() => {
     const refresh = (event: Event) => {
