@@ -1,9 +1,9 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm'),ts=require('typescript');
-function scenario({permission=true,deny=false,uncertain=false,delayed=false}={}){
+function scenario({permission=true,deny=false,uncertain=false,delayed=false,stale=false}={}){
  const keyA='BC1'+'A'.repeat(48),keyB='BC1'+'B'.repeat(48),calls=[],storage=new Map();let active=keyA,checks=0,reads=0;const messages=[];
  const events=new EventTarget(),window={localStorage:{getItem:k=>storage.get(k)??null,setItem:(k,v)=>storage.set(k,v),removeItem:k=>storage.delete(k),key:i=>[...storage.keys()][i]??null,get length(){return storage.size}},addEventListener:(...a)=>events.addEventListener(...a),removeEventListener:(...a)=>events.removeEventListener(...a),dispatchEvent:e=>events.dispatchEvent(e),setTimeout:(fn,ms)=>{if(ms<10000)queueMicrotask(fn);return 0},clearTimeout:()=>{}};
  const navigator={locks:{request:async(_n,_opts,fn)=>fn({name:'test'})}};
- const identity={currentUser:async()=>({publicKey:active}),hasPermissions:async()=>{checks++;return permission||checks>1},spendingLimits:async()=>({GlobalDESOLimit:10000000,TransactionCountLimitMap:{SUBMIT_POST:5}}),requestPermissions:async()=>{calls.push('permission');if(deny)throw Error('denied')},signTx:async()=>{calls.push('sign');return'bb'},refreshSpendingLimits:async()=>{}};
+ const identity={currentUser:async()=>({publicKey:active}),hasPermissions:async()=>{checks++;return permission||checks>(stale?1:2)},spendingLimits:async()=>({GlobalDESOLimit:10000000,TransactionCountLimitMap:{SUBMIT_POST:5}}),requestPermissions:async()=>{calls.push('permission');if(deny)throw Error('denied')},signTx:async()=>{calls.push('sign');return'bb'},refreshSpendingLimits:async()=>{}};
  const fetch=async(url,opts)=>{if(url.includes('/api/via/post?')){const level=delayed&&++reads===1?0:1;return{ok:true,json:async()=>({ok:true,post:{diamondCount:level,diamondLevelByReader:level}})}};const body=JSON.parse(opts.body);calls.push(body.action);if(body.action==='prepare')return{ok:true,json:async()=>({ok:true,diamondLevel:1,transactionHex:'aa',feeNanos:100,spendAmountNanos:50000})};if(uncertain)throw Error('timeout');return{ok:true,json:async()=>({ok:true,transaction:{TxnHashHex:'c'.repeat(64)}})}};
  const cache={};
  function load(file){if(cache[file])return cache[file];const exports={};cache[file]=exports;const code=ts.transpileModule(fs.readFileSync(path.join(__dirname,'..',file),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2020,jsx:ts.JsxEmit.ReactJSX}}).outputText;
@@ -25,3 +25,4 @@ test('accepted diamond waits for DeSo readback without resubmitting',async()=>{c
 
 test('existing sufficient grant requires no extra approval',async()=>{const s=scenario();s.click();await settle();assert.deepEqual(s.calls,['prepare','sign','submit'])});
 test('insufficient grant uses DeSo approval before signing',async()=>{const s=scenario({permission:false});s.click();await settle();assert.deepEqual(s.calls,['prepare','permission','sign','submit'])});
+test('stale grant refresh avoids unnecessary approval',async()=>{const s=scenario({permission:false,stale:true});s.click();await settle();assert.deepEqual(s.calls,['prepare','sign','submit'])});
