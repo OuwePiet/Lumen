@@ -111,21 +111,17 @@ export default function NFTOwnerSaleControl({ postHash, editions, hasUnlockable 
       const data = await response.json() as PrepareResponse
       if (!response.ok || !data.ok || !data.transactionHex) throw new Error(data.error || "PREPARE_FAILED")
       setFeeNanos(typeof data.feeNanos === "number" ? data.feeNanos : null)
-      const updatePermission = {
-        NFTOperationLimitMap: {
-          [postHash]: {
-            [selected.serialNumber]: {
-              update: 1,
-            },
-          },
-        },
-      }
+      // DeSo SDK 3.4.1 updateNFT uses UPDATE_NFT and the transaction fee budget.
+      if (typeof data.feeNanos !== "number" || !Number.isSafeInteger(data.feeNanos) || data.feeNanos < 0) throw new Error("INVALID_NFT_FEE")
+      const updatePermission = { GlobalDESOLimit: data.feeNanos, TransactionCountLimitMap: { UPDATE_NFT: 1 } }
       if (!(await viaModernIdentity.hasPermissions(updatePermission))) {
         setMessage("Requesting permission for this exact DeSo NFT sale change…")
         await viaModernIdentity.requestPermissions(updatePermission)
+        if (!(await viaModernIdentity.hasPermissions(updatePermission))) throw new Error("NFT_PERMISSION_NOT_GRANTED")
       }
       setStatus("approval")
       setMessage("Signing this NFT sale change with DeSo Identity…")
+      if ((await viaModernIdentity.currentUser())?.publicKey !== session.publicKey) throw new Error("ACCOUNT_CHANGED")
       const signedTransactionHex = await viaModernIdentity.signTx(data.transactionHex)
       setStatus("submitting")
       setMessage("Submitting the approved NFT sale update to DeSo…")
