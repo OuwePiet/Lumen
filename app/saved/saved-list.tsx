@@ -1,6 +1,6 @@
 "use client"
 
-import Link from "next/link"
+import Link from "next/link"; import PublicPosts from "../social/public-posts"
 import { useEffect, useState } from "react"
 import { SAVED_KEY, type SavedItem } from "./save-button"
 
@@ -31,15 +31,20 @@ export default function SavedList() {
   const [ready, setReady] = useState(false)
 
   useEffect(() => {
-    setItems(readSaved())
+    const sync = () => setItems(readSaved())
+    sync()
     setReady(true)
+    window.addEventListener("via:saved:changed", sync)
+    window.addEventListener("storage", sync)
+    return () => { window.removeEventListener("via:saved:changed", sync); window.removeEventListener("storage", sync) }
   }, [])
 
   function remove(href: string) {
     try {
-      const next = items.filter((item) => item.href !== href)
+      const next = readSaved().filter((item) => item.href !== href)
       window.localStorage.setItem(SAVED_KEY, JSON.stringify(next))
       setItems(next)
+      window.dispatchEvent(new Event("via:saved:changed"))
     } catch {
       // Keep the visible list unchanged when local browser storage is unavailable.
     }
@@ -59,8 +64,8 @@ export default function SavedList() {
   }
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      {items.map((item) => (
+    <div className="space-y-4"><PublicPosts bookmarkHashes={items.map(item => /^\/social\?post=([a-f0-9]{64})$/i.exec(item.href)?.[1]).filter((hash): hash is string => Boolean(hash))} />
+      {items.filter(item => !/^\/social\?post=[a-f0-9]{64}$/i.test(item.href)).map((item) => (
         <article key={item.href} className="rounded-2xl border border-zinc-800 bg-zinc-950 p-5">
           <p className="text-xs font-semibold uppercase tracking-wider text-[#8fd4a9]">{item.kind}</p>
           <h2 className="mt-2 font-medium text-white">{item.title}</h2>

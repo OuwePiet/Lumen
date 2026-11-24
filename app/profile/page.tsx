@@ -2,15 +2,19 @@
 
 import Link from "next/link"
 import { useEffect, useState } from "react"
-import { Copy, MoreVertical, UserRoundPen, WalletCards } from "lucide-react"
+import { MessageSquare, Copy, MoreVertical, UserRoundPen, WalletCards } from "lucide-react"
 import { viaModernIdentity, type ViaModernIdentityUser } from "../deso-identity-modern"
 import { readViaLocalSettings, VIA_SETTINGS_EVENT, type ViaLanguage } from "../via-local-settings"
 import ViaIdentityStatusMarks from "../via-identity-status"
-import PostComposer from "../social/post-composer"
+import PostVideo from "../social/post-video"; import PostComposer from "../social/post-composer"
+import PostComposeShortcut from "../social/post-compose-shortcut"
 import LikeButton from "../social/like-button"
 import RepostButton from "../social/repost-button"
 import DiamondButton from "../social/diamond-button"
+import ScrollTopButton from "../social/scroll-top-button"
 import LocalSaveButton from "../social/local-save-button"
+import PostShareButton from "../social/post-share-button"
+import PostActionsMenu from "../social/post-actions-menu"
 import XShareButton from "../x-share-button"
 import { translateViaTextLocally } from "../via-local-translation"
 
@@ -33,7 +37,7 @@ type PublicProfile = {
 
 type ProfileResponse = { ok?: boolean; profile?: PublicProfile }
 type ReplyComment = { postHash: string; username?: string; publicKey?: string; body: string; likeCount: number; repostCount: number; quoteRepostCount: number; diamondCount: number; comments?: ReplyComment[] }
-type OwnPost = { postHash: string; body: string; imageUrls: string[]; videoUrls: string[]; timestampNanos: number; likeCount: number; diamondCount: number; commentCount: number; repostCount: number; quoteRepostCount: number }
+type OwnPost = { publicKey: string; username: string; postHash: string; body: string; imageUrls: string[]; videoUrls: string[]; timestampNanos: number; likeCount: number; diamondCount: number; commentCount: number; repostCount: number; quoteRepostCount: number }
 type OwnPostsResponse = { ok?: boolean; posts?: OwnPost[] }
 
 type Copy = {
@@ -346,24 +350,9 @@ export default function ProfilePage() {
   function ReplyExtraActions({ reply }: { reply: ReplyComment }) {
     const url = `${typeof window === "undefined" ? "" : window.location.origin}/social?post=${encodeURIComponent(reply.postHash)}`
     return <>
-      <button type="button" onClick={() => {
-        if (navigator.share) void navigator.share({ title: "VIA · DeSo post", url }).catch(() => {})
-        else void navigator.clipboard?.writeText(url)
-      }} className="text-xs text-zinc-300">Share</button>
+      <PostShareButton postHash={reply.postHash} />
       {reply.publicKey ? <LocalSaveButton postHash={reply.postHash} body={reply.body} publicKey={reply.publicKey} timestampNanos={0} /> : null}
-      <details className="relative">
-        <summary className="cursor-pointer list-none text-xs text-zinc-300" aria-label="Meer reactieacties">•••</summary>
-        <div className="absolute right-0 z-20 mt-1 min-w-44 overflow-hidden rounded-lg border border-zinc-800 bg-[#050806] shadow-xl">
-          <button type="button" onClick={async () => {
-            const lang = readViaLocalSettings().interfaceLanguage
-            const target = ({ Dutch: "nl", English: "en", French: "fr", Spanish: "es", Chinese: "zh", Hindi: "hi" } as Record<string, string>)[lang] ?? "en"
-            const result = await translateViaTextLocally(reply.body, target)
-            setReplyTranslation({ hash: reply.postHash, ...result })
-            ;(document.activeElement as HTMLElement | null)?.closest("details")?.removeAttribute("open")
-          }} className="block w-full px-3 py-2 text-left text-xs text-zinc-300 hover:bg-white/[0.04]">🌐 Translate / Vertalen</button>
-          <button type="button" onClick={() => void navigator.clipboard?.writeText(url)} className="block w-full px-3 py-2 text-left text-xs text-zinc-300 hover:bg-white/[0.04]">Link to Post</button>
-        </div>
-      </details>
+      <PostActionsMenu postHash={reply.postHash} body={reply.body} publicKey={reply.publicKey} authenticated={Boolean(true)} />
       {replyTranslation?.hash === reply.postHash ? <span className="basis-full rounded-lg border border-zinc-800 p-2 text-xs text-zinc-300">{replyTranslation.text || replyTranslation.message}</span> : null}
     </>
   }
@@ -479,7 +468,7 @@ export default function ProfilePage() {
             </div>
           </section>
         ) : null}
-        {session && profile ? <section className="mt-5 rounded-[14px] border border-zinc-800/80 bg-zinc-950/50 p-4 sm:p-5" aria-label="Write a post"><PostComposer /></section> : null}
+        {session && profile ? <><PostComposeShortcut /></> : null}
         {session && profile ? <section className="mt-5" aria-label="Your DeSo posts and gallery">
           <div className="mb-5 grid grid-cols-5 gap-1.5 border-t border-zinc-800/70 pt-4 sm:gap-3" aria-label="Profile content">{(["posts", "gallery"] as const).map((tab) => <button key={tab} type="button" role="tab" aria-selected={contentTab === tab} onClick={() => setContentTab(tab)} className={`flex min-w-0 items-center justify-center rounded-xl border px-1 py-2 text-center text-[11px] sm:px-3 sm:text-sm ${contentTab === tab ? "border-[#8fd4a9] bg-[#10271a] text-[#9adbb2]" : "border-zinc-800 text-zinc-400"}`}>{tab === "posts" ? "Posts" : "Gallery"}</button>)}
           <nav aria-label="Other DeSo profile sections" className="contents"><Link href="/profile/coin" className="flex min-w-0 items-center justify-center rounded-xl border border-zinc-800 px-1 py-2 text-center text-[11px] text-zinc-200 sm:px-3 sm:text-sm">Creator Coin</Link><Link href="/wallet" className="flex min-w-0 items-center justify-center rounded-xl border border-zinc-800 px-1 py-2 text-center text-[11px] text-zinc-200 sm:px-3 sm:text-sm">Diamonds</Link><Link href="/collection" className="flex min-w-0 items-center justify-center rounded-xl border border-zinc-800 px-1 py-2 text-center text-[11px] text-zinc-200 sm:px-3 sm:text-sm">NFTs</Link></nav></div>
@@ -488,20 +477,16 @@ export default function ProfilePage() {
           {ownPostsLoading ? <p className="text-sm text-zinc-400">Loading DeSo posts…</p> : ownPostsError ? <p className="text-sm text-zinc-400" role="status">DeSo posts are temporarily unavailable.</p> : ownPosts.length === 0 ? <p className="text-sm text-zinc-400">No posts returned for the active DeSo account.</p> : <div className="space-y-3">{ownPosts.map((post) => <article key={post.postHash} className="rounded-[14px] border border-zinc-800/80 bg-zinc-950/50 p-4">
             <p className="whitespace-pre-wrap text-sm text-zinc-200">{post.body}</p>
             {post.imageUrls?.length ? <div className="mt-3 grid gap-2 sm:grid-cols-2">{post.imageUrls.slice(0, 4).map((url) => <img key={url} src={url} alt="" loading="lazy" referrerPolicy="no-referrer" className="max-h-96 w-full rounded-lg object-cover" />)}</div> : null}
+            {post.videoUrls?.filter(url => url.startsWith("https://")).map(url => <PostVideo key={url} url={url} />)}
             {post.videoUrls?.length ? <div className="mt-3 space-y-2">{post.videoUrls.slice(0, 2).map((url) => <video key={url} src={url} controls playsInline preload="none" className="max-h-96 w-full" />)}</div> : null}
-            <div className="mt-3 flex flex-wrap items-center gap-2" aria-label="DeSo post actions">
-              <button type="button" onClick={() => setReplyingToOwnPost(replyingToOwnPost === post.postHash ? null : post.postHash)} className="rounded-full border border-zinc-800 px-3 py-2 text-xs">Reply · {post.commentCount}</button>
+            <div className="mt-3 flex flex-wrap items-center gap-2" aria-label="DeSo post actions"><ScrollTopButton />
+              <button type="button" onClick={() => setReplyingToOwnPost(replyingToOwnPost === post.postHash ? null : post.postHash)} className="rounded-full border border-zinc-800 px-3 py-2 text-xs"><MessageSquare size={16} /> {post.commentCount}</button>
               <RepostButton postHash={post.postHash} initialCount={post.repostCount + post.quoteRepostCount} variant="icon" />
-              <span className="rounded-full border border-zinc-800 px-3 py-2 text-xs text-zinc-400" title="DeSo does not allow sending Diamonds to yourself">Diamonds · {post.diamondCount}</span>
+              <DiamondButton postHash={post.postHash} receiverPublicKey={post.publicKey} initialCount={post.diamondCount} variant="icon" />
               <LikeButton postHash={post.postHash} initialCount={post.likeCount} variant="icon" />
-              <XShareButton href={`/social?post=${encodeURIComponent(post.postHash)}`} text={post.body.slice(0, 180)} label="Share on X" />
-              <LocalSaveButton postHash={post.postHash} body={post.body} publicKey={session.publicKey} timestampNanos={post.timestampNanos} />
-              <details className="relative">
-                <summary className="grid h-9 w-9 cursor-pointer list-none place-items-center rounded-full border border-zinc-800 text-zinc-300" aria-label="More actions">•••</summary>
-                <div className="absolute right-0 z-30 mt-2 min-w-40 rounded-xl border border-zinc-700 bg-[#080b09] p-2 shadow-2xl">
-                  <Link href={`/social?post=${encodeURIComponent(post.postHash)}`} className="block rounded-lg px-3 py-2 text-xs text-zinc-300 hover:bg-zinc-900 hover:text-white">Open post</Link>
-                </div>
-              </details>
+              <PostShareButton postHash={post.postHash} />
+              <LocalSaveButton postHash={post.postHash} body={post.body} publicKey={post.publicKey} timestampNanos={post.timestampNanos} />
+              <PostActionsMenu postHash={post.postHash} body={post.body} publicKey={post.publicKey} authenticated={Boolean(true)} />
             </div>
             {replyingToOwnPost === post.postHash ? (
               <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-2 sm:p-6" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setReplyingToOwnPost(null) }}>
@@ -517,7 +502,7 @@ export default function ProfilePage() {
                         {replyCommentsError ? <div role="alert" className="flex flex-wrap items-center gap-2 text-xs text-amber-300"><span>DeSo replies could not be loaded.</span><button type="button" onClick={() => setCommentsRefresh((value) => value + 1)} className="rounded-lg border border-amber-500/40 px-2 py-1">Retry</button></div> : null}
                     {!replyCommentsBusy && !replyCommentsError && replyComments.length === 0 ? <p className="text-xs text-zinc-500">No replies returned by DeSo yet.</p> : null}
                     {!replyCommentsBusy ? <button type="button" onClick={() => setCommentsRefresh((value) => value + 1)} className="rounded-lg border border-zinc-700 px-2 py-1 text-xs text-zinc-300">Refresh replies</button> : null}
-                    {replyComments.map((comment) => <div key={comment.postHash} className="rounded-lg border border-zinc-800 p-2 text-sm"><p className="text-xs text-zinc-400">{comment.username ? `@${comment.username}` : comment.publicKey ? `${comment.publicKey.slice(0, 10)}…` : "DeSo member"}</p><p className="whitespace-pre-wrap break-words">{comment.body}</p><button type="button" className="mt-1 text-xs text-[#9adbb2]" onClick={() => setReplyParent({ hash: comment.postHash, name: comment.username ? `@${comment.username}` : "DeSo member" })}>Reply</button><div className="mt-2 flex flex-wrap gap-2"><RepostButton postHash={comment.postHash} initialCount={comment.repostCount + comment.quoteRepostCount} variant="icon" />{comment.publicKey && comment.publicKey !== session.publicKey ? <DiamondButton postHash={comment.postHash} receiverPublicKey={comment.publicKey} initialCount={comment.diamondCount} variant="icon" /> : <span className="text-xs text-zinc-400">Diamonds · {comment.diamondCount}</span>}<LikeButton postHash={comment.postHash} initialCount={comment.likeCount} variant="icon" /><ReplyExtraActions reply={comment} /></div>{comment.comments?.map((child) => <div key={child.postHash} className="ml-4 mt-2 border-l border-zinc-700 pl-3"><p className="text-xs text-zinc-400">{child.username ? `@${child.username}` : child.publicKey ? `${child.publicKey.slice(0, 10)}…` : "DeSo member"}</p><p className="whitespace-pre-wrap break-words">{child.body}</p><button type="button" className="mt-1 text-xs text-[#9adbb2]" onClick={() => setReplyParent({ hash: child.postHash, name: child.username ? `@${child.username}` : "DeSo member" })}>Reply</button><div className="mt-2 flex flex-wrap gap-2"><RepostButton postHash={child.postHash} initialCount={child.repostCount + child.quoteRepostCount} variant="icon" />{child.publicKey && child.publicKey !== session.publicKey ? <DiamondButton postHash={child.postHash} receiverPublicKey={child.publicKey} initialCount={child.diamondCount} variant="icon" /> : <span className="text-xs text-zinc-400">Diamonds · {child.diamondCount}</span>}<LikeButton postHash={child.postHash} initialCount={child.likeCount} variant="icon" /><ReplyExtraActions reply={child} /></div></div>)}</div>)}
+                    {replyComments.map((comment) => <div key={comment.postHash} className="rounded-lg border border-zinc-800 p-2 text-sm"><p className="text-xs text-zinc-400">{comment.username ? `@${comment.username}` : comment.publicKey ? `${comment.publicKey.slice(0, 10)}…` : "DeSo member"}</p><p className="whitespace-pre-wrap break-words">{comment.body}</p><button type="button" className="mt-1 text-xs text-[#9adbb2]" onClick={() => setReplyParent({ hash: comment.postHash, name: comment.username ? `@${comment.username}` : "DeSo member" })}>Reply</button><div className="mt-2 flex flex-wrap gap-2"><RepostButton postHash={comment.postHash} initialCount={comment.repostCount + comment.quoteRepostCount} variant="icon" />{comment.publicKey ? <DiamondButton postHash={comment.postHash} receiverPublicKey={comment.publicKey} initialCount={comment.diamondCount} variant="icon" /> : <span className="text-xs text-zinc-400">Diamonds · {comment.diamondCount}</span>}<LikeButton postHash={comment.postHash} initialCount={comment.likeCount} variant="icon" /><ReplyExtraActions reply={comment} /><ScrollTopButton /></div>{comment.comments?.map((child) => <div key={child.postHash} className="ml-4 mt-2 border-l border-zinc-700 pl-3"><p className="text-xs text-zinc-400">{child.username ? `@${child.username}` : child.publicKey ? `${child.publicKey.slice(0, 10)}…` : "DeSo member"}</p><p className="whitespace-pre-wrap break-words">{child.body}</p><button type="button" className="mt-1 text-xs text-[#9adbb2]" onClick={() => setReplyParent({ hash: child.postHash, name: child.username ? `@${child.username}` : "DeSo member" })}>Reply</button><div className="mt-2 flex flex-wrap gap-2"><RepostButton postHash={child.postHash} initialCount={child.repostCount + child.quoteRepostCount} variant="icon" />{child.publicKey ? <DiamondButton postHash={child.postHash} receiverPublicKey={child.publicKey} initialCount={child.diamondCount} variant="icon" /> : <span className="text-xs text-zinc-400">Diamonds · {child.diamondCount}</span>}<LikeButton postHash={child.postHash} initialCount={child.likeCount} variant="icon" /><ReplyExtraActions reply={child} /><ScrollTopButton /></div></div>)}</div>)}
                   </div>
                   <p className="mt-4 text-sm text-zinc-400">Replying to {replyParent?.name ?? "your post"}</p>
                   <PostComposer key={replyParent?.hash ?? post.postHash} parentStakeID={replyParent?.hash ?? post.postHash} compact onCancel={() => { setReplyParent(null); setReplyingToOwnPost(null) }} onDone={() => { setReplyParent(null); setCommentsRefresh((value) => value + 1) }} />

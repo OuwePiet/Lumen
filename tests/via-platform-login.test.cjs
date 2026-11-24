@@ -16,7 +16,7 @@ function fixture({ active = A, legacy = OLD, users = { [A]: user(A), [B]: user(B
   ])
   if (active) storage.set('desoActivePublicKey', active)
   const events = new EventTarget()
-  const window = { location: { origin: 'https://via.example' }, addEventListener: events.addEventListener.bind(events), removeEventListener: events.removeEventListener.bind(events), dispatchEvent: events.dispatchEvent.bind(events) }
+  const window = { location: { origin: 'https://via.example', pathname: '/', assign(url) { this.pathname = url } }, addEventListener: events.addEventListener.bind(events), removeEventListener: events.removeEventListener.bind(events), dispatchEvent: events.dispatchEvent.bind(events) }
   const localStorage = { getItem: key => storage.get(key) ?? null, setItem: (key, value) => storage.set(key, value), removeItem: key => storage.delete(key) }
   const calls = [], subscribers = []
   let loginResolve, loginReject
@@ -77,7 +77,7 @@ for (const device of ['iPhone', 'iPad', 'laptop']) {
 test('double click starts only one SDK login', async () => { const f = fixture(); const first = f.identity.login(); await assert.rejects(f.identity.login(), /already opening/); assert.equal(f.calls.filter(c => c[0] === 'login').length, 1); f.resolveLogin(); await first })
 test('cancelled login allows explicit retry', async () => { const f = fixture(); const first = f.identity.login(); await tick(); f.rejectLogin(); await assert.rejects(first); const retry = f.identity.login(); await tick(); f.resolveLogin(); await retry; assert.equal(f.calls.filter(c => c[0] === 'login').length, 2) })
 test('reading session, switching, and subscribing do not open login', async () => { const f = fixture(); await f.identity.currentUser(); f.identity.subscribe(() => {}); await f.identity.alternateUsers(); await f.identity.setActiveUser(B); assert.equal(f.calls.filter(c => c[0] === 'login').length, 0) })
-test('permissions come from SDK, never implicit legacy true', async () => { const f = fixture(); assert.equal(await f.identity.hasPermissions({}), false); assert.equal(f.calls.filter(c => c[0] === 'hasPermissions').length, 1) })
+test('permissions come from SDK, never implicit legacy true', async () => { const f = fixture(); assert.equal(await f.identity.hasPermissions({}), false); assert.equal(f.calls.filter(c => c[0] === 'hasPermissions').length, 2); assert.equal(f.calls.filter(c => c[0] === 'refresh').length, 1) })
 
 test('login retains the SDK default finite fee budget instead of an implicit zero limit', async () => {
   const f = fixture()
@@ -129,3 +129,5 @@ test('installed SDK 3.4.1 really launches derive login by redirect, without popu
   assert.equal(url.searchParams.get('redirect_uri'), 'https://via.example/')
   assert.equal(requests.length, 0)
 })
+
+test('non-homepage login redirects without starting SDK login', async () => { const f = fixture(); f.window.location.pathname = '/collection'; await assert.rejects(f.identity.login(), /homepage/); assert.equal(f.window.location.pathname, '/'); assert.equal(f.calls.filter(c => c[0] === 'login').length, 0) });

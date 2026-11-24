@@ -5,6 +5,7 @@ import { Popover } from "@base-ui/react/popover"
 import { Gem, TrendingUp } from "lucide-react"
 import { restoreIdentitySession, VIA_IDENTITY_EVENT } from "../deso-identity-session"
 import { financialSubmissionBlock, markFinancialPending, markFinancialSubmitted, withFinancialAccountLock } from "../financial-submission"
+import { ensureDiamondPermission } from "./diamond-permissions"
 import { viaModernIdentity } from "../deso-identity-modern"
 import { fetchViaRates } from "../via-live-rates"
 import { readViaLocalSettings, VIA_SETTINGS_EVENT, type ViaLanguage } from "../via-local-settings"
@@ -183,6 +184,7 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
     window.addEventListener("storage", onIdentity)
     try {
       if (!session) throw new Error("DESO_LOGIN_REQUIRED")
+
       const intent = "diamond:" + postHash + ":" + receiverPublicKey + ":" + chosenLevel
       await withFinancialAccountLock(session.publicKey, async () => {
         await assertAccount()
@@ -197,11 +199,8 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
             typeof data.spendAmountNanos !== "number" || !Number.isSafeInteger(data.spendAmountNanos) || data.spendAmountNanos < 0) throw new Error(data.error || "INVALID_DESO_TRANSACTION_DATA")
         const cost = data.spendAmountNanos + data.feeNanos
         if (!Number.isSafeInteger(cost) || cost < 1) throw new Error("INVALID_DESO_SPEND_LIMIT")
-        // DeSo permissions are granted at homepage login; never open a second
-        // permission request from a diamond click. Fail closed if the grant is absent.
-        setStatus("approval"); setMessage("Checking the DeSo permission granted at login…")
-        const permitted = await awaitIdentityResponse(Promise.resolve(viaModernIdentity.hasPermissions({ GlobalDESOLimit: cost, TransactionCountLimitMap: { BASIC_TRANSFER: 1 } })), 20000)
-        if (!permitted) throw new Error("DeSo diamantmachtiging ontbreekt in deze sessie. Meld je opnieuw aan via de VIA-homepage om de eenmalige toestemming te verlenen.")
+        setStatus("approval"); setMessage("Checking DeSo Identity permissions...")
+        await awaitIdentityResponse(ensureDiamondPermission(viaModernIdentity, cost), 120000)
         await assertAccount()
         setMessage("DeSo Identity is signing your Diamond…")
         const signedTransactionHex = await awaitIdentityResponse(viaModernIdentity.signTx(data.transactionHex), 20000)
@@ -253,8 +252,8 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
   }
 
   return <>
-    <Popover.Root open={menuOpen} onOpenChange={changeMenu}>
-      <Popover.Trigger type="button" title="Diamanten" aria-label={"Diamanten · " + count}
+    <Popover.Root open={reader === receiverPublicKey ? false : menuOpen} onOpenChange={open => { if (reader !== receiverPublicKey) changeMenu(open) }}>
+      <Popover.Trigger disabled={Boolean(reader && reader === receiverPublicKey)} type="button" title={reader === receiverPublicKey ? "Own post" : "Diamanten"} aria-label={"Diamanten · " + count}
         className="inline-flex h-9 min-w-9 items-center justify-center gap-1 rounded-full border border-zinc-800 px-2 text-xs text-zinc-300 hover:border-[#8fd4a9] data-[popup-open]:border-[#8fd4a9] data-[popup-open]:bg-[#285f40]">
         <Gem className="size-4" aria-hidden="true" />
         <span>{count}{variant === "default" ? " Diamanten" : ""}</span>

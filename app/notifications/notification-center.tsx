@@ -24,6 +24,10 @@ import PostVideo from "../social/post-video"
 import PostSource from "../post-source"
 import RepostButton from "../social/repost-button"
 import DiamondButton from "../social/diamond-button"
+import PostShareButton from "../social/post-share-button"
+import ScrollTopButton from "../social/scroll-top-button"
+import PostActionsMenu from "../social/post-actions-menu"
+import LocalSaveButton from "../social/local-save-button"
 import SponsorPlatform from "../sponsor-platform"
 
 type NotificationItem = {
@@ -819,7 +823,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
 
   return (
     <section className={`${styles.center} min-w-0 w-full max-w-full rounded-2xl border border-zinc-800 bg-zinc-950/60`} aria-label={copy.notificationLabel}>
-      <div id="notification-controls" data-notification-controls className="flex flex-col border-b border-zinc-800 xl:flex-row-reverse xl:items-center xl:justify-between">
+      <div id="notification-controls" data-notification-controls className="sticky top-0 z-20 bg-zinc-950 flex flex-col border-b border-zinc-800 xl:flex-row-reverse xl:items-center xl:justify-between">
       <div className={`${styles.toolbar} flex flex-nowrap items-center justify-between gap-1 bg-zinc-950/95 px-2 py-0.5 max-sm:items-stretch sm:px-3`}>
         <div className={`${styles.controls} flex w-full min-w-0 flex-nowrap items-center justify-between gap-1 sm:w-auto sm:flex-wrap sm:justify-start sm:gap-2`}>
           <button
@@ -905,7 +909,8 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
           const username = profile.username?.trim().replace(/^@/, "")
           const actor = username ? `@${username}` : shortKey(actorPublicKey || metadata.TransactorPublicKeyBase58Check, copy.actor)
           const rowKey = `${item.Index ?? "n"}-${index}`
-          const expanded = !collapsedRows[rowKey] && (expandedKey === rowKey || (index < 8 && Boolean(postHashFor(item))))
+          const isCreatorPost = itemCategory === "reply" || itemCategory === "mention5" || itemCategory === "mention6" || itemCategory === "repost"
+          const expanded = !collapsedRows[rowKey] && (expandedKey === rowKey || (isCreatorPost && index < 8 && Boolean(postHashFor(item))))
           const postHash = postHashFor(item)
           const post = postHash ? postCache[postHash] : undefined
           return <article key={rowKey} className={`${styles.row} mx-1 mb-1 grid grid-cols-[34px_minmax(0,1fr)] gap-2 rounded-xl border px-2 py-1.5 transition sm:mx-0 sm:mb-0 sm:rounded-none sm:border-x-0 sm:border-b-0 sm:grid-cols-[46px_minmax(0,1fr)] sm:gap-3 sm:px-4 sm:py-2 ${unread ? "border-[#285f40]/70 bg-[#0b1510]/70" : "border-zinc-800 bg-black/10"}`}>
@@ -931,7 +936,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
                   </> : null}
                   {post.imageUrls?.length ? <div className="mt-3 grid gap-2 sm:grid-cols-2">{post.imageUrls.slice(0, 4).map((url) => <img key={url} src={url} alt="" loading="lazy" className="max-h-72 w-full rounded-xl object-contain" />)}</div> : null}
                   {post.videoUrls?.length ? <div className="mt-3 space-y-2">{post.videoUrls.slice(0, 2).filter(url => { try { return new URL(url).protocol === "https:" } catch { return false } }).map(url => <PostVideo key={url} url={url} />)}</div> : null}
-                  <div data-via-post-actions className="mt-1 flex flex-wrap items-start gap-1 pt-1">
+                  {isCreatorPost && actorPublicKey === post.publicKey ? <><div data-via-post-actions className="mt-1 flex flex-wrap items-start gap-1 pt-1"><ScrollTopButton />
                     <button
                       type="button"
                       onClick={() => setReplyingTo((current) => current === post.postHash ? null : post.postHash)}
@@ -943,27 +948,11 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
                       <MessageSquare className="h-4 w-4" />
                     </button>
                     <RepostButton quotedPost={post} postHash={post.postHash} initialCount={0} variant="icon" />
-                    <LikeButton postHash={post.postHash} initialCount={post.likeCount} variant="icon" />
                     <DiamondButton postHash={post.postHash} receiverPublicKey={post.publicKey} initialCount={post.diamondCount} variant="icon" />
-                    <details className="relative">
-                      <summary className="grid h-9 w-9 cursor-pointer list-none place-items-center rounded-full border border-zinc-800 text-zinc-300 transition hover:border-[#8fd4a9] hover:text-white" aria-label="More actions">•••</summary>
-                      <div className="absolute left-0 z-30 mt-2 min-w-44 rounded-xl border border-zinc-700 bg-[#080b09] p-2 shadow-2xl">
-                        <button type="button" onClick={(event) => { setRewardPost((current) => current === post.postHash ? null : post.postHash); setRewardMessage(""); event.currentTarget.closest("details")?.removeAttribute("open") }} className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs text-zinc-300 hover:bg-zinc-900 hover:text-white">
-                          <ArrowUpRight className="h-4 w-4" /><span>{copy.rewardAction}</span>
-                        </button>
-                        <button type="button" onClick={(event) => {
-                          const url = `${window.location.origin}/social?post=${encodeURIComponent(post.postHash)}`
-                          void navigator.clipboard?.writeText(url).then(() => {
-                            setCopiedPost(post.postHash)
-                            window.setTimeout(() => setCopiedPost((current) => current === post.postHash ? null : current), 1400)
-                          }).catch(() => {})
-                          event.currentTarget.closest("details")?.removeAttribute("open")
-                        }} className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs text-zinc-300 hover:bg-zinc-900 hover:text-white">
-                          {copiedPost === post.postHash ? <Check className="h-4 w-4" /> : <Link2 className="h-4 w-4" />}<span>{copiedPost === post.postHash ? copy.linkCopied : copy.copyLink}</span>
-                        </button>
-                        <button type="button" onClick={(event) => event.currentTarget.closest("details")?.removeAttribute("open")} className="mt-1 w-full rounded-lg border border-zinc-800 px-3 py-2 text-left text-xs text-zinc-400 hover:border-[#8fd4a9]/45 hover:text-white">{copy.close}</button>
-                      </div>
-                    </details>
+                    <LikeButton postHash={post.postHash} initialCount={post.likeCount} variant="icon" />
+                    <PostShareButton postHash={post.postHash} />
+                    <LocalSaveButton postHash={post.postHash} body={post.body ?? ""} publicKey={post.publicKey} timestampNanos={post.timestampNanos ?? 0} />
+                    <PostActionsMenu postHash={post.postHash} body={post.body ?? ""} publicKey={post.publicKey} authenticated onReward={() => { setRewardPost(current => current === post.postHash ? null : post.postHash); setRewardMessage("") }} />
                   </div>
                   {rewardPost === post.postHash ? <div className="mt-3 rounded-xl border border-[#285f40]/70 bg-[#07110b] p-3">
                     <div className="flex flex-wrap items-center gap-2">
@@ -979,7 +968,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
                     </div>
                     {rewardMessage ? <p className="mt-2 text-[11px] text-zinc-400" role="status">{rewardMessage}</p> : null}
                   </div> : null}
-                  {replyingTo === post.postHash ? <div className="mt-3"><PostComposer parentStakeID={post.postHash} compact onDone={() => setReplyingTo(null)} /></div> : null}
+                  {replyingTo === post.postHash ? <div className="mt-3"><PostComposer parentStakeID={post.postHash} compact onDone={() => setReplyingTo(null)} /></div> : null}</> : null}
                 </> : <p className="text-xs text-zinc-500">{copy.postUnavailable}</p>}
               </div> : expanded && destination ? <div className="mt-3 rounded-xl border border-zinc-800 bg-black/25 p-3 text-xs text-zinc-500">{destination}</div> : null}
             </div>

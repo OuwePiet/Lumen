@@ -24,15 +24,14 @@ export default function ParticipationGate({
   const [status, setStatus] = useState<"idle" | "waiting" | "blocked">("idle")
 
   useEffect(() => {
-    void viaModernIdentity.currentUser().then(setSession)
+    return viaModernIdentity.subscribe(setSession)
   }, [])
 
   async function openDeSoIdentity() {
     setStatus("waiting")
     try {
-      const nextSession = await viaModernIdentity.login()
-      setSession(nextSession)
-      setStatus("idle")
+      window.location.assign("/")
+      return
     } catch {
       setStatus("blocked")
     }

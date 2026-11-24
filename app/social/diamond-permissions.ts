@@ -1,9 +1,12 @@
 import type { ViaModernIdentityAdapter } from "../deso-identity-modern"
 
 /** Check the cost of this transaction, not remaining budget plus the cost. */
-export async function ensureDiamondPermission(identity: Pick<ViaModernIdentityAdapter, "hasPermissions" | "requestPermissions" | "spendingLimits">, spendNanos: number) {
+export async function ensureDiamondPermission(identity: Pick<ViaModernIdentityAdapter, "hasPermissions" | "requestPermissions" | "spendingLimits" | "refreshSpendingLimits">, spendNanos: number) {
   if (!Number.isSafeInteger(spendNanos) || spendNanos < 0) throw new Error("INVALID_DESO_SPEND_LIMIT")
   const required = { GlobalDESOLimit: spendNanos, TransactionCountLimitMap: { BASIC_TRANSFER: 1 } }
+  if (await identity.hasPermissions(required)) return
+  // SDK 3.4.1: refresh the on-chain grant before requesting additional approval.
+  await identity.refreshSpendingLimits()
   if (await identity.hasPermissions(required)) return
   const current = await identity.spendingLimits()
   const remaining = current?.GlobalDESOLimit ?? 0

@@ -20,9 +20,7 @@ export default function SocialAccountControl() {
   }, [])
 
   async function addAccount() {
-    const next = await viaModernIdentity.login()
-    setSession(next)
-    setOpen(false)
+    window.location.assign("/")
   }
 
   async function choose(publicKey: string) {

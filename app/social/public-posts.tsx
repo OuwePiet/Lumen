@@ -11,8 +11,11 @@ import LikeButton from "./like-button"
 import FollowButton from "./follow-button"
 import RepostButton from "./repost-button"
 import DiamondButton from "./diamond-button"
+import ScrollTopButton from "./scroll-top-button"
 import LocalSaveButton from "./local-save-button"
 import PollVoteControl from "./poll-vote-control"
+import PostShareButton from "./post-share-button"
+import PostActionsMenu from "./post-actions-menu"
 import XShareButton from "../x-share-button"
 import { viaModernIdentity, type ViaModernIdentityUser } from "../deso-identity-modern"
 
@@ -105,7 +108,7 @@ function feedReadyMessage(choice: ChoiceId) {
   return "Hot is ready."
 }
 
-export default function PublicPosts({ initialPost }: { initialPost?: PublicPost | null }) {
+export default function PublicPosts({ initialPost, bookmarkHashes }: { initialPost?: PublicPost | null; bookmarkHashes?: string[] }) {
   const requestController = useRef<AbortController | null>(null)
   const [posts, setPosts] = useState<PublicPost[]>(initialPost ? [initialPost] : [])
   const [published, setPublished] = useState<{ hash: string; publicKey: string; text: string; repostedHash?: string }[]>([])
@@ -136,7 +139,7 @@ export default function PublicPosts({ initialPost }: { initialPost?: PublicPost 
   }, [replyingTo, commentsRefresh, session?.publicKey])
   const [actionLoginPost, setActionLoginPost] = useState<string | null>(null)
   const [sharedPostHash, setSharedPostHash] = useState<string | null>()
-  const sharedPostView = Boolean(sharedPostHash)
+  const sharedPostView = Boolean(sharedPostHash) || bookmarkHashes !== undefined
   const [creatorProfiles, setCreatorProfiles] = useState<Record<string, CompactProfile>>({})
   const loadMoreSentinelRef = useRef<HTMLDivElement | null>(null)
 
@@ -232,17 +235,9 @@ export default function PublicPosts({ initialPost }: { initialPost?: PublicPost 
   function ReplyExtraActions({ reply }: { reply: PublicPost }) {
     const url = `${typeof window === "undefined" ? "" : window.location.origin}/social?post=${encodeURIComponent(reply.postHash)}`
     return <>
-      <button type="button" onClick={() => {
-        if (navigator.share) void navigator.share({ title: "VIA · DeSo post", url }).catch(() => {})
-        else void navigator.clipboard?.writeText(url)
-      }}>Share</button>
+      <PostShareButton postHash={reply.postHash} />
       {session ? <LocalSaveButton postHash={reply.postHash} body={reply.body} publicKey={reply.publicKey} timestampNanos={reply.timestampNanos} /> : <button type="button" title="Save (DeSo login required)" onClick={() => setActionLoginPost(reply.postHash)}>Save</button>}
-      <details className="relative">
-        <summary aria-label="Meer reactieacties" title="Meer reactieacties" className="cursor-pointer list-none">•••</summary>
-        <div className="absolute right-0 z-20 mt-1 min-w-44 overflow-hidden rounded-lg border border-zinc-800 bg-[#050806] text-left shadow-xl">
-          <button type="button" onClick={() => void navigator.clipboard?.writeText(url)} className="block w-full px-3 py-2 text-left text-zinc-300 hover:bg-white/[0.04]">Link to Post</button>
-        </div>
-      </details>
+      <PostActionsMenu postHash={reply.postHash} body={reply.body} publicKey={reply.publicKey} authenticated={Boolean(session)} />
     </>
   }
 
@@ -258,13 +253,13 @@ export default function PublicPosts({ initialPost }: { initialPost?: PublicPost 
     const controller = new AbortController()
     requestController.current = controller
 
-    if (!sharedPostHash && feedChoice === "following" && session === undefined) {
+    if (!bookmarkHashes && !sharedPostHash && feedChoice === "following" && session === undefined) {
       requestController.current = null
       setMessage("Loading Following…")
       return
     }
 
-    if (!sharedPostHash && feedChoice === "following" && !session) {
+    if (!bookmarkHashes && !sharedPostHash && feedChoice === "following" && !session) {
       setMessage("Log in with DeSo to open Following. Previous posts remain visible.")
       requestController.current = null
       setLoading(false)
@@ -280,6 +275,24 @@ export default function PublicPosts({ initialPost }: { initialPost?: PublicPost 
       setMessage(sharedPostHash ? "This shared post is temporarily unavailable." : "Posts are temporarily unavailable.")
     }, 15000)
     try {
+      if (bookmarkHashes) {
+        setHasMore(false)
+        const result: PublicPost[] = []
+        for (let i = 0; i < bookmarkHashes.length; i += 5) {
+          const batch = await Promise.all(bookmarkHashes.slice(i, i + 5).map(async hash => {
+            try {
+              const response = await fetch("/api/via/post?hash=" + hash + "&reader=" + encodeURIComponent(session?.publicKey ?? ""), {signal: controller.signal})
+              const data = await response.json() as SinglePostResponse
+              return response.ok && data.ok ? data.post : undefined
+            } catch { return undefined }
+          }))
+          if (controller.signal.aborted) return
+          result.push(...batch.filter((post): post is PublicPost => Boolean(post)))
+        }
+        setPosts(result)
+        setMessage(result.length === bookmarkHashes.length ? "" : "Some bookmarks are temporarily unavailable.")
+        return
+      }
       if (sharedPostHash) {
         const reader = encodeURIComponent(session?.publicKey ?? "")
         const response = await fetch(`/api/via/post?hash=${sharedPostHash}&reader=${reader}`, { signal: controller.signal })
@@ -317,7 +330,7 @@ export default function PublicPosts({ initialPost }: { initialPost?: PublicPost 
 
   useEffect(() => {
     void loadPosts()
-  }, [feedChoice, session?.publicKey, feedRevision, sharedPostHash])
+  }, [feedChoice, session?.publicKey, feedRevision, sharedPostHash, bookmarkHashes?.join(",")])
 
   useEffect(() => {
     const refresh = (event: Event) => {
@@ -484,32 +497,14 @@ export default function PublicPosts({ initialPost }: { initialPost?: PublicPost 
                   </div>
                 ) : null}
 
-                <div data-via-post-actions className="mt-4 flex flex-wrap items-start gap-2 border-t border-white/[0.06] pt-3 text-xs text-zinc-500">
+                <div data-via-post-actions className="mt-4 flex flex-wrap items-start gap-2 border-t border-white/[0.06] pt-3 text-xs text-zinc-500"><ScrollTopButton />
                   <button type="button" onClick={() => (setReplyParent(null), setReplyingTo(isReplying ? null : post.postHash))} title="Reply" aria-label={`Reply · ${post.commentCount}`} className="inline-flex h-9 min-w-9 items-center justify-center gap-1 rounded-full border border-zinc-800 px-2 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2]"><MessageSquare aria-hidden="true" className="h-4 w-4" /><span>{post.commentCount}</span></button>
                   {session ? <RepostButton quotedPost={post} postHash={post.postHash} initialCount={totalReposts} variant="icon" /> : <button type="button" title="Repost (DeSo login required)" onClick={() => setActionLoginPost(post.postHash)} className="inline-flex h-9 min-w-9 items-center justify-center gap-1 rounded-full border border-zinc-800 px-2 text-xs text-zinc-300">Repost · {totalReposts}</button>}
                   {session ? <DiamondButton postHash={post.postHash} receiverPublicKey={post.publicKey} initialCount={post.diamondCount} variant="icon" /> : <button type="button" title="Diamond (DeSo login required)" onClick={() => setActionLoginPost(post.postHash)} className="inline-flex h-9 min-w-9 items-center justify-center gap-1 rounded-full border border-zinc-800 px-2 text-xs text-zinc-300">Diamond · {post.diamondCount}</button>}
                   {session ? <LikeButton postHash={post.postHash} initialCount={post.likeCount} initialLiked={post.isLikedByReader} variant="icon" /> : <button type="button" title="Like (DeSo login required)" onClick={() => setActionLoginPost(post.postHash)} className="inline-flex h-9 min-w-9 items-center justify-center gap-1 rounded-full border border-zinc-800 px-2 text-xs text-zinc-300">Like · {post.likeCount}</button>}
-                  <button type="button" onClick={() => {
-                    const url = `${window.location.origin}/social?post=${encodeURIComponent(post.postHash)}`
-                    if (navigator.share) void navigator.share({ title: "VIA · DeSo post", url }).catch(() => {})
-                    else void navigator.clipboard?.writeText(url)
-                  }} className="inline-flex h-9 min-w-9 items-center justify-center rounded-full border border-zinc-800 px-3 text-xs text-zinc-300">Share</button>
+                  <PostShareButton postHash={post.postHash} />
                   {session ? <LocalSaveButton postHash={post.postHash} body={post.body} publicKey={post.publicKey} timestampNanos={post.timestampNanos} /> : <button type="button" title="Save (DeSo login required)" onClick={() => setActionLoginPost(post.postHash)} className="inline-flex h-9 min-w-9 items-center justify-center rounded-full border border-zinc-800 px-3 text-xs text-zinc-300">Save</button>}
-                  <details className="relative">
-                    <summary aria-label="Meer postacties" title="Meer postacties" className="cursor-pointer list-none rounded-full border border-zinc-800 px-3 py-1 text-zinc-400">•••</summary>
-                    <div className="mt-2 flex flex-col overflow-hidden rounded-xl border border-zinc-800 bg-[#050806] text-left">
-                      <button type="button" onClick={() => void navigator.clipboard?.writeText(`${window.location.origin}/social?post=${encodeURIComponent(post.postHash)}`)} className="px-3 py-2 text-left text-zinc-300 hover:bg-white/[0.04]">Link to Post</button>
-                      <XShareButton href={`/social?post=${encodeURIComponent(post.postHash)}`} text={post.body ? post.body.slice(0, 180) : "VIA · DeSo post"} label="X" className="px-3 py-2 text-left text-zinc-300 hover:bg-white/[0.04]" />
-                      {session ? <button type="button" onClick={() => {
-                        const url = `${window.location.origin}/social?post=${encodeURIComponent(post.postHash)}`
-                        const text = `VIA · DeSo post
-${url}`
-                        window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank", "noopener,noreferrer")
-                      }} className="px-3 py-2 text-left text-zinc-300 hover:bg-white/[0.04]">WhatsApp</button> : null}
-                      {session ? <div className="[&_button]:w-full [&_button]:rounded-none [&_button]:border-0 [&_button]:px-3 [&_button]:py-2 [&_button]:text-left"><FollowButton followedPublicKey={post.publicKey} /></div> : null}
-                      <button type="button" onClick={(event) => (event.currentTarget.closest("details") as HTMLDetailsElement | null)?.removeAttribute("open")} className="border-t border-zinc-800 px-3 py-2 text-left text-zinc-400 hover:bg-white/[0.04]">Sluiten</button>
-                    </div>
-                  </details>
+                  <PostActionsMenu postHash={post.postHash} body={post.body} publicKey={post.publicKey} authenticated={Boolean(session)} />
                   {isOwnPost ? <Link href={`/edit-post?post=${encodeURIComponent(post.postHash)}`} className="rounded-full border border-[#8fd4a9]/45 px-3 py-1 text-[#9adbb2]">Edit</Link> : null}
                 </div>
 
@@ -523,7 +518,7 @@ ${url}`
                 {options.length >= 2 ? <PollVoteControl postHash={post.postHash} options={options} /> : null}
                 {isReplying ? <section className="mt-3 space-y-3 rounded-xl border border-zinc-700 p-3" aria-label="DeSo replies">
                   <div className="flex items-center justify-between"><strong className="text-sm">DeSo replies</strong><button type="button" onClick={() => { setReplyingTo(null); setReplyParent(null) }} aria-label="Close replies">×</button></div>
-                  {commentsBusy ? <p>Loading replies…</p> : commentsError ? <p role="alert">DeSo replies unavailable. <button type="button" onClick={() => setCommentsRefresh(n => n + 1)}>Retry</button></p> : commentPosts.length === 0 ? <p>No replies returned by DeSo.</p> : commentPosts.map(comment => <div key={comment.postHash} className="rounded-lg border border-zinc-800 p-2 text-sm"><p className="text-zinc-400">{comment.username ? `@${comment.username}` : shortPublicKey(comment.publicKey)}</p><p className="whitespace-pre-wrap break-words">{linkedPostText(comment.body)}</p><PostSource extra={comment.postExtraData} reply />{comment.comments?.map(child => <div key={child.postHash} className="ml-4 mt-2 border-l border-zinc-700 pl-3"><p className="text-zinc-400">{child.username ? `@${child.username}` : shortPublicKey(child.publicKey)}</p><p className="whitespace-pre-wrap break-words">{linkedPostText(child.body)}</p><PostSource extra={child.postExtraData} reply /><div className="mt-2 flex flex-wrap items-start gap-2"><button type="button" onClick={() => setReplyParent(child.postHash)}>Reply</button>{session ? <><RepostButton postHash={child.postHash} initialCount={child.repostCount + child.quoteRepostCount} variant="icon" />{session.publicKey !== child.publicKey ? <DiamondButton postHash={child.postHash} receiverPublicKey={child.publicKey} initialCount={child.diamondCount} variant="icon" /> : <span>Diamonds · {child.diamondCount}</span>}<LikeButton postHash={child.postHash} initialCount={child.likeCount} initialLiked={child.isLikedByReader} variant="icon" /><ReplyExtraActions reply={child} /></> : <><button type="button" title="Repost (DeSo login required)" onClick={() => setActionLoginPost(child.postHash)}>Repost · {child.repostCount + child.quoteRepostCount}</button><button type="button" title="Diamond (DeSo login required)" onClick={() => setActionLoginPost(child.postHash)}>Diamond · {child.diamondCount}</button><button type="button" title="Like (DeSo login required)" onClick={() => setActionLoginPost(child.postHash)}>Like · {child.likeCount}</button><ReplyExtraActions reply={child} /></>}<ReplyLoginNotice replyHash={child.postHash} /></div></div>)}<div className="flex flex-wrap items-start gap-2"><button type="button" onClick={() => setReplyParent(comment.postHash)}>Reply</button>{session ? <><RepostButton postHash={comment.postHash} initialCount={comment.repostCount + comment.quoteRepostCount} variant="icon" />{session.publicKey !== comment.publicKey ? <DiamondButton postHash={comment.postHash} receiverPublicKey={comment.publicKey} initialCount={comment.diamondCount} variant="icon" /> : <span>Diamonds · {comment.diamondCount}</span>}<LikeButton postHash={comment.postHash} initialCount={comment.likeCount} initialLiked={comment.isLikedByReader} variant="icon" /><ReplyExtraActions reply={comment} /></> : <><button type="button" title="Repost (DeSo login required)" onClick={() => setActionLoginPost(comment.postHash)}>Repost · {comment.repostCount + comment.quoteRepostCount}</button><button type="button" title="Diamond (DeSo login required)" onClick={() => setActionLoginPost(comment.postHash)}>Diamond · {comment.diamondCount}</button><button type="button" title="Like (DeSo login required)" onClick={() => setActionLoginPost(comment.postHash)}>Like · {comment.likeCount}</button><ReplyExtraActions reply={comment} /></>}<ReplyLoginNotice replyHash={comment.postHash} /></div></div>)}
+                  {commentsBusy ? <p>Loading replies…</p> : commentsError ? <p role="alert">DeSo replies unavailable. <button type="button" onClick={() => setCommentsRefresh(n => n + 1)}>Retry</button></p> : commentPosts.length === 0 ? <p>No replies returned by DeSo.</p> : commentPosts.map(comment => <div key={comment.postHash} className="rounded-lg border border-zinc-800 p-2 text-sm"><p className="text-zinc-400">{comment.username ? `@${comment.username}` : shortPublicKey(comment.publicKey)}</p><p className="whitespace-pre-wrap break-words">{linkedPostText(comment.body)}</p><PostSource extra={comment.postExtraData} reply />{comment.comments?.map(child => <div key={child.postHash} className="ml-4 mt-2 border-l border-zinc-700 pl-3"><p className="text-zinc-400">{child.username ? `@${child.username}` : shortPublicKey(child.publicKey)}</p><p className="whitespace-pre-wrap break-words">{linkedPostText(child.body)}</p><PostSource extra={child.postExtraData} reply /><div className="mt-2 flex flex-wrap items-start gap-2"><button type="button" onClick={() => setReplyParent(child.postHash)}>Reply</button>{session ? <><RepostButton postHash={child.postHash} initialCount={child.repostCount + child.quoteRepostCount} variant="icon" />{child.publicKey ? <DiamondButton postHash={child.postHash} receiverPublicKey={child.publicKey} initialCount={child.diamondCount} variant="icon" /> : <span>Diamonds · {child.diamondCount}</span>}<LikeButton postHash={child.postHash} initialCount={child.likeCount} initialLiked={child.isLikedByReader} variant="icon" /><ReplyExtraActions reply={child} /><ScrollTopButton /></> : <><button type="button" title="Repost (DeSo login required)" onClick={() => setActionLoginPost(child.postHash)}>Repost · {child.repostCount + child.quoteRepostCount}</button><button type="button" title="Diamond (DeSo login required)" onClick={() => setActionLoginPost(child.postHash)}>Diamond · {child.diamondCount}</button><button type="button" title="Like (DeSo login required)" onClick={() => setActionLoginPost(child.postHash)}>Like · {child.likeCount}</button><ReplyExtraActions reply={child} /><ScrollTopButton /></>}<ReplyLoginNotice replyHash={child.postHash} /></div></div>)}<div className="flex flex-wrap items-start gap-2"><button type="button" onClick={() => setReplyParent(comment.postHash)}>Reply</button>{session ? <><RepostButton postHash={comment.postHash} initialCount={comment.repostCount + comment.quoteRepostCount} variant="icon" />{comment.publicKey ? <DiamondButton postHash={comment.postHash} receiverPublicKey={comment.publicKey} initialCount={comment.diamondCount} variant="icon" /> : <span>Diamonds · {comment.diamondCount}</span>}<LikeButton postHash={comment.postHash} initialCount={comment.likeCount} initialLiked={comment.isLikedByReader} variant="icon" /><ReplyExtraActions reply={comment} /><ScrollTopButton /></> : <><button type="button" title="Repost (DeSo login required)" onClick={() => setActionLoginPost(comment.postHash)}>Repost · {comment.repostCount + comment.quoteRepostCount}</button><button type="button" title="Diamond (DeSo login required)" onClick={() => setActionLoginPost(comment.postHash)}>Diamond · {comment.diamondCount}</button><button type="button" title="Like (DeSo login required)" onClick={() => setActionLoginPost(comment.postHash)}>Like · {comment.likeCount}</button><ReplyExtraActions reply={comment} /><ScrollTopButton /></>}<ReplyLoginNotice replyHash={comment.postHash} /></div></div>)}
                   <button type="button" onClick={() => setCommentsRefresh(n => n + 1)} disabled={commentsBusy}>Refresh replies</button>
                   {session ? <PostComposer key={replyParent ?? post.postHash} parentStakeID={replyParent ?? post.postHash} compact onCancel={() => setReplyParent(null)} onDone={() => setReplyParent(null)} /> : <p>Sign in with DeSo to reply.</p>}
                 </section> : null}

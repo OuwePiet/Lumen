@@ -110,6 +110,8 @@ async function forSelectedUser<T>(operation: () => T | Promise<T>): Promise<T> {
 export const viaModernIdentity: ViaModernIdentityAdapter = {
   async currentUser() { ensureConfigured(); return selectedUser() },
   async login() {
+    // 3.4.1: the homepage is the sole entry for a new DeSo login.
+    if (window.location.pathname !== "/") { window.location.assign("/"); throw new Error("Continue on the VIA homepage.") }
     if (loginPending) throw new Error("DeSo Identity login is already opening.")
     loginPending = true
     try {
@@ -160,7 +162,14 @@ export const viaModernIdentity: ViaModernIdentityAdapter = {
     window.dispatchEvent(new CustomEvent(VIA_IDENTITY_EVENT, { detail: restoreIdentitySession() }))
   },
   signTx(transactionHex) { return forSelectedUser(() => identity.signTx(transactionHex)) },
-  hasPermissions(permissions) { return forSelectedUser(() => identity.hasPermissions(permissions)) },
+  async hasPermissions(permissions) {
+    return forSelectedUser(async () => {
+      if (await identity.hasPermissions(permissions)) return true
+      // DeSo SDK 3.4.1: refresh the registered on-chain grant before requesting consent.
+      await identity.refreshDerivedKeyPermissions()
+      return identity.hasPermissions(permissions)
+    })
+  },
   requestPermissions(permissions) { return forSelectedUser(() => identity.requestPermissions(permissions)) },
   async spendingLimits() {
     return forSelectedUser(async () => {

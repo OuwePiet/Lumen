@@ -45,7 +45,7 @@ export default function SaveButton({ title, href, kind }: { title: string; href:
       const current = readSaved()
       if (current.some((item) => item.href === href)) {
         const next = current.filter((item) => item.href !== href)
-        window.localStorage.setItem(SAVED_KEY, JSON.stringify(next))
+        window.localStorage.setItem(SAVED_KEY, JSON.stringify(next)); window.dispatchEvent(new Event("via:saved:changed"))
         setSaved(false)
         setStatus("Removed from Saved")
       } else {
@@ -53,7 +53,7 @@ export default function SaveButton({ title, href, kind }: { title: string; href:
           { title, href, kind, savedAt: new Date().toISOString() },
           ...current.filter((item) => item.href !== href),
         ].slice(0, 100)
-        window.localStorage.setItem(SAVED_KEY, JSON.stringify(next))
+        window.localStorage.setItem(SAVED_KEY, JSON.stringify(next)); window.dispatchEvent(new Event("via:saved:changed"))
         setSaved(true)
         setStatus("Saved in this browser")
       }
