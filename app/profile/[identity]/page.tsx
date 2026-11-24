@@ -7,6 +7,7 @@ import { MessageCircle } from "lucide-react"
 import LikeButton from "../../social/like-button"
 import RepostButton from "../../social/repost-button"
 import DiamondButton from "../../social/diamond-button"
+import ScrollTopButton from "../../social/scroll-top-button"
 import PostComposer from "../../social/post-composer"
 import LocalSaveButton from "../../social/local-save-button"
 import XShareButton from "../../x-share-button"
@@ -290,7 +291,7 @@ export default function PublicProfilePage() {
                           ))}
                         </div>
                       ) : null}
-                      <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-zinc-800/70 pt-3 text-xs text-zinc-500">
+                      <div data-via-post-actions className="mt-4 flex flex-wrap items-start gap-2 border-t border-zinc-800/70 pt-3 text-xs text-zinc-500"><ScrollTopButton />
                         {hasSession ? <button type="button" onClick={() => setReplyingTo(replyingTo === post.postHash ? null : post.postHash)} title="Reply" aria-label={`Reply · ${post.commentCount}`} className="inline-flex h-9 min-w-9 items-center justify-center gap-1 rounded-full border border-zinc-800 px-2 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2]"><MessageCircle aria-hidden="true" className="h-4 w-4" /><span>{post.commentCount}</span></button> : <span>Reply · {formatNumber(post.commentCount)}</span>}
                         {hasSession ? <RepostButton postHash={post.postHash} initialCount={post.repostCount + post.quoteRepostCount} variant="icon" /> : <span>Repost · {formatNumber(post.repostCount + post.quoteRepostCount)}</span>}
                         {hasSession ? <LikeButton postHash={post.postHash} initialCount={post.likeCount} variant="icon" /> : <span>Like · {formatNumber(post.likeCount)}</span>}

@@ -24,6 +24,8 @@ import PostVideo from "../social/post-video"
 import PostSource from "../post-source"
 import RepostButton from "../social/repost-button"
 import DiamondButton from "../social/diamond-button"
+import ScrollTopButton from "../social/scroll-top-button"
+import LocalSaveButton from "../social/local-save-button"
 import SponsorPlatform from "../sponsor-platform"
 
 type NotificationItem = {
@@ -931,7 +933,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
                   </> : null}
                   {post.imageUrls?.length ? <div className="mt-3 grid gap-2 sm:grid-cols-2">{post.imageUrls.slice(0, 4).map((url) => <img key={url} src={url} alt="" loading="lazy" className="max-h-72 w-full rounded-xl object-contain" />)}</div> : null}
                   {post.videoUrls?.length ? <div className="mt-3 space-y-2">{post.videoUrls.slice(0, 2).filter(url => { try { return new URL(url).protocol === "https:" } catch { return false } }).map(url => <PostVideo key={url} url={url} />)}</div> : null}
-                  <div data-via-post-actions className="mt-1 flex flex-wrap items-start gap-1 pt-1">
+                  <div data-via-post-actions className="mt-1 flex flex-wrap items-start gap-1 pt-1"><ScrollTopButton />
                     <button
                       type="button"
                       onClick={() => setReplyingTo((current) => current === post.postHash ? null : post.postHash)}
@@ -943,8 +945,10 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
                       <MessageSquare className="h-4 w-4" />
                     </button>
                     <RepostButton quotedPost={post} postHash={post.postHash} initialCount={0} variant="icon" />
-                    <LikeButton postHash={post.postHash} initialCount={post.likeCount} variant="icon" />
                     <DiamondButton postHash={post.postHash} receiverPublicKey={post.publicKey} initialCount={post.diamondCount} variant="icon" />
+                    <LikeButton postHash={post.postHash} initialCount={post.likeCount} variant="icon" />
+                    <button type="button" onClick={() => { const url = window.location.origin + "/social?post=" + encodeURIComponent(post.postHash); if (navigator.share) void navigator.share({url}).catch(() => {}); else void navigator.clipboard?.writeText(url) }} className="inline-flex h-9 min-w-9 items-center justify-center rounded-full border border-zinc-800 px-3 text-xs text-zinc-300">Share</button>
+                    <LocalSaveButton postHash={post.postHash} body={post.body ?? ""} publicKey={post.publicKey} timestampNanos={post.timestampNanos ?? 0} />
                     <details className="relative">
                       <summary className="grid h-9 w-9 cursor-pointer list-none place-items-center rounded-full border border-zinc-800 text-zinc-300 transition hover:border-[#8fd4a9] hover:text-white" aria-label="More actions">•••</summary>
                       <div className="absolute left-0 z-30 mt-2 min-w-44 rounded-xl border border-zinc-700 bg-[#080b09] p-2 shadow-2xl">
