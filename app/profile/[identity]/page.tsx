@@ -37,6 +37,8 @@ type PublicProfile = {
 }
 
 type PublicPost = {
+  publicKey: string
+  username: string
   postHash: string
   body: string
   imageUrls: string[]
@@ -295,9 +297,9 @@ export default function PublicProfilePage() {
                         {hasSession ? <button type="button" onClick={() => setReplyingTo(replyingTo === post.postHash ? null : post.postHash)} title="Reply" aria-label={`Reply · ${post.commentCount}`} className="inline-flex h-9 min-w-9 items-center justify-center gap-1 rounded-full border border-zinc-800 px-2 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2]"><MessageCircle aria-hidden="true" className="h-4 w-4" /><span>{post.commentCount}</span></button> : <span>Reply · {formatNumber(post.commentCount)}</span>}
                         {hasSession ? <RepostButton postHash={post.postHash} initialCount={post.repostCount + post.quoteRepostCount} variant="icon" /> : <span>Repost · {formatNumber(post.repostCount + post.quoteRepostCount)}</span>}
                         {hasSession ? <LikeButton postHash={post.postHash} initialCount={post.likeCount} variant="icon" /> : <span>Like · {formatNumber(post.likeCount)}</span>}
-                        {hasSession ? <DiamondButton postHash={post.postHash} receiverPublicKey={profile.publicKey} initialCount={post.diamondCount} variant="icon" /> : <span>Diamond · {formatNumber(post.diamondCount)}</span>}
+                        {hasSession ? <DiamondButton postHash={post.postHash} receiverPublicKey={post.publicKey} initialCount={post.diamondCount} variant="icon" /> : <span>Diamond · {formatNumber(post.diamondCount)}</span>}
                         <XShareButton href={`/social?post=${encodeURIComponent(post.postHash)}`} text={post.body.slice(0, 180)} label="Share on X" />
-                        <LocalSaveButton postHash={post.postHash} body={post.body} publicKey={profile.publicKey} timestampNanos={post.timestampNanos} />
+                        <LocalSaveButton postHash={post.postHash} body={post.body} publicKey={post.publicKey} timestampNanos={post.timestampNanos} />
                         <Link href={`/social?post=${encodeURIComponent(post.postHash)}`} className="rounded-full border border-zinc-800 px-3 py-1 text-zinc-400 transition hover:border-[#8fd4a9]/45 hover:text-[#9adbb2]">Open post</Link>
                         <details className="relative">
                           <summary aria-label="Meer postacties" title="Meer postacties" className="cursor-pointer list-none rounded-full border border-zinc-800 px-3 py-1 text-zinc-400">•••</summary>
