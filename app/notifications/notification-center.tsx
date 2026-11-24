@@ -907,7 +907,8 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
           const username = profile.username?.trim().replace(/^@/, "")
           const actor = username ? `@${username}` : shortKey(actorPublicKey || metadata.TransactorPublicKeyBase58Check, copy.actor)
           const rowKey = `${item.Index ?? "n"}-${index}`
-          const expanded = !collapsedRows[rowKey] && (expandedKey === rowKey || (index < 8 && Boolean(postHashFor(item))))
+          const isCreatorPost = itemCategory === "reply" || itemCategory === "mention5" || itemCategory === "mention6" || itemCategory === "repost"
+          const expanded = !collapsedRows[rowKey] && (expandedKey === rowKey || (isCreatorPost && index < 8 && Boolean(postHashFor(item))))
           const postHash = postHashFor(item)
           const post = postHash ? postCache[postHash] : undefined
           return <article key={rowKey} className={`${styles.row} mx-1 mb-1 grid grid-cols-[34px_minmax(0,1fr)] gap-2 rounded-xl border px-2 py-1.5 transition sm:mx-0 sm:mb-0 sm:rounded-none sm:border-x-0 sm:border-b-0 sm:grid-cols-[46px_minmax(0,1fr)] sm:gap-3 sm:px-4 sm:py-2 ${unread ? "border-[#285f40]/70 bg-[#0b1510]/70" : "border-zinc-800 bg-black/10"}`}>
@@ -933,7 +934,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
                   </> : null}
                   {post.imageUrls?.length ? <div className="mt-3 grid gap-2 sm:grid-cols-2">{post.imageUrls.slice(0, 4).map((url) => <img key={url} src={url} alt="" loading="lazy" className="max-h-72 w-full rounded-xl object-contain" />)}</div> : null}
                   {post.videoUrls?.length ? <div className="mt-3 space-y-2">{post.videoUrls.slice(0, 2).filter(url => { try { return new URL(url).protocol === "https:" } catch { return false } }).map(url => <PostVideo key={url} url={url} />)}</div> : null}
-                  <div data-via-post-actions className="mt-1 flex flex-wrap items-start gap-1 pt-1"><ScrollTopButton />
+                  {isCreatorPost && actorPublicKey === post.publicKey ? <><div data-via-post-actions className="mt-1 flex flex-wrap items-start gap-1 pt-1"><ScrollTopButton />
                     <button
                       type="button"
                       onClick={() => setReplyingTo((current) => current === post.postHash ? null : post.postHash)}
@@ -983,7 +984,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
                     </div>
                     {rewardMessage ? <p className="mt-2 text-[11px] text-zinc-400" role="status">{rewardMessage}</p> : null}
                   </div> : null}
-                  {replyingTo === post.postHash ? <div className="mt-3"><PostComposer parentStakeID={post.postHash} compact onDone={() => setReplyingTo(null)} /></div> : null}
+                  {replyingTo === post.postHash ? <div className="mt-3"><PostComposer parentStakeID={post.postHash} compact onDone={() => setReplyingTo(null)} /></div> : null}</> : null}
                 </> : <p className="text-xs text-zinc-500">{copy.postUnavailable}</p>}
               </div> : expanded && destination ? <div className="mt-3 rounded-xl border border-zinc-800 bg-black/25 p-3 text-xs text-zinc-500">{destination}</div> : null}
             </div>
