@@ -31,7 +31,6 @@ export default async function SocialPage({ searchParams }: { searchParams: Promi
               <h1 className="text-2xl font-semibold tracking-tight ">Post Office</h1>
             </div>
           </div>
-          <Link href="/saved" className="rounded-full border border-white/10 px-3 py-1.5 text-sm text-zinc-300">Saved</Link>
         </header>
 
 
