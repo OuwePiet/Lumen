@@ -282,6 +282,7 @@ export default function ViaSiteHeader() {
   }
 
   async function loginWithDeSo() {
+    if (pathname !== "/") { router.push("/"); return }
     setIdentityError("")
     try {
       const user = await viaModernIdentity.login()
