@@ -95,7 +95,10 @@ export const viaModernIdentity: ViaModernIdentityAdapter = {
     loginPending = true
     try {
       localStorage.removeItem("viaActivePublicKey")
-      await recoverExistingSDKSession()
+      if (await recoverExistingSDKSession()) {
+        const recovered = selectedUser()
+        if (recovered) return recovered
+      }
       configure(true)
       const payload = await identity.login()
       return { publicKey: payload.publicKeyBase58Check }
