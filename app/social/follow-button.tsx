@@ -1,6 +1,8 @@
 "use client"
+import { updateFollowingStatus, identity } from 'deso-protocol'
+import { ensureNFTPermission } from "../nft-permissions"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import { viaModernIdentity, type ViaModernIdentityUser } from "../deso-identity-modern"
 
 type Props = {
@@ -61,43 +63,33 @@ export default function FollowButton({ followedPublicKey, variant = "default", f
     return () => { cancelled = true }
   }, [session, followedPublicKey, variant])
 
+  const actionLock=useRef(false)
   async function performToggle() {
-    if (!session || !statusReady || busy || session.publicKey === followedPublicKey) return
+    if (!session || !statusReady || busy || actionLock.current || session.publicKey === followedPublicKey) return
     setConfirmUnfollow(false)
+    actionLock.current=true
     setBusy(true)
     setMessage(following ? "Preparing DeSo unfollow transaction…" : "Preparing DeSo follow transaction…")
     try {
-      const response = await fetch("/api/via/social/follow", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        cache: "no-store",
-        body: JSON.stringify({
-          action: "prepare",
-          followerPublicKey: session.publicKey,
-          followedPublicKey,
-          isUnfollow: following,
-        }),
-      })
-      const data = await response.json() as PrepareResponse
-      if (!response.ok || !data.ok || !data.transactionHex) throw new Error(data.error || "PREPARE_FAILED")
-      if ((await viaModernIdentity.currentUser())?.publicKey !== session.publicKey) throw new Error("DESO_ACCOUNT_CHANGED")
-      const signedTransactionHex = await viaModernIdentity.signTx(data.transactionHex)
-      if ((await viaModernIdentity.currentUser())?.publicKey !== session.publicKey) throw new Error("DESO_ACCOUNT_CHANGED")
-      const submitResponse = await fetch("/api/via/social/follow", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        cache: "no-store",
-        body: JSON.stringify({ action: "submit", signedTransactionHex }),
-      })
-      const submitData = await submitResponse.json() as SubmitResponse
-      if (!submitResponse.ok || !submitData.ok) throw new Error(submitData.error || "SUBMIT_FAILED")
+      const key=session.publicKey
+      const assertAccount=async()=>{if((await viaModernIdentity.currentUser())?.publicKey!==key||(await identity.snapshot()).currentUser?.publicKey!==key)throw new Error("DESO_ACCOUNT_CHANGED")}
+      await assertAccount()
+      const {constructedTransactionResponse:tx}=await updateFollowingStatus({FollowerPublicKeyBase58Check:key,FollowedPublicKeyBase58Check:followedPublicKey,IsUnfollow:following,MinFeeRateNanosPerKB:1000,TransactionFees:[]},{broadcast:false,checkPermissions:false,localConstruction:false})
+      if(!tx.TransactionHex||!Number.isSafeInteger(tx.FeeNanos)||tx.FeeNanos<0)throw new Error("INVALID_FEE")
+      await ensureNFTPermission({GlobalDESOLimit:tx.FeeNanos,TransactionCountLimitMap:{FOLLOW:1}},assertAccount)
+      await assertAccount()
+      const signed=await viaModernIdentity.signTx(tx.TransactionHex)
+      await assertAccount()
+      await identity.submitTx(signed)
       const nextFollowing = !following
       setFollowing(nextFollowing)
       setStatusReady(true)
       setMessage(nextFollowing ? "Followed on DeSo." : "Unfollowed on DeSo.")
+      actionLock.current=false
       setBusy(false)
     } catch {
-      setMessage("Follow transaction could not be prepared. Nothing changed.")
+      setMessage("Follow status uncertain. Refresh DeSo before retrying.")
+      actionLock.current=false
       setBusy(false)
     }
   }

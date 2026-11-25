@@ -1,4 +1,6 @@
 "use client"
+import {uploadNativeImage} from "./native-image"
+import {prepareNativePost,submitNativePost} from "./native-post"
 
 import { useEffect, useRef, useState } from "react"
 import { Dialog } from "@base-ui/react/dialog"
@@ -108,16 +110,7 @@ export default function RepostButton({ postHash, initialCount, quotedPost, varia
     try {
       setImageUploadStatus("jwt")
       setImageUploadMessage("Authorizing this image upload with DeSo Identity…")
-      const jwt = await viaModernIdentity.jwt()
-      setImageUploadStatus("uploading")
-      setImageUploadMessage("Uploading image to the DeSo media endpoint…")
-      const form = new FormData()
-      form.set("publicKey", session.publicKey)
-      form.set("jwt", jwt)
-      form.set("file", file, file.name)
-      const response = await fetch("/api/via/social/image-upload", { method: "POST", body: form, cache: "no-store" })
-      const data = await response.json() as UploadResponse
-      if (!response.ok || !data.ok || !data.imageUrl) throw new Error(data.error || "IMAGE_UPLOAD_FAILED")
+      const data=await uploadNativeImage(session.publicKey,file)
       addUploadedImage(data.imageUrl)
       setImageUploadStatus("idle")
       setImageUploadMessage("Image uploaded to DeSo and attached to this quote draft.")
@@ -130,8 +123,9 @@ export default function RepostButton({ postHash, initialCount, quotedPost, varia
     }
   }
 
+  const repostLock=useRef(false)
   async function prepareRepost(asQuote: boolean) {
-    if (!session || busy) return
+    if (!session || busy || repostLock.current) return
     const quoteText = asQuote ? quote.trim() : ""
     if (asQuote && !quoteText) {
       setMessage("Write a quote before continuing.")
@@ -139,39 +133,19 @@ export default function RepostButton({ postHash, initialCount, quotedPost, varia
     }
     if (quoteText.length > MAX_QUOTE_LENGTH || (asQuote && (mediaInvalid || imageUploading || videoUploading))) return
 
+    repostLock.current=true
     pendingQuote.current = asQuote
     setBusy(true)
     setMessage(asQuote ? "Preparing DeSo Quote Repost…" : "Preparing DeSo repost…")
 
     try {
-      const response = await fetch("/api/via/social/repost", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        cache: "no-store",
-        body: JSON.stringify({
-          action: "prepare",
-          publicKey: session.publicKey,
-          repostedPostHash: postHash,
-          quote: quoteText,
-          imageUrls: asQuote ? imageUrls : [],
-          videoUrls: asQuote ? videoUrls : [],
-        }),
-      })
-      const data = await response.json() as PrepareResponse
-      if (!response.ok || !data.ok || !data.transactionHex) throw new Error(data.error || "PREPARE_FAILED")
+      const data=await prepareNativePost(session.publicKey,quoteText,asQuote?imageUrls:[],asQuote?videoUrls:[],"",[],false,postHash)
 
       setMessage(asQuote ? "Signing your Quote Repost with your DeSo Identity session…" : "Signing your repost with your DeSo Identity session…")
       if ((await viaModernIdentity.currentUser())?.publicKey !== session.publicKey) throw new Error("DESO_ACCOUNT_CHANGED")
       const signedTransactionHex = await viaModernIdentity.signTx(data.transactionHex)
       if ((await viaModernIdentity.currentUser())?.publicKey !== session.publicKey) throw new Error("DESO_ACCOUNT_CHANGED")
-      const submitResponse = await fetch("/api/via/social/repost", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        cache: "no-store",
-        body: JSON.stringify({ action: "submit", signedTransactionHex }),
-      })
-      const submitData = await submitResponse.json() as SubmitResponse
-      if (!submitResponse.ok || !submitData.ok) throw new Error(submitData.error || "SUBMIT_FAILED")
+      const submitData=await submitNativePost(signedTransactionHex,data.assertAccount)
       setCount((current) => current + 1)
       window.dispatchEvent(new CustomEvent("via:social:post-published", {
         detail: submitData.postHashHex ? { hash: submitData.postHashHex, publicKey: session.publicKey, text: quoteText, repostedHash: postHash } : undefined,
@@ -185,9 +159,11 @@ export default function RepostButton({ postHash, initialCount, quotedPost, varia
       setImageUploadMessage("")
       setVideoUploading(false)
       setQuoteOpen(false)
+      repostLock.current=false
       setBusy(false)
     } catch {
-      setMessage("Repost transaction could not be prepared. Nothing changed.")
+      setMessage("Repost not confirmed. Check DeSo before retrying.")
+      repostLock.current=false
       setBusy(false)
     }
   }

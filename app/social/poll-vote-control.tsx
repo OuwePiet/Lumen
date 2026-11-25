@@ -1,6 +1,9 @@
 "use client"
+import {createPostAssociation,identity} from "deso-protocol"
+import {withFinancialAccountLock,financialSubmissionBlock,markFinancialPending,markFinancialSubmitted} from "../financial-submission"
+import {ensureNFTPermission} from "../nft-permissions"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import { viaModernIdentity, type ViaModernIdentityUser } from "../deso-identity-modern"
 import { readPollResponseStatus } from "./poll-response-status"
 
@@ -92,61 +95,59 @@ export default function PollVoteControl({ postHash, options }: Props) {
     return () => { cancelled = true }
   }, [postHash, session?.publicKey, normalizedOptions.join("\u0001")])
 
+  const voteLock=useRef(false)
   async function vote(option: string) {
-    if (!session || status !== "ready") return
+    if (!session || status !== "ready" || voteLock.current || !normalizedOptions.includes(option)) return
+    voteLock.current=true
     setPendingOption(option)
     setStatus("preparing")
     setMessage(`Preparing the DeSo poll response “${option}”…`)
 
     try {
-      const response = await fetch("/api/via/social/poll-vote", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        cache: "no-store",
-        body: JSON.stringify({
-          action: "prepare",
-          voterPublicKey: session.publicKey,
-          postHash,
-          option,
-        }),
-      })
-      const data = await response.json() as PrepareResponse
-      if (!response.ok || !data.ok || !data.transactionHex) {
-        if (data.error === "POLL_RESPONSE_ALREADY_EXISTS" || data.error === "MULTIPLE_EXISTING_POLL_RESPONSES") {
-          setStatus("blocked")
-          setMessage("DeSo now reports an existing poll response. VIA stopped before creating another transaction.")
-          return
-        }
-        throw new Error(data.error || "PREPARE_FAILED")
-      }
+      const key=session.publicKey
+      const intent="poll:"+postHash.toLowerCase()
+      await withFinancialAccountLock(key,async()=>{
+      const blocked=financialSubmissionBlock(key,intent)
+      if(blocked)throw new Error(blocked)
+      const assertAccount=async()=>{if((await viaModernIdentity.currentUser())?.publicKey!==key||(await identity.snapshot()).currentUser?.publicKey!==key)throw new Error("ACCOUNT_CHANGED")}
+      await assertAccount()
+      const prior=await readPollResponseStatus(postHash,key)
+      if(prior.truncated||prior.multipleResponsesDetected||prior.existingResponse)throw new Error("EXISTING_OR_UNCERTAIN_VOTE")
+      const {constructedTransactionResponse:tx}=await createPostAssociation({TransactorPublicKeyBase58Check:key,PostHashHex:postHash,AppPublicKeyBase58Check:"",AssociationType:"POLL_RESPONSE",AssociationValue:option,ExtraData:{ViaClient:"viadeso.online"},MinFeeRateNanosPerKB:1000,TransactionFees:[]},{broadcast:false,checkPermissions:false,localConstruction:false})
+      if(!tx.TransactionHex||!Number.isSafeInteger(tx.FeeNanos)||tx.FeeNanos<0)throw new Error("INVALID_FEE")
+      await ensureNFTPermission({GlobalDESOLimit:tx.FeeNanos,TransactionCountLimitMap:{CREATE_POST_ASSOCIATION:1}},assertAccount)
+      const data={transactionHex:tx.TransactionHex,feeNanos:tx.FeeNanos}
 
       setStatus("approval")
       const fee = typeof data.feeNanos === "number" ? ` Network fee: ${data.feeNanos.toLocaleString()} nanos.` : ""
       setMessage(`Signing the exact POLL_RESPONSE transaction with DeSo Identity.${fee}`)
+      await assertAccount()
       const signedTransactionHex = await viaModernIdentity.signTx(data.transactionHex)
 
       setStatus("submitting")
       setMessage("Submitting your approved poll response to DeSo…")
-      const submitResponse = await fetch("/api/via/social/poll-vote", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        cache: "no-store",
-        body: JSON.stringify({ action: "submit", signedTransactionHex }),
-      })
-      const submitData = await submitResponse.json() as SubmitResponse
-      if (!submitResponse.ok || !submitData.ok) throw new Error(submitData.error || "SUBMIT_FAILED")
+      await assertAccount()
+      const latest=await readPollResponseStatus(postHash,key)
+      if(latest.truncated||latest.multipleResponsesDetected||latest.existingResponse)throw new Error("EXISTING_OR_UNCERTAIN_VOTE")
+      await assertAccount()
+      const record={publicKey:key,intent,amountNanos:tx.FeeNanos,startedAt:Date.now()}
+      if(record.amountNanos<1)throw new Error("INVALID_FEE")
+      markFinancialPending(record)
+      const receipt=await identity.submitTx(signedTransactionHex)
+      markFinancialSubmitted(record,receipt?.TxnHashHex??receipt?.TransactionHashHex)
 
       const reread = await readPollResponseStatus(postHash, session.publicKey)
-      const confirmed = reread.existingResponse?.option ?? option
+      const confirmed = !reread.truncated&&!reread.multipleResponsesDetected?reread.existingResponse?.option:undefined
       setExistingOption(confirmed || null)
       setStatus("done")
       setMessage(confirmed ? `Vote confirmed from DeSo: ${confirmed}` : "Vote submitted to DeSo; refresh the poll to verify its response.")
       setPendingOption(null)
+      })
     } catch {
       setStatus("error")
-      setMessage("The DeSo poll response could not be prepared. Nothing was submitted.")
+      setMessage("Vote not confirmed. Check DeSo before retrying.")
       setPendingOption(null)
-    }
+    } finally { voteLock.current=false }
   }
 
   const busy = status === "loading" || status === "preparing" || status === "approval" || status === "submitting"

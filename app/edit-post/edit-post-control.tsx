@@ -1,8 +1,10 @@
 "use client"
 
 import { useEffect, useMemo, useRef, useState } from "react"
+import {submitPost,identity} from "deso-protocol"
+import {ensureNFTPermission} from "../nft-permissions"
 import { viaModernIdentity } from "../deso-identity-modern"
-import { DESO_IDENTITY_ORIGIN, restoreIdentitySession, type ViaIdentitySession } from "../deso-identity-session"
+import { restoreIdentitySession, type ViaIdentitySession } from "../deso-identity-session"
 
 type InspectResponse = {
   ok?: boolean
@@ -12,22 +14,13 @@ type InspectResponse = {
     body: string
     imageUrls: string[]
     videoUrls: string[]
+    parentStakeID: string
+    postExtraData: Record<string,string>
   }
 }
 
 type PrepareResponse = { ok?: boolean; error?: string; transactionHex?: string; feeNanos?: number | null }
 type SubmitResponse = { ok?: boolean; error?: string }
-
-function signedTransactionFromMessage(event: MessageEvent, source: Window | null) {
-  if (event.origin !== DESO_IDENTITY_ORIGIN || event.source !== source) return null
-  if (!event.data || typeof event.data !== "object") return null
-  const data = event.data as Record<string, unknown>
-  if (data.service !== "identity") return null
-  const payload = data.payload
-  if (!payload || typeof payload !== "object" || Array.isArray(payload)) return null
-  const signed = (payload as Record<string, unknown>).signedTransactionHex
-  return typeof signed === "string" && signed.length > 0 ? signed : null
-}
 
 export default function EditPostControl() {
   const [session, setSession] = useState<ViaIdentitySession | null>(null)
@@ -39,8 +32,7 @@ export default function EditPostControl() {
   const [feeNanos, setFeeNanos] = useState<number | null>(null)
   const [status, setStatus] = useState<"idle" | "loading" | "ready" | "preparing" | "awaiting" | "submitting" | "done" | "error">("idle")
   const [message, setMessage] = useState("")
-  const popupRef = useRef<Window | null>(null)
-  const popupWatch = useRef<number | null>(null)
+  const lock=useRef(false)
 
   useEffect(() => {
     const current = restoreIdentitySession()
@@ -59,47 +51,7 @@ export default function EditPostControl() {
     setLoadedHash("")
     setBody("")
     setOriginalBody("")
-    popupRef.current?.close()
-    popupRef.current = null
   }, [session?.publicKey])
-
-  useEffect(() => {
-    const onMessage = async (event: MessageEvent) => {
-      const signedTransactionHex = signedTransactionFromMessage(event, popupRef.current)
-      if (!signedTransactionHex) return
-      if (popupWatch.current !== null) window.clearInterval(popupWatch.current)
-      popupWatch.current = null
-      popupRef.current?.close()
-      popupRef.current = null
-      setStatus("submitting")
-      setMessage("Submitting the approved edit to DeSo…")
-      try {
-        const response = await fetch("/api/via/social/edit-post", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          cache: "no-store",
-          body: JSON.stringify({ action: "submit", signedTransactionHex }),
-        })
-        const data = await response.json() as SubmitResponse
-        if (!response.ok || !data.ok) throw new Error(data.error || "SUBMIT_FAILED")
-        setStatus("done")
-        setOriginalBody(body)
-        setMessage("Edited post submitted to DeSo.")
-        setFeeNanos(null)
-      } catch {
-        setStatus("error")
-        setMessage("The approved edit could not be submitted. VIA did not change the post.")
-      }
-    }
-    window.addEventListener("message", onMessage)
-    return () => {
-      window.removeEventListener("message", onMessage)
-      if (popupWatch.current !== null) window.clearInterval(popupWatch.current)
-      popupWatch.current = null
-      popupRef.current?.close()
-      popupRef.current = null
-    }
-  }, [body])
 
   const hashValid = /^[0-9a-fA-F]{64}$/.test(postHashHex.trim())
   const changed = Boolean(loadedHash && body !== originalBody)
@@ -140,42 +92,33 @@ export default function EditPostControl() {
   }
 
   async function prepare() {
-    if (!session || !loadedHash || !changed || body.length > 5000) return
+    if (!session || !loadedHash || !changed || !body.trim() || body.length > 5000 || lock.current) return
+    lock.current=true
     const activeKey = session.publicKey
     setStatus("preparing")
     setMessage("Rechecking ownership and preparing the exact DeSo edit transaction…")
     setFeeNanos(null)
     try {
-      const response = await fetch("/api/via/social/edit-post", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        cache: "no-store",
-        body: JSON.stringify({ action: "prepare", publicKey: activeKey, postHashHex: loadedHash, body }),
-      })
-      const data = await response.json() as PrepareResponse
-      if (!response.ok || !data.ok || !data.transactionHex) throw new Error(data.error || "PREPARE_FAILED")
-      setFeeNanos(typeof data.feeNanos === "number" ? data.feeNanos : null)
-      const approveUrl = `${DESO_IDENTITY_ORIGIN}/approve?tx=${encodeURIComponent(data.transactionHex)}`
-      const popup = window.open(approveUrl, "via-deso-edit-approve", "popup=yes,width=800,height=900")
-      if (!popup) throw new Error("POPUP_BLOCKED")
-      popupRef.current = popup
-      if (popupWatch.current !== null) window.clearInterval(popupWatch.current)
-      popupWatch.current = window.setInterval(() => {
-        if (popupRef.current?.closed) {
-          popupRef.current = null
-          if (popupWatch.current !== null) window.clearInterval(popupWatch.current)
-          popupWatch.current = null
-          setStatus("ready")
-          setMessage("DeSo approval was closed. VIA changed nothing.")
-        }
-      }, 500)
+            const assertAccount=async()=>{if((await viaModernIdentity.currentUser())?.publicKey!==activeKey||(await identity.snapshot()).currentUser?.publicKey!==activeKey)throw new Error("ACCOUNT_CHANGED")}
+      await assertAccount()
+      const response=await fetch("/api/via/social/edit-post",{method:"POST",headers:{"Content-Type":"application/json"},cache:"no-store",body:JSON.stringify({action:"inspect",publicKey:activeKey,postHashHex:loadedHash})})
+      const data=await response.json() as InspectResponse
+      if(!response.ok||!data.ok||!data.post||data.post.body!==originalBody||data.post.postHashHex!==loadedHash)throw new Error("POST_CHANGED")
+      const post=data.post
+      const {constructedTransactionResponse:tx}=await submitPost({UpdaterPublicKeyBase58Check:activeKey,PostHashHexToModify:loadedHash,ParentStakeID:post.parentStakeID,RepostedPostHashHex:"",BodyObj:{Body:body.trim(),ImageURLs:post.imageUrls,VideoURLs:post.videoUrls},PostExtraData:{...post.postExtraData,ViaClient:"viadeso.online"},IsHidden:false,MinFeeRateNanosPerKB:1000,TransactionFees:[]},{broadcast:false,checkPermissions:false,localConstruction:false})
+      if(!tx.TransactionHex||!Number.isSafeInteger(tx.FeeNanos)||tx.FeeNanos<0)throw new Error("INVALID_FEE")
+      setFeeNanos(tx.FeeNanos)
       setStatus("awaiting")
-      setMessage("Review the exact edit in DeSo Identity. VIA will submit it only after your approval.")
-    } catch (error) {
-      const code = error instanceof Error ? error.message : "PREPARE_FAILED"
-      setStatus("error")
-      setMessage(code === "POPUP_BLOCKED" ? "Approval window was blocked. Nothing was changed." : "The edit transaction could not be prepared. Nothing was changed.")
-    }
+      await ensureNFTPermission({GlobalDESOLimit:tx.FeeNanos,TransactionCountLimitMap:{SUBMIT_POST:1}},assertAccount)
+      await assertAccount()
+      const signed=await viaModernIdentity.signTx(tx.TransactionHex)
+      await assertAccount()
+      setStatus("submitting")
+      await identity.submitTx(signed)
+      setOriginalBody(body.trim());setStatus("done");setMessage("Edited post submitted to DeSo.")
+    } catch {
+      setStatus("error");setMessage("Edit not confirmed. Reload the post from DeSo before retrying.")
+    } finally {lock.current=false}
   }
 
   if (!session) {

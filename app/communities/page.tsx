@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import CommunityMemberships from "./community-memberships";
 import { useEffect, useState } from "react";
 import { readViaLocalSettings, VIA_SETTINGS_EVENT, type ViaLanguage } from "../via-local-settings";
 
@@ -154,9 +155,9 @@ export default function CommunitiesPage() {
   const t = copy[language];
 
   return (
-    <main className="min-h-screen bg-[#050807] px-5 py-8 text-zinc-100 sm:px-8 lg:px-12">
-      <div className="mx-auto max-w-6xl">
-        <header className="mb-9 flex flex-wrap items-start justify-between gap-5">
+    <main className="min-h-screen bg-[#050807] px-3 py-3 text-zinc-100 sm:px-5 lg:px-8">
+      <div className="mx-auto max-w-5xl rounded-2xl border border-[#b99d6b]/50 bg-[#08140e] p-3 sm:p-5">
+        <header className="mb-4 flex flex-wrap items-start justify-between gap-2">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8fd4a9]">{t.kicker}</p>
             <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-[2.25rem]">{t.heading}</h1>
@@ -165,16 +166,17 @@ export default function CommunitiesPage() {
           <Link href="/my-via" className={quietAction}>{t.back}</Link>
         </header>
 
-        <div className="grid gap-7">
+        <CommunityMemberships language={language} />
+        <div className="grid gap-3">
           {t.groups.map((group) => (
             <section key={group.title}>
               <div className="mb-3">
                 <h2 className="text-lg font-semibold text-zinc-100">{group.title}</h2>
                 <p className="mt-1 text-sm text-zinc-500">{group.intro}</p>
               </div>
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid gap-2 sm:grid-cols-2">
                 {group.cards.map((community) => (
-                  <article key={community.title} className="rounded-[14px] border border-zinc-800/80 bg-zinc-950/50 p-5">
+                  <article key={community.title} className="rounded-[14px] border border-[#b99d6b]/30 bg-[#0b1a14] p-3">
                     <h3 className="text-lg font-medium text-zinc-100">{community.title}</h3>
                     <p className="mt-2 text-sm leading-6 text-zinc-400">{community.text}</p>
                   </article>

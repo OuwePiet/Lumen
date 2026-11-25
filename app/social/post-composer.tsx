@@ -1,4 +1,6 @@
 "use client"
+import {uploadNativeImage} from "./native-image"
+import {prepareNativePost,submitNativePost} from "./native-post"
 
 import { useEffect, useMemo, useRef, useState } from "react"
 import { viaModernIdentity, type ViaModernIdentityUser } from "../deso-identity-modern"
@@ -205,20 +207,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
       setImageUploadMessage("Preparing image upload approval…")
       const uploadUser = await viaModernIdentity.currentUser()
       if (uploadUser?.publicKey !== session.publicKey) throw new Error("DESO_ACCOUNT_CHANGED_RECONNECT")
-      const jwt = await viaModernIdentity.jwt()
-      const userAfterJwt = await viaModernIdentity.currentUser()
-      if (userAfterJwt?.publicKey !== session.publicKey) throw new Error("DESO_ACCOUNT_CHANGED_RECONNECT")
-
-      setImageUploadStatus("uploading")
-      setImageUploadMessage("Uploading image…")
-      const form = new FormData()
-      form.set("publicKey", session.publicKey)
-      form.set("jwt", jwt)
-      form.set("file", file, file.name)
-
-      const response = await fetch("/api/via/social/image-upload", { method: "POST", body: form, cache: "no-store" })
-      const data = await response.json() as UploadResponse
-      if (!response.ok || !data.ok || !data.imageUrl) throw new Error(data.error || "IMAGE_UPLOAD_FAILED")
+      const data=await uploadNativeImage(session.publicKey,file)
       const userAfterUpload = await viaModernIdentity.currentUser()
       if (userAfterUpload?.publicKey !== session.publicKey) throw new Error("DESO_ACCOUNT_CHANGED_RECONNECT")
 
@@ -252,22 +241,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
       if (isReply) saveDraft()
       const activeBeforePrepare = await viaModernIdentity.currentUser()
       if (activeBeforePrepare?.publicKey !== session.publicKey) throw new Error("DESO_ACCOUNT_CHANGED_RECONNECT")
-      const { response, data: prepared } = await fetchJsonWithTimeout<PrepareResponse>("/api/via/social/post", {
-        method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store",
-        body: JSON.stringify({
-          action: "prepare",
-          publicKey: session.publicKey,
-          body: body.trim(),
-          parentStakeID,
-          imageUrls,
-          videoUrls,
-          pollOptions: preparedPollOptions,
-          sensitiveContent: !isReply && sensitiveContent,
-        }),
-      })
-      if (!response.ok || !prepared.ok || !prepared.transactionHex) {
-        throw new Error(prepared.error || `DeSo prepare failed: HTTP ${response.status}`)
-      }
+      const prepared=await prepareNativePost(session.publicKey,body,imageUrls,videoUrls,parentStakeID,preparedPollOptions,!isReply&&sensitiveContent)
       setFeeNanos(typeof prepared.feeNanos === "number" ? prepared.feeNanos : null)
       setStatus("awaiting-approval")
       setMessage(isReply ? "Signing your reply with your DeSo Identity session…" : "Signing your post with your DeSo Identity session…")
@@ -279,11 +253,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
       setStatus("submitting")
       setMessage(isReply ? "Posting your signed reply…" : "Posting your signed post…")
       submissionStarted = true
-      const { response: submitResponse, data: submitted } = await fetchJsonWithTimeout<SubmitResponse>("/api/via/social/post", {
-        method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store",
-        body: JSON.stringify({ action: "submit", signedTransactionHex }),
-      })
-      if (!submitResponse.ok || !submitted.ok) throw new Error(submitted.error || "DESO_SUBMIT_FAILED")
+      const submitted=await submitNativePost(signedTransactionHex,prepared.assertAccount)
       setStatus("done")
       setMessage(isReply ? "Reply posted." : "Post published.")
       setBody("")

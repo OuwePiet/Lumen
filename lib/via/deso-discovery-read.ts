@@ -50,7 +50,7 @@ function safePostExtraData(value: unknown) {
  * sortByNew switches DeSo's own get-hot-feed endpoint to newest-first order.
  * No wallet authority or write action is requested.
  */
-export async function readDiscoveryPosts(limit = 20, sortByNew = false, seenPosts: string[] = [], readerPublicKey = ""): Promise<ViaPublicPost[]> {
+export async function readDiscoveryPosts(limit = 20, sortByNew = false, seenPosts: string[] = [], readerPublicKey = "", strict = false): Promise<ViaPublicPost[]> {
   const responseLimit = Math.max(1, Math.min(30, Math.trunc(limit) || 20))
   const response = await fetchDeSo("get-hot-feed", {
     method: "POST",
@@ -64,9 +64,10 @@ export async function readDiscoveryPosts(limit = 20, sortByNew = false, seenPost
     }),
   })
 
-  if (!response.ok) return []
+  if (!response.ok) { if(strict) throw new Error("DISCOVERY_SOURCE_UNAVAILABLE"); return [] }
 
   const data = (await response.json()) as HotFeedResponse
+  if(strict && !Array.isArray(data.HotFeedPage)) throw new Error("INVALID_DISCOVERY_RESPONSE")
   const rawPosts = Array.isArray(data.HotFeedPage) ? (data.HotFeedPage as DeSoPost[]) : []
 
   return rawPosts

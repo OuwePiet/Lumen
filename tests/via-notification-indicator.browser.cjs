@@ -7,6 +7,15 @@ const out = process.env.VIA_TEST_OUTPUT || path.resolve(__dirname, '../../../out
 fs.mkdirSync(out, { recursive: true })
 const A='A'.repeat(48), B='B'.repeat(48), results=[]
 const users=Object.fromEntries([A,B].map(publicKey=>[publicKey,{publicKey,primaryDerivedKey:{publicKeyBase58Check:publicKey,derivedPublicKeyBase58Check:publicKey,derivedSeedHex:'11'.repeat(32),derivedKeyRegistered:true,IsValid:true}}]))
+async function goHome(page) {
+  const drawer=page.getByRole('button',{name:'Open VIA menu',exact:true})
+  if(await drawer.isVisible()){
+    await drawer.click()
+    await page.getByRole('navigation',{name:'VIA mobiel menu'}).locator('a[href="/"]').click()
+  }else{
+    await page.getByRole('link',{name:/^(VIA )?Home(?:page)?$/i}).filter({visible:true}).first().click()
+  }
+}
 async function run(name, engine, options) {
   const browser=await engine.launch(name==='laptop'?{channel:'msedge',headless:true}:{headless:true})
   const context=await browser.newContext(options), forbidden=[]
@@ -16,6 +25,15 @@ async function run(name, engine, options) {
     await context.addInitScript(({A,users})=>{if(localStorage.getItem('fixture'))return;localStorage.setItem('fixture','1');localStorage.setItem('desoIdentityUsers',JSON.stringify(users));localStorage.setItem('desoActivePublicKey',A)}, {A,users})
     await context.route('**/*',async route=>{
       const req=route.request(),url=new URL(req.url())
+      if(url.origin==='https://node.deso.org'){
+ if(url.pathname==='/api/v0/get-unread-notifications-count')return route.fulfill({json:{NotificationsCount:count}})
+ if(url.pathname==='/api/v0/get-notifications'){
+  const body=req.postDataJSON()
+  if(failFeed&&body.NumToFetch!==1)return route.fulfill({status:503,json:{}})
+  return route.fulfill({json:{LastSeenIndex:0,Notifications:[{Index:index,Metadata:{TxnType:'SUBMIT_POST',TransactorPublicKeyBase58Check:B,SubmitPostTxindexMetadata:{PostHashHex:'a'.repeat(64),MentionCount:2}}}]}})
+ }
+ if(req.method()!=='GET'){forbidden.push(url.pathname);return route.fulfill({status:403,json:{}})}
+}
       if(url.origin!==new URL(base).origin){if(url.pathname.includes('/get-single-derived-key/'))return route.fulfill({json:{DerivedKey:{IsValid:true,TransactionSpendingLimit:{GlobalDESOLimit:0,TransactionCountLimitMap:{}}}}});return route.fulfill({json:{}})}
       if(!url.pathname.startsWith('/api/'))return route.continue()
       let data={ok:true,items:[],posts:[],notifications:[]}
@@ -46,7 +64,7 @@ async function run(name, engine, options) {
     const controls = page.locator('#notification-controls')
     await page.getByRole('button', { name: 'Hide controls' }).click()
     await controls.waitFor({ state: 'hidden' })
-    await page.locator('.via-site-header').waitFor({ state: 'hidden' })
+    await page.locator('.via-site-header').waitFor({ state: 'visible' })
     await page.getByText('Een rustigere meldingenpagina', { exact: false }).waitFor()
     await page.getByRole('button', { name: 'Show controls' }).click()
     await controls.waitFor()
@@ -84,7 +102,7 @@ async function run(name, engine, options) {
     await page.locator('section:has(#notification-controls) article').waitFor()
     await page.screenshot({path:path.join(out,name+'-meldingen-rustiger.png'),fullPage:true})
     assert.equal(await page.evaluate(A=>localStorage.getItem('via:notifications:seen-index:'+A),A),null,'view is acknowledged on departure, not unread counter load')
-    await page.getByRole('link',{name:/^Home(?:page)?$/i}).filter({visible:true}).first().click(); await page.getByRole('button',{name:'Switch account',exact:true}).waitFor()
+    await goHome(page); await page.getByRole('button',{name:'Switch account',exact:true}).waitFor()
     await page.waitForLoadState('networkidle')
     assert.equal(await lamp().count(),0)
     assert.equal(await page.evaluate(A=>localStorage.getItem('via:notifications:seen-index:'+A),A),'100')
@@ -97,13 +115,13 @@ async function run(name, engine, options) {
     failFeed=true
     await page.goto(base + '/notifications', { waitUntil: 'domcontentloaded' })
     await page.getByText('Notifications are temporarily unavailable.',{exact:true}).waitFor()
-    await page.getByRole('link',{name:/^Home(?:page)?$/i}).filter({visible:true}).first().click(); await page.getByRole('button',{name:'Switch account',exact:true}).waitFor()
+    await goHome(page); await page.getByRole('button',{name:'Switch account',exact:true}).waitFor()
     await lamp().waitFor()
     assert.equal(await page.evaluate(A=>localStorage.getItem('via:notifications:seen-index:'+A),A),'100','failed feed never acknowledges index 101')
     failFeed=false
     await page.goto(base + '/notifications', { waitUntil: 'domcontentloaded' })
     await page.getByText('1 recent notifications loaded.',{exact:true}).waitFor({state:'attached'})
-    await page.getByRole('link',{name:/^Home(?:page)?$/i}).filter({visible:true}).first().click(); await page.getByRole('button',{name:'Switch account',exact:true}).waitFor()
+    await goHome(page); await page.getByRole('button',{name:'Switch account',exact:true}).waitFor()
     await page.waitForLoadState('networkidle')
     assert.equal(await lamp().count(),0)
     await page.screenshot({path:path.join(out,name+'-bekeken-lampje-uit.png')})

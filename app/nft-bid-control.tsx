@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { viaModernIdentity, type ViaModernIdentityUser } from "./deso-identity-modern"
 
 type SaleEdition = {
@@ -10,6 +10,8 @@ type SaleEdition = {
   isBuyNow?: boolean
   ownerPublicKey?: string
 }
+
+import { submitNativeNFTBid } from "./nft-native-bid"
 
 type Props = {
   postHash: string
@@ -54,64 +56,18 @@ export default function NFTBidControl({ postHash, editions }: Props) {
     return viaModernIdentity.subscribe(setSession)
   }, [])
 
-  async function prepare(forBuyNow = false) {
-    const effectiveBidNanos = forBuyNow && canBuyNow ? edition?.buyNowPriceNanos ?? null : bidNanos
-    if (!session || !edition || typeof effectiveBidNanos !== "number" || effectiveBidNanos <= 0 || !confirmed || isOwner || busy) return
-    if (!forBuyNow && !amountValid) return
-    setStatus("preparing")
-    setMessage("Preparing the exact DeSo NFT bid transaction…")
-    setFeeNanos(null)
-    try {
-      const response = await fetch("/api/via/nft/bid", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        cache: "no-store",
-        body: JSON.stringify({
-          action: "prepare",
-          publicKey: session.publicKey,
-          postHash,
-          serialNumber: edition.serialNumber,
-          bidAmountNanos: effectiveBidNanos,
-        }),
-      })
-      const data = await response.json() as PrepareResponse
-      if (!response.ok || !data.ok || !data.transactionHex) throw new Error(data.error || "PREPARE_FAILED")
-      setFeeNanos(typeof data.feeNanos === "number" ? data.feeNanos : null)
-      const bidPermission = {
-        NFTOperationLimitMap: {
-          [postHash]: {
-            [edition.serialNumber]: {
-              nft_bid: 1,
-            },
-          },
-        },
-      }
-      if (!(await viaModernIdentity.hasPermissions(bidPermission))) {
-        setMessage("Requesting permission for this exact DeSo NFT edition…")
-        await viaModernIdentity.requestPermissions(bidPermission)
-      }
-      setStatus("approval")
-      setMessage(forBuyNow ? "Signing the exact Buy Now purchase with DeSo Identity…" : "Signing the exact NFT bid with DeSo Identity…")
-      const signedTransactionHex = await viaModernIdentity.signTx(data.transactionHex)
-      setStatus("submitting")
-      setMessage("Submitting the approved NFT bid to DeSo…")
-      const submitResponse = await fetch("/api/via/nft/bid", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        cache: "no-store",
-        body: JSON.stringify({ action: "submit", signedTransactionHex }),
-      })
-      const submitData = await submitResponse.json() as { ok?: boolean; error?: string }
-      if (!submitResponse.ok || !submitData.ok) throw new Error(submitData.error || "SUBMIT_FAILED")
-      setStatus("done")
-      setMessage(forBuyNow ? "Buy Now purchase submitted to DeSo." : "NFT bid submitted to DeSo.")
-      setConfirmed(false)
-    } catch (error) {
-      setStatus("error")
-      setMessage(error instanceof Error && error.message === "POPUP_BLOCKED"
-        ? "Approval window was blocked. No bid was placed."
-        : "The NFT bid transaction could not be prepared. No bid was placed.")
-    }
+  const lock=useRef(false)
+  async function prepare(forBuyNow=false){
+    const effectiveBidNanos=forBuyNow&&canBuyNow?edition?.buyNowPriceNanos:bidNanos
+    if(!session||!edition||typeof effectiveBidNanos!=="number"||effectiveBidNanos<=0||!confirmed||isOwner||busy||lock.current||(forBuyNow&&!canBuyNow)||(!forBuyNow&&!amountValid))return
+    lock.current=true;setConfirmed(false);setStatus("preparing");setFeeNanos(null)
+    let submitting=false
+    try{
+      setMessage("Preparing directly with DeSo...")
+      await submitNativeNFTBid(session.publicKey,postHash,edition.serialNumber,effectiveBidNanos,setFeeNanos,()=>{submitting=true;setStatus("submitting")})
+      setStatus("done");setMessage("Submitted to DeSo. Refresh to verify.")
+    }catch{setStatus("error");setMessage(submitting?"Submission uncertain. Verify on DeSo before retrying.":"Bid not submitted. Review account and permissions.")}
+    finally{lock.current=false}
   }
 
   if (editions.length === 0) return null

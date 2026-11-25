@@ -1,4 +1,5 @@
 "use client"
+import {readNativeUnread,readNativeNotifications} from "./notifications/native-notifications"
 import { hasUnfinishedSDKLogin } from "./deso-session-recovery"
 
 import Link from "next/link"
@@ -248,25 +249,12 @@ export default function ViaHomeControls() {
     const loadUnread = async () => {
       const id = ++requestId
       try {
-        const response = await fetch("/api/via/social/notifications", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ action: "unread", publicKey }),
-          cache: "no-store",
-          signal: controller.signal,
-        })
-        if (!response.ok) return
-        const data = await response.json() as { ok?: boolean; unreadCount?: number }
+        const data = await readNativeUnread(publicKey)
         if (data.ok !== true || !validNotificationIndex(data.unreadCount) || id !== requestId || !sameAccount()) return
         let latestIndex: number | null = null
         if (data.unreadCount > 0) {
-          const latestResponse = await fetch("/api/via/social/notifications", {
-            method: "POST", headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ publicKey, fetchStartIndex: -1, numToFetch: 1 }),
-            cache: "no-store", signal: controller.signal,
-          })
-          if (latestResponse.ok) {
-            const latest = await latestResponse.json() as { ok?: boolean; notifications?: Array<{ Index?: unknown }> }
+          const latest = await readNativeNotifications(publicKey,-1,1)
+          {
             if (latest.ok === true && Array.isArray(latest.notifications)) {
               const indices = latest.notifications.map(item => item.Index).filter(validNotificationIndex)
               if (indices.length) latestIndex = Math.max(...indices)

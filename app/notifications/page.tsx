@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import {readNativeUnread} from "./native-notifications"
 import styles from "./notification-center.module.css"
 import { useEffect, useState } from "react"
 import NotificationCenter from "./notification-center"
@@ -22,6 +23,7 @@ const COPY: Record<ViaLanguage | "Hindi", PageCopy> = {
 }
 
 export default function NotificationsPage() {
+  const [reading, setReading] = useState(false)
   const [language, setLanguage] = useState<ViaLanguage>("English")
   const [session, setSession] = useState<ViaModernIdentityUser | null>(null)
   const [unreadCount, setUnreadCount] = useState<number | null>(null)
@@ -35,15 +37,7 @@ export default function NotificationsPage() {
     const controller = new AbortController()
     const loadUnread = async () => {
       try {
-        const response = await fetch("/api/via/social/notifications", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ action: "unread", publicKey }),
-          cache: "no-store",
-          signal: controller.signal,
-        })
-        if (!response.ok) throw new Error("UNREAD_FAILED")
-        const data = await response.json() as { ok?: boolean; unreadCount?: number }
+        const data = await readNativeUnread(publicKey)
         if (!controller.signal.aborted) {
           const count = data.ok && typeof data.unreadCount === "number" && Number.isSafeInteger(data.unreadCount) && data.unreadCount >= 0 ? data.unreadCount : null
           setUnreadCount(count !== null && count > 0 ? count : null)
@@ -75,7 +69,7 @@ export default function NotificationsPage() {
   const title = <span className="inline-flex min-w-0 items-center gap-2">{copy.title}{unreadCount !== null ? <span className="inline-flex shrink-0 items-center gap-1 rounded-full border border-emerald-500/40 bg-emerald-950/60 px-2 py-0.5 text-sm font-semibold text-emerald-300" aria-label={String(unreadCount) + " ongelezen meldingen"}><span aria-hidden="true" className="h-2 w-2 rounded-full bg-emerald-400" />{unreadCount}</span> : null}</span>
 
   return (
-    <main className={`${styles.page} min-h-screen bg-black px-0 pb-8 pt-0 text-white sm:px-8 sm:py-2 lg:px-12`}>
+    <main data-notification-reading={reading} className={`${styles.page} min-h-screen bg-black px-0 pb-8 pt-0 text-white sm:px-8 sm:py-2 lg:px-12`}>
       <div className="mx-auto grid max-w-7xl gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
         <div className="min-w-0">
         <header className="sticky top-0 z-30 mb-2 flex flex-wrap items-center justify-between gap-2 border-b border-white/10 bg-black px-4 py-1 sm:px-0">
@@ -84,6 +78,11 @@ export default function NotificationsPage() {
           </div>
           <div data-notification-controls className="hidden w-full flex-nowrap items-center justify-end gap-2 py-1 sm:flex sm:w-auto sm:flex-wrap sm:justify-start sm:gap-2 sm:py-0"><div className="relative [&>button]:!grid [&>button]:!h-12 [&>button]:!w-12 [&>button]:!min-h-0 [&>button]:!place-items-center [&>button]:!rounded-full [&>button]:!p-0 [&>button]:!text-[0] sm:[&>button]:!inline-flex sm:[&>button]:!h-auto sm:[&>button]:!w-auto sm:[&>button]:!min-h-[38px] sm:[&>button]:!px-4 sm:[&>button]:!py-2 sm:[&>button]:!text-sm"><SponsorPlatform compact /><span className="pointer-events-none absolute inset-0 grid place-items-center text-xl leading-none text-[#9adbb2] sm:hidden" aria-hidden="true">💵</span></div><Link href="/social" aria-label={copy.back} title={copy.back} className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-[#8fd4a9]/35 bg-[#050b08]/80 p-0 text-[#9adbb2] hover:border-[#8fd4a9]/60 hover:bg-[#0c1711]/55 sm:h-auto sm:w-auto sm:min-h-[38px] sm:px-4 sm:py-2 sm:text-sm"><span className="text-3xl font-light leading-none sm:hidden" aria-hidden="true">←</span><span className="hidden sm:inline">{copy.back}</span></Link></div>
 
+        <button type="button" aria-expanded={!reading} aria-controls="notification-controls"
+            onClick={() => setReading(value => !value)}
+            className="min-h-11 rounded-lg px-3 text-sm text-[#9adbb2] hover:bg-[#10251a]">
+            {({ Dutch: ["Knoppen inklappen", "Knoppen tonen"], English: ["Hide controls", "Show controls"], French: ["Masquer les commandes", "Afficher les commandes"], Spanish: ["Ocultar controles", "Mostrar controles"], Chinese: ["µöÂÞÁÀµÄºõ╗Â", "µÿ¥þñ║µÄºõ╗Â"], Hindi: ["Óñ¿Óñ┐Óñ»ÓñéÓññÓÑìÓñ░Óñú ÓñøÓñ┐Óñ¬Óñ¥ÓñÅÓñü", "Óñ¿Óñ┐Óñ»ÓñéÓññÓÑìÓñ░Óñú ÓñªÓñ┐ÓñûÓñ¥ÓñÅÓñü"] })[language][reading ? 1 : 0]}
+          </button>
         </header>
 
         {session ? <><PostComposeShortcut /></> : null}

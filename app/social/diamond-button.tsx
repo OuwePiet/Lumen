@@ -1,4 +1,5 @@
 "use client"
+import {sendDiamonds,identity} from "deso-protocol"
 
 import { useEffect, useRef, useState } from "react"
 import { Popover } from "@base-ui/react/popover"
@@ -178,7 +179,7 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
     const assertAccount = async () => {
       if (!session || invalidated || restoreIdentitySession()?.publicKey !== session.publicKey) throw new Error("ACCOUNT_CHANGED")
       const current = await viaModernIdentity.currentUser()
-      if (invalidated || current?.publicKey !== session.publicKey) throw new Error("ACCOUNT_CHANGED")
+      if (invalidated || current?.publicKey !== session.publicKey || (await identity.snapshot()).currentUser?.publicKey !== session.publicKey) throw new Error("ACCOUNT_CHANGED")
     }
     window.addEventListener(VIA_IDENTITY_EVENT, onIdentity)
     window.addEventListener("storage", onIdentity)
@@ -191,12 +192,12 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
         const blocked = financialSubmissionBlock(session.publicKey, intent)
         if (blocked) throw new Error(blocked)
         setCelebrate(false); setStatus("preparing"); setMessage("Preparing the Diamond and exact DeSo cost…")
-        const response = await fetch("/api/via/social/diamond", { method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store", body: JSON.stringify({ action: "prepare", senderPublicKey: session.publicKey, receiverPublicKey, diamondPostHashHex: postHash, diamondLevel: chosenLevel }) })
-        const data = await response.json() as PrepareResponse
+        const {constructedTransactionResponse:tx}=await sendDiamonds({SenderPublicKeyBase58Check:session.publicKey,ReceiverPublicKeyBase58Check:receiverPublicKey,DiamondPostHashHex:postHash,DiamondLevel:chosenLevel,MinFeeRateNanosPerKB:1000,TransactionFees:[]},{broadcast:false,checkPermissions:false,localConstruction:false})
+        const data={transactionHex:tx.TransactionHex,feeNanos:tx.FeeNanos,spendAmountNanos:tx.SpendAmountNanos}
         await assertAccount()
-        if (!response.ok || !data.ok || !data.transactionHex || data.diamondLevel !== chosenLevel ||
+        if (!data.transactionHex ||
             typeof data.feeNanos !== "number" || !Number.isSafeInteger(data.feeNanos) || data.feeNanos < 0 ||
-            typeof data.spendAmountNanos !== "number" || !Number.isSafeInteger(data.spendAmountNanos) || data.spendAmountNanos < 0) throw new Error(data.error || "INVALID_DESO_TRANSACTION_DATA")
+            typeof data.spendAmountNanos !== "number" || !Number.isSafeInteger(data.spendAmountNanos) || data.spendAmountNanos < 0) throw new Error("INVALID_DESO_TRANSACTION_DATA")
         const cost = data.spendAmountNanos + data.feeNanos
         if (!Number.isSafeInteger(cost) || cost < 1) throw new Error("INVALID_DESO_SPEND_LIMIT")
         setStatus("approval"); setMessage("Checking DeSo Identity permissions...")
@@ -210,11 +211,10 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
         if (invalidated || restoreIdentitySession()?.publicKey !== session.publicKey) throw new Error("ACCOUNT_CHANGED")
         setStatus("submitting"); setMessage("Submitting your Diamond to DeSo…")
         sent = true
-        const submit = await fetch("/api/via/social/diamond", { method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store", body: JSON.stringify({ action: "submit", signedTransactionHex }) })
-        const result = await submit.json() as { ok?: boolean; error?: string; transaction?: { TxnHashHex?: string; TransactionHashHex?: string } }
-        if (!submit.ok || !result.ok) throw new Error(result.error || "SUBMIT_FAILED")
+        await assertAccount()
+        const result=await identity.submitTx(signedTransactionHex)
         accepted = true
-        markFinancialSubmitted(submission, result.transaction?.TxnHashHex ?? result.transaction?.TransactionHashHex)
+        markFinancialSubmitted(submission, result?.TxnHashHex ?? result?.TransactionHashHex)
         setEarnings(null)
         changeMenu(false)
         setMessage("DeSo heeft de diamant ontvangen. Toekenning wordt gecontroleerd…")

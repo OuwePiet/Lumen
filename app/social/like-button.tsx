@@ -1,6 +1,8 @@
 "use client"
+import { updateLikeStatus, identity } from 'deso-protocol'
+import { ensureNFTPermission } from "../nft-permissions"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import { Heart } from "lucide-react"
 import { viaModernIdentity, type ViaModernIdentityUser } from "../deso-identity-modern"
 
@@ -29,39 +31,33 @@ export default function LikeButton({ postHash, initialCount, initialLiked = fals
   useEffect(() => setCount(initialCount), [initialCount])
   useEffect(() => setLiked(initialLiked), [initialLiked])
 
+  const actionLock=useRef(false)
   async function toggleLike() {
-    if (!session || busy) return
+    if (!session || busy || actionLock.current) return
+    actionLock.current=true
     setBusy(true)
     setMessage("Preparing DeSo like transaction…")
     try {
-      const response = await fetch("/api/via/social/like", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        cache: "no-store",
-        body: JSON.stringify({ action: "prepare", publicKey: session.publicKey, postHash, isUnlike: liked }),
-      })
-      const data = await response.json() as PrepareResponse
-      if (!response.ok || !data.ok || !data.transactionHex) throw new Error(data.error || "PREPARE_FAILED")
-      if ((await viaModernIdentity.currentUser())?.publicKey !== session.publicKey) throw new Error("DESO_ACCOUNT_CHANGED")
-      setMessage("Signing this like with your DeSo Identity session…")
-      const signedTransactionHex = await viaModernIdentity.signTx(data.transactionHex)
-      if ((await viaModernIdentity.currentUser())?.publicKey !== session.publicKey) throw new Error("DESO_ACCOUNT_CHANGED")
-      const submitResponse = await fetch("/api/via/social/like", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        cache: "no-store",
-        body: JSON.stringify({ action: "submit", signedTransactionHex }),
-      })
-      const submitData = await submitResponse.json() as SubmitResponse
-      if (!submitResponse.ok || !submitData.ok) throw new Error(submitData.error || "SUBMIT_FAILED")
+      const key=session.publicKey
+      const assertAccount=async()=>{if((await viaModernIdentity.currentUser())?.publicKey!==key||(await identity.snapshot()).currentUser?.publicKey!==key)throw new Error("DESO_ACCOUNT_CHANGED")}
+      await assertAccount()
+      const {constructedTransactionResponse:tx}=await updateLikeStatus({ReaderPublicKeyBase58Check:key,LikedPostHashHex:postHash,IsUnlike:liked,MinFeeRateNanosPerKB:1000,TransactionFees:[]},{broadcast:false,checkPermissions:false,localConstruction:false})
+      if(!tx.TransactionHex||!Number.isSafeInteger(tx.FeeNanos)||tx.FeeNanos<0)throw new Error("INVALID_FEE")
+      await ensureNFTPermission({GlobalDESOLimit:tx.FeeNanos,TransactionCountLimitMap:{LIKE:1}},assertAccount)
+      await assertAccount()
+      const signed=await viaModernIdentity.signTx(tx.TransactionHex)
+      await assertAccount()
+      await identity.submitTx(signed)
       const nextLiked = !liked
       setLiked(nextLiked)
       setCount((current) => Math.max(0, current + (nextLiked ? 1 : -1)))
       setMessage(nextLiked ? "Liked on DeSo." : "Like removed on DeSo.")
       window.dispatchEvent(new Event("via:social:post-published"))
+      actionLock.current=false
       setBusy(false)
     } catch {
-      setMessage("Like niet verzonden. Controleer DeSo-toestemming of probeer opnieuw.")
+      setMessage("Controleer de actuele DeSo-status voordat je opnieuw probeert.")
+      actionLock.current=false
       setBusy(false)
     }
   }

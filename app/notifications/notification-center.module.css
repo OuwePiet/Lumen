@@ -155,3 +155,5 @@
   .filter { min-width: 34px; height: 34px; padding-inline: 7px; }
   .filter::before { inset: 5px 2px; }
 }
+
+.page[data-notification-reading="true"] [data-notification-controls] { display: none !important; }
