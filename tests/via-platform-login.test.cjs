@@ -77,7 +77,6 @@ for (const device of ['iPhone', 'iPad', 'laptop']) {
 test('double click starts only one SDK login', async () => { const f = fixture(); const first = f.identity.login(); await assert.rejects(f.identity.login(), /already opening/); assert.equal(f.calls.filter(c => c[0] === 'login').length, 1); f.resolveLogin(); await first })
 test('cancelled login allows explicit retry', async () => { const f = fixture(); const first = f.identity.login(); await tick(); f.rejectLogin(); await assert.rejects(first); const retry = f.identity.login(); await tick(); f.resolveLogin(); await retry; assert.equal(f.calls.filter(c => c[0] === 'login').length, 2) })
 test('reading session, switching, and subscribing do not open login', async () => { const f = fixture(); await f.identity.currentUser(); f.identity.subscribe(() => {}); await f.identity.alternateUsers(); await f.identity.setActiveUser(B); assert.equal(f.calls.filter(c => c[0] === 'login').length, 0) })
-test('permissions come from SDK, never implicit legacy true', async () => { const f = fixture(); assert.equal(await f.identity.hasPermissions({}), false); assert.equal(f.calls.filter(c => c[0] === 'hasPermissions').length, 2); assert.equal(f.calls.filter(c => c[0] === 'refresh').length, 1) })
 
 test('login retains the SDK default finite fee budget instead of an implicit zero limit', async () => {
   const f = fixture()

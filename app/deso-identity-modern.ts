@@ -23,9 +23,6 @@ export type ViaModernIdentityAdapter = {
   subscribe(listener: (user: ViaModernIdentityUser | null) => void): () => void
   setActiveUser(publicKey: string): Promise<void>
   signTx(transactionHex: string): Promise<string>
-  hasPermissions(permissions: Parameters<typeof identity.hasPermissions>[0]): ReturnType<typeof identity.hasPermissions>
-  requestPermissions(permissions: Parameters<typeof identity.requestPermissions>[0]): ReturnType<typeof identity.requestPermissions>
-  refreshSpendingLimits(): Promise<void>
   resumeRedirect(): void
   encryptMessage(recipientPublicKey: string, message: string): Promise<string>
   decryptMessage(message: NewMessageEntryResponse, groups?: AccessGroupEntryResponse[]): Promise<string>
@@ -144,16 +141,6 @@ export const viaModernIdentity: ViaModernIdentityAdapter = {
     window.dispatchEvent(new CustomEvent(VIA_IDENTITY_EVENT, { detail: restoreIdentitySession() }))
   },
   signTx(transactionHex) { return forSelectedUser(() => identity.signTx(transactionHex)) },
-  async hasPermissions(permissions) {
-    return forSelectedUser(async () => {
-      if (await identity.hasPermissions(permissions)) return true
-      // DeSo SDK 3.4.1: refresh the registered on-chain grant before requesting consent.
-      await identity.refreshDerivedKeyPermissions()
-      return identity.hasPermissions(permissions)
-    })
-  },
-  requestPermissions(permissions) { return forSelectedUser(() => identity.requestPermissions({...permissions, GlobalDESOLimit: (identity.transactionSpendingLimitOptions.GlobalDESOLimit ?? 0) + (permissions.GlobalDESOLimit ?? 0)})) },
-  refreshSpendingLimits() { return forSelectedUser(() => identity.refreshDerivedKeyPermissions()) },
   encryptMessage(recipientPublicKey, message) { return forSelectedUser(() => identity.encryptMessage(recipientPublicKey, message)) },
   async decryptMessage(message, groups = []) {
     return forSelectedUser(async () => (await identity.decryptMessage(message, groups)).DecryptedMessage)

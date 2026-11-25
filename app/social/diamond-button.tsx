@@ -5,7 +5,6 @@ import { useEffect, useRef, useState } from "react"
 import { Popover } from "@base-ui/react/popover"
 import { Gem, TrendingUp } from "lucide-react"
 import { restoreIdentitySession, VIA_IDENTITY_EVENT } from "../deso-identity-session"
-import { ensureDiamondPermission } from "./diamond-permissions"
 import { viaModernIdentity } from "../deso-identity-modern"
 import { fetchViaRates } from "../via-live-rates"
 import { readViaLocalSettings, VIA_SETTINGS_EVENT, type ViaLanguage } from "../via-local-settings"
@@ -47,7 +46,7 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
   const [menuOpen, setMenuOpen] = useState(false)
   const [celebrate, setCelebrate] = useState(false)
   const leafRain = celebrate ? <div aria-hidden="true" className="pointer-events-none fixed inset-0 z-[90] overflow-hidden">{Array.from({ length: 28 }, (_, i) => <span key={i} className="absolute top-[-12%] animate-[viaLeafFall_4s_ease-in_forwards]" style={{ left: `${(i * 37) % 100}%`, animationDelay: `${(i % 10) * 0.20}s`, transform: `rotate(${i * 41}deg)` }}><img src="/via-leaf.svg" alt="" width="36" height="34" className="h-9 w-9 object-contain" /></span>)}<style>{`@keyframes viaLeafFall { from { translate: 0 -10vh; opacity: 1 } to { translate: 8vw 115vh; opacity: 0 } }`}</style></div> : null
-  const [status, setStatus] = useState<"idle" | "preparing" | "approval" | "submitting" | "done" | "error">("idle")
+  const [status, setStatus] = useState<"idle" | "preparing" | "submitting" | "done" | "error">("idle")
   const [message, setMessage] = useState("")
   const [diamondValues, setDiamondValues] = useState<Array<{ level: number; nanos: number }> | null>(null)
   const [desoUsd, setDesoUsd] = useState<number | null>(null)
@@ -125,7 +124,7 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
     setRecipientOpen(false)
   }
 
-  const busy = status === "preparing" || status === "approval" || status === "submitting"
+  const busy = status === "preparing" || status === "submitting"
   const [earnings, setEarnings] = useState<number[] | "error" | null>(null)
   async function loadEarnings() {
     setEarnings(null)
@@ -187,19 +186,21 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
 
         await assertAccount()
         setCelebrate(false); setStatus("preparing"); setMessage("")
-        const {constructedTransactionResponse:tx}=await sendDiamonds({SenderPublicKeyBase58Check:session.publicKey,ReceiverPublicKeyBase58Check:receiverPublicKey,DiamondPostHashHex:postHash,DiamondLevel:chosenLevel,MinFeeRateNanosPerKB:1000,TransactionFees:[]},{broadcast:false,checkPermissions:false,localConstruction:false})
-        const data={transactionHex:tx.TransactionHex,feeNanos:tx.FeeNanos,spendAmountNanos:tx.SpendAmountNanos}
+        const { constructedTransactionResponse: tx } = await awaitIdentityResponse(
+          sendDiamonds({
+            SenderPublicKeyBase58Check: session.publicKey,
+            ReceiverPublicKeyBase58Check: receiverPublicKey,
+            DiamondPostHashHex: postHash,
+            DiamondLevel: chosenLevel,
+            MinFeeRateNanosPerKB: 1000,
+            TransactionFees: [],
+          }, { broadcast: false, localConstruction: false }),
+          120000,
+        )
         await assertAccount()
-        if (!data.transactionHex ||
-            typeof data.feeNanos !== "number" || !Number.isSafeInteger(data.feeNanos) || data.feeNanos < 0 ||
-            typeof data.spendAmountNanos !== "number" || !Number.isSafeInteger(data.spendAmountNanos) || data.spendAmountNanos < 0) throw new Error("INVALID_DESO_TRANSACTION_DATA")
-        const cost = data.spendAmountNanos + data.feeNanos
-        if (!Number.isSafeInteger(cost) || cost < 1) throw new Error("INVALID_DESO_SPEND_LIMIT")
-        setStatus("approval"); setMessage("")
-        await awaitIdentityResponse(ensureDiamondPermission(viaModernIdentity, cost), 120000)
-        await assertAccount()
+        if (!tx.TransactionHex) throw new Error("INVALID_DESO_TRANSACTION_DATA")
         setMessage("")
-        const signedTransactionHex = await awaitIdentityResponse(viaModernIdentity.signTx(data.transactionHex), 20000)
+        const signedTransactionHex = await awaitIdentityResponse(viaModernIdentity.signTx(tx.TransactionHex), 20000)
         await assertAccount()
         if (invalidated || restoreIdentitySession()?.publicKey !== session.publicKey) throw new Error("ACCOUNT_CHANGED")
         setStatus("submitting"); setMessage("")
@@ -302,6 +303,6 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
       </Popover.Root>
     ) : null}
     {leafRain}
-    {message === "DESO_HOMEPAGE_AUTHORIZATION_REQUIRED" ? <a href="/" className="order-last w-full basis-full text-xs text-amber-200" role="status">{language === "Dutch" ? "DeSo-machtiging onvoldoende. Ga naar de homepage." : "DeSo authorization insufficient. Go to homepage."}</a> : message ? <span className="order-last w-full basis-full text-xs text-amber-200" role="status">{message}</span> : null}
+    {message ? <span className="order-last w-full basis-full text-xs text-amber-200" role="status">{message}</span> : null}
   </>
 }
