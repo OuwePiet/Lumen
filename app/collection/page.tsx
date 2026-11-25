@@ -46,6 +46,15 @@ export default function CollectionPage() {
       </div>
 
       <style>{`
+        body.via-session-pending:has([data-via-collection-page]) section:has(#account-lookup-heading),
+        body.via-no-deso-session:has([data-via-collection-page]) section:has(#account-lookup-heading) {
+          display: block !important;
+        }
+        body.via-session-pending:has([data-via-collection-page]) a[href^="/profile/"],
+        body.via-no-deso-session:has([data-via-collection-page]) a[href^="/profile/"] {
+          pointer-events: auto !important;
+          cursor: pointer !important;
+        }
         .nf-via-screenprint {
           position: fixed;
           inset: 0;
@@ -77,6 +86,20 @@ export default function CollectionPage() {
           .nf-via-screenprint span {
             font-size: 72vw;
             transform: translateX(-14vw) scaleY(1.12);
+          }
+        }
+        @media (min-width: 721px) and (max-width: 980px) {
+          body:has([data-via-collection-page]) .via-site-header-top {
+            overflow: hidden !important;
+          }
+          body:has([data-via-collection-page]) .via-site-header-tools {
+            justify-content: flex-start !important;
+            overflow-x: auto !important;
+            overflow-y: hidden !important;
+            scrollbar-width: none;
+          }
+          body:has([data-via-collection-page]) .via-site-header-tools::-webkit-scrollbar {
+            display: none;
           }
         }
       `}</style>
