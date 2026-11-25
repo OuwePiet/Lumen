@@ -1,5 +1,5 @@
 "use client"
-import { getTransaction } from "deso-protocol"
+import { getTransaction, sha256X2 } from "deso-protocol"
 
 // Non-secret, origin-local recovery state. Never persist signed transactions or
 // credentials. Absence from the mempool is never proof that a payment failed.
@@ -35,8 +35,23 @@ export function financialAccountRecovery(publicKey: string) {
   return { uncertain: rawPending !== null, invalid, receipts: receipts.sort((a, b) => b.startedAt - a.startedAt) }
 }
 
-export function financialSubmissionBlock(publicKey: string, intent: string, allowNewConfirmedAction = false) {
-  if (window.localStorage.getItem(pendingKey(publicKey)) !== null) return "Een eerdere financiële verzending is onzeker. Controleer DeSo; niet opnieuw verzenden."
+export async function financialSubmissionBlock(publicKey: string, intent: string, allowNewConfirmedAction = false) {
+  const raw = window.localStorage.getItem(pendingKey(publicKey))
+  if (raw !== null) {
+    // Only DeSo can establish that the previous transaction was received.
+    // Never infer failure from an absent transaction or resend automatically.
+    try {
+      const prior = JSON.parse(raw) as FinancialSubmission
+      if (prior.publicKey === publicKey && typeof prior.intent === "string" && /^[0-9a-f]{64}$/i.test(prior.transactionHashHex ?? "")) {
+        const result = await getTransaction({ TxnHashHex: prior.transactionHashHex! })
+        if (result.TxnFound === true && window.localStorage.getItem(pendingKey(publicKey)) === raw) {
+          markFinancialSubmitted(prior, prior.transactionHashHex)
+          if (prior.intent === intent) return "DeSo confirmed the previous transaction. Nothing has been resent."
+        }
+      }
+    } catch { /* Unknown outcome remains unknown. */ }
+    if (window.localStorage.getItem(pendingKey(publicKey)) !== null) return "DeSo has not confirmed a previous transaction. Check its status before retrying."
+  }
   if (!allowNewConfirmedAction && window.localStorage.getItem(receiptKey(publicKey, intent)) !== null) return "Deze actie is al door DeSo ontvangen. Niet opnieuw verzenden."
   return ""
 }
@@ -56,6 +71,8 @@ function writeVerified(key: string, value: FinancialSubmission) {
   window.localStorage.setItem(key, raw)
   if (window.localStorage.getItem(key) !== raw) throw new Error("FINANCIAL_STORAGE_UNAVAILABLE")
 }
+
+export function signedDeSoTransactionHash(signedHex: string) { return Array.from(sha256X2(signedHex), byte => byte.toString(16).padStart(2, "0")).join("") }
 
 export function markFinancialPending(value: FinancialSubmission) {
   if (window.localStorage.getItem(pendingKey(value.publicKey)) !== null) throw new Error("FINANCIAL_SUBMISSION_UNCERTAIN")

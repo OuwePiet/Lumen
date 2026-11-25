@@ -1,7 +1,7 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),path=require('node:path'),ts=require('typescript'),crypto=require('node:crypto').webcrypto;
 function fixture({fail=false,blocked=false}={}){
  const events=[],exportsMock={};let pending=false;
- const financial={withFinancialAccountLock:async(k,fn)=>{events.push('lock');await fn()},financialSubmissionBlock:()=>blocked||pending?'blocked':'',markFinancialPending:()=>{pending=true;events.push('pending')},markFinancialSubmitted:(r,h)=>{pending=false;events.push('receipt:'+h)}};
+ const financial={signedDeSoTransactionHash:()=>"a".repeat(64),withFinancialAccountLock:async(k,fn)=>{events.push('lock');await fn()},financialSubmissionBlock:()=>blocked||pending?'blocked':'',markFinancialPending:()=>{pending=true;events.push('pending')},markFinancialSubmitted:(r,h)=>{pending=false;events.push('receipt:'+h)}};
  vm.runInNewContext(ts.transpileModule(fs.readFileSync(path.join(__dirname,'../app/nft-submission-guard.ts'),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2020}}).outputText,{exports:exportsMock,crypto,TextEncoder,Uint8Array,require:n=>n==='deso-protocol'?{identity:{submitTx:async()=>{events.push('submit');if(fail)throw Error('network');return {TxnHashHex:'a'.repeat(64)}}}}:financial});
  return {events,run:(check=async()=>{})=>exportsMock.submitGuardedNFT('key','hash',1,100,'signed',check)};
 }

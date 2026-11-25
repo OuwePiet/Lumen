@@ -2,7 +2,7 @@
 import {readNativeNotifications} from "./native-notifications"
 import {sendDeso,identity} from "deso-protocol"
 import {ensureNFTPermission} from "../nft-permissions"
-import {withFinancialAccountLock,financialSubmissionBlock,markFinancialPending,markFinancialSubmitted} from "../financial-submission"
+import {signedDeSoTransactionHash,withFinancialAccountLock,financialSubmissionBlock,markFinancialPending,markFinancialSubmitted} from "../financial-submission"
 
 import Link from "next/link"
 import styles from "./notification-center.module.css"
@@ -518,7 +518,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
       const assertAccount=async()=>{if((await viaModernIdentity.currentUser())?.publicKey!==key||(await identity.snapshot()).currentUser?.publicKey!==key)throw new Error("ACCOUNT_CHANGED")}
       await withFinancialAccountLock(key,async()=>{
         await assertAccount()
-        const blocked=financialSubmissionBlock(key,intent);if(blocked)throw new Error(blocked)
+        const blocked=await financialSubmissionBlock(key,intent,true);if(blocked)throw new Error(blocked)
         const {constructedTransactionResponse:tx}=await sendDeso({SenderPublicKeyBase58Check:key,RecipientPublicKeyOrUsername:post.publicKey,AmountNanos:amountNanos,MinFeeRateNanosPerKB:1000,TransactionFees:[]},{broadcast:false,checkPermissions:false,localConstruction:false})
         const cost=amountNanos+tx.FeeNanos
         if(!tx.TransactionHex||!Number.isSafeInteger(tx.FeeNanos)||tx.FeeNanos<0||!Number.isSafeInteger(cost))throw new Error("INVALID_COST")
@@ -526,7 +526,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
         await assertAccount()
         const signed=await viaModernIdentity.signTx(tx.TransactionHex)
         await assertAccount()
-        const record={publicKey:key,intent,amountNanos:cost,startedAt:Date.now()}
+        const record={publicKey:key,intent,amountNanos:cost,startedAt:Date.now(),transactionHashHex:signedDeSoTransactionHash(signed)}
         markFinancialPending(record)
         const receipt=await identity.submitTx(signed)
         markFinancialSubmitted(record,receipt?.TxnHashHex??receipt?.TransactionHashHex)

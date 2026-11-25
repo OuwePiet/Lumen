@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react"
 import { Popover } from "@base-ui/react/popover"
 import { Gem, TrendingUp } from "lucide-react"
 import { restoreIdentitySession, VIA_IDENTITY_EVENT } from "../deso-identity-session"
-import { financialSubmissionBlock, markFinancialPending, markFinancialSubmitted, withFinancialAccountLock } from "../financial-submission"
+import { signedDeSoTransactionHash, financialSubmissionBlock, markFinancialPending, markFinancialSubmitted, withFinancialAccountLock } from "../financial-submission"
 import { ensureDiamondPermission } from "./diamond-permissions"
 import { viaModernIdentity } from "../deso-identity-modern"
 import { fetchViaRates } from "../via-live-rates"
@@ -189,7 +189,7 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
       const intent = "diamond:" + postHash + ":" + receiverPublicKey + ":" + chosenLevel
       await withFinancialAccountLock(session.publicKey, async () => {
         await assertAccount()
-        const blocked = financialSubmissionBlock(session.publicKey, intent)
+        const blocked = await financialSubmissionBlock(session.publicKey, intent)
         if (blocked) throw new Error(blocked)
         setCelebrate(false); setStatus("preparing"); setMessage("")
         const {constructedTransactionResponse:tx}=await sendDiamonds({SenderPublicKeyBase58Check:session.publicKey,ReceiverPublicKeyBase58Check:receiverPublicKey,DiamondPostHashHex:postHash,DiamondLevel:chosenLevel,MinFeeRateNanosPerKB:1000,TransactionFees:[]},{broadcast:false,checkPermissions:false,localConstruction:false})
@@ -206,19 +206,18 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
         setMessage("")
         const signedTransactionHex = await awaitIdentityResponse(viaModernIdentity.signTx(data.transactionHex), 20000)
         await assertAccount()
-        const submission = { publicKey: session.publicKey, intent, amountNanos: cost, startedAt: Date.now() }
-        markFinancialPending(submission)
+        const submission = { publicKey: session.publicKey, intent, amountNanos: cost, startedAt: Date.now(), transactionHashHex: signedDeSoTransactionHash(signedTransactionHex) }
         if (invalidated || restoreIdentitySession()?.publicKey !== session.publicKey) throw new Error("ACCOUNT_CHANGED")
         setStatus("submitting"); setMessage("")
-        sent = true
         await assertAccount()
+        markFinancialPending(submission)
+        sent = true
         const result=await identity.submitTx(signedTransactionHex)
         accepted = true
         markFinancialSubmitted(submission, result?.TxnHashHex ?? result?.TransactionHashHex)
         setEarnings(null)
         changeMenu(false)
         setMessage("")
-        void viaModernIdentity.refreshSpendingLimits().catch(() => {})
         const params = new URLSearchParams({ hash: postHash, fresh: "1", reader: session.publicKey })
         for (const delay of [0, 750, 1500, 3000]) {
           if (delay) await new Promise(resolve => window.setTimeout(resolve, delay))
