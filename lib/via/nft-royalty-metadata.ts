@@ -19,19 +19,31 @@ function firstNumber(data: Record<string, unknown>, keys: string[]) {
   }
 }
 
+function record(value: unknown) {
+  return value && typeof value === "object"
+    ? (value as Record<string, unknown>)
+    : undefined
+}
+
 /**
- * Reads known royalty fields without assuming they exist on every legacy NFT.
+ * Reads the official DeSo NFT royalty fields from the post response. Legacy
+ * metadata remains a fallback for older VIA records that do not expose them.
  * Values still pass through the strict 0–10000 basis-point normalizer.
  */
-export function readRoyaltyMetadata(extraData: unknown): ViaRoyaltyInfo {
-  if (!extraData || typeof extraData !== "object") {
+export function readRoyaltyMetadata(post: unknown): ViaRoyaltyInfo {
+  const data = record(post)
+  if (!data) {
     return normalizeRoyaltyInfo({})
   }
 
-  const data = extraData as Record<string, unknown>
+  const metadata = record(data.PostExtraData) ?? record(data.ExtraData)
   return normalizeRoyaltyInfo({
-    creatorBasisPoints: firstNumber(data, CREATOR_KEYS),
-    coinBasisPoints: firstNumber(data, COIN_KEYS),
+    creatorBasisPoints:
+      firstNumber(data, CREATOR_KEYS) ??
+      (metadata ? firstNumber(metadata, CREATOR_KEYS) : undefined),
+    coinBasisPoints:
+      firstNumber(data, COIN_KEYS) ??
+      (metadata ? firstNumber(metadata, COIN_KEYS) : undefined),
     source: "deso-nft",
   })
 }
