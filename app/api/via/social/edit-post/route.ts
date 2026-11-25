@@ -98,26 +98,8 @@ export async function POST(request: Request) {
   const body = record(input)
   if (!body) return json({ ok: false, error: "INVALID_REQUEST" }, 400)
 
-  const allowed = body.action === "inspect"
-    ? ["action", "publicKey", "postHashHex"]
-    : body.action === "prepare"
-      ? ["action", "publicKey", "postHashHex", "body"]
-      : body.action === "submit"
-        ? ["action", "signedTransactionHex"]
-        : []
-  if (!allowed.length || Object.keys(body).some((key) => !allowed.includes(key))) {
-    return json({ ok: false, error: "INVALID_REQUEST" }, 400)
-  }
-
-  if (body.action === "submit") {
-    const signedTransactionHex = body.signedTransactionHex
-    if (!validHex(signedTransactionHex)) return json({ ok: false, error: "INVALID_SIGNED_TRANSACTION" }, 400)
-    try {
-      const response = await fetchDeSo("submit-transaction", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ TransactionHex: signedTransactionHex }) })
-      if (!response.ok) return json({ ok: false, error: "DESO_EDIT_SUBMIT_REJECTED" }, 502)
-      return json({ ok: true, transaction: await response.json() as Record<string, unknown> })
-    } catch { return json({ ok: false, error: "DESO_EDIT_SUBMIT_UNAVAILABLE" }, 503) }
-  }
+  const allowed = ["action", "publicKey", "postHashHex"]
+  if(body.action !== "inspect" || Object.keys(body).some(key=>!allowed.includes(key))) return json({ok:false,error:"INVALID_REQUEST"},400)
 
   const publicKey = body.publicKey
   const postHashHex = typeof body.postHashHex === "string" ? body.postHashHex.trim() : body.postHashHex
@@ -129,49 +111,5 @@ export async function POST(request: Request) {
   catch { return json({ ok: false, error: "DESO_POST_LOOKUP_UNAVAILABLE" }, 503) }
   if ("error" in owned) return json({ ok: false, error: owned.error }, owned.error === "POST_NOT_OWNED_BY_ACTIVE_KEY" ? 403 : 409)
 
-  if (body.action === "inspect") {
-    return json({ ok: true, editable: true, post: owned.post, writeAuthorized: false })
-  }
-
-  const text = typeof body.body === "string" ? body.body.trim() : ""
-  if (!text || text.length > MAX_POST_LENGTH || text.includes("\u0000")) {
-    return json({ ok: false, error: "INVALID_POST_BODY" }, 400)
-  }
-
-  const configuredRate = Number(process.env.DESO_MIN_FEE_RATE_NANOS_PER_KB)
-  const minFeeRate = Number.isFinite(configuredRate) && configuredRate > 0
-    ? Math.trunc(configuredRate)
-    : DEFAULT_MIN_FEE_RATE_NANOS_PER_KB
-
-  try {
-    const response = await fetchDeSo("submit-post", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        UpdaterPublicKeyBase58Check: publicKey,
-        PostHashHexToModify: owned.post.postHashHex,
-        ParentStakeID: owned.post.parentStakeID,
-        RepostedPostHashHex: "",
-        Title: "",
-        BodyObj: { Body: text, ImageURLs: owned.post.imageUrls, VideoURLs: owned.post.videoUrls },
-        PostExtraData: { ...owned.post.postExtraData, ViaClient: "viadeso.online" },
-        Sub: "",
-        IsHidden: false,
-        MinFeeRateNanosPerKB: minFeeRate,
-        TransactionFees: [],
-      }),
-    })
-    if (!response.ok) return json({ ok: false, error: "DESO_EDIT_PREPARE_REJECTED" }, 502)
-    const data = await response.json() as Record<string, unknown>
-    if (!validHex(data.TransactionHex)) return json({ ok: false, error: "INVALID_PREPARED_TRANSACTION" }, 502)
-    return json({
-      ok: true,
-      transactionHex: data.TransactionHex,
-      feeNanos: typeof data.FeeNanos === "number" && Number.isFinite(data.FeeNanos) ? data.FeeNanos : null,
-      writeAuthorized: false,
-      preservedMedia: { images: owned.post.imageUrls.length, videos: owned.post.videoUrls.length },
-    })
-  } catch {
-    return json({ ok: false, error: "DESO_EDIT_PREPARE_UNAVAILABLE" }, 503)
-  }
+  return json({ ok: true, editable: true, post: owned.post, writeAuthorized: false })
 }

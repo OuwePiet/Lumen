@@ -14,7 +14,7 @@ export async function GET() {
     // Read at most three pages. Some nodes can return overlapping results.
     const sampled = new Map<string, Awaited<ReturnType<typeof readDiscoveryPosts>>[number]>()
     for (let page = 0; page < 3; page++) {
-      const batch = await readDiscoveryPosts(30, true, [...sampled.keys()]).catch(() => [])
+      const batch = await readDiscoveryPosts(30, true, [...sampled.keys()], "", true)
       const before = sampled.size
       for (const post of batch) sampled.set(post.postHash, post)
       if (sampled.size === before) break

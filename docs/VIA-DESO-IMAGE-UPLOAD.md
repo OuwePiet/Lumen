@@ -13,7 +13,7 @@ VIA does not introduce permanent VIA/Vercel media storage. Direct image upload u
 3. VIA checks MIME type and size before requesting credentials for upload.
 4. VIA asks the official DeSo Identity iframe for a short-lived JWT immediately before upload.
 5. If Safari/iOS requires Identity storage access, the official Identity iframe is shown so the user can grant it.
-6. VIA forwards the file, public key and short-lived JWT to `/api/via/social/image-upload`.
+6. The browser sends the file, public key and short-lived JWT directly to DeSo through SDK 3.4.1.
 7. That route accepts only GIF, JPEG, PNG or WebP smaller than 10 MB and forwards the multipart request to DeSo `/api/v0/upload-image`.
 8. VIA accepts only a valid HTTPS `ImageURL` response and inserts that URL into the existing post composer.
 9. Uploading the image does not publish a post. Publishing still uses the existing prepare → exact DeSo Identity approval → signed transaction submit path.

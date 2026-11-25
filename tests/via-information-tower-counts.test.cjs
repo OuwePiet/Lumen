@@ -11,3 +11,8 @@ test('one failed count does not discard the historical counter',async()=>{let ca
 
 test('concurrent requests share one source read and failures get a cooldown',async()=>{let calls=0;const get=route(async()=>{calls++;return{ok:false,status:403}});await Promise.all([get(),get(),get()]);assert.equal(calls,5);await get();assert.equal(calls,5)});
 test('an unrecognized country response is unavailable rather than zero countries',async()=>{const get=route(async url=>({ok:true,status:200,json:async()=>url.pathname.endsWith('aggregate')?{unexpected:'shape'}:{visitors:2}}));const r=await get();assert.equal(r.body.countriesAvailable,false);assert.equal(r.body.visitors.year,2)});
+
+function activity(readDiscoveryPosts){return load('app/api/via/analytics/activity/route.ts',{require:name=>name==='next/server'?{NextResponse:{json:(body,options)=>({body,...options})}}:{readDiscoveryPosts}}).GET}
+test('activity rejects partial upstream failure rather than reporting a false zero',async()=>{let calls=0;const r=await activity(async(limit,sort,seen,key,strict)=>{assert.equal(strict,true);if(++calls===2)throw Error('upstream');return [{postHash:'a',postExtraData:{}}]})();assert.equal(r.status,503);assert.equal(r.body.ok,false);assert.equal(calls,2)});
+test('activity deduplicates sample and labels genuine sample zero',async()=>{const r=await activity(async()=>[{postHash:'a',postExtraData:{}}])();assert.equal(r.status,200);assert.equal(r.body.sampledPosts,1);assert.equal(r.body.activity.posts,0);assert.equal(r.body.scope,'bounded-recent-via-posts')});
+test('empty source is unavailable',async()=>{const r=await activity(async()=>[])();assert.equal(r.status,503);assert.equal(r.body.ok,false)});

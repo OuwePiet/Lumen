@@ -1,4 +1,8 @@
 "use client"
+import {readNativeNotifications} from "./native-notifications"
+import {sendDeso,identity} from "deso-protocol"
+import {ensureNFTPermission} from "../nft-permissions"
+import {withFinancialAccountLock,financialSubmissionBlock,markFinancialPending,markFinancialSubmitted} from "../financial-submission"
 
 import Link from "next/link"
 import styles from "./notification-center.module.css"
@@ -496,10 +500,12 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
   const [rewardUsd, setRewardUsd] = useState("1.00")
   const [rewardMessage, setRewardMessage] = useState("")
   const [rewardBusy, setRewardBusy] = useState(false)
+  const rewardLock=useRef(false)
   async function sendReward(post: PublicPost) {
-    if (!session || rewardBusy) return
+    if (!session || rewardBusy || rewardLock.current || session.publicKey===post.publicKey) return
     const usd = Number(rewardUsd)
     if (!Number.isFinite(usd) || usd <= 0) { setRewardMessage(copy.rewardFailed); return }
+    rewardLock.current=true
     setRewardBusy(true)
     setRewardMessage(copy.rewardSending)
     try {
@@ -507,18 +513,31 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
       if (isViaRateStale(rates.checkedAt) || !rates.rates?.USD || rates.rates.USD <= 0) throw new Error("RATE")
       const amountNanos = Math.round((usd / rates.rates.USD) * 1_000_000_000)
       if (!Number.isSafeInteger(amountNanos) || amountNanos < 1) throw new Error("AMOUNT")
-      const response = await fetch("/api/via/social/reward", { method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store", body: JSON.stringify({ action: "prepare", senderPublicKey: session.publicKey, recipientPublicKey: post.publicKey, amountNanos, confirmed: true }) })
-      const result = await response.json() as { ok?: boolean; transactionHex?: string }
-      if (!response.ok || !result.ok || !result.transactionHex) throw new Error("PREPARE")
-      const signedTransactionHex = await viaModernIdentity.signTx(result.transactionHex)
-      const submitResponse = await fetch("/api/via/social/reward", { method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store", body: JSON.stringify({ action: "submit", signedTransactionHex }) })
-      const submitResult = await submitResponse.json() as { ok?: boolean }
-      if (!submitResponse.ok || !submitResult.ok) throw new Error("SUBMIT")
+      const key=session.publicKey
+      const intent="reward:"+post.publicKey+":"+usd
+      const assertAccount=async()=>{if((await viaModernIdentity.currentUser())?.publicKey!==key||(await identity.snapshot()).currentUser?.publicKey!==key)throw new Error("ACCOUNT_CHANGED")}
+      await withFinancialAccountLock(key,async()=>{
+        await assertAccount()
+        const blocked=financialSubmissionBlock(key,intent);if(blocked)throw new Error(blocked)
+        const {constructedTransactionResponse:tx}=await sendDeso({SenderPublicKeyBase58Check:key,RecipientPublicKeyOrUsername:post.publicKey,AmountNanos:amountNanos,MinFeeRateNanosPerKB:1000,TransactionFees:[]},{broadcast:false,checkPermissions:false,localConstruction:false})
+        const cost=amountNanos+tx.FeeNanos
+        if(!tx.TransactionHex||!Number.isSafeInteger(tx.FeeNanos)||tx.FeeNanos<0||!Number.isSafeInteger(cost))throw new Error("INVALID_COST")
+        await ensureNFTPermission({GlobalDESOLimit:cost,TransactionCountLimitMap:{BASIC_TRANSFER:1}},assertAccount)
+        await assertAccount()
+        const signed=await viaModernIdentity.signTx(tx.TransactionHex)
+        await assertAccount()
+        const record={publicKey:key,intent,amountNanos:cost,startedAt:Date.now()}
+        markFinancialPending(record)
+        const receipt=await identity.submitTx(signed)
+        markFinancialSubmitted(record,receipt?.TxnHashHex??receipt?.TransactionHashHex)
+      })
+      rewardLock.current=false
       setRewardBusy(false)
-      setRewardMessage(copy.rewardSent)
+      setRewardMessage("Reward submitted to DeSo; verify transaction status.")
     } catch (error) {
+      rewardLock.current=false
       setRewardBusy(false)
-      setRewardMessage(error instanceof Error && error.message === "RATE" ? copy.rewardRateUnavailable : copy.rewardFailed)
+      setRewardMessage(error instanceof Error && error.message === "RATE" ? copy.rewardRateUnavailable : "Reward not confirmed. Check DeSo before retrying.")
     }
   }
 
@@ -590,18 +609,11 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
       setStatus("loading")
       setMessageKey("loading")
       try {
-        const response = await fetch("/api/via/social/notifications", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          cache: "no-store",
-          signal: controller.signal,
-          body: JSON.stringify({ publicKey, fetchStartIndex: -1, numToFetch: 40 }),
-        })
-        const data = await response.json() as NotificationResponse
+        const data = await readNativeNotifications(publicKey,-1,40) as unknown as NotificationResponse
         // An account switch can abort a request after its response has arrived.
         // Never let that obsolete response update the visible account or snapshot.
         if (controller.signal.aborted) return
-        if (!response.ok || !data.ok || !Array.isArray(data.notifications)) throw new Error(data.error || "NOTIFICATIONS_FAILED")
+        if (!data.ok || !Array.isArray(data.notifications)) throw new Error(data.error || "NOTIFICATIONS_FAILED")
         const ordered = [...data.notifications].sort((a, b) => (b.Index ?? -1) - (a.Index ?? -1))
         if (!visitSnapshotRef.current && ordered.length > 0) {
           const latestIndex = ordered.find((item) => typeof item.Index === "number" && Number.isSafeInteger(item.Index) && item.Index >= 0)?.Index
@@ -710,14 +722,10 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
     const fetchStartIndex = Math.min(...indexes)
     setLoadingOlder(true)
     try {
-      const response = await fetch("/api/via/social/notifications", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        cache: "no-store",
-        body: JSON.stringify({ publicKey: session.publicKey, fetchStartIndex, numToFetch: 40 }),
-      })
-      const data = await response.json() as NotificationResponse
-      if (!response.ok || !data.ok || !Array.isArray(data.notifications)) throw new Error(data.error || "NOTIFICATIONS_FAILED")
+      const key=session.publicKey
+      const data = await readNativeNotifications(key,fetchStartIndex,40) as unknown as NotificationResponse
+      if((await viaModernIdentity.currentUser())?.publicKey!==key)return
+      if (!data.ok || !Array.isArray(data.notifications)) throw new Error(data.error || "NOTIFICATIONS_FAILED")
       const existing = new Set(items.map((item) => item.Index).filter((value): value is number => typeof value === "number"))
       const older = data.notifications.filter((item) => typeof item.Index !== "number" || !existing.has(item.Index))
       setItems((current) => [...current, ...older].sort((a, b) => (b.Index ?? -1) - (a.Index ?? -1)))

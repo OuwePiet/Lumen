@@ -1,7 +1,11 @@
 "use client"
+import { submitGuardedNFT } from "./nft-submission-guard"
+import { ensureNFTPermission } from "./nft-permissions"
 
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { viaModernIdentity, type ViaModernIdentityUser } from "./deso-identity-modern"
+
+import { acceptNFTBid, identity } from "deso-protocol"
 
 type Bid = {
   serialNumber: number
@@ -57,65 +61,32 @@ export default function NFTReceivedBids({ postHash, bids, editions, hasUnlockabl
     [bids, ownedSerials],
   )
 
-  async function acceptBid(bid: Bid) {
-    if (!session || hasUnlockable) return
-    const key = `${bid.serialNumber}:${bid.bidderPublicKey}:${bid.bidAmountNanos}`
-    if (confirmedKey !== key || status === "preparing" || status === "approval" || status === "submitting") return
-
-    setStatus("preparing")
-    setMessage("Preparing exact DeSo bid acceptance…")
-    try {
-      const response = await fetch("/api/via/nft/accept-bid", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        cache: "no-store",
-        body: JSON.stringify({
-          action: "prepare",
-          ownerPublicKey: session.publicKey,
-          bidderPublicKey: bid.bidderPublicKey,
-          postHash,
-          serialNumber: bid.serialNumber,
-          bidAmountNanos: bid.bidAmountNanos,
-          hasUnlockable,
-        }),
-      })
-      const result = await response.json() as PrepareResponse
-      if (!response.ok || !result.ok || !result.transactionHex) throw new Error(result.error || "PREPARE_FAILED")
-      const acceptBidPermission = {
-        NFTOperationLimitMap: {
-          [postHash]: {
-            [bid.serialNumber]: {
-              accept_nft_bid: 1,
-            },
-          },
-        },
-      }
-      if (!(await viaModernIdentity.hasPermissions(acceptBidPermission))) {
-        setMessage("Requesting permission to accept this exact DeSo NFT bid…")
-        await viaModernIdentity.requestPermissions(acceptBidPermission)
-      }
+  const lock=useRef(false)
+  async function acceptBid(bid:Bid){
+    if(!session||hasUnlockable||lock.current||!ownedSerials.has(bid.serialNumber)||confirmedKey!==`${bid.serialNumber}:${bid.bidderPublicKey}:${bid.bidAmountNanos}`)return
+    lock.current=true;setConfirmedKey(null);setStatus("preparing")
+    const key=session.publicKey
+    let submitting=false
+    const assertAccount=async()=>{if((await viaModernIdentity.currentUser())?.publicKey!==key||(await identity.snapshot()).currentUser?.publicKey!==key)throw new Error("Account changed")}
+    try{
+      await assertAccount()
+      setMessage("Preparing bid acceptance directly with DeSo...")
+      const {constructedTransactionResponse:tx}=await acceptNFTBid({UpdaterPublicKeyBase58Check:key,BidderPublicKeyBase58Check:bid.bidderPublicKey,NFTPostHashHex:postHash,SerialNumber:bid.serialNumber,BidAmountNanos:bid.bidAmountNanos,MinFeeRateNanosPerKB:1000,TransactionFees:[]},{broadcast:false,checkPermissions:false,localConstruction:false})
+      if(!tx.TransactionHex||!Number.isSafeInteger(tx.FeeNanos)||tx.FeeNanos<0||!Number.isSafeInteger(bid.bidAmountNanos+tx.FeeNanos))throw new Error("Invalid fee")
+      await assertAccount()
+      const permission={GlobalDESOLimit:bid.bidAmountNanos+tx.FeeNanos,NFTOperationLimitMap:{[postHash]:{[bid.serialNumber]:{accept_nft_bid:1}}}}
+      await ensureNFTPermission(permission,assertAccount)
+      await assertAccount()
+      if(!(await viaModernIdentity.hasPermissions(permission)))throw new Error("Permission missing")
+      await assertAccount()
       setStatus("approval")
-      setMessage("Signing the exact accepted NFT bid with DeSo Identity…")
-      const signedTransactionHex = await viaModernIdentity.signTx(result.transactionHex)
-      setStatus("submitting")
-      setMessage("Submitting the accepted NFT bid to DeSo…")
-      const submitResponse = await fetch("/api/via/nft/accept-bid", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        cache: "no-store",
-        body: JSON.stringify({ action: "submit", signedTransactionHex }),
-      })
-      const submitResult = await submitResponse.json() as { ok?: boolean; error?: string }
-      if (!submitResponse.ok || !submitResult.ok) throw new Error(submitResult.error || "SUBMIT_FAILED")
-      setStatus("done")
-      setMessage("Accepted NFT bid submitted to DeSo.")
-      setConfirmedKey(null)
-    } catch (error) {
-      setStatus("error")
-      setMessage(error instanceof Error && error.message === "POPUP_BLOCKED"
-        ? "Approval window was blocked. VIA changed nothing."
-        : "Bid acceptance could not be prepared. VIA changed nothing.")
-    }
+      const signed=await viaModernIdentity.signTx(tx.TransactionHex)
+      await assertAccount()
+      submitting=true;setStatus("submitting")
+      await submitGuardedNFT(key,postHash,bid.serialNumber,permission.GlobalDESOLimit,signed,assertAccount)
+      setStatus("done");setMessage("Accepted bid submitted to DeSo. Refresh to verify.")
+    }catch{setStatus("error");setMessage(submitting?"Submission uncertain. Verify on DeSo before retrying.":"Bid acceptance not submitted. Review account and permissions.")}
+    finally{lock.current=false}
   }
 
   if (!session || received.length === 0) return null

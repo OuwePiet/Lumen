@@ -1,4 +1,5 @@
 "use client"
+import { getTransaction } from "deso-protocol"
 
 // Non-secret, origin-local recovery state. Never persist signed transactions or
 // credentials. Absence from the mempool is never proof that a payment failed.
@@ -84,12 +85,11 @@ export async function withFinancialAccountLock(publicKey: string, action: () => 
 export async function readFinancialReceipt(publicKey: string, intent: string) {
   const receipt = financialReceipt(publicKey, intent)
   if (!receipt?.transactionHashHex) return "Geen betrouwbare transactiereferentie beschikbaar. Niet opnieuw verzenden; controleer DeSo handmatig."
-  const response = await fetch(`/api/via/financial-status?hash=${encodeURIComponent(receipt.transactionHashHex)}`, { cache: "no-store" })
-  const data = await response.json() as { ok?: boolean; found?: boolean }
-  if (!response.ok || !data.ok || typeof data.found !== "boolean") throw new Error("FINANCIAL_READBACK_UNAVAILABLE")
+  const data = await getTransaction({TxnHashHex:receipt.transactionHashHex})
+  if(typeof data.TxnFound !== "boolean") throw new Error("FINANCIAL_READBACK_UNAVAILABLE")
   // get-txn establishes mempool visibility, not block inclusion or ownership.
   // Neither result clears pending/receipts or starts a new financial action.
-  return data.found
+  return data.TxnFound
     ? "DeSo ziet deze transactie. Dit is nog geen bewijs van definitieve block inclusion of NFT-eigendom."
     : "DeSo bevestigt deze referentie nog niet. Dat bewijst geen mislukking. Niet opnieuw verzenden."
 }

@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { viaModernIdentity, type ViaModernIdentityUser } from "./deso-identity-modern"
 
 type Bid = {
@@ -8,6 +8,8 @@ type Bid = {
   bidderPublicKey: string
   bidAmountNanos: number
 }
+
+import { submitNativeNFTBid } from "./nft-native-bid"
 
 type Props = {
   postHash: string
@@ -43,64 +45,17 @@ export default function NFTMyBids({ postHash, bids }: Props) {
     [bids, session],
   )
 
-  async function withdrawBid(serialNumber: number) {
-    if (!session || confirmedSerial !== serialNumber) return
-    if (status === "preparing" || status === "approval" || status === "submitting") return
-
-    setStatus("preparing")
-    setMessage("Preparing exact DeSo bid withdrawal…")
-
-    try {
-      const response = await fetch("/api/via/nft/withdraw-bid", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        cache: "no-store",
-        body: JSON.stringify({
-          action: "prepare",
-          publicKey: session.publicKey,
-          postHash,
-          serialNumber,
-        }),
-      })
-      const result = await response.json() as PrepareResponse
-      if (!response.ok || !result.ok || !result.transactionHex) throw new Error(result.error || "PREPARE_FAILED")
-
-      const withdrawBidPermission = {
-        NFTOperationLimitMap: {
-          [postHash]: {
-            [serialNumber]: {
-              nft_bid: 1,
-            },
-          },
-        },
-      }
-      if (!(await viaModernIdentity.hasPermissions(withdrawBidPermission))) {
-        setMessage("Requesting permission to withdraw this exact DeSo NFT bid…")
-        await viaModernIdentity.requestPermissions(withdrawBidPermission)
-      }
-
-      setStatus("approval")
-      setMessage("Signing the exact bid withdrawal with DeSo Identity…")
-      const signedTransactionHex = await viaModernIdentity.signTx(result.transactionHex)
-      setStatus("submitting")
-      setMessage("Submitting the approved bid withdrawal to DeSo…")
-      const submitResponse = await fetch("/api/via/nft/withdraw-bid", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        cache: "no-store",
-        body: JSON.stringify({ action: "submit", signedTransactionHex }),
-      })
-      const submitResult = await submitResponse.json() as { ok?: boolean; error?: string }
-      if (!submitResponse.ok || !submitResult.ok) throw new Error(submitResult.error || "SUBMIT_FAILED")
-      setStatus("done")
-      setMessage("Bid withdrawal submitted to DeSo.")
-      setConfirmedSerial(null)
-    } catch (error) {
-      setStatus("error")
-      setMessage(error instanceof Error && error.message === "POPUP_BLOCKED"
-        ? "Approval window was blocked. VIA changed nothing."
-        : "Bid withdrawal could not be prepared. VIA changed nothing.")
-    }
+  const lock=useRef(false)
+  async function withdrawBid(serialNumber:number){
+    if(!session||confirmedSerial!==serialNumber||lock.current||!myBids.some(b=>b.serialNumber===serialNumber))return
+    lock.current=true;setConfirmedSerial(null);setStatus("preparing")
+    let submitting=false
+    try{
+      setMessage("Preparing withdrawal directly with DeSo...")
+      await submitNativeNFTBid(session.publicKey,postHash,serialNumber,0,()=>{},()=>{submitting=true;setStatus("submitting")})
+      setStatus("done");setMessage("Withdrawal submitted to DeSo. Refresh to verify.")
+    }catch{setStatus("error");setMessage(submitting?"Submission uncertain. Verify on DeSo before retrying.":"Withdrawal not submitted. Review account and permissions.")}
+    finally{lock.current=false}
   }
 
   if (!session || myBids.length === 0) return null

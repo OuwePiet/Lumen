@@ -1,6 +1,8 @@
 "use client"
+import {uploadNativeImage} from "../social/native-image"
+import {prepareNativePost,submitNativePost} from "../social/native-post"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import { viaModernIdentity, type ViaModernIdentityUser } from "../deso-identity-modern"
 import VideoUploadControl from "../social/video-upload-control"
 
@@ -48,31 +50,29 @@ export default function MintMediaStep({ onPostHash }: { onPostHash?: (postHash: 
     return ()=>controller.abort()
   },[mode,file])
 
+  const sourceLock=useRef(false)
   async function createSourcePost(){
     const sourceUrl=mode==="advanced" ? externalMediaUrl.trim() : (videoUrl || imageUrl)
     if(mode==="protected"){ setMessage("Arweave storage upload and direct provider payment are not connected yet. Nothing was uploaded, posted or minted."); return }
     if(!session){ setMessage("Sign in with DeSo Identity before creating the source post. Nothing was posted or minted."); return }
     if(!sourceUrl){ setMessage("Choose or upload NFT media before creating the source post. Nothing was posted or minted."); return }
-    if(postBusy) return
+    if(postBusy||sourceLock.current) return
     if(description.trim().length===0){ setMessage("Add a description before creating the DeSo source post. Nothing was posted or minted."); return }
     if(mode==="advanced"){ try { const parsed=new URL(sourceUrl); if(parsed.protocol!=="https:" || !parsed.hostname) throw new Error("HTTPS_REQUIRED") } catch { setMessage("Use a valid HTTPS media URL. Nothing was posted or minted."); return } }
-    setSourcePostReady(false); onPostHash?.(""); setPostBusy(true); setMessage("Preparing the DeSo source post…")
+    sourceLock.current=true; setSourcePostReady(false); onPostHash?.(""); setPostBusy(true); setMessage("Preparing the DeSo source post…")
     try {
-      const response=await fetch("/api/via/social/post",{method:"POST",headers:{"Content-Type":"application/json"},cache:"no-store",body:JSON.stringify({action:"prepare",publicKey:session.publicKey,body:description,imageUrls:videoUrl && mode==="deso" ? [] : [sourceUrl],videoUrls:videoUrl && mode==="deso" ? [sourceUrl] : [],sensitiveContent})})
-      const data=await response.json() as {ok?:boolean;transactionHex?:string;error?:string}
-      if(!response.ok || !data.ok || !data.transactionHex) throw new Error(data.error || "PREPARE_FAILED")
+      const data=await prepareNativePost(session.publicKey,description,videoUrl&&mode==="deso"?[]:[sourceUrl],videoUrl&&mode==="deso"?[sourceUrl]:[],"",[],sensitiveContent)
       setMessage("Signing the DeSo source post with the active Identity…")
       const signedTransactionHex=await viaModernIdentity.signTx(data.transactionHex)
       setMessage("Submitting approved DeSo source post…")
-      const submitResponse=await fetch("/api/via/social/post",{method:"POST",headers:{"Content-Type":"application/json"},cache:"no-store",body:JSON.stringify({action:"submit",signedTransactionHex})})
-      const submitResult=await submitResponse.json() as {ok?:boolean;postHashHex?:string|null;error?:string}
-      if(!submitResponse.ok || !submitResult.ok || !submitResult.postHashHex) throw new Error(submitResult.error || "POST_HASH_MISSING")
+      const submitResult=await submitNativePost(signedTransactionHex,data.assertAccount)
+      if(!submitResult.postHashHex)throw new Error("POST_HASH_MISSING")
       if(!/^[0-9a-fA-F]{64}$/.test(submitResult.postHashHex)) throw new Error("INVALID_POST_HASH")
       onPostHash?.(submitResult.postHashHex)
       setSourcePostReady(true)
       setMessage("Source post confirmed. Its DeSo PostHash is ready for the NFT mint terms below.")
-    } catch { setMessage("The source post could not be prepared. Nothing was posted or minted.") }
-    finally { setPostBusy(false) }
+    } catch { setMessage("Source post not confirmed. Check DeSo before retrying.") }
+    finally { sourceLock.current=false; setPostBusy(false) }
   }
 
   async function uploadStandardImage(){
@@ -83,11 +83,7 @@ export default function MintMediaStep({ onPostHash }: { onPostHash?: (postHash: 
     if(file.size<=0){ setMessage("The selected image is empty. Nothing was uploaded."); return }
     setUploading(true); setMessage("Authorizing DeSo media upload…")
     try {
-      const jwt=await viaModernIdentity.jwt()
-      const form=new FormData(); form.set("publicKey",session.publicKey); form.set("jwt",jwt); form.set("file",file,file.name)
-      const response=await fetch("/api/via/social/image-upload",{method:"POST",body:form,cache:"no-store"})
-      const data=await response.json() as {ok?:boolean;imageUrl?:string;error?:string}
-      if(!response.ok || !data.ok || !data.imageUrl) throw new Error(data.error || "UPLOAD_FAILED")
+      const data=await uploadNativeImage(session.publicKey,file)
       setImageUrl(data.imageUrl); setVideoUrl(""); setSourcePostReady(false); setMessage("Image uploaded to DeSo. Next: add the description and create the source post. NFT minting has not started.")
       onPostHash?.("")
     } catch { setMessage("Image upload failed. Nothing was posted or minted.") }

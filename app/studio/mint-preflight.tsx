@@ -1,7 +1,12 @@
 "use client"
+import { mintCost } from "./mint-cost"
+import { submitGuardedNFT } from "../nft-submission-guard"
+import { ensureNFTPermission } from "../nft-permissions"
 
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react"
 import { viaModernIdentity, type ViaModernIdentityUser } from "../deso-identity-modern"
+
+import { createNFT, identity } from "deso-protocol"
 
 type MintQuote = {
   resolved?: boolean
@@ -92,6 +97,8 @@ export default function MintPreflight({ initialPostHash = "" }: { initialPostHas
   }, [])
 
   useEffect(() => {
+    requestSequence.current += 1
+    unsignedQuote.current=null
     setResult(null)
     setQuotedPublicKey("")
     setServerClockOffset(0)
@@ -147,94 +154,56 @@ export default function MintPreflight({ initialPostHash = "" }: { initialPostHas
     }
   }
 
-  async function requestPreflight() {
-    if (!valid || !session || requestInFlight.current) return
-    requestInFlight.current = true
-    const requestId = ++requestSequence.current
-    setLoading(true); setResult(null); setServerClockOffset(0); setPreflightFailed(false); setMessage("Requesting current DeSo mint fee and spend context…")
-    try {
-      const response = await fetch("/api/via/mint/preflight", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "Cache-Control": "no-store" },
-        cache: "no-store",
-        body: JSON.stringify({
-          updaterPublicKey: session.publicKey,
-          nftPostHashHex: postHash.trim(),
-          numCopies: Number(copies),
-          hasUnlockable: unlockable,
-          isForSale: forSale,
-          minBidAmountNanos: forSale ? Number(minBid) : 0,
-          creatorRoyaltyBasisPoints: Number(creatorRoyalty),
-          coinRoyaltyBasisPoints: Number(coinRoyalty),
-          isBuyNow: forSale && buyNow,
-          buyNowPriceNanos: forSale && buyNow ? Number(buyNowPrice) : 0,
-        }),
-      })
-      const data: MintQuote = await response.json().catch(() => ({}))
-      if (requestId !== requestSequence.current) return
-      setResult(data)
-      if (typeof data.serverNow === "number") setServerClockOffset(data.serverNow - Date.now())
-      setQuotedPublicKey(response.ok && data.resolved && data.quotedForPublicKey === session.publicKey ? data.quotedForPublicKey : "")
-      const accepted = response.ok && data.resolved && data.quotedForPublicKey === session.publicKey
-      setPreflightFailed(!accepted)
-      setMessage(accepted ? "Fresh unsigned DeSo mint quote loaded. Nothing has been signed or submitted." : response.ok && data.resolved ? "Preflight stopped: quote account did not match the active DeSo Identity." : `Preflight stopped: ${data.reason ?? "quote unavailable"}.`)
-    } catch {
-      if (requestId !== requestSequence.current) return
-      setPreflightFailed(true)
-      setMessage("Preflight stopped: current DeSo quote could not be loaded.")
-    } finally {
-      requestInFlight.current = false
-      setLoading(false)
-    }
+  const mintLock=useRef(false)
+  const unsignedQuote=useRef<{key:string;terms:string;hex:string;cost:number;expires:number}|null>(null)
+  function mintParams(key:string){
+    return {UpdaterPublicKeyBase58Check:key,NFTPostHashHex:postHash.trim(),NumCopies:Number(copies),HasUnlockable:unlockable,IsForSale:forSale,MinBidAmountNanos:forSale?Number(minBid):0,NFTRoyaltyToCreatorBasisPoints:Number(creatorRoyalty),NFTRoyaltyToCoinBasisPoints:Number(coinRoyalty),IsBuyNow:forSale&&buyNow,BuyNowPriceNanos:forSale&&buyNow?Number(buyNowPrice):0,AdditionalDESORoyaltiesMap:{},AdditionalCoinRoyaltiesMap:{},MinFeeRateNanosPerKB:1000,TransactionFees:[]}
   }
-
-  async function prepareMint() {
-    if (!session || !quoteUsable || mintStatus === "preparing" || mintStatus === "approval" || mintStatus === "submitting") return
-    setMintStatus("preparing")
-    setMintMessage("Refreshing exact DeSo mint transaction for approval…")
-    try {
-      const response = await fetch("/api/via/mint/execute", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        cache: "no-store",
-        body: JSON.stringify({
-          action: "prepare",
-          mint: {
-            updaterPublicKey: session.publicKey,
-            nftPostHashHex: postHash.trim(),
-            numCopies: Number(copies),
-            hasUnlockable: unlockable,
-            isForSale: forSale,
-            minBidAmountNanos: forSale ? Number(minBid) : 0,
-            creatorRoyaltyBasisPoints: Number(creatorRoyalty),
-            coinRoyaltyBasisPoints: Number(coinRoyalty),
-            isBuyNow: forSale && buyNow,
-            buyNowPriceNanos: forSale && buyNow ? Number(buyNowPrice) : 0,
-          },
-        }),
-      })
-      const data = await response.json() as { ok?: boolean; transactionHex?: string; feeNanos?: number | null; spendAmountNanos?: number | null; error?: string }
-      if (!response.ok || !data.ok || !data.transactionHex) throw new Error(data.error || "PREPARE_FAILED")
+  async function assertMintAccount(key:string){
+    if((await viaModernIdentity.currentUser())?.publicKey!==key||(await identity.snapshot()).currentUser?.publicKey!==key)throw new Error("Account changed")
+  }
+  async function requestPreflight(){
+    if(!valid||!session||requestInFlight.current||mintLock.current)return
+    requestInFlight.current=true
+    const requestId=++requestSequence.current,key=session.publicKey,params=mintParams(key)
+    unsignedQuote.current=null
+    setLoading(true);setResult(null);setServerClockOffset(0);setPreflightFailed(false)
+    try{
+      await assertMintAccount(key)
+      const {constructedTransactionResponse:tx}=await createNFT(params,{broadcast:false,checkPermissions:false,localConstruction:false})
+      await assertMintAccount(key)
+      if(requestId!==requestSequence.current)return
+      const {fee,spend}=mintCost(tx.FeeNanos,tx.TotalInputNanos,tx.ChangeAmountNanos)
+      if(!tx.TransactionHex||!Number.isSafeInteger(fee)||fee<0||!Number.isSafeInteger(spend)||spend<0||!Number.isSafeInteger(fee+spend))throw new Error("Invalid quote")
+      const now=Date.now(),expires=now+300000
+      unsignedQuote.current={key,terms:JSON.stringify(params),hex:tx.TransactionHex,cost:fee+spend,expires}
+      setResult({resolved:true,source:"deso-create-nft-constructor",quoteContractVersion:1,quotedAt:new Date(now).toISOString(),createdAt:new Date(now).toISOString(),quoteId:crypto.randomUUID(),quoteTtlSeconds:300,quotedForPublicKey:key,expiresAt:new Date(expires).toISOString(),viaServiceFee:{currency:"USD",amountMinor:1,collectionStatus:"not-collected"},quote:{feeNanos:fee,spendAmountNanos:spend,totalInputNanos:tx.TotalInputNanos,changeAmountNanos:tx.ChangeAmountNanos,viaServiceFeeNanos:0},mintAuthorized:false})
+      setQuotedPublicKey(key);setMessage("Unsigned DeSo quote loaded. Nothing signed or submitted.")
+    }catch{if(requestId===requestSequence.current){setPreflightFailed(true);setMessage("Direct DeSo quote unavailable.")}}
+    finally{requestInFlight.current=false;setLoading(false)}
+  }
+  async function prepareMint(){
+    if(!session||!quoteUsable||!valid||mintLock.current)return
+    const key=session.publicKey,q=unsignedQuote.current
+    if(!q||q.key!==key||q.terms!==JSON.stringify(mintParams(key))||Date.now()>=q.expires){setResult(null);setMintMessage("Request a fresh quote.");return}
+    mintLock.current=true;unsignedQuote.current=null;setMintStatus("preparing")
+    let submitting=false
+    try{
+      await assertMintAccount(key)
+      const permission={GlobalDESOLimit:q.cost,TransactionCountLimitMap:{CREATE_NFT:1}}
+      await ensureNFTPermission(permission,()=>assertMintAccount(key))
+      await assertMintAccount(key)
+      if(!(await viaModernIdentity.hasPermissions(permission))||Date.now()>=q.expires)throw new Error("Permission or quote expired")
+      await assertMintAccount(key)
       setMintStatus("approval")
-      setMintMessage("Approve the freshly prepared NFT mint with DeSo Identity…")
-      const signedTransactionHex = await viaModernIdentity.signTx(data.transactionHex)
-      setMintStatus("submitting")
-      setMintMessage("Submitting approved mint to DeSo…")
-      const submitResponse = await fetch("/api/via/mint/execute", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        cache: "no-store",
-        body: JSON.stringify({ action: "submit", signedTransactionHex }),
-      })
-      const submitData = await submitResponse.json() as { ok?: boolean; error?: string }
-      if (!submitResponse.ok || !submitData.ok) throw new Error(submitData.error || "SUBMIT_FAILED")
-      setMintStatus("done")
-      setMintMessage("NFT mint submitted to DeSo.")
-      setResult(null)
-    } catch {
-      setMintStatus("error")
-      setMintMessage("The NFT mint could not be approved or submitted. VIA changed nothing.")
-    }
+      const signed=await viaModernIdentity.signTx(q.hex)
+      await assertMintAccount(key)
+      if(Date.now()>=q.expires)throw new Error("Quote expired")
+      submitting=true;setMintStatus("submitting")
+      await submitGuardedNFT(key,postHash.trim(),0,q.cost,signed,()=>assertMintAccount(key))
+      setMintStatus("done");setMintMessage("NFT mint submitted to DeSo. Refresh to verify.")
+    }catch{setMintStatus("error");setMintMessage(submitting?"Submission uncertain. Verify on DeSo before retrying.":"Mint not submitted. Request a fresh quote.")}
+    finally{mintLock.current=false;setResult(null)}
   }
 
   function resetPreflight() {

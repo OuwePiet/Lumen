@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import ViaGroupChat from "./via-group-chat"
 import { useEffect, useMemo, useState } from "react"
 import { ArrowLeft, Search, SquarePen } from "lucide-react"
 import { viaModernIdentity } from "../deso-identity-modern"
@@ -490,7 +491,7 @@ export default function MessagesClient() {
     const encryptedMessage = await viaModernIdentity.encryptMessage(recipientGroup.AccessGroupPublicKeyBase58Check, message)
     const transactionHex = await constructViaDMTransaction(senderGroup, recipientGroup, encryptedMessage)
     const signedTransactionHex = await viaModernIdentity.signTx(transactionHex)
-    await submitViaSignedTransaction(signedTransactionHex)
+    await submitViaSignedTransaction(signedTransactionHex,publicKey)
     setDraft("")
     const response = await fetchDeSo("get-paginated-messages-for-dm-thread", {
       method: "POST",
@@ -529,6 +530,7 @@ export default function MessagesClient() {
           </div>
 
         </header>
+        {publicKey && <ViaGroupChat key={publicKey} publicKey={publicKey} language={language} />}
 
         {!publicKey ? (
           <section className="via-messages-login rounded-[16px] border border-zinc-800 bg-zinc-950/50 p-4 sm:p-6">

@@ -40,6 +40,8 @@ async function run(name, engine, options) {
         identityLaunches.push({ pathname: url.pathname, redirect: url.searchParams.get('redirect_uri'), feeBudget: permissions.GlobalDESOLimit })
         return route.fulfill({ contentType: 'text/html', body: '<h1>Identity intercepted — no real login or signing</h1>' })
       }
+      if(url.origin==='https://node.deso.org' && url.pathname==='/api/v0/get-unread-notifications-count')return route.fulfill({json:{NotificationsCount:0}})
+      if(url.origin==='https://node.deso.org' && url.pathname==='/api/v0/get-notifications')return route.fulfill({json:{Notifications:[],LastSeenIndex:0}})
       if (url.origin !== new URL(base).origin) {
         if (request.method() !== 'GET' && !['/api/v0/get-user-dm-threads-ordered-by-timestamp'].includes(url.pathname)) forbidden.push(url.pathname)
         if (url.pathname.includes('/get-single-derived-key/')) return route.fulfill({ json: { DerivedKey: { IsValid: true, TransactionSpendingLimit: { GlobalDESOLimit: 0, TransactionCountLimitMap: {} } } } })
