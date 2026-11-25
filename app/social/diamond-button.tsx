@@ -1,5 +1,6 @@
 "use client"
 import {sendDiamonds,identity} from "deso-protocol"
+import { DIAMOND_LEVEL_MAP } from "deso-protocol/src/identity/constants.js"
 
 import { useEffect, useRef, useState } from "react"
 import { Popover } from "@base-ui/react/popover"
@@ -21,8 +22,7 @@ const RECIPIENT_COPY: Record<ViaLanguage, { recipient: string; show: string; pre
 }
 
 type Props = { postHash: string; receiverPublicKey: string; initialCount: number; variant?: "default" | "icon" }
-type PrepareResponse = { ok?: boolean; transactionHex?: string; diamondLevel?: number; feeNanos?: number | null; spendAmountNanos?: number | null; error?: string }
-type DiamondLevelsResponse = { ok?: boolean; diamondLevelMap?: Record<string, number> }
+const diamondValues = Object.entries(DIAMOND_LEVEL_MAP).map(([level, nanos]) => ({ level: Number(level), nanos }))
 
 /**
  * Fail closed if DeSo Identity never answers (notably on mobile Safari).
@@ -48,12 +48,10 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
   const leafRain = celebrate ? <div aria-hidden="true" className="pointer-events-none fixed inset-0 z-[90] overflow-hidden">{Array.from({ length: 28 }, (_, i) => <span key={i} className="absolute top-[-12%] animate-[viaLeafFall_4s_ease-in_forwards]" style={{ left: `${(i * 37) % 100}%`, animationDelay: `${(i % 10) * 0.20}s`, transform: `rotate(${i * 41}deg)` }}><img src="/via-leaf.svg" alt="" width="36" height="34" className="h-9 w-9 object-contain" /></span>)}<style>{`@keyframes viaLeafFall { from { translate: 0 -10vh; opacity: 1 } to { translate: 8vw 115vh; opacity: 0 } }`}</style></div> : null
   const [status, setStatus] = useState<"idle" | "preparing" | "submitting" | "done" | "error">("idle")
   const [message, setMessage] = useState("")
-  const [diamondValues, setDiamondValues] = useState<Array<{ level: number; nanos: number }> | null>(null)
   const [desoUsd, setDesoUsd] = useState<number | null>(null)
-  const [levelsFailed, setLevelsFailed] = useState(false)
-  const [levelsAttempt, setLevelsAttempt] = useState(0)
   const [recipientOpen, setRecipientOpen] = useState(false)
   const reader = useViaIdentitySession()?.publicKey
+  const ownPost = reader === receiverPublicKey
   const [previousDiamond, setPreviousDiamond] = useState<{ reader: string; hash: string; level: number } | null>(null)
   const previousLevel = previousDiamond?.reader === reader && previousDiamond?.hash === postHash ? previousDiamond.level : null
 
@@ -90,34 +88,6 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
     const usd = (nanos / 1_000_000_000) * desoUsd
     return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", minimumFractionDigits: usd < 1 ? 2 : 0, maximumFractionDigits: usd < 1 ? 2 : 0 }).format(Math.max(0.01, usd))
   }
-
-  useEffect(() => {
-    if (diamondValues) return
-    const controller = new AbortController()
-    fetch("/api/via/social/diamond", { method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store", body: JSON.stringify({ action: "levels" }), signal: controller.signal })
-      .then(async (response) => {
-        const data = await response.json() as DiamondLevelsResponse
-        if (!response.ok || !data.ok || !data.diamondLevelMap) throw new Error("DIAMOND_LEVELS_UNAVAILABLE")
-        const values = Object.entries(data.diamondLevelMap)
-          .map(([key, nanos]) => ({ level: Number(key), nanos }))
-          .filter((entry) => Number.isInteger(entry.level) && entry.level >= 1 && entry.level <= 8 && Number.isSafeInteger(entry.nanos) && entry.nanos > 0)
-          .sort((a, b) => a.level - b.level)
-        if (!values.length) throw new Error("DIAMOND_LEVELS_UNAVAILABLE")
-        if (!controller.signal.aborted) {
-          setDiamondValues(values)
-        }
-      }).catch(() => {
-        if (!controller.signal.aborted) setLevelsFailed(true)
-      })
-    return () => controller.abort()
-  }, [diamondValues, levelsAttempt])
-
-  const retryLevels = levelsFailed ? (
-    <button type="button" onClick={() => { setLevelsFailed(false); setLevelsAttempt((attempt) => attempt + 1) }}
-      className="min-h-9 rounded-lg border border-zinc-700 px-2 text-xs text-amber-200">
-      Prijzen niet beschikbaar · Opnieuw laden
-    </button>
-  ) : null
 
   function changeMenu(open: boolean) {
     setMenuOpen(open)
@@ -243,8 +213,8 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
   }
 
   return <>
-    <Popover.Root open={reader === receiverPublicKey ? false : menuOpen} onOpenChange={open => { if (reader !== receiverPublicKey) changeMenu(open) }}>
-      <Popover.Trigger disabled={Boolean(reader && reader === receiverPublicKey)} type="button" title={reader === receiverPublicKey ? "Own post" : "Diamanten"} aria-label={"Diamanten · " + count}
+    <Popover.Root open={menuOpen} onOpenChange={changeMenu}>
+      <Popover.Trigger type="button" title="Diamanten" aria-label={"Diamanten · " + count}
         className="inline-flex h-9 min-w-9 items-center justify-center gap-1 rounded-full border border-zinc-800 px-2 text-xs text-zinc-300 hover:border-[#8fd4a9] data-[popup-open]:border-[#8fd4a9] data-[popup-open]:bg-[#285f40]">
         <Gem className="size-4" aria-hidden="true" />
         <span>{count}{variant === "default" ? " Diamanten" : ""}</span>
@@ -260,9 +230,11 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
               </div>
             ) : null}
             <div className="flex flex-wrap items-center gap-0.5">
-              {retryLevels}
-              {!diamondValues && !levelsFailed ? <span role="status" className="px-1 text-xs text-zinc-400">Prijzen laden…</span> : null}
-              {(diamondValues ?? []).map(({ level, nanos }) => {
+              {ownPost ? (
+                <span className="px-2 py-1 text-xs text-zinc-300">
+                  {language === "Dutch" ? "Je kunt geen diamant aan je eigen bericht geven." : "You can’t give a Diamond to your own post."}
+                </span>
+              ) : diamondValues.map(({ level, nanos }) => {
                 const price = diamondUsd(nanos) ?? (nanos / 1_000_000_000) + " DESO"
                 return (
                   <button key={level} type="button" disabled={busy || (previousLevel !== null && level <= previousLevel)}
@@ -294,7 +266,7 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
             <Popover.Popup aria-label="Diamantopbrengst" className="max-w-[calc(100vw-1rem)] rounded-xl border border-[#376047] bg-[#0d1c14] px-3 py-2 text-xs text-zinc-100 shadow-xl">
               <div className="flex flex-wrap items-center gap-1">
                 <PublicAccountLabel key={receiverPublicKey} publicKey={receiverPublicKey} />
-                <span role="status">{earnings === null || (!diamondValues && !levelsFailed && earnings !== "error" && !earningsLabel)
+                <span role="status">{earnings === null
                   ? "· Opbrengst laden…" : earningsLabel ? "· Geschatte diamantopbrengst " + earningsLabel : "· Opbrengst niet beschikbaar"}</span>
               </div>
             </Popover.Popup>
