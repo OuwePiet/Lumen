@@ -24,31 +24,12 @@ export type ViaModernIdentityAdapter = {
   setActiveUser(publicKey: string): Promise<void>
   signTx(transactionHex: string): Promise<string>
   hasPermissions(permissions: Parameters<typeof identity.hasPermissions>[0]): ReturnType<typeof identity.hasPermissions>
+  requestPermissions(permissions: Parameters<typeof identity.requestPermissions>[0]): ReturnType<typeof identity.requestPermissions>
   refreshSpendingLimits(): Promise<void>
   resumeRedirect(): void
   encryptMessage(recipientPublicKey: string, message: string): Promise<string>
   decryptMessage(message: NewMessageEntryResponse, groups?: AccessGroupEntryResponse[]): Promise<string>
   jwt(): Promise<string>
-}
-
-export const VIA_BASE_SPENDING_LIMITS: Parameters<typeof identity.hasPermissions>[0] = {
-  // SDK 3.4.1 DEFAULT_PERMISSIONS: a finite 0.01 DESO allowance. Replacing
-  // the default with only transaction counts otherwise drops the fee budget,
-  // including the fee needed to authorize the login key itself. This is a
-  // spending ceiling presented by Identity, not a payment or a fee charged by VIA.
-  GlobalDESOLimit: 10_000_000,
-  TransactionCountLimitMap: {
-    SUBMIT_POST: "UNLIMITED",
-    LIKE: "UNLIMITED",
-    FOLLOW: "UNLIMITED",
-    UPDATE_PROFILE: "UNLIMITED",
-    CREATE_POST_ASSOCIATION: "UNLIMITED",
-    NEW_MESSAGE: "UNLIMITED",
-    CREATE_NFT: "UNLIMITED",
-    // DeSo diamonds use BASIC_TRANSFER. Request this with the single homepage
-    // Identity approval, under the existing finite GlobalDESOLimit ceiling.
-    BASIC_TRANSFER: 100,
-  },
 }
 
 let configured = false
@@ -60,7 +41,7 @@ function configure(redirectLogin = false) {
   if (typeof window === "undefined") return
   identity.configure({
     appName: "VIA", network: "mainnet", nodeURI: "https://node.deso.org",
-    identityURI: "https://identity.deso.org", spendingLimitOptions: VIA_BASE_SPENDING_LIMITS,
+    identityURI: "https://identity.deso.org",
     // Official SDK redirect: no Safari popup/opener dependency. Only login redirects.
     redirectURI: redirectLogin ? `${window.location.origin}/` : undefined,
     identityPresenter: redirectLogin ? (url) => { window.location.href = checkedIdentityLoginURL(url, window.location.origin) } : undefined,
@@ -168,6 +149,7 @@ export const viaModernIdentity: ViaModernIdentityAdapter = {
       return identity.hasPermissions(permissions)
     })
   },
+  requestPermissions(permissions) { return forSelectedUser(() => identity.requestPermissions({...permissions, GlobalDESOLimit: (identity.transactionSpendingLimitOptions.GlobalDESOLimit ?? 0) + (permissions.GlobalDESOLimit ?? 0)})) },
   refreshSpendingLimits() { return forSelectedUser(() => identity.refreshDerivedKeyPermissions()) },
   encryptMessage(recipientPublicKey, message) { return forSelectedUser(() => identity.encryptMessage(recipientPublicKey, message)) },
   async decryptMessage(message, groups = []) {
