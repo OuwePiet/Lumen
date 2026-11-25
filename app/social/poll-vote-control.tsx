@@ -1,6 +1,5 @@
 "use client"
 import {createPostAssociation,identity} from "deso-protocol"
-import {withFinancialAccountLock,financialSubmissionBlock,markFinancialPending,markFinancialSubmitted} from "../financial-submission"
 import {ensureNFTPermission} from "../nft-permissions"
 
 import { useEffect, useState, useRef } from "react"
@@ -105,10 +104,6 @@ export default function PollVoteControl({ postHash, options }: Props) {
 
     try {
       const key=session.publicKey
-      const intent="poll:"+postHash.toLowerCase()
-      await withFinancialAccountLock(key,async()=>{
-      const blocked=financialSubmissionBlock(key,intent)
-      if(blocked)throw new Error(blocked)
       const assertAccount=async()=>{if((await viaModernIdentity.currentUser())?.publicKey!==key||(await identity.snapshot()).currentUser?.publicKey!==key)throw new Error("ACCOUNT_CHANGED")}
       await assertAccount()
       const prior=await readPollResponseStatus(postHash,key)
@@ -130,11 +125,7 @@ export default function PollVoteControl({ postHash, options }: Props) {
       const latest=await readPollResponseStatus(postHash,key)
       if(latest.truncated||latest.multipleResponsesDetected||latest.existingResponse)throw new Error("EXISTING_OR_UNCERTAIN_VOTE")
       await assertAccount()
-      const record={publicKey:key,intent,amountNanos:tx.FeeNanos,startedAt:Date.now()}
-      if(record.amountNanos<1)throw new Error("INVALID_FEE")
-      markFinancialPending(record)
-      const receipt=await identity.submitTx(signedTransactionHex)
-      markFinancialSubmitted(record,receipt?.TxnHashHex??receipt?.TransactionHashHex)
+      await identity.submitTx(signedTransactionHex)
 
       const reread = await readPollResponseStatus(postHash, session.publicKey)
       const confirmed = !reread.truncated&&!reread.multipleResponsesDetected?reread.existingResponse?.option:undefined
@@ -142,7 +133,6 @@ export default function PollVoteControl({ postHash, options }: Props) {
       setStatus("done")
       setMessage(confirmed ? `Vote confirmed from DeSo: ${confirmed}` : "Vote submitted to DeSo; refresh the poll to verify its response.")
       setPendingOption(null)
-      })
     } catch {
       setStatus("error")
       setMessage("Vote not confirmed. Check DeSo before retrying.")

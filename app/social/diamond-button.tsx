@@ -5,7 +5,6 @@ import { useEffect, useRef, useState } from "react"
 import { Popover } from "@base-ui/react/popover"
 import { Gem, TrendingUp } from "lucide-react"
 import { restoreIdentitySession, VIA_IDENTITY_EVENT } from "../deso-identity-session"
-import { financialSubmissionBlock, markFinancialPending, markFinancialSubmitted, withFinancialAccountLock } from "../financial-submission"
 import { ensureDiamondPermission } from "./diamond-permissions"
 import { viaModernIdentity } from "../deso-identity-modern"
 import { fetchViaRates } from "../via-live-rates"
@@ -186,11 +185,7 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
     try {
       if (!session) throw new Error("DESO_LOGIN_REQUIRED")
 
-      const intent = "diamond:" + postHash + ":" + receiverPublicKey + ":" + chosenLevel
-      await withFinancialAccountLock(session.publicKey, async () => {
         await assertAccount()
-        const blocked = financialSubmissionBlock(session.publicKey, intent)
-        if (blocked) throw new Error(blocked)
         setCelebrate(false); setStatus("preparing"); setMessage("")
         const {constructedTransactionResponse:tx}=await sendDiamonds({SenderPublicKeyBase58Check:session.publicKey,ReceiverPublicKeyBase58Check:receiverPublicKey,DiamondPostHashHex:postHash,DiamondLevel:chosenLevel,MinFeeRateNanosPerKB:1000,TransactionFees:[]},{broadcast:false,checkPermissions:false,localConstruction:false})
         const data={transactionHex:tx.TransactionHex,feeNanos:tx.FeeNanos,spendAmountNanos:tx.SpendAmountNanos}
@@ -206,19 +201,15 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
         setMessage("")
         const signedTransactionHex = await awaitIdentityResponse(viaModernIdentity.signTx(data.transactionHex), 20000)
         await assertAccount()
-        const submission = { publicKey: session.publicKey, intent, amountNanos: cost, startedAt: Date.now() }
-        markFinancialPending(submission)
         if (invalidated || restoreIdentitySession()?.publicKey !== session.publicKey) throw new Error("ACCOUNT_CHANGED")
         setStatus("submitting"); setMessage("")
         sent = true
         await assertAccount()
-        const result=await identity.submitTx(signedTransactionHex)
+        await identity.submitTx(signedTransactionHex)
         accepted = true
-        markFinancialSubmitted(submission, result?.TxnHashHex ?? result?.TransactionHashHex)
         setEarnings(null)
         changeMenu(false)
         setMessage("")
-        void viaModernIdentity.refreshSpendingLimits().catch(() => {})
         const params = new URLSearchParams({ hash: postHash, fresh: "1", reader: session.publicKey })
         for (const delay of [0, 750, 1500, 3000]) {
           if (delay) await new Promise(resolve => window.setTimeout(resolve, delay))
@@ -240,10 +231,9 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
         }
         setStatus("done")
         setMessage("DeSo heeft de transactie ontvangen. De diamant is nog niet zichtbaar. Controleer later opnieuw.")
-      })
     } catch (error) {
       setStatus(accepted ? "done" : "error")
-      setMessage(accepted ? "DeSo received the Diamond. Recovery storage could not be updated; check DeSo before any new payment." : sent ? "The Diamond outcome is uncertain. Do not resend; check DeSo." : error instanceof Error && error.message === "DESO_IDENTITY_NO_RESPONSE" ? "DeSo Identity reageert niet. Er is vanuit VIA geen diamant verzonden. Controleer de DeSo-machtiging voordat je opnieuw probeert." : error instanceof Error ? error.message : "Diamond preparation stopped. Nothing was submitted.")
+      setMessage(accepted ? "DeSo received the Diamond. Check DeSo for its current status." : sent ? "The Diamond outcome is uncertain. Do not resend; check DeSo." : error instanceof Error && error.message === "DESO_IDENTITY_NO_RESPONSE" ? "DeSo Identity reageert niet. Er is vanuit VIA geen diamant verzonden. Controleer de DeSo-machtiging voordat je opnieuw probeert." : error instanceof Error ? error.message : "Diamond preparation stopped. Nothing was submitted.")
     } finally {
       window.removeEventListener(VIA_IDENTITY_EVENT, onIdentity)
       window.removeEventListener("storage", onIdentity)

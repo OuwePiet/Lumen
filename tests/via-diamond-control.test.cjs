@@ -16,10 +16,10 @@ function scenario({permission=true,deny=false,uncertain=false,delayed=false,stal
  const button=find(tree);assert.ok(button,'diamond level button');return{click:()=>button.props.onClick(),calls,storage,messages,switchAccount:()=>{active=keyB;window.dispatchEvent(new Event('via:identity-session'))}};
 }
 async function settle(){for(let i=0;i<18;i++)await new Promise(resolve=>setImmediate(resolve))}
-test('rapid diamond confirmations submit once and keep a recovery receipt',async()=>{const s=scenario();s.click();s.click();await settle();assert.equal(s.calls.filter(x=>x==='prepare').length,1);assert.equal(s.calls.filter(x=>x==='submit').length,1);assert.ok([...s.storage.keys()].some(k=>k.endsWith(':submitted')));s.click();await settle();assert.equal(s.calls.filter(x=>x==='submit').length,1)});
+test('rapid diamond confirmations submit once without local receipt gate',async()=>{const s=scenario();s.click();s.click();await settle();assert.equal(s.calls.filter(x=>x==='prepare').length,1);assert.equal(s.calls.filter(x=>x==='submit').length,1);assert.equal(s.storage.size,0)});
 test('denied Diamond permission never signs or submits',async()=>{const s=scenario({permission:false,deny:true});s.click();await settle();assert.ok(s.calls.includes('prepare'));assert.ok(!s.calls.includes('permission'));assert.ok(!s.calls.includes('sign'));assert.ok(!s.calls.includes('submit'))});
 test('account switch after confirmation stops signing and submission',async()=>{const s=scenario();s.click();s.switchAccount();await settle();assert.ok(!s.calls.includes('sign'));assert.ok(!s.calls.includes('submit'))});
-test('uncertain broadcast keeps recovery block and cannot resubmit',async()=>{const s=scenario({uncertain:true});s.click();await settle();assert.equal(s.calls.filter(x=>x==='submit').length,1);assert.ok([...s.storage.keys()].some(k=>k.endsWith(':pending')));s.click();await settle();assert.equal(s.calls.filter(x=>x==='submit').length,1)});
+test('uncertain broadcast reports error without automatic resubmission',async()=>{const s=scenario({uncertain:true});s.click();await settle();assert.equal(s.calls.filter(x=>x==='submit').length,1);assert.equal(s.storage.size,0);assert.ok(s.messages.some(m=>m.includes('uncertain')))});
 
 test('accepted diamond waits for DeSo readback without resubmitting',async()=>{const s=scenario({delayed:true});s.click();await settle();assert.equal(s.calls.filter(x=>x==='submit').length,1);assert.ok(!s.messages.includes('Diamant zichtbaar op DeSo.'));assert.equal(s.messages.at(-1),'')});
 
