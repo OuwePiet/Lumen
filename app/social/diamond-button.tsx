@@ -191,7 +191,7 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
         await assertAccount()
         const blocked = financialSubmissionBlock(session.publicKey, intent)
         if (blocked) throw new Error(blocked)
-        setCelebrate(false); setStatus("preparing"); setMessage("Preparing the Diamond and exact DeSo cost…")
+        setCelebrate(false); setStatus("preparing"); setMessage("")
         const {constructedTransactionResponse:tx}=await sendDiamonds({SenderPublicKeyBase58Check:session.publicKey,ReceiverPublicKeyBase58Check:receiverPublicKey,DiamondPostHashHex:postHash,DiamondLevel:chosenLevel,MinFeeRateNanosPerKB:1000,TransactionFees:[]},{broadcast:false,checkPermissions:false,localConstruction:false})
         const data={transactionHex:tx.TransactionHex,feeNanos:tx.FeeNanos,spendAmountNanos:tx.SpendAmountNanos}
         await assertAccount()
@@ -200,16 +200,16 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
             typeof data.spendAmountNanos !== "number" || !Number.isSafeInteger(data.spendAmountNanos) || data.spendAmountNanos < 0) throw new Error("INVALID_DESO_TRANSACTION_DATA")
         const cost = data.spendAmountNanos + data.feeNanos
         if (!Number.isSafeInteger(cost) || cost < 1) throw new Error("INVALID_DESO_SPEND_LIMIT")
-        setStatus("approval"); setMessage("Checking DeSo Identity permissions...")
+        setStatus("approval"); setMessage("")
         await awaitIdentityResponse(ensureDiamondPermission(viaModernIdentity, cost), 120000)
         await assertAccount()
-        setMessage("DeSo Identity is signing your Diamond…")
+        setMessage("")
         const signedTransactionHex = await awaitIdentityResponse(viaModernIdentity.signTx(data.transactionHex), 20000)
         await assertAccount()
         const submission = { publicKey: session.publicKey, intent, amountNanos: cost, startedAt: Date.now() }
         markFinancialPending(submission)
         if (invalidated || restoreIdentitySession()?.publicKey !== session.publicKey) throw new Error("ACCOUNT_CHANGED")
-        setStatus("submitting"); setMessage("Submitting your Diamond to DeSo…")
+        setStatus("submitting"); setMessage("")
         sent = true
         await assertAccount()
         const result=await identity.submitTx(signedTransactionHex)
@@ -217,7 +217,7 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
         markFinancialSubmitted(submission, result?.TxnHashHex ?? result?.TransactionHashHex)
         setEarnings(null)
         changeMenu(false)
-        setMessage("DeSo heeft de diamant ontvangen. Toekenning wordt gecontroleerd…")
+        setMessage("")
         void viaModernIdentity.refreshSpendingLimits().catch(() => {})
         const params = new URLSearchParams({ hash: postHash, fresh: "1", reader: session.publicKey })
         for (const delay of [0, 750, 1500, 3000]) {
@@ -312,6 +312,6 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
       </Popover.Root>
     ) : null}
     {leafRain}
-    {message ? <span className="order-last w-full basis-full text-xs text-amber-200" role="status">{message}</span> : null}
+    {message === "DESO_HOMEPAGE_AUTHORIZATION_REQUIRED" ? <a href="/" className="order-last w-full basis-full text-xs text-amber-200" role="status">{language === "Dutch" ? "DeSo-machtiging onvoldoende. Ga naar de homepage." : "DeSo authorization insufficient. Go to homepage."}</a> : message ? <span className="order-last w-full basis-full text-xs text-amber-200" role="status">{message}</span> : null}
   </>
 }
