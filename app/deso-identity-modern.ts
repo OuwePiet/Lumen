@@ -24,8 +24,6 @@ export type ViaModernIdentityAdapter = {
   setActiveUser(publicKey: string): Promise<void>
   signTx(transactionHex: string): Promise<string>
   hasPermissions(permissions: Parameters<typeof identity.hasPermissions>[0]): ReturnType<typeof identity.hasPermissions>
-  requestPermissions(permissions: Parameters<typeof identity.requestPermissions>[0]): ReturnType<typeof identity.requestPermissions>
-  spendingLimits(): Promise<NonNullable<Awaited<ReturnType<typeof identity.snapshot>>["currentUser"]>["primaryDerivedKey"]["transactionSpendingLimits"] | null>
   refreshSpendingLimits(): Promise<void>
   resumeRedirect(): void
   encryptMessage(recipientPublicKey: string, message: string): Promise<string>
@@ -168,14 +166,6 @@ export const viaModernIdentity: ViaModernIdentityAdapter = {
       // DeSo SDK 3.4.1: refresh the registered on-chain grant before requesting consent.
       await identity.refreshDerivedKeyPermissions()
       return identity.hasPermissions(permissions)
-    })
-  },
-  requestPermissions(permissions) { return forSelectedUser(() => identity.requestPermissions(permissions)) },
-  async spendingLimits() {
-    return forSelectedUser(async () => {
-      const state = await identity.snapshot()
-      if (state.currentUser?.publicKey !== selectedUser()?.publicKey) throw new Error("DeSo account mismatch")
-      return state.currentUser?.primaryDerivedKey?.transactionSpendingLimits ?? null
     })
   },
   refreshSpendingLimits() { return forSelectedUser(() => identity.refreshDerivedKeyPermissions()) },
