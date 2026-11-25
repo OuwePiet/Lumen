@@ -2,7 +2,6 @@
 import {readNativeNotifications} from "./native-notifications"
 import {sendDeso,identity} from "deso-protocol"
 import {ensureNFTPermission} from "../nft-permissions"
-import {withFinancialAccountLock,financialSubmissionBlock,markFinancialPending,markFinancialSubmitted} from "../financial-submission"
 
 import Link from "next/link"
 import styles from "./notification-center.module.css"
@@ -514,11 +513,8 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
       const amountNanos = Math.round((usd / rates.rates.USD) * 1_000_000_000)
       if (!Number.isSafeInteger(amountNanos) || amountNanos < 1) throw new Error("AMOUNT")
       const key=session.publicKey
-      const intent="reward:"+post.publicKey+":"+usd
       const assertAccount=async()=>{if((await viaModernIdentity.currentUser())?.publicKey!==key||(await identity.snapshot()).currentUser?.publicKey!==key)throw new Error("ACCOUNT_CHANGED")}
-      await withFinancialAccountLock(key,async()=>{
         await assertAccount()
-        const blocked=financialSubmissionBlock(key,intent);if(blocked)throw new Error(blocked)
         const {constructedTransactionResponse:tx}=await sendDeso({SenderPublicKeyBase58Check:key,RecipientPublicKeyOrUsername:post.publicKey,AmountNanos:amountNanos,MinFeeRateNanosPerKB:1000,TransactionFees:[]},{broadcast:false,checkPermissions:false,localConstruction:false})
         const cost=amountNanos+tx.FeeNanos
         if(!tx.TransactionHex||!Number.isSafeInteger(tx.FeeNanos)||tx.FeeNanos<0||!Number.isSafeInteger(cost))throw new Error("INVALID_COST")
@@ -526,11 +522,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
         await assertAccount()
         const signed=await viaModernIdentity.signTx(tx.TransactionHex)
         await assertAccount()
-        const record={publicKey:key,intent,amountNanos:cost,startedAt:Date.now()}
-        markFinancialPending(record)
-        const receipt=await identity.submitTx(signed)
-        markFinancialSubmitted(record,receipt?.TxnHashHex??receipt?.TransactionHashHex)
-      })
+        await identity.submitTx(signed)
       rewardLock.current=false
       setRewardBusy(false)
       setRewardMessage("Reward submitted to DeSo; verify transaction status.")
