@@ -26,7 +26,6 @@ export default function NFTAcceptTransferControl({postHash,editions}:{postHash:s
    const permission={GlobalDESOLimit:tx.FeeNanos,NFTOperationLimitMap:{[postHash]:{[serialNumber]:{accept_nft_transfer:1}}}}
    await ensureNFTPermission(permission,assertAccount)
    await assertAccount()
-   if(!(await viaModernIdentity.hasPermissions(permission)))throw new Error("Permission missing")
    await assertAccount()
    const signed=await viaModernIdentity.signTx(tx.TransactionHex)
    await assertAccount()

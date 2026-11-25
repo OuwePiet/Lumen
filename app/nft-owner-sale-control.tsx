@@ -105,7 +105,6 @@ export default function NFTOwnerSaleControl({ postHash, editions, hasUnlockable 
       const permission=sale?{GlobalDESOLimit:tx.FeeNanos,TransactionCountLimitMap:{UPDATE_NFT:1}}:{GlobalDESOLimit:tx.FeeNanos,NFTOperationLimitMap:{[postHash]:{[serial]:{[mode]:1}}}}
       await ensureNFTPermission(permission,assertAccount)
       await assertAccount()
-      if(!(await viaModernIdentity.hasPermissions(permission)))throw new Error("Permission missing")
       await assertAccount()
       setStatus("approval")
       const signed=await viaModernIdentity.signTx(tx.TransactionHex)

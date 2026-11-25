@@ -77,7 +77,6 @@ export default function NFTReceivedBids({ postHash, bids, editions, hasUnlockabl
       const permission={GlobalDESOLimit:bid.bidAmountNanos+tx.FeeNanos,NFTOperationLimitMap:{[postHash]:{[bid.serialNumber]:{accept_nft_bid:1}}}}
       await ensureNFTPermission(permission,assertAccount)
       await assertAccount()
-      if(!(await viaModernIdentity.hasPermissions(permission)))throw new Error("Permission missing")
       await assertAccount()
       setStatus("approval")
       const signed=await viaModernIdentity.signTx(tx.TransactionHex)

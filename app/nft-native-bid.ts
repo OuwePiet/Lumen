@@ -15,7 +15,6 @@ export async function submitNativeNFTBid(key:string, postHash:string, serial:num
  const permission={GlobalDESOLimit:amount+tx.FeeNanos,NFTOperationLimitMap:{[postHash]:{[serial]:{nft_bid:1}}}}
  await ensureNFTPermission(permission,assertAccount)
  await assertAccount()
- if(!(await viaModernIdentity.hasPermissions(permission)))throw new Error("Permission missing")
  await assertAccount()
  const signed=await viaModernIdentity.signTx(tx.TransactionHex)
  await assertAccount()

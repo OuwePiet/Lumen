@@ -193,7 +193,7 @@ export default function MintPreflight({ initialPostHash = "" }: { initialPostHas
       const permission={GlobalDESOLimit:q.cost,TransactionCountLimitMap:{CREATE_NFT:1}}
       await ensureNFTPermission(permission,()=>assertMintAccount(key))
       await assertMintAccount(key)
-      if(!(await viaModernIdentity.hasPermissions(permission))||Date.now()>=q.expires)throw new Error("Permission or quote expired")
+      if(Date.now()>=q.expires)throw new Error("Quote expired")
       await assertMintAccount(key)
       setMintStatus("approval")
       const signed=await viaModernIdentity.signTx(q.hex)

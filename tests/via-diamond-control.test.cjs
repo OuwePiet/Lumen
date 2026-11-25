@@ -17,12 +17,12 @@ function scenario({permission=true,deny=false,uncertain=false,delayed=false,stal
 }
 async function settle(){for(let i=0;i<18;i++)await new Promise(resolve=>setImmediate(resolve))}
 test('rapid diamond confirmations submit once without local receipt gate',async()=>{const s=scenario();s.click();s.click();await settle();assert.equal(s.calls.filter(x=>x==='prepare').length,1);assert.equal(s.calls.filter(x=>x==='submit').length,1);assert.equal(s.storage.size,0)});
-test('denied Diamond permission never signs or submits',async()=>{const s=scenario({permission:false,deny:true});s.click();await settle();assert.ok(s.calls.includes('prepare'));assert.ok(!s.calls.includes('permission'));assert.ok(!s.calls.includes('sign'));assert.ok(!s.calls.includes('submit'))});
+test('denied Diamond permission never signs or submits',async()=>{const s=scenario({permission:false,deny:true});s.click();await settle();assert.ok(s.calls.includes('prepare'));assert.ok(s.calls.includes('permission'));assert.ok(!s.calls.includes('sign'));assert.ok(!s.calls.includes('submit'))});
 test('account switch after confirmation stops signing and submission',async()=>{const s=scenario();s.click();s.switchAccount();await settle();assert.ok(!s.calls.includes('sign'));assert.ok(!s.calls.includes('submit'))});
 test('uncertain broadcast reports error without automatic resubmission',async()=>{const s=scenario({uncertain:true});s.click();await settle();assert.equal(s.calls.filter(x=>x==='submit').length,1);assert.equal(s.storage.size,0);assert.ok(s.messages.some(m=>m.includes('uncertain')))});
 
 test('accepted diamond waits for DeSo readback without resubmitting',async()=>{const s=scenario({delayed:true});s.click();await settle();assert.equal(s.calls.filter(x=>x==='submit').length,1);assert.ok(!s.messages.includes('Diamant zichtbaar op DeSo.'));assert.equal(s.messages.at(-1),'')});
 
 test('existing sufficient grant requires no extra approval',async()=>{const s=scenario();s.click();await settle();assert.deepEqual(s.calls,['prepare','sign','submit'])});
-test('insufficient grant stops without approval or signing',async()=>{const s=scenario({permission:false});s.click();await settle();assert.deepEqual(s.calls,['prepare']);assert.ok(s.messages.includes('DESO_HOMEPAGE_AUTHORIZATION_REQUIRED'))});
-test('stale grant refresh avoids unnecessary approval',async()=>{const s=scenario({permission:false,stale:true});s.click();await settle();assert.deepEqual(s.calls,['prepare','sign','submit'])});
+test('insufficient grant requests consent before signing',async()=>{const s=scenario({permission:false});s.click();await settle();assert.deepEqual(s.calls,['prepare','permission','sign','submit'])});
+test('insufficient mocked grant requests SDK consent',async()=>{const s=scenario({permission:false,stale:true});s.click();await settle();assert.deepEqual(s.calls,['prepare','permission','sign','submit'])});
