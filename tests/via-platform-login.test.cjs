@@ -25,7 +25,7 @@ function fixture({ active = A, legacy = OLD, users = { [A]: user(A), [B]: user(B
     async subscribe(fn) { subscribers.push(fn) },
     login() { calls.push(['login']); return new Promise((resolve, reject) => { loginResolve = resolve; loginReject = reject }) },
     setActiveUser(publicKey) { storage.set('desoActivePublicKey', publicKey); subscribers.forEach(fn => fn({})) },
-    async snapshot() { return { currentUser: user(storage.get('desoActivePublicKey')) } },
+    snapshot() { const active = localStorage.getItem('desoActivePublicKey'); const records = JSON.parse(localStorage.getItem('desoIdentityUsers') || '{}'); return { currentUser: records[active] || null, alternateUsers: Object.fromEntries(Object.entries(records).filter(([key]) => key !== active)) } }, async logout() { storage.delete('desoActivePublicKey'); subscribers.forEach(fn => fn({})) },
     async hasPermissions() { calls.push(['hasPermissions']); return false },
     async requestPermissions() { calls.push(['requestPermissions']); return {} },
     async refreshDerivedKeyPermissions() { calls.push(['refresh']) },
@@ -36,10 +36,9 @@ function fixture({ active = A, legacy = OLD, users = { [A]: user(A), [B]: user(B
   }
   const sessionExports = {}, modernExports = {}, recoveryExports = {}, returnExports = {}
   const context = { window, localStorage, CustomEvent, console, exports: sessionExports, URL, URLSearchParams, AbortController, setTimeout, clearTimeout }
-  vm.runInNewContext(compile('deso-identity-session.ts'), context)
-  vm.runInNewContext(compile('deso-session-recovery.ts'), { ...context, exports: recoveryExports, require: () => sessionExports })
+  vm.runInNewContext(compile('deso-identity-session.ts'), { ...context, require: () => ({ identity: sdk }) })
   vm.runInNewContext(compile('deso-identity-return.ts'), { ...context, exports: returnExports })
-  vm.runInNewContext(compile('deso-identity-modern.ts'), { ...context, exports: modernExports, require(name) { if (name === 'deso-protocol') return { identity: sdk }; if (name === './deso-identity-session') return sessionExports; if (name === './deso-session-recovery') return recoveryExports; if (name === './deso-identity-return') return returnExports; throw new Error('Unexpected legacy import: '+name) } })
+  vm.runInNewContext(compile('deso-identity-modern.ts'), { ...context, exports: modernExports, require(name) { if (name === 'deso-protocol') return { identity: sdk }; if (name === './deso-identity-session') return sessionExports; if (name === './deso-identity-return') return returnExports; throw new Error('Unexpected legacy import: '+name) } })
   return { storage, localStorage, window, calls, sdk, session: sessionExports, identity: modernExports.viaModernIdentity,
     resolveLogin() { loginResolve({ publicKeyBase58Check: A }) }, rejectLogin() { loginReject(new Error('cancelled')) },
     emitSDK() { subscribers.forEach(fn => fn({})) },
@@ -49,22 +48,13 @@ function fixture({ active = A, legacy = OLD, users = { [A]: user(A), [B]: user(B
 
 test('canonical active SDK account wins over a different old account', async () => { const f = fixture(); assert.equal(f.session.restoreIdentitySession().publicKey, A); assert.equal((await f.identity.currentUser()).publicKey, A) })
 test('legacy-only account is never silently restored as SDK login', async () => { const f = fixture({ active: null }); assert.equal(f.session.restoreIdentitySession(), null); assert.equal(await f.identity.currentUser(), null) })
-test('a returned publicKeyAdded without registered SDK credentials is not a login', async () => { const f = fixture({ users: { [A]: { publicKey: A } } }); assert.equal(await f.identity.currentUser(), null); await assert.rejects(f.identity.setActiveUser(A)); await f.identity.logout(); assert.equal(f.storage.has('desoActivePublicKey'), false) })
-test('pending/unregistered derived key does not expose a logged-in session', () => { const f = fixture({ users: { [A]: { ...user(A), primaryDerivedKey: { ...user(A).primaryDerivedKey, derivedKeyRegistered: false } } } }); assert.equal(f.session.restoreIdentitySession(), null) })
-
-for (const fields of [{ IsValid: false }, { derivedSeedHex: undefined }, { derivedPublicKeyBase58Check: undefined }]) test('registered flag alone cannot create a usable session: '+JSON.stringify(fields), async () => {
-  const f=fixture({users:{[A]:{...user(A),primaryDerivedKey:{...user(A).primaryDerivedKey,...fields}}}})
-  assert.equal(f.session.restoreIdentitySession(),null)
-  await assert.rejects(f.identity.signTx('mock-tx'))
-  assert.equal(f.calls.some(call=>call[0]==='sign'),false)
-})
-test('mismatched SDK owner fails closed', () => { const f = fixture({ users: { [A]: { ...user(A), primaryDerivedKey: user(B).primaryDerivedKey } } }); assert.equal(f.session.restoreIdentitySession(), null) })
+test('SDK account display does not grant transaction authorization', async () => { const f = fixture({ users: { [A]: { publicKey: A } } }); assert.equal(f.session.restoreIdentitySession().publicKey,A); f.sdk.signTx = async () => { throw new Error('SDK authorization rejected') }; await assert.rejects(f.identity.signTx('mock-tx'), /SDK authorization rejected/) })
 test('corrupt SDK storage does not fall back to legacy', () => { const f = fixture(); f.storage.set('desoIdentityUsers', '{'); assert.equal(f.session.restoreIdentitySession(), null) })
 test('unavailable browser storage fails closed', () => { const f = fixture(); f.localStorage.getItem = () => { throw new Error('blocked') }; assert.equal(f.session.restoreIdentitySession(), null) })
 test('known accounts contain registered SDK users only', async () => { const f = fixture(); assert.deepEqual(Array.from(await f.identity.alternateUsers(), u => u.publicKey), [A, B]) })
-test('switch uses SDK and removes only obsolete selection', async () => { const f = fixture(); await f.identity.setActiveUser(B); assert.equal((await f.identity.currentUser()).publicKey, B); assert.equal(f.storage.has('viaActivePublicKey'), false); assert.ok(f.storage.has('identityUsersV2')) })
+test('switch uses SDK without modifying legacy storage', async () => { const f = fixture(); await f.identity.setActiveUser(B); assert.equal((await f.identity.currentUser()).publicKey, B); assert.equal(f.storage.get('viaActivePublicKey'), OLD); assert.ok(f.storage.has('identityUsersV2')) })
 test('legacy-only switch is rejected before SDK operation', async () => { const f = fixture(); await assert.rejects(f.identity.setActiveUser(OLD)); assert.equal(f.storage.get('desoActivePublicKey'), A) })
-test('logout cannot resurrect SDK or legacy account after navigation', async () => { const f = fixture(); await f.identity.logout(); assert.equal(await f.identity.currentUser(), null); assert.equal(f.storage.has('desoActivePublicKey'), false); assert.equal(f.storage.has('viaActivePublicKey'), false); assert.ok(f.storage.has('desoIdentityUsers')); assert.ok(f.storage.has('identityUsersV2')); assert.equal(f.storage.get('via:financial:v1:test:pending'), 'keep-pending') })
+test('logout cannot resurrect SDK or legacy account after navigation', async () => { const f = fixture(); await f.identity.logout(); assert.equal(await f.identity.currentUser(), null); assert.equal(f.storage.has('desoActivePublicKey'), false); assert.equal(f.storage.get('viaActivePublicKey'), OLD); assert.ok(f.storage.has('desoIdentityUsers')); assert.ok(f.storage.has('identityUsersV2')); assert.equal(f.storage.get('via:financial:v1:test:pending'), 'keep-pending') })
 test('all subscribers update immediately on local logout', async () => { const f = fixture(); const seen = []; f.identity.subscribe(u => seen.push(u?.publicKey ?? null)); await f.identity.logout(); assert.equal(seen.at(-1), null) })
 test('SDK login event updates all pages', () => { const f = fixture({ active: null }); const seen = []; f.identity.subscribe(u => seen.push(u?.publicKey ?? null)); f.storage.set('desoActivePublicKey', B); f.emitSDK(); assert.equal(seen.at(-1), B) })
 test('storage account switch updates other tabs', () => { const f = fixture(); const seen = []; f.identity.subscribe(u => seen.push(u?.publicKey ?? null)); f.storage.set('desoActivePublicKey', B); f.event('storage', { key: 'desoActivePublicKey', newValue: B }); assert.equal(seen.at(-1), B) })

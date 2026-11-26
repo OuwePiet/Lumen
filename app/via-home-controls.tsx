@@ -1,6 +1,5 @@
 "use client"
 import {readNativeUnread,readNativeNotifications} from "./notifications/native-notifications"
-import { hasUnfinishedSDKLogin } from "./deso-session-recovery"
 
 import Link from "next/link"
 import { useRouter, usePathname } from "next/navigation"
@@ -8,7 +7,6 @@ import { useEffect, useRef, useState } from "react"
 import { CircleHelp, Music2, RadioTower, UsersRound } from "lucide-react"
 import {
   VIA_IDENTITY_EVENT,
-  clearIdentitySession,
   listIdentitySessions,
   restoreIdentitySession,
   type ViaIdentitySession,
@@ -228,7 +226,6 @@ export default function ViaHomeControls() {
   const [profiles, setProfiles] = useState<Record<string, PublicProfile>>({})
   const [accountsOpen, setAccountsOpen] = useState(false)
   const [status, setStatus] = useState<"idle" | "waiting" | "blocked">("idle")
-  const [unfinishedLogin, setUnfinishedLogin] = useState(false)
   const [language, setLanguage] = useState<ViaLanguage>("English")
   const [languageOpen, setLanguageOpen] = useState(false)
   const [hasUnreadNotifications, setHasUnreadNotifications] = useState(false)
@@ -366,7 +363,6 @@ export default function ViaHomeControls() {
     const syncLanguage = () => setLanguage(readViaLocalSettings().interfaceLanguage)
     const syncIdentity = () => {
       setSession(restoreIdentitySession())
-      setUnfinishedLogin(hasUnfinishedSDKLogin())
       refreshAccounts()
     }
     syncLanguage()
@@ -448,8 +444,8 @@ export default function ViaHomeControls() {
     } catch { setStatus("blocked") }
   }
 
-  function logout() {
-    clearIdentitySession()
+  async function logout() {
+    try { await viaModernIdentity.logout() } catch { return }
     setSession(null)
     setProfile(null)
     setAccountsOpen(false)
@@ -459,9 +455,6 @@ export default function ViaHomeControls() {
   }
 
   function enterPublicMode() {
-    clearIdentitySession()
-    setSession(null)
-    setProfile(null)
     setAccountsOpen(false)
     setStatus("idle")
     router.push("/public")
@@ -597,7 +590,6 @@ export default function ViaHomeControls() {
 
       </div>
       {status === "waiting" ? <span role="status" style={{ fontSize: "11px" }}>{t.connecting}</span> : null}
-      {unfinishedLogin && !session ? <span role="status" style={{ color: "#c6a97b", fontSize: "11px", lineHeight: 1.5 }}>{language === "Dutch" ? "Je DeSo-aanmelding is nog niet afgerond. Kies ‘DeSo Login’ om de toegang opnieuw te verbinden." : "Your DeSo connection has not finished. Use ‘DeSo Login’ to reconnect."}</span> : null}
       {status === "blocked" ? <span style={{ color: "#c6a97b", fontSize: "9px", lineHeight: 1.45 }}>{t.blocked}</span> : null}
       <style>{`
         .via-home-menu-unified { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; }
