@@ -5,7 +5,6 @@ import { DIAMOND_LEVEL_MAP } from "deso-protocol/src/identity/constants.js"
 import { useEffect, useRef, useState } from "react"
 import { Popover } from "@base-ui/react/popover"
 import { Gem, TrendingUp } from "lucide-react"
-import { restoreIdentitySession, VIA_IDENTITY_EVENT } from "../deso-identity-session"
 import { viaModernIdentity } from "../deso-identity-modern"
 import { fetchViaRates } from "../via-live-rates"
 import { readViaLocalSettings, VIA_SETTINGS_EVENT, type ViaLanguage } from "../via-local-settings"
@@ -121,26 +120,10 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
   async function prepare(chosenLevel: number) {
     if (sendLock.current || (previousLevel !== null && chosenLevel <= previousLevel) || !diamondValues?.some(item => item.level === chosenLevel)) return
     sendLock.current = true
-    const session = restoreIdentitySession()
-    let invalidated = false, sent = false, accepted = false
-    const onIdentity = (event: Event) => {
-      if (event.type === "storage") {
-        const changed = event as StorageEvent
-        if (changed.key === null || changed.key === "desoIdentityUsers" || (changed.key === "desoActivePublicKey" && changed.newValue !== session?.publicKey)) invalidated = true
-      }
-      if (restoreIdentitySession()?.publicKey !== session?.publicKey) invalidated = true
-    }
-    const assertAccount = async () => {
-      if (!session || invalidated || restoreIdentitySession()?.publicKey !== session.publicKey) throw new Error("ACCOUNT_CHANGED")
-      const current = await viaModernIdentity.currentUser()
-      if (invalidated || current?.publicKey !== session.publicKey || (await identity.snapshot()).currentUser?.publicKey !== session.publicKey) throw new Error("ACCOUNT_CHANGED")
-    }
-    window.addEventListener(VIA_IDENTITY_EVENT, onIdentity)
-    window.addEventListener("storage", onIdentity)
+    let sent = false, accepted = false
     try {
+      const session = (await identity.snapshot()).currentUser
       if (!session) throw new Error("DESO_LOGIN_REQUIRED")
-
-        await assertAccount()
         setCelebrate(false); setStatus("preparing"); setMessage("")
         sent = true
         setStatus("submitting")
@@ -159,13 +142,13 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
         const params = new URLSearchParams({ hash: postHash, fresh: "1", reader: session.publicKey })
         for (const delay of [0, 750, 1500, 3000]) {
           if (delay) await new Promise(resolve => window.setTimeout(resolve, delay))
-          if (invalidated) break
+          if ((await identity.snapshot()).currentUser?.publicKey !== session.publicKey) break
           try {
             const response = await fetch("/api/via/post?" + params, { cache: "no-store", signal: AbortSignal.timeout(4000) })
             const data = await response.json() as { ok?: boolean; post?: { diamondCount?: number; diamondLevelByReader?: number } }
             const confirmedLevel = data.post?.diamondLevelByReader
             const confirmedCount = data.post?.diamondCount
-            if (invalidated || !response.ok || !data.ok || typeof confirmedLevel !== "number" || !Number.isSafeInteger(confirmedLevel) || confirmedLevel < chosenLevel) continue
+            if ((await identity.snapshot()).currentUser?.publicKey !== session.publicKey || !response.ok || !data.ok || typeof confirmedLevel !== "number" || !Number.isSafeInteger(confirmedLevel) || confirmedLevel < chosenLevel) continue
             setPreviousDiamond({ reader: session.publicKey, hash: postHash, level: confirmedLevel })
             if (typeof confirmedCount === "number" && Number.isSafeInteger(confirmedCount) && confirmedCount >= 0) setCount(confirmedCount)
             setStatus("done")
@@ -181,8 +164,6 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
       setStatus(accepted ? "done" : "error")
       setMessage(accepted ? "DeSo received the Diamond. Check DeSo for its current status." : sent ? "The Diamond outcome is uncertain. Do not resend; check DeSo." : error instanceof Error && error.message === "DESO_IDENTITY_NO_RESPONSE" ? "DeSo Identity reageert niet. Er is vanuit VIA geen diamant verzonden. Controleer de DeSo-machtiging voordat je opnieuw probeert." : error instanceof Error ? error.message : "Diamond preparation stopped. Nothing was submitted.")
     } finally {
-      window.removeEventListener(VIA_IDENTITY_EVENT, onIdentity)
-      window.removeEventListener("storage", onIdentity)
       sendLock.current = false
     }
   }

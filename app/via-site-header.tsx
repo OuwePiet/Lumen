@@ -11,6 +11,7 @@ import {
 import ViaIdentityStatusMarks from "./via-identity-status"
 import ViaHelpButton from "./via-help-button"
 import ViaHeaderMicrophone from "./via-header-microphone"
+import ViaHeaderBalance from "./via-header-balance"
 import { viaModernIdentity } from "./deso-identity-modern"
 import {
   readViaLocalSettings,
@@ -172,7 +173,7 @@ export default function ViaSiteHeader() {
   const isHomepage = pathname === "/"
 
   function refreshKnownAccounts() {
-    void viaModernIdentity.alternateUsers().then((users) => setKnownAccounts(users.map((user) => ({ ...user, accessLevel: 3, signedUp: false }))))
+    void viaModernIdentity.alternateUsers().then((users) => setKnownAccounts(users.map((user) => ({ ...user }))))
   }
 
   useEffect(() => {
@@ -183,7 +184,7 @@ export default function ViaSiteHeader() {
     }
     syncSettings()
     const unsubscribeIdentity = viaModernIdentity.subscribe((user) => {
-      setSession(user ? { ...user, accessLevel: 3, signedUp: false } : null)
+      setSession(user ? { ...user } : null)
       refreshKnownAccounts()
     })
     window.addEventListener(VIA_SETTINGS_EVENT, syncSettings)
@@ -276,7 +277,7 @@ export default function ViaSiteHeader() {
   async function chooseAccount(publicKey: string) {
     await viaModernIdentity.setActiveUser(publicKey)
     const nextUser = await viaModernIdentity.currentUser()
-    setSession(nextUser ? { ...nextUser, accessLevel: 3, signedUp: false } : null)
+    setSession(nextUser ? { ...nextUser } : null)
     setProfile(profiles[publicKey] ?? null)
     setMenuOpen(false)
   }
@@ -286,7 +287,7 @@ export default function ViaSiteHeader() {
     setIdentityError("")
     try {
       const user = await viaModernIdentity.login()
-      setSession({ ...user, accessLevel: 3, signedUp: false })
+      setSession({ ...user })
       setMenuOpen(false)
       router.refresh()
     } catch { setIdentityError("DeSo Identity kon niet worden geopend. Probeer opnieuw via de homepage.") }
@@ -362,6 +363,7 @@ export default function ViaSiteHeader() {
         <div style={styles.toolsRow} className={`via-site-header-tools ${pathname === "/notifications" || pathname === "/radio" || pathname === "/messages" || pathname === "/profile" ? "via-site-header-tools-notifications" : ""} ${pathname === "/messages" ? "via-site-header-tools-messages" : ""} ${pathname === "/radio" ? "via-site-header-tools-radio" : ""}`} aria-label="VIA utility controls">
           <div className="via-notifications-top-control" ref={searchWrapRef} style={{ position: "relative" }}><button type="button" style={{ ...styles.search, cursor: "pointer" }} className={`via-site-header-search ${pathname === "/notifications" || pathname === "/radio" || pathname === "/messages" || pathname === "/profile" ? "via-site-header-search-notifications" : ""}`} aria-label={t.search} title={t.search} aria-expanded={searchOpen} onClick={() => setSearchOpen((open) => !open)}><span className="via-notifications-members-icon" aria-hidden="true"><UsersRound className="h-4 w-4" /></span><span className="via-site-header-search-label">&nbsp;&nbsp; {t.search}</span></button>{searchOpen ? <div style={{ ...styles.menu, left: 0, right: "auto", top: "44px", width: "300px" }} role="search"><input autoFocus value={searchQuery} onChange={(event) => setSearchQuery(event.target.value)} placeholder={t.search} aria-label={t.search} autoComplete="off" style={{ width: "100%", minHeight: "38px", padding: "8px 10px", borderRadius: "9px", border: "1px solid rgba(143,212,169,.18)", background: "rgba(2,7,4,.96)", color: "#e3ebe6", outline: "none" }} />{searchResults.map((item) => { const resultAvatar = safeProfileImage(item.profilePic); return <Link key={item.publicKey} href={`/collection?account=${encodeURIComponent(item.username)}`} onClick={() => setSearchOpen(false)} style={{ ...styles.accountChoice, textDecoration: "none" }}>{resultAvatar ? <img src={resultAvatar} alt="" style={styles.avatar} referrerPolicy="no-referrer" /> : <span style={styles.avatarFallback} aria-hidden="true">{item.username.slice(0, 1).toUpperCase()}</span>}<span style={styles.accountChoiceText}><span style={styles.accountChoiceName}>@{item.username}{item.isVerified ? " ✓" : ""}</span><span style={styles.accountChoiceKey}>{shortPublicKey(item.publicKey)}</span></span></Link> })}</div> : null}{pathname === "/notifications" || pathname === "/radio" || pathname === "/messages" || pathname === "/profile" ? <span className="via-notifications-top-label">Members</span> : null}</div>
           {!isHomepage ? <ViaHeaderMicrophone onTranscript={text => { setSearchQuery(text); setSearchOpen(true) }} onFallback={() => setSearchOpen(true)} /> : null}
+          {session?.publicKey && /^\/(social|notifications|messages|discover|saved|profile|wallet|collection|nft|studio|my-via|communities|live|market|settings|drafts|wereldkalender|mijn-agenda)(\/|$)/.test(pathname) ? <ViaHeaderBalance publicKey={session.publicKey} /> : null}
           <div className="via-site-header-language-wrap">
             <button type="button" onClick={() => setLanguageOpen((open) => !open)} style={styles.language} className={`via-site-header-language ${pathname === "/notifications" || pathname === "/radio" || pathname === "/messages" || pathname === "/profile" ? "via-site-header-language-notifications" : ""}`} aria-label="VIA language" aria-expanded={languageOpen}>
               <span className="via-site-header-language-flag" aria-hidden="true"><LanguageFlag language={language} /></span><span className="via-site-header-language-code">{languageCodes[language]}</span>

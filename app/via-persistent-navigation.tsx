@@ -11,7 +11,7 @@ export default function ViaPersistentNavigation({ children }: { children: ReactN
   const path = usePathname()
   const home = path === "/"
   const session = useViaIdentitySession()
-  const privateCalendar = /^\/(wereldkalender|mijn-agenda)(\/|$)/.test(path)
+  const privateCalendar = /^\/mijn-agenda(\/|$)/.test(path)
   const newspaper = /^\/wereldspiegel(?:-proef)?(\/|$)/.test(path)
   const shared = community.test(path) || newspaper
   const [open, setOpen] = useState(false)

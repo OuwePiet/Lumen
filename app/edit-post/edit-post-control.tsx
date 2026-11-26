@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react"
 import {submitPost,identity} from "deso-protocol"
 import { viaModernIdentity } from "../deso-identity-modern"
-import { restoreIdentitySession, type ViaIdentitySession } from "../deso-identity-session"
+import { type ViaIdentitySession } from "../deso-identity-session"
 
 type InspectResponse = {
   ok?: boolean
@@ -34,15 +34,13 @@ export default function EditPostControl() {
   const lock=useRef(false)
 
   useEffect(() => {
-    const current = restoreIdentitySession()
-    setSession(current)
     const linkedHash = new URLSearchParams(window.location.search).get("post")?.trim() ?? ""
     if (/^[0-9a-fA-F]{64}$/.test(linkedHash)) {
       setPostHashHex(linkedHash.toLowerCase())
       setMessage("Post hash loaded from VIA. Verify ownership before editing.")
     }
     return viaModernIdentity.subscribe((user) => {
-      setSession(user ? { ...user, accessLevel: 3, signedUp: false } : null)
+      setSession(user)
     })
   }, [])
 
