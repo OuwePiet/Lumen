@@ -7,6 +7,7 @@ import RadioLocalizer from './radio/radio-localizer'
 import ViaGlobalRadio from './via-global-radio'
 import ViaPublicAccountGuard from './via-public-account-guard'
 import ViaSiteHeader from './via-site-header'
+import ViaPersistentNavigation from './via-persistent-navigation'
 import WalletLocalizer from './wallet/wallet-localizer'
 
 const description =
@@ -113,7 +114,7 @@ export default async function RootLayout({
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(viaStructuredData) }} />
         <ViaPublicAccountGuard />
         <ViaSiteHeader />
-        {children}
+        <ViaPersistentNavigation>{children}</ViaPersistentNavigation>
         <WalletLocalizer />
         <RadioLocalizer />
         <ViaGlobalRadio />
