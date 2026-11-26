@@ -1,6 +1,6 @@
 "use client"
 import {createPostAssociation,identity} from "deso-protocol"
-import {ensureNFTPermission} from "../nft-permissions"
+
 
 import { useEffect, useState, useRef } from "react"
 import { viaModernIdentity, type ViaModernIdentityUser } from "../deso-identity-modern"
@@ -108,24 +108,9 @@ export default function PollVoteControl({ postHash, options }: Props) {
       await assertAccount()
       const prior=await readPollResponseStatus(postHash,key)
       if(prior.truncated||prior.multipleResponsesDetected||prior.existingResponse)throw new Error("EXISTING_OR_UNCERTAIN_VOTE")
-      const {constructedTransactionResponse:tx}=await createPostAssociation({TransactorPublicKeyBase58Check:key,PostHashHex:postHash,AppPublicKeyBase58Check:"",AssociationType:"POLL_RESPONSE",AssociationValue:option,ExtraData:{ViaClient:"viadeso.online"},MinFeeRateNanosPerKB:1000,TransactionFees:[]},{broadcast:false,checkPermissions:false,localConstruction:false})
-      if(!tx.TransactionHex||!Number.isSafeInteger(tx.FeeNanos)||tx.FeeNanos<0)throw new Error("INVALID_FEE")
-      await ensureNFTPermission({GlobalDESOLimit:tx.FeeNanos,TransactionCountLimitMap:{CREATE_POST_ASSOCIATION:1}},assertAccount)
-      const data={transactionHex:tx.TransactionHex,feeNanos:tx.FeeNanos}
-
-      setStatus("approval")
-      const fee = typeof data.feeNanos === "number" ? ` Network fee: ${data.feeNanos.toLocaleString()} nanos.` : ""
-      setMessage(`Signing the exact POLL_RESPONSE transaction with DeSo Identity.${fee}`)
-      await assertAccount()
-      const signedTransactionHex = await viaModernIdentity.signTx(data.transactionHex)
-
       setStatus("submitting")
-      setMessage("Submitting your approved poll response to DeSo…")
       await assertAccount()
-      const latest=await readPollResponseStatus(postHash,key)
-      if(latest.truncated||latest.multipleResponsesDetected||latest.existingResponse)throw new Error("EXISTING_OR_UNCERTAIN_VOTE")
-      await assertAccount()
-      await identity.submitTx(signedTransactionHex)
+      await createPostAssociation({TransactorPublicKeyBase58Check:key,PostHashHex:postHash,AppPublicKeyBase58Check:"",AssociationType:"POLL_RESPONSE",AssociationValue:option,ExtraData:{ViaClient:"viadeso.online"},MinFeeRateNanosPerKB:1000,TransactionFees:[]},{localConstruction:false})
 
       const reread = await readPollResponseStatus(postHash, session.publicKey)
       const confirmed = !reread.truncated&&!reread.multipleResponsesDetected?reread.existingResponse?.option:undefined

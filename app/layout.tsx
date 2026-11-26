@@ -2,7 +2,7 @@ import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
 import { headers } from 'next/headers'
 import './global.css'
-import './visitor-account-access.css'
+
 import RadioLocalizer from './radio/radio-localizer'
 import ViaGlobalRadio from './via-global-radio'
 import ViaPublicAccountGuard from './via-public-account-guard'
@@ -110,7 +110,7 @@ export default async function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark">
-      <body className="antialiased via-session-pending" data-via-provenance="@OuwePiet-2026">
+      <body className="antialiased" data-via-provenance="@OuwePiet-2026">
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(viaStructuredData) }} />
         <ViaPublicAccountGuard />
         <ViaSiteHeader />

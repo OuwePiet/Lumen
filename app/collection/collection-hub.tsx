@@ -50,12 +50,11 @@ export default function CollectionHub() {
   const t = COPY[language] ?? COPY.English!
 
   return (
-    <section style={{ maxWidth: 1480, margin: "0 auto", padding: "22px 20px 4px" }} aria-label={t.navLabel}>
-      <div style={{ border: "1px solid rgba(143,212,169,.24)", borderRadius: 16, background: "rgba(5,16,10,.74)", backdropFilter: "blur(5px)", padding: 16 }}>
-        <p style={{ margin: 0, color: "#8fd4a9", fontSize: 11, fontWeight: 800, letterSpacing: ".16em", textTransform: "uppercase" }}>{t.kicker}</p>
-        <h1 style={{ margin: "7px 0 5px", color: "#f1f6f3", fontSize: "clamp(24px,4vw,34px)", lineHeight: 1.08 }}>{t.title}</h1>
-        <p style={{ margin: "0 0 14px", color: "#b3beb8", fontSize: 14, lineHeight: 1.55 }}>{t.intro}</p>
-        <nav className="via-collection-hub-nav" style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 10 }} aria-label={t.navLabel}>
+    <section style={{ maxWidth: 1480, margin: "0 auto", padding: "10px clamp(10px, 2vw, 20px) 0" }} aria-label={t.navLabel}>
+      <div style={{ border: "1px solid rgba(143,212,169,.24)", borderRadius: 16, background: "rgba(5,16,10,.74)", backdropFilter: "blur(5px)", padding: 10 }}>
+        <h1 style={{ margin: "0 0 4px", color: "#f1f6f3", fontSize: "clamp(20px,3vw,26px)", lineHeight: 1.08 }}>{t.title}</h1>
+        <p style={{ margin: "0 0 8px", color: "#b3beb8", fontSize: 14, lineHeight: 1.55 }}>{t.intro}</p>
+        <nav className="via-collection-hub-nav" style={{ display: "flex", flexWrap: "wrap", gap: 6 }} aria-label={t.navLabel}>
           <Link href="/studio#mint-nft" style={hubLink}>{t.mint}</Link>
           <a href="#collection-controls" style={hubLink}>{t.myNfts}</a>
           <Link href="/market" style={hubLink}>{t.creatorsMarket}</Link>

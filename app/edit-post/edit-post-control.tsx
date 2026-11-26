@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useRef, useState } from "react"
 import {submitPost,identity} from "deso-protocol"
-import {ensureNFTPermission} from "../nft-permissions"
 import { viaModernIdentity } from "../deso-identity-modern"
 import { restoreIdentitySession, type ViaIdentitySession } from "../deso-identity-session"
 
@@ -105,16 +104,7 @@ export default function EditPostControl() {
       const data=await response.json() as InspectResponse
       if(!response.ok||!data.ok||!data.post||data.post.body!==originalBody||data.post.postHashHex!==loadedHash)throw new Error("POST_CHANGED")
       const post=data.post
-      const {constructedTransactionResponse:tx}=await submitPost({UpdaterPublicKeyBase58Check:activeKey,PostHashHexToModify:loadedHash,ParentStakeID:post.parentStakeID,RepostedPostHashHex:"",BodyObj:{Body:body.trim(),ImageURLs:post.imageUrls,VideoURLs:post.videoUrls},PostExtraData:{...post.postExtraData,ViaClient:"viadeso.online"},IsHidden:false,MinFeeRateNanosPerKB:1000,TransactionFees:[]},{broadcast:false,checkPermissions:false,localConstruction:false})
-      if(!tx.TransactionHex||!Number.isSafeInteger(tx.FeeNanos)||tx.FeeNanos<0)throw new Error("INVALID_FEE")
-      setFeeNanos(tx.FeeNanos)
-      setStatus("awaiting")
-      await ensureNFTPermission({GlobalDESOLimit:tx.FeeNanos,TransactionCountLimitMap:{SUBMIT_POST:1}},assertAccount)
-      await assertAccount()
-      const signed=await viaModernIdentity.signTx(tx.TransactionHex)
-      await assertAccount()
-      setStatus("submitting")
-      await identity.submitTx(signed)
+      await submitPost({UpdaterPublicKeyBase58Check:activeKey,PostHashHexToModify:loadedHash,ParentStakeID:post.parentStakeID,RepostedPostHashHex:"",BodyObj:{Body:body.trim(),ImageURLs:post.imageUrls,VideoURLs:post.videoUrls},PostExtraData:{...post.postExtraData,ViaClient:"viadeso.online"},IsHidden:false,MinFeeRateNanosPerKB:1000,TransactionFees:[]},{localConstruction:false})
       setOriginalBody(body.trim());setStatus("done");setMessage("Edited post submitted to DeSo.")
     } catch {
       setStatus("error");setMessage("Edit not confirmed. Reload the post from DeSo before retrying.")

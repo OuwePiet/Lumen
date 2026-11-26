@@ -1,6 +1,4 @@
 "use client"
-import { submitGuardedNFT } from "./nft-submission-guard"
-import { ensureNFTPermission } from "./nft-permissions"
 import { useEffect, useRef, useState } from "react"
 import { viaModernIdentity, type ViaModernIdentityUser } from "./deso-identity-modern"
 import { acceptNFTTransfer, identity } from "deso-protocol"
@@ -19,18 +17,8 @@ export default function NFTAcceptTransferControl({postHash,editions}:{postHash:s
   try{
    await assertAccount()
    setMessage("Preparing transfer directly with DeSo...")
-   // SDK 3.4.1: unsigned preparation only; explicit permission check below.
-   const {constructedTransactionResponse:tx}=await acceptNFTTransfer({UpdaterPublicKeyBase58Check:key,NFTPostHashHex:postHash,SerialNumber:serialNumber,MinFeeRateNanosPerKB:1000,TransactionFees:[]},{broadcast:false,checkPermissions:false})
-   if(!tx.TransactionHex||!Number.isSafeInteger(tx.FeeNanos)||tx.FeeNanos<0)throw new Error("Invalid quote")
-   await assertAccount()
-   const permission={GlobalDESOLimit:tx.FeeNanos,NFTOperationLimitMap:{[postHash]:{[serialNumber]:{accept_nft_transfer:1}}}}
-   await ensureNFTPermission(permission,assertAccount)
-   await assertAccount()
-   await assertAccount()
-   const signed=await viaModernIdentity.signTx(tx.TransactionHex)
-   await assertAccount()
    submitting=true
-   await submitGuardedNFT(key,postHash,serialNumber,permission.GlobalDESOLimit,signed,assertAccount)
+   await acceptNFTTransfer({UpdaterPublicKeyBase58Check:key,NFTPostHashHex:postHash,SerialNumber:serialNumber,MinFeeRateNanosPerKB:1000,TransactionFees:[]},{localConstruction:false})
    setMessage("Submitted to DeSo. Refresh to verify ownership.")
   }catch{
    setMessage(submitting?"Submission outcome uncertain. Verify on DeSo before retrying.":"Transfer not submitted. Review account and permissions.")

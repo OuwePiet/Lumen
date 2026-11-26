@@ -488,10 +488,10 @@ export default function ViaHomeControls() {
         paddingRight: "4px",
       }}
     >
-      <Link prefetch={false} href="/" aria-label="VIA home" style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "2px", textDecoration: "none" }}>
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "2px", textDecoration: "none" }}>
         <img src="/via-logo-original.jpg?v=2" alt="VIA" className="via-home-controls-logo" style={{ width: "76%", maxHeight: "76px", objectFit: "contain", display: "block", borderRadius: "14px" }} />
         <span style={{ color: "#8fd4a9", fontSize: "10px", fontWeight: 650, letterSpacing: ".14em", lineHeight: 1.2 }}>viadeso.online</span>
-      </Link>
+      </div>
 
       <nav className="via-home-iphone-utility-row" aria-label="VIA iPhone quick controls">
         <Link prefetch={false} href="/help" aria-label="Handboek VIA" title="Handboek VIA"><CircleHelp aria-hidden="true" /></Link>

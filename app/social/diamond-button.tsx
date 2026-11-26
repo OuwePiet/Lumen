@@ -24,21 +24,7 @@ const RECIPIENT_COPY: Record<ViaLanguage, { recipient: string; show: string; pre
 type Props = { postHash: string; receiverPublicKey: string; initialCount: number; variant?: "default" | "icon" }
 const diamondValues = Object.entries(DIAMOND_LEVEL_MAP).map(([level, nanos]) => ({ level: Number(level), nanos }))
 
-/**
- * Fail closed if DeSo Identity never answers (notably on mobile Safari).
- * A late permission/signing response cannot resume this payment chain:
- * Promise.race has already rejected and the caller exits via catch.
- * No transaction is submitted or retried on timeout.
- */
-function awaitIdentityResponse<T>(operation: Promise<T>, timeoutMs: number): Promise<T> {
-  return new Promise<T>((resolve, reject) => {
-    const timer = window.setTimeout(() => reject(new Error("DESO_IDENTITY_NO_RESPONSE")), timeoutMs)
-    operation.then(
-      value => { window.clearTimeout(timer); resolve(value) },
-      error => { window.clearTimeout(timer); reject(error) },
-    )
-  })
-}
+
 
 export default function DiamondButton({ postHash, receiverPublicKey, initialCount, variant = "default" }: Props) {
   const [count, setCount] = useState(initialCount)
@@ -156,27 +142,16 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
 
         await assertAccount()
         setCelebrate(false); setStatus("preparing"); setMessage("")
-        const { constructedTransactionResponse: tx } = await awaitIdentityResponse(
-          sendDiamonds({
+        sent = true
+        setStatus("submitting")
+        await sendDiamonds({
             SenderPublicKeyBase58Check: session.publicKey,
             ReceiverPublicKeyBase58Check: receiverPublicKey,
             DiamondPostHashHex: postHash,
             DiamondLevel: chosenLevel,
             MinFeeRateNanosPerKB: 1000,
             TransactionFees: [],
-          }, { broadcast: false, localConstruction: false }),
-          120000,
-        )
-        await assertAccount()
-        if (!tx.TransactionHex) throw new Error("INVALID_DESO_TRANSACTION_DATA")
-        setMessage("")
-        const signedTransactionHex = await awaitIdentityResponse(viaModernIdentity.signTx(tx.TransactionHex), 20000)
-        await assertAccount()
-        if (invalidated || restoreIdentitySession()?.publicKey !== session.publicKey) throw new Error("ACCOUNT_CHANGED")
-        setStatus("submitting"); setMessage("")
-        sent = true
-        await assertAccount()
-        await identity.submitTx(signedTransactionHex)
+          }, { localConstruction: false })
         accepted = true
         setEarnings(null)
         changeMenu(false)

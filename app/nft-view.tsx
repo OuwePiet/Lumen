@@ -169,7 +169,7 @@ const styles = {
     background: "#050807",
     color: "#f4f7f5",
     fontFamily: "Arial, Helvetica, sans-serif",
-    padding: "28px 20px 60px",
+    padding: "16px clamp(10px, 2vw, 20px) 32px",
   },
   container: {
     width: "100%",
@@ -212,12 +212,12 @@ const styles = {
   title: {
     fontSize: "clamp(22px, 2.5vw, 30px)",
     lineHeight: 1.08,
-    margin: "0 0 20px",
+    margin: "0 0 12px",
   },
   grid: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-    gap: "20px",
+    gridTemplateColumns: "repeat(auto-fit, minmax(min(300px, 100%), 1fr))",
+    gap: "12px",
     alignItems: "start",
   },
   mediaFrame: {
@@ -226,7 +226,7 @@ const styles = {
     background: "rgba(9,13,11,.78)",
     backdropFilter: "blur(4px)",
     justifySelf: "center",
-    maxWidth: "440px",
+    maxWidth: "380px",
     width: "100%",
     border: "1px solid rgba(63,74,68,.72)",
     borderRadius: "14px",
@@ -252,7 +252,7 @@ const styles = {
     backdropFilter: "blur(8px)",
     border: "1px solid rgba(63,74,68,.72)",
     borderRadius: "14px",
-    padding: "20px",
+    padding: "12px",
   },
   badge: {
     display: "inline-block",
@@ -295,7 +295,7 @@ const styles = {
   },
   facts: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
+    gridTemplateColumns: "repeat(auto-fit, minmax(min(128px, 100%), 1fr))",
     gap: "12px",
     margin: 0,
   },

@@ -1,6 +1,5 @@
 "use client"
-import { submitGuardedNFT } from "./nft-submission-guard"
-import { ensureNFTPermission } from "./nft-permissions"
+
 
 import { useEffect, useMemo, useRef, useState } from "react"
 import { viaModernIdentity, type ViaModernIdentityUser } from "./deso-identity-modern"
@@ -93,24 +92,15 @@ export default function NFTOwnerSaleControl({ postHash, editions, hasUnlockable 
       await assertAccount()
       setMessage("Preparing directly with DeSo...")
       const common={NFTPostHashHex:postHash,SerialNumber:serial,MinFeeRateNanosPerKB:1000,TransactionFees:[]}
-      const opts={broadcast:false,checkPermissions:false,localConstruction:false}
+      await assertAccount()
+      submitting=true;setStatus("submitting")
+      const opts={localConstruction:false}
       const {constructedTransactionResponse:tx}=sale
         ?await updateNFT({...common,UpdaterPublicKeyBase58Check:key,IsForSale:mode!=="remove",MinBidAmountNanos:minimum??0,IsBuyNow:buy,BuyNowPriceNanos:price??0},opts)
         :mode==="transfer"
           ?await transferNFT({...common,SenderPublicKeyBase58Check:key,ReceiverPublicKeyBase58Check:receiver},opts)
           :await burnNFT({...common,UpdaterPublicKeyBase58Check:key},opts)
-      if(!tx.TransactionHex||!Number.isSafeInteger(tx.FeeNanos)||tx.FeeNanos<0)throw new Error("Invalid fee")
       setFeeNanos(tx.FeeNanos)
-      await assertAccount()
-      const permission=sale?{GlobalDESOLimit:tx.FeeNanos,TransactionCountLimitMap:{UPDATE_NFT:1}}:{GlobalDESOLimit:tx.FeeNanos,NFTOperationLimitMap:{[postHash]:{[serial]:{[mode]:1}}}}
-      await ensureNFTPermission(permission,assertAccount)
-      await assertAccount()
-      await assertAccount()
-      setStatus("approval")
-      const signed=await viaModernIdentity.signTx(tx.TransactionHex)
-      await assertAccount()
-      submitting=true;setStatus("submitting")
-      await submitGuardedNFT(key,postHash,serial,permission.GlobalDESOLimit,signed,assertAccount)
       setStatus("done");setMessage("Submitted to DeSo. Refresh to verify.")
     }catch{setStatus("error");setMessage(submitting?"Submission uncertain. Verify on DeSo before retrying.":"Transaction not submitted. Review account and permissions.")}
     finally{lock.current=false;pendingMode.current=null}

@@ -1,6 +1,4 @@
 "use client"
-import { submitGuardedNFT } from "./nft-submission-guard"
-import { ensureNFTPermission } from "./nft-permissions"
 
 import { useEffect, useMemo, useRef, useState } from "react"
 import { viaModernIdentity, type ViaModernIdentityUser } from "./deso-identity-modern"
@@ -71,18 +69,8 @@ export default function NFTReceivedBids({ postHash, bids, editions, hasUnlockabl
     try{
       await assertAccount()
       setMessage("Preparing bid acceptance directly with DeSo...")
-      const {constructedTransactionResponse:tx}=await acceptNFTBid({UpdaterPublicKeyBase58Check:key,BidderPublicKeyBase58Check:bid.bidderPublicKey,NFTPostHashHex:postHash,SerialNumber:bid.serialNumber,BidAmountNanos:bid.bidAmountNanos,MinFeeRateNanosPerKB:1000,TransactionFees:[]},{broadcast:false,checkPermissions:false,localConstruction:false})
-      if(!tx.TransactionHex||!Number.isSafeInteger(tx.FeeNanos)||tx.FeeNanos<0||!Number.isSafeInteger(bid.bidAmountNanos+tx.FeeNanos))throw new Error("Invalid fee")
-      await assertAccount()
-      const permission={GlobalDESOLimit:bid.bidAmountNanos+tx.FeeNanos,NFTOperationLimitMap:{[postHash]:{[bid.serialNumber]:{accept_nft_bid:1}}}}
-      await ensureNFTPermission(permission,assertAccount)
-      await assertAccount()
-      await assertAccount()
-      setStatus("approval")
-      const signed=await viaModernIdentity.signTx(tx.TransactionHex)
-      await assertAccount()
-      submitting=true;setStatus("submitting")
-      await submitGuardedNFT(key,postHash,bid.serialNumber,permission.GlobalDESOLimit,signed,assertAccount)
+      submitting=true
+      await acceptNFTBid({UpdaterPublicKeyBase58Check:key,BidderPublicKeyBase58Check:bid.bidderPublicKey,NFTPostHashHex:postHash,SerialNumber:bid.serialNumber,BidAmountNanos:bid.bidAmountNanos,MinFeeRateNanosPerKB:1000,TransactionFees:[]},{localConstruction:false})
       setStatus("done");setMessage("Accepted bid submitted to DeSo. Refresh to verify.")
     }catch{setStatus("error");setMessage(submitting?"Submission uncertain. Verify on DeSo before retrying.":"Bid acceptance not submitted. Review account and permissions.")}
     finally{lock.current=false}
