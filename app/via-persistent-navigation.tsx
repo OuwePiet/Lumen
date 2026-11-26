@@ -31,6 +31,15 @@ export default function ViaPersistentNavigation({ children }: { children: ReactN
       .via-shell-backdrop { position:fixed; inset:0; z-index:1001; background:#0008; border:0; }
       body:has(.via-shell-community) .via-site-header-brand { visibility:hidden; }
       body:has(.via-shell-community) .via-site-header-language-wrap, body:has(.via-shell-community) .via-site-header-utility[href="/wallet"] { display:none !important; }
+      body:has(.via-shell-community) .via-site-header:not(.via-calendar-header) .via-site-header-shell { display:flex !important; width:100% !important; min-height:56px !important; height:auto !important; max-height:none !important; padding:4px 12px 4px 108px !important; align-items:center !important; overflow:visible !important; }
+      body:has(.via-shell-community) .via-site-header:not(.via-calendar-header) :is(.via-site-header-brand,.via-site-header-top,.via-global-guides,.via-mobile-social-bar,.via-mobile-drawer-trigger,.via-notifications-future-mark) { display:none !important; }
+      body:has(.via-shell-community) .via-site-header:not(.via-calendar-header) .via-site-header-tools { display:flex !important; position:relative !important; inset:auto !important; width:auto !important; max-width:100% !important; height:auto !important; padding:0 !important; border:0 !important; justify-content:flex-start !important; overflow:visible !important; flex-wrap:wrap !important; }
+      body:has(.via-shell-community) .via-site-header:not(.via-calendar-header) .via-site-header-tools .via-notifications-top-control { display:block !important; }
+      body:has(.via-shell-community) .via-site-header:not(.via-calendar-header) .via-site-header-tools .via-site-header-search { display:flex !important; }
+      .via-shell-community .via-home-grid-account-wrap { min-width:0; }
+      .via-shell-community .via-home-grid-account-wrap > button { padding-inline:4px !important; gap:3px !important; }
+      body:has(.via-shell-community):not(:has(.via-site-header:not(.via-calendar-header))) .via-shell-content { padding-top:48px; }
+      @media(max-width:720px) { body:has(.via-shell-community) .via-site-header:not(.via-calendar-header) .via-site-header-tools { flex-wrap:nowrap !important; gap:4px !important; } body:has(.via-shell-community) .via-site-header:not(.via-calendar-header) .via-site-header-search { min-width:44px !important; width:44px !important; padding:0 !important; justify-content:center !important; } body:has(.via-shell-community) .via-site-header-search-label, body:has(.via-shell-community) .via-notifications-top-label { display:none !important; } }
       .via-shell-navigation[hidden] { display:none !important; }
       body:has(.via-shell-community) .via-site-header-account-wrap, body:has(.via-shell-community) .via-site-header-nav { display:none !important; }
       @media(max-width:1366px) { .via-shell-home > .via-shell-navigation { position:relative; inset:auto; } }
