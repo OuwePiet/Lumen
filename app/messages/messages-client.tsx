@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import ViaGroupChat from "./via-group-chat"
+import { readRichMessageRouting, replyLabels } from "./via-rich-metadata"
 import { useEffect, useMemo, useState } from "react"
 import { ArrowLeft, Search, SquarePen } from "lucide-react"
 import { viaModernIdentity } from "../deso-identity-modern"
@@ -226,6 +227,7 @@ export default function MessagesClient() {
   const [threads, setThreads] = useState<ThreadEntry[]>([])
   const [profiles, setProfiles] = useState<Record<string, Profile>>({})
   const [selectedKey, setSelectedKey] = useState("")
+  const [reply, setReply] = useState<{account:string;party:string;timestamp:string}|null>(null)
   const [search, setSearch] = useState("")
   const [mobileConversationOpen, setMobileConversationOpen] = useState(false)
   const [threadMessages, setThreadMessages] = useState<ThreadEntry[]>([])
@@ -305,6 +307,8 @@ export default function MessagesClient() {
   }), [threads, profiles, publicKey, search])
 
   const selected = rows.find((row) => row.key === selectedKey) ?? rows[0]
+  const activeReply = reply?.account === publicKey && reply.party === selected?.key ? reply : null
+  useEffect(() => { setReply(null) }, [publicKey, selected?.key])
 
   useEffect(() => {
     if (!publicKey || !selected) {
@@ -489,7 +493,7 @@ export default function MessagesClient() {
   setSendError("")
   try {
     const encryptedMessage = await viaModernIdentity.encryptMessage(recipientGroup.AccessGroupPublicKeyBase58Check, message)
-    const transactionHex = await constructViaDMTransaction(senderGroup, recipientGroup, encryptedMessage)
+    const transactionHex = await constructViaDMTransaction(senderGroup, recipientGroup, encryptedMessage, activeReply?.timestamp)
     const signedTransactionHex = await viaModernIdentity.signTx(transactionHex)
     await submitViaSignedTransaction(signedTransactionHex,publicKey)
     setDraft("")
@@ -587,12 +591,16 @@ export default function MessagesClient() {
                       {[...threadMessages].reverse().map((message, index) => {
                         const encryptedHex = message.MessageInfo?.EncryptedText ?? message.EncryptedText ?? ""
                         const body = decryptedMessages[encryptedHex] || t.encrypted
+                        const routing = decryptedMessages[encryptedHex] ? readRichMessageRouting(message.MessageInfo?.ExtraData) : null
+                        const replyMessage = routing?.replyTo ? threadMessages.find(entry => entry.MessageInfo?.TimestampNanosString === routing.replyTo) : undefined
+                        const replyBody = replyMessage ? decryptedMessages[replyMessage.MessageInfo?.EncryptedText ?? replyMessage.EncryptedText ?? ""] : undefined
                         const mine = (message.SenderInfo?.OwnerPublicKeyBase58Check ?? message.SenderPublicKeyBase58Check) === publicKey
-                        return <div key={`${encryptedHex.slice(0,16)}-${index}`} className={`max-w-[78%] rounded-[16px] px-4 py-3 text-sm leading-6 ${mine ? "ml-auto border border-[#8fd4a9]/25 bg-transparent text-zinc-100" : "mr-auto border border-zinc-800 bg-transparent text-zinc-200"}`}><p className="whitespace-pre-wrap break-words">{body}</p></div>
+                        return <div key={`${encryptedHex.slice(0,16)}-${index}`} className={`max-w-[78%] rounded-[16px] px-4 py-3 text-sm leading-6 ${mine ? "ml-auto border border-[#8fd4a9]/25 bg-transparent text-zinc-100" : "mr-auto border border-zinc-800 bg-transparent text-zinc-200"}`}>{routing?.replyTo && <span className="block truncate border-l-2 border-zinc-500 pl-2 text-xs text-zinc-400" aria-label={replyLabels[language].action}>&#8618; {replyBody?.slice(0,160) || t.encrypted}</span>}<p className="whitespace-pre-wrap break-words">{body}</p>{selected && decryptedMessages[encryptedHex] && /^[1-9][0-9]{0,19}$/.test(message.MessageInfo?.TimestampNanosString ?? "") && counterpartKey(message,publicKey) === selected.key && <button type="button" disabled={sending} aria-label={replyLabels[language].action} className="min-h-11 px-2 text-zinc-400" onClick={()=>setReply({account:publicKey,party:selected.key,timestamp:message.MessageInfo!.TimestampNanosString!})}>&#8618;</button>}</div>
                       })}
                     </div>
                     <div className="border-t border-zinc-800 p-4">
-                      <div className="flex gap-2">
+                      {activeReply && <div className="flex items-center gap-2 text-xs text-zinc-400"><span>&#8618; {replyLabels[language].selected}</span><button type="button" disabled={sending} onClick={()=>setReply(null)} className="min-h-11 px-2">{t.cancel}</button></div>}
+<div className="flex gap-2">
                         <textarea value={draft} onChange={(event) => setDraft(event.target.value)} rows={2} maxLength={5000} placeholder={t.typeMessage} className="min-w-0 flex-1 resize-none rounded-[12px] border border-zinc-800 bg-transparent px-3 py-2 text-sm text-zinc-200 outline-none focus:border-[#8fd4a9]/50" />
                         <button type="button" onClick={() => void sendCurrentMessage()} disabled={!draft.trim() || sending} title={t.identityNote} className="rounded-[12px] border border-[#8fd4a9]/25 px-4 text-sm font-semibold text-[#9adbb2] disabled:border-zinc-800 disabled:text-zinc-600">{sending ? "…" : t.send}</button>
                       </div>

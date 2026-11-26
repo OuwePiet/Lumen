@@ -1,7 +1,7 @@
 "use client"
 import { mintCost } from "./mint-cost"
 import { submitGuardedNFT } from "../nft-submission-guard"
-import { ensureNFTPermission } from "../nft-permissions"
+import { guardTxPermission } from "deso-protocol/src/transactions/utils.js"
 
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react"
 import { viaModernIdentity, type ViaModernIdentityUser } from "../deso-identity-modern"
@@ -191,7 +191,7 @@ export default function MintPreflight({ initialPostHash = "" }: { initialPostHas
     try{
       await assertMintAccount(key)
       const permission={GlobalDESOLimit:q.cost,TransactionCountLimitMap:{CREATE_NFT:1}}
-      await ensureNFTPermission(permission,()=>assertMintAccount(key))
+      await guardTxPermission(permission)
       await assertMintAccount(key)
       if(Date.now()>=q.expires)throw new Error("Quote expired")
       await assertMintAccount(key)

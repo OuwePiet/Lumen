@@ -1,6 +1,6 @@
 "use client"
 import {uploadNativeImage} from "./native-image"
-import {prepareNativePost,submitNativePost} from "./native-post"
+import {publishNativePost} from "./native-post"
 
 import { useEffect, useRef, useState } from "react"
 import { Dialog } from "@base-ui/react/dialog"
@@ -139,13 +139,7 @@ export default function RepostButton({ postHash, initialCount, quotedPost, varia
     setMessage(asQuote ? "Preparing DeSo Quote Repost…" : "Preparing DeSo repost…")
 
     try {
-      const data=await prepareNativePost(session.publicKey,quoteText,asQuote?imageUrls:[],asQuote?videoUrls:[],"",[],false,postHash)
-
-      setMessage(asQuote ? "Signing your Quote Repost with your DeSo Identity session…" : "Signing your repost with your DeSo Identity session…")
-      if ((await viaModernIdentity.currentUser())?.publicKey !== session.publicKey) throw new Error("DESO_ACCOUNT_CHANGED")
-      const signedTransactionHex = await viaModernIdentity.signTx(data.transactionHex)
-      if ((await viaModernIdentity.currentUser())?.publicKey !== session.publicKey) throw new Error("DESO_ACCOUNT_CHANGED")
-      const submitData=await submitNativePost(signedTransactionHex,data.assertAccount)
+      const submitData=await publishNativePost(session.publicKey,quoteText,asQuote?imageUrls:[],asQuote?videoUrls:[],"",[],false,postHash)
       setCount((current) => current + 1)
       window.dispatchEvent(new CustomEvent("via:social:post-published", {
         detail: submitData.postHashHex ? { hash: submitData.postHashHex, publicKey: session.publicKey, text: quoteText, repostedHash: postHash } : undefined,

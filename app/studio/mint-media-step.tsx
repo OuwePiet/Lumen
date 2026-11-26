@@ -1,6 +1,6 @@
 "use client"
 import {uploadNativeImage} from "../social/native-image"
-import {prepareNativePost,submitNativePost} from "../social/native-post"
+import {publishNativePost} from "../social/native-post"
 
 import { useEffect, useState, useRef } from "react"
 import { viaModernIdentity, type ViaModernIdentityUser } from "../deso-identity-modern"
@@ -61,11 +61,7 @@ export default function MintMediaStep({ onPostHash }: { onPostHash?: (postHash: 
     if(mode==="advanced"){ try { const parsed=new URL(sourceUrl); if(parsed.protocol!=="https:" || !parsed.hostname) throw new Error("HTTPS_REQUIRED") } catch { setMessage("Use a valid HTTPS media URL. Nothing was posted or minted."); return } }
     sourceLock.current=true; setSourcePostReady(false); onPostHash?.(""); setPostBusy(true); setMessage("Preparing the DeSo source post…")
     try {
-      const data=await prepareNativePost(session.publicKey,description,videoUrl&&mode==="deso"?[]:[sourceUrl],videoUrl&&mode==="deso"?[sourceUrl]:[],"",[],sensitiveContent)
-      setMessage("Signing the DeSo source post with the active Identity…")
-      const signedTransactionHex=await viaModernIdentity.signTx(data.transactionHex)
-      setMessage("Submitting approved DeSo source post…")
-      const submitResult=await submitNativePost(signedTransactionHex,data.assertAccount)
+      const submitResult=await publishNativePost(session.publicKey,description,videoUrl&&mode==="deso"?[]:[sourceUrl],videoUrl&&mode==="deso"?[sourceUrl]:[],"",[],sensitiveContent)
       if(!submitResult.postHashHex)throw new Error("POST_HASH_MISSING")
       if(!/^[0-9a-fA-F]{64}$/.test(submitResult.postHashHex)) throw new Error("INVALID_POST_HASH")
       onPostHash?.(submitResult.postHashHex)

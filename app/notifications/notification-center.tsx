@@ -1,7 +1,6 @@
 "use client"
 import {readNativeNotifications} from "./native-notifications"
 import {sendDeso,identity} from "deso-protocol"
-import {ensureNFTPermission} from "../nft-permissions"
 
 import Link from "next/link"
 import styles from "./notification-center.module.css"
@@ -515,14 +514,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
       const key=session.publicKey
       const assertAccount=async()=>{if((await viaModernIdentity.currentUser())?.publicKey!==key||(await identity.snapshot()).currentUser?.publicKey!==key)throw new Error("ACCOUNT_CHANGED")}
         await assertAccount()
-        const {constructedTransactionResponse:tx}=await sendDeso({SenderPublicKeyBase58Check:key,RecipientPublicKeyOrUsername:post.publicKey,AmountNanos:amountNanos,MinFeeRateNanosPerKB:1000,TransactionFees:[]},{broadcast:false,checkPermissions:false,localConstruction:false})
-        const cost=amountNanos+tx.FeeNanos
-        if(!tx.TransactionHex||!Number.isSafeInteger(tx.FeeNanos)||tx.FeeNanos<0||!Number.isSafeInteger(cost))throw new Error("INVALID_COST")
-        await ensureNFTPermission({GlobalDESOLimit:cost,TransactionCountLimitMap:{BASIC_TRANSFER:1}},assertAccount)
-        await assertAccount()
-        const signed=await viaModernIdentity.signTx(tx.TransactionHex)
-        await assertAccount()
-        await identity.submitTx(signed)
+        await sendDeso({SenderPublicKeyBase58Check:key,RecipientPublicKeyOrUsername:post.publicKey,AmountNanos:amountNanos,MinFeeRateNanosPerKB:1000,TransactionFees:[]},{localConstruction:false})
       rewardLock.current=false
       setRewardBusy(false)
       setRewardMessage("Reward submitted to DeSo; verify transaction status.")

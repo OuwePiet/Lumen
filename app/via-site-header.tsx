@@ -6,7 +6,6 @@ import { usePathname, useRouter } from "next/navigation"
 import { useEffect, useRef, useState } from "react"
 import { Bell, House, Menu, MessageCircle, Radio, UsersRound, Wallet, X } from "lucide-react"
 import {
-  clearIdentitySession,
   type ViaIdentitySession,
 } from "./deso-identity-session"
 import ViaIdentityStatusMarks from "./via-identity-status"
@@ -294,9 +293,6 @@ export default function ViaSiteHeader() {
   }
 
   function enterPublicMode() {
-    clearIdentitySession()
-    setSession(null)
-    setProfile(null)
     setMenuOpen(false)
     router.push("/public")
   }

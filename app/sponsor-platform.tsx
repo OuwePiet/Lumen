@@ -3,12 +3,12 @@
 import { useEffect, useRef, useState } from "react"
 import { createPortal } from "react-dom"
 import { HandCoins } from "lucide-react"
-import { DESO_IDENTITY_ORIGIN, restoreIdentitySession } from "./deso-identity-session"
+import { sendDeso } from "deso-protocol"
+import { restoreIdentitySession } from "./deso-identity-session"
 import DiamondButton from "./social/diamond-button"
 import { readViaLocalSettings, VIA_SETTINGS_EVENT, type ViaLanguage } from "./via-local-settings"
 
 type Target = { ok?: boolean; publicKey?: string; postHash?: string | null }
-type PrepareResponse = { ok?: boolean; transactionHex?: string; feeNanos?: number | null; amountNanos?: number; error?: string }
 
 type SponsorCopy = {
   trigger: string
@@ -141,17 +141,6 @@ const COPY: Record<ViaLanguage | "Hindi", SponsorCopy> = {
   },
 }
 
-function signedTransactionFromMessage(event: MessageEvent, source: Window | null) {
-  if (event.origin !== DESO_IDENTITY_ORIGIN || event.source !== source) return null
-  if (!event.data || typeof event.data !== "object") return null
-  const data = event.data as Record<string, unknown>
-  if (data.service !== "identity") return null
-  const payload = data.payload
-  if (!payload || typeof payload !== "object" || Array.isArray(payload)) return null
-  const signed = (payload as Record<string, unknown>).signedTransactionHex
-  return typeof signed === "string" && signed.length > 0 ? signed : null
-}
-
 function parseDesoToNanos(value: string) {
   const clean = value.trim()
   if (!/^\d+(?:\.\d{0,9})?$/.test(clean)) return null
@@ -171,8 +160,6 @@ export default function SponsorPlatform({ compact = false, showIcon = true }: { 
   const [status, setStatus] = useState<"idle"|"preparing"|"approval"|"submitting"|"done"|"error">("idle")
   const [message, setMessage] = useState("")
   const [feeNanos, setFeeNanos] = useState<number | null>(null)
-  const popupRef = useRef<Window | null>(null)
-  const popupWatch = useRef<number | null>(null)
 
   useEffect(() => {
     const sync = () => setLanguage(readViaLocalSettings().interfaceLanguage)
@@ -206,42 +193,10 @@ export default function SponsorPlatform({ compact = false, showIcon = true }: { 
       .catch(() => undefined)
   }, [open, target])
 
-  useEffect(() => {
-    const onMessage = async (event: MessageEvent) => {
-      const signedTransactionHex = signedTransactionFromMessage(event, popupRef.current)
-      if (!signedTransactionHex) return
-      if (popupWatch.current !== null) window.clearInterval(popupWatch.current)
-      popupWatch.current = null
-      popupRef.current?.close()
-      popupRef.current = null
-      setStatus("submitting")
-      setMessage(copy.submitting)
-      try {
-        const response = await fetch("/api/via/sponsor/contribute", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          cache: "no-store",
-          body: JSON.stringify({ action: "submit", signedTransactionHex }),
-        })
-        const data = await response.json() as { ok?: boolean; error?: string }
-        if (!response.ok || !data.ok) throw new Error(data.error || "SUBMIT_FAILED")
-        setStatus("done")
-        setMessage(copy.sent)
-        setConfirmed(false)
-      } catch {
-        setStatus("error")
-        setMessage(copy.failed)
-      }
-    }
-    window.addEventListener("message", onMessage)
-    return () => {
-      window.removeEventListener("message", onMessage)
-      if (popupWatch.current !== null) window.clearInterval(popupWatch.current)
-      popupRef.current?.close()
-    }
-  }, [copy])
+  const sendingRef = useRef(false)
 
   async function prepareDeso() {
+    if (sendingRef.current) return
     const session = restoreIdentitySession()
     const entered = Number(amount)
     const desoAmount = amountMode === "USD"
@@ -252,40 +207,21 @@ export default function SponsorPlatform({ compact = false, showIcon = true }: { 
     if (!amountNanos) { setStatus("error"); setMessage(copy.invalidAmount); return }
     if (!confirmed || status === "preparing" || status === "approval" || status === "submitting") return
 
+    sendingRef.current = true
     setStatus("preparing")
     setMessage(copy.prepareExact)
     setFeeNanos(null)
     try {
-      const response = await fetch("/api/via/sponsor/contribute", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        cache: "no-store",
-        body: JSON.stringify({ action: "prepare", senderPublicKey: session.publicKey, amountNanos, confirmed: true }),
-      })
-      const data = await response.json() as PrepareResponse
-      if (!response.ok || !data.ok || !data.transactionHex) throw new Error(data.error || "PREPARE_FAILED")
-      setFeeNanos(typeof data.feeNanos === "number" ? data.feeNanos : null)
-      const popup = window.open(
-        `${DESO_IDENTITY_ORIGIN}/approve?tx=${encodeURIComponent(data.transactionHex)}`,
-        "via-sponsor-deso-approve",
-        `popup=yes,width=${Math.min(800, window.screen.availWidth)},height=${Math.min(900, window.screen.availHeight)}`,
-      )
-      if (!popup) throw new Error("POPUP_BLOCKED")
-      popupRef.current = popup
-      popupWatch.current = window.setInterval(() => {
-        if (popupRef.current?.closed) {
-          popupRef.current = null
-          if (popupWatch.current !== null) window.clearInterval(popupWatch.current)
-          popupWatch.current = null
-          setStatus("idle")
-          setMessage(copy.approvalClosed)
-        }
-      }, 500)
-      setStatus("approval")
-      setMessage(copy.checkApproval)
+      const result = await sendDeso({ SenderPublicKeyBase58Check: session.publicKey, RecipientPublicKeyOrUsername: "OuwePiet", AmountNanos: amountNanos, MinFeeRateNanosPerKB: 1000, TransactionFees: [] }, { localConstruction: false })
+      setFeeNanos(result.constructedTransactionResponse.FeeNanos ?? null)
+      setStatus("done")
+      setMessage(copy.sent)
+      setConfirmed(false)
     } catch (error) {
       setStatus("error")
-      setMessage(error instanceof Error && error.message === "POPUP_BLOCKED" ? copy.popupBlocked : copy.prepareFailed)
+      setMessage(copy.prepareFailed)
+    } finally {
+      sendingRef.current = false
     }
   }
 

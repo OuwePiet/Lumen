@@ -1,6 +1,6 @@
 "use client"
 import {uploadNativeImage} from "./native-image"
-import {prepareNativePost,submitNativePost} from "./native-post"
+import {publishNativePost} from "./native-post"
 
 import { useEffect, useMemo, useRef, useState } from "react"
 import { viaModernIdentity, type ViaModernIdentityUser } from "../deso-identity-modern"
@@ -241,19 +241,9 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
       if (isReply) saveDraft()
       const activeBeforePrepare = await viaModernIdentity.currentUser()
       if (activeBeforePrepare?.publicKey !== session.publicKey) throw new Error("DESO_ACCOUNT_CHANGED_RECONNECT")
-      const prepared=await prepareNativePost(session.publicKey,body,imageUrls,videoUrls,parentStakeID,preparedPollOptions,!isReply&&sensitiveContent)
-      setFeeNanos(typeof prepared.feeNanos === "number" ? prepared.feeNanos : null)
-      setStatus("awaiting-approval")
-      setMessage(isReply ? "Signing your reply with your DeSo Identity session…" : "Signing your post with your DeSo Identity session…")
-      const activeBeforeSigning = await viaModernIdentity.currentUser()
-      if (activeBeforeSigning?.publicKey !== session.publicKey) throw new Error("DESO_ACCOUNT_CHANGED_RECONNECT")
-      const signedTransactionHex = await viaModernIdentity.signTx(prepared.transactionHex)
-      const activeBeforeSubmit = await viaModernIdentity.currentUser()
-      if (activeBeforeSubmit?.publicKey !== session.publicKey) throw new Error("DESO_ACCOUNT_CHANGED_RECONNECT")
       setStatus("submitting")
-      setMessage(isReply ? "Posting your signed reply…" : "Posting your signed post…")
       submissionStarted = true
-      const submitted=await submitNativePost(signedTransactionHex,prepared.assertAccount)
+      const submitted=await publishNativePost(session.publicKey,body,imageUrls,videoUrls,parentStakeID,preparedPollOptions,!isReply&&sensitiveContent)
       setStatus("done")
       setMessage(isReply ? "Reply posted." : "Post published.")
       setBody("")

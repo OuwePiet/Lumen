@@ -1,6 +1,7 @@
 import {sendDMMessage,identity} from "deso-protocol"
+import {replyExtraData} from "./via-rich-metadata"
 import {viaModernIdentity} from "../deso-identity-modern"
-import {ensureNFTPermission} from "../nft-permissions"
+import {guardTxPermission} from "deso-protocol/src/transactions/utils.js"
 import { fetchDeSo } from "../deso-api"
 
 type AccessGroup = {
@@ -52,7 +53,7 @@ export async function getViaDefaultDMGroups(senderPublicKey: string, recipientPu
   }
 }
 
-export async function constructViaDMTransaction(sender: AccessGroup, recipient: AccessGroup, encryptedMessage: string) {
+export async function constructViaDMTransaction(sender: AccessGroup, recipient: AccessGroup, encryptedMessage: string, replyTimestamp?: string) {
   if (!complete(sender) || !complete(recipient) || !encryptedMessage) throw new Error("Incomplete DeSo DM transaction data.")
 
   const key=sender.OwnerPublicKeyBase58Check
@@ -65,10 +66,10 @@ export async function constructViaDMTransaction(sender: AccessGroup, recipient: 
     RecipientAccessGroupOwnerPublicKeyBase58Check:recipient.OwnerPublicKeyBase58Check,
     RecipientAccessGroupPublicKeyBase58Check:recipient.AccessGroupPublicKeyBase58Check,
     RecipientAccessGroupKeyName:recipient.AccessGroupKeyName,
-    EncryptedMessageText:encryptedMessage,MinFeeRateNanosPerKB:1500,TransactionFees:[],ExtraData:{}
+    EncryptedMessageText:encryptedMessage,MinFeeRateNanosPerKB:1500,TransactionFees:[],ExtraData:replyExtraData(replyTimestamp)
   },{broadcast:false,checkPermissions:false,localConstruction:false})
   if(!tx.TransactionHex||!Number.isSafeInteger(tx.FeeNanos)||tx.FeeNanos<0)throw new Error("INVALID_DM_FEE")
-  await ensureNFTPermission({GlobalDESOLimit:tx.FeeNanos,TransactionCountLimitMap:{NEW_MESSAGE:1}},assertAccount)
+  await guardTxPermission({GlobalDESOLimit:tx.FeeNanos,TransactionCountLimitMap:{NEW_MESSAGE:1}})
   await assertAccount()
   return tx.TransactionHex
 }

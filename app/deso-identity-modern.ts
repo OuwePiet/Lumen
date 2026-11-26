@@ -1,8 +1,7 @@
 "use client"
 
 import { identity, type AccessGroupEntryResponse, type NewMessageEntryResponse } from "deso-protocol"
-import { clearIdentitySession, listIdentitySessions, restoreIdentitySession, SDK_ACTIVE_PUBLIC_KEY, SDK_IDENTITY_USERS, VIA_IDENTITY_EVENT } from "./deso-identity-session"
-import { checkedIdentityLoginURL, recoverExistingSDKSession } from "./deso-session-recovery"
+import { listIdentitySessions, restoreIdentitySession, SDK_ACTIVE_PUBLIC_KEY, SDK_IDENTITY_USERS, VIA_IDENTITY_EVENT } from "./deso-identity-session"
 import { resumeIdentityReturn } from "./deso-identity-return"
 
 /**
@@ -23,9 +22,6 @@ export type ViaModernIdentityAdapter = {
   subscribe(listener: (user: ViaModernIdentityUser | null) => void): () => void
   setActiveUser(publicKey: string): Promise<void>
   signTx(transactionHex: string): Promise<string>
-  hasPermissions(permissions: Parameters<typeof identity.hasPermissions>[0]): ReturnType<typeof identity.hasPermissions>
-  requestPermissions(permissions: Parameters<typeof identity.requestPermissions>[0]): ReturnType<typeof identity.requestPermissions>
-  refreshSpendingLimits(): Promise<void>
   resumeRedirect(): void
   encryptMessage(recipientPublicKey: string, message: string): Promise<string>
   decryptMessage(message: NewMessageEntryResponse, groups?: AccessGroupEntryResponse[]): Promise<string>
@@ -44,7 +40,7 @@ function configure(redirectLogin = false) {
     identityURI: "https://identity.deso.org",
     // Official SDK redirect: no Safari popup/opener dependency. Only login redirects.
     redirectURI: redirectLogin ? `${window.location.origin}/` : undefined,
-    identityPresenter: redirectLogin ? (url) => { window.location.href = checkedIdentityLoginURL(url, window.location.origin) } : undefined,
+    identityPresenter: redirectLogin ? (url) => { window.location.href = url } : undefined,
   })
   configured = true
 }
@@ -87,31 +83,26 @@ async function forSelectedUser<T>(operation: () => T | Promise<T>): Promise<T> {
 }
 
 export const viaModernIdentity: ViaModernIdentityAdapter = {
-  async currentUser() { ensureConfigured(); return selectedUser() },
+  async currentUser() { ensureConfigured(); const { currentUser } = await identity.snapshot(); return currentUser ? { publicKey: currentUser.publicKey } : null },
   async login() {
     // 3.4.1: the homepage is the sole entry for a new DeSo login.
     if (window.location.pathname !== "/") { window.location.assign("/"); throw new Error("Continue on the VIA homepage.") }
     if (loginPending) throw new Error("DeSo Identity login is already opening.")
     loginPending = true
     try {
-      localStorage.removeItem("viaActivePublicKey")
-      if (await recoverExistingSDKSession()) {
-        const recovered = selectedUser()
-        if (recovered) return recovered
-      }
       configure(true)
       const payload = await identity.login()
       return { publicKey: payload.publicKeyBase58Check }
     } finally { loginPending = false; configure() }
   },
-  async logout() { clearIdentitySession() },
+  async logout() { ensureConfigured(); await identity.logout() },
   async alternateUsers() {
     ensureConfigured()
-    return listIdentitySessions().map(({ publicKey }) => ({ publicKey }))
+    const { currentUser, alternateUsers } = await identity.snapshot(); return [...(currentUser ? [currentUser] : []), ...Object.values(alternateUsers ?? {})].map(({ publicKey }) => ({ publicKey }))
   },
   resumeRedirect() {
     resumeIdentityReturn((url) => identity.handleRedirectURI(url))
-    void recoverExistingSDKSession().then(recovered => { if (recovered) notify() })
+
   },
   subscribe(listener) {
     ensureConfigured()
@@ -120,7 +111,7 @@ export const viaModernIdentity: ViaModernIdentityAdapter = {
       subscribed = true
       void identity.subscribe(() => {
         notify()
-        void recoverExistingSDKSession().then(recovered => { if (recovered) notify() })
+
         window.dispatchEvent(new CustomEvent(VIA_IDENTITY_EVENT, { detail: restoreIdentitySession() }))
       }).catch(() => notify())
       window.addEventListener(VIA_IDENTITY_EVENT, notify)
@@ -131,7 +122,7 @@ export const viaModernIdentity: ViaModernIdentityAdapter = {
       window.addEventListener("focus", notify)
     }
     listener(selectedUser())
-    void recoverExistingSDKSession().then(recovered => { if (recovered) notify() })
+
     return () => { identityListeners.delete(listener) }
   },
   async setActiveUser(publicKey) {
@@ -139,21 +130,10 @@ export const viaModernIdentity: ViaModernIdentityAdapter = {
     if (!listIdentitySessions().some((user) => user.publicKey === publicKey)) {
       throw new Error("This account must first log in with DeSo Identity on the VIA homepage.")
     }
-    localStorage.removeItem("viaActivePublicKey")
     await identity.setActiveUser(publicKey)
     window.dispatchEvent(new CustomEvent(VIA_IDENTITY_EVENT, { detail: restoreIdentitySession() }))
   },
   signTx(transactionHex) { return forSelectedUser(() => identity.signTx(transactionHex)) },
-  async hasPermissions(permissions) {
-    return forSelectedUser(async () => {
-      if (await identity.hasPermissions(permissions)) return true
-      // DeSo SDK 3.4.1: refresh the registered on-chain grant before requesting consent.
-      await identity.refreshDerivedKeyPermissions()
-      return identity.hasPermissions(permissions)
-    })
-  },
-  requestPermissions(permissions) { return forSelectedUser(() => identity.requestPermissions(permissions)) },
-  refreshSpendingLimits() { return forSelectedUser(() => identity.refreshDerivedKeyPermissions()) },
   encryptMessage(recipientPublicKey, message) { return forSelectedUser(() => identity.encryptMessage(recipientPublicKey, message)) },
   async decryptMessage(message, groups = []) {
     return forSelectedUser(async () => (await identity.decryptMessage(message, groups)).DecryptedMessage)

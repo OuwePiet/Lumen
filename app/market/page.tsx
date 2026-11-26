@@ -92,14 +92,14 @@ export default async function MarketPage({ searchParams }: { searchParams: Promi
   const query = publicKey ? "?publicKey=" + encodeURIComponent(publicKey) : ""
 
   return (
-    <main className="mx-auto min-h-screen max-w-6xl px-5 py-10 text-zinc-100">
+    <main className="mx-auto min-h-screen max-w-6xl px-3 py-5 sm:px-5 text-zinc-100">
       <header className="max-w-3xl">
         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8fd4a9]"><MarketLocalizedText kind="marketplace" /></p>
-        <h1 className="mt-2 text-3xl font-semibold"><MarketLocalizedText kind="heading" /></h1>
+        <h1 className="mt-1 text-2xl font-semibold"><MarketLocalizedText kind="heading" /></h1>
         <p className="mt-2 text-sm leading-6 text-zinc-400"><MarketLocalizedText kind="intro" /></p>
       </header>
 
-      <nav aria-label="Marketplace sections" className="mt-6 flex flex-wrap gap-2">
+      <nav aria-label="Marketplace sections" className="mt-3 flex flex-wrap gap-2">
         <Link href="/collection" className="rounded-lg border border-zinc-800 px-3 py-2 text-sm text-zinc-300"><MarketLocalizedText kind="collection" /></Link>
         <Link href={"/market/received-bids" + query} className="rounded-lg border border-zinc-800 px-3 py-2 text-sm text-zinc-300"><MarketLocalizedText kind="receivedBids" /></Link>
         <Link href={"/market/my-bids" + query} className="rounded-lg border border-zinc-800 px-3 py-2 text-sm text-zinc-300"><MarketLocalizedText kind="myBids" /></Link>
@@ -108,7 +108,7 @@ export default async function MarketPage({ searchParams }: { searchParams: Promi
       </nav>
 
       {!publicKey ? (
-        <><MarketIdentityRedirect /><section className="mt-8 rounded-xl border border-zinc-800 bg-black/20 p-4" aria-labelledby="market-account-heading">
+        <><MarketIdentityRedirect /><section className="mt-4 rounded-xl border border-zinc-800 bg-black/20 p-3" aria-labelledby="market-account-heading">
           <h2 id="market-account-heading" className="text-sm font-semibold text-zinc-200"><MarketLocalizedText kind="chooseAccount" /></h2>
           <p className="mt-1 text-sm text-zinc-500"><MarketLocalizedText kind="readOnly" /></p>
           <form className="mt-4 flex flex-wrap gap-3">
@@ -116,16 +116,16 @@ export default async function MarketPage({ searchParams }: { searchParams: Promi
             <button className="rounded-lg border border-[#285f40] px-4 py-2 text-sm font-semibold text-[#9adbb2]"><MarketLocalizedText kind="openMarket" /></button>
           </form>
         </section></>
-      ) : error ? <p className="mt-8 text-sm text-amber-300"><MarketLocalizedText kind="loadError" /></p> : (
+      ) : error ? <p className="mt-4 text-sm text-amber-300"><MarketLocalizedText kind="loadError" /></p> : (
         <>
-          <section id="listings" className="mt-10 scroll-mt-24">
+          <section id="listings" className="mt-5 scroll-mt-24">
             <div className="flex items-baseline justify-between gap-4">
               <h2 className="text-xl font-semibold"><MarketLocalizedText kind="listings" /></h2>
               <span className="text-xs text-zinc-500"><MarketLocalizedText kind="listedCount" count={listings.length} /></span>
             </div>
             {listings.length === 0 ? <p className="mt-3 text-sm text-zinc-500"><MarketLocalizedText kind="noForSale" /></p> : (
-              <div className="mt-4 grid gap-3">
-                {listings.map(({hash,post,entry},index)=><Link key={hash+":"+entry.SerialNumber+":"+index} href={"/nft/"+hash+(publicKey?"?returnTo=market&publicKey="+encodeURIComponent(publicKey):"")} className="rounded-xl border border-zinc-800 bg-black/20 p-4">
+              <div className="mt-4 grid gap-2">
+                {listings.map(({hash,post,entry},index)=><Link key={hash+":"+entry.SerialNumber+":"+index} href={"/nft/"+hash+(publicKey?"?returnTo=market&publicKey="+encodeURIComponent(publicKey):"")} className="rounded-xl border border-zinc-800 bg-black/20 p-3">
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div><p className="text-sm font-semibold">{title(post.Body)}</p><p className="mt-1 text-xs text-zinc-500">{post.ProfileEntryResponse?.Username ? "@"+post.ProfileEntryResponse.Username+" · " : ""}<MarketLocalizedText kind="edition" /> #{entry.SerialNumber ?? "?"}</p></div>
                     <p className="text-sm text-[#9adbb2]">{entry.IsBuyNow && typeof entry.BuyNowPriceNanos === "number" ? <><MarketLocalizedText kind="buyNow" /> {formatDeso(entry.BuyNowPriceNanos)} DESO</> : <><MarketLocalizedText kind="minBid" /> {formatDeso(entry.MinBidAmountNanos)} DESO</>}</p>
@@ -135,14 +135,14 @@ export default async function MarketPage({ searchParams }: { searchParams: Promi
             )}
           </section>
 
-          <section id="transfers" className="mt-10 scroll-mt-24">
+          <section id="transfers" className="mt-5 scroll-mt-24">
             <div className="flex items-baseline justify-between gap-4">
               <h2 className="text-xl font-semibold"><MarketLocalizedText kind="transfers" /></h2>
               <span className="text-xs text-zinc-500"><MarketLocalizedText kind="pendingCount" count={transfers.length} /></span>
             </div>
             {transfers.length === 0 ? <p className="mt-3 text-sm text-zinc-500"><MarketLocalizedText kind="noTransfers" /></p> : (
-              <div className="mt-4 grid gap-3">
-                {transfers.map(({hash,post,entry},index)=><Link key={hash+":"+entry.SerialNumber+":"+index} href={"/nft/"+hash+(publicKey?"?returnTo=market&publicKey="+encodeURIComponent(publicKey):"")} className="rounded-xl border border-zinc-800 bg-black/20 p-4">
+              <div className="mt-4 grid gap-2">
+                {transfers.map(({hash,post,entry},index)=><Link key={hash+":"+entry.SerialNumber+":"+index} href={"/nft/"+hash+(publicKey?"?returnTo=market&publicKey="+encodeURIComponent(publicKey):"")} className="rounded-xl border border-zinc-800 bg-black/20 p-3">
                   <p className="text-sm font-semibold">{title(post.Body)}</p>
                   <p className="mt-1 text-xs text-zinc-500">{post.ProfileEntryResponse?.Username ? "@"+post.ProfileEntryResponse.Username+" · " : ""}<MarketLocalizedText kind="edition" /> #{entry.SerialNumber ?? "?"} · <MarketLocalizedText kind="pendingOnDeSo" /></p>
                 </Link>)}

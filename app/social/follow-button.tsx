@@ -1,6 +1,5 @@
 "use client"
 import { updateFollowingStatus, identity } from 'deso-protocol'
-import { ensureNFTPermission } from "../nft-permissions"
 
 import { useEffect, useState, useRef } from "react"
 import { viaModernIdentity, type ViaModernIdentityUser } from "../deso-identity-modern"
@@ -74,13 +73,7 @@ export default function FollowButton({ followedPublicKey, variant = "default", f
       const key=session.publicKey
       const assertAccount=async()=>{if((await viaModernIdentity.currentUser())?.publicKey!==key||(await identity.snapshot()).currentUser?.publicKey!==key)throw new Error("DESO_ACCOUNT_CHANGED")}
       await assertAccount()
-      const {constructedTransactionResponse:tx}=await updateFollowingStatus({FollowerPublicKeyBase58Check:key,FollowedPublicKeyBase58Check:followedPublicKey,IsUnfollow:following,MinFeeRateNanosPerKB:1000,TransactionFees:[]},{broadcast:false,checkPermissions:false,localConstruction:false})
-      if(!tx.TransactionHex||!Number.isSafeInteger(tx.FeeNanos)||tx.FeeNanos<0)throw new Error("INVALID_FEE")
-      await ensureNFTPermission({GlobalDESOLimit:tx.FeeNanos,TransactionCountLimitMap:{FOLLOW:1}},assertAccount)
-      await assertAccount()
-      const signed=await viaModernIdentity.signTx(tx.TransactionHex)
-      await assertAccount()
-      await identity.submitTx(signed)
+      await updateFollowingStatus({FollowerPublicKeyBase58Check:key,FollowedPublicKeyBase58Check:followedPublicKey,IsUnfollow:following,MinFeeRateNanosPerKB:1000,TransactionFees:[]},{localConstruction:false})
       const nextFollowing = !following
       setFollowing(nextFollowing)
       setStatusReady(true)

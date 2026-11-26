@@ -4,7 +4,6 @@ import { ChangeEvent,useEffect,useRef,useState } from "react"
 import { Camera,Save } from "lucide-react"
 import {updateProfile,identity} from "deso-protocol"
 import {viaModernIdentity} from "../../deso-identity-modern"
-import {ensureNFTPermission} from "../../nft-permissions"
 import { useViaIdentitySession } from "../../use-via-identity-session"
 type Profile={username:string;description:string;profilePic:string|null;creatorBasisPoints:number|null;stakeMultipleBasisPoints:number|null;isHidden:boolean}
 export default function EditProfilePage(){
@@ -31,13 +30,7 @@ export default function EditProfilePage(){
   const assertAccount=async()=>{if((await viaModernIdentity.currentUser())?.publicKey!==key||(await identity.snapshot()).currentUser?.publicKey!==key)throw new Error("ACCOUNT_CHANGED")}
   try{
    await assertAccount()
-   const {constructedTransactionResponse:tx}=await updateProfile({UpdaterPublicKeyBase58Check:key,ProfilePublicKeyBase58Check:key,NewUsername:name,NewDescription:description,NewProfilePic:profilePic,NewCreatorBasisPoints:frValue,NewStakeMultipleBasisPoints:stakeMultiple,IsHidden:isHidden,MinFeeRateNanosPerKB:1000,TransactionFees:[]},{broadcast:false,checkPermissions:false,localConstruction:false})
-   if(!tx.TransactionHex||!Number.isSafeInteger(tx.FeeNanos)||tx.FeeNanos<0)throw new Error("INVALID_FEE")
-   await ensureNFTPermission({GlobalDESOLimit:tx.FeeNanos,TransactionCountLimitMap:{UPDATE_PROFILE:1}},assertAccount)
-   await assertAccount()
-   const signed=await viaModernIdentity.signTx(tx.TransactionHex)
-   await assertAccount()
-   await identity.submitTx(signed)
+   await updateProfile({UpdaterPublicKeyBase58Check:key,ProfilePublicKeyBase58Check:key,NewUsername:name,NewDescription:description,NewProfilePic:profilePic,NewCreatorBasisPoints:frValue,NewStakeMultipleBasisPoints:stakeMultiple,IsHidden:isHidden,MinFeeRateNanosPerKB:1000,TransactionFees:[]},{localConstruction:false})
    setMessage("Profile update submitted to DeSo.")
   }catch{setMessage("Profile update not confirmed. Check DeSo before retrying.")}
   finally{lock.current=false;setBusy(false)}

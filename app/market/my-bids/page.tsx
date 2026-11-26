@@ -59,32 +59,32 @@ export default async function MarketMyBidsPage({ searchParams }: { searchParams:
   const marketHref = publicKey ? "/market?publicKey=" + encodeURIComponent(publicKey) : "/market"
 
   return (
-    <main className="mx-auto min-h-screen max-w-5xl px-5 py-10 text-zinc-100">
+    <main className="mx-auto min-h-screen max-w-5xl px-3 py-5 sm:px-5 text-zinc-100">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8fd4a9]">VIA Marketplace</p>
-          <h1 className="mt-2 text-3xl font-semibold">My bids</h1>
+          <h1 className="mt-1 text-2xl font-semibold">My bids</h1>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-400">One quiet overview of active NFT bids from a DeSo account. Open an NFT to change or withdraw its bid.</p>
         </div>
         <Link href={marketHref} className="text-sm text-[#8fd4a9] hover:text-[#9adbb2]">Back to Market</Link>
       </div>
 
       {!publicKey ? (
-        <><MyBidsIdentityRedirect /><form className="mt-8 rounded-xl border border-zinc-800 bg-black/20 p-4">
+        <><MyBidsIdentityRedirect /><form className="mt-4 rounded-xl border border-zinc-800 bg-black/20 p-3">
           <label className="text-sm text-zinc-300">DeSo public key
             <input name="publicKey" required placeholder="BC1…" className="mt-2 block w-full rounded-lg border border-zinc-800 bg-black px-3 py-2 text-sm" />
           </label>
           <button className="mt-3 rounded-lg border border-[#285f40] px-4 py-2 text-sm font-semibold text-[#9adbb2]">Show bids</button>
         </form></>
-      ) : error ? <p className="mt-8 text-sm text-amber-300">{error}</p> : bids.length === 0 ? (
-        <p className="mt-8 rounded-xl border border-zinc-800 p-5 text-sm text-zinc-400">No active NFT bids found for this DeSo account.</p>
+      ) : error ? <p className="mt-4 text-sm text-amber-300">{error}</p> : bids.length === 0 ? (
+        <p className="mt-4 rounded-xl border border-zinc-800 p-5 text-sm text-zinc-400">No active NFT bids found for this DeSo account.</p>
       ) : (
-        <div className="mt-8 grid gap-3">
+        <div className="mt-4 grid gap-2">
           {bids.sort((a,b)=>(b.BidAmountNanos??0)-(a.BidAmountNanos??0)).map((bid,index) => {
             const hash = bid.PostHashHex ?? ""
             const post = posts[hash]
             return (
-              <Link key={hash+":"+bid.SerialNumber+":"+index} href={"/nft/"+hash+(publicKey?"?returnTo=my-bids&publicKey="+encodeURIComponent(publicKey):"")} className="rounded-xl border border-zinc-800 bg-black/20 p-4 transition hover:border-zinc-700">
+              <Link key={hash+":"+bid.SerialNumber+":"+index} href={"/nft/"+hash+(publicKey?"?returnTo=my-bids&publicKey="+encodeURIComponent(publicKey):"")} className="rounded-xl border border-zinc-800 bg-black/20 p-3 transition hover:border-zinc-700">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
                     <p className="text-sm font-semibold">{title(post?.Body)}</p>

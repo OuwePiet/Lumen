@@ -12,13 +12,15 @@
  */import Link from "next/link"
 import { viaSearchGeoShards, type ViaGeoPlace } from "../../via-geo-shard-search"
 import { useEffect, useMemo, useState } from "react"
-import { deletePrivateCalendar, exportEncryptedBackup, hasPrivateCalendar, importEncryptedBackup, loadPrivateCalendar, savePrivateCalendar } from "./private-storage"
+import { useViaIdentitySession } from "../../use-via-identity-session"
+import { recoverLegacyCalendar, deletePrivateCalendar, exportEncryptedBackup, hasPrivateCalendar, importEncryptedBackup, loadPrivateCalendar, savePrivateCalendar } from "./private-storage"
 
 type Repeat = "none" | "daily" | "weekly" | "monthly" | "yearly"
 type Appointment = { id: number; title: string; date: string; time: string; repeat: Repeat; reminder: boolean; place?: string; geoId?: string; countryCode?: string; sourceEventId?: string }
 
 /** VIA Mijn Agenda: isolated, session-only prototype. No blockchain, backend or external calendar writes. */
 export default function MijnAgendaProef() {
+  const account = useViaIdentitySession()?.publicKey ?? ""
   const [items, setItems] = useState<Appointment[]>([])
   const [title, setTitle] = useState("")
   const [date, setDate] = useState("")
@@ -80,7 +82,7 @@ export default function MijnAgendaProef() {
     setNotice("Gebeurtenis uit de Wereldkalender ingevuld. Controleer de gegevens en kies Afspraak toevoegen.")
     window.history.replaceState(null, "", window.location.pathname)
   }, [])
-  useEffect(() => { setSavedOnDevice(hasPrivateCalendar()) }, [])
+  useEffect(() => { setSavedOnDevice(account ? hasPrivateCalendar(account) : false) }, [account])
   useEffect(() => {
     const controller = new AbortController()
     fetch("/wereldkalender19/geo-countries.json", { credentials: "omit", signal: controller.signal })
@@ -89,25 +91,26 @@ export default function MijnAgendaProef() {
       .catch(() => {})
     return () => controller.abort()
   }, [])
+  const recoverOld = async () => { if (!account || !passphrase || !window.confirm("Oude versleutelde agenda kopieren naar dit DeSo-account?")) return; setBusy(true); try { await recoverLegacyCalendar(account, passphrase); setSavedOnDevice(true); setNotice("Oude agenda hersteld. Open deze met je wachtzin.") } catch { setNotice("Herstel mislukt. Bestaande gegevens zijn behouden.") } finally { setBusy(false); setPassphrase("") } }
   const saveEncrypted = async () => {
     setBusy(true)
-    try { await savePrivateCalendar(items, passphrase); setSavedOnDevice(true); setNotice("Versleutelde kopie op dit apparaat bewaard. Bewaar je wachtzin zelf.") }
+    try { await savePrivateCalendar(items, passphrase, account); setSavedOnDevice(true); setNotice("Versleutelde kopie op dit apparaat bewaard. Bewaar je wachtzin zelf.") }
     catch (error) { setNotice(error instanceof Error ? error.message : "Opslaan mislukt.") }
     finally { setBusy(false); setPassphrase("") }
   }
   const unlockEncrypted = async () => {
     setBusy(true)
-    try { const loaded = await loadPrivateCalendar(passphrase); if (items.length && !window.confirm("Huidige sessieafspraken vervangen door de opgeslagen agenda?")) return; setItems(loaded); setNotice("Versleutelde agenda geopend. Wijzigingen moet je opnieuw opslaan.") }
+    try { const loaded = await loadPrivateCalendar(passphrase, account); if (items.length && !window.confirm("Huidige sessieafspraken vervangen door de opgeslagen agenda?")) return; setItems(loaded); setNotice("Versleutelde agenda geopend. Wijzigingen moet je opnieuw opslaan.") }
     catch { setNotice("Ontgrendelen mislukt: controleer wachtzin of opgeslagen gegevens.") }
     finally { setBusy(false); setPassphrase("") }
   }
   const eraseEncrypted = () => {
     if (!window.confirm("De versleutelde kopie op dit apparaat definitief verwijderen?")) return
-    deletePrivateCalendar(); setSavedOnDevice(false); setNotice("Opgeslagen kopie verwijderd. Huidige sessie blijft open.")
+    deletePrivateCalendar(account); setSavedOnDevice(false); setNotice("Opgeslagen kopie verwijderd. Huidige sessie blijft open.")
   }
   const downloadEncrypted = () => {
     try {
-      const blob = new Blob([exportEncryptedBackup()], { type: "application/json" })
+      const blob = new Blob([exportEncryptedBackup(account)], { type: "application/json" })
       const url = URL.createObjectURL(blob)
       const anchor = document.createElement("a"); anchor.href = url; anchor.download = "via-mijn-agenda-versleuteld.json"; anchor.click()
       setTimeout(() => URL.revokeObjectURL(url), 5000)
@@ -118,7 +121,7 @@ export default function MijnAgendaProef() {
     if (!file) return
     if (file.size > 3_000_000) { setNotice("Back-upbestand te groot."); return }
     if (savedOnDevice && !window.confirm("Bestaande versleutelde apparaatkopie vervangen?")) return
-    try { importEncryptedBackup(await file.text()); setSavedOnDevice(true); setNotice("Versleutelde back-up ingelezen. Open deze met je wachtzin.") }
+    try { importEncryptedBackup(await file.text(), account); setSavedOnDevice(true); setNotice("Versleutelde back-up ingelezen. Open deze met je wachtzin.") }
     catch { setNotice("Ongeldig back-upbestand of opslag niet beschikbaar.") }
   }
   const add = () => {
@@ -186,6 +189,7 @@ export default function MijnAgendaProef() {
       <label style={{ display: "grid", gap: 5, maxWidth: 360 }}>Wachtzin<input style={field} type="password" autoComplete="off" value={passphrase} onChange={event => setPassphrase(event.target.value)} /></label>
       <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 12 }}>
         <button style={field} disabled={busy || !items.length || passphrase.length < 12} onClick={saveEncrypted}>Versleuteld opslaan</button>
+        <button style={field} disabled={busy || savedOnDevice || !passphrase} onClick={recoverOld}>Oude agenda herstellen</button>
         <button style={field} disabled={busy || !savedOnDevice || !passphrase} onClick={unlockEncrypted}>Opgeslagen agenda openen</button>
         <button style={field} disabled={busy || !savedOnDevice} onClick={eraseEncrypted}>Opgeslagen kopie verwijderen</button>
         <button style={field} disabled={!savedOnDevice} onClick={downloadEncrypted}>Download versleutelde back-up</button>

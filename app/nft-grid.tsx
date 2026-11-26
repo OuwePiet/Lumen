@@ -124,8 +124,8 @@ function cardTitle(body?: string) {
 }
 
 const styles = {
-  section: { minHeight: "100vh", background: "transparent", color: "#f4f7f5", fontFamily: "Arial, Helvetica, sans-serif", padding: "28px 20px 72px" },
-  container: { width: "100%", maxWidth: "1120px", margin: "0 auto" },
+  section: { background: "transparent", color: "#f4f7f5", fontFamily: "Arial, Helvetica, sans-serif", padding: "16px clamp(10px, 2vw, 20px) 24px" },
+  container: { width: "100%", maxWidth: "1320px", margin: "0 auto" },
   brandRow: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: "18px", marginBottom: "26px", flexWrap: "wrap" as const },
   brandLockup: { display: "flex", alignItems: "center", gap: "12px", textDecoration: "none" },
   brandMark: { display: "grid", placeItems: "center", width: "38px", height: "38px", border: "1px solid rgba(143,212,169,.32)", borderRadius: "12px", color: "#9adbb2", background: "rgba(12,23,17,.45)", fontSize: "15px", fontWeight: 800, letterSpacing: "0.08em" },
@@ -134,18 +134,17 @@ const styles = {
   domain: { color: "#76837b", fontSize: "11px", letterSpacing: "0.08em", margin: 0 },
   nav: { display: "flex", flexWrap: "wrap" as const, gap: "8px", justifyContent: "flex-end" },
   navLink: { minHeight: "40px", display: "inline-flex", alignItems: "center", color: "#c1cbc5", background: "transparent", border: "1px solid rgba(113,130,120,.58)", borderRadius: "11px", fontSize: "12px", fontWeight: 700, padding: "7px 12px", textDecoration: "none", transition: "background-color 200ms ease-out, border-color 200ms ease-out, color 200ms ease-out" },
-  heading: { fontSize: "clamp(27px, 4vw, 44px)", lineHeight: 1.08, margin: "0 0 10px", letterSpacing: "-0.02em" },
-  introduction: { color: "#9ba9a0", fontSize: "15px", lineHeight: 1.6, margin: "0 0 30px", maxWidth: "760px" },
+  heading: { fontSize: "clamp(20px, 3vw, 28px)", lineHeight: 1.08, margin: "0 0 10px", letterSpacing: "-0.02em" },
+  introduction: { color: "#9ba9a0", fontSize: "15px", lineHeight: 1.6, margin: "0 0 14px", maxWidth: "760px" },
   owner: { color: "#8fd4a9", fontSize: "13px", fontWeight: 700, lineHeight: 1.7, margin: "-12px 0 30px" },
-  grid: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: "18px" },
+  grid: { display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(150px, 100%), 1fr))", gap: "12px" },
   card: { display: "block", overflow: "hidden", color: "inherit", background: "rgba(9,13,11,.72)", border: "1px solid rgba(63,74,68,.72)", borderRadius: "14px", textDecoration: "none" },
   mediaFrame: { position: "relative" as const, width: "100%", aspectRatio: "1 / 1", overflow: "hidden", background: "#070b09", borderBottom: "1px solid rgba(63,74,68,.72)" },
   image: { display: "block", width: "100%", height: "100%", objectFit: "cover" as const, background: "#070b09" },
   placeholder: { display: "grid", width: "100%", height: "100%", placeItems: "center", color: "#84958b", background: "#070b09" },
-  content: { padding: "18px" },
-  badge: { display: "inline-block", color: "#92d7ab", background: "rgba(12,23,17,.45)", border: "1px solid rgba(143,212,169,.28)", borderRadius: "999px", fontSize: "11px", fontWeight: 700, padding: "5px 9px", marginBottom: "12px" },
-  title: { fontSize: "17px", lineHeight: 1.4, margin: "0 0 16px", fontWeight: 600 },
-  facts: { display: "flex", justifyContent: "space-between", gap: "16px", color: "#9daaa3", fontSize: "13px", lineHeight: 1.5, flexWrap: "wrap" as const },
+  content: { padding: "10px" },
+  title: { fontSize: "14px", lineHeight: 1.3, margin: "0 0 6px", overflowWrap: "anywhere" as const, fontWeight: 600 },
+  facts: { display: "flex", justifyContent: "space-between", gap: "4px 8px", color: "#9daaa3", fontSize: "13px", lineHeight: 1.5, flexWrap: "wrap" as const },
 }
 
 export default async function NFTGrid({ initialAccount }: { initialAccount?: string }) {
@@ -165,8 +164,7 @@ export default async function NFTGrid({ initialAccount }: { initialAccount?: str
           <ViaWatermark />
         </div>
         <div style={styles.content}>
-          <span style={styles.badge}><CollectionLocalizedText kind="onChain" /></span>
-          <h2 style={styles.title}>{cardTitle(post.Body)}</h2>
+          <h3 style={styles.title}>{cardTitle(post.Body)}</h3>
           <div style={styles.facts}>
             <span>{creatorUsername ? `@${creatorUsername}` : <CollectionLocalizedText kind="creator" />}</span>
             <span><CollectionLocalizedText kind="cardFacts" copies={post.NumNFTCopies ?? 0} forSaleCount={forSaleCount} buyNowPrice={lowestBuyNowPrice} minBidAmount={lowestMinBidAmount} /></span>
@@ -180,7 +178,7 @@ export default async function NFTGrid({ initialAccount }: { initialAccount?: str
     <main id="main-content" style={styles.section}>
       <a className={accessibilityStyles.skipLink} href="#collection-controls">Skip to collection controls</a>
       <div style={styles.container}>
-        <h1 style={styles.heading}><CollectionLocalizedText kind="heading" /></h1>
+        <h2 id="collection-controls" style={styles.heading}><CollectionLocalizedText kind="heading" /></h2>
         <p style={styles.introduction}><CollectionLocalizedText kind="intro" /></p>
         <CollectionBrowser initialAccount={initialAccount}>
           {selectedAccount ? (
@@ -194,7 +192,7 @@ export default async function NFTGrid({ initialAccount }: { initialAccount?: str
                   selectedAccount={selectedAccount}
                 />
               </p>
-              <div id="collection-controls">
+              <div>
                 <MediaFilter
                   mediaTypes={collectionNFTs.map(({ post }) => mediaFilterType(post))}
                   saleStatuses={collectionNFTs.map(({ forSaleCount }) => forSaleCount > 0 ? "for-sale" : "not-for-sale")}

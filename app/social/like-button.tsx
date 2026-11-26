@@ -1,6 +1,5 @@
 "use client"
 import { updateLikeStatus, identity } from 'deso-protocol'
-import { ensureNFTPermission } from "../nft-permissions"
 
 import { useEffect, useState, useRef } from "react"
 import { Heart } from "lucide-react"
@@ -41,13 +40,7 @@ export default function LikeButton({ postHash, initialCount, initialLiked = fals
       const key=session.publicKey
       const assertAccount=async()=>{if((await viaModernIdentity.currentUser())?.publicKey!==key||(await identity.snapshot()).currentUser?.publicKey!==key)throw new Error("DESO_ACCOUNT_CHANGED")}
       await assertAccount()
-      const {constructedTransactionResponse:tx}=await updateLikeStatus({ReaderPublicKeyBase58Check:key,LikedPostHashHex:postHash,IsUnlike:liked,MinFeeRateNanosPerKB:1000,TransactionFees:[]},{broadcast:false,checkPermissions:false,localConstruction:false})
-      if(!tx.TransactionHex||!Number.isSafeInteger(tx.FeeNanos)||tx.FeeNanos<0)throw new Error("INVALID_FEE")
-      await ensureNFTPermission({GlobalDESOLimit:tx.FeeNanos,TransactionCountLimitMap:{LIKE:1}},assertAccount)
-      await assertAccount()
-      const signed=await viaModernIdentity.signTx(tx.TransactionHex)
-      await assertAccount()
-      await identity.submitTx(signed)
+      await updateLikeStatus({ReaderPublicKeyBase58Check:key,LikedPostHashHex:postHash,IsUnlike:liked,MinFeeRateNanosPerKB:1000,TransactionFees:[]},{localConstruction:false})
       const nextLiked = !liked
       setLiked(nextLiked)
       setCount((current) => Math.max(0, current + (nextLiked ? 1 : -1)))
