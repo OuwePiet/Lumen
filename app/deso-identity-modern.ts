@@ -95,7 +95,10 @@ export const viaModernIdentity: ViaModernIdentityAdapter = {
     loginPending = true
     try {
       localStorage.removeItem("viaActivePublicKey")
-      await recoverExistingSDKSession()
+      if (await recoverExistingSDKSession()) {
+        const recovered = selectedUser()
+        if (recovered) return recovered
+      }
       configure(true)
       const payload = await identity.login()
       return { publicKey: payload.publicKeyBase58Check }
@@ -149,7 +152,7 @@ export const viaModernIdentity: ViaModernIdentityAdapter = {
       return identity.hasPermissions(permissions)
     })
   },
-  requestPermissions(permissions) { return forSelectedUser(() => identity.requestPermissions({...permissions, GlobalDESOLimit: (identity.transactionSpendingLimitOptions.GlobalDESOLimit ?? 0) + (permissions.GlobalDESOLimit ?? 0)})) },
+  requestPermissions(permissions) { return forSelectedUser(() => identity.requestPermissions(permissions)) },
   refreshSpendingLimits() { return forSelectedUser(() => identity.refreshDerivedKeyPermissions()) },
   encryptMessage(recipientPublicKey, message) { return forSelectedUser(() => identity.encryptMessage(recipientPublicKey, message)) },
   async decryptMessage(message, groups = []) {

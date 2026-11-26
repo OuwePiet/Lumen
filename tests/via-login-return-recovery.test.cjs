@@ -93,6 +93,30 @@ test('real SDK 3.4.1 stale authenticatedUsers hint is corrected without signing 
   assert.equal(checked.pathname,'/derive');assert.equal(requests.length,0)
 })
 
+test('homepage login reuses a session once DeSo confirms its existing key', async () => {
+  const f = fixture()
+  f.localStorage.removeItem = name => f.storage.delete(name)
+  const exports = {}
+  const sdk = { configure() {}, login() { assert.fail('Recovered session must not start another login') } }
+  vm.runInNewContext(compile('deso-identity-modern.ts'), {
+    exports, window: { location: { pathname: '/', origin: 'https://via.example' } }, localStorage: f.localStorage,
+    require(name) {
+      if (name === 'deso-protocol') return { identity: sdk }
+      if (name === './deso-session-recovery') return f.api
+      if (name === './deso-identity-return') return {}
+      if (name === './deso-identity-session') return {
+        restoreIdentitySession() {
+          const key = JSON.parse(f.storage.get('desoIdentityUsers'))[A].primaryDerivedKey
+          return key.derivedKeyRegistered ? { publicKey: A } : null
+        },
+      }
+      throw new Error('Unexpected module: ' + name)
+    },
+  })
+  assert.equal((await exports.viaModernIdentity.login()).publicKey, A)
+  assert.equal(f.calls.length, 1)
+})
+
 test('real SDK redirect callback uses VIA configuration before its first authorization request',async()=>{
   const {Identity}=await import('deso-protocol/src/identity/identity.js')
   const f=fixture(),requests=[]
