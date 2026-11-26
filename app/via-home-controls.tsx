@@ -3,7 +3,7 @@ import {readNativeUnread,readNativeNotifications} from "./notifications/native-n
 import { hasUnfinishedSDKLogin } from "./deso-session-recovery"
 
 import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { useRouter, usePathname } from "next/navigation"
 import { useEffect, useRef, useState } from "react"
 import { CircleHelp, Music2, RadioTower, UsersRound } from "lucide-react"
 import {
@@ -218,6 +218,7 @@ function shortPublicKey(publicKey: string) {
 
 export default function ViaHomeControls() {
   const router = useRouter()
+  const pathname = usePathname()
   const loginLock = useRef(false)
   const accountMenuRef = useRef<HTMLDivElement | null>(null)
   const [session, setSession] = useState<ViaIdentitySession | null>(null)
@@ -429,6 +430,7 @@ export default function ViaHomeControls() {
   }
 
   async function openDeSoIdentity() {
+    if (pathname !== "/") { router.push("/"); return }
     if (loginLock.current) return
     loginLock.current = true
     setStatus("waiting")
@@ -477,7 +479,7 @@ export default function ViaHomeControls() {
 
   return (
     <aside
-      aria-label="VIA homepage controls"
+      aria-label="VIA navigation"
       className="via-home-controls"
       style={{
         position: "absolute",

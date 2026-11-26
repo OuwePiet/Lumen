@@ -1,7 +1,6 @@
 import Link from "next/link"
 import ViaFeatured from "./via-featured"
 import ViaHomeCenterActions from "./via-home-center-actions"
-import ViaHomeControls from "./via-home-controls"
 import ViaHomeEarth from "./via-home-earth"
 import ViaSeasonal from "./via-seasonal"
 import ViaNewYear from "./via-new-year"
@@ -13,8 +12,8 @@ export default async function Home() {
   return (
     <>
       <style>{`
-        body:has(> .via-home-free-earth) > header { display: none !important; }
-        body:has(> .via-home-free-earth) { margin: 0; background: #000; }
+        body:has(.via-shell-home) > header { display: none !important; }
+        body:has(.via-shell-home) { margin: 0; background: #000; }
       `}</style>
       <main
         className="via-home-free-earth"
@@ -29,7 +28,6 @@ export default async function Home() {
         <ViaHomeEarth />
         <ViaSeasonal />
         <ViaNewYear />
-        <ViaHomeControls />
         <ViaHomeCenterActions />
         <ViaFeatured initialItems={featured.items} />
         <ViaWorldClock />
