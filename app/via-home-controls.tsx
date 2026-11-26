@@ -6,9 +6,9 @@ import { useRouter, usePathname } from "next/navigation"
 import { useEffect, useRef, useState } from "react"
 import { CircleHelp, Music2, RadioTower, UsersRound } from "lucide-react"
 import {
-  VIA_IDENTITY_EVENT,
-  listIdentitySessions,
-  restoreIdentitySession,
+
+
+
   type ViaIdentitySession,
 } from "./deso-identity-session"
 import { viaModernIdentity } from "./deso-identity-modern"
@@ -240,7 +240,7 @@ export default function ViaHomeControls() {
     const controller = new AbortController()
     let requestId = 0
     let snapshot: { count: number; latestIndex: number | null } | null = null
-    const sameAccount = () => !controller.signal.aborted && restoreIdentitySession()?.publicKey === publicKey
+    const sameAccount = () => !controller.signal.aborted
     const applySnapshot = () => {
       if (snapshot && sameAccount()) setHasUnreadNotifications(notificationLampIsOn(snapshot.count, snapshot.latestIndex, readSeenNotificationIndex(publicKey)))
     }
@@ -354,27 +354,20 @@ export default function ViaHomeControls() {
   }, [accountsOpen])
 
   function refreshAccounts() {
-    setKnownAccounts(listIdentitySessions())
+    void viaModernIdentity.alternateUsers().then(setKnownAccounts).catch(() => setKnownAccounts([]))
   }
 
   useEffect(() => {
-    setSession(restoreIdentitySession())
     refreshAccounts()
     const syncLanguage = () => setLanguage(readViaLocalSettings().interfaceLanguage)
-    const syncIdentity = () => {
-      setSession(restoreIdentitySession())
-      refreshAccounts()
-    }
     syncLanguage()
 
-    const unsubscribeIdentity = viaModernIdentity.subscribe(() => syncIdentity())
+    const unsubscribeIdentity = viaModernIdentity.subscribe((user) => { setSession(user); refreshAccounts() })
 
     window.addEventListener(VIA_SETTINGS_EVENT, syncLanguage)
-    window.addEventListener(VIA_IDENTITY_EVENT, syncIdentity)
     return () => {
       unsubscribeIdentity()
       window.removeEventListener(VIA_SETTINGS_EVENT, syncLanguage)
-      window.removeEventListener(VIA_IDENTITY_EVENT, syncIdentity)
     }
   }, [])
 
@@ -438,7 +431,7 @@ export default function ViaHomeControls() {
   async function chooseAccount(publicKey: string) {
     try {
       await viaModernIdentity.setActiveUser(publicKey)
-      setSession(restoreIdentitySession())
+      setSession(await viaModernIdentity.currentUser())
       setProfile(profiles[publicKey] ?? null)
       setAccountsOpen(false)
     } catch { setStatus("blocked") }

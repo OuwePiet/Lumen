@@ -1,8 +1,8 @@
 "use client"
 
 import { identity, type AccessGroupEntryResponse, type NewMessageEntryResponse } from "deso-protocol"
-import { listIdentitySessions, restoreIdentitySession, SDK_ACTIVE_PUBLIC_KEY, SDK_IDENTITY_USERS, VIA_IDENTITY_EVENT } from "./deso-identity-session"
-import { resumeIdentityReturn } from "./deso-identity-return"
+import { SDK_ACTIVE_PUBLIC_KEY, SDK_IDENTITY_USERS, VIA_IDENTITY_EVENT } from "./deso-identity-session"
+
 
 /**
  * Central modern DeSo Identity boundary for VIA.
@@ -22,7 +22,7 @@ export type ViaModernIdentityAdapter = {
   subscribe(listener: (user: ViaModernIdentityUser | null) => void): () => void
   setActiveUser(publicKey: string): Promise<void>
   signTx(transactionHex: string): Promise<string>
-  resumeRedirect(): void
+
   encryptMessage(recipientPublicKey: string, message: string): Promise<string>
   decryptMessage(message: NewMessageEntryResponse, groups?: AccessGroupEntryResponse[]): Promise<string>
   jwt(): Promise<string>
@@ -40,48 +40,17 @@ function configure(redirectLogin = false) {
     identityURI: "https://identity.deso.org",
     // Official SDK redirect: no Safari popup/opener dependency. Only login redirects.
     redirectURI: redirectLogin ? `${window.location.origin}/` : undefined,
-    identityPresenter: redirectLogin ? (url) => { window.location.href = url } : undefined,
+
   })
   configured = true
 }
 function ensureConfigured() { if (!configured) configure() }
-function selectedUser(): ViaModernIdentityUser | null {
-  const session = restoreIdentitySession()
-  return session ? { publicKey: session.publicKey } : null
+function publish(user: ViaModernIdentityUser | null) {
+  identityListeners.forEach(listener => listener(user))
 }
 function notify() {
-  const user = selectedUser()
-  identityListeners.forEach((listener) => listener(user))
+  void viaModernIdentity.currentUser().then(publish).catch(() => {})
 }
-function requireUser() {
-  ensureConfigured()
-  const user = selectedUser()
-  if (!user) throw new Error("Log in once on the VIA homepage with DeSo Identity.")
-  return user
-}
-async function forSelectedUser<T>(operation: () => T | Promise<T>): Promise<T> {
-  const user = requireUser()
-  let changed = false
-  const check = () => { if (selectedUser()?.publicKey !== user.publicKey) changed = true }
-  const onStorage = (event: StorageEvent) => {
-    if (event.key === null || event.key === SDK_ACTIVE_PUBLIC_KEY || event.key === SDK_IDENTITY_USERS) {
-      if (event.key === SDK_ACTIVE_PUBLIC_KEY && event.newValue !== user.publicKey) changed = true
-      check()
-    }
-  }
-  window.addEventListener(VIA_IDENTITY_EVENT, check)
-  window.addEventListener("storage", onStorage)
-  try {
-    const result = await operation()
-    check()
-    if (changed) throw new Error("The active DeSo account changed. Please review the action again.")
-    return result
-  } finally {
-    window.removeEventListener(VIA_IDENTITY_EVENT, check)
-    window.removeEventListener("storage", onStorage)
-  }
-}
-
 export const viaModernIdentity: ViaModernIdentityAdapter = {
   async currentUser() { ensureConfigured(); const { currentUser } = await identity.snapshot(); return currentUser ? { publicKey: currentUser.publicKey } : null },
   async login() {
@@ -100,45 +69,37 @@ export const viaModernIdentity: ViaModernIdentityAdapter = {
     ensureConfigured()
     const { currentUser, alternateUsers } = await identity.snapshot(); return [...(currentUser ? [currentUser] : []), ...Object.values(alternateUsers ?? {})].map(({ publicKey }) => ({ publicKey }))
   },
-  resumeRedirect() {
-    resumeIdentityReturn((url) => identity.handleRedirectURI(url))
-
-  },
   subscribe(listener) {
     ensureConfigured()
     identityListeners.add(listener)
     if (!subscribed) {
       subscribed = true
-      void identity.subscribe(() => {
-        notify()
+      void identity.subscribe(({ currentUser }) => {
+        publish(currentUser ? { publicKey: currentUser.publicKey } : null)
 
-        window.dispatchEvent(new CustomEvent(VIA_IDENTITY_EVENT, { detail: restoreIdentitySession() }))
+        window.dispatchEvent(new CustomEvent(VIA_IDENTITY_EVENT, { detail: currentUser ? { publicKey: currentUser.publicKey } : null }))
       }).catch(() => notify())
-      window.addEventListener(VIA_IDENTITY_EVENT, notify)
+
       window.addEventListener("storage", (event) => {
         if (event.key === null || event.key === SDK_ACTIVE_PUBLIC_KEY || event.key === SDK_IDENTITY_USERS) notify()
       })
       window.addEventListener("pageshow", notify)
       window.addEventListener("focus", notify)
     }
-    listener(selectedUser())
+    void viaModernIdentity.currentUser().then(user => { if (identityListeners.has(listener)) listener(user) }).catch(() => {})
 
     return () => { identityListeners.delete(listener) }
   },
   async setActiveUser(publicKey) {
     ensureConfigured()
-    if (!listIdentitySessions().some((user) => user.publicKey === publicKey)) {
-      throw new Error("This account must first log in with DeSo Identity on the VIA homepage.")
-    }
     await identity.setActiveUser(publicKey)
-    window.dispatchEvent(new CustomEvent(VIA_IDENTITY_EVENT, { detail: restoreIdentitySession() }))
   },
-  signTx(transactionHex) { return forSelectedUser(() => identity.signTx(transactionHex)) },
-  encryptMessage(recipientPublicKey, message) { return forSelectedUser(() => identity.encryptMessage(recipientPublicKey, message)) },
+  signTx(transactionHex) { ensureConfigured(); return identity.signTx(transactionHex) },
+  encryptMessage(recipientPublicKey, message) { ensureConfigured(); return identity.encryptMessage(recipientPublicKey, message) },
   async decryptMessage(message, groups = []) {
-    return forSelectedUser(async () => (await identity.decryptMessage(message, groups)).DecryptedMessage)
+    ensureConfigured(); return (await identity.decryptMessage(message, groups)).DecryptedMessage
   },
-  jwt() { return forSelectedUser(() => identity.jwt()) },
+  jwt() { ensureConfigured(); return identity.jwt() },
 }
 export const VIA_MODERN_IDENTITY_READY = true as const
 

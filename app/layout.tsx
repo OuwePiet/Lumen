@@ -5,7 +5,6 @@ import './global.css'
 
 import RadioLocalizer from './radio/radio-localizer'
 import ViaGlobalRadio from './via-global-radio'
-import ViaPublicAccountGuard from './via-public-account-guard'
 import ViaSiteHeader from './via-site-header'
 import ViaPersistentNavigation from './via-persistent-navigation'
 import WalletLocalizer from './wallet/wallet-localizer'
@@ -112,7 +111,6 @@ export default async function RootLayout({
     <html lang="en" className="dark">
       <body className="antialiased" data-via-provenance="@OuwePiet-2026">
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(viaStructuredData) }} />
-        <ViaPublicAccountGuard />
         <ViaSiteHeader />
         <ViaPersistentNavigation>{children}</ViaPersistentNavigation>
         <WalletLocalizer />

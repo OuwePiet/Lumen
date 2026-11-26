@@ -3,8 +3,7 @@
 import { useEffect, useRef, useState } from "react"
 import { createPortal } from "react-dom"
 import { HandCoins } from "lucide-react"
-import { sendDeso } from "deso-protocol"
-import { restoreIdentitySession } from "./deso-identity-session"
+import { sendDeso, identity } from "deso-protocol"
 import DiamondButton from "./social/diamond-button"
 import { readViaLocalSettings, VIA_SETTINGS_EVENT, type ViaLanguage } from "./via-local-settings"
 
@@ -197,13 +196,11 @@ export default function SponsorPlatform({ compact = false, showIcon = true }: { 
 
   async function prepareDeso() {
     if (sendingRef.current) return
-    const session = restoreIdentitySession()
     const entered = Number(amount)
     const desoAmount = amountMode === "USD"
       ? (Number.isFinite(entered) && entered > 0 && usdPerDeso ? (entered / usdPerDeso).toFixed(9) : "")
       : amount
     const amountNanos = parseDesoToNanos(desoAmount)
-    if (!session) { setStatus("error"); setMessage(copy.loginFirst); return }
     if (!amountNanos) { setStatus("error"); setMessage(copy.invalidAmount); return }
     if (!confirmed || status === "preparing" || status === "approval" || status === "submitting") return
 
@@ -212,6 +209,8 @@ export default function SponsorPlatform({ compact = false, showIcon = true }: { 
     setMessage(copy.prepareExact)
     setFeeNanos(null)
     try {
+      const session = (await identity.snapshot()).currentUser
+      if (!session) { setStatus("error"); setMessage(copy.loginFirst); return }
       const result = await sendDeso({ SenderPublicKeyBase58Check: session.publicKey, RecipientPublicKeyOrUsername: "OuwePiet", AmountNanos: amountNanos, MinFeeRateNanosPerKB: 1000, TransactionFees: [] }, { localConstruction: false })
       setFeeNanos(result.constructedTransactionResponse.FeeNanos ?? null)
       setStatus("done")
