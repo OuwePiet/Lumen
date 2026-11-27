@@ -2,8 +2,7 @@
 import Link from "next/link"
 import { ChangeEvent,useEffect,useRef,useState } from "react"
 import { Camera,Save } from "lucide-react"
-import {updateProfile,identity} from "deso-protocol"
-import {viaModernIdentity} from "../../deso-identity-modern"
+import {updateProfile} from "deso-protocol"
 import { useViaIdentitySession } from "../../use-via-identity-session"
 type Profile={username:string;description:string;profilePic:string|null;creatorBasisPoints:number|null;stakeMultipleBasisPoints:number|null;isHidden:boolean}
 export default function EditProfilePage(){
@@ -27,9 +26,7 @@ export default function EditProfilePage(){
   const key=session.publicKey,frValue=Number(fr),name=username.trim()
   if(!name||name.length>25||description.length>20000||profilePic.length>5000000||!Number.isInteger(frValue)||frValue<0||frValue>10000||!Number.isInteger(stakeMultiple)||stakeMultiple<0||stakeMultiple>1000000){setMessage("Invalid profile settings.");return}
   lock.current=true;setBusy(true);setMessage("Preparing DeSo profile update...")
-  const assertAccount=async()=>{if((await viaModernIdentity.currentUser())?.publicKey!==key||(await identity.snapshot()).currentUser?.publicKey!==key)throw new Error("ACCOUNT_CHANGED")}
   try{
-   await assertAccount()
    await updateProfile({UpdaterPublicKeyBase58Check:key,ProfilePublicKeyBase58Check:key,NewUsername:name,NewDescription:description,NewProfilePic:profilePic,NewCreatorBasisPoints:frValue,NewStakeMultipleBasisPoints:stakeMultiple,IsHidden:isHidden,MinFeeRateNanosPerKB:1000,TransactionFees:[]},{localConstruction:false})
    setMessage("Profile update submitted to DeSo.")
   }catch{setMessage("Profile update not confirmed. Check DeSo before retrying.")}
