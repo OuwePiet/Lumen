@@ -205,8 +205,6 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
     try {
       setImageUploadStatus("jwt")
       setImageUploadMessage("Preparing image upload approval…")
-      const uploadUser = await viaModernIdentity.currentUser()
-      if (uploadUser?.publicKey !== session.publicKey) throw new Error("DESO_ACCOUNT_CHANGED_RECONNECT")
       const data=await uploadNativeImage(session.publicKey,file)
       const userAfterUpload = await viaModernIdentity.currentUser()
       if (userAfterUpload?.publicKey !== session.publicKey) throw new Error("DESO_ACCOUNT_CHANGED_RECONNECT")
@@ -239,8 +237,6 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
     let submissionStarted = false
     try {
       if (isReply) saveDraft()
-      const activeBeforePrepare = await viaModernIdentity.currentUser()
-      if (activeBeforePrepare?.publicKey !== session.publicKey) throw new Error("DESO_ACCOUNT_CHANGED_RECONNECT")
       setStatus("submitting")
       submissionStarted = true
       const submitted=await publishNativePost(session.publicKey,body,imageUrls,videoUrls,parentStakeID,preparedPollOptions,!isReply&&sensitiveContent)

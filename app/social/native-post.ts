@@ -1,10 +1,7 @@
 "use client"
-import {submitPost,identity} from "deso-protocol"
-import {viaModernIdentity} from "../deso-identity-modern"
+import {submitPost} from "deso-protocol"
 
 export async function publishNativePost(key:string,body:string,imageUrls:string[],videoUrls:string[],parentStakeID="",pollOptions:string[]=[],sensitive=false,repostedHash=""){
- const assertAccount=async()=>{if((await viaModernIdentity.currentUser())?.publicKey!==key||(await identity.snapshot()).currentUser?.publicKey!==key)throw new Error("DESO_ACCOUNT_CHANGED_RECONNECT")}
- await assertAccount()
  const PostExtraData:Record<string,string>={ViaClient:"viadeso.online"}
  if(pollOptions.length>=2)PostExtraData.PollOptions=JSON.stringify(pollOptions)
  if(!parentStakeID&&sensitive)PostExtraData.ViaSensitiveContent="1"

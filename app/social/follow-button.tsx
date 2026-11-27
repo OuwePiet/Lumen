@@ -71,8 +71,6 @@ export default function FollowButton({ followedPublicKey, variant = "default", f
     setMessage(following ? "Preparing DeSo unfollow transaction…" : "Preparing DeSo follow transaction…")
     try {
       const key=session.publicKey
-      const assertAccount=async()=>{if((await viaModernIdentity.currentUser())?.publicKey!==key||(await identity.snapshot()).currentUser?.publicKey!==key)throw new Error("DESO_ACCOUNT_CHANGED")}
-      await assertAccount()
       await updateFollowingStatus({FollowerPublicKeyBase58Check:key,FollowedPublicKeyBase58Check:followedPublicKey,IsUnfollow:following,MinFeeRateNanosPerKB:1000,TransactionFees:[]},{localConstruction:false})
       const nextFollowing = !following
       setFollowing(nextFollowing)

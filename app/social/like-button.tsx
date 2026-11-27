@@ -38,8 +38,6 @@ export default function LikeButton({ postHash, initialCount, initialLiked = fals
     setMessage("Preparing DeSo like transaction…")
     try {
       const key=session.publicKey
-      const assertAccount=async()=>{if((await viaModernIdentity.currentUser())?.publicKey!==key||(await identity.snapshot()).currentUser?.publicKey!==key)throw new Error("DESO_ACCOUNT_CHANGED")}
-      await assertAccount()
       await updateLikeStatus({ReaderPublicKeyBase58Check:key,LikedPostHashHex:postHash,IsUnlike:liked,MinFeeRateNanosPerKB:1000,TransactionFees:[]},{localConstruction:false})
       const nextLiked = !liked
       setLiked(nextLiked)
