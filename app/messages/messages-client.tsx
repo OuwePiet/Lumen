@@ -8,7 +8,7 @@ import { ArrowLeft, Search, SquarePen } from "lucide-react"
 import { viaModernIdentity } from "../deso-identity-modern"
 import ParticipationGate from "../participation-gate"
 import { fetchDeSo } from "../deso-api"
-import { constructViaDMTransaction, getViaDefaultDMGroups, submitViaSignedTransaction } from "./deso-dm-transaction"
+import { sendViaDMTransaction, getViaDefaultDMGroups } from "./deso-dm-transaction"
 import { readViaLocalSettings, VIA_SETTINGS_EVENT, type ViaLanguage } from "../via-local-settings"
 
 type AccessGroupInfo = {
@@ -493,9 +493,7 @@ export default function MessagesClient() {
   setSendError("")
   try {
     const encryptedMessage = await viaModernIdentity.encryptMessage(recipientGroup.AccessGroupPublicKeyBase58Check, message)
-    const transactionHex = await constructViaDMTransaction(senderGroup, recipientGroup, encryptedMessage, activeReply?.timestamp)
-    const signedTransactionHex = await viaModernIdentity.signTx(transactionHex)
-    await submitViaSignedTransaction(signedTransactionHex,publicKey)
+    await sendViaDMTransaction(senderGroup, recipientGroup, encryptedMessage, activeReply?.timestamp)
     setDraft("")
     const response = await fetchDeSo("get-paginated-messages-for-dm-thread", {
       method: "POST",
