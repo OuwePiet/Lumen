@@ -11,6 +11,7 @@ type InspectResponse = {
   post?: {
     postHashHex: string
     body: string
+    isHidden: boolean
     imageUrls: string[]
     videoUrls: string[]
     parentStakeID: string
@@ -89,7 +90,7 @@ export default function EditPostControl() {
   }
 
   async function prepare() {
-    if (!session || !loadedHash || !changed || !body.trim() || lock.current) return
+    if (!session || !loadedHash || !changed || lock.current) return
     lock.current=true
     const activeKey = session.publicKey
     setStatus("preparing")
@@ -100,8 +101,8 @@ export default function EditPostControl() {
       const data=await response.json() as InspectResponse
       if(!response.ok||!data.ok||!data.post||data.post.body!==originalBody||data.post.postHashHex!==loadedHash)throw new Error("POST_CHANGED")
       const post=data.post
-      await submitPost({UpdaterPublicKeyBase58Check:activeKey,PostHashHexToModify:loadedHash,ParentStakeID:post.parentStakeID,RepostedPostHashHex:"",BodyObj:{Body:body.trim(),ImageURLs:post.imageUrls,VideoURLs:post.videoUrls},PostExtraData:{...post.postExtraData,ViaClient:"viadeso.online"},IsHidden:false,MinFeeRateNanosPerKB:1000,TransactionFees:[]},{localConstruction:false})
-      setOriginalBody(body.trim());setStatus("done");setMessage("Edited post submitted to DeSo.")
+      await submitPost({UpdaterPublicKeyBase58Check:activeKey,PostHashHexToModify:loadedHash,ParentStakeID:post.parentStakeID,RepostedPostHashHex:"",BodyObj:{Body:body,ImageURLs:post.imageUrls,VideoURLs:post.videoUrls},PostExtraData:post.postExtraData,IsHidden:post.isHidden,MinFeeRateNanosPerKB:1000,TransactionFees:[]},{localConstruction:false})
+      setOriginalBody(body);setStatus("done");setMessage("Edited post submitted to DeSo.")
     } catch {
       setStatus("error");setMessage("Edit not confirmed. Reload the post from DeSo before retrying.")
     } finally {lock.current=false}

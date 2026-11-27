@@ -27,13 +27,7 @@ function safeUrls(value: unknown) {
   const result: string[] = []
   for (const item of value) {
     if (typeof item !== "string" || item.length === 0) return null
-    try {
-      const url = new URL(item)
-      if (url.protocol !== "https:" || url.username || url.password) return null
-      result.push(item)
-    } catch {
-      return null
-    }
+    result.push(item)
   }
   return result
 }
@@ -41,9 +35,10 @@ function safeUrls(value: unknown) {
 function safeExtraData(value: unknown) {
   const source = record(value)
   if (!source) return {} as Record<string, string>
-  const output: Record<string, string> = {}
+  const output: Record<string, string> = Object.create(null)
   for (const [key, item] of Object.entries(source)) {
-    if (typeof item === "string") output[key] = item
+    if (typeof item !== "string") throw new Error("INVALID_POST_METADATA")
+    output[key] = item
   }
   return output
 }
@@ -77,6 +72,7 @@ async function loadOwnedPost(postHashHex: string, publicKey: string) {
       postHashHex: typeof post.PostHashHex === "string" ? post.PostHashHex : postHashHex,
       body: typeof post.Body === "string" ? post.Body : "",
       parentStakeID: typeof post.ParentStakeID === "string" ? post.ParentStakeID : "",
+      isHidden: post.IsHidden === true,
       imageUrls,
       videoUrls,
       postExtraData: safeExtraData(post.PostExtraData),
