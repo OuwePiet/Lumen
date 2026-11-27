@@ -104,12 +104,9 @@ export default function PollVoteControl({ postHash, options }: Props) {
 
     try {
       const key=session.publicKey
-      const assertAccount=async()=>{if((await viaModernIdentity.currentUser())?.publicKey!==key||(await identity.snapshot()).currentUser?.publicKey!==key)throw new Error("ACCOUNT_CHANGED")}
-      await assertAccount()
       const prior=await readPollResponseStatus(postHash,key)
       if(prior.truncated||prior.multipleResponsesDetected||prior.existingResponse)throw new Error("EXISTING_OR_UNCERTAIN_VOTE")
       setStatus("submitting")
-      await assertAccount()
       await createPostAssociation({TransactorPublicKeyBase58Check:key,PostHashHex:postHash,AppPublicKeyBase58Check:"",AssociationType:"POLL_RESPONSE",AssociationValue:option,ExtraData:{ViaClient:"viadeso.online"},MinFeeRateNanosPerKB:1000,TransactionFees:[]},{localConstruction:false})
 
       const reread = await readPollResponseStatus(postHash, session.publicKey)

@@ -96,8 +96,6 @@ export default function EditPostControl() {
     setMessage("Rechecking ownership and preparing the exact DeSo edit transaction…")
     setFeeNanos(null)
     try {
-            const assertAccount=async()=>{if((await viaModernIdentity.currentUser())?.publicKey!==activeKey||(await identity.snapshot()).currentUser?.publicKey!==activeKey)throw new Error("ACCOUNT_CHANGED")}
-      await assertAccount()
       const response=await fetch("/api/via/social/edit-post",{method:"POST",headers:{"Content-Type":"application/json"},cache:"no-store",body:JSON.stringify({action:"inspect",publicKey:activeKey,postHashHex:loadedHash})})
       const data=await response.json() as InspectResponse
       if(!response.ok||!data.ok||!data.post||data.post.body!==originalBody||data.post.postHashHex!==loadedHash)throw new Error("POST_CHANGED")
