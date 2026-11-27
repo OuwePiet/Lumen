@@ -1,7 +1,6 @@
 import {sendDMMessage,identity} from "deso-protocol"
 import {replyExtraData} from "./via-rich-metadata"
 import {viaModernIdentity} from "../deso-identity-modern"
-import {guardTxPermission} from "deso-protocol/src/transactions/utils.js"
 import { fetchDeSo } from "../deso-api"
 
 type AccessGroup = {
@@ -53,13 +52,13 @@ export async function getViaDefaultDMGroups(senderPublicKey: string, recipientPu
   }
 }
 
-export async function constructViaDMTransaction(sender: AccessGroup, recipient: AccessGroup, encryptedMessage: string, replyTimestamp?: string) {
+export async function sendViaDMTransaction(sender: AccessGroup, recipient: AccessGroup, encryptedMessage: string, replyTimestamp?: string) {
   if (!complete(sender) || !complete(recipient) || !encryptedMessage) throw new Error("Incomplete DeSo DM transaction data.")
 
   const key=sender.OwnerPublicKeyBase58Check
   const assertAccount=async()=>{if((await viaModernIdentity.currentUser())?.publicKey!==key||(await identity.snapshot()).currentUser?.publicKey!==key)throw new Error("ACCOUNT_CHANGED")}
   await assertAccount()
-  const {constructedTransactionResponse:tx}=await sendDMMessage({
+  return await sendDMMessage({
     SenderAccessGroupOwnerPublicKeyBase58Check:key,
     SenderAccessGroupPublicKeyBase58Check:sender.AccessGroupPublicKeyBase58Check,
     SenderAccessGroupKeyName:sender.AccessGroupKeyName,
@@ -67,15 +66,5 @@ export async function constructViaDMTransaction(sender: AccessGroup, recipient: 
     RecipientAccessGroupPublicKeyBase58Check:recipient.AccessGroupPublicKeyBase58Check,
     RecipientAccessGroupKeyName:recipient.AccessGroupKeyName,
     EncryptedMessageText:encryptedMessage,MinFeeRateNanosPerKB:1500,TransactionFees:[],ExtraData:replyExtraData(replyTimestamp)
-  },{broadcast:false,checkPermissions:false,localConstruction:false})
-  if(!tx.TransactionHex||!Number.isSafeInteger(tx.FeeNanos)||tx.FeeNanos<0)throw new Error("INVALID_DM_FEE")
-  await guardTxPermission({GlobalDESOLimit:tx.FeeNanos,TransactionCountLimitMap:{NEW_MESSAGE:1}})
-  await assertAccount()
-  return tx.TransactionHex
-}
-
-export async function submitViaSignedTransaction(signedTransactionHex:string,key:string){
-  if(!/^[0-9a-fA-F]+$/.test(signedTransactionHex)||signedTransactionHex.length%2!==0)throw new Error("INVALID_SIGNED_DM")
-  if((await viaModernIdentity.currentUser())?.publicKey!==key||(await identity.snapshot()).currentUser?.publicKey!==key)throw new Error("ACCOUNT_CHANGED")
-  return await identity.submitTx(signedTransactionHex)
+  },{localConstruction:false})
 }
