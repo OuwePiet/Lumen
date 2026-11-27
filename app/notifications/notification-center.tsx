@@ -512,8 +512,6 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
       const amountNanos = Math.round((usd / rates.rates.USD) * 1_000_000_000)
       if (!Number.isSafeInteger(amountNanos) || amountNanos < 1) throw new Error("AMOUNT")
       const key=session.publicKey
-      const assertAccount=async()=>{if((await viaModernIdentity.currentUser())?.publicKey!==key||(await identity.snapshot()).currentUser?.publicKey!==key)throw new Error("ACCOUNT_CHANGED")}
-        await assertAccount()
         await sendDeso({SenderPublicKeyBase58Check:key,RecipientPublicKeyOrUsername:post.publicKey,AmountNanos:amountNanos,MinFeeRateNanosPerKB:1000,TransactionFees:[]},{localConstruction:false})
       rewardLock.current=false
       setRewardBusy(false)
