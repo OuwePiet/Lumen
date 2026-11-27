@@ -59,6 +59,19 @@ export function ViaSettingsContent({ embedded = false }: { embedded?: boolean })
     }
   }
 
+  function exportDraft() {
+    try {
+      const raw = window.localStorage.getItem(VIA_STUDIO_DRAFT_KEY)
+      if (raw === null) { setStatus("No saved Studio draft on this device."); return }
+      const url = URL.createObjectURL(new Blob([raw], { type: "application/json" }))
+      const link = document.createElement("a")
+      link.href = url; link.download = "VIA-Studio-draft.json"
+      document.body.appendChild(link); link.click(); link.remove()
+      setTimeout(() => URL.revokeObjectURL(url), 1000)
+      setStatus("Studio draft exported. Original remains on this device.")
+    } catch { setStatus("Studio draft could not be exported.") }
+  }
+
   function clearDraft() {
     try {
       window.localStorage.removeItem(VIA_STUDIO_DRAFT_KEY)
@@ -149,6 +162,7 @@ export function ViaSettingsContent({ embedded = false }: { embedded?: boolean })
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#8fd4a9]">Local data</p>
           <h2 id="local-data" className="mt-2 text-2xl font-semibold">Studio draft</h2>
           <p className="mt-2 text-sm leading-6 text-zinc-400">Studio drafts are browser-local. Removing one here does not publish, delete or change anything on DeSo.</p>
+          <button type="button" onClick={exportDraft} className={`${quietAction} mt-4 mr-2`}>Export saved Studio draft</button>
           <button type="button" onClick={clearDraft} className={`${quietAction} mt-4`}>Clear local Studio draft</button>
         </section>
 

@@ -13,7 +13,7 @@ export async function GET() {
       routes: {
         fiat: readiness.fiatOperational ? "ready" : "not-ready",
         bitcoin: readiness.bitcoinOperational ? "ready" : "not-ready",
-        deso: readiness.desoOperational ? "ready" : "not-released",
+        deso: "native-sdk-outside-checkout",
       },
     },
     { headers: { "Cache-Control": "no-store" } },

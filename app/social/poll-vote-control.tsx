@@ -24,9 +24,8 @@ type SubmitResponse = { ok?: boolean; error?: string }
 
 function safeOptions(options: string[]) {
   return options
-    .map((value) => value.trim())
-    .filter((value, index, all) => value.length > 0 && value.length <= 160 && all.indexOf(value) === index)
-    .slice(0, 5)
+    .filter((value, index, all) => value.length > 0 && all.indexOf(value) === index)
+
 }
 
 export default function PollVoteControl({ postHash, options }: Props) {

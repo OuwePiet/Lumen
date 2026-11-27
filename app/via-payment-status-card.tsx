@@ -50,7 +50,7 @@ export default function ViaPaymentStatusCard() {
             ? "Payment availability could not be checked right now."
             : ready > 0
               ? ready + " payment method" + (ready === 1 ? "" : "s") + " currently available."
-              : "Payments are not available yet."}
+              : "External checkout is not available yet. Native DeSo is separate."}
       </p>
       <a href="/payments" style={{ color: "#9adbb2", fontSize: 12 }}>
         View payment availability

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react"
 import {
   getNFTsForUser,
+  getCreatedNFTs,
   type DeSoNFTCollection,
   type DeSoNFTEntry,
   type DeSoNFTPost,
@@ -12,7 +13,7 @@ import XShareButton from "./x-share-button"
 import { isViaSensitiveContent } from "../lib/via/sensitive-content"
 
 const PAGE_SIZE = 25
-const CACHE_VERSION = 1
+const CACHE_VERSION = 3
 const QUERY_LIMIT = 120
 const VIDEO_EXTENSIONS = [".mp4", ".webm", ".mov", ".m4v"]
 const AUDIO_EXTENSIONS = [".mp3", ".wav", ".m4a", ".aac", ".flac", ".oga"]
@@ -408,11 +409,27 @@ export default function PublicAccountNFTs({
     setError("")
 
     try {
-      const collections = await getNFTsForUser(publicKey, controller.signal)
+      const [ownedResult, createdResult] = await Promise.allSettled([getNFTsForUser(publicKey, controller.signal), getCreatedNFTs(publicKey, controller.signal)])
+      if (controller.signal.aborted) return
+      if (ownedResult.status === "rejected" && createdResult.status === "rejected") throw new Error("DESO_NFTS_UNAVAILABLE")
+      const complete = ownedResult.status === "fulfilled" && createdResult.status === "fulfilled"
+      const owned = ownedResult.status === "fulfilled" ? ownedResult.value : []
+      const created = createdResult.status === "fulfilled" ? createdResult.value : []
+      const byHash = new Map(created.map(item => [item.PostEntryResponse?.PostHashHex, item]))
+      for (const item of owned) {
+        const hash = item.PostEntryResponse?.PostHashHex
+        byHash.set(hash, { ...(byHash.get(hash) ?? item), OwnedEntries: item.NFTEntryResponses ?? [] })
+      }
+      const collections = [...byHash.values()]
+      if (controller.signal.aborted) return
       const savedAt = Date.now()
       setNFTs(collections)
       setLastUpdated(savedAt)
 
+      if (!complete) {
+        setError("DeSo returned an incomplete collection. Refresh to retrieve missing NFTs.")
+        return
+      }
       const envelope: NFTCacheEnvelope = {
         version: CACHE_VERSION,
         publicKey,
@@ -425,7 +442,7 @@ export default function PublicAccountNFTs({
         // Session cache is an optimisation only.
       }
     } catch (error) {
-      if (!(error instanceof DOMException && error.name === "AbortError")) setError("The public NFTs could not be retrieved from DeSo right now.")
+      if (!controller.signal.aborted && !(error instanceof DOMException && error.name === "AbortError")) setError("The public NFTs could not be retrieved from DeSo right now.")
     } finally {
       if (loadController.current === controller) {
         loadController.current = null
@@ -481,7 +498,7 @@ export default function PublicAccountNFTs({
   }
 
   const totalOwnedCopies = nfts.reduce(
-    (total, collection) => total + (collection.NFTEntryResponses?.length ?? 0),
+    (total, collection) => total + (collection.OwnedEntries?.length ?? 0),
     0
   )
   const normalizedQuery = query.trim().toLocaleLowerCase()
@@ -498,6 +515,7 @@ export default function PublicAccountNFTs({
 
   const saleFilteredNFTs = filteredNFTs.filter((collection) => {
     if (saleFilter === "all") return true
+    if (!collection.NFTEntryResponses?.length) return false
     const hasSale = (collection.NFTEntryResponses ?? []).some(
       (entry) => entry.IsForSale
     )
@@ -530,8 +548,8 @@ export default function PublicAccountNFTs({
         : rightPrice - leftPrice
     }
 
-    const leftOwned = left.NFTEntryResponses?.length ?? 0
-    const rightOwned = right.NFTEntryResponses?.length ?? 0
+    const leftOwned = left.OwnedEntries?.length ?? 0
+    const rightOwned = right.OwnedEntries?.length ?? 0
     return sortMode === "most-owned"
       ? rightOwned - leftOwned
       : leftOwned - rightOwned
@@ -587,14 +605,14 @@ export default function PublicAccountNFTs({
   }
 
   return (
-    <section aria-label={`Public NFTs owned by @${username}`}>
-      {nfts.length > 0 ? (
+    <section aria-label={`Public NFTs created or owned by @${username}`}>
+      {nfts.length > 0 && !error ? (
         <p style={styles.status}>
-          @{username} owns {totalOwnedCopies} NFT {totalOwnedCopies === 1 ? "copy" : "copies"} across {nfts.length} different NFT{nfts.length === 1 ? "" : "s"}.
+          @{username} owns {totalOwnedCopies} NFT {totalOwnedCopies === 1 ? "copy" : "copies"}; {nfts.length} created or owned NFT{nfts.length === 1 ? "" : "s"} displayed.
         </p>
       ) : null}
 
-      {nfts.length > 0 ? (
+      {nfts.length > 0 && !error ? (
         <div style={styles.controls}>
           <input
             type="search"
@@ -714,7 +732,7 @@ export default function PublicAccountNFTs({
 
       <p style={styles.status} aria-live="polite">
         {nfts.length === 0
-          ? `No public NFTs found for @${username}.`
+          ? (error || loading ? "Collection not confirmed." : `No public NFTs found for @${username}.`)
           : `${mediaFilteredNFTs.length} of ${nfts.length} public NFTs match.`}
       </p>
 
@@ -723,7 +741,7 @@ export default function PublicAccountNFTs({
           {visibleNFTs.map((collection) => {
             const post = collection.PostEntryResponse!
             const postHash = post.PostHashHex!
-            const ownedEntries = collection.NFTEntryResponses ?? []
+            const ownedEntries = collection.OwnedEntries ?? []
             const ownedCopies = ownedEntries.length
             const totalCopies = post.NumNFTCopies ?? ownedCopies
 
@@ -743,7 +761,7 @@ export default function PublicAccountNFTs({
                 key={postHash}
                 href={`/nft/${postHash}?${returnParams.toString()}`}
                 style={styles.card}
-                aria-label={`${title(post.Body)}. ${ownedSaleStatus(ownedEntries)}`}
+                aria-label={`${title(post.Body)}. ${ownedCopies ? ownedSaleStatus(ownedEntries) : "Created NFT; current sale status on detail"}`}
               >
                 <div style={styles.media}>
                   <NFTMedia
@@ -758,9 +776,9 @@ export default function PublicAccountNFTs({
                 <div style={styles.content}>
                   <h3 style={styles.title}>{title(post.Body)}</h3>
                   <p style={styles.fact}>
-                    @{username} owns {ownedCopies} of {totalCopies} {totalCopies === 1 ? "copy" : "copies"}
+                    {ownedCopies ? `@${username} owns ${ownedCopies} of ${totalCopies} copies` : `Created by @${username}`}
                   </p>
-                  <p style={styles.saleFact}>{ownedSaleStatus(ownedEntries)}</p>
+                  <p style={styles.saleFact}>{ownedCopies ? ownedSaleStatus(ownedEntries) : "See NFT for current sale status"}</p>
                 </div>
               </a>
             )

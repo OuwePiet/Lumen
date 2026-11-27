@@ -75,7 +75,7 @@ export default function ViaPaymentReadiness() {
           </div>
         ))}
       <p style={{ color: "#b9c6be", lineHeight: 1.55, marginBottom: 0 }}>
-        Only methods marked “Checkout ready” can enter VIA&apos;s current checkout path. Bitcoin and DESO remain blocked until their own authoritative payment paths are explicitly released.
+        Only methods marked “Checkout ready” can enter VIA&apos;s current checkout path. Native DeSo transactions use DeSo Identity directly and are outside this external checkout.
       </p>
     </div>
   )

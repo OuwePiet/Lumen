@@ -7,11 +7,12 @@ import { viaModernIdentity, type ViaModernIdentityUser } from "../deso-identity-
 import VideoUploadControl from "./video-upload-control"
 import SponsorPlatform from "../sponsor-platform"
 
-const MAX_POST_LENGTH = 5000
-const MAX_IMAGES = 4
-const MAX_IMAGE_BYTES = 10 * 1024 * 1024
-const MAX_POLL_OPTIONS = 5
-const MAX_POLL_OPTION_LENGTH = 120
+
+
+// DeSo backend MaxRequestBodySizeBytes (decimal MB).
+const MAX_IMAGE_BYTES = 10_000_000
+
+
 const SOCIAL_DRAFT_STORAGE_KEY = "via:social:draft:v1"
 const SOCIAL_REPLY_DRAFT_PREFIX = "via:social:reply-draft:v1:"
 const COMPOSER_EMOJI = ["😀", "😄", "😂", "😍", "😎", "🤔", "👏", "👍", "❤️", "🔥", "🎉", "🚀", "🌍", "🎨", "🎵", "✨"] as const
@@ -59,6 +60,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
   const [imageInputs, setImageInputs] = useState([""])
   const [imagePreviews, setImagePreviews] = useState<string[]>([])
   const [videoInput, setVideoInput] = useState("")
+  const [attachedVideos, setAttachedVideos] = useState<string[]>([])
   const [pollOpen, setPollOpen] = useState(false)
   const [sensitiveContent, setSensitiveContent] = useState(false)
   const [pollOptions, setPollOptions] = useState(["", ""])
@@ -87,7 +89,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
       const key = isReply ? `${SOCIAL_REPLY_DRAFT_PREFIX}${parentStakeID}` : SOCIAL_DRAFT_STORAGE_KEY
       const stored = window.localStorage.getItem(key)
       if (stored) {
-        setBody(stored.slice(0, MAX_POST_LENGTH))
+        setBody(stored)
         setDraftMessage(isReply ? "Unsent reply restored on this device." : "Local draft restored from this device.")
       }
     } catch {
@@ -99,24 +101,24 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
   const parsedVideo = httpsUrl(videoInput)
   const mediaInvalid = parsedImages.some((value) => value === null) || parsedVideo === null
   const imageUrls = parsedImages.filter((value): value is string => typeof value === "string" && value.length > 0)
-  const videoUrls = typeof parsedVideo === "string" && parsedVideo ? [parsedVideo] : []
+  const videoUrls = [...new Set([...attachedVideos, ...(typeof parsedVideo === "string" && parsedVideo ? [parsedVideo] : [])])]
   const preparedPollOptions = pollOpen ? pollOptions.map((option) => option.trim()).filter(Boolean) : []
   const pollUnique = new Set(preparedPollOptions.map((option) => option.toLocaleLowerCase())).size === preparedPollOptions.length
-  const pollValid = !pollOpen || (preparedPollOptions.length >= 2 && preparedPollOptions.length <= MAX_POLL_OPTIONS && pollUnique)
+  const pollValid = !pollOpen || (preparedPollOptions.length >= 2 && preparedPollOptions.every(option => new TextEncoder().encode(option).length <= 256 && !option.includes(String.fromCharCode(0))) && pollUnique)
   const hasContent = Boolean(body.trim() || imageUrls.length || videoUrls.length)
   const busy = status === "preparing" || status === "awaiting-approval" || status === "submitting"
   const imageUploading = imageUploadStatus === "jwt" || imageUploadStatus === "uploading"
-  const canPrepare = Boolean(session && hasContent && body.length <= MAX_POST_LENGTH && !mediaInvalid && pollValid && !busy && !imageUploading && !videoUploading)
+  const canPrepare = Boolean(session && hasContent && !mediaInvalid && pollValid && !busy && !imageUploading && !videoUploading)
   const sendBlockedReason = canPrepare ? "" : !session ? "DeSo session unavailable." : !hasContent ? "Add text, a photo or video." : mediaInvalid ? "One media link is invalid." : !pollValid ? "Complete or remove the poll." : imageUploading ? "Photo upload is still running." : videoUploading ? "Video upload is still running." : busy ? "Publishing is already in progress." : "Send is waiting for valid post content."
-  const remaining = MAX_POST_LENGTH - body.length
+
   const feeLabel = useMemo(() => feeNanos === null ? null : `${feeNanos.toLocaleString()} nanos network fee in the prepared transaction`, [feeNanos])
 
   function insertEmoji(emoji: string) {
-    if (body.length + emoji.length > MAX_POST_LENGTH) return
+
     const textarea = textareaRef.current
     const start = textarea?.selectionStart ?? body.length
     const end = textarea?.selectionEnd ?? body.length
-    const next = `${body.slice(0, start)}${emoji}${body.slice(end)}`.slice(0, MAX_POST_LENGTH)
+    const next = `${body.slice(0, start)}${emoji}${body.slice(end)}`
     setBody(next)
     setDraftMessage("")
     window.requestAnimationFrame(() => {
@@ -130,7 +132,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
     try {
       const key = isReply ? `${SOCIAL_REPLY_DRAFT_PREFIX}${parentStakeID}` : SOCIAL_DRAFT_STORAGE_KEY
       if (body.trim()) {
-        window.localStorage.setItem(key, body.slice(0, MAX_POST_LENGTH))
+        window.localStorage.setItem(key, body)
         setDraftMessage(isReply ? "Reply kept safely on this device until DeSo confirms it." : "Draft saved on this device.")
       } else {
         window.localStorage.removeItem(key)
@@ -146,7 +148,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
     try { window.localStorage.removeItem(SOCIAL_DRAFT_STORAGE_KEY) } catch {}
     setBody("")
     setImageInputs([""])
-    setVideoInput("")
+    setVideoInput(""); setAttachedVideos([])
     setPollOpen(false)
     setPollOptions(["", ""])
     setSensitiveContent(false)
@@ -167,8 +169,8 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
       const next = [...current]
       const emptyIndex = next.findIndex((value) => !value.trim())
       if (emptyIndex >= 0) next[emptyIndex] = imageUrl
-      else if (next.length < MAX_IMAGES) next.push(imageUrl)
-      return next.slice(0, MAX_IMAGES)
+      else next.push(imageUrl)
+      return next
     })
   }
 
@@ -176,7 +178,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
     setImageInputs((current) => {
       const attached = current.filter((value) => value.trim())
       attached.splice(index, 1)
-      return attached.length ? [...attached, ""].slice(0, MAX_IMAGES) : [""]
+      return attached.length ? [...attached, ""] : [""]
     })
     if (!uploadingImageRef.current) {
       setImageUploadStatus("idle")
@@ -185,16 +187,16 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
   }
 
   async function uploadImage(file: File | null) {
-    if (!session || !file || imageUrls.length >= MAX_IMAGES || uploadingImageRef.current || publishingRef.current) return
+    if (!session || !file || uploadingImageRef.current || publishingRef.current) return
 
     if (!ALLOWED_IMAGE_TYPES.has(file.type)) {
       setImageUploadStatus("error")
       setImageUploadMessage("Choose a GIF, JPEG, PNG or WebP image.")
       return
     }
-    if (file.size <= 0 || file.size >= MAX_IMAGE_BYTES) {
+    if (file.size <= 0 || file.size > MAX_IMAGE_BYTES) {
       setImageUploadStatus("error")
-      setImageUploadMessage("Image must be smaller than 10 MB.")
+      setImageUploadMessage("DeSo accepts images up to 10 MB.")
       return
     }
 
@@ -244,7 +246,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
       setMessage(isReply ? "Reply posted." : "Post published.")
       setBody("")
       setImageInputs([""])
-      setVideoInput("")
+      setVideoInput(""); setAttachedVideos([])
       setPollOpen(false)
       setSensitiveContent(false)
       setPollOptions(["", ""])
@@ -279,9 +281,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
       <label htmlFor={isReply ? `via-reply-${parentStakeID}` : "via-post-body"} className="sr-only">{isReply ? "Reply" : "Post"}</label>
       {session === null ? <p className="mb-2 text-sm text-zinc-500">DeSo login is required to publish. You can prepare your post first.</p> : null}
       <div className="relative">
-        <textarea ref={textareaRef} id={isReply ? `via-reply-${parentStakeID}` : "via-post-body"} value={body} onChange={(event) => { setBody(event.target.value); setDraftMessage(""); if (status === "done" || status === "error") { setStatus("idle"); setMessage("") } }} maxLength={MAX_POST_LENGTH} rows={isReply ? 3 : 2} placeholder={isReply ? "Write a reply…" : "What do you want to share?"} className={`block min-h-16 w-full resize-y border border-zinc-800 bg-zinc-950 px-3 pb-5 pt-2 text-base text-zinc-100 outline-none focus:border-[#8fd4a9]/55 ${imagePreviews.length || imageUrls.length ? "rounded-t-xl rounded-b-none border-b-0" : "rounded-xl"}`} />
-        {!isReply && body.length < 4900 ? <span aria-hidden="true" className="pointer-events-none absolute bottom-2 right-3 text-[10px] text-zinc-700">{body.length} / {MAX_POST_LENGTH}</span> : null}
-        {body.length >= 4900 ? <span className="pointer-events-none absolute bottom-2 right-3 text-[10px] text-zinc-500" aria-live="polite">{body.length.toLocaleString()} / {MAX_POST_LENGTH.toLocaleString()}</span> : null}
+        <textarea ref={textareaRef} id={isReply ? `via-reply-${parentStakeID}` : "via-post-body"} value={body} onChange={(event) => { setBody(event.target.value); setDraftMessage(""); if (status === "done" || status === "error") { setStatus("idle"); setMessage("") } }} rows={isReply ? 3 : 2} placeholder={isReply ? "Write a reply…" : "What do you want to share?"} className={`block min-h-16 w-full resize-y border border-zinc-800 bg-zinc-950 px-3 pb-5 pt-2 text-base text-zinc-100 outline-none focus:border-[#8fd4a9]/55 ${imagePreviews.length || imageUrls.length ? "rounded-t-xl rounded-b-none border-b-0" : "rounded-xl"}`} />
         {imagePreviews.length || imageUrls.length ? <div className="flex flex-wrap gap-2 rounded-b-xl border-x border-b border-zinc-800 bg-zinc-950 px-3 pb-3">{imagePreviews.map((url, index) => <div key={`local-${url}`} className="relative h-28 w-28 overflow-hidden rounded-lg border border-zinc-800 bg-black"><img src={url} alt={`Selected image ${index + 1}`} className="h-full w-full object-cover" /></div>)}{imageUrls.map((url, index) => <div key={`attached-${url}`} className="relative h-28 w-28 overflow-hidden rounded-lg border border-zinc-800 bg-black"><img src={url} alt={`Attached image ${index + 1}`} className="h-full w-full object-cover" /><button type="button" onClick={() => removeUploadedImage(index)} aria-label={`Remove attached image ${index + 1}`} className="absolute right-1 top-1 rounded-md bg-black/75 px-1.5 py-0.5 text-[10px] text-zinc-200">×</button></div>)}</div> : null}
       </div>
 
@@ -290,12 +290,12 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
         <p className="mt-1 hidden text-xs text-zinc-500 sm:block">Add 2–5 unique choices.</p>
         <div className="mt-3 space-y-2">
           {pollOptions.map((option, index) => <div key={index} className="flex gap-2">
-            <input value={option} maxLength={MAX_POLL_OPTION_LENGTH} onChange={(event) => setPollOptions((current) => current.map((item, itemIndex) => itemIndex === index ? event.target.value : item))} placeholder={`Option ${index + 1}`} className="min-w-0 flex-1 rounded-lg border border-zinc-800 bg-black/40 px-3 py-2 text-sm text-zinc-200 outline-none focus:border-[#8fd4a9]/55" />
+            <input value={option} onChange={(event) => setPollOptions((current) => current.map((item, itemIndex) => itemIndex === index ? event.target.value : item))} placeholder={`Option ${index + 1}`} className="min-w-0 flex-1 rounded-lg border border-zinc-800 bg-black/40 px-3 py-2 text-sm text-zinc-200 outline-none focus:border-[#8fd4a9]/55" />
             {pollOptions.length > 2 ? <button type="button" onClick={() => setPollOptions((current) => current.filter((_, itemIndex) => itemIndex !== index))} className="rounded-lg border border-zinc-800 px-3 text-xs text-zinc-500 hover:text-zinc-300">Remove</button> : null}
           </div>)}
         </div>
-        {pollOptions.length < MAX_POLL_OPTIONS ? <button type="button" onClick={() => setPollOptions((current) => [...current, ""])} className="mt-2 text-xs text-[#9adbb2]">+ Add option</button> : null}
-        {!pollValid ? <p className="mt-2 text-xs text-amber-300">Use at least two different, non-empty poll options.</p> : null}
+        {<button type="button" onClick={() => setPollOptions((current) => [...current, ""])} className="mt-2 text-xs text-[#9adbb2]">+ Add option</button>}
+        {!pollValid ? <p className="mt-2 text-xs text-amber-300">Use at least two different, non-empty options, each within the DeSo limit of 256 bytes and without null characters.</p> : null}
       </div> : null}
 
       {isReply ? <div className="mt-4 flex justify-end gap-2">
@@ -305,7 +305,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
 
       <div className="mt-3 grid grid-cols-3 gap-2 sm:flex sm:flex-wrap sm:items-center">
         <button type="button" onClick={() => setEmojiOpen((open) => !open)} disabled={busy} className="min-h-10 rounded-lg border border-zinc-800 px-3 py-1.5 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2] disabled:opacity-50">Emoji</button>
-        {!isReply ? <><label className="flex min-h-10 cursor-pointer items-center justify-center rounded-lg border border-zinc-800 px-3 py-1.5 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2]"><span>{imageUploading ? "Uploading…" : "Photo"}</span><input type="file" accept="image/*" className="sr-only" disabled={busy || imageUploading || imageUrls.length >= MAX_IMAGES} onChange={(event) => { const file = event.target.files?.[0] ?? null; event.currentTarget.value = ""; void uploadImage(file) }} /></label><button type="button" onClick={() => { setMediaChoice("video"); setMediaOpen(true) }} disabled={busy} className="min-h-10 rounded-lg border border-zinc-800 px-3 py-1.5 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2] disabled:opacity-50">Video</button></> : null}
+        {!isReply ? <><label className="flex min-h-10 cursor-pointer items-center justify-center rounded-lg border border-zinc-800 px-3 py-1.5 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2]"><span>{imageUploading ? "Uploading…" : "Photo"}</span><input type="file" accept="image/*" className="sr-only" disabled={busy || imageUploading} onChange={(event) => { const file = event.target.files?.[0] ?? null; event.currentTarget.value = ""; void uploadImage(file) }} /></label><button type="button" onClick={() => { setMediaChoice("video"); setMediaOpen(true) }} disabled={busy} className="min-h-10 rounded-lg border border-zinc-800 px-3 py-1.5 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2] disabled:opacity-50">Video</button></> : null}
         {!isReply ? <>
           <button type="button" onClick={saveDraft} disabled={busy} className="rounded-lg border border-zinc-800 px-3 py-1.5 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2] disabled:opacity-50">Save</button>
           <button type="button" onClick={() => { setPollOpen((open) => !open); if (pollOpen) setPollOptions(["", ""]); else requestAnimationFrame(() => { const panel = document.querySelector<HTMLElement>("[data-via-poll-options]"); panel?.scrollIntoView({ behavior: "smooth", block: "center" }); panel?.querySelector("input")?.focus({ preventScroll: true }) }) }} disabled={busy} className="rounded-lg border border-zinc-800 px-3 py-1.5 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2] disabled:opacity-50">{pollOpen ? "Remove poll" : "Poll"}</button>
@@ -316,7 +316,7 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
       {!isReply && !canPrepare && hasContent ? <p className="mt-2 text-[11px] text-amber-300" role="status" aria-live="polite">Send unavailable: {sendBlockedReason}</p> : null}
 
       {emojiOpen ? <div className="mt-2 flex flex-wrap gap-1 rounded-xl border border-zinc-800 bg-zinc-950/70 p-2" aria-label="Insert emoji">
-        {COMPOSER_EMOJI.map((emoji) => <button key={emoji} type="button" onClick={() => insertEmoji(emoji)} disabled={busy || body.length + emoji.length > MAX_POST_LENGTH} className="rounded-lg px-2 py-1 text-lg hover:bg-white/[0.06] disabled:opacity-40" aria-label={`Insert ${emoji}`}>{emoji}</button>)}
+        {COMPOSER_EMOJI.map((emoji) => <button key={emoji} type="button" onClick={() => insertEmoji(emoji)} disabled={busy} className="rounded-lg px-2 py-1 text-lg hover:bg-white/[0.06] disabled:opacity-40" aria-label={`Insert ${emoji}`}>{emoji}</button>)}
       </div> : null}
       {!isReply && draftMessage ? <p className="mt-2 text-xs text-zinc-500" role="status" aria-live="polite">{draftMessage}</p> : null}
 
@@ -334,19 +334,21 @@ export default function PostComposer({ parentStakeID = "", compact = false, onDo
       {mediaOpen && (isReply || mediaChoice === "video") ? <div className="mt-4 rounded-xl border border-zinc-800 bg-zinc-950/70 p-3"><div className="flex justify-end"><button type="button" onClick={() => setMediaOpen(false)} className="text-xs text-zinc-500 hover:text-zinc-300">Sluiten</button></div>
         {mediaChoice === "photo" ? <>
         <p className="text-sm font-medium text-zinc-200">Images</p>
-        <p className="mt-1 hidden text-xs leading-5 text-zinc-500 sm:block">Choose up to four images.</p>
+        <p className="mt-1 hidden text-xs leading-5 text-zinc-500 sm:block">Choose images.</p>
 
-        {imageUrls.length < MAX_IMAGES ? <label className="mt-3 inline-flex cursor-pointer items-center rounded-lg border border-[#285f40] px-3 py-2 text-xs font-semibold text-[#9adbb2]">
+        {<label className="mt-3 inline-flex cursor-pointer items-center rounded-lg border border-[#285f40] px-3 py-2 text-xs font-semibold text-[#9adbb2]">
           {imageUploading ? "Uploading…" : "Choose image"}
           <input type="file" accept="image/*" className="sr-only" disabled={imageUploading} onChange={(event) => { const file = event.target.files?.[0] ?? null; event.currentTarget.value = ""; void uploadImage(file) }} />
-        </label> : null}
-        <p className="mt-2 text-xs text-zinc-600">Up to {MAX_IMAGES} images · maximum 10 MB each.</p>
+        </label>}
+        <p className="mt-2 text-xs text-zinc-600">Maximum 10 MB per image.</p>
 
         </>
         : <div>
           <p className="text-sm font-medium text-zinc-200">Video</p>
-          <p className="mt-1 text-xs leading-5 text-zinc-500">Choose one video.</p>
-          <VideoUploadControl onReady={setVideoInput} onBusyChange={setVideoUploading} />
+          <p className="mt-1 text-xs leading-5 text-zinc-500">Choose videos.</p>
+          <VideoUploadControl onReady={(url) => setAttachedVideos(current => [...new Set([...current, url])])} onBusyChange={setVideoUploading} />
+            {attachedVideos.map((url, index) => <div key={url} className="mt-2 flex items-center justify-between text-xs"><span>Video {index + 1}</span><button type="button" disabled={busy} onClick={() => setAttachedVideos(current => current.filter(item => item !== url))}>Remove</button></div>)}
+            <button type="button" disabled={busy || videoUploading || !parsedVideo} onClick={() => { if (parsedVideo) { setAttachedVideos(current => [...new Set([...current, parsedVideo])]); setVideoInput("") } }}>Add video link</button>
           <div className="mt-3">
             <label htmlFor={isReply ? `via-reply-youtube-${parentStakeID}` : "via-post-youtube"} className="text-xs text-zinc-400">Or paste a YouTube link</label>
             <input id={isReply ? `via-reply-youtube-${parentStakeID}` : "via-post-youtube"} type="url" inputMode="url" value={videoUploading ? "" : videoInput} onChange={(event) => setVideoInput(event.target.value)} disabled={videoUploading} placeholder="https://www.youtube.com/watch?v=…" className="mt-2 w-full rounded-lg border border-zinc-800 bg-black/40 px-3 py-2 text-sm text-zinc-200 outline-none focus:border-[#8fd4a9]/55 disabled:opacity-50" />

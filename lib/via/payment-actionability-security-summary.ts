@@ -10,7 +10,7 @@ export const VIA_PAYMENT_ACTIONABILITY_SECURITY_SUMMARY = {
   priority:
     "EUR/USD remain primary, Bitcoin secondary and DESO an extra future route.",
   deso:
-    "DESO stays non-actionable until its secure signing/payment-write boundary is explicitly released.",
+    "Native DeSo transactions are outside external checkout.",
   noSecrets:
     "Public payment-method projection exposes method availability only, never credentials, wallet administration or security internals.",
   noImplicitWrite:

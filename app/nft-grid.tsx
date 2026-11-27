@@ -29,7 +29,7 @@ type DeSoProfile = { Username?: string; PublicKeyBase58Check?: string }
 
 const VIDEO_EXTENSIONS = [".mp4", ".webm", ".mov", ".m4v"]
 const AUDIO_EXTENSIONS = [".mp3", ".wav", ".m4a", ".aac", ".flac", ".oga"]
-const MAX_AUTOMATIC_NFTS_DISPLAYED = 50
+
 
 function mediaFilterType(post: DeSoPost): MediaFilterType {
   const videoUrl = post.VideoURLs?.[0]
@@ -60,7 +60,8 @@ async function loadAutomaticNFTCount(publicKey: string) {
   let checkedPosts = 0
   let nftCount = 0
   const discoveredNFTPostHashes: string[] = []
-  for (let page = 0; page < 20; page += 1) {
+  const seenCursors = new Set<string>()
+  while (true) {
     const response = await fetchDeSo("get-posts-for-public-key", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -81,13 +82,14 @@ async function loadAutomaticNFTCount(publicKey: string) {
     const nftPosts = posts.filter((post) => post.IsNFT === true)
     nftCount += nftPosts.length
     for (const post of nftPosts) {
-      if (discoveredNFTPostHashes.length < MAX_AUTOMATIC_NFTS_DISPLAYED && post.PostHashHex && !discoveredNFTPostHashes.includes(post.PostHashHex)) {
+      if (post.PostHashHex && !discoveredNFTPostHashes.includes(post.PostHashHex)) {
         discoveredNFTPostHashes.push(post.PostHashHex)
       }
     }
     if (posts.length < 12) break
     const lastPost = posts[posts.length - 1]
-    if (!lastPost.PostHashHex) break
+    if (!lastPost.PostHashHex || seenCursors.has(lastPost.PostHashHex)) throw new Error("DESO_NFT_CURSOR_STALLED")
+    seenCursors.add(lastPost.PostHashHex)
     lastPostHashHex = lastPost.PostHashHex
   }
   return { nftCount, checkedPosts, discoveredNFTPostHashes }

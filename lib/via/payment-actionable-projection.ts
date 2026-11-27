@@ -7,7 +7,7 @@ import { paymentAvailabilityConsistency } from "./payment-availability-consisten
 export function actionablePaymentMethods(input: {
   fiatOperational: boolean
   bitcoinOperational: boolean
-  desoOperational: boolean
+
 }): ViaSupportedPaymentMethod[] {
   return paymentMethodAvailability(input)
     .filter((item) => {
@@ -23,7 +23,7 @@ export const VIA_ACTIONABLE_PAYMENT_PROJECTION_RULES = {
   failClosed:
     "Any inconsistent method state is omitted from the actionable projection.",
   order:
-    "The projection preserves configured payment priority: fiat EUR/USD first, Bitcoin second and DESO only after an explicit future release.",
+    "The projection preserves configured payment priority: fiat EUR/USD first, Bitcoin second; native DeSo is outside this projection.",
   noSecrets:
     "The projection returns payment method identifiers only and exposes no provider, wallet or security configuration.",
   noPayment:
