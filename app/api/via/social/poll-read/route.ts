@@ -43,6 +43,10 @@ export async function GET(request: Request) {
   }
 
   try {
+    const raw: Association[] = [];
+    const seen = new Set<string>();
+    let cursor = "";
+    while (true) {
     const response = await fetchDeSo("post-associations/query", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -52,6 +56,7 @@ export async function GET(request: Request) {
         TransactorPublicKeyBase58Check: voter || "",
         AssociationType: POLL_ASSOCIATION_TYPE,
         Limit: MAX_RESULTS,
+        LastSeenAssociationID: cursor,
         SortDescending: true,
         IncludeTransactorProfile: false,
         IncludePostEntry: false,
@@ -62,7 +67,14 @@ export async function GET(request: Request) {
 
     if (!response.ok) throw new Error("DESO_POLL_READ_FAILED")
     const data = await response.json() as QueryResponse
-    const raw = Array.isArray(data.Associations) ? data.Associations : []
+    if (!Array.isArray(data.Associations)) throw new Error("INVALID_DESO_POLL_RESPONSE");
+    const page = data.Associations;
+    raw.push(...page);
+    if (page.length < MAX_RESULTS) break;
+    const next = page[page.length - 1]?.AssociationID;
+    if (!next || seen.has(next)) throw new Error("DESO_POLL_CURSOR_STALLED");
+    seen.add(next); cursor = next;
+    }
 
     const responses = raw
       .filter((item) => item?.AssociationType === POLL_ASSOCIATION_TYPE && item?.PostHashHex === postHash)
@@ -83,7 +95,8 @@ export async function GET(request: Request) {
         voter: voter || null,
         responses,
         resultLimit: MAX_RESULTS,
-        truncated: raw.length >= MAX_RESULTS,
+        LastSeenAssociationID: cursor,
+        truncated: false,
         countsFinal: false,
       },
       { status: 200, headers: { "Cache-Control": "no-store" } },

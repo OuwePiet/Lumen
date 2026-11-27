@@ -21,7 +21,6 @@ export type ViaModernIdentityAdapter = {
   alternateUsers(): Promise<ViaModernIdentityUser[]>
   subscribe(listener: (user: ViaModernIdentityUser | null) => void): () => void
   setActiveUser(publicKey: string): Promise<void>
-  signTx(transactionHex: string): Promise<string>
 
   encryptMessage(recipientPublicKey: string, message: string): Promise<string>
   decryptMessage(message: NewMessageEntryResponse, groups?: AccessGroupEntryResponse[]): Promise<string>
@@ -94,14 +93,12 @@ export const viaModernIdentity: ViaModernIdentityAdapter = {
     ensureConfigured()
     await identity.setActiveUser(publicKey)
   },
-  signTx(transactionHex) { ensureConfigured(); return identity.signTx(transactionHex) },
   encryptMessage(recipientPublicKey, message) { ensureConfigured(); return identity.encryptMessage(recipientPublicKey, message) },
   async decryptMessage(message, groups = []) {
     ensureConfigured(); return (await identity.decryptMessage(message, groups)).DecryptedMessage
   },
   jwt() { ensureConfigured(); return identity.jwt() },
 }
-export const VIA_MODERN_IDENTITY_READY = true as const
 
 // SDK 3.4.1 starts redirect handling in its constructor. Configure synchronously
 // in this module, before that async callback resumes, rather than waiting for a

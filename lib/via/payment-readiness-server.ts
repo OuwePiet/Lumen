@@ -19,11 +19,11 @@ export function currentPaymentReadiness() {
   return {
     fiatOperational,
     bitcoinOperational,
-    desoOperational: false,
+
     methods: paymentMethodAvailability({
       fiatOperational,
       bitcoinOperational,
-      desoOperational: false,
+
     }),
   }
 }
@@ -36,5 +36,5 @@ export const VIA_PAYMENT_READINESS_SERVER_RULES = {
   failClosed:
     "Only the exact trimmed value true activates a deployment readiness signal; missing/unknown values are false.",
   deso:
-    "DESO remains hard-disabled until its secure payment-write boundary is explicitly released.",
+    "Native DeSo transactions are outside external checkout readiness.",
 } as const

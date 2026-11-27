@@ -55,6 +55,10 @@ export async function readPollResponseStatus(postHash: string, voterPublicKey: s
       && (typeof value.blockHeight === "number" || value.blockHeight === null)
   })
 
+  if (responses.length !== data.responses.length || responses.some(item => item.voterPublicKey !== voterPublicKey || !item.associationId || !item.option) || typeof data.truncated !== "boolean") {
+    throw new Error("INCOMPLETE_POLL_RESPONSE_LOOKUP")
+  }
+
   // DeSo can expose more than one POLL_RESPONSE association from the same key.
   // VIA treats that as an ambiguity and must not silently create another vote.
   const existingResponse = responses.length === 1 ? responses[0] : null

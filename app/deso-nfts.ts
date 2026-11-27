@@ -20,6 +20,8 @@ export type DeSoNFTEntry = {
 export type DeSoNFTCollection = {
   PostEntryResponse?: DeSoNFTPost
   NFTEntryResponses?: DeSoNFTEntry[]
+  CreatedByAccount?: boolean
+  OwnedEntries?: DeSoNFTEntry[]
 }
 
 function isFiniteNonNegativeNumber(value: unknown): value is number {
@@ -105,4 +107,29 @@ export async function getNFTsForUser(publicKey: string, signal?: AbortSignal) {
   return values
     .map(normalizeCollection)
     .filter((value): value is DeSoNFTCollection => value !== null)
+}
+
+export async function getCreatedNFTs(publicKey: string, signal?: AbortSignal) {
+  const found = new Map<string, DeSoNFTCollection>()
+  const cursors = new Set<string>()
+  let cursor = ""
+  while (true) {
+    const response = await fetchDeSo("get-nfts-created-by-public-key", {
+      method: "POST", headers: { "Content-Type": "application/json" }, signal,
+      body: JSON.stringify({ PublicKeyBase58Check: publicKey, ReaderPublicKeyBase58Check: "", LastPostHashHex: cursor, NumToFetch: 12 }),
+    })
+    if (!response.ok) throw new Error("DESO_CREATED_NFTS_UNAVAILABLE")
+    const data = await response.json()
+    if (!Array.isArray(data.NFTs) || typeof data.LastPostHashHex !== "string") throw new Error("DESO_CREATED_NFTS_INVALID_RESPONSE")
+    for (const nft of data.NFTs) {
+      const item = normalizeCollection({ ...nft.NFTCollectionResponse, NFTEntryResponses: nft.NFTEntryResponses })
+      if (item?.PostEntryResponse?.PostHashHex) found.set(item.PostEntryResponse.PostHashHex, { ...item, CreatedByAccount: true })
+    }
+    const next = data.LastPostHashHex
+    if (!next) break
+    if (cursors.has(next)) throw new Error("DESO_NFT_CURSOR_STALLED")
+    cursors.add(next)
+    cursor = next
+  }
+  return [...found.values()]
 }

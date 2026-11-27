@@ -1,5 +1,5 @@
 import Link from "next/link"
-import CheckoutSecurityPreview from "../checkout-security-preview"
+
 import ViaPaymentReadiness from "../via-payment-readiness"
 
 export const dynamic = "force-dynamic"
@@ -36,7 +36,7 @@ export default function PaymentsPage() {
           .
         </p>
         <ViaPaymentReadiness />
-        <CheckoutSecurityPreview />
+        <p>DeSo transactions use DeSo Identity and the official SDK directly, outside external checkout.</p>
       </section>
     </main>
   )

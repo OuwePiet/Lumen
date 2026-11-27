@@ -3,11 +3,6 @@ import { fetchDeSo } from "../../../../deso-api"
 
 export const dynamic = "force-dynamic"
 
-const MAX_POST_LENGTH = 5000
-const MAX_MEDIA_URL_LENGTH = 2048
-const MAX_IMAGE_URLS = 4
-const MAX_VIDEO_URLS = 1
-const DEFAULT_MIN_FEE_RATE_NANOS_PER_KB = 1000
 
 function json(data: unknown, status = 200) {
   return NextResponse.json(data, { status, headers: { "Cache-Control": "no-store" } })
@@ -25,20 +20,17 @@ function validPostHash(value: unknown): value is string {
   return typeof value === "string" && /^[0-9a-fA-F]{64}$/.test(value)
 }
 
-function validHex(value: unknown): value is string {
-  return typeof value === "string" && value.length >= 2 && value.length <= 500_000 && value.length % 2 === 0 && /^[0-9a-fA-F]+$/.test(value)
-}
 
-function safeUrls(value: unknown, maxItems: number) {
+function safeUrls(value: unknown) {
   if (value == null) return [] as string[]
-  if (!Array.isArray(value) || value.length > maxItems) return null
+  if (!Array.isArray(value)) return null
   const result: string[] = []
   for (const item of value) {
-    if (typeof item !== "string" || item.length === 0 || item.length > MAX_MEDIA_URL_LENGTH) return null
+    if (typeof item !== "string" || item.length === 0) return null
     try {
       const url = new URL(item)
       if (url.protocol !== "https:" || url.username || url.password) return null
-      result.push(url.toString())
+      result.push(item)
     } catch {
       return null
     }
@@ -51,7 +43,7 @@ function safeExtraData(value: unknown) {
   if (!source) return {} as Record<string, string>
   const output: Record<string, string> = {}
   for (const [key, item] of Object.entries(source)) {
-    if (typeof item === "string" && key.length <= 100 && item.length <= 4000) output[key] = item
+    if (typeof item === "string") output[key] = item
   }
   return output
 }
@@ -76,8 +68,8 @@ async function loadOwnedPost(postHashHex: string, publicKey: string) {
   if (post.PosterPublicKeyBase58Check !== publicKey) return { error: "POST_NOT_OWNED_BY_ACTIVE_KEY" as const }
   if (post.RepostedPostEntryResponse) return { error: "EDIT_REPOST_NOT_SUPPORTED" as const }
 
-  const imageUrls = safeUrls(post.ImageURLs, MAX_IMAGE_URLS)
-  const videoUrls = safeUrls(post.VideoURLs, MAX_VIDEO_URLS)
+  const imageUrls = safeUrls(post.ImageURLs)
+  const videoUrls = safeUrls(post.VideoURLs)
   if (!imageUrls || !videoUrls) return { error: "UNSAFE_EXISTING_MEDIA" as const }
 
   return {
@@ -111,5 +103,5 @@ export async function POST(request: Request) {
   catch { return json({ ok: false, error: "DESO_POST_LOOKUP_UNAVAILABLE" }, 503) }
   if ("error" in owned) return json({ ok: false, error: owned.error }, owned.error === "POST_NOT_OWNED_BY_ACTIVE_KEY" ? 403 : 409)
 
-  return json({ ok: true, editable: true, post: owned.post, writeAuthorized: false })
+  return json({ ok: true, editable: true, post: owned.post })
 }

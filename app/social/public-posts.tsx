@@ -94,12 +94,11 @@ function pollOptions(extraData?: Record<string, string>) {
     if (Array.isArray(parsed)) {
       return parsed
         .filter((value): value is string => typeof value === "string")
-        .map((value) => value.trim())
         .filter(Boolean)
-        .slice(0, 5)
+
     }
   } catch {}
-  return direct.split(/\r?\n|\|/).map((value) => value.trim()).filter(Boolean).slice(0, 5)
+  return direct.split(/\r?\n|\|/).filter(Boolean)
 }
 
 function feedReadyMessage(choice: ChoiceId) {

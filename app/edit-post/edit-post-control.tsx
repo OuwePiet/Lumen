@@ -52,7 +52,7 @@ export default function EditPostControl() {
 
   const hashValid = /^[0-9a-fA-F]{64}$/.test(postHashHex.trim())
   const changed = Boolean(loadedHash && body !== originalBody)
-  const remaining = 5000 - body.length
+
   const feeLabel = useMemo(() => feeNanos === null ? "" : `${feeNanos.toLocaleString()} nanos network fee in the prepared transaction`, [feeNanos])
 
   async function inspect() {
@@ -89,7 +89,7 @@ export default function EditPostControl() {
   }
 
   async function prepare() {
-    if (!session || !loadedHash || !changed || !body.trim() || body.length > 5000 || lock.current) return
+    if (!session || !loadedHash || !changed || !body.trim() || lock.current) return
     lock.current=true
     const activeKey = session.publicKey
     setStatus("preparing")
@@ -125,10 +125,10 @@ export default function EditPostControl() {
 
       {loadedHash ? <>
         <label className="mt-5 block text-sm text-zinc-300" htmlFor="edit-post-body">Post text</label>
-        <textarea id="edit-post-body" value={body} onChange={(event) => setBody(event.target.value)} maxLength={5000} rows={8} className="mt-2 w-full rounded-xl border border-zinc-800 bg-black/40 px-3 py-3 text-sm text-zinc-100 outline-none focus:border-green-700" />
-        <div className="mt-2 flex flex-wrap justify-between gap-2 text-xs text-zinc-500"><span>{remaining.toLocaleString()} characters left</span><span>{mediaSummary}</span></div>
+        <textarea id="edit-post-body" value={body} onChange={(event) => setBody(event.target.value)} rows={8} className="mt-2 w-full rounded-xl border border-zinc-800 bg-black/40 px-3 py-3 text-sm text-zinc-100 outline-none focus:border-green-700" />
+        <div className="mt-2 flex flex-wrap justify-between gap-2 text-xs text-zinc-500"><span>{body.length.toLocaleString()} characters</span><span>{mediaSummary}</span></div>
         {feeLabel ? <p className="mt-2 text-xs text-zinc-500">{feeLabel}</p> : null}
-        <button type="button" onClick={prepare} disabled={!changed || body.length > 5000 || status === "preparing" || status === "awaiting" || status === "submitting"} className="mt-4 rounded-xl border border-green-700 px-4 py-2 text-sm font-semibold text-green-300 disabled:border-zinc-800 disabled:text-zinc-600">{status === "preparing" ? "Preparing…" : status === "awaiting" ? "Awaiting approval…" : status === "submitting" ? "Submitting…" : "Review edit in DeSo"}</button>
+        <button type="button" onClick={prepare} disabled={!changed || status === "preparing" || status === "awaiting" || status === "submitting"} className="mt-4 rounded-xl border border-green-700 px-4 py-2 text-sm font-semibold text-green-300 disabled:border-zinc-800 disabled:text-zinc-600">{status === "preparing" ? "Preparing…" : status === "awaiting" ? "Awaiting approval…" : status === "submitting" ? "Submitting…" : "Review edit in DeSo"}</button>
       </> : null}
 
       {message ? <p className={`mt-4 text-sm ${status === "error" ? "text-amber-300" : status === "done" ? "text-green-300" : "text-zinc-400"}`} role="status" aria-live="polite">{message}</p> : null}
