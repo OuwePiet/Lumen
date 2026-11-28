@@ -7,28 +7,7 @@ import ViaAuraCompact from "../via-aura-compact"
 import { fetchViaRates, isViaRateStale, VIA_RATE_REFRESH_MS } from "../via-live-rates"
 import { readViaLocalSettings, VIA_SETTINGS_EVENT, type ViaLanguage } from "../via-local-settings"
 
-type CreatorCoinHolding = {
-  creatorPublicKey: string
-  username: string
-  profilePic: string | null
-  isVerified: boolean
-  balanceNanos: number
-  balanceCoins: number
-  hasPurchased: boolean
-}
-
-type WalletData = {
-  publicKey: string
-  balanceNanos: number
-  unminedBalanceNanos: number
-  balanceDeSo: number
-  creatorCoinHoldings: CreatorCoinHolding[]
-}
-
-type WalletResponse = {
-  ok?: boolean
-  wallet?: WalletData
-}
+import { readDeSoWallet, type WalletData, type CreatorCoinHolding } from "../deso-wallet-read"
 
 type Copy = {
   title: string
@@ -255,7 +234,7 @@ function CoinList({ title, holdings, emptyText, coinLabel }: { title: string; ho
 
 export default function WalletPage() {
   const [session, setSession] = useState<ViaModernIdentityUser | null>(null)
-  const [wallet, setWallet] = useState<WalletData | null>(null)
+  const [walletSnapshot, setWallet] = useState<WalletData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
   const [copied, setCopied] = useState(false)
@@ -284,29 +263,22 @@ export default function WalletPage() {
     }
 
     let active = true
-    let controller: AbortController | null = null
+    let sequence = 0
 
     const refreshWallet = async () => {
-      controller?.abort()
-      controller = new AbortController()
+      const request = ++sequence
       try {
-        const response = await fetch(`/api/via/wallet?publicKey=${encodeURIComponent(session.publicKey)}`, {
-          cache: "no-store",
-          signal: controller.signal,
-          headers: { Accept: "application/json" },
-        })
-        const data = response.ok ? (await response.json()) as WalletResponse : null
-        if (!response.ok || !data?.ok || !data.wallet) throw new Error("WALLET_UNAVAILABLE")
-        if (!active) return
-        setWallet(data.wallet)
+        const data = await readDeSoWallet(session.publicKey)
+        if (!active || request !== sequence) return
+        setWallet(data)
         setLastUpdated(Date.now())
         setError("")
       } catch (reason) {
-        if (active && !(reason instanceof DOMException && reason.name === "AbortError")) {
+        if (active && request === sequence) {
           setError(copies[language].unavailable)
         }
       } finally {
-        if (active) setLoading(false)
+        if (active && request === sequence) setLoading(false)
       }
     }
 
@@ -317,7 +289,6 @@ export default function WalletPage() {
 
     return () => {
       active = false
-      controller?.abort()
       window.clearInterval(timer)
     }
   }, [session?.publicKey, language])
@@ -354,6 +325,7 @@ export default function WalletPage() {
     }
   }, [])
 
+  const wallet = walletSnapshot?.publicKey === session?.publicKey ? walletSnapshot : null
   const copy = copies[language]
   const bought = wallet?.creatorCoinHoldings.filter((holding) => holding.hasPurchased) ?? []
   const received = wallet?.creatorCoinHoldings.filter((holding) => !holding.hasPurchased) ?? []
