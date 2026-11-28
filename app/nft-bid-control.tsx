@@ -38,7 +38,6 @@ export default function NFTBidControl({ postHash, editions }: Props) {
   const [session, setSession] = useState<ViaModernIdentityUser | null>(null)
   const [serialNumber, setSerialNumber] = useState(editions[0]?.serialNumber ?? 1)
   const [amount, setAmount] = useState("")
-  const [confirmed, setConfirmed] = useState(false)
   const [status, setStatus] = useState<"idle"|"preparing"|"approval"|"submitting"|"done"|"error">("idle")
   const [message, setMessage] = useState("")
   const [feeNanos, setFeeNanos] = useState<number | null>(null)
@@ -59,8 +58,8 @@ export default function NFTBidControl({ postHash, editions }: Props) {
   const lock=useRef(false)
   async function prepare(forBuyNow=false){
     const effectiveBidNanos=forBuyNow&&canBuyNow?edition?.buyNowPriceNanos:bidNanos
-    if(!session||!edition||typeof effectiveBidNanos!=="number"||effectiveBidNanos<=0||!confirmed||isOwner||busy||lock.current||(forBuyNow&&!canBuyNow)||(!forBuyNow&&!amountValid))return
-    lock.current=true;setConfirmed(false);setStatus("preparing");setFeeNanos(null)
+    if(!session||!edition||typeof effectiveBidNanos!=="number"||effectiveBidNanos<=0||isOwner||busy||lock.current||(forBuyNow&&!canBuyNow)||(!forBuyNow&&!amountValid))return
+    lock.current=true;setStatus("preparing");setFeeNanos(null)
     let submitting=false
     try{
       setMessage("Preparing directly with DeSo...")
@@ -74,27 +73,27 @@ export default function NFTBidControl({ postHash, editions }: Props) {
 
   return (
     <section className="mt-5 rounded-xl border border-[#285f40]/50 bg-black/30 p-4" aria-labelledby="via-nft-bid-heading">
-      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#8fd4a9]">Controlled DeSo NFT action</p>
+      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#8fd4a9]">DeSo NFT action</p>
       <h2 id="via-nft-bid-heading" className="mt-2 text-lg font-semibold">Place a bid</h2>
-      <p className="mt-2 text-sm leading-6 text-zinc-400">This creates a native DeSo NFT bid. VIA never signs or submits it without your DeSo Identity approval.</p>
+      <p className="mt-2 text-sm leading-6 text-zinc-400">This creates a native DeSo NFT bid. DeSo Identity signs and submits within your granted permissions.</p>
       {!session ? <p className="mt-3 text-sm text-zinc-500">Connect through DeSo Identity on VIA before bidding.</p> : <>
         <label className="mt-4 block text-sm text-zinc-300">Edition
-          <select value={serialNumber} onChange={(event) => { setSerialNumber(Number(event.target.value)); setConfirmed(false) }} className="mt-2 block w-full rounded-lg border border-zinc-800 bg-black px-3 py-2 text-sm">
+          <select value={serialNumber} onChange={(event) => { setSerialNumber(Number(event.target.value)) }} className="mt-2 block w-full rounded-lg border border-zinc-800 bg-black px-3 py-2 text-sm">
             {editions.map((item) => <option key={item.serialNumber} value={item.serialNumber}>#${item.serialNumber} · min ${formatDeso(item.minBidAmountNanos)} DESO${typeof item.buyNowPriceNanos === "number" ? ` · buy now ${formatDeso(item.buyNowPriceNanos)} DESO` : ""}</option>)}
           </select>
         </label>
         <label className="mt-3 block text-sm text-zinc-300">Bid amount in DESO
-          <input value={amount} onChange={(event) => { setAmount(event.target.value); setConfirmed(false) }} inputMode="decimal" placeholder={minBid ? formatDeso(minBid) : "0.01"} className="mt-2 block w-full rounded-lg border border-zinc-800 bg-black px-3 py-2 text-sm" />
+          <input value={amount} onChange={(event) => { setAmount(event.target.value) }} inputMode="decimal" placeholder={minBid ? formatDeso(minBid) : "0.01"} className="mt-2 block w-full rounded-lg border border-zinc-800 bg-black px-3 py-2 text-sm" />
         </label>
         {isOwner ? <p className="mt-2 text-xs text-amber-300">The active DeSo account owns this edition and cannot bid on itself through VIA.</p> : null}
         {!isOwner && amount && !amountValid ? <p className="mt-2 text-xs text-amber-300">Enter a valid amount of at least {formatDeso(minBid)} DESO.</p> : null}
-        <label className="mt-3 flex items-start gap-2 text-xs text-amber-200"><input type="checkbox" checked={confirmed} onChange={(event) => setConfirmed(event.target.checked)} />I understand this creates a real on-chain bid that may reserve/spend $DESO according to DeSo rules.</label>
+        <p className="mt-3 text-xs text-amber-200">This creates a real on-chain bid that may reserve/spend $DESO according to DeSo rules.</p>
         {feeNanos !== null ? <p className="mt-2 text-xs text-zinc-500">Prepared network fee: {feeNanos.toLocaleString()} nanos.</p> : null}
         <div className="mt-3 flex flex-wrap gap-2">
-          <button type="button" onClick={() => void prepare(false)} disabled={!confirmed || !amountValid || isOwner || busy} className="rounded-lg border border-[#8fd4a9]/55 px-4 py-2 text-sm font-semibold text-[#9adbb2] disabled:border-zinc-800 disabled:text-zinc-600">
-            {status === "preparing" ? "Preparing…" : status === "approval" ? "Review in DeSo…" : status === "submitting" ? "Submitting…" : "Review bid in DeSo"}
+          <button type="button" onClick={() => void prepare(false)} disabled={!amountValid || isOwner || busy} className="rounded-lg border border-[#8fd4a9]/55 px-4 py-2 text-sm font-semibold text-[#9adbb2] disabled:border-zinc-800 disabled:text-zinc-600">
+            {status === "preparing" ? "Preparing…" : status === "approval" ? "Review in DeSo…" : status === "submitting" ? "Submitting…" : `Place bid ${formatDeso(bidNanos ?? 0)} DESO`}
           </button>
-          {canBuyNow ? <button type="button" onClick={() => void prepare(true)} disabled={!confirmed || isOwner || busy} className="rounded-lg border border-emerald-600 px-4 py-2 text-sm font-semibold text-emerald-300 disabled:border-zinc-800 disabled:text-zinc-600">Buy now · {formatDeso(edition?.buyNowPriceNanos)} DESO</button> : null}
+          {canBuyNow ? <button type="button" onClick={() => void prepare(true)} disabled={isOwner || busy} className="rounded-lg border border-emerald-600 px-4 py-2 text-sm font-semibold text-emerald-300 disabled:border-zinc-800 disabled:text-zinc-600">Buy now · {formatDeso(edition?.buyNowPriceNanos)} DESO</button> : null}
         </div>
         {message ? <p className={"mt-3 text-xs " + (status === "error" ? "text-amber-300" : status === "done" ? "text-[#9adbb2]" : "text-zinc-500")} role="status">{message}</p> : null}
       </>}
