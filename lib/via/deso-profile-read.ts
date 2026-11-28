@@ -242,9 +242,11 @@ export async function searchPublicProfilesByPrefix(prefix: string, limit = 8) {
     }),
   })
 
-  if (!response.ok) return []
-  const data = await response.json() as { ProfilesFound?: DeSoProfileResponse["Profile"][] }
-  return (data.ProfilesFound ?? []).flatMap((profile) => {
+  if (!response.ok) throw new Error("DeSo profile search failed: " + response.status)
+  const data = await response.json() as { ProfilesFound?: DeSoProfileResponse["Profile"][] | null }
+  if (data.ProfilesFound === null) return []
+  if (!Array.isArray(data.ProfilesFound)) throw new Error("Invalid DeSo profile search response")
+  return data.ProfilesFound.flatMap((profile) => {
     if (!profile) return []
     const publicKey = text(profile.PublicKeyBase58Check)
     const username = text(profile.Username)
@@ -270,13 +272,17 @@ export async function readPublicProfileIdentity(usernameOrPublicKey: string) {
       Username: identity.startsWith("BC1") ? "" : identity,
     }),
   })
-  if (!response.ok) return null
+  if (response.status === 404) return null
+  if (!response.ok) throw new Error("DeSo profile read failed: " + response.status)
   const data = (await response.json()) as DeSoProfileResponse
   const profile = data.Profile
-  if (!profile) return null
+  if (profile === null) return null
+  if (!profile) throw new Error("Invalid DeSo profile response")
   const publicKey = text(profile.PublicKeyBase58Check)
   const username = text(profile.Username)
-  if (!publicKey && !username) return null
+  if (!publicKey) throw new Error("Invalid DeSo profile identity")
+  if (identity.startsWith("BC1") && publicKey !== identity) throw new Error("DeSo profile public key mismatch")
+  if (!identity.startsWith("BC1") && username.toLowerCase() !== identity.toLowerCase()) throw new Error("DeSo profile username mismatch")
   return {
     publicKey,
     username,
@@ -300,15 +306,19 @@ export async function readPublicProfile(
     }),
   })
 
-  if (!response.ok) return null
+  if (response.status === 404) return null
+  if (!response.ok) throw new Error("DeSo profile read failed: " + response.status)
 
   const data = (await response.json()) as DeSoProfileResponse
   const profile = data.Profile
-  if (!profile) return null
+  if (profile === null) return null
+  if (!profile) throw new Error("Invalid DeSo profile response")
 
   const publicKey = text(profile.PublicKeyBase58Check)
   const username = text(profile.Username)
-  if (!publicKey && !username) return null
+  if (!publicKey) throw new Error("Invalid DeSo profile identity")
+  if (identity.startsWith("BC1") && publicKey !== identity) throw new Error("DeSo profile public key mismatch")
+  if (!identity.startsWith("BC1") && username.toLowerCase() !== identity.toLowerCase()) throw new Error("DeSo profile username mismatch")
 
   const profilePic = text(profile.ProfilePic)
   const coinEntry = profile.CoinEntry ?? null
