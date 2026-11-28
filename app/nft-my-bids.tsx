@@ -29,7 +29,6 @@ function formatDeso(nanos: number) {
 
 export default function NFTMyBids({ postHash, bids }: Props) {
   const [session, setSession] = useState<ViaModernIdentityUser | null>(null)
-  const [confirmedSerial, setConfirmedSerial] = useState<number | null>(null)
   const [status, setStatus] = useState<"idle"|"preparing"|"approval"|"submitting"|"done"|"error">("idle")
   const [message, setMessage] = useState("")
 
@@ -47,8 +46,8 @@ export default function NFTMyBids({ postHash, bids }: Props) {
 
   const lock=useRef(false)
   async function withdrawBid(serialNumber:number){
-    if(!session||confirmedSerial!==serialNumber||lock.current||!myBids.some(b=>b.serialNumber===serialNumber))return
-    lock.current=true;setConfirmedSerial(null);setStatus("preparing")
+    if(!session||lock.current||!myBids.some(b=>b.serialNumber===serialNumber))return
+    lock.current=true;setStatus("preparing")
     let submitting=false
     try{
       setMessage("Preparing withdrawal directly with DeSo...")
@@ -68,25 +67,17 @@ export default function NFTMyBids({ postHash, bids }: Props) {
 
       <div className="mt-4 grid gap-3">
         {myBids.map((bid) => {
-          const confirmed = confirmedSerial === bid.serialNumber
           return (
             <div key={bid.serialNumber} className="rounded-lg border border-zinc-800 p-3">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <p className="text-sm font-semibold text-zinc-200">Edition #{bid.serialNumber} · {formatDeso(bid.bidAmountNanos)} DESO</p>
                 <button
                   type="button"
-                  onClick={() => {
-                    if (!confirmed) {
-                      setConfirmedSerial(bid.serialNumber)
-                      setMessage("Press Withdraw bid again to prepare removal of this exact bid.")
-                    } else {
-                      void withdrawBid(bid.serialNumber)
-                    }
-                  }}
+                  onClick={() => void withdrawBid(bid.serialNumber)}
                   disabled={status === "preparing" || status === "approval" || status === "submitting"}
                   className="rounded-lg border border-zinc-700 px-3 py-2 text-xs font-semibold text-zinc-300 disabled:text-zinc-600"
                 >
-                  {confirmed ? "Confirm withdraw" : "Withdraw bid"}
+                  Withdraw bid
                 </button>
               </div>
             </div>
