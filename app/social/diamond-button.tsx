@@ -1,5 +1,5 @@
 "use client"
-import {sendDiamonds,identity,getDiamondsForPost} from "deso-protocol"
+import {sendDiamonds,identity,getDiamondsForPost,getSinglePost} from "deso-protocol"
 import { DIAMOND_LEVEL_MAP } from "deso-protocol/src/identity/constants.js"
 
 import { useEffect, useRef, useState } from "react"
@@ -44,19 +44,15 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
     if (!menuOpen) return
     const controller = new AbortController()
     setPreviousDiamond(null)
-    const params = new URLSearchParams({ hash: postHash, fresh: "1", reader: reader ?? "" })
-    void fetch("/api/via/post?" + params, { cache: "no-store", signal: controller.signal })
-      .then(async (response) => {
-        if (!response.ok) return
-        const data = await response.json() as { ok?: boolean; post?: { diamondCount?: number; diamondLevelByReader?: number | null } }
-        const latestCount = data.post?.diamondCount
-        const latestLevel = data.post?.diamondLevelByReader
-        if (!controller.signal.aborted && data.ok && reader && typeof latestLevel === "number" && Number.isSafeInteger(latestLevel) && latestLevel >= 0) {
+    void getSinglePost({ PostHashHex: postHash, ReaderPublicKeyBase58Check: reader ?? "", FetchParents: false, CommentLimit: 0, CommentOffset: 0 })
+      .then(({ PostFound: post }) => {
+        if (controller.signal.aborted || post?.PostHashHex !== postHash) return
+        const latestCount = post.DiamondCount
+        const latestLevel = post.PostEntryReaderState?.DiamondLevelBestowed
+        if (reader && typeof latestLevel === "number" && Number.isSafeInteger(latestLevel) && latestLevel >= 0) {
           setPreviousDiamond({ reader, hash: postHash, level: latestLevel })
         }
-        if (!controller.signal.aborted && data.ok && typeof latestCount === "number" && Number.isSafeInteger(latestCount) && latestCount >= 0) {
-          setCount(latestCount)
-        }
+        if (Number.isSafeInteger(latestCount) && latestCount >= 0) setCount(latestCount)
       })
       .catch(() => {})
     return () => controller.abort()
@@ -146,16 +142,15 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
         setEarnings(null)
         changeMenu(false)
         setMessage("")
-        const params = new URLSearchParams({ hash: postHash, fresh: "1", reader: session.publicKey })
+
         for (const delay of [0, 750, 1500, 3000]) {
           if (delay) await new Promise(resolve => window.setTimeout(resolve, delay))
           if ((await identity.snapshot()).currentUser?.publicKey !== session.publicKey) break
           try {
-            const response = await fetch("/api/via/post?" + params, { cache: "no-store", signal: AbortSignal.timeout(4000) })
-            const data = await response.json() as { ok?: boolean; post?: { diamondCount?: number; diamondLevelByReader?: number } }
-            const confirmedLevel = data.post?.diamondLevelByReader
-            const confirmedCount = data.post?.diamondCount
-            if ((await identity.snapshot()).currentUser?.publicKey !== session.publicKey || !response.ok || !data.ok || typeof confirmedLevel !== "number" || !Number.isSafeInteger(confirmedLevel) || confirmedLevel < chosenLevel) continue
+            const { PostFound: post } = await getSinglePost({ PostHashHex: postHash, ReaderPublicKeyBase58Check: session.publicKey, FetchParents: false, CommentLimit: 0, CommentOffset: 0 })
+            const confirmedLevel = post?.PostEntryReaderState?.DiamondLevelBestowed
+            const confirmedCount = post?.DiamondCount
+            if ((await identity.snapshot()).currentUser?.publicKey !== session.publicKey || post?.PostHashHex !== postHash || typeof confirmedLevel !== "number" || !Number.isSafeInteger(confirmedLevel) || confirmedLevel < chosenLevel) continue
             setPreviousDiamond({ reader: session.publicKey, hash: postHash, level: confirmedLevel })
             if (typeof confirmedCount === "number" && Number.isSafeInteger(confirmedCount) && confirmedCount >= 0) setCount(confirmedCount)
             setStatus("done")

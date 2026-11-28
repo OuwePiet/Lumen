@@ -138,7 +138,7 @@ World clocks are calculated with IANA time zones and therefore follow daylight-s
 
 The DESO reference price uses the existing VIA live-rates route and refresh logic. If the rate is stale/unavailable, display `—`; never invent a rate.
 
-`Your DESO` uses the active DeSo Identity public key and `/api/via/wallet`. If nobody is signed in, or the balance cannot be read, display `—`; never invent a wallet balance. Login/logout session events update this strip without requiring a page reload.
+`Your DESO` uses the active DeSo Identity public key and the official SDK `getUsersStateless`. If nobody is signed in, or the balance cannot be read, display `—`; never invent a wallet balance. Login/logout session events update this strip without requiring a page reload.
 
 Do not put the placeholder `Total visitors —` in this lower strip. A reliable aggregate visitor total may only be shown when a real counting source is connected.
 
@@ -147,7 +147,7 @@ Implementation:
 - `app/via-world-clock.tsx`
 - `app/via-live-rates.ts`
 - `app/api/via/rates/route.ts`
-- `app/api/via/wallet/route.ts`
+- `app/deso-wallet-read.ts`
 - `app/deso-identity-session.ts`
 
 ## 9. Failure and recovery rules
