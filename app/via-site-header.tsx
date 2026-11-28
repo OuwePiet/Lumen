@@ -170,6 +170,7 @@ export default function ViaSiteHeader() {
   const [searchOpen, setSearchOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
   const [searchResults, setSearchResults] = useState<SearchProfile[]>([])
+  const [searchFailed, setSearchFailed] = useState(false)
   const isHomepage = pathname === "/"
 
   function refreshKnownAccounts() {
@@ -212,13 +213,14 @@ export default function ViaSiteHeader() {
 
   useEffect(() => {
     const prefix = searchQuery.trim().replace(/^@/, "")
-    if (!searchOpen || !prefix) { setSearchResults([]); return }
+    setSearchFailed(false); setSearchResults([])
+    if (!searchOpen || !prefix) return
     const controller = new AbortController()
     const timer = window.setTimeout(() => {
       void fetch(`/api/via/profile-search?prefix=${encodeURIComponent(prefix)}`, { signal: controller.signal, headers: { Accept: "application/json" } })
-        .then(async (response) => response.ok ? (await response.json()) as SearchResponse : null)
-        .then((data) => { if (!controller.signal.aborted) setSearchResults(data?.ok && Array.isArray(data.profiles) ? data.profiles : []) })
-        .catch((error) => { if (!(error instanceof DOMException && error.name === "AbortError")) setSearchResults([]) })
+        .then(async (response) => { if (!response.ok) throw new Error("DeSo search unavailable"); return await response.json() as SearchResponse })
+        .then((data) => { if (!data?.ok || !Array.isArray(data.profiles)) throw new Error("Invalid search response"); if (!controller.signal.aborted) setSearchResults(data.profiles) })
+        .catch(() => { if (!controller.signal.aborted) { setSearchResults([]); setSearchFailed(true) } })
     }, 180)
     return () => { window.clearTimeout(timer); controller.abort() }
   }, [searchOpen, searchQuery])
@@ -238,8 +240,8 @@ export default function ViaSiteHeader() {
       try {
         const response = await fetch("/api/via/profile?identity=" + encodeURIComponent(publicKey) + "&compact=1", { cache: "no-store", signal: controller.signal, headers: { Accept: "application/json" } })
         const data = response.ok ? await response.json() as ProfileResponse : null
-        if (controller.signal.aborted || !data?.ok || !data.profile) return
-        const next = { ...data.profile, publicKey }
+        if (controller.signal.aborted || !data?.ok || !data.profile || data.profile.publicKey !== publicKey) return
+        const next = data.profile
         setProfile(next)
         try { window.localStorage.setItem(cacheKey, JSON.stringify({ publicKey, username: next.username, profilePic: next.profilePic })) } catch {}
       } catch { /* Retain only the last public name and avatar, never a cached verification mark. */ }
@@ -258,7 +260,7 @@ export default function ViaSiteHeader() {
       try {
         const response = await fetch(`/api/via/profile?identity=${encodeURIComponent(account.publicKey)}&compact=1`, { cache: "no-store", signal: controller.signal, headers: { Accept: "application/json" } })
         const data = response.ok ? (await response.json()) as ProfileResponse : null
-        return [account.publicKey, data?.ok && data.profile ? { ...data.profile, publicKey: account.publicKey } : {}] as const
+        return [account.publicKey, data?.ok && data.profile?.publicKey === account.publicKey ? data.profile : {}] as const
       } catch {
         return [account.publicKey, {}] as const
       }
@@ -361,7 +363,7 @@ export default function ViaSiteHeader() {
         </div>
 
         <div style={styles.toolsRow} className={`via-site-header-tools ${pathname === "/notifications" || pathname === "/radio" || pathname === "/messages" || pathname === "/profile" ? "via-site-header-tools-notifications" : ""} ${pathname === "/messages" ? "via-site-header-tools-messages" : ""} ${pathname === "/radio" ? "via-site-header-tools-radio" : ""}`} aria-label="VIA utility controls">
-          <div className="via-notifications-top-control" ref={searchWrapRef} style={{ position: "relative" }}><button type="button" style={{ ...styles.search, cursor: "pointer" }} className={`via-site-header-search ${pathname === "/notifications" || pathname === "/radio" || pathname === "/messages" || pathname === "/profile" ? "via-site-header-search-notifications" : ""}`} aria-label={t.search} title={t.search} aria-expanded={searchOpen} onClick={() => setSearchOpen((open) => !open)}><span className="via-notifications-members-icon" aria-hidden="true"><UsersRound className="h-4 w-4" /></span><span className="via-site-header-search-label">&nbsp;&nbsp; {t.search}</span></button>{searchOpen ? <div style={{ ...styles.menu, left: 0, right: "auto", top: "44px", width: "300px" }} role="search"><input autoFocus value={searchQuery} onChange={(event) => setSearchQuery(event.target.value)} placeholder={t.search} aria-label={t.search} autoComplete="off" style={{ width: "100%", minHeight: "38px", padding: "8px 10px", borderRadius: "9px", border: "1px solid rgba(143,212,169,.18)", background: "rgba(2,7,4,.96)", color: "#e3ebe6", outline: "none" }} />{searchResults.map((item) => { const resultAvatar = safeProfileImage(item.profilePic); return <Link key={item.publicKey} href={`/profile/${encodeURIComponent(item.publicKey)}`} onClick={() => setSearchOpen(false)} style={{ ...styles.accountChoice, textDecoration: "none" }}>{resultAvatar ? <img src={resultAvatar} alt="" style={styles.avatar} referrerPolicy="no-referrer" /> : <span style={styles.avatarFallback} aria-hidden="true">{item.username.slice(0, 1).toUpperCase()}</span>}<span style={styles.accountChoiceText}><span style={styles.accountChoiceName}>@{item.username}{item.isVerified ? " ✓" : ""}</span><span style={styles.accountChoiceKey}>{shortPublicKey(item.publicKey)}</span></span></Link> })}</div> : null}{pathname === "/notifications" || pathname === "/radio" || pathname === "/messages" || pathname === "/profile" ? <span className="via-notifications-top-label">Members</span> : null}</div>
+          <div className="via-notifications-top-control" ref={searchWrapRef} style={{ position: "relative" }}><button type="button" style={{ ...styles.search, cursor: "pointer" }} className={`via-site-header-search ${pathname === "/notifications" || pathname === "/radio" || pathname === "/messages" || pathname === "/profile" ? "via-site-header-search-notifications" : ""}`} aria-label={t.search} title={t.search} aria-expanded={searchOpen} onClick={() => setSearchOpen((open) => !open)}><span className="via-notifications-members-icon" aria-hidden="true"><UsersRound className="h-4 w-4" /></span><span className="via-site-header-search-label">&nbsp;&nbsp; {t.search}</span></button>{searchOpen ? <div style={{ ...styles.menu, left: 0, right: "auto", top: "44px", width: "300px" }} role="search"><input autoFocus value={searchQuery} onChange={(event) => setSearchQuery(event.target.value)} placeholder={t.search} aria-label={t.search} autoComplete="off" style={{ width: "100%", minHeight: "38px", padding: "8px 10px", borderRadius: "9px", border: "1px solid rgba(143,212,169,.18)", background: "rgba(2,7,4,.96)", color: "#e3ebe6", outline: "none" }} />{searchFailed ? <p role="status">{language === "Dutch" ? "DeSo zoeken tijdelijk niet beschikbaar." : "DeSo search temporarily unavailable."}</p> : null}{searchResults.map((item) => { const resultAvatar = safeProfileImage(item.profilePic); return <Link key={item.publicKey} href={`/profile/${encodeURIComponent(item.publicKey)}`} onClick={() => setSearchOpen(false)} style={{ ...styles.accountChoice, textDecoration: "none" }}>{resultAvatar ? <img src={resultAvatar} alt="" style={styles.avatar} referrerPolicy="no-referrer" /> : <span style={styles.avatarFallback} aria-hidden="true">{item.username.slice(0, 1).toUpperCase()}</span>}<span style={styles.accountChoiceText}><span style={styles.accountChoiceName}>@{item.username}{item.isVerified ? " ✓" : ""}</span><span style={styles.accountChoiceKey}>{shortPublicKey(item.publicKey)}</span></span></Link> })}</div> : null}{pathname === "/notifications" || pathname === "/radio" || pathname === "/messages" || pathname === "/profile" ? <span className="via-notifications-top-label">Members</span> : null}</div>
           {!isHomepage ? <ViaHeaderMicrophone onTranscript={text => { setSearchQuery(text); setSearchOpen(true) }} onFallback={() => setSearchOpen(true)} /> : null}
           {session?.publicKey && /^\/(social|notifications|messages|discover|saved|profile|wallet|collection|nft|studio|my-via|communities|live|market|settings|drafts|wereldkalender|mijn-agenda)(\/|$)/.test(pathname) ? <ViaHeaderBalance publicKey={session.publicKey} /> : null}
           <div className="via-site-header-language-wrap">
