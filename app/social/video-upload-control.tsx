@@ -2,9 +2,8 @@
 
 import { useEffect, useState } from "react"
 import { viaModernIdentity, type ViaModernIdentityUser } from "../deso-identity-modern"
-import { uploadVideoToDeSo, waitForDeSoVideoReady } from "./deso-video-upload"
+import { uploadVideo, pollForVideoReady } from "deso-protocol"
 
-const MAX_VIDEO_BYTES = 250 * 1024 * 1024
 
 type VideoUploadControlProps = {
   onReady?: (videoUrl: string) => void
@@ -64,7 +63,7 @@ export default function VideoUploadControl({ onReady, onBusyChange }: VideoUploa
     setStatus("processing")
     setMessage("Checking the DeSo video stream again…")
     try {
-      const ready = await waitForDeSoVideoReady(pendingVideo.mediaId, 30, 2000)
+      const ready = await pollForVideoReady(pendingVideo.mediaId).then(() => true)
       if (ready) {
         markReady(pendingVideo.videoUrl)
         return
@@ -86,9 +85,9 @@ export default function VideoUploadControl({ onReady, onBusyChange }: VideoUploa
       setMessage("Choose a video file.")
       return
     }
-    if (file.size <= 0 || file.size > MAX_VIDEO_BYTES) {
+    if (file.size <= 0) {
       setStatus("error")
-      setMessage("Video must be smaller than 250 MB.")
+      setMessage("Choose a non-empty video file.")
       return
     }
 
@@ -101,12 +100,14 @@ export default function VideoUploadControl({ onReady, onBusyChange }: VideoUploa
       setProgress(0)
       setStatus("uploading")
       setMessage("Uploading directly to the DeSo video service…")
-      const result = await uploadVideoToDeSo(file, ({ percent }) => setProgress(percent))
+      const uploaded = await uploadVideo({ UserPublicKeyBase58Check: session.publicKey, file })
+      const result = { mediaId: uploaded.asset.id, videoUrl: uploaded.url }
+      setProgress(100)
 
       setPendingVideo(result)
       setStatus("processing")
       setMessage("Upload complete. Waiting for the DeSo video stream to become ready…")
-      const ready = await waitForDeSoVideoReady(result.mediaId)
+      const ready = await pollForVideoReady(result.mediaId).then(() => true, () => false)
       if (!ready) {
         setStatus("pending")
         setMessage("Upload complete. DeSo is still processing the video. Nothing failed or published; you can keep editing the draft and check again.")

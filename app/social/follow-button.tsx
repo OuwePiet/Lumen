@@ -1,5 +1,5 @@
 "use client"
-import { updateFollowingStatus, identity } from 'deso-protocol'
+import { updateFollowingStatus, getIsFollowing } from 'deso-protocol'
 
 import { useEffect, useState, useRef } from "react"
 import { viaModernIdentity, type ViaModernIdentityUser } from "../deso-identity-modern"
@@ -35,24 +35,14 @@ export default function FollowButton({ followedPublicKey, variant = "default", f
       setFollowsYou(false)
       if (!session || session.publicKey === followedPublicKey) return
       try {
-        const followingRequest = fetch(`/api/via/social/follow?follower=${encodeURIComponent(session.publicKey)}&followed=${encodeURIComponent(followedPublicKey)}`, { cache: "no-store" })
-        const followsYouRequest = variant === "profile"
-          ? fetch(`/api/via/social/follow?follower=${encodeURIComponent(followedPublicKey)}&followed=${encodeURIComponent(session.publicKey)}`, { cache: "no-store" })
-          : null
-
-        const response = await followingRequest
-        const data = await response.json() as StatusResponse
-        if (!cancelled && response.ok && data.ok) {
-          setFollowing(data.following === true)
+        const data = await getIsFollowing({ PublicKeyBase58Check: session.publicKey, IsFollowingPublicKeyBase58Check: followedPublicKey })
+        if (!cancelled && typeof data.IsFollowing === "boolean") {
+          setFollowing(data.IsFollowing)
           setStatusReady(true)
         }
-
-        if (followsYouRequest) {
-          const reverseResponse = await followsYouRequest
-          const reverseData = await reverseResponse.json() as StatusResponse
-          if (!cancelled && reverseResponse.ok && reverseData.ok) {
-            setFollowsYou(reverseData.following === true)
-          }
+        if (variant === "profile") {
+          const reverse = await getIsFollowing({ PublicKeyBase58Check: followedPublicKey, IsFollowingPublicKeyBase58Check: session.publicKey })
+          if (!cancelled) setFollowsYou(reverse.IsFollowing === true)
         }
       } catch {
         if (!cancelled) setMessage("Follow status is temporarily unavailable.")

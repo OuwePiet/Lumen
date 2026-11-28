@@ -283,14 +283,14 @@ export default function PublicProfilePage() {
                       {post.body ? <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-zinc-200">{post.body}</p> : null}
                       {post.imageUrls.length > 0 ? (
                         <div className="mt-3 grid gap-2 sm:grid-cols-2">
-                          {post.imageUrls.slice(0, 4).map((url) => (
+                          {post.imageUrls.map((url) => (
                             <img key={url} src={url} alt="" className="max-h-96 w-full rounded-[12px] border border-zinc-800 object-cover" loading="lazy" referrerPolicy="no-referrer" />
                           ))}
                         </div>
                       ) : null}
                       {post.videoUrls.length > 0 ? (
                         <div className="mt-3 space-y-2">
-                          {post.videoUrls.slice(0, 2).map((url) => (
+                          {post.videoUrls.map((url) => (
                             <video key={url} src={url} controls preload="none" playsInline className="max-h-[32rem] w-full rounded-[12px] border border-zinc-800" />
                           ))}
                         </div>
