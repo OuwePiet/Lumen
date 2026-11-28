@@ -133,7 +133,7 @@ const visibleCostBoundaryNanos = result?.resolved ? sumKnownNanos(result.quote?.
   const mintLock=useRef(false)
   const unsignedQuote=useRef<{key:string;terms:string}|null>(null)
   function mintParams(key:string){
-    return {UpdaterPublicKeyBase58Check:key,NFTPostHashHex:postHash.trim(),NumCopies:Number(copies),HasUnlockable:unlockable,IsForSale:forSale,MinBidAmountNanos:forSale?Number(minBid):0,NFTRoyaltyToCreatorBasisPoints:Number(creatorRoyalty),NFTRoyaltyToCoinBasisPoints:Number(coinRoyalty),IsBuyNow:forSale&&buyNow,BuyNowPriceNanos:forSale&&buyNow?Number(buyNowPrice):0,AdditionalDESORoyaltiesMap:{},AdditionalCoinRoyaltiesMap:{},MinFeeRateNanosPerKB:1000,TransactionFees:[]}
+    return {UpdaterPublicKeyBase58Check:key,NFTPostHashHex:postHash.trim(),NumCopies:Number(copies),HasUnlockable:unlockable,IsForSale:forSale,MinBidAmountNanos:forSale?Number(minBid):0,NFTRoyaltyToCreatorBasisPoints:Number(creatorRoyalty),NFTRoyaltyToCoinBasisPoints:Number(coinRoyalty),IsBuyNow:forSale&&buyNow,BuyNowPriceNanos:forSale&&buyNow?Number(buyNowPrice):0,AdditionalDESORoyaltiesMap:{},AdditionalCoinRoyaltiesMap:{},TransactionFees:[]}
   }
   async function assertMintAccount(key:string){
     if((await viaModernIdentity.currentUser())?.publicKey!==key||(await identity.snapshot()).currentUser?.publicKey!==key)throw new Error("Account changed")

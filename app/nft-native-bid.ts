@@ -7,6 +7,6 @@ export async function submitNativeNFTBid(key:string, postHash:string, serial:num
  const assertAccount=async()=>{if((await viaModernIdentity.currentUser())?.publicKey!==key||(await identity.snapshot()).currentUser?.publicKey!==key)throw new Error("Account changed")}
  await assertAccount()
  onSubmit()
- const {constructedTransactionResponse:tx}=await createNFTBid({UpdaterPublicKeyBase58Check:key,NFTPostHashHex:postHash,SerialNumber:serial,BidAmountNanos:amount,MinFeeRateNanosPerKB:1000,TransactionFees:[]},{})
+ const {constructedTransactionResponse:tx}=await createNFTBid({UpdaterPublicKeyBase58Check:key,NFTPostHashHex:postHash,SerialNumber:serial,BidAmountNanos:amount,TransactionFees:[]},{})
  onFee(tx.FeeNanos)
 }

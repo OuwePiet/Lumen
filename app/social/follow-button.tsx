@@ -61,7 +61,7 @@ export default function FollowButton({ followedPublicKey, variant = "default", f
     setMessage(following ? "Preparing DeSo unfollow transaction…" : "Preparing DeSo follow transaction…")
     try {
       const key=session.publicKey
-      await updateFollowingStatus({FollowerPublicKeyBase58Check:key,FollowedPublicKeyBase58Check:followedPublicKey,IsUnfollow:following,MinFeeRateNanosPerKB:1000,TransactionFees:[]},{localConstruction:false})
+      await updateFollowingStatus({FollowerPublicKeyBase58Check:key,FollowedPublicKeyBase58Check:followedPublicKey,IsUnfollow:following,TransactionFees:[]},{localConstruction:false})
       const nextFollowing = !following
       setFollowing(nextFollowing)
       setStatusReady(true)

@@ -27,7 +27,7 @@ export default function EditProfilePage(){
   if(!name||name.length>25||description.length>20000||profilePic.length>5000000||!Number.isInteger(frValue)||frValue<0||frValue>10000||!Number.isInteger(stakeMultiple)||stakeMultiple<0||stakeMultiple>1000000){setMessage("Invalid profile settings.");return}
   lock.current=true;setBusy(true);setMessage("Preparing DeSo profile update...")
   try{
-   await updateProfile({UpdaterPublicKeyBase58Check:key,ProfilePublicKeyBase58Check:key,NewUsername:name,NewDescription:description,NewProfilePic:profilePic,NewCreatorBasisPoints:frValue,NewStakeMultipleBasisPoints:stakeMultiple,IsHidden:isHidden,MinFeeRateNanosPerKB:1000,TransactionFees:[]},{localConstruction:false})
+   await updateProfile({UpdaterPublicKeyBase58Check:key,ProfilePublicKeyBase58Check:key,NewUsername:name,NewDescription:description,NewProfilePic:profilePic,NewCreatorBasisPoints:frValue,NewStakeMultipleBasisPoints:stakeMultiple,IsHidden:isHidden,TransactionFees:[]},{localConstruction:false})
    setMessage("Profile update submitted to DeSo.")
   }catch{setMessage("Profile update not confirmed. Check DeSo before retrying.")}
   finally{lock.current=false;setBusy(false)}

@@ -65,6 +65,6 @@ export async function sendViaDMTransaction(sender: AccessGroup, recipient: Acces
     RecipientAccessGroupOwnerPublicKeyBase58Check:recipient.OwnerPublicKeyBase58Check,
     RecipientAccessGroupPublicKeyBase58Check:recipient.AccessGroupPublicKeyBase58Check,
     RecipientAccessGroupKeyName:recipient.AccessGroupKeyName,
-    EncryptedMessageText:encryptedMessage,MinFeeRateNanosPerKB:1500,TransactionFees:[],ExtraData:replyExtraData(replyTimestamp)
+    EncryptedMessageText:encryptedMessage,TransactionFees:[],ExtraData:replyExtraData(replyTimestamp)
   },{localConstruction:false})
 }

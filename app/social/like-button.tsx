@@ -38,7 +38,7 @@ export default function LikeButton({ postHash, initialCount, initialLiked = fals
     setMessage("Preparing DeSo like transaction…")
     try {
       const key=session.publicKey
-      await updateLikeStatus({ReaderPublicKeyBase58Check:key,LikedPostHashHex:postHash,IsUnlike:liked,MinFeeRateNanosPerKB:1000,TransactionFees:[]},{localConstruction:false})
+      await updateLikeStatus({ReaderPublicKeyBase58Check:key,LikedPostHashHex:postHash,IsUnlike:liked,TransactionFees:[]},{localConstruction:false})
       const nextLiked = !liked
       setLiked(nextLiked)
       setCount((current) => Math.max(0, current + (nextLiked ? 1 : -1)))

@@ -140,7 +140,6 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
             ReceiverPublicKeyBase58Check: receiverPublicKey,
             DiamondPostHashHex: postHash,
             DiamondLevel: chosenLevel,
-            MinFeeRateNanosPerKB: 1000,
             TransactionFees: [],
           }, { localConstruction: false })
         accepted = true
