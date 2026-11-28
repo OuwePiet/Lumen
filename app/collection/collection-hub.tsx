@@ -52,7 +52,7 @@ export default function CollectionHub() {
   return (
     <section style={{ maxWidth: 1480, margin: "0 auto", padding: "10px clamp(10px, 2vw, 20px) 0" }} aria-label={t.navLabel}>
       <div style={{ border: "1px solid rgba(143,212,169,.24)", borderRadius: 16, background: "rgba(5,16,10,.74)", backdropFilter: "blur(5px)", padding: 10 }}>
-        <h1 style={{ margin: "0 0 4px", color: "#f1f6f3", fontSize: "clamp(20px,3vw,26px)", lineHeight: 1.08 }}>{t.title}</h1>
+        <h1 style={{ display: "flex", alignItems: "center", gap: 8, margin: "0 0 4px", color: "#f1f6f3", fontSize: "clamp(20px,3vw,26px)", lineHeight: 1.08 }}><img src="/via-leaf.svg" alt="" width={24} height={24} />SUPER NFT</h1>
         <p style={{ margin: "0 0 8px", color: "#b3beb8", fontSize: 14, lineHeight: 1.55 }}>{t.intro}</p>
         <nav className="via-collection-hub-nav" style={{ display: "flex", flexWrap: "wrap", gap: 6 }} aria-label={t.navLabel}>
           <Link href="/studio#mint-nft" style={hubLink}>{t.mint}</Link>

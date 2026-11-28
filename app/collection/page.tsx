@@ -3,7 +3,7 @@ import "../home-wide.css"
 import "../creator-nft-watermark.css"
 
 export const metadata: Metadata = {
-  title: "NF.VIA",
+  title: "SUPER NFT",
   description: "Create, collect and discover DeSo NFTs on VIA.",
 }
 
@@ -26,7 +26,7 @@ export default function CollectionPage() {
         overflow: "hidden",
         position: "relative",
         isolation: "isolate",
-        background: "linear-gradient(180deg, #0b0d0c 0%, #070908 55%, #050605 100%)",
+        background: "linear-gradient(rgba(7,9,8,.82), rgba(7,9,8,.92)), url(/via-nft-background-approved.webp) center top / cover fixed",
       }}
     >
       <CreatorCollectionLocalizer />
