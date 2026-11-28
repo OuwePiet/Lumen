@@ -101,7 +101,7 @@ export async function getNFTsForUser(publicKey: string, signal?: AbortSignal) {
     .filter((value): value is DeSoNFTCollection => value !== null)
 }
 
-export async function getCreatedNFTs(publicKey: string, signal?: AbortSignal) {
+export async function getCreatedNFTs(publicKey: string, signal?: AbortSignal, onPage?: (items: DeSoNFTCollection[]) => void) {
   const found = new Map<string, DeSoNFTCollection>()
   const cursors = new Set<string>()
   let cursor = ""
@@ -117,6 +117,8 @@ export async function getCreatedNFTs(publicKey: string, signal?: AbortSignal) {
       const item = normalizeCollection({ ...nft.NFTCollectionResponse, NFTEntryResponses: nft.NFTEntryResponses })
       if (item?.PostEntryResponse?.PostHashHex) found.set(item.PostEntryResponse.PostHashHex, { ...item, CreatedByAccount: true })
     }
+    signal?.throwIfAborted()
+    onPage?.([...found.values()])
     const next = data.LastPostHashHex
     if (!next) break
     if (cursors.has(next)) throw new Error("DESO_NFT_CURSOR_STALLED")
