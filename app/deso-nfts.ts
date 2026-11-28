@@ -1,4 +1,5 @@
 import { fetchDeSo } from "./deso-api"
+import { getNFTsForUser as sdkGetNFTsForUser } from "deso-protocol"
 
 export type DeSoNFTPost = {
   PostHashHex?: string
@@ -87,21 +88,12 @@ function normalizeCollection(value: unknown): DeSoNFTCollection | null {
  * they are verified against the currently deployed DeSo API contract.
  */
 export async function getNFTsForUser(publicKey: string, signal?: AbortSignal) {
-  const response = await fetchDeSo("get-nfts-for-user", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      UserPublicKeyBase58Check: publicKey,
-      ReaderPublicKeyBase58Check: "",
-    }),
-    signal,
+  signal?.throwIfAborted()
+  const data = await sdkGetNFTsForUser({
+    UserPublicKeyBase58Check: publicKey,
+    ReaderPublicKeyBase58Check: "",
   })
-
-  if (!response.ok) {
-    throw new Error("DESO_NFT_COLLECTION_UNAVAILABLE")
-  }
-
-  const data = await response.json()
+  signal?.throwIfAborted()
   const values = Object.values(data.NFTsMap ?? {})
 
   return values
