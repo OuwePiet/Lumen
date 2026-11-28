@@ -18,7 +18,7 @@ export default function NFTAcceptTransferControl({postHash,editions}:{postHash:s
    await assertAccount()
    setMessage("Preparing transfer directly with DeSo...")
    submitting=true
-   await acceptNFTTransfer({UpdaterPublicKeyBase58Check:key,NFTPostHashHex:postHash,SerialNumber:serialNumber,MinFeeRateNanosPerKB:1000,TransactionFees:[]},{localConstruction:false})
+   await acceptNFTTransfer({UpdaterPublicKeyBase58Check:key,NFTPostHashHex:postHash,SerialNumber:serialNumber,TransactionFees:[]},{localConstruction:false})
    setMessage("Submitted to DeSo. Refresh to verify ownership.")
   }catch{
    setMessage(submitting?"Submission outcome uncertain. Verify on DeSo before retrying.":"Transfer not submitted. Review account and permissions.")

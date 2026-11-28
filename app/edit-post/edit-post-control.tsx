@@ -82,7 +82,7 @@ export default function EditPostControl() {
     try {
       const post = await loadPost(loadedHash, activeKey)
       if(post.body!==originalBody||post.postHashHex!==loadedHash)throw new Error("POST_CHANGED")
-      await submitPost({UpdaterPublicKeyBase58Check:activeKey,PostHashHexToModify:loadedHash,ParentStakeID:post.parentStakeID,RepostedPostHashHex:post.repostedPostHashHex,IsFrozen:post.isFrozen,BodyObj:{Body:body,ImageURLs:post.imageUrls,VideoURLs:post.videoUrls},PostExtraData:post.postExtraData,IsHidden:post.isHidden,MinFeeRateNanosPerKB:1000,TransactionFees:[]},{localConstruction:false})
+      await submitPost({UpdaterPublicKeyBase58Check:activeKey,PostHashHexToModify:loadedHash,ParentStakeID:post.parentStakeID,RepostedPostHashHex:post.repostedPostHashHex,IsFrozen:post.isFrozen,BodyObj:{Body:body,ImageURLs:post.imageUrls,VideoURLs:post.videoUrls},PostExtraData:post.postExtraData,IsHidden:post.isHidden,TransactionFees:[]},{localConstruction:false})
       setOriginalBody(body);setStatus("done");setMessage("Edited post submitted to DeSo.")
     } catch {
       setStatus("error");setMessage("Edit not confirmed. Reload the post from DeSo before retrying.")

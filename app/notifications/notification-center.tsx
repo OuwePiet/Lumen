@@ -512,7 +512,7 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
       const amountNanos = Math.round((usd / rates.rates.USD) * 1_000_000_000)
       if (!Number.isSafeInteger(amountNanos) || amountNanos < 1) throw new Error("AMOUNT")
       const key=session.publicKey
-        await sendDeso({SenderPublicKeyBase58Check:key,RecipientPublicKeyOrUsername:post.publicKey,AmountNanos:amountNanos,MinFeeRateNanosPerKB:1000,TransactionFees:[]},{localConstruction:false})
+        await sendDeso({SenderPublicKeyBase58Check:key,RecipientPublicKeyOrUsername:post.publicKey,AmountNanos:amountNanos,TransactionFees:[]},{localConstruction:false})
       rewardLock.current=false
       setRewardBusy(false)
       setRewardMessage("Reward submitted to DeSo; verify transaction status.")

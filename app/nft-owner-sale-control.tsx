@@ -91,7 +91,7 @@ export default function NFTOwnerSaleControl({ postHash, editions, hasUnlockable 
     try{
       await assertAccount()
       setMessage("Preparing directly with DeSo...")
-      const common={NFTPostHashHex:postHash,SerialNumber:serial,MinFeeRateNanosPerKB:1000,TransactionFees:[]}
+      const common={NFTPostHashHex:postHash,SerialNumber:serial,TransactionFees:[]}
       await assertAccount()
       submitting=true;setStatus("submitting")
       const opts={localConstruction:false}

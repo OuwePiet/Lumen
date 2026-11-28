@@ -70,7 +70,7 @@ export default function NFTReceivedBids({ postHash, bids, editions, hasUnlockabl
       await assertAccount()
       setMessage("Preparing bid acceptance directly with DeSo...")
       submitting=true
-      await acceptNFTBid({UpdaterPublicKeyBase58Check:key,BidderPublicKeyBase58Check:bid.bidderPublicKey,NFTPostHashHex:postHash,SerialNumber:bid.serialNumber,BidAmountNanos:bid.bidAmountNanos,MinFeeRateNanosPerKB:1000,TransactionFees:[]},{localConstruction:false})
+      await acceptNFTBid({UpdaterPublicKeyBase58Check:key,BidderPublicKeyBase58Check:bid.bidderPublicKey,NFTPostHashHex:postHash,SerialNumber:bid.serialNumber,BidAmountNanos:bid.bidAmountNanos,TransactionFees:[]},{localConstruction:false})
       setStatus("done");setMessage("Accepted bid submitted to DeSo. Refresh to verify.")
     }catch{setStatus("error");setMessage(submitting?"Submission uncertain. Verify on DeSo before retrying.":"Bid acceptance not submitted. Review account and permissions.")}
     finally{lock.current=false}

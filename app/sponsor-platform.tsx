@@ -211,7 +211,7 @@ export default function SponsorPlatform({ compact = false, showIcon = true }: { 
     try {
       const session = (await identity.snapshot()).currentUser
       if (!session) { setStatus("error"); setMessage(copy.loginFirst); return }
-      const result = await sendDeso({ SenderPublicKeyBase58Check: session.publicKey, RecipientPublicKeyOrUsername: "OuwePiet", AmountNanos: amountNanos, MinFeeRateNanosPerKB: 1000, TransactionFees: [] }, { localConstruction: false })
+      const result = await sendDeso({ SenderPublicKeyBase58Check: session.publicKey, RecipientPublicKeyOrUsername: "OuwePiet", AmountNanos: amountNanos, TransactionFees: [] }, { localConstruction: false })
       setFeeNanos(result.constructedTransactionResponse.FeeNanos ?? null)
       setStatus("done")
       setMessage(copy.sent)

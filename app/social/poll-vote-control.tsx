@@ -106,7 +106,7 @@ export default function PollVoteControl({ postHash, options }: Props) {
       const prior=await readPollResponseStatus(postHash,key)
       if(prior.truncated||prior.multipleResponsesDetected||prior.existingResponse)throw new Error("EXISTING_OR_UNCERTAIN_VOTE")
       setStatus("submitting")
-      await createPostAssociation({TransactorPublicKeyBase58Check:key,PostHashHex:postHash,AppPublicKeyBase58Check:"",AssociationType:"POLL_RESPONSE",AssociationValue:option,ExtraData:{ViaClient:"viadeso.online"},MinFeeRateNanosPerKB:1000,TransactionFees:[]},{localConstruction:false})
+      await createPostAssociation({TransactorPublicKeyBase58Check:key,PostHashHex:postHash,AppPublicKeyBase58Check:"",AssociationType:"POLL_RESPONSE",AssociationValue:option,ExtraData:{ViaClient:"viadeso.online"},TransactionFees:[]},{localConstruction:false})
 
       const reread = await readPollResponseStatus(postHash, session.publicKey)
       const confirmed = !reread.truncated&&!reread.multipleResponsesDetected?reread.existingResponse?.option:undefined
