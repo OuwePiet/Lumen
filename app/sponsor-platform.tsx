@@ -155,7 +155,7 @@ export default function SponsorPlatform({ compact = false, showIcon = true }: { 
   const [amount, setAmount] = useState("0.01")
   const [amountMode, setAmountMode] = useState<"DESO"|"USD">("DESO")
   const [usdPerDeso, setUsdPerDeso] = useState<number | null>(null)
-  const [confirmed, setConfirmed] = useState(false)
+
   const [status, setStatus] = useState<"idle"|"preparing"|"approval"|"submitting"|"done"|"error">("idle")
   const [message, setMessage] = useState("")
   const [feeNanos, setFeeNanos] = useState<number | null>(null)
@@ -202,7 +202,7 @@ export default function SponsorPlatform({ compact = false, showIcon = true }: { 
       : amount
     const amountNanos = parseDesoToNanos(desoAmount)
     if (!amountNanos) { setStatus("error"); setMessage(copy.invalidAmount); return }
-    if (!confirmed || status === "preparing" || status === "approval" || status === "submitting") return
+    if (status === "preparing" || status === "approval" || status === "submitting") return
 
     sendingRef.current = true
     setStatus("preparing")
@@ -215,7 +215,7 @@ export default function SponsorPlatform({ compact = false, showIcon = true }: { 
       setFeeNanos(result.constructedTransactionResponse.FeeNanos ?? null)
       setStatus("done")
       setMessage(copy.sent)
-      setConfirmed(false)
+
     } catch (error) {
       setStatus("error")
       setMessage(copy.prepareFailed)
@@ -248,14 +248,14 @@ export default function SponsorPlatform({ compact = false, showIcon = true }: { 
                 <strong>{copy.desoTitle}</strong>
                 <p style={{ margin:"5px 0 10px", color:"#87958d", fontSize:12 }}>{copy.desoIntro}</p>
                 <div style={{ display:"flex", gap:8, alignItems:"center", flexWrap:"wrap" }}>
-                  <input value={amount} onChange={(e)=>{setAmount(e.target.value);setConfirmed(false)}} inputMode="decimal" aria-label={amountMode === "DESO" ? copy.amountAria : "USD amount"} style={{ minHeight:40, width:160, border:"1px solid rgba(143,212,169,.22)", borderRadius:10, padding:"8px 10px", background:"#050807", color:"#eef5f0" }} />
+                  <input value={amount} onChange={(e)=>{setAmount(e.target.value)}} inputMode="decimal" aria-label={amountMode === "DESO" ? copy.amountAria : "USD amount"} style={{ minHeight:40, width:160, border:"1px solid rgba(143,212,169,.22)", borderRadius:10, padding:"8px 10px", background:"#050807", color:"#eef5f0" }} />
                   <div role="group" aria-label="DESO or USD" style={{ display:"inline-flex", padding:2, border:"1px solid rgba(143,212,169,.28)", borderRadius:999, background:"#050807" }}>
-                    {(["DESO","USD"] as const).map((mode) => <button key={mode} type="button" onClick={()=>{ if (mode !== amountMode) { setAmount(mode === "USD" ? "1.00" : "0.01"); setAmountMode(mode); setConfirmed(false) } }} aria-pressed={amountMode===mode} style={{ minHeight:30, border:0, borderRadius:999, padding:"5px 10px", background:amountMode===mode?"rgba(40,95,64,.9)":"transparent", color:amountMode===mode?"#c9ffdc":"#8d978f", fontSize:11, fontWeight:750, cursor:"pointer" }}>{mode === "USD" ? "$" : "DESO"}</button>)}
+                    {(["DESO","USD"] as const).map((mode) => <button key={mode} type="button" onClick={()=>{ if (mode !== amountMode) { setAmount(mode === "USD" ? "1.00" : "0.01"); setAmountMode(mode) } }} aria-pressed={amountMode===mode} style={{ minHeight:30, border:0, borderRadius:999, padding:"5px 10px", background:amountMode===mode?"rgba(40,95,64,.9)":"transparent", color:amountMode===mode?"#c9ffdc":"#8d978f", fontSize:11, fontWeight:750, cursor:"pointer" }}>{mode === "USD" ? "$" : "DESO"}</button>)}
                   </div>
                 </div>
                 {amountMode === "USD" ? <p style={{ margin:"7px 0 0", color:"#75847b", fontSize:11 }}>{usdPerDeso ? `$1 = ${(1/usdPerDeso).toFixed(6)} DESO · 1 DESO = ${usdPerDeso.toFixed(2)}` : "Live DESO / $ rate wordt geladen…"}</p> : null}
-                <label style={{ marginTop:10, display:"flex", gap:7, alignItems:"flex-start", color:"#d8bf82", fontSize:11, lineHeight:1.4 }}><input type="checkbox" checked={confirmed} onChange={(e)=>setConfirmed(e.target.checked)} />{copy.confirm}</label>
-                <button type="button" onClick={()=>void prepareDeso()} disabled={!confirmed || status==="preparing" || status==="approval" || status==="submitting"} style={{ marginTop:10, minHeight:38, border:"1px solid rgba(143,212,169,.42)", borderRadius:999, padding:"7px 13px", background:"rgba(18,53,34,.58)", color: confirmed ? "#b9ffd4" : "#65746b", fontWeight:750, cursor: confirmed ? "pointer" : "default" }}>{status==="preparing"?copy.preparing:status==="approval"?copy.approval:status==="submitting"?copy.submitting:copy.sendDeso}</button>
+                <p style={{ marginTop:10, color:"#d8bf82", fontSize:11, lineHeight:1.4 }}>{copy.confirm}</p>
+                <button type="button" onClick={()=>void prepareDeso()} disabled={status==="preparing" || status==="approval" || status==="submitting"} style={{ marginTop:10, minHeight:38, border:"1px solid rgba(143,212,169,.42)", borderRadius:999, padding:"7px 13px", background:"rgba(18,53,34,.58)", color: "#b9ffd4", fontWeight:750, cursor: "pointer" }}>{status==="preparing"?copy.preparing:status==="approval"?copy.approval:status==="submitting"?copy.submitting:copy.sendDeso}</button>
                 {feeNanos !== null ? <p style={{ margin:"8px 0 0", color:"#75847b", fontSize:11 }}>{copy.fee}: {feeNanos.toLocaleString()} nanos.</p> : null}
               </section>
 
