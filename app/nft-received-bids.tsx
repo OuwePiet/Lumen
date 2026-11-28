@@ -40,7 +40,6 @@ function shortKey(key: string) {
 
 export default function NFTReceivedBids({ postHash, bids, editions, hasUnlockable }: Props) {
   const [session, setSession] = useState<ViaModernIdentityUser | null>(null)
-  const [confirmedKey, setConfirmedKey] = useState<string | null>(null)
   const [status, setStatus] = useState<"idle"|"preparing"|"approval"|"submitting"|"done"|"error">("idle")
   const [message, setMessage] = useState("")
 
@@ -61,8 +60,8 @@ export default function NFTReceivedBids({ postHash, bids, editions, hasUnlockabl
 
   const lock=useRef(false)
   async function acceptBid(bid:Bid){
-    if(!session||hasUnlockable||lock.current||!ownedSerials.has(bid.serialNumber)||confirmedKey!==`${bid.serialNumber}:${bid.bidderPublicKey}:${bid.bidAmountNanos}`)return
-    lock.current=true;setConfirmedKey(null);setStatus("preparing")
+    if(!session||hasUnlockable||lock.current||!ownedSerials.has(bid.serialNumber))return
+    lock.current=true;setStatus("preparing")
     const key=session.publicKey
     let submitting=false
     const assertAccount=async()=>{if((await viaModernIdentity.currentUser())?.publicKey!==key||(await identity.snapshot()).currentUser?.publicKey!==key)throw new Error("Account changed")}
@@ -91,7 +90,6 @@ export default function NFTReceivedBids({ postHash, bids, editions, hasUnlockabl
       <div className="mt-4 grid gap-3">
         {received.map((bid) => {
           const key = `${bid.serialNumber}:${bid.bidderPublicKey}:${bid.bidAmountNanos}`
-          const confirmed = confirmedKey === key
           return (
             <div key={key} className="rounded-lg border border-zinc-800 p-3">
               <div className="flex flex-wrap items-center justify-between gap-2">
@@ -102,18 +100,11 @@ export default function NFTReceivedBids({ postHash, bids, editions, hasUnlockabl
                 {!hasUnlockable ? (
                   <button
                     type="button"
-                    onClick={() => {
-                      if (!confirmed) {
-                        setConfirmedKey(key)
-                        setMessage("Press Accept bid again to prepare this exact on-chain sale.")
-                      } else {
-                        void acceptBid(bid)
-                      }
-                    }}
+                    onClick={() => void acceptBid(bid)}
                     disabled={status === "preparing" || status === "approval" || status === "submitting"}
                     className="rounded-lg border border-[#285f40] px-3 py-2 text-xs font-semibold text-[#9adbb2] disabled:text-zinc-600"
                   >
-                    {confirmed ? "Confirm accept bid" : "Accept bid"}
+                    Accept bid {formatDeso(bid.bidAmountNanos)} DESO
                   </button>
                 ) : null}
               </div>
