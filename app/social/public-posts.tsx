@@ -38,6 +38,7 @@ type PublicPost = {
   parentStakeID?: string
   postExtraData?: Record<string, string>
   sourcePublicKey?: string
+  RepostedPostEntryResponse?: import("deso-protocol").PostEntryResponse | null
   comments?: PublicPost[]
 }
 
@@ -70,6 +71,11 @@ function linkedPostText(body: string) {
   })
 }
 
+
+function OriginalPost({ post }: { post: NonNullable<PublicPost["RepostedPostEntryResponse"]> }) {
+  if (post.IsHidden) return null
+  return <section className="mt-3 rounded-xl border border-zinc-700 p-3"><Link href={"/profile/" + encodeURIComponent(post.PosterPublicKeyBase58Check)} className="text-sm font-semibold text-[#9adbb2]">{post.ProfileEntryResponse?.Username ? "@" + post.ProfileEntryResponse.Username : shortPublicKey(post.PosterPublicKeyBase58Check)}</Link><p data-via-user-content className="mt-2 whitespace-pre-wrap break-words text-sm">{linkedPostText(post.Body || "")}</p>{(post.ImageURLs ?? []).map(safeHttps).filter((url): url is string => Boolean(url)).map((url,i) => <img key={i} src={url} alt="DeSo post media" loading="lazy" className="mt-2 max-h-[32rem] w-full rounded-xl object-contain" />)}{(post.VideoURLs ?? []).map(safeHttps).filter((url): url is string => Boolean(url)).map((url,i) => <PostVideo key={i} url={url} />)}<Link href={"/social?post=" + encodeURIComponent(post.PostHashHex)} className="text-xs text-[#9adbb2]">Open original post</Link></section>
+}
 
 function postTime(timestampNanos: number) {
   if (!Number.isFinite(timestampNanos) || timestampNanos <= 0) return ""
@@ -450,8 +456,8 @@ export default function PublicPosts({ initialPost, bookmarkHashes }: { initialPo
       {visiblePosts.length > 0 ? (
         <div className="mt-3 space-y-3">
           {visiblePosts.map((post) => {
-            const images = post.imageUrls.map(safeHttps).filter((url): url is string => Boolean(url)).slice(0, 4)
-            const videos = post.videoUrls.map(safeHttps).filter((url): url is string => Boolean(url)).slice(0, 2)
+            const images = post.imageUrls.map(safeHttps).filter((url): url is string => Boolean(url))
+            const videos = post.videoUrls.map(safeHttps).filter((url): url is string => Boolean(url))
             const time = postTime(post.timestampNanos)
             const isReplying = replyingTo === post.postHash
             const totalReposts = post.repostCount + post.quoteRepostCount
@@ -481,7 +487,7 @@ export default function PublicPosts({ initialPost, bookmarkHashes }: { initialPo
                 {post.body ? <div className="mt-3 min-w-0">
                   <p data-via-user-content className="whitespace-pre-wrap break-words [overflow-wrap:anywhere] text-sm leading-6 text-zinc-200">{linkedPostText(post.body.length > 420 && !expandedPosts[post.postHash] ? `${post.body.slice(0, 420).trimEnd()}…` : post.body)}</p>
                   {post.body.length > 420 ? <button type="button" onClick={() => setExpandedPosts((current) => ({ ...current, [post.postHash]: !current[post.postHash] }))} aria-expanded={Boolean(expandedPosts[post.postHash])} className="mt-1 text-sm font-semibold text-[#9adbb2] hover:underline">{expandedPosts[post.postHash] ? "Minder tonen" : "Lees verder …"}</button> : null}
-                </div> : <p className="mt-3 text-sm text-zinc-500">Media post</p>}
+                </div> : post.RepostedPostEntryResponse ? null : <p className="mt-3 text-sm text-zinc-500">Media post</p>}
                 {postedViaVIA ? <PostSource extra={post.postExtraData} reply={Boolean(post.parentStakeID)} /> : null}
 
                 {images.length ? (
@@ -496,6 +502,7 @@ export default function PublicPosts({ initialPost, bookmarkHashes }: { initialPo
                   </div>
                 ) : null}
 
+                {post.RepostedPostEntryResponse ? <OriginalPost post={post.RepostedPostEntryResponse} /> : null}
                 <div data-via-post-actions className="mt-4 flex flex-wrap items-start gap-2 border-t border-white/[0.06] pt-3 text-xs text-zinc-500"><ScrollTopButton />
                   <button type="button" onClick={() => (setReplyParent(null), setReplyingTo(isReplying ? null : post.postHash))} title="Reply" aria-label={`Reply · ${post.commentCount}`} className="inline-flex h-9 min-w-9 items-center justify-center gap-1 rounded-full border border-zinc-800 px-2 text-xs text-zinc-300 hover:border-[#8fd4a9]/45 hover:text-[#9adbb2]"><MessageSquare aria-hidden="true" className="h-4 w-4" /><span>{post.commentCount}</span></button>
                   {session ? <RepostButton quotedPost={post} postHash={post.postHash} initialCount={totalReposts} variant="icon" /> : <button type="button" title="Repost (DeSo login required)" onClick={() => setActionLoginPost(post.postHash)} className="inline-flex h-9 min-w-9 items-center justify-center gap-1 rounded-full border border-zinc-800 px-2 text-xs text-zinc-300">Repost · {totalReposts}</button>}

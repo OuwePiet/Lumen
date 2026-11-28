@@ -5,6 +5,7 @@ type DeSoPost = {
   PostHashHex?: unknown
   PosterPublicKeyBase58Check?: unknown
   ProfileEntryResponse?: { Username?: unknown } | null
+  RepostedPostEntryResponse?: ViaPublicPost["RepostedPostEntryResponse"]
   Body?: unknown
   ImageURLs?: unknown
   VideoURLs?: unknown
@@ -34,7 +35,6 @@ function safeHttpsUrls(value: unknown) {
   if (!Array.isArray(value)) return []
   return value
     .filter((item): item is string => typeof item === "string" && /^https:\/\//i.test(item))
-    .slice(0, 8)
 }
 
 function safePostExtraData(value: unknown) {
@@ -78,6 +78,7 @@ export async function readDiscoveryPosts(limit = 20, sortByNew = false, seenPost
       publicKey: text(post.PosterPublicKeyBase58Check),
       username: text(post.ProfileEntryResponse?.Username),
       body: text(post.Body),
+      RepostedPostEntryResponse: post.RepostedPostEntryResponse,
       imageUrls: safeHttpsUrls(post.ImageURLs),
       videoUrls: safeHttpsUrls(post.VideoURLs),
       timestampNanos: count(post.TimestampNanos),

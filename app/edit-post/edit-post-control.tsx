@@ -1,26 +1,16 @@
 "use client"
 
 import { useEffect, useMemo, useRef, useState } from "react"
-import {submitPost,identity} from "deso-protocol"
+import {submitPost,getSinglePost} from "deso-protocol"
 import { viaModernIdentity } from "../deso-identity-modern"
 import { type ViaIdentitySession } from "../deso-identity-session"
 
-type InspectResponse = {
-  ok?: boolean
-  error?: string
-  post?: {
-    postHashHex: string
-    body: string
-    isHidden: boolean
-    imageUrls: string[]
-    videoUrls: string[]
-    parentStakeID: string
-    postExtraData: Record<string,string>
-  }
+async function loadPost(postHashHex: string, publicKey: string) {
+  const { PostFound: post } = await getSinglePost({ PostHashHex: postHashHex, ReaderPublicKeyBase58Check: publicKey, FetchParents: false, CommentLimit: 0, CommentOffset: 0 })
+  if (!post || post.PosterPublicKeyBase58Check !== publicKey) throw new Error("POST_NOT_OWNED_BY_ACTIVE_KEY")
+  return { postHashHex: post.PostHashHex, body: post.Body, imageUrls: post.ImageURLs ?? [], videoUrls: post.VideoURLs ?? [], parentStakeID: post.ParentStakeID, postExtraData: post.PostExtraData ?? {}, isHidden: post.IsHidden, isFrozen: post.IsFrozen, repostedPostHashHex: post.RepostedPostEntryResponse?.PostHashHex ?? post.RecloutedPostEntryResponse?.PostHashHex ?? "" }
 }
 
-type PrepareResponse = { ok?: boolean; error?: string; transactionHex?: string; feeNanos?: number | null }
-type SubmitResponse = { ok?: boolean; error?: string }
 
 export default function EditPostControl() {
   const [session, setSession] = useState<ViaIdentitySession | null>(null)
@@ -63,14 +53,7 @@ export default function EditPostControl() {
     setMessage("Checking the post and ownership on DeSo…")
     setFeeNanos(null)
     try {
-      const response = await fetch("/api/via/social/edit-post", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        cache: "no-store",
-        body: JSON.stringify({ action: "inspect", publicKey: activeKey, postHashHex: postHashHex.trim() }),
-      })
-      const data = await response.json() as InspectResponse
-      if (!response.ok || !data.ok || !data.post) throw new Error(data.error || "LOOKUP_FAILED")
+      const data = { post: await loadPost(postHashHex.trim(), activeKey) }
       setLoadedHash(data.post.postHashHex)
       setPostHashHex(data.post.postHashHex)
       setBody(data.post.body)
@@ -97,11 +80,9 @@ export default function EditPostControl() {
     setMessage("Rechecking ownership and preparing the exact DeSo edit transaction…")
     setFeeNanos(null)
     try {
-      const response=await fetch("/api/via/social/edit-post",{method:"POST",headers:{"Content-Type":"application/json"},cache:"no-store",body:JSON.stringify({action:"inspect",publicKey:activeKey,postHashHex:loadedHash})})
-      const data=await response.json() as InspectResponse
-      if(!response.ok||!data.ok||!data.post||data.post.body!==originalBody||data.post.postHashHex!==loadedHash)throw new Error("POST_CHANGED")
-      const post=data.post
-      await submitPost({UpdaterPublicKeyBase58Check:activeKey,PostHashHexToModify:loadedHash,ParentStakeID:post.parentStakeID,RepostedPostHashHex:"",BodyObj:{Body:body,ImageURLs:post.imageUrls,VideoURLs:post.videoUrls},PostExtraData:post.postExtraData,IsHidden:post.isHidden,MinFeeRateNanosPerKB:1000,TransactionFees:[]},{localConstruction:false})
+      const post = await loadPost(loadedHash, activeKey)
+      if(post.body!==originalBody||post.postHashHex!==loadedHash)throw new Error("POST_CHANGED")
+      await submitPost({UpdaterPublicKeyBase58Check:activeKey,PostHashHexToModify:loadedHash,ParentStakeID:post.parentStakeID,RepostedPostHashHex:post.repostedPostHashHex,IsFrozen:post.isFrozen,BodyObj:{Body:body,ImageURLs:post.imageUrls,VideoURLs:post.videoUrls},PostExtraData:post.postExtraData,IsHidden:post.isHidden,MinFeeRateNanosPerKB:1000,TransactionFees:[]},{localConstruction:false})
       setOriginalBody(body);setStatus("done");setMessage("Edited post submitted to DeSo.")
     } catch {
       setStatus("error");setMessage("Edit not confirmed. Reload the post from DeSo before retrying.")

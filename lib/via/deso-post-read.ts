@@ -18,6 +18,7 @@ export type ViaPublicPost = {
   quoteRepostCount: number
   isNft: boolean
   postExtraData: Record<string, string>
+  RepostedPostEntryResponse?: import("deso-protocol").PostEntryResponse | null
   comments?: ViaPublicPost[]
 }
 
@@ -26,6 +27,7 @@ type DeSoPost = {
   ParentStakeID?: unknown
   PosterPublicKeyBase58Check?: unknown
   ProfileEntryResponse?: { Username?: unknown } | null
+  RepostedPostEntryResponse?: import("deso-protocol").PostEntryResponse | null
   Body?: unknown
   ImageURLs?: unknown
   VideoURLs?: unknown
@@ -64,7 +66,6 @@ function safeHttpsUrls(value: unknown) {
   if (!Array.isArray(value)) return []
   return value
     .filter((item): item is string => typeof item === "string" && /^https:\/\//i.test(item))
-    .slice(0, 8)
 }
 
 function safePostExtraData(value: unknown) {
@@ -90,6 +91,7 @@ function normalizePublicPost(post: DeSoPost): ViaPublicPost {
     publicKey: text(post.PosterPublicKeyBase58Check),
     username: text(post.ProfileEntryResponse?.Username),
     body: text(post.Body),
+    RepostedPostEntryResponse: post.RepostedPostEntryResponse,
     imageUrls: safeHttpsUrls(post.ImageURLs),
     videoUrls: safeHttpsUrls(post.VideoURLs),
     timestampNanos: count(post.TimestampNanos),

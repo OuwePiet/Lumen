@@ -924,8 +924,8 @@ export default function NotificationCenter({ language }: { language: ViaLanguage
                     <p id={`notification-body-${rowKey}`} className={`${expandedBodies[rowKey] ? "" : styles.bodyPreview} mt-0.5 whitespace-pre-wrap text-sm leading-5 text-zinc-200`}>{post.body}</p>
                     {post.body.length > 240 || post.body.split("\n").length > 5 ? <button type="button" className={styles.readMore} aria-expanded={Boolean(expandedBodies[rowKey])} aria-controls={`notification-body-${rowKey}`} onClick={() => setExpandedBodies(current => ({ ...current, [rowKey]: !current[rowKey] }))}>{expandedBodies[rowKey] ? BODY_LABELS[language].less : BODY_LABELS[language].more}</button> : null}
                   </> : null}
-                  {post.imageUrls?.length ? <div className="mt-3 grid gap-2 sm:grid-cols-2">{post.imageUrls.slice(0, 4).map((url) => <img key={url} src={url} alt="" loading="lazy" className="max-h-72 w-full rounded-xl object-contain" />)}</div> : null}
-                  {post.videoUrls?.length ? <div className="mt-3 space-y-2">{post.videoUrls.slice(0, 2).filter(url => { try { return new URL(url).protocol === "https:" } catch { return false } }).map(url => <PostVideo key={url} url={url} />)}</div> : null}
+                  {post.imageUrls?.length ? <div className="mt-3 grid gap-2 sm:grid-cols-2">{post.imageUrls.map((url) => <img key={url} src={url} alt="" loading="lazy" className="max-h-72 w-full rounded-xl object-contain" />)}</div> : null}
+                  {post.videoUrls?.length ? <div className="mt-3 space-y-2">{post.videoUrls.filter(url => { try { return new URL(url).protocol === "https:" } catch { return false } }).map(url => <PostVideo key={url} url={url} />)}</div> : null}
                   {isCreatorPost && actorPublicKey === post.publicKey ? <><div data-via-post-actions className="mt-1 flex flex-wrap items-start gap-1 pt-1"><ScrollTopButton />
                     <button
                       type="button"
