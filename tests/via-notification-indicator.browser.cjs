@@ -26,6 +26,7 @@ async function run(name, engine, options) {
     await context.route('**/*',async route=>{
       const req=route.request(),url=new URL(req.url())
       if(url.origin==='https://node.deso.org'){
+ if(url.pathname==='/api/v0/get-diamonds-for-post')return route.fulfill({json:{DiamondSenders:[{DiamondLevel:1},{DiamondLevel:1}]}})
  if(url.pathname==='/api/v0/get-unread-notifications-count')return route.fulfill({json:{NotificationsCount:count}})
  if(url.pathname==='/api/v0/get-notifications'){
   const body=req.postDataJSON()
@@ -37,8 +38,6 @@ async function run(name, engine, options) {
       if(url.origin!==new URL(base).origin){if(url.pathname.includes('/get-single-derived-key/'))return route.fulfill({json:{DerivedKey:{IsValid:true,TransactionSpendingLimit:{GlobalDESOLimit:0,TransactionCountLimitMap:{}}}}});return route.fulfill({json:{}})}
       if(!url.pathname.startsWith('/api/'))return route.continue()
       let data={ok:true,items:[],posts:[],notifications:[]}
-      if(url.pathname==='/api/via/social/diamond' && req.method()==='POST' && req.postDataJSON()?.action==='levels')return route.fulfill({json:{ok:true,diamondLevelMap:{1:1000}}})
-      if(url.pathname==='/api/via/social/diamond' && req.method()==='POST' && req.postDataJSON()?.action==='received-levels')return route.fulfill({json:{ok:true,levels:[1,1]}})
       if(url.pathname==='/api/via/social/notifications') {
         const body=req.postDataJSON()
         if(!['unread',undefined].includes(body.action)){forbidden.push(body.action);return route.fulfill({status:403,json:{ok:false}})}

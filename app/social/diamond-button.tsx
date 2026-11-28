@@ -1,5 +1,5 @@
 "use client"
-import {sendDiamonds,identity} from "deso-protocol"
+import {sendDiamonds,identity,getDiamondsForPost} from "deso-protocol"
 import { DIAMOND_LEVEL_MAP } from "deso-protocol/src/identity/constants.js"
 
 import { useEffect, useRef, useState } from "react"
@@ -84,13 +84,21 @@ export default function DiamondButton({ postHash, receiverPublicKey, initialCoun
   async function loadEarnings() {
     setEarnings(null)
     try {
-      const response = await fetch("/api/via/social/diamond", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "received-levels", postHash }),
-      })
-      const data = await response.json() as { ok?: boolean; levels?: number[] }
-      setEarnings(response.ok && data.ok && Array.isArray(data.levels) ? data.levels : "error")
+      const levels: number[] = []
+      const limit = 100
+      const seen = new Set<string>()
+      for (let offset = 0; ; offset += limit) {
+        const data = await getDiamondsForPost({ PostHashHex: postHash, Offset: offset, Limit: limit })
+        const senders = data.DiamondSenders ?? []
+        const page = senders.map(sender => sender.DiamondLevel)
+        if (!page.every(level => Number.isSafeInteger(level) && level > 0)) throw new Error("Invalid DeSo diamond levels")
+        const signature = JSON.stringify(senders)
+        if (seen.has(signature) && senders.length) throw new Error("DeSo diamond pagination stalled")
+        seen.add(signature)
+        levels.push(...page)
+        if (senders.length < limit) break
+      }
+      setEarnings(levels)
     } catch {
       setEarnings("error")
     }
