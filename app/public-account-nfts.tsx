@@ -409,18 +409,31 @@ export default function PublicAccountNFTs({
     setError("")
 
     try {
-      const [ownedResult, createdResult] = await Promise.allSettled([getNFTsForUser(publicKey, controller.signal), getCreatedNFTs(publicKey, controller.signal)])
+      let owned: DeSoNFTCollection[] = []
+      let created: DeSoNFTCollection[] = []
+      const combine = () => {
+        const byHash = new Map(created.map(item => [item.PostEntryResponse?.PostHashHex, item]))
+        for (const item of owned) {
+          const hash = item.PostEntryResponse?.PostHashHex
+          byHash.set(hash, { ...(byHash.get(hash) ?? item), OwnedEntries: item.NFTEntryResponses ?? [] })
+        }
+        return [...byHash.values()]
+      }
+      const publish = () => {
+        if (!controller.signal.aborted) {
+          const items = combine()
+          if (items.length) setNFTs(items)
+        }
+      }
+      const [ownedResult, createdResult] = await Promise.allSettled([
+        getNFTsForUser(publicKey, controller.signal).then(items => { owned = items; publish(); return items }),
+        getCreatedNFTs(publicKey, controller.signal, items => { created = items; publish() }),
+      ])
       if (controller.signal.aborted) return
       if (ownedResult.status === "rejected" && createdResult.status === "rejected") throw new Error("DESO_NFTS_UNAVAILABLE")
       const complete = ownedResult.status === "fulfilled" && createdResult.status === "fulfilled"
-      const owned = ownedResult.status === "fulfilled" ? ownedResult.value : []
-      const created = createdResult.status === "fulfilled" ? createdResult.value : []
-      const byHash = new Map(created.map(item => [item.PostEntryResponse?.PostHashHex, item]))
-      for (const item of owned) {
-        const hash = item.PostEntryResponse?.PostHashHex
-        byHash.set(hash, { ...(byHash.get(hash) ?? item), OwnedEntries: item.NFTEntryResponses ?? [] })
-      }
-      const collections = [...byHash.values()]
+      if (createdResult.status === "fulfilled") created = createdResult.value
+      const collections = combine()
       if (controller.signal.aborted) return
       const savedAt = Date.now()
       setNFTs(collections)
